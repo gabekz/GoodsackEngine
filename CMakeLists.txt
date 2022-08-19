@@ -46,7 +46,7 @@ target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
 
-if(TRUE) # testing for imgui implementation
+if(FALSE) # testing for imgui implementation
 # cimgui
 set(CIMGUI_DIR "${LIB_DIR}/cimgui")
 set(CIMGUI_IMPL "${CIMGUI_DIR}/imgui/backends")

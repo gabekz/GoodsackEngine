@@ -14,8 +14,8 @@
 #include "gfx.h" // GLFW & glad headers
 #include "shader.h"
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include <cimgui.h>
+//#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+//#include <cimgui.h>
 
 #include "vao.h"
 #include "vbo.h"
