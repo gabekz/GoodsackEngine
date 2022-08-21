@@ -4,9 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "vbo.h"
-#include "ibo.h"
-
 VAO* load_obj(const char* path) {
 
     FILE* stream = NULL;
@@ -179,7 +176,7 @@ VAO* load_obj(const char* path) {
 
     VBO* vbo = vbo_create(out, outI * sizeof(float));
     //VBO* vbo = vbo_create(v, 24 * sizeof(float));
-    struct IBO* ibo = ibo_create(outIndices, (outIndicesI) * sizeof(unsigned int));
+    IBO* ibo = ibo_create(outIndices, (outIndicesI) * sizeof(unsigned int));
 
     // Push our data into our single VBO
     vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);

@@ -1,8 +1,9 @@
-#include "ibo.h"
+#include "glbuffer.h"
+#include <stdlib.h>
 
-struct IBO *ibo_create(const unsigned int* data, unsigned int size)
+IBO *ibo_create(const unsigned int* data, unsigned int size)
 {
-  struct IBO *ibo = malloc(sizeof(struct IBO)); 
+  IBO *ibo = malloc(sizeof(IBO)); 
 
    glGenBuffers(1, &ibo->id);
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->id);
@@ -11,12 +12,12 @@ struct IBO *ibo_create(const unsigned int* data, unsigned int size)
    return ibo;
 }
 
-void ibo_bind(struct IBO *self)
+void ibo_bind(IBO *self)
 {
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->id);
 }
 
-void ibo_destroy(struct IBO *self)
+void ibo_destroy(IBO *self)
 {
    glDeleteBuffers(1, &self->id);
 

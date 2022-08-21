@@ -17,9 +17,7 @@
 //#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 //#include <cimgui.h>
 
-#include "vao.h"
-#include "vbo.h"
-#include "ibo.h"
+#include "glbuffer/glbuffer.h"
 #include "texture.h"
 
 #include "primitives.h"
@@ -159,7 +157,7 @@ int main(void) {
       0, 1, 2,
       2, 3, 0
    };
-    struct IBO *ib = ibo_create(indices, 6 * sizeof(unsigned int));
+    IBO *ib = ibo_create(indices, 6 * sizeof(unsigned int));
     // add the buffer
     vbo_push(vb, 2, GL_FLOAT, GL_FALSE);
     vbo_push(vb, 2, GL_FLOAT, GL_FALSE);
@@ -218,7 +216,7 @@ int main(void) {
 	    13, 15, 14 // Facing side
     };
 
-    struct IBO *ib = ibo_create(indices, (3 * 6) * sizeof(unsigned int));
+    IBO *ib = ibo_create(indices, (3 * 6) * sizeof(unsigned int));
     // add the buffer
     vbo_push(vb, 3, GL_FLOAT, GL_FALSE);
     vbo_push(vb, 2, GL_FLOAT, GL_FALSE);
@@ -258,7 +256,7 @@ int main(void) {
        4, 5, 6,
        4, 6, 7
    };
-    struct IBO *ibLight = ibo_create(lightIndices , (3 * 12) * sizeof(unsigned int));
+    IBO *ibLight = ibo_create(lightIndices , (3 * 12) * sizeof(unsigned int));
 
     vbo_push(vbLight, 3, GL_FLOAT, GL_FALSE);
     vao_add_buffer(vaoLight, vbLight);

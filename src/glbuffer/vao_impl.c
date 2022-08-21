@@ -1,9 +1,7 @@
-#include "vao.h"
+#include "glbuffer.h"
+#include <stdlib.h>
 
-#include "stdio.h"
-#include "stdlib.h"
-
-#define LOGGING
+//#define LOGGING
 
 VAO* vao_create() {
     VAO* ret = malloc(sizeof(VAO));
