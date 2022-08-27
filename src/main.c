@@ -28,7 +28,7 @@
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 720
 
-#define OBJ_LOADER
+//#define OBJ_LOADER
 #define DRAWING_MODE GL_TRIANGLES
 
 /* ~~~ CALLBACKS ~~~ */
@@ -138,32 +138,9 @@ int main(void) {
    vao_bind(vao);
 
 // Create a 3D Pyramid object
-
-    float points[] = {
-    //  COORDINATES     |    TexCoord   |        NORMALS       //
-	-0.5f, 0.0f,  0.5f,     0.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-	-0.5f, 0.0f, -0.5f,     0.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-	 0.5f, 0.0f, -0.5f,     5.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-	 0.5f, 0.0f,  0.5f,     5.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-
-	-0.5f, 0.0f,  0.5f,     0.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left side
-	-0.5f, 0.0f, -0.5f,     5.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left side
-	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,     -0.8f, 0.5f,  0.0f, // Left side
-
-	-0.5f, 0.0f, -0.5f,     5.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing
-	 0.5f, 0.0f, -0.5f,     0.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing
-	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,      0.0f, 0.5f, -0.8f, // Non-facing
-
-	 0.5f, 0.0f, -0.5f,     0.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
-	 0.5f, 0.0f,  0.5f,     5.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
-	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,      0.8f, 0.5f,  0.0f, // Right side
-
-	 0.5f, 0.0f,  0.5f,     5.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
-	-0.5f, 0.0f,  0.5f,     0.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
-	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,      0.0f, 0.5f,  0.8f  // Facing side
-};
-    
-    VBO *vb = vbo_create(points, (3 * 2 * 3 * 16) * sizeof(float));
+    float *pyramidPoints = prim_vert_norm_pyramid();
+    VBO *vb = vbo_create(pyramidPoints, (3 * 2 * 3 * 16) * sizeof(float));
+    free(pyramidPoints);
 
     unsigned int indices[] = {
         0, 1, 2,        // Bottom side
@@ -184,7 +161,7 @@ int main(void) {
 // Create the point-light object
    VAO *vaoLight = vao_create();
    vao_bind(vaoLight);
-// Cube for point-light
+    // Cube for point-light
     float *lightPositions = prim_vert_cube(0.03f);
     VBO *vbLight = vbo_create(lightPositions, (3 * 8) * sizeof(float));
     free(lightPositions);
