@@ -2,4 +2,4 @@
 
 ---
 
-![Alt text](git/test.png?raw=true "Title")
+![Alt text](docs/public/test.png?raw=true "Title")
