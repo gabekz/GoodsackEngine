@@ -28,7 +28,6 @@
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 720
 
-#define RENDER_3D
 #define OBJ_LOADER
 #define DRAWING_MODE GL_TRIANGLES
 
@@ -357,11 +356,15 @@ int main(void) {
         vao_bind(vaoLight);
         glDrawElements(DRAWING_MODE, 36, GL_UNSIGNED_INT, NULL); 
 
+/* Testing the OBJ Loader. The object here can use the same shader
+    and matrix information, both for the pyramid and loaded model. */
+        glUseProgram(shader);
 #ifdef OBJ_LOADER
         vao_bind(vaoLoaded);
-        glUseProgram(shader);
-        //glDrawElements(GL_LINE_LOOP, vertexCount, GL_UNSIGNED_INT, NULL); 
         glDrawArrays(GL_TRIANGLES, 0, 23232);
+#else
+        vao_bind(vao);
+        glDrawElements(DRAWING_MODE, 24, GL_UNSIGNED_INT, NULL);
 #endif
 
     // Swap backbuffer and poll for GLFW events
