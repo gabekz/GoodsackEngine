@@ -28,17 +28,9 @@
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 720
 
-#define NORMAL
-
 #define RENDER_3D
 #define OBJ_LOADER
 #define DRAWING_MODE GL_TRIANGLES
-//#define NORMALS
-
-/*
-#define VAO_NON_ABSTRACT    0
-#define TEXTURE_DISABLE     0
-*/
 
 /* ~~~ CALLBACKS ~~~ */
 
@@ -146,39 +138,22 @@ int main(void) {
    VAO *vao = vao_create();
    vao_bind(vao);
 
-#ifndef RENDER_3D
-// Create a 2D Plane object
-    float *positions = prim_vert_plane();
-    VBO *vb = vbo_create(positions, (4 * 4) * sizeof(float));
-    free(positions);
-
-   // Create the Index Buffer for optimized vertex-position rendering
-   unsigned int indices[] = {
-      0, 1, 2,
-      2, 3, 0
-   };
-    IBO *ib = ibo_create(indices, 6 * sizeof(unsigned int));
-    // add the buffer
-    vbo_push(vb, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vb, 2, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vao, vb);
-#else
 // Create a 3D Pyramid object
 
-    float points[] =
-{ //     COORDINATES     /  TexCoord   /        NORMALS       //
+    float points[] = {
+    //  COORDINATES     |    TexCoord   |        NORMALS       //
 	-0.5f, 0.0f,  0.5f,     0.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
 	-0.5f, 0.0f, -0.5f,     0.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
 	 0.5f, 0.0f, -0.5f,     5.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
 	 0.5f, 0.0f,  0.5f,     5.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
 
-	-0.5f, 0.0f,  0.5f,     0.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
-	-0.5f, 0.0f, -0.5f,     5.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
-	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+	-0.5f, 0.0f,  0.5f,     0.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left side
+	-0.5f, 0.0f, -0.5f,     5.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left side
+	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,     -0.8f, 0.5f,  0.0f, // Left side
 
-	-0.5f, 0.0f, -0.5f,     5.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
-	 0.5f, 0.0f, -0.5f,     0.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
-	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+	-0.5f, 0.0f, -0.5f,     5.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing
+	 0.5f, 0.0f, -0.5f,     0.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing
+	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,      0.0f, 0.5f, -0.8f, // Non-facing
 
 	 0.5f, 0.0f, -0.5f,     0.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
 	 0.5f, 0.0f,  0.5f,     5.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
@@ -188,32 +163,16 @@ int main(void) {
 	-0.5f, 0.0f,  0.5f,     0.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
 	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,      0.0f, 0.5f,  0.8f  // Facing side
 };
-
     
     VBO *vb = vbo_create(points, (3 * 2 * 3 * 16) * sizeof(float));
-    //float *positions = prim_vert_pyramid();
-    //VBO *vb = vbo_create(positions, ((3 * 5) + (2 * 5)) * sizeof(float));
-    //free(positions);
-
-   // Create the Index Buffer for optimized vertex-position rendering
-/*
-   unsigned int indices[] = {
-      0, 1, 2,
-      0, 2, 3,
-      0, 1, 4,
-      1, 2, 4,
-      2, 3, 4,
-      3, 0, 4,
-   };
-*/
 
     unsigned int indices[] = {
-        0, 1, 2, // Bottom side
-	    0, 2, 3, // Bottom side
-	    4, 6, 5, // Left side
-	    7, 9, 8, // Non-facing side
-	    10, 12, 11, // Right side
-	    13, 15, 14 // Facing side
+        0, 1, 2,        // Bottom side
+	    0, 2, 3,        // Bottom side
+	    4, 6, 5,        // Left side
+	    7, 9, 8,        // Non-facing
+	    10, 12, 11,     // Right side
+	    13, 15, 14      // Facing side
     };
 
     IBO *ib = ibo_create(indices, (3 * 6) * sizeof(unsigned int));
@@ -222,17 +181,6 @@ int main(void) {
     vbo_push(vb, 2, GL_FLOAT, GL_FALSE);
     vbo_push(vb, 3, GL_FLOAT, GL_FALSE); // Normals
     vao_add_buffer(vao, vb);
-
-// Create normals?
-/*
-    float *normPositions = prim_norm_pyramid();
-    VBO *vb_norm = vbo_create(normPositions, 3 * 4 * 4 * sizeof(float));
-    free(normPositions);
-    vbo_push(vb_norm, 3, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vao, vb_norm);
-*/
-
-#endif
 
 // Create the point-light object
    VAO *vaoLight = vao_create();
@@ -273,7 +221,6 @@ int main(void) {
 
 // Set up for shaders
     MyShaderStruct *ss =
-      //ParseShader("../res/shaders/unlit-textured.shader");
         ParseShader("../res/shaders/lit-diffuse.shader");
 
    unsigned int shader = CreateShader(ss->shaderVertex, ss->shaderFragment);
@@ -298,7 +245,7 @@ int main(void) {
     struct Texture *tex = texture_create(
       (unsigned char *)"../res/textures/bricks.png");
     texture_bind(tex);
-// ..send it to the active shader
+// ..send it to the shader
     int location2 = glGetUniformLocation(shader, "u_Texture");
     glUniform1i(location2, 0); // 0 is the first (only) texture?
 
@@ -399,7 +346,6 @@ int main(void) {
         //glDrawElements(DRAWING_MODE, 18, GL_UNSIGNED_INT, NULL);
 
     // drawing our second object
-        // Tell OpenGL which shader to use
         glUseProgram(shader2);
         camera_matrix(camera, shader2, "camMatrix"); // send to shader
         mat4 model2 = GLM_MAT4_IDENTITY_INIT;
