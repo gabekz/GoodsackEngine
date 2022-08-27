@@ -7,8 +7,8 @@ layout(location = 1) in vec2 texCoords;
 layout(location = 2) in vec3 normal;
 
 uniform mat4 u_NormMat;
-uniform mat4 model;
-uniform mat4 camMatrix;
+uniform mat4 u_Model;
+uniform mat4 u_CamMatrix;
 
 out vec2 v_TexCoords;
 out vec3 v_Normal;
@@ -17,18 +17,18 @@ out vec3 v_CrntPos;
 void main()
 {
    //gl_Position = vec4(position.x, position.y, position.z, 1.0);      
-   gl_Position = camMatrix * model * vec4(position, 1.0);
+   gl_Position = u_CamMatrix * u_Model * vec4(position, 1.0);
    v_TexCoords = texCoords;
 
     // rotated normals?
-    mat3 normalMatrix = mat3(model); //mvp
+    mat3 normalMatrix = mat3(u_Model); //mvp
     normalMatrix = inverse(normalMatrix);
     normalMatrix = transpose(normalMatrix);
     v_Normal = normalize(normalMatrix * normal);
     //v_Normal = normalize(normal);
 
-   v_CrntPos = vec3(model * vec4(position, 1.0));
-   //v_Normal = vec3(model.x, model.y, model.z) * normal;
+   v_CrntPos = vec3(u_Model * vec4(position, 1.0));
+   //v_Normal = vec3(u_Model.x, u_Model.y, u_Model.z) * normal;
 }
 
 // ---------------------- Fragment -----------------
@@ -41,9 +41,7 @@ in vec2 v_TexCoords;
 in vec3 v_Normal;
 in vec3 v_CrntPos;
 
-uniform vec4 u_Color;
 uniform sampler2D u_Texture;
-
 uniform vec4 u_LightColor;
 uniform vec3 u_LightPosition;
 uniform vec3 u_CamPos;

@@ -28,12 +28,14 @@
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 720
 
-//#define OBJ_LOADER
+#define OBJ_LOADER
 #define DRAWING_MODE GL_TRIANGLES
 
-/* ~~~ CALLBACKS ~~~ */
-
+static int winWidth  = WINDOW_WIDTH;
+static int winHeight = WINDOW_HEIGHT;
 static int vertexCount = 4;
+
+/* ~~~ CALLBACKS ~~~ */
 
 static void _error_callback
 (int error, const char* description) {
@@ -44,7 +46,6 @@ static void _key_callback
 (GLFWwindow* window, int key, int scancode, int action, int mods) {
    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
    {
-      //printf("Escape key was pressed");
       glfwSetWindowShouldClose(window, GLFW_TRUE);
    }
    if(key == GLFW_KEY_V && action == GLFW_PRESS)
@@ -66,8 +67,7 @@ static void GLClearError() {
 
 static void GLCheckError() {
    GLenum error = glGetError();
-   while(error)
-   {
+   while(error) {
       printf("\n|OpenGL Error| (%s)\n", error);
    }
 }
@@ -212,11 +212,6 @@ int main(void) {
     free(ss);
     free(ss2);
 
-// Shader Fun 
-   int location = glGetUniformLocation(shader, "u_Color");
-   float r = 0.0f;
-   float increment = 0.005f;
-
 // Create texture
     struct Texture *tex = texture_create(
       (unsigned char *)"../res/textures/bricks.png");
@@ -225,7 +220,8 @@ int main(void) {
     int location2 = glGetUniformLocation(shader, "u_Texture");
     glUniform1i(location2, 0); // 0 is the first (only) texture?
 
-// Create the camera, containing position and up-axis coords
+// Create the camera, containing starting-position and up-axis coords.
+// TODO: Update camera when window is resized
     Camera* camera = camera_create(winWidth, winHeight,
       (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
 
@@ -267,75 +263,52 @@ int main(void) {
             (float)lightColor[0], (float)lightColor[1],
             (float)lightColor[2], (float)lightColor[3]);
 
-// Rotation stuff for shader
-    float rotation = 0.0f;
-    float rotationInc = 0.5f;
-    double timePrev = -1.0f;
+// Rotation parametes
+    float  rotation     = 0.0f;
+    float  rotationInc  = 0.5f;
+    double timePrev     = -1.0f;
 
 // Render Loop
-    while(!glfwWindowShouldClose(window))
-    {
+    while(!glfwWindowShouldClose(window)) {
+    // Start by clearing our buffer bits and setting a BG color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.15f, 1.0f);
 
-        // Tell OpenGL which shader to use
-        glUseProgram(shader);
-
-        // color-shift logic for shader
-        if(r > 1.0f || r < 0.0f) {
-            increment = -increment;
-        }
-        r+=increment;
-        glUniform4f(location, r, 1.0f, 1.0f, 1.0f);
-
-        // rotation logic for pyramid
-        int timeCurr = glfwGetTime();
-        if((timeCurr - timePrev) >= (1.0f / 60.0f)) {
+    // rotation logic for model 
+        if((glfwGetTime() - timePrev) >= (1.0f / 60.0f)) {
             rotation += rotationInc;
         }
-        mat4 model = GLM_MAT4_IDENTITY_INIT;
-        glm_rotate(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
-
-        int modelLoc = glGetUniformLocation(shader, "model");       // Model
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
-
-        mat4 testThing = GLM_MAT4_IDENTITY_INIT;
-        glm_mat4_mul(camera->proj, camera->view, testThing);
-        int modelLocTest = glGetUniformLocation(shader, "u_NormMat");       // Model
-        glUniformMatrix4fv(modelLocTest, 1, GL_FALSE, (float *)testThing);
 
     // Update the view and projection based on the camera data
         camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
-        camera_matrix(camera, shader, "camMatrix"); // send to shader
+
+    // Shader for the first model
+        glUseProgram(shader);
+
+    // Rotate the model, send information to shader
+        mat4 model = GLM_MAT4_IDENTITY_INIT;
+        glm_rotate(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
+        int modelLoc = glGetUniformLocation(shader, "u_Model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
+
+    // Send normals information to shader
+        mat4 normMatrix = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_mul(camera->proj, camera->view, normMatrix);
+        glUniformMatrix4fv(glGetUniformLocation(shader, "u_NormMat"),
+          1, GL_FALSE, (float *)normMatrix);
+
+        // send the camera matrix to the shader
+        camera_matrix(camera, shader, "u_CamMatrix"); // send to shader
 
     // send our camera position to the shader
-    int locationCameraPosition = glGetUniformLocation(shader, "u_CamPos");
-    glUniform3f(locationCameraPosition,
-      camera->position[0], camera->position[1], camera->position[2]);
+        glUniform3f(glGetUniformLocation(shader, "u_CamPos"),
+        camera->position[0], camera->position[1], camera->position[2]);
 
     // Compute camera-input
         camera_input(camera, window);
 
-    // drawing our object
-        //ibo_bind(ib); -- no need to do this if we bind the vao
-        vao_bind(vao);
-        //glDrawElements(DRAWING_MODE, 18, GL_UNSIGNED_INT, NULL);
-
-    // drawing our second object
-        glUseProgram(shader2);
-        camera_matrix(camera, shader2, "camMatrix"); // send to shader
-        mat4 model2 = GLM_MAT4_IDENTITY_INIT;
-        int modelLoc2 = glGetUniformLocation(shader2, "model");       // Model
-
-        glm_translate(model2, lightPos);
-        glUniformMatrix4fv(modelLoc2, 1, GL_FALSE, (float *)model2);
-
-        vao_bind(vaoLight);
-        glDrawElements(DRAWING_MODE, 36, GL_UNSIGNED_INT, NULL); 
-
 /* Testing the OBJ Loader. The object here can use the same shader
     and matrix information, both for the pyramid and loaded model. */
-        glUseProgram(shader);
 #ifdef OBJ_LOADER
         vao_bind(vaoLoaded);
         glDrawArrays(GL_TRIANGLES, 0, 23232);
@@ -343,6 +316,18 @@ int main(void) {
         vao_bind(vao);
         glDrawElements(DRAWING_MODE, 24, GL_UNSIGNED_INT, NULL);
 #endif
+
+    // drawing our second object
+        glUseProgram(shader2);
+        camera_matrix(camera, shader2, "u_CamMatrix"); // send to shader
+
+        mat4 model2 = GLM_MAT4_IDENTITY_INIT;
+        glm_translate(model2, lightPos);
+        glUniformMatrix4fv(glGetUniformLocation(shader2, "u_Model"),
+          1, GL_FALSE, (float *)model2);
+
+        vao_bind(vaoLight);
+        glDrawElements(DRAWING_MODE, 36, GL_UNSIGNED_INT, NULL); 
 
     // Swap backbuffer and poll for GLFW events
         glfwSwapBuffers(window);

@@ -3,12 +3,12 @@
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 texCoords;
 
-uniform mat4 model;
-uniform mat4 camMatrix;
+uniform mat4 u_Model;
+uniform mat4 u_CamMatrix;
 
 void main()
 {
-   gl_Position = camMatrix * model * vec4(position, 1.0);
+   gl_Position = u_CamMatrix * u_Model * vec4(position, 1.0);
 }
 
 #shader fragment
