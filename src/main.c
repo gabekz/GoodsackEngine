@@ -11,6 +11,8 @@
 #include <cglm/cglm.h>   /* for inline */
 #include <cglm/struct.h>   /* for inline */
 
+#include <util/sysdefs.h>
+
 #include "gfx.h" // GLFW & glad headers
 #include "shader.h"
 
@@ -18,6 +20,7 @@
 //#include <cimgui.h>
 
 #include "glbuffer/glbuffer.h"
+#include "mesh.h"
 #include "texture.h"
 
 #include "primitives.h"
@@ -124,7 +127,6 @@ int main(void) {
    // Get current OpenGL version
    printf("%s\n", glGetString(GL_VERSION));
 
-
 #ifdef CIMGUI
    // IMGUI initialization
    imgui_init(window);
@@ -133,7 +135,7 @@ int main(void) {
    // Refresh rate 
    glfwSwapInterval(1);
 
-// Create the VAO [will segfault unless before vbo binding]
+// Create a VAO [will segfault unless before vbo binding]
    VAO *vao = vao_create();
    vao_bind(vao);
 
@@ -196,27 +198,34 @@ int main(void) {
 #endif
 
 // Set up for shaders
-    MyShaderStruct *ss =
-        ParseShader("../res/shaders/lit-diffuse.shader");
-
-   unsigned int shader = CreateShader(ss->shaderVertex, ss->shaderFragment);
-   glUseProgram(shader); // Activate the shader
+    unsigned int shader = CreateShader("../res/shaders/lit-diffuse.shader");
+    glUseProgram(shader); // Activate the shader
 
 
-    // Setup for the second shader (test)
-    MyShaderStruct *ss2 = 
-        ParseShader("../res/shaders/white.shader");
-   unsigned int shader2 = CreateShader(ss2->shaderVertex, ss2->shaderFragment);
+// Setup for the second shader (test)
+    unsigned int shader2 = CreateShader("../res/shaders/white.shader");
 
-    /* Note: Once we've set up the shader, we can free contents */
-    free(ss);
-    free(ss2);
+#ifdef MESH_ABSTRACTION
+
+    unsigned int meshShader;
+      CreateShader("../res/shaders/lit-diffuse.shader");
+
+    Mesh *mesh = mesh_create("../res/models/suzanne.obj", meshShader);
+
+    Mesh *meshSingle = mesh_create(
+        "../res/models/suzanne.obj",            // model data
+        "../res/shaders/lit-diffuse.shader",    // shader path 
+        "../res/textures/bricks.png"            // texture [diffuse]
+        );
+#endif
+
+    glUseProgram(shader);
 
 // Create texture
-    struct Texture *tex = texture_create(
-      (unsigned char *)"../res/textures/bricks.png");
+    Texture *tex = texture_create(
+      (unsigned char*)"../res/textures/bricks.png");
     texture_bind(tex);
-// ..send it to the shader
+// send it to the shader
     int location2 = glGetUniformLocation(shader, "u_Texture");
     glUniform1i(location2, 0); // 0 is the first (only) texture?
 
@@ -311,7 +320,7 @@ int main(void) {
     and matrix information, both for the pyramid and loaded model. */
 #ifdef OBJ_LOADER
         vao_bind(vaoLoaded);
-        glDrawArrays(GL_TRIANGLES, 0, 23232);
+        glDrawArrays(DRAWING_MODE, 0, 23232);
 #else
         vao_bind(vao);
         glDrawElements(DRAWING_MODE, 24, GL_UNSIGNED_INT, NULL);

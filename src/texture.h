@@ -4,8 +4,9 @@
 #include "gfx.h"
 #include "stdlib.h"
 
+typedef struct _texture Texture;
 
-struct Texture {
+struct _texture {
   const char *filePath;
   unsigned int id;
   unsigned int bpp;
@@ -13,9 +14,9 @@ struct Texture {
   unsigned int slot;
 };
 
-struct Texture *texture_create(unsigned char* path);
+Texture *texture_create(unsigned char* path);
 
-void texture_bind(struct Texture *self);
+void texture_bind(Texture *self);
 void texture_unbind();
 
 

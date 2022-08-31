@@ -9,9 +9,29 @@
 #include <stdio.h>
 #include <string.h>
 
+static unsigned int CompileShader(unsigned int type, const char* source) {
+    unsigned int id = glCreateShader(type);
+    //const char* src = &source[0];
+    glShaderSource(id, 1, &source, NULL);
+    glCompileShader(id);
 
-MyShaderStruct *ParseShader(const char* path)
-{
+    /* Error handling */ 
+    int result;
+    glGetShaderiv(id, GL_COMPILE_STATUS, &result); 
+    if(result == GL_FALSE) {
+       int length;
+       glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+       char* message = (char *)alloca(length * sizeof(char));
+       glGetShaderInfoLog(id, length, &length, message);
+       printf("Failed to compile shader.\n Error output: %s\n", message);
+       glDeleteShader(id);
+       return 0;
+    }
+    return id;
+}
+
+
+ShaderSource *ParseShader(const char *path) {
    // File in 
    FILE* fptr = NULL;
    char line[256];
@@ -77,7 +97,7 @@ MyShaderStruct *ParseShader(const char* path)
 
    /* TODO: Report 'NULL' declaration bug */
 
-   MyShaderStruct *ss = malloc(sizeof(struct myShaderStruct));
+   ShaderSource *ss = malloc(sizeof(ShaderSource));
 
    // TODO: Is this malloc'd?
    ss->shaderVertex   = strdup(vertOut);
@@ -86,47 +106,24 @@ MyShaderStruct *ParseShader(const char* path)
    free(vertOut);
    free(fragOut);
 
-   // Make sure you free the pointer.
    return ss;
 }
 
-unsigned int CompileShader(unsigned int type, const char* source)
-{
-   unsigned int id = glCreateShader(type);
-   //const char* src = &source[0];
-   glShaderSource(id, 1, &source, NULL);
-   glCompileShader(id);
 
-   /* Error handling */ 
-   int result;
-   glGetShaderiv(id, GL_COMPILE_STATUS, &result); 
-   if(result == GL_FALSE)
-   {
-      int length;
-      glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-      char* message = (char *)alloca(length * sizeof(char));
-      glGetShaderInfoLog(id, length, &length, message);
-      printf("Failed to compile shader.\n Error output: %s\n", message);
-      glDeleteShader(id);
-      return 0;
-   }
+unsigned int CreateShader(const char *source) {
+    ShaderSource *ss = ParseShader(source);
 
-   return id;
-}
+    ui32 program = glCreateProgram();   
+    ui32 vs = CompileShader(GL_VERTEX_SHADER, ss->shaderVertex);
+    ui32 fs = CompileShader(GL_FRAGMENT_SHADER, ss->shaderFragment);
 
-unsigned int CreateShader(char* vertexShader, char* fragmentShader)
-{
-   unsigned int program = glCreateProgram();   
-   unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
-   unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    // TODO: Read documentation on these functions
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+    glValidateProgram(program);
 
-   // TODO: Read documentation on these functions
-   glAttachShader(program, vs);
-   glAttachShader(program, fs);
-   glLinkProgram(program);
-   glValidateProgram(program);
-
-   glDeleteShader(vs);
-   glDeleteShader(fs);
-   return program;
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+    return program;
 }

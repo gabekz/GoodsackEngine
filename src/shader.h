@@ -1,18 +1,18 @@
 #ifndef _SHADER_
 #define _SHADER_
 
+#include <util/sysdefs.h>
 #include "gfx.h"
 
-struct myShaderStruct 
+typedef struct _shaderSource ShaderSource;
+
+struct _shaderSource 
 {
    char* shaderVertex;
    char* shaderFragment;
 };
-typedef struct myShaderStruct MyShaderStruct;
 
-MyShaderStruct* ParseShader(const char* path);
-unsigned int CompileShader(unsigned int type, const char* source);
-unsigned int CreateShader(char * vertexShader, char* fragmentShader);
-
+ShaderSource *ParseShader(const char *path);
+unsigned int CreateShader(const char *source);
 
 #endif
