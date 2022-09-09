@@ -31,7 +31,6 @@
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 720
 
-#define OBJ_LOADER
 #define DRAWING_MODE GL_TRIANGLES
 
 static int winWidth  = WINDOW_WIDTH;
@@ -135,31 +134,6 @@ int main(void) {
    // Refresh rate 
    glfwSwapInterval(1);
 
-// Create a VAO [will segfault unless before vbo binding]
-   VAO *vao = vao_create();
-   vao_bind(vao);
-
-// Create a 3D Pyramid object
-    float *pyramidPoints = prim_vert_norm_pyramid();
-    VBO *vb = vbo_create(pyramidPoints, (3 * 2 * 3 * 16) * sizeof(float));
-    free(pyramidPoints);
-
-    unsigned int indices[] = {
-        0, 1, 2,        // Bottom side
-	    0, 2, 3,        // Bottom side
-	    4, 6, 5,        // Left side
-	    7, 9, 8,        // Non-facing
-	    10, 12, 11,     // Right side
-	    13, 15, 14      // Facing side
-    };
-
-    IBO *ib = ibo_create(indices, (3 * 6) * sizeof(unsigned int));
-    // add the buffer
-    vbo_push(vb, 3, GL_FLOAT, GL_FALSE);
-    vbo_push(vb, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vb, 3, GL_FLOAT, GL_FALSE); // Normals
-    vao_add_buffer(vao, vb);
-
 // Create the point-light object
    VAO *vaoLight = vao_create();
    vao_bind(vaoLight);
@@ -170,44 +144,36 @@ int main(void) {
 
    unsigned int lightIndices[] = {
        0, 1, 2,
-       0, 2, 3,
+       2, 3, 0,
        0, 4, 7,
-       0, 7, 3,
+       7, 0, 3,
        3, 7, 6,
-       3, 6, 2,
+       6, 3, 2,
        2, 6, 5,
-       2, 5, 1,
+       5, 2, 1,
        1, 5, 4,
-       1, 4, 0,
+       1, 0, 4,
        4, 5, 6,
-       4, 6, 7
+       6, 4, 7
    };
     IBO *ibLight = ibo_create(lightIndices , (3 * 12) * sizeof(unsigned int));
 
     vbo_push(vbLight, 3, GL_FLOAT, GL_FALSE);
     vao_add_buffer(vaoLight, vbLight);
 
-#ifdef TEST_TIME
-    printf("Vertex Shader:\n%s", ss->shaderVertex);
-    printf("Fragment Shader:\n%s", ss->shaderFragment);
-#endif
-
-#ifdef OBJ_LOADER
-// TEST: Load an OBJ file
+// Loaded VAO
    VAO* vaoLoaded = load_obj("../res/models/suzanne.obj");
-#endif
 
 // Set up for shaders
     unsigned int shader = CreateShader("../res/shaders/lit-diffuse.shader");
     glUseProgram(shader); // Activate the shader
 
-
 // Setup for the second shader (test)
     unsigned int shader2 = CreateShader("../res/shaders/white.shader");
 
-#ifdef MESH_ABSTRACTION
+#ifdef MESH_ABSTRACTION_TEST
 
-    unsigned int meshShader;
+    unsigned int meshShader =
       CreateShader("../res/shaders/lit-diffuse.shader");
 
     Mesh *mesh = mesh_create("../res/models/suzanne.obj", meshShader);
@@ -218,8 +184,6 @@ int main(void) {
         "../res/textures/bricks.png"            // texture [diffuse]
         );
 #endif
-
-    glUseProgram(shader);
 
 // Create texture
     Texture *tex = texture_create(
@@ -234,15 +198,6 @@ int main(void) {
     Camera* camera = camera_create(winWidth, winHeight,
       (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
 
-// Clearing GL State
-    glBindVertexArray(0);
-    glUseProgram(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);            // unbind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);    // unbind IBO
-    // Free VBO's [not needed anymore, the data exists in the VAO's]
-    free(vb);
-    free(vbLight);
-
 // Enable Depth Testing
     glEnable(GL_DEPTH_TEST);
 
@@ -252,25 +207,34 @@ int main(void) {
     //vec4 lightColor = GLM_VEC4_ONE_INIT;
     //lightColor = (float *){1.0f, 1.0f, 1.0f, 1.0f};
 
-    int locationLightColor  = glGetUniformLocation(shader, "u_LightColor");
-    int locationLightColor2 = glGetUniformLocation(shader2, "u_LightColor");
-    int locationLightPos    = glGetUniformLocation(shader, "u_LightPosition");
 
     glUseProgram(shader);
 
-    glUniform3f(locationLightPos,
-            (float)lightPos[0],
-            (float)lightPos[1],
-            (float)lightPos[2]);
+    int locationLightColor = glGetUniformLocation(shader, "u_LightColor");
     glUniform4f(locationLightColor,
             (float)lightColor[0], (float)lightColor[1],
             (float)lightColor[2], (float)lightColor[3]);
 
+    int locationLightPos = glGetUniformLocation(shader, "u_LightPosition");
+    glUniform3f(locationLightPos,
+            (float)lightPos[0],
+            (float)lightPos[1],
+            (float)lightPos[2]);
+
     glUseProgram(shader2);
 
+    int locationLightColor2 = glGetUniformLocation(shader2, "u_LightColor");
     glUniform4f(locationLightColor2,
             (float)lightColor[0], (float)lightColor[1],
             (float)lightColor[2], (float)lightColor[3]);
+
+// Clearing GL State
+    glBindVertexArray(0);
+    glUseProgram(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);            // unbind VBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);    // unbind IBO
+    // Free VBO's [not needed anymore, the data exists in the VAO's]
+    free(vbLight);
 
 // Rotation parametes
     float  rotation     = 0.0f;
@@ -313,18 +277,11 @@ int main(void) {
         glUniform3f(glGetUniformLocation(shader, "u_CamPos"),
         camera->position[0], camera->position[1], camera->position[2]);
 
-    // Compute camera-input
-        camera_input(camera, window);
 
 /* Testing the OBJ Loader. The object here can use the same shader
     and matrix information, both for the pyramid and loaded model. */
-#ifdef OBJ_LOADER
         vao_bind(vaoLoaded);
         glDrawArrays(DRAWING_MODE, 0, 23232);
-#else
-        vao_bind(vao);
-        glDrawElements(DRAWING_MODE, 24, GL_UNSIGNED_INT, NULL);
-#endif
 
     // drawing our second object
         glUseProgram(shader2);
@@ -337,6 +294,9 @@ int main(void) {
 
         vao_bind(vaoLight);
         glDrawElements(DRAWING_MODE, 36, GL_UNSIGNED_INT, NULL); 
+ 
+    // Compute camera-input
+        camera_input(camera, window);
 
     // Swap backbuffer and poll for GLFW events
         glfwSwapBuffers(window);
