@@ -28,8 +28,8 @@
 
 #include "loaders/loader_obj.h"
 
-#define WINDOW_WIDTH  1280
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH  1916
+#define WINDOW_HEIGHT 1074
 
 #define DRAWING_MODE GL_TRIANGLES
 
@@ -122,6 +122,9 @@ int main(void) {
 
    // Set callbacks
    glfwSetKeyCallback(window, _key_callback);
+
+   // Refresh rate 
+   glfwSwapInterval(1);
    
    // Get current OpenGL version
    printf("%s\n", glGetString(GL_VERSION));
@@ -130,9 +133,6 @@ int main(void) {
    // IMGUI initialization
    imgui_init(window);
 #endif
-
-   // Refresh rate 
-   glfwSwapInterval(1);
 
 // Create the point-light object
    VAO *vaoLight = vao_create();
@@ -200,6 +200,11 @@ int main(void) {
 
 // Enable Depth Testing
     glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_CULL_FACE);
+
+// Enable Face Culling
+//  glCullFace(GL_FRONT);
+//  glFrontFace(GL_CW);
 
 // Lighting information
     float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
@@ -241,11 +246,69 @@ int main(void) {
     float  rotationInc  = 0.5f;
     double timePrev     = -1.0f;
 
+// Framebuffer shader
+    ui32 fbShader = CreateShader("../res/shaders/framebuffer.shader");
+    glUseProgram(fbShader);
+    glUniform1i(glGetUniformLocation(fbShader, "u_ScreenTexture"), 0);
+
+    // Create Rectangle
+   VAO *vaoRect = vao_create();
+   vao_bind(vaoRect);
+    // Cube for point-light
+    float *rectPositions = prim_vert_rect();
+    VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    vbo_bind(vboRect);
+    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    vao_add_buffer(vaoRect, vboRect);
+    free(rectPositions);
+
+// Framebuffer
+    ui32 FBO;
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+    // Create Texture
+    ui32 frameBufferTexture;
+    glGenTextures(1, &frameBufferTexture);
+    glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, winWidth, winHeight,
+        0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, frameBufferTexture, 0);
+
+    // Create Renderbuffer
+    ui32 RBO;
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
+        winWidth, winHeight);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    // Attach Renderbuffer
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+        GL_RENDERBUFFER, RBO);
+
+    // Error checking
+    GLenum fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if(fbStatus != GL_FRAMEBUFFER_COMPLETE) {
+        printf("\nFramebuffer ERROR: %u\n", fbStatus);
+    }
+
+
+
 // Render Loop
     while(!glfwWindowShouldClose(window)) {
+
+    // Bind the Framebuffer
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
     // Start by clearing our buffer bits and setting a BG color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.15f, 1.0f);
+        glEnable(GL_DEPTH_TEST);
 
     // rotation logic for model 
         if((glfwGetTime() - timePrev) >= (1.0f / 60.0f)) {
@@ -256,6 +319,7 @@ int main(void) {
         camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
 
     // Shader for the first model
+        texture_bind(tex); 
         glUseProgram(shader);
 
     // Rotate the model, send information to shader
@@ -297,6 +361,14 @@ int main(void) {
  
     // Compute camera-input
         camera_input(camera, window);
+
+// Second pass
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glUseProgram(fbShader);
+    vao_bind(vaoRect);
+    glDisable(GL_DEPTH_TEST);
+    glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // Swap backbuffer and poll for GLFW events
         glfwSwapBuffers(window);

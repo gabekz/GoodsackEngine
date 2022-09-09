@@ -12,6 +12,30 @@ static void* fillData(unsigned int size, unsigned int dataSize, void* dataIn) {
 }
 */
 
+// * ----------- Rect -------------* //
+float* prim_vert_rect() {
+
+    float rectPoints[] = {
+        // Coords   // texCoords
+         1.0f, -1.0f,    1.0f, 0.0f,
+        -1.0f, -1.0f,    0.0f, 0.0f,
+        -1.0f,  1.0f,    0.0f, 1.0f,
+    
+         1.0f,  1.0f,     1.0f, 1.0f,
+         1.0f, -1.0f,     1.0f, 0.0f,
+        -1.0f,  1.0f,     0.0f, 1.0f
+    };
+    
+        unsigned int size = (2 * 3) * 4;
+        float *ret = malloc(size * sizeof(float));
+        for(int i = 0; i <= size; i++) {
+            ret[i] = rectPoints[i];
+        }
+        return ret;
+}
+
+
+
 // * ----------- Plane -------------* //
 
 float* prim_vert_plane() {

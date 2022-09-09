@@ -2,6 +2,7 @@
 #define PRIMITIVES_H
 
 void primitive_pyramid(float* out);
+float* prim_vert_rect();
 float* prim_vert_plane();
 
 float* prim_vert_pyramid();
