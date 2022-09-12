@@ -16,9 +16,6 @@
 #include "gfx.h" // GLFW & glad headers
 #include "shader.h"
 
-//#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-//#include <cimgui.h>
-
 #include "glbuffer/glbuffer.h"
 #include "mesh.h"
 #include "texture.h"
@@ -28,8 +25,8 @@
 
 #include "loaders/loader_obj.h"
 
-#define WINDOW_WIDTH  1916
-#define WINDOW_HEIGHT 1074
+#define WINDOW_WIDTH  1280
+#define WINDOW_HEIGHT 720
 
 #define DRAWING_MODE GL_TRIANGLES
 
@@ -74,23 +71,16 @@ static void GLCheckError() {
    }
 }
 
-#ifdef CIMGUI
-/* Platform */
-struct ImGuiContext* ctx;
-struct ImGuiIO* io;
-
-void imgui_init(GLFWwindow* win) {
-    ctx = igCreateContext(NULL);
-    io = igGetIO();
-
-    const char* glsl_version = "#version 330 core";
-    ImGui_ImplGlfw_InitForOpenGL(win, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-
-    igStyleColorsDark(NULL);
+/* ~~ Clear ~~ */
+void clearGL() {
+    glUseProgram(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);            // unbind VBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);    // unbind IBO
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
-
-#endif
 
 /* ~~~ MAIN ~~~ */
 
@@ -102,7 +92,7 @@ int main(void) {
 
    // Minimum OpenGL version required
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
    int winWidth    = WINDOW_WIDTH;
@@ -134,6 +124,11 @@ int main(void) {
    imgui_init(window);
 #endif
 
+// Create the Camera, containing starting-position and up-axis coords.
+    // TODO: Update camera when window is resized
+    Camera* camera = camera_create(winWidth, winHeight,
+      (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
+
 // Create the point-light object
    VAO *vaoLight = vao_create();
    vao_bind(vaoLight);
@@ -164,7 +159,7 @@ int main(void) {
 // Loaded VAO
    VAO* vaoLoaded = load_obj("../res/models/suzanne.obj");
 
-// Set up for shaders
+    // Set up for shaders
     unsigned int shader = CreateShader("../res/shaders/lit-diffuse.shader");
     glUseProgram(shader); // Activate the shader
 
@@ -185,33 +180,18 @@ int main(void) {
         );
 #endif
 
-// Create texture
+    // Create texture
     Texture *tex = texture_create(
       (unsigned char*)"../res/textures/bricks.png");
     texture_bind(tex);
-// send it to the shader
+    // send it to the shader
     int location2 = glGetUniformLocation(shader, "u_Texture");
     glUniform1i(location2, 0); // 0 is the first (only) texture?
 
-// Create the camera, containing starting-position and up-axis coords.
-// TODO: Update camera when window is resized
-    Camera* camera = camera_create(winWidth, winHeight,
-      (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
-
-// Enable Depth Testing
-    glEnable(GL_DEPTH_TEST);
-//    glEnable(GL_CULL_FACE);
-
-// Enable Face Culling
-//  glCullFace(GL_FRONT);
-//  glFrontFace(GL_CW);
 
 // Lighting information
     float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
     float* lightPos     = (vec3){0.0f, 0.5f, 0.4f};
-    //vec4 lightColor = GLM_VEC4_ONE_INIT;
-    //lightColor = (float *){1.0f, 1.0f, 1.0f, 1.0f};
-
 
     glUseProgram(shader);
 
@@ -233,40 +213,23 @@ int main(void) {
             (float)lightColor[0], (float)lightColor[1],
             (float)lightColor[2], (float)lightColor[3]);
 
-// Clearing GL State
-    glBindVertexArray(0);
-    glUseProgram(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);            // unbind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);    // unbind IBO
-    // Free VBO's [not needed anymore, the data exists in the VAO's]
-    free(vbLight);
-
-// Rotation parametes
-    float  rotation     = 0.0f;
-    float  rotationInc  = 0.5f;
-    double timePrev     = -1.0f;
-
-// Framebuffer shader
+// Framebuffer 
+    // Shader
     ui32 fbShader = CreateShader("../res/shaders/framebuffer.shader");
     glUseProgram(fbShader);
     glUniform1i(glGetUniformLocation(fbShader, "u_ScreenTexture"), 0);
 
     // Create Rectangle
-   VAO *vaoRect = vao_create();
-   vao_bind(vaoRect);
-    // Cube for point-light
+    VAO *vaoRect = vao_create();
+    vao_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
+
     VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
     vbo_bind(vboRect);
     vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     vao_add_buffer(vaoRect, vboRect);
     free(rectPositions);
-
-// Framebuffer
-    ui32 FBO;
-    glGenFramebuffers(1, &FBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
     // Create Texture
     ui32 frameBufferTexture;
@@ -277,16 +240,22 @@ int main(void) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Create Framebuffer object
+    ui32 FBO;
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    // Attach texture to FBO
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D, frameBufferTexture, 0);
 
-    // Create Renderbuffer
+    // Create Renderbuffer object [Depth]
     ui32 RBO;
     glGenRenderbuffers(1, &RBO);
     glBindRenderbuffer(GL_RENDERBUFFER, RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
         winWidth, winHeight);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    //glBindRenderbuffer(GL_RENDERBUFFER, 0); -- This doesn't have to be done?
     // Attach Renderbuffer
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
         GL_RENDERBUFFER, RBO);
@@ -297,7 +266,15 @@ int main(void) {
         printf("\nFramebuffer ERROR: %u\n", fbStatus);
     }
 
+// Clearing GL State
+    clearGL();
+    // Free VBO's [not needed anymore, the data exists in the VAO's]
+    //free(vbLight);
 
+// Rotation parametes for the render loop
+    float  rotation     = 0.0f;
+    float  rotationInc  = 0.5f;
+    double timePrev     = -1.0f;
 
 // Render Loop
     while(!glfwWindowShouldClose(window)) {
@@ -308,7 +285,11 @@ int main(void) {
     // Start by clearing our buffer bits and setting a BG color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.15f, 1.0f);
+
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        glFrontFace(GL_CW);
 
     // rotation logic for model 
         if((glfwGetTime() - timePrev) >= (1.0f / 60.0f)) {
@@ -319,7 +300,7 @@ int main(void) {
         camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
 
     // Shader for the first model
-        texture_bind(tex); 
+        texture_bind(tex);
         glUseProgram(shader);
 
     // Rotate the model, send information to shader
@@ -366,8 +347,9 @@ int main(void) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUseProgram(fbShader);
     vao_bind(vaoRect);
-    glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // Swap backbuffer and poll for GLFW events

@@ -11,7 +11,7 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 #set(SOURCES "${SRC_DIR}/*.c")
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.h" "src/*.c")
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.h" "src/*.c" "src/*.cpp")
 
 # Executable definition and properties
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -26,7 +26,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${STB_DIR}")
 set(CGLM_DIR "${LIB_DIR}/cglm")
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
 target_link_libraries(${PROJECT_NAME} "cglm" cglm_headers) 
-
 
 # glfw
 set(GLFW_DIR "${LIB_DIR}/glfw")
@@ -45,49 +44,3 @@ add_library("glad" "${GLAD_DIR}/src/gl.c")
 target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
-
-if(FALSE) # testing for imgui implementation
-# cimgui
-set(CIMGUI_DIR "${LIB_DIR}/cimgui")
-set(CIMGUI_IMPL "${CIMGUI_DIR}/imgui/backends")
-
-#add_subdirectory("${CIMGUI_DIR}")
-#target_include_directories(${PROJECT_NAME} PRIVATE "${CIMGUI_DIR}")
-#target_include_directories(${PROJECT_NAME} PRIVATE "${CIMGUI_DIR}/imgui")
-
-file(GLOB 
-	cimgui_files 
-    "${CIMGUI_DIR}/*.cpp" 
-    "${CIMGUI_DIR}/*.h" 
-    "${CIMGUI_DIR}/imgui/*.cpp"
-    "${CIMGUI_DIR}/imgui/*.h"
-    "${CIMGUI_IMPL}/imgui_impl_glfw.cpp"
-    "${CIMGUI_IMPL}/imgui_impl_opengl3.cpp"
-    "${CIMGUI_IMPL}/*.h")
-#target_include_directories(${PROJECT_NAME} PRIVATE "${CIMGUI_IMPL}")
-#add_subdirectory("${CIMGUI_DIR}")
-#add_subdirectory("${CIMGUI_DIR}/imgui")
-
-include_directories(
-    "${CIMGUI_DIR}"
-    "${CIMGUI_DIR}/imgui"
-    "${CIMGUI_IMPL}"
-    )
-
-add_library("cimgui" STATIC ${cimgui_files})
-target_link_libraries("cimgui" PRIVATE "glfw")
-target_include_directories("cimgui" PRIVATE "${CIMGUI_DIR}")
-target_include_directories("cimgui" PRIVATE "${CIMGUI_DIR}/imgui")
-target_include_directories("cimgui" PRIVATE "${CIMGUI_IMPL}")
-target_compile_definitions("cimgui" PRIVATE
-    IMGUI_IMPL_API=extern\ \"C\"
-    IMGUI_IMPL_OPENGL_LOADER_GLAD)
-#include_directories("${CIMGUI_DIR}")
-#include_directories("${CIMGUI_DIR}/imgui")
-#include_directories("${CIMGUI_IMPL}")
-
-target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_IMPL_API=\ )
-
-target_link_libraries(${PROJECT_NAME} "cimgui")
-
-endif()
