@@ -7,6 +7,7 @@ layout(location = 1) in vec2 a_TexCoords;
 layout(location = 2) in vec3 a_Normal;
 
 layout (std140) uniform Camera {
+    vec3 position;
     mat4 projection;
     mat4 view;
 } s_Camera;
@@ -32,6 +33,7 @@ void main() {
 
    vs_out.crntPos = vec3(u_Model * vec4(a_Position, 1.0));
    vs_out.texCoords = a_TexCoords;
+   vs_out.camPos = s_Camera.position;
    //v_Normal = vec3(u_Model.x, u_Model.y, u_Model.z) * normal;
 }
 
@@ -52,7 +54,6 @@ in VS_OUT {
 uniform sampler2D u_Texture;
 uniform vec4 u_LightColor;
 uniform vec3 u_LightPosition;
-uniform vec3 u_CamPos;
 
 out vec4 FragColor;
 
@@ -74,7 +75,7 @@ vec4 pointLight() {
 
     // Specular Light
     float specularLight = 0.50f;
-    vec3 viewDirection = normalize(u_CamPos - fs_in.crntPos);
+    vec3 viewDirection = normalize(fs_in.camPos - fs_in.crntPos);
     vec3 reflectionDirection = reflect(-lightDirection, fs_in.normal);
     float specularAmount =
       pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);

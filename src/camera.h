@@ -17,6 +17,7 @@ struct _camera {
     mat4 view;
     mat4 proj;
 
+    ui32 uboId;
     int width;
     int height;
 
@@ -27,8 +28,6 @@ Camera* camera_create(int width, int height, float *position, float *up);
 
 void camera_send_matrix(Camera* self, float FOVdeg, float nearPlane,
   float farPlane);
-
-void camera_matrix(Camera* self, unsigned int shaderId, const char* uniform);
 
 void camera_input(Camera *self, GLFWwindow *window);
 

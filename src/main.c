@@ -129,14 +129,6 @@ int main(void) {
     Camera* camera = camera_create(winWidth, winHeight,
       (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
 
-// Create UBO for shit
-    ui32 uboId;
-    glGenBuffers(1, &uboId);
-    glBindBuffer(GL_UNIFORM_BUFFER, uboId);
-    glBufferData(GL_UNIFORM_BUFFER, (2 * sizeof(mat4)), NULL, GL_STATIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboId, 0, 2 * sizeof(mat4));
-
 // Create the point-light object
    VAO *vaoLight = vao_create();
    vao_bind(vaoLight);
@@ -274,6 +266,12 @@ int main(void) {
         printf("\nFramebuffer ERROR: %u\n", fbStatus);
     }
 
+// Send Camera UBO data to shaders
+    ui32 ubiShader1 = glGetUniformBlockIndex(shader, "Camera");
+    ui32 ubiShader2 = glGetUniformBlockIndex(shader2, "Camera");
+    glUniformBlockBinding(shader, ubiShader1, 0);
+    glUniformBlockBinding(shader2, ubiShader2, 0);
+
 // Clearing GL State
     clearGL();
     // Free VBO's [not needed anymore, the data exists in the VAO's]
@@ -317,19 +315,6 @@ int main(void) {
         int modelLoc = glGetUniformLocation(shader, "u_Model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
 
-    // Update camera UBO
-        ui32 ubiShader = glGetUniformBlockIndex(shader, "Camera");
-        glUniformBlockBinding(shader, ubiShader, 0);
-
-        glBindBuffer(GL_UNIFORM_BUFFER, uboId);
-        //glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3),
-        //  camera->position);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4),
-          camera->proj);
-        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4),
-          camera->view);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
 /* Testing the OBJ Loader. The object here can use the same shader
     and matrix information, both for the pyramid and loaded model. */
         vao_bind(vaoLoaded);
@@ -362,7 +347,7 @@ int main(void) {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-   
+
 // Clean-up 
     glDeleteProgram(shader);
     // TODO: destory buffers HERE

@@ -1,6 +1,7 @@
 #include "camera.h"
 
 #include <stdlib.h>
+#include <util/sysdefs.h>
 
 Camera* camera_create(int width, int height, float *position, float *up) {
 
@@ -11,17 +12,20 @@ Camera* camera_create(int width, int height, float *position, float *up) {
     cam->axisUp     = up;
     cam->speed      = 0.05f;
 
-    // initialize default view and projection matrixes
+// initialize default view and projection matrixes
     mat4 m4init = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_copy(m4init, cam->view);
     glm_mat4_copy(m4init, cam->proj);
 
-    /*
-    cam->orientation = orientation;
-    cam->axisUp = axisUp;
-    cam->speed = speed;
-    cam->sensitivity = speed;
-    */
+// Create UBO for camera data
+    ui32 uboId;
+    ui32 uboSize = 4 + sizeof(vec3) + (2 * sizeof(mat4));
+    glGenBuffers(1, &uboId);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboId);
+    glBufferData(GL_UNIFORM_BUFFER, uboSize, NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboId, 0, uboSize);
+    cam->uboId = uboId;
 
     return cam;
 }
@@ -40,15 +44,19 @@ void camera_send_matrix(Camera* self, float FOVdeg, float nearPlane,
 
     float aspectRatio = (float)self->width / (float)self->height;
     glm_perspective(glm_rad(FOVdeg), aspectRatio, nearPlane, farPlane, self->proj);
-}
 
-void camera_matrix(Camera* self, unsigned int shaderId, const char* uniform) {
-
-    mat4 val = GLM_MAT4_IDENTITY_INIT;
-    glm_mat4_mul(self->proj, self->view, val);
-
-    glUniformMatrix4fv(glGetUniformLocation(shaderId, uniform), 1,
-      GL_FALSE, (float *)val);
+// Update camera UBO
+        glBindBuffer(GL_UNIFORM_BUFFER, self->uboId);
+        glBufferSubData(GL_UNIFORM_BUFFER,
+            0, sizeof(vec3) + 4,
+            self->position);
+        glBufferSubData(GL_UNIFORM_BUFFER,
+            sizeof(vec3) + 4, sizeof(mat4),
+            self->proj);
+        glBufferSubData(GL_UNIFORM_BUFFER,
+            sizeof(mat4) + sizeof(vec3) + 4, sizeof(mat4),
+            self->view);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void camera_input(Camera *self, GLFWwindow *window) {
