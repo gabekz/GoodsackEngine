@@ -1,12 +1,12 @@
 // ---------------------- Vertex -----------------
 #shader vertex
-#version 330 core
+#version 420 core
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec2 a_TexCoords;
 layout(location = 2) in vec3 a_Normal;
 
-layout (std140) uniform Camera {
+layout (std140, binding = 0) uniform Camera {
     vec3 position;
     mat4 projection;
     mat4 view;
@@ -40,9 +40,15 @@ void main() {
 // ---------------------- Fragment -----------------
 
 #shader fragment
-#version 330 core
+#version 420 core
 
 layout(location = 0) out vec4 color;
+
+layout(std140, binding = 1) uniform Light {
+    vec3 position;
+    vec4 color;
+
+} s_Light;
 
 in VS_OUT {
     vec2 texCoords;
@@ -52,15 +58,13 @@ in VS_OUT {
 } fs_in;
 
 uniform sampler2D u_Texture;
-uniform vec4 u_LightColor;
-uniform vec3 u_LightPosition;
 
 out vec4 FragColor;
 
 // Note: Directional Light is a static lightposition w/o inten
 vec4 pointLight() {
     // Light attenuation
-    vec3 lightVec = (u_LightPosition - fs_in.crntPos);
+    vec3 lightVec = (s_Light.position - fs_in.crntPos);
     float dist = length(lightVec);
     float a = 5.00f;
     float b = 1.00f;
@@ -81,7 +85,7 @@ vec4 pointLight() {
       pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
     float specular = specularAmount * specularLight;
 
-    return ((diffuse * inten + ambient) + (specular * inten)) * u_LightColor;
+    return ((diffuse * inten + ambient) + (specular * inten)) * s_Light.color;
 }
 
 void main() {

@@ -24,6 +24,7 @@ static unsigned int CompileShader(unsigned int type, const char* source) {
        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
        char* message = (char *)alloca(length * sizeof(char));
        glGetShaderInfoLog(id, length, &length, message);
+       printf("Error at: %s\n", source);
        printf("Failed to compile %s shader.\n Error output: %s\n", typeStr, message);
        glDeleteShader(id);
        return 0;

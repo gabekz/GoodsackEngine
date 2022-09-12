@@ -91,7 +91,6 @@ void camera_input(Camera *self, GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
         glm_vec3_scale((vec3){0.0f, -1.0f, 0.0f}, self->speed, p);
         glm_vec3_add(self->position, p, self->position);
-
     }
 }
 

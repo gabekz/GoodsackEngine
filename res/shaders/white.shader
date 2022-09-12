@@ -1,9 +1,9 @@
 #shader vertex
-#version 330 core
+#version 420 core
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 texCoords;
 
-layout (std140) uniform Camera {
+layout (std140, binding = 0) uniform Camera {
     vec3 position;
     mat4 projection;
     mat4 view;
@@ -16,13 +16,17 @@ void main() {
 }
 
 #shader fragment
-#version 330 core
-
-uniform vec4 u_LightColor;
+#version 420 core
 
 layout(location = 0) out vec4 color;
 
+layout (std140, binding = 1) uniform Light {
+    vec3 position;
+    vec4 color;
+
+} s_Light;
+
 void main()
 {
-   color = u_LightColor;
+   color = s_Light.color;
 }

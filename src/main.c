@@ -188,30 +188,28 @@ int main(void) {
     int location2 = glGetUniformLocation(shader, "u_Texture");
     glUniform1i(location2, 0); // 0 is the first (only) texture?
 
+// Lights UBO
+    ui32 uboLight;
+    ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
+    glGenBuffers(1, &uboLight);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboLight);
+    glBufferData(GL_UNIFORM_BUFFER, uboLightSize, NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 1, uboLight, 0, uboLightSize);
 
 // Lighting information
-    float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
     float* lightPos     = (vec3){0.0f, 0.5f, 0.4f};
+    float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
 
-    glUseProgram(shader);
-
-    int locationLightColor = glGetUniformLocation(shader, "u_LightColor");
-    glUniform4f(locationLightColor,
-            (float)lightColor[0], (float)lightColor[1],
-            (float)lightColor[2], (float)lightColor[3]);
-
-    int locationLightPos = glGetUniformLocation(shader, "u_LightPosition");
-    glUniform3f(locationLightPos,
-            (float)lightPos[0],
-            (float)lightPos[1],
-            (float)lightPos[2]);
-
-    glUseProgram(shader2);
-
-    int locationLightColor2 = glGetUniformLocation(shader2, "u_LightColor");
-    glUniform4f(locationLightColor2,
-            (float)lightColor[0], (float)lightColor[1],
-            (float)lightColor[2], (float)lightColor[3]);
+    // Send lighting data to UBO
+    glBindBuffer(GL_UNIFORM_BUFFER, uboLight);
+    glBufferSubData(GL_UNIFORM_BUFFER,
+        0, sizeof(vec3) + 4,
+        lightPos);
+    glBufferSubData(GL_UNIFORM_BUFFER,
+        sizeof(vec3) + 4, sizeof(vec4),
+        lightColor);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 // Framebuffer 
     // Shader
@@ -265,12 +263,6 @@ int main(void) {
     if(fbStatus != GL_FRAMEBUFFER_COMPLETE) {
         printf("\nFramebuffer ERROR: %u\n", fbStatus);
     }
-
-// Send Camera UBO data to shaders
-    ui32 ubiShader1 = glGetUniformBlockIndex(shader, "Camera");
-    ui32 ubiShader2 = glGetUniformBlockIndex(shader2, "Camera");
-    glUniformBlockBinding(shader, ubiShader1, 0);
-    glUniformBlockBinding(shader2, ubiShader2, 0);
 
 // Clearing GL State
     clearGL();
