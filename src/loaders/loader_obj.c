@@ -98,8 +98,8 @@ VAO* load_obj(const char* path) {
                     // Vertex
                     if(j == 0) {
                         int loc = saved*3-3;
-                        printf("%.03f, %.03f, %.02f,\t", 
-                          v[loc], v[loc+1], v[loc+2]);
+                        //printf("%.03f, %.03f, %.02f,\t", 
+                        //  v[loc], v[loc+1], v[loc+2]);
 // Add vertex to positions
                         out[outI] = v[loc];
                         out[outI+1] = v[loc+1];
@@ -113,8 +113,8 @@ VAO* load_obj(const char* path) {
                     }
                     else if(j == 1) {
                         int loc = saved*2-2;
-                        printf("%f, %f,\t", 
-                          vt[loc], vt[loc+1]);
+                        //printf("%f, %f,\t", 
+                        //  vt[loc], vt[loc+1]);
 
                         out[outI] = vt[loc];
                         out[outI+1] = vt[loc+1];
@@ -123,8 +123,8 @@ VAO* load_obj(const char* path) {
                     }
                     else if(j == 2) {
                         int loc = saved*3-3;
-                        printf("%f, %f, %f\n", 
-                          vn[loc], vn[loc+1], vn[loc+2]);
+                        //printf("%f, %f, %f\n", 
+                        //  vn[loc], vn[loc+1], vn[loc+2]);
 
                         out[outI] = vn[loc];
                         out[outI+1] = vn[loc+1];
@@ -137,7 +137,7 @@ VAO* load_obj(const char* path) {
                 // Next element increment
                 collection = strtok(NULL, " ");
             }
-            printf("\n");
+            //printf("\n");
             /*
             for(int i = 0; i < 3; i++) {
                 element = strtok(NULL, colDem);
@@ -186,11 +186,13 @@ VAO* load_obj(const char* path) {
     // VBO push -> VAO
     vao_add_buffer(vao, vbo);
 
+#if 0
     printf("Indiceis [count: %d]:\n", outIndicesI);
     for(int i = 0; i < outIndicesI; i++) {
         printf("%d, ", outIndices[i]);
     }
     printf("\n");
+#endif
 
     printf("\nsize of OUT: %d\n", outI);
     //glBindVertexArray(0);
