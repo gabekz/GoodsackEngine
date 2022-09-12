@@ -129,6 +129,14 @@ int main(void) {
     Camera* camera = camera_create(winWidth, winHeight,
       (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
 
+// Create UBO for shit
+    ui32 uboId;
+    glGenBuffers(1, &uboId);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboId);
+    glBufferData(GL_UNIFORM_BUFFER, (2 * sizeof(mat4)), NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboId, 0, 2 * sizeof(mat4));
+
 // Create the point-light object
    VAO *vaoLight = vao_create();
    vao_bind(vaoLight);
@@ -309,19 +317,18 @@ int main(void) {
         int modelLoc = glGetUniformLocation(shader, "u_Model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
 
-    // Send normals information to shader
-        mat4 normMatrix = GLM_MAT4_IDENTITY_INIT;
-        glm_mat4_mul(camera->proj, camera->view, normMatrix);
-        glUniformMatrix4fv(glGetUniformLocation(shader, "u_NormMat"),
-          1, GL_FALSE, (float *)normMatrix);
+    // Update camera UBO
+        ui32 ubiShader = glGetUniformBlockIndex(shader, "Camera");
+        glUniformBlockBinding(shader, ubiShader, 0);
 
-        // send the camera matrix to the shader
-        camera_matrix(camera, shader, "u_CamMatrix"); // send to shader
-
-    // send our camera position to the shader
-        glUniform3f(glGetUniformLocation(shader, "u_CamPos"),
-        camera->position[0], camera->position[1], camera->position[2]);
-
+        glBindBuffer(GL_UNIFORM_BUFFER, uboId);
+        //glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3),
+        //  camera->position);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4),
+          camera->proj);
+        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4),
+          camera->view);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 /* Testing the OBJ Loader. The object here can use the same shader
     and matrix information, both for the pyramid and loaded model. */
@@ -330,7 +337,6 @@ int main(void) {
 
     // drawing our second object
         glUseProgram(shader2);
-        camera_matrix(camera, shader2, "u_CamMatrix"); // send to shader
 
         mat4 model2 = GLM_MAT4_IDENTITY_INIT;
         glm_translate(model2, lightPos);

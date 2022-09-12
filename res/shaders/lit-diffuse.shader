@@ -1,33 +1,37 @@
-
 // ---------------------- Vertex -----------------
 #shader vertex
 #version 330 core
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec2 texCoords;
-layout(location = 2) in vec3 normal;
 
-uniform mat4 u_NormMat;
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec2 a_TexCoords;
+layout(location = 2) in vec3 a_Normal;
+
+layout (std140) uniform Camera {
+    mat4 projection;
+    mat4 view;
+} s_Camera;
+
 uniform mat4 u_Model;
-uniform mat4 u_CamMatrix;
 
-out vec2 v_TexCoords;
-out vec3 v_Normal;
-out vec3 v_CrntPos;
+out VS_OUT {
+    vec2 texCoords;
+    vec3 normal;
+    vec3 crntPos;
+    vec3 camPos;
+} vs_out;
 
-void main()
-{
-   //gl_Position = vec4(position.x, position.y, position.z, 1.0);      
-   gl_Position = u_CamMatrix * u_Model * vec4(position, 1.0);
-   v_TexCoords = texCoords;
+void main() {
+   gl_Position = s_Camera.projection * s_Camera.view * u_Model *
+       vec4(a_Position, 1.0);
 
     // rotated normals?
     mat3 normalMatrix = mat3(u_Model); //mvp
-    normalMatrix = inverse(normalMatrix);
-    normalMatrix = transpose(normalMatrix);
-    v_Normal = normalize(normalMatrix * normal);
-    //v_Normal = normalize(normal);
+    normalMatrix  = inverse(normalMatrix);
+    normalMatrix  = transpose(normalMatrix);
+    vs_out.normal = normalize(normalMatrix * a_Normal);
 
-   v_CrntPos = vec3(u_Model * vec4(position, 1.0));
+   vs_out.crntPos = vec3(u_Model * vec4(a_Position, 1.0));
+   vs_out.texCoords = a_TexCoords;
    //v_Normal = vec3(u_Model.x, u_Model.y, u_Model.z) * normal;
 }
 
@@ -37,9 +41,13 @@ void main()
 #version 330 core
 
 layout(location = 0) out vec4 color;
-in vec2 v_TexCoords;
-in vec3 v_Normal;
-in vec3 v_CrntPos;
+
+in VS_OUT {
+    vec2 texCoords;
+    vec3 normal;
+    vec3 crntPos;
+    vec3 camPos;
+} fs_in;
 
 uniform sampler2D u_Texture;
 uniform vec4 u_LightColor;
@@ -51,7 +59,7 @@ out vec4 FragColor;
 // Note: Directional Light is a static lightposition w/o inten
 vec4 pointLight() {
     // Light attenuation
-    vec3 lightVec = (u_LightPosition - v_CrntPos);
+    vec3 lightVec = (u_LightPosition - fs_in.crntPos);
     float dist = length(lightVec);
     float a = 5.00f;
     float b = 1.00f;
@@ -59,15 +67,15 @@ vec4 pointLight() {
 
     // Diffuse Lighting
     vec3 lightDirection = normalize(lightVec);
-    float diffuse = max(dot(v_Normal, lightDirection), 0.0f);
+    float diffuse = max(dot(fs_in.normal, lightDirection), 0.0f);
 
     // Ambient Light
     float ambient = 0.2f;
 
     // Specular Light
     float specularLight = 0.50f;
-    vec3 viewDirection = normalize(u_CamPos - v_CrntPos);
-    vec3 reflectionDirection = reflect(-lightDirection, v_Normal);
+    vec3 viewDirection = normalize(u_CamPos - fs_in.crntPos);
+    vec3 reflectionDirection = reflect(-lightDirection, fs_in.normal);
     float specularAmount =
       pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
     float specular = specularAmount * specularLight;
@@ -76,7 +84,6 @@ vec4 pointLight() {
 }
 
 void main() {
-
-    vec4 texColor = texture(u_Texture, v_TexCoords);
+    vec4 texColor = texture(u_Texture, fs_in.texCoords);
     FragColor = texColor * pointLight();
 }

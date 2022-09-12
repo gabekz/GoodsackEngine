@@ -3,12 +3,15 @@
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 texCoords;
 
-uniform mat4 u_Model;
-uniform mat4 u_CamMatrix;
+layout (std140) uniform Camera {
+    mat4 projection;
+    mat4 view;
+} s_Camera;
 
-void main()
-{
-   gl_Position = u_CamMatrix * u_Model * vec4(position, 1.0);
+uniform mat4 u_Model;
+
+void main() {
+   gl_Position = s_Camera.projection * s_Camera.view * u_Model * vec4(position, 1.0);
 }
 
 #shader fragment
