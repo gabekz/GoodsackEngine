@@ -8,8 +8,8 @@
 #include<stdlib.h>
 #include<string.h>
 
-#include <cglm/cglm.h>   /* for inline */
-#include <cglm/struct.h>   /* for inline */
+#include <cglm/cglm.h>
+#include <cglm/struct.h>
 
 #include <util/sysdefs.h>
 
@@ -25,14 +25,8 @@
 
 #include "loaders/loader_obj.h"
 
-#define WINDOW_WIDTH  1280
-#define WINDOW_HEIGHT 720
-
-#define DRAWING_MODE GL_TRIANGLES
-
-static int winWidth  = WINDOW_WIDTH;
-static int winHeight = WINDOW_HEIGHT;
-static int vertexCount = 4;
+static int winWidth  = DEFAULT_WINDOW_WIDTH;
+static int winHeight = DEFAULT_WINDOW_HEIGHT;
 
 /* ~~~ CALLBACKS ~~~ */
 
@@ -43,13 +37,8 @@ static void _error_callback
 
 static void _key_callback 
 (GLFWwindow* window, int key, int scancode, int action, int mods) {
-   if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-   {
+   if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
       glfwSetWindowShouldClose(window, GLFW_TRUE);
-   }
-   if(key == GLFW_KEY_V && action == GLFW_PRESS)
-   {
-       vertexCount++;
    }
 }
 
@@ -78,6 +67,7 @@ void clearGL() {
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);            // unbind VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);    // unbind IBO
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
@@ -95,8 +85,8 @@ int main(void) {
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-   int winWidth    = WINDOW_WIDTH;
-   int winHeight   = WINDOW_HEIGHT;
+   int winWidth    = DEFAULT_WINDOW_WIDTH;
+   int winHeight   = DEFAULT_WINDOW_HEIGHT;
 
    GLFWwindow* window =
       glfwCreateWindow(winWidth, winHeight, "My Title", NULL, NULL);
@@ -129,66 +119,11 @@ int main(void) {
     Camera* camera = camera_create(winWidth, winHeight,
       (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
 
-// Create the point-light object
-   VAO *vaoLight = vao_create();
-   vao_bind(vaoLight);
-    // Cube for point-light
-    float *lightPositions = prim_vert_cube(0.03f);
-    VBO *vbLight = vbo_create(lightPositions, (3 * 8) * sizeof(float));
-    free(lightPositions);
+// Lighting information
+    float* lightPos     = (vec3){0.0f, 0.5f, 0.4f};
+    float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
 
-   unsigned int lightIndices[] = {
-       0, 1, 2,
-       2, 3, 0,
-       0, 4, 7,
-       7, 0, 3,
-       3, 7, 6,
-       6, 3, 2,
-       2, 6, 5,
-       5, 2, 1,
-       1, 5, 4,
-       1, 0, 4,
-       4, 5, 6,
-       6, 4, 7
-   };
-    IBO *ibLight = ibo_create(lightIndices , (3 * 12) * sizeof(unsigned int));
-
-    vbo_push(vbLight, 3, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vaoLight, vbLight);
-
-// Loaded VAO
-   VAO* vaoLoaded = load_obj("../res/models/suzanne.obj");
-
-    // Set up for shaders
-    unsigned int shader = CreateShader("../res/shaders/lit-diffuse.shader");
-    glUseProgram(shader); // Activate the shader
-
-// Setup for the second shader (test)
-    unsigned int shader2 = CreateShader("../res/shaders/white.shader");
-
-#ifdef MESH_ABSTRACTION_TEST
-
-    unsigned int meshShader =
-      CreateShader("../res/shaders/lit-diffuse.shader");
-
-    Mesh *mesh = mesh_create("../res/models/suzanne.obj", meshShader);
-
-    Mesh *meshSingle = mesh_create(
-        "../res/models/suzanne.obj",            // model data
-        "../res/shaders/lit-diffuse.shader",    // shader path 
-        "../res/textures/bricks.png"            // texture [diffuse]
-        );
-#endif
-
-    // Create texture
-    Texture *tex = texture_create(
-      (unsigned char*)"../res/textures/bricks.png");
-    texture_bind(tex);
-    // send it to the shader
-    int location2 = glGetUniformLocation(shader, "u_Texture");
-    glUniform1i(location2, 0); // 0 is the first (only) texture?
-
-// Lights UBO
+// UBO Lighting
     ui32 uboLight;
     ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
     glGenBuffers(1, &uboLight);
@@ -196,11 +131,6 @@ int main(void) {
     glBufferData(GL_UNIFORM_BUFFER, uboLightSize, NULL, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferRange(GL_UNIFORM_BUFFER, 1, uboLight, 0, uboLightSize);
-
-// Lighting information
-    float* lightPos     = (vec3){0.0f, 0.5f, 0.4f};
-    float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
-
     // Send lighting data to UBO
     glBindBuffer(GL_UNIFORM_BUFFER, uboLight);
     glBufferSubData(GL_UNIFORM_BUFFER,
@@ -211,7 +141,7 @@ int main(void) {
         lightColor);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-// Framebuffer 
+// Framebuffer [Post-Processing]
     // Shader
     ui32 fbShader = CreateShader("../res/shaders/framebuffer.shader");
     glUseProgram(fbShader);
@@ -230,6 +160,7 @@ int main(void) {
     free(rectPositions);
 
     // Create Texture
+#if 1
     ui32 frameBufferTexture;
     glGenTextures(1, &frameBufferTexture);
     glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
@@ -238,6 +169,10 @@ int main(void) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+#else
+    Texture *frameBufferTexture = texture_create(NULL, 0);
+#endif
 
     // Create Framebuffer object
     ui32 FBO;
@@ -263,6 +198,30 @@ int main(void) {
     if(fbStatus != GL_FRAMEBUFFER_COMPLETE) {
         printf("\nFramebuffer ERROR: %u\n", fbStatus);
     }
+
+// Create an object with the OBJ Loader
+    VAO *vaoSuzanne = load_obj("../res/models/suzanne.obj");
+    // Create texture
+    Texture *tex = texture_create(
+      "../res/textures/bricks.png", 0);
+    // Shader
+    unsigned int shaderSuzanne =
+        CreateShader("../res/shaders/lit-diffuse.shader");
+    glUseProgram(shaderSuzanne);
+    // Send texture location to shader
+    glUniform1i(glGetUniformLocation(shaderSuzanne, "u_Texture"), 0);
+
+// Create the point-light object
+   VAO *vaoLight = vao_create();
+   vao_bind(vaoLight);
+    // Cube for point-light
+    float *lightPositions = prim_vert_cube(0.03f);
+    VBO *vboLight = vbo_create(lightPositions, (3 * 8) * sizeof(float));
+    free(lightPositions);
+    vbo_push(vboLight, 3, GL_FLOAT, GL_FALSE);
+    vao_add_buffer(vaoLight, vboLight);
+    // Shader
+    unsigned int shaderLightObj = CreateShader("../res/shaders/white.shader");
 
 // Clearing GL State
     clearGL();
@@ -297,51 +256,50 @@ int main(void) {
     // Update the view and projection based on the camera data
         camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
 
-    // Shader for the first model
-        texture_bind(tex);
-        glUseProgram(shader);
-
-    // Rotate the model, send information to shader
+    // Drawing our first object
+        glUseProgram(shaderSuzanne);
+        // Calculating model
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         glm_rotate(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
-        int modelLoc = glGetUniformLocation(shader, "u_Model");
+        int modelLoc = glGetUniformLocation(shaderSuzanne, "u_Model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
-
-/* Testing the OBJ Loader. The object here can use the same shader
-    and matrix information, both for the pyramid and loaded model. */
-        vao_bind(vaoLoaded);
+        // Bind and draw
+        vao_bind(vaoSuzanne);
+        texture_bind(tex);
         glDrawArrays(DRAWING_MODE, 0, 23232);
 
     // drawing our second object
-        glUseProgram(shader2);
-
+        glUseProgram(shaderLightObj);
+        // Calculating model
         mat4 model2 = GLM_MAT4_IDENTITY_INIT;
         glm_translate(model2, lightPos);
-        glUniformMatrix4fv(glGetUniformLocation(shader2, "u_Model"),
+        glUniformMatrix4fv(glGetUniformLocation(shaderLightObj, "u_Model"),
           1, GL_FALSE, (float *)model2);
-
+        // Bind and draw
         vao_bind(vaoLight);
-        glDrawElements(DRAWING_MODE, 36, GL_UNSIGNED_INT, NULL); 
+        glDisable(GL_CULL_FACE);
+        glDrawArrays(DRAWING_MODE, 0, 24);
  
-    // Compute camera-input
-        camera_input(camera, window);
+    // Second pass [Post-Processing buffer]
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
+        vao_bind(vaoRect);
+        glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
+        glActiveTexture(GL_TEXTURE0);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glUseProgram(fbShader);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-// Second pass
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glUseProgram(fbShader);
-    vao_bind(vaoRect);
-    glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    // Swap backbuffer and poll for GLFW events
+// Swap backbuffer + poll for events
         glfwSwapBuffers(window);
         glfwPollEvents();
+        camera_input(camera, window);
     }
 
 // Clean-up 
-    glDeleteProgram(shader);
+    glDeleteProgram(shaderSuzanne);
+    glDeleteProgram(shaderLightObj);
+    glDeleteProgram(fbShader);
     // TODO: destory buffers HERE
     glfwDestroyWindow(window);
     glfwTerminate();

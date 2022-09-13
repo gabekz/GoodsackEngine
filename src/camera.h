@@ -10,18 +10,11 @@
 typedef struct _camera Camera;
 
 struct _camera {
-    float *position;
-    float *axisUp;
-
-    // MVP
-    mat4 view;
-    mat4 proj;
-
+    si32 width, height;
     ui32 uboId;
-    int width;
-    int height;
-
+    float *position, *axisUp;
     float speed, sensitivity;
+    mat4 view, proj;
 };
 
 Camera* camera_create(int width, int height, float *position, float *up); 

@@ -25,8 +25,8 @@ void main() {
    gl_Position = s_Camera.projection * s_Camera.view * u_Model *
        vec4(a_Position, 1.0);
 
-    // rotated normals?
-    mat3 normalMatrix = mat3(u_Model); //mvp
+    // transposing the inverse of the normals
+    mat3 normalMatrix = mat3(u_Model);
     normalMatrix  = inverse(normalMatrix);
     normalMatrix  = transpose(normalMatrix);
     vs_out.normal = normalize(normalMatrix * a_Normal);
@@ -34,7 +34,6 @@ void main() {
    vs_out.crntPos = vec3(u_Model * vec4(a_Position, 1.0));
    vs_out.texCoords = a_TexCoords;
    vs_out.camPos = s_Camera.position;
-   //v_Normal = vec3(u_Model.x, u_Model.y, u_Model.z) * normal;
 }
 
 // ---------------------- Fragment -----------------

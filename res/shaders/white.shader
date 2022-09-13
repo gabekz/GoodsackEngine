@@ -1,3 +1,4 @@
+// ---------------------- Vertex -----------------
 #shader vertex
 #version 420 core
 layout(location = 0) in vec3 position;
@@ -15,10 +16,11 @@ void main() {
    gl_Position = s_Camera.projection * s_Camera.view * u_Model * vec4(position, 1.0);
 }
 
+// ---------------------- Fragment -----------------
 #shader fragment
 #version 420 core
 
-layout(location = 0) out vec4 color;
+out vec4 color;
 
 layout (std140, binding = 1) uniform Light {
     vec3 position;

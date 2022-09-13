@@ -5,6 +5,19 @@
 #ifndef SYSDEFS_H
 #define SYSDEFS_H
 
+#define DEFAULT_WINDOW_WIDTH 1280
+#define DEFAULT_WINDOW_HEIGHT 720
+
+#define DRAWING_MODE GL_TRIANGLES
+
+#define OPEN_GL     0xF0F01
+#define VULKAN      0xF0F02
+#define DX11        0xF0F03
+#define DX12        0xF0F04
+#define RENDERER    OPEN_GL
+
+#define LOG_LEVEL   0
+
 typedef int si32;
 typedef unsigned int ui32;
 
