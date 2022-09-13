@@ -138,17 +138,32 @@ int main(void) {
 // Initialize the Post Processing Framebuffer
     postbuffer_init(winWidth, winHeight);
 
+#if 0
+    Material myMaterial = material_create(
+        "../res/shaders/lit-diffuse.shader",
+        "../res/textures/bricks.png",
+        "../res/textures/bricks-specular.png",
+        "../res/textures/bricks-normals.png",
+        );
+    Mesh *myMesh = mesh_create(myMaterial, "../res/models/suzanne.obj");
+
+    // down in render..
+    mesh_draw(myMesh);
+    // or
+    mesh_draw_instanced(myMesh, 1000);
+#endif
+
 // Create an object with the OBJ Loader
     VAO *vaoSuzanne = load_obj("../res/models/suzanne.obj");
     // Create texture
-    Texture *tex = texture_create(
-      "../res/textures/bricks.png", 0);
+    Texture *tex =
+        texture_create( "../res/textures/bricks.png", 0);
     // Shader
     unsigned int shaderSuzanne =
         CreateShader("../res/shaders/lit-diffuse.shader");
     glUseProgram(shaderSuzanne);
     // Send texture location to shader
-    glUniform1i(glGetUniformLocation(shaderSuzanne, "u_Texture"), 0);
+    //glUniform1i(glGetUniformLocation(shaderSuzanne, "u_Texture"), 0);
 
 // Create the point-light object
    VAO *vaoLight = vao_create();
@@ -164,8 +179,6 @@ int main(void) {
 
 // Clearing GL State
     clearGL();
-    // Free VBO's [not needed anymore, the data exists in the VAO's]
-    //free(vbLight);
 
 // Rotation parametes for the render loop
     float  rotation     = 0.0f;
