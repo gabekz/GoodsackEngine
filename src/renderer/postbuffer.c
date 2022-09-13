@@ -11,14 +11,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static ui32 shaderId, textureId, fboId;
+static ShaderProgram *shader;
 static VAO *vaoRect;
+static ui32 textureId, fboId;
 
 void postbuffer_init(ui32 winWidth, ui32 winHeight) {
     // Shader
-    shaderId = CreateShader("../res/shaders/framebuffer.shader");
-    glUseProgram(shaderId);
-    glUniform1i(glGetUniformLocation(shaderId, "u_ScreenTexture"), 0);
+    shader = shader_create_program("../res/shaders/framebuffer.shader");
+    shader_use(shader);
+    glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
 
     // Create Rectangle
     vaoRect = vao_create();
@@ -85,10 +86,10 @@ void postbuffer_draw() {
         glActiveTexture(GL_TEXTURE0);
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
-        glUseProgram(shaderId);
+        shader_use(shader);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void postbuffer_cleanup() {
-    glDeleteProgram(shaderId);
+    glDeleteProgram(shader->id);
 }

@@ -139,13 +139,18 @@ int main(void) {
     postbuffer_init(winWidth, winHeight);
 
 #if 0
-    Material myMaterial = material_create(
-        "../res/shaders/lit-diffuse.shader",
-        "../res/textures/bricks.png",
-        "../res/textures/bricks-specular.png",
-        "../res/textures/bricks-normals.png",
-        );
-    Mesh *myMesh = mesh_create(myMaterial, "../res/models/suzanne.obj");
+    Texture *textureDiffuse = texture_create("../res/textures/bricks-albed.png");
+    Texture *textureSpecular = texture_create("../res/textures/bricks-spec.png");
+    Texture *textureNormalMap = texture_create("../res/textures/brick-norm.png");
+
+    ShaderSource *ss = shader_assemble("../res/shader/lit-diffuse.shader");
+    ShaderProgram *sp = shader_program_create(ss);
+
+    Material myMaterial = material_create(shaderCode,
+        textureDiffuse, textureSpecular, textureNormalMap);
+
+    Mesh *myMesh = mesh_create(myMaterial,
+        MESH_OBJ, "../res/models/suzanne.obj");
 
     // down in render..
     mesh_draw(myMesh);
@@ -157,11 +162,11 @@ int main(void) {
     VAO *vaoSuzanne = load_obj("../res/models/suzanne.obj");
     // Create texture
     Texture *tex =
-        texture_create( "../res/textures/bricks.png", 0);
+        texture_create( "../res/textures/bricks.png");
     // Shader
-    unsigned int shaderSuzanne =
-        CreateShader("../res/shaders/lit-diffuse.shader");
-    glUseProgram(shaderSuzanne);
+    ShaderProgram *shaderSuzanne =
+        shader_create_program("../res/shaders/lit-diffuse.shader");
+    shader_use(shaderSuzanne);
     // Send texture location to shader
     //glUniform1i(glGetUniformLocation(shaderSuzanne, "u_Texture"), 0);
 
@@ -175,7 +180,7 @@ int main(void) {
     vbo_push(vboLight, 3, GL_FLOAT, GL_FALSE);
     vao_add_buffer(vaoLight, vboLight);
     // Shader
-    unsigned int shaderLightObj = CreateShader("../res/shaders/white.shader");
+    ShaderProgram *shaderLightObj = shader_create_program("../res/shaders/white.shader");
 
 // Clearing GL State
     clearGL();
@@ -199,23 +204,23 @@ int main(void) {
         camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
 
     // Drawing our first object
-        glUseProgram(shaderSuzanne);
+        shader_use(shaderSuzanne);
         // Calculating model
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         glm_rotate(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
-        int modelLoc = glGetUniformLocation(shaderSuzanne, "u_Model");
+        int modelLoc = glGetUniformLocation(shaderSuzanne->id, "u_Model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
         // Bind and draw
         vao_bind(vaoSuzanne);
-        texture_bind(tex);
+        texture_bind(tex, 0);
         glDrawArrays(DRAWING_MODE, 0, 23232);
 
     // drawing our second object
-        glUseProgram(shaderLightObj);
+        shader_use(shaderLightObj);
         // Calculating model
         mat4 model2 = GLM_MAT4_IDENTITY_INIT;
         glm_translate(model2, lightPos);
-        glUniformMatrix4fv(glGetUniformLocation(shaderLightObj, "u_Model"),
+        glUniformMatrix4fv(glGetUniformLocation(shaderLightObj->id, "u_Model"),
           1, GL_FALSE, (float *)model2);
         // Bind and draw
         vao_bind(vaoLight);
@@ -231,8 +236,8 @@ int main(void) {
     }
 
 // Clean-up 
-    glDeleteProgram(shaderSuzanne);
-    glDeleteProgram(shaderLightObj);
+    glDeleteProgram(shaderSuzanne->id);
+    glDeleteProgram(shaderLightObj->id);
     // TODO: destory buffers HERE
     glfwDestroyWindow(window);
     glfwTerminate();
