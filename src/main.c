@@ -24,6 +24,7 @@
 #include "camera.h"
 
 #include "loaders/loader_obj.h"
+#include "renderer/postbuffer.h"
 
 static int winWidth  = DEFAULT_WINDOW_WIDTH;
 static int winHeight = DEFAULT_WINDOW_HEIGHT;
@@ -77,7 +78,7 @@ void clearGL() {
 int main(void) {
    glfwSetErrorCallback(_error_callback);
    if(!glfwInit()) { // Initialization failed
-        printf("Failed to initialize glfw");         
+        printf("Failed to initialize glfw");
    }
 
    // Minimum OpenGL version required
@@ -99,20 +100,13 @@ int main(void) {
 
    glfwGetFramebufferSize(window, &winWidth, &winHeight);
    glfwSetFramebufferSizeCallback(window, _resize_callback);
-
-   // Set callbacks
    glfwSetKeyCallback(window, _key_callback);
 
-   // Refresh rate 
-   glfwSwapInterval(1);
-   
    // Get current OpenGL version
    printf("%s\n", glGetString(GL_VERSION));
 
-#ifdef CIMGUI
-   // IMGUI initialization
-   imgui_init(window);
-#endif
+   // Refresh rate 
+   glfwSwapInterval(1);
 
 // Create the Camera, containing starting-position and up-axis coords.
     // TODO: Update camera when window is resized
@@ -141,63 +135,8 @@ int main(void) {
         lightColor);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-// Framebuffer [Post-Processing]
-    // Shader
-    ui32 fbShader = CreateShader("../res/shaders/framebuffer.shader");
-    glUseProgram(fbShader);
-    glUniform1i(glGetUniformLocation(fbShader, "u_ScreenTexture"), 0);
-
-    // Create Rectangle
-    VAO *vaoRect = vao_create();
-    vao_bind(vaoRect);
-    float *rectPositions = prim_vert_rect();
-
-    VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
-    vbo_bind(vboRect);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vaoRect, vboRect);
-    free(rectPositions);
-
-    // Create Texture
-#if 1
-    ui32 frameBufferTexture;
-    glGenTextures(1, &frameBufferTexture);
-    glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, winWidth, winHeight,
-        0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-#else
-    Texture *frameBufferTexture = texture_create(NULL, 0);
-#endif
-
-    // Create Framebuffer object
-    ui32 FBO;
-    glGenFramebuffers(1, &FBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-    // Attach texture to FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        GL_TEXTURE_2D, frameBufferTexture, 0);
-
-    // Create Renderbuffer object [Depth]
-    ui32 RBO;
-    glGenRenderbuffers(1, &RBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
-        winWidth, winHeight);
-    //glBindRenderbuffer(GL_RENDERBUFFER, 0); -- This doesn't have to be done?
-    // Attach Renderbuffer
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-        GL_RENDERBUFFER, RBO);
-
-    // Error checking
-    GLenum fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if(fbStatus != GL_FRAMEBUFFER_COMPLETE) {
-        printf("\nFramebuffer ERROR: %u\n", fbStatus);
-    }
+// Initialize the Post Processing Framebuffer
+    postbuffer_init(winWidth, winHeight);
 
 // Create an object with the OBJ Loader
     VAO *vaoSuzanne = load_obj("../res/models/suzanne.obj");
@@ -235,18 +174,8 @@ int main(void) {
 
 // Render Loop
     while(!glfwWindowShouldClose(window)) {
-
     // Bind the Framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-    // Start by clearing our buffer bits and setting a BG color
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f, 0.0f, 0.15f, 1.0f);
-
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-        glFrontFace(GL_CW);
+        postbuffer_bind();
 
     // rotation logic for model 
         if((glfwGetTime() - timePrev) >= (1.0f / 60.0f)) {
@@ -277,18 +206,10 @@ int main(void) {
           1, GL_FALSE, (float *)model2);
         // Bind and draw
         vao_bind(vaoLight);
-        glDisable(GL_CULL_FACE);
         glDrawArrays(DRAWING_MODE, 0, 24);
- 
-    // Second pass [Post-Processing buffer]
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
-        vao_bind(vaoRect);
-        glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-        glActiveTexture(GL_TEXTURE0);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glUseProgram(fbShader);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+// Second pass [Post Processing is drawn to backbuffer]
+    postbuffer_draw();
 
 // Swap backbuffer + poll for events
         glfwSwapBuffers(window);
@@ -299,7 +220,6 @@ int main(void) {
 // Clean-up 
     glDeleteProgram(shaderSuzanne);
     glDeleteProgram(shaderLightObj);
-    glDeleteProgram(fbShader);
     // TODO: destory buffers HERE
     glfwDestroyWindow(window);
     glfwTerminate();
