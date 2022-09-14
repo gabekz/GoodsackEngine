@@ -9,7 +9,7 @@
 #define PRIMITIVE_PYRAMID   0xAB02
 
 /*
-         ------- PLANE
+         ------- Plane
 
 //   Position        UV Coords     */
 #define PRIM_ARR_V_PLANE (float[]){ \
@@ -67,7 +67,14 @@
 	-0.5f, 0.0f,  0.5f,     0.0f, 0.0f,      0.0f, 0.5f,  0.8f, \
 	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,      0.0f, 0.5f,  0.8f}
 #define PRIM_SIZ_V_PYRAMID  288
-
+#define PRIM_SIZ_I_PYRAMID  18
+#define PRIM_ARR_I_PYRAMID (ui32[]){ \
+        0, 1, 2, \
+	    0, 2, 3, \
+	    4, 6, 5, \
+	    7, 9, 8, \
+	    10, 12, 11, \
+	    13, 15, 14}
 
 Model *primitive_model_create(ui32 shape, float scale);
 

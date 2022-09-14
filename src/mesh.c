@@ -44,46 +44,58 @@ Mesh *mesh_create_primitive(Material *material, ui32 primitive, float scale,
         ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace) {
     Mesh *ret = malloc(sizeof(Mesh));
 
-    float *points;
-    ui32 pointsSize;
+    ui32 pointsSize  = 0;
+    ui32 indicesSize = 0;
 
+    float *points;
     ui32 *indices;
-    ui32 indicesSize;
+
+    VAO *vao = vao_create();
+    vao_bind(vao);
+    VBO *vbo;
 
     switch(primitive) {
         case PRIMITIVE_PLANE:
-            //points = prim_vert_plane();
-            //pointsSize = PRIMITIVE_SIZE_PLANE;
-            //ret->drawingMode = GL_TRIANGLES;
+            pointsSize  = PRIM_SIZ_V_PLANE;
+            points = FillFloat(PRIM_ARR_V_PLANE, pointsSize, scale);
+            vbo = vbo_create(points, pointsSize * sizeof(float));
+            vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
+            vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
+            ret->drawingMode = DRAW_MODE_ARRAYS;
+            ret->renderingMode = GL_TRIANGLE_STRIP;
             break;
         case PRIMITIVE_CUBE:
-
-            pointsSize = PRIM_SIZ_V_CUBE;
-            points = FillFloat(PRIM_ARR_V_CUBE, pointsSize, scale);
-
+            pointsSize  = PRIM_SIZ_V_CUBE;
             indicesSize = PRIM_SIZ_I_CUBE;
+            points  = FillFloat(PRIM_ARR_V_CUBE, pointsSize, scale);
             indices = FillInt(PRIM_ARR_I_CUBE, indicesSize);
-
+            vbo = vbo_create(points, pointsSize * sizeof(float));
+            vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
             ret->drawingMode = DRAW_MODE_ELEMENTS;
             ret->renderingMode = GL_TRIANGLE_STRIP;
             break;
         case PRIMITIVE_PYRAMID:
-            //points = prim_vert_pyramid();
-            //pointsSize = PRIMITIVE_SIZE_PYRAMID;
+            pointsSize = PRIM_SIZ_V_PYRAMID;
+            indicesSize = PRIM_SIZ_I_PYRAMID;
+            points = FillFloat(PRIM_ARR_V_PYRAMID, pointsSize, scale);
+            indices = FillInt(PRIM_ARR_I_PYRAMID, indicesSize);
+            vbo = vbo_create(points, pointsSize * sizeof(float));
+            vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
+            vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
+            vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
+            ret->drawingMode = DRAW_MODE_ELEMENTS;
+            ret->renderingMode = GL_TRIANGLES;
             break;
         default:
             return NULL;
             break;
     }
-    
-    VAO *vao = vao_create();
-    vao_bind(vao);
-    VBO *vbo = vbo_create(points, pointsSize * sizeof(float));
-    vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vao, vbo);
+
+
     if(indicesSize >= 0) {
         IBO *ibo = ibo_create(indices, indicesSize * sizeof(ui32));
     }
+    vao_add_buffer(vao, vbo);
 
     Model *model = malloc(sizeof(Model));
     model->vao = vao;
