@@ -17,6 +17,7 @@
 #include "shader.h"
 
 #include "glbuffer/glbuffer.h"
+#include "material.h"
 #include "mesh.h"
 #include "texture.h"
 
