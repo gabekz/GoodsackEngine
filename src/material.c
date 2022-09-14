@@ -1,26 +1,30 @@
 #include "material.h"
-#include <stdlib.h>
+#include <stdio.h>
 #include <stdarg.h>
 
 #include <gfx.h>
 
 Material *material_create(ShaderProgram *shader, ui32 textureCount, ...) {
     Material *ret = malloc(sizeof(Material));
+    ret->shaderProgram = shader;
+
+    //ret->textures = textures;
+    ret->texturesCount = textureCount;
+
+    if(textureCount <= 0) {
+        ret->texturesCount = 0;
+        return ret;
+    }
 
     va_list ap;
     va_start(ap, textureCount);
     va_end(ap);
-
-    //Texture *textures[textureCount]; 
-    //for(int i = 0; i < textureCount; i++) {
-        // TODO: reallocate here
-    //    textures[i] = va_arg(ap, Texture*);
-    //}
-
-    //ret->textures = textures;
+    Texture **textures = malloc(textureCount * sizeof(Texture));
+    for(int i = 0; i < textureCount; i++) {
+        *(textures+i) = va_arg(ap, Texture*);
+    }
+    ret->textures = textures;
     ret->texturesCount = textureCount;
-    ret->shaderProgram = shader;
-
     return ret;
 }
 
@@ -31,11 +35,4 @@ void material_use(Material *self) {
         }
     }
     shader_use(self->shaderProgram);
-}
-
-void material_uniform(Material *self, char *value, ui32 type, void *data) {
-    shader_use(self->shaderProgram);
-    ui32 location = glGetUniformLocation(self->shaderProgram->id, value);
-
-    glUniformMatrix4fv(location, 1, GL_FALSE, data);
 }

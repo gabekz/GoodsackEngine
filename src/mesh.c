@@ -7,12 +7,12 @@
 
 Mesh *mesh_create_obj(Material *material, const char* modelPath) {
     Mesh *ret = malloc(sizeof(Mesh));
-    VAO *vao = load_obj(modelPath);
+    Model *model = load_obj(modelPath);
 
-    ret->vertexCount = 2550; // TODO: pull from OBJ
+    ret->vertexCount = model->indicesCount;
 
     ret->material = material;
-    ret->vao = vao;
+    ret->vao = model->vao;
     return ret;
 }
 

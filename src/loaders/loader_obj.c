@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-VAO* load_obj(const char* path) {
+Model* load_obj(const char* path) {
 
     FILE* stream = NULL;
     char line[256]; // 256 = MAX line_length
@@ -176,7 +176,7 @@ VAO* load_obj(const char* path) {
 
     VBO* vbo = vbo_create(out, outI * sizeof(float));
     //VBO* vbo = vbo_create(v, 24 * sizeof(float));
-    IBO* ibo = ibo_create(outIndices, (outIndicesI) * sizeof(unsigned int));
+    //IBO* ibo = ibo_create(outIndices, (outIndicesI) * sizeof(unsigned int));
 
     // Push our data into our single VBO
     vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
@@ -187,7 +187,7 @@ VAO* load_obj(const char* path) {
     vao_add_buffer(vao, vbo);
 
 #if 0
-    printf("Indiceis [count: %d]:\n", outIndicesI);
+    printf("Indices [count: %d]:\n", outIndicesI);
     for(int i = 0; i < outIndicesI; i++) {
         printf("%d, ", outIndices[i]);
     }
@@ -195,6 +195,12 @@ VAO* load_obj(const char* path) {
 #endif
 
     printf("\nsize of OUT: %d\n", outI);
+
+    // Output
+    Model *ret = malloc(sizeof(Model));
+    ret->vao = vao;
+    ret->indicesCount = outI;
+
     //glBindVertexArray(0);
     // Free a lot of memory....
     free(v);
@@ -204,9 +210,9 @@ VAO* load_obj(const char* path) {
     //free(outIndices);
     // .. and some more.
     free(vbo);
-    free(ibo);
+    //free(ibo);
 
     fclose(stream);
 
-    return vao;
+    return ret;
 }

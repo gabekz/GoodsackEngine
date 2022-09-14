@@ -3,8 +3,15 @@
 
 //#include "../glbuffer/glbuffer.h"
 #include <glbuffer/glbuffer.h>
+#include <util/sysdefs.h>
 
-VAO* load_obj(const char* path);
+typedef struct _model Model;
 
+struct _model {
+    VAO* vao;
+    ui32 indicesCount;
+};
+
+Model* load_obj(const char* path);
 
 #endif /* LOADER_OBJ_H */

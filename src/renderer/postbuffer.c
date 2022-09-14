@@ -87,7 +87,7 @@ void postbuffer_draw() {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         shader_use(shader);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 }
 
 void postbuffer_cleanup() {
