@@ -16,12 +16,12 @@
 #include "gfx.h" // GLFW & glad headers
 #include "shader.h"
 
-#include "glbuffer/glbuffer.h"
+#include <glbuffer/glbuffer.h>
 #include "material.h"
 #include "mesh.h"
 #include "texture.h"
 
-#include "primitives.h"
+#include <model/primitives.h>
 #include "camera.h"
 
 #include "loaders/loader_obj.h"
@@ -155,7 +155,7 @@ int main(void) {
 // Create light object
     ShaderProgram *shaderLight = shader_create_program("../res/shaders/white.shader");
     Material *matLight = material_create(shaderLight, 0); 
-    Mesh *meshLight    = mesh_create_primitive(matLight, PRIMITIVE_CUBE, 0, 0, 0);
+    Mesh *meshLight    = mesh_create_primitive(matLight, PRIMITIVE_CUBE, 0.03f, 0, 0, 0);
     //Mesh *meshLight    = mesh_create_obj(matLight, "../res/models/cube-triangulated.obj", 1, GL_FRONT, GL_CW);
 
 // Clearing GL State

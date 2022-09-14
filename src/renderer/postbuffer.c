@@ -4,7 +4,7 @@
 #include "../glbuffer/glbuffer.h"
 #include "../gfx.h"
 #include "../shader.h"
-#include "../primitives.h"
+#include <model/primitives.h>
 
 #include <util/sysdefs.h>
 
@@ -26,12 +26,19 @@ void postbuffer_init(ui32 winWidth, ui32 winHeight) {
     vao_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
 
+#if 1
     VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
     vbo_bind(vboRect);
     vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     vao_add_buffer(vaoRect, vboRect);
     free(rectPositions);
+#else
+    Material *matFrame = material_create(shader);
+    Mesh *frameMesh = mesh_create_primitive(matFrame, PRIMITIVE_PLANE, 1.0f,
+            0, 0, 0);
+#endif
+
 
     // Create Texture
     glGenTextures(1, &textureId);
