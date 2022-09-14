@@ -59,7 +59,7 @@ Mesh *mesh_create_primitive(Material *material, ui32 primitive, float scale,
             pointsSize  = PRIM_SIZ_V_PLANE;
             points = FillFloat(PRIM_ARR_V_PLANE, pointsSize, scale);
             vbo = vbo_create(points, pointsSize * sizeof(float));
-            vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
+            vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
             vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
             ret->drawingMode = DRAW_MODE_ARRAYS;
             ret->renderingMode = GL_TRIANGLE_STRIP;
