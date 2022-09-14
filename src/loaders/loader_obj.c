@@ -199,7 +199,7 @@ Model* load_obj(const char* path) {
     // Output
     Model *ret = malloc(sizeof(Model));
     ret->vao = vao;
-    ret->indicesCount = outI;
+    ret->vertexCount = outI;
 
     //glBindVertexArray(0);
     // Free a lot of memory....

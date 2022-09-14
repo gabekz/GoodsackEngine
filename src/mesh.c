@@ -7,15 +7,16 @@
 
 Mesh *mesh_create_obj(Material *material, const char* modelPath,
         ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace) {
-    Mesh *ret = malloc(sizeof(Mesh));
+
     Model *model = load_obj(modelPath);
+
+    Mesh *ret = malloc(sizeof(Mesh));
+    ret->model = model;
 
     ret->drawingMode   = DRAW_MODE_ARRAYS;
     ret->renderingMode = GL_TRIANGLES;
 
-    ret->vertexCount = model->indicesCount;
     ret->material = material;
-    ret->vao = model->vao;
 
     ret->cullEnable = cullEnable;
     ret->cullFace = cullFace;
@@ -56,11 +57,13 @@ Mesh *mesh_create_primitive(Material *material, ui32 primitive,
     vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
     vao_add_buffer(vao, vbo);
 
-    ret->material = material;
-    ret->modelPath = NULL;
-    ret->vao = vao;
-    ret->vertexCount = 24;
+    Model *model = malloc(sizeof(Model));
+    model->vao = vao;
+    model->vertexCount = 24;
+    model->modelPath = NULL;
 
+    ret->model = model;
+    ret->material = material;
     ret->cullEnable = cullEnable;
     ret->cullFace = cullFace;
     ret-> cullFrontFace = cullFrontFace;
@@ -79,12 +82,13 @@ void mesh_draw(Mesh *self) {
     }
 
     material_use(self->material);
-    vao_bind(self->vao);
+    vao_bind(self->model->vao);
 
     ui32 mode = self->drawingMode;
+    ui32 vertices = self->model->vertexCount;
     switch(mode) {
         case DRAW_MODE_ARRAYS:
-            glDrawArrays(self->renderingMode, 0, self->vertexCount);
+            glDrawArrays(self->renderingMode, 0, vertices);
             break;
         case DRAW_MODE_ELEMENTS:
             break;

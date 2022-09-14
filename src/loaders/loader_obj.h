@@ -4,13 +4,7 @@
 //#include "../glbuffer/glbuffer.h"
 #include <glbuffer/glbuffer.h>
 #include <util/sysdefs.h>
-
-typedef struct _model Model;
-
-struct _model {
-    VAO* vao;
-    ui32 indicesCount;
-};
+#include "../mesh.h"
 
 Model* load_obj(const char* path);
 
