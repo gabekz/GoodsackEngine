@@ -155,6 +155,17 @@ float* prim_norm_pyramid() {
 float* prim_vert_cube(float scale) {
 
     float points[] = {
+    -1.0, -1.0,  1.0,
+    1.0, -1.0,  1.0,
+    -1.0,  1.0,  1.0,
+    1.0,  1.0,  1.0,
+    -1.0, -1.0, -1.0,
+    1.0, -1.0, -1.0,
+    -1.0,  1.0, -1.0,
+    1.0,  1.0, -1.0
+    };
+
+    float pointsT[] = {
        -1.0f,  -1.0f,  1.0f,
        -1.0f,  -1.0f, -1.0f,
         1.0f,  -1.0f, -1.0f,
@@ -165,10 +176,10 @@ float* prim_vert_cube(float scale) {
         1.0f,   1.0f,  1.0f
     };
 
-    unsigned int size = 3 * 8;
+    unsigned int size = PRIMITIVE_SIZE_CUBE;
 
     float *ret = malloc(size * sizeof(float));
-    for(int i = 0; i < size; i++) {
+    for(int i = 0; i < size; ++i) {
         ret[i] = points[i] * scale;
     }
     return ret;

@@ -17,7 +17,7 @@ struct _shaderSource {
 };
 
 ShaderProgram *shader_create_program(const char *path);
-//void shader_uniform(ShaderProgram *shader, ui32 type, void* data);
 void shader_use(ShaderProgram *shader);
+void shader_uniform(ShaderProgram *shader, ui32 type, void* data);
 
 #endif
