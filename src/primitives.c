@@ -1,6 +1,7 @@
 #include "primitives.h"
 
 #include <stdlib.h>
+#include <util/sysdefs.h>
 
 /*
 static void* fillData(unsigned int size, unsigned int dataSize, void* dataIn) {
@@ -36,6 +37,7 @@ float* prim_vert_rect() {
 
 
 
+#if 0
 // * ----------- Plane -------------* //
 
 float* prim_vert_plane() {
@@ -149,12 +151,54 @@ float* prim_norm_pyramid() {
     return ret;
 }
 
-
+#endif
 // * ----------- Cube -------------* //
 
 float* prim_vert_cube(float scale) {
 
-    float points[] = {
+    float pointsT[] = {
+        -1.0f, -1.0f, 1.0f, //Vertex 0
+        1.0f, -1.0f, 1.0f,  //v1
+        -1.0f, 1.0f, 1.0f,  //v2
+        1.0f, 1.0f, 1.0f,   //v3
+
+        1.0f, -1.0f, 1.0f,  //...
+        1.0f, -1.0f, -1.0f,         
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
+
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,            
+        1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,         
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,         
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,           
+        -1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f
+    };
+
+    unsigned int size = 3 * 4 * 6;
+    float *ret = malloc(size * sizeof(float));
+    for(int i = 0; i <= size; i++) {
+        ret[i] = pointsT[i] * scale;
+    }
+    return ret;
+}
+
+float* prim_vert_cube_elements(float scale) {
+
+    float cubeVertices[] = {
     -1.0, -1.0,  1.0,
     1.0, -1.0,  1.0,
     -1.0,  1.0,  1.0,
@@ -162,25 +206,17 @@ float* prim_vert_cube(float scale) {
     -1.0, -1.0, -1.0,
     1.0, -1.0, -1.0,
     -1.0,  1.0, -1.0,
-    1.0,  1.0, -1.0
-    };
+    1.0,  1.0, -1.0,
+};
 
-    float pointsT[] = {
-       -1.0f,  -1.0f,  1.0f,
-       -1.0f,  -1.0f, -1.0f,
-        1.0f,  -1.0f, -1.0f,
-        1.0f,  -1.0f,  1.0f,
-       -1.0f,   1.0f,  1.0f,
-       -1.0f,   1.0f, -1.0f,
-        1.0f,   1.0f, -1.0f,
-        1.0f,   1.0f,  1.0f
-    };
+    ui32 cubeIndices[] = {
+    0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1
+};
 
-    unsigned int size = PRIMITIVE_SIZE_CUBE;
-
+    unsigned int size = 3 * 8;
     float *ret = malloc(size * sizeof(float));
-    for(int i = 0; i < size; ++i) {
-        ret[i] = points[i] * scale;
+    for(int i = 0; i <= size; i++) {
+        ret[i] = cubeVertices[i] * scale;
     }
     return ret;
 }

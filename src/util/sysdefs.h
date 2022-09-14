@@ -16,6 +16,10 @@
 #define DX12        0xF0F04
 #define RENDERER    OPEN_GL
 
+// Drawing modes
+#define DRAW_MODE_ARRAYS     0xD000
+#define DRAW_MODE_ELEMENTS   0xD001
+
 #define LOG_LEVEL   0
 
 typedef int si32;

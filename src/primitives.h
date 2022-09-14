@@ -5,9 +5,9 @@
 #define PRIMITIVE_CUBE      0xAB01
 #define PRIMITIVE_PYRAMID   0xAB02
 
-#define PRIMITIVE_SIZE_PLANE    (3 * 8 * sizeof(float))
+#define PRIMITIVE_SIZE_PLANE    (3 * 8 )
 #define PRIMITIVE_SIZE_CUBE     3 * 8
-#define PRIMITIVE_SIZE_PYRAMID  (3 * 8 * sizeof(float))
+#define PRIMITIVE_SIZE_PYRAMID  (3 * 8 )
 
 void primitive_pyramid(float* out);
 float* prim_vert_rect();

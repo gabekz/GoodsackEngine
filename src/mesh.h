@@ -19,6 +19,8 @@ struct _mesh {
     ui32 vertexCount;
 
     ui32 cullEnable, cullFace, cullFrontFace;
+
+    ui32 drawingMode, renderingMode;
 };
 
 
