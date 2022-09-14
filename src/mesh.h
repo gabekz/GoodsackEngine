@@ -17,11 +17,15 @@ struct _mesh {
     const char *modelPath;
     VAO *vao;
     ui32 vertexCount;
+
+    ui32 cullEnable, cullFace, cullFrontFace;
 };
 
 
-Mesh *mesh_create_obj(Material *material, const char* modelPath);
-Mesh *mesh_create_primitive(Material *material, ui32 primitive);
+Mesh *mesh_create_obj(Material *material, const char* modelPath,
+        ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace);
+Mesh *mesh_create_primitive(Material *material, ui32 primitive,
+        ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace);
 void mesh_draw(Mesh *self);
 
 #endif // H_MESH

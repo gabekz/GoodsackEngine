@@ -5,18 +5,23 @@
 #include "primitives.h"
 #include "gfx.h"
 
-Mesh *mesh_create_obj(Material *material, const char* modelPath) {
+Mesh *mesh_create_obj(Material *material, const char* modelPath,
+        ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace) {
     Mesh *ret = malloc(sizeof(Mesh));
     Model *model = load_obj(modelPath);
 
     ret->vertexCount = model->indicesCount;
-
     ret->material = material;
     ret->vao = model->vao;
+
+    ret->cullEnable = cullEnable;
+    ret->cullFace = cullFace;
+    ret-> cullFrontFace = cullFrontFace;
     return ret;
 }
 
-Mesh *mesh_create_primitive(Material *material, ui32 primitive) {
+Mesh *mesh_create_primitive(Material *material, ui32 primitive,
+        ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace) {
     Mesh *ret = malloc(sizeof(Mesh));
 
     float *points;
@@ -50,11 +55,23 @@ Mesh *mesh_create_primitive(Material *material, ui32 primitive) {
     ret->vao = vao;
     ret->vertexCount = 24;
 
+    ret->cullEnable = cullEnable;
+    ret->cullFace = cullFace;
+    ret-> cullFrontFace = cullFrontFace;
 
     return ret;
 }
 
 void mesh_draw(Mesh *self) {
+    if(self->cullEnable == GL_TRUE) {
+        glEnable(GL_CULL_FACE);
+        glCullFace(self->cullFace);
+        glFrontFace(self->cullFrontFace);
+    }
+    else {
+        glDisable(GL_CULL_FACE);
+    }
+
     material_use(self->material);
     vao_bind(self->vao);
     glDrawArrays(GL_TRIANGLES, 0, self->vertexCount);

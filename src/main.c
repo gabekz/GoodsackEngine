@@ -149,12 +149,13 @@ int main(void) {
         material_create(shaderSuzanne, 1, tex);
 
     Mesh *meshSuzanne =
-        mesh_create_obj(matSuzanne , "../res/models/cube2.obj");
+        mesh_create_obj(matSuzanne , "../res/models/cube-triangulated.obj",
+            1, GL_FRONT, GL_CW);
 
 // Create light object
     ShaderProgram *shaderLight = shader_create_program("../res/shaders/white.shader");
     Material *matLight = material_create(shaderLight, 0); 
-    Mesh *meshLight    = mesh_create_primitive(matLight, PRIMITIVE_CUBE);
+    Mesh *meshLight    = mesh_create_primitive(matLight, PRIMITIVE_CUBE, 0, 0, 0);
 
 // Clearing GL State
     clearGL();
