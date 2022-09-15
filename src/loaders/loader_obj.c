@@ -14,9 +14,10 @@ Model* load_obj(const char* path) {
         exit(1);
     }
 
-    int vC  = 20000;
-    int vtC = 20000;
-    int vnC = 20000;
+    // TODO: scaling
+    int vC  = 50000;
+    int vtC = 50000;
+    int vnC = 50000;
 
     // Buffers for storing input
     float *v  = malloc(vC * sizeof(float));
@@ -29,8 +30,8 @@ Model* load_obj(const char* path) {
     int fL  = 0;
 
     // Buffers for output
-    int outC = 25000;
-    int outIndicesC = 25000;
+    int outC = 50000;
+    int outIndicesC = 50000;
 
     float *out = malloc(outC * sizeof(float));
     unsigned int *outIndices = malloc(outIndicesC * sizeof(unsigned int));
@@ -81,25 +82,30 @@ Model* load_obj(const char* path) {
         }
         if(strstr(def, "f") != NULL) {
             char *collection = split;
+#ifdef LOGGING
+            printf("\ncollection: %s", collection);
+#endif
             // Create the "collections" for each face
             while(collection != NULL) {
-            //for(int i = 0; i < 3; i++) {
-                //printf("Collection: %s\n", collection);
 
                 // Go through each collection and grab the vertex
                 char elemDem[] = "/";
                 char *ptr = collection;
                 char *posn = NULL;
                 char *element = strtok_r(ptr, elemDem, &posn);
+
+
+                // Go through each element in the collection
+                // TODO: change to 1 for only vertex
                 for(int j = 0; j < 3; j++) {
-                    //printf("%s", element);
                     int saved = atoi(element);
+#ifdef LOGGING
+                    printf(" [%d],", saved);
+#endif
 
                     // Vertex
                     if(j == 0) {
                         int loc = saved*3-3;
-                        //printf("%.03f, %.03f, %.02f,\t", 
-                        //  v[loc], v[loc+1], v[loc+2]);
 // Add vertex to positions
                         out[outI] = v[loc];
                         out[outI+1] = v[loc+1];
@@ -111,20 +117,18 @@ Model* load_obj(const char* path) {
                         outIndices[outIndicesI] = ind;
                         outIndicesI++;
                     }
+                    // Texture
                     else if(j == 1) {
                         int loc = saved*2-2;
-                        //printf("%f, %f,\t", 
-                        //  vt[loc], vt[loc+1]);
 
                         out[outI] = vt[loc];
                         out[outI+1] = vt[loc+1];
                         outI += 2;
 
                     }
+                    // Normal
                     else if(j == 2) {
                         int loc = saved*3-3;
-                        //printf("%f, %f, %f\n", 
-                        //  vn[loc], vn[loc+1], vn[loc+2]);
 
                         out[outI] = vn[loc];
                         out[outI+1] = vn[loc+1];
@@ -179,6 +183,7 @@ Model* load_obj(const char* path) {
     //IBO* ibo = ibo_create(outIndices, (outIndicesI) * sizeof(unsigned int));
 
     // Push our data into our single VBO
+    // NOTE: For only vertex we must disable the following two pushes
     vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
     vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
     vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
