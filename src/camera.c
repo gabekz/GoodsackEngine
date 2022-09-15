@@ -22,7 +22,7 @@ Camera* camera_create(int width, int height, float *position, float *up) {
     ui32 uboSize = 4 + sizeof(vec3) + (2 * sizeof(mat4));
     glGenBuffers(1, &uboId);
     glBindBuffer(GL_UNIFORM_BUFFER, uboId);
-    glBufferData(GL_UNIFORM_BUFFER, uboSize, NULL, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, uboSize, NULL, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboId, 0, uboSize);
     cam->uboId = uboId;

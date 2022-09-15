@@ -131,7 +131,7 @@ int main(void) {
     ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
     glGenBuffers(1, &uboLight);
     glBindBuffer(GL_UNIFORM_BUFFER, uboLight);
-    glBufferData(GL_UNIFORM_BUFFER, uboLightSize, NULL, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, uboLightSize, NULL, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferRange(GL_UNIFORM_BUFFER, 1, uboLight, 0, uboLightSize);
     // Send lighting data to UBO

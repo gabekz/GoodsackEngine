@@ -13,8 +13,11 @@ Mesh *mesh_create_obj(Material *material, const char* modelPath,
     Mesh *ret = malloc(sizeof(Mesh));
     ret->model = model;
 
-    ret->drawingMode = 
-        (model->indicesCount <= 0) ? DRAW_MODE_ARRAYS: DRAW_MODE_ELEMENTS;
+    // TODO: FIX THIS when IBO implemented for .obj files.
+    //ret->drawingMode = 
+    //    (model->indicesCount <= 0) ? DRAW_MODE_ARRAYS: DRAW_MODE_ELEMENTS;
+    ret->drawingMode = DRAW_MODE_ARRAYS;
+
     ret->renderingMode = GL_TRIANGLES;
 
     ret->material = material;
@@ -129,11 +132,12 @@ void mesh_draw(Mesh *self) {
     ui32 vertices = self->model->vertexCount;
     ui32 indices = self->model->indicesCount;
     switch(mode) {
-        case DRAW_MODE_ARRAYS:
-            glDrawArrays(self->renderingMode, 0, vertices);
-            break;
         case DRAW_MODE_ELEMENTS:
             glDrawElements(self->renderingMode, indices, GL_UNSIGNED_INT, NULL);
+            break;
+        case DRAW_MODE_ARRAYS:
+        default:
+            glDrawArrays(self->renderingMode, 0, vertices);
             break;
     }
 }
