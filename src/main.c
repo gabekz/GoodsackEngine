@@ -12,6 +12,7 @@
 #include <cglm/struct.h>
 
 #include <util/sysdefs.h>
+#include <util/debug.h>
 
 #include "gfx.h" // GLFW & glad headers
 #include "shader.h"
@@ -85,6 +86,7 @@ int main(void) {
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, DEBUG);
 
    int winWidth    = DEFAULT_WINDOW_WIDTH;
    int winHeight   = DEFAULT_WINDOW_HEIGHT;
@@ -101,6 +103,9 @@ int main(void) {
    glfwGetFramebufferSize(window, &winWidth, &winHeight);
    glfwSetFramebufferSizeCallback(window, _resize_callback);
    glfwSetKeyCallback(window, _key_callback);
+
+    // Initialize GL debug callback
+    glDebugInit();
 
    // Get current OpenGL version
    printf("%s\n", glGetString(GL_VERSION));

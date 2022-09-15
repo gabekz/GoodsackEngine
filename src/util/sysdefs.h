@@ -17,6 +17,7 @@
 #define RENDERER    OPEN_GL
 
 #define LOG_LEVEL   0
+#define DEBUG       1
 
 typedef int si32;
 typedef unsigned int ui32;
