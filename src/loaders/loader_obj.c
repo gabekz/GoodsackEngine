@@ -1,8 +1,10 @@
-#include "loader_obj.h"
+#include <loaders/loader_obj.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <model/mesh.h>
 
 Model* load_obj(const char* path) {
 

@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include <model/mesh.h>
 #include <stdlib.h>
 
 #include <loaders/loader_obj.h>

@@ -17,11 +17,12 @@
 #include "shader.h"
 
 #include <glbuffer/glbuffer.h>
-#include "material.h"
-#include "mesh.h"
 #include "texture.h"
 
+#include <model/material.h>
+#include <model/mesh.h>
 #include <model/primitives.h>
+
 #include "camera.h"
 
 #include "loaders/loader_obj.h"

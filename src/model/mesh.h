@@ -4,7 +4,7 @@
 #include <util/sysdefs.h>
 #include <glbuffer/glbuffer.h>
 
-#include "material.h"
+#include <model/material.h>
 #include "texture.h"
 #include "shader.h"
 
