@@ -6,6 +6,6 @@
 #include <util/sysdefs.h>
 #include <model/mesh.h>
 
-Model* load_obj(const char* path);
+Model* load_obj(const char* path, float scale);
 
 #endif /* LOADER_OBJ_H */

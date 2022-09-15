@@ -8,7 +8,7 @@
 Mesh *mesh_create_obj(Material *material, const char* modelPath,
         ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace) {
 
-    Model *model = load_obj(modelPath);
+    Model *model = load_obj(modelPath, 1.0f);
 
     Mesh *ret = malloc(sizeof(Mesh));
     ret->model = model;

@@ -6,7 +6,7 @@
 
 #include <model/mesh.h>
 
-Model* load_obj(const char* path) {
+Model* load_obj(const char* path, float scale) {
 
     FILE* stream = NULL;
     char line[256]; // 256 = MAX line_length
@@ -43,7 +43,6 @@ Model* load_obj(const char* path) {
 
     // Looping through the file
     while(fgets(line, sizeof(line), stream)) {
-
         // Get the first two characters
         char def[5];                        // TODO: Fix uninitialized;
         memcpy(def, line, 2);
@@ -58,7 +57,7 @@ Model* load_obj(const char* path) {
 
             while(split != NULL) {
                 float saved = atof(split) * 0.2f;
-                v[vL] = saved;
+                v[vL] = saved * scale;
                 vL++;
 
                 split = strtok(NULL, delim);
@@ -76,7 +75,7 @@ Model* load_obj(const char* path) {
         if(strstr(def, "vn") != NULL) {
             while(split != NULL) {
                 float saved = atof(split);
-                vn[vnL] = saved;
+                vn[vnL] = saved * scale;
                 vnL++;
 
                 split = strtok(NULL, delim);
