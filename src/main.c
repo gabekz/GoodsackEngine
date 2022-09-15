@@ -155,7 +155,7 @@ int main(void) {
         material_create(shaderSuzanne, 1, tex);
 
     Mesh *meshSuzanne =
-        mesh_create_obj(matSuzanne , "../res/models/suzanne.obj",
+        mesh_create_obj(matSuzanne , "../res/models/suzanne.obj", 1.0f,
             1, GL_FRONT, GL_CW);
 
 // Create light object

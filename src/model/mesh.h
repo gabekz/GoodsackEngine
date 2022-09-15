@@ -26,7 +26,7 @@ struct _model {
     const char *modelPath;
 };
 
-Mesh *mesh_create_obj(Material *material, const char* modelPath,
+Mesh *mesh_create_obj(Material *material, const char* modelPath, float scale,
         ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace);
 
 Mesh *mesh_create_primitive(Material *material, ui32 primitive, float scale,

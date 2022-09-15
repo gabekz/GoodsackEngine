@@ -5,10 +5,10 @@
 #include <model/primitives.h>
 #include "gfx.h"
 
-Mesh *mesh_create_obj(Material *material, const char* modelPath,
+Mesh *mesh_create_obj(Material *material, const char* modelPath, float scale,
         ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace) {
 
-    Model *model = load_obj(modelPath, 1.0f);
+    Model *model = load_obj(modelPath, scale);
 
     Mesh *ret = malloc(sizeof(Mesh));
     ret->model = model;

@@ -76,6 +76,9 @@ void postbuffer_init(ui32 winWidth, ui32 winHeight) {
 }
 
 void postbuffer_bind() {
+    //glDebugMessageInsert(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_MARKER, 0,                       
+    //    GL_DEBUG_SEVERITY_NOTIFICATION, -1, "Post Processing buffer init");
+
     glBindFramebuffer(GL_FRAMEBUFFER, fboId);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

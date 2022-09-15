@@ -174,7 +174,7 @@ Model* load_obj(const char* path, float scale) {
 #if 1 
     printf("\n-------------------------------------\n[OBJ Loader]\n");
     printf("path: \t\t%s", path);
-    printf("\n\nVertice Count \nPosition: \t%d\nTexture: \t%d\nNormal: \t%d\n\nFaces: \t%d\n\n",
+    printf("\n\nVertice Count\nPosition:\t%d\nTexture:\t%d\nNormal:\t\t%d\n\nFaces:\t\t%d\n\n",
       vL/3, vtL/2, vnL/3, fL);
     printf("Output Buffer Size: %.2f KB\n", (float)outI / 1000);
     printf("-------------------------------------\n\n");
