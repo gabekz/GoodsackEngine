@@ -96,16 +96,17 @@ Model* load_obj(const char* path, float scale) {
                 char *element = strtok_r(ptr, elemDem, &posn);
 
 
-                // Go through each element in the collection
-                // TODO: change to 1 for only vertex
-                for(int j = 0; j < 3; j++) {
+            // Go through each element in the collection
+                // Get the incremental steps for the components we need
+                int inc = ((vL > 0) + (vtL > 0) + (vnL > 0));
+                for(int j = 0; j < inc; j++) {
                     int saved = atoi(element);
 #ifdef LOGGING
                     printf(" [%d],", saved);
 #endif
 
                     // Vertex
-                    if(j == 0) {
+                    if(j == 0 && vL > 0) {
                         int loc = saved*3-3;
 // Add vertex to positions
                         out[outI] = v[loc];
@@ -119,7 +120,7 @@ Model* load_obj(const char* path, float scale) {
                         outIndicesI++;
                     }
                     // Texture
-                    else if(j == 1) {
+                    else if(j == 1 && vtL > 0) {
                         int loc = saved*2-2;
 
                         out[outI] = vt[loc];
@@ -128,7 +129,7 @@ Model* load_obj(const char* path, float scale) {
 
                     }
                     // Normal
-                    else if(j == 2) {
+                    else if(j == 2 && vnL > 0) {
                         int loc = saved*3-3;
 
                         out[outI] = vn[loc];
@@ -170,37 +171,31 @@ Model* load_obj(const char* path, float scale) {
     }
 #endif
 
-    printf("\nVertex Points: \t%d\nUV Points: \t%d\nNormal Points: \t%d\nFaces Count: \t%d\n\n",
+#if 1 
+    printf("\n-------------------------------------\n[OBJ Loader]\n");
+    printf("path: \t\t%s", path);
+    printf("\n\nVertice Count \nPosition: \t%d\nTexture: \t%d\nNormal: \t%d\n\nFaces: \t%d\n\n",
       vL/3, vtL/2, vnL/3, fL);
+    printf("Output Buffer Size: %.2f KB\n", (float)outI / 1000);
+    printf("-------------------------------------\n\n");
+#endif
 
     // Create the VAO
     VAO* vao = vao_create();
     vao_bind(vao);
-
-    printf("VLCount: %d", vL);
 
     VBO* vbo = vbo_create(out, outI * sizeof(float));
     //VBO* vbo = vbo_create(v, 24 * sizeof(float));
     //IBO* ibo = ibo_create(outIndices, (outIndicesI) * sizeof(unsigned int));
 
     // Push our data into our single VBO
-    // NOTE: For only vertex we must disable the following two pushes
-    vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
-    vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
+    if(vL  > 0)  vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
+    if(vtL > 0)  vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
+    if(vnL > 0)  vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
 
     // VBO push -> VAO
     vao_add_buffer(vao, vbo);
 
-#if 0
-    printf("Indices [count: %d]:\n", outIndicesI);
-    for(int i = 0; i < outIndicesI; i++) {
-        printf("%d, ", outIndices[i]);
-    }
-    printf("\n");
-#endif
-
-    printf("\nsize of OUT: %d\n", outI);
 
     // Output
     Model *ret = malloc(sizeof(Model));
@@ -210,6 +205,7 @@ Model* load_obj(const char* path, float scale) {
     //glBindVertexArray(0);
     // Free a lot of memory....
     free(v);
+    free(vt);
     free(vn);
     free(out);
     free(outIndices);
