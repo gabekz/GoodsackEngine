@@ -86,7 +86,7 @@ void postbuffer_bind() {
     glFrontFace(GL_CW);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 0.0f, 0.15f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.00f, 1.0f);
 }
 
 void postbuffer_draw() {

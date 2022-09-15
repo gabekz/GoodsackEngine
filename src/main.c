@@ -123,7 +123,7 @@ int main(void) {
       (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
 
 // Lighting information
-    float* lightPos     = (vec3){0.0f, 0.2f, 0.4f};
+    float* lightPos     = (vec3){0.0f, 0.1f, 0.4f};
     float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
 
 // UBO Lighting
@@ -156,13 +156,16 @@ int main(void) {
     Texture *texContDiff = texture_create("../res/textures/container/diffuse.png");
     Texture *texContSpec = texture_create("../res/textures/container/specular.png");
 
+    Texture *texEarthDiff = texture_create("../res/textures/earth/diffuse.png");
+    Texture *texEarthNorm = texture_create("../res/textures/earth/normal.png");
+
     ShaderProgram *shaderSuzanne =
         shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matSuzanne =
-        material_create(shaderSuzanne, 2, texBrickDiff, texBrickNorm);
+        material_create(shaderSuzanne, 2, texEarthDiff, texEarthNorm);
 
     Mesh *meshSuzanne =
-        mesh_create_obj(matSuzanne , "../res/models/suzanne.obj", 1.0f,
+        mesh_create_obj(matSuzanne , "../res/models/sphere.obj", 1.0f,
             1, GL_FRONT, GL_CW);
 
 // Create light object

@@ -63,6 +63,15 @@ layout(binding = 2) uniform sampler2D t_Specular;
 
 out vec4 FragColor;
 
+vec3 calcNormal(float strength){
+    vec3 n = texture(t_Normal ,fs_in.texCoords).xyz;
+    n = n * 2.0 - 1.0;
+    n.xy *= strength;
+    n = normalize(n);
+    //return  normalize (v_TBN * n);
+    return n;
+}
+
 // Note: Directional Light is a static lightposition w/o inten
 vec4 pointLight() {
     // Light attenuation
@@ -74,7 +83,7 @@ vec4 pointLight() {
 
     // Diffuse Lighting
     vec3 lightDirection = normalize(lightVec);
-    float diffuse = max(dot(fs_in.normal, lightDirection), 0.0f);
+    float diffuse = max(dot(fs_in.normal * calcNormal(1.0), lightDirection), 0.0f);
 
     // Ambient Light
     float ambient = 0.2f;
