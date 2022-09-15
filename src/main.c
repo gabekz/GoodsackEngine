@@ -150,13 +150,16 @@ int main(void) {
 // Create suzanne object
     Texture *tex = texture_create("../res/textures/bricks.png");
 
-    Texture *texContDiff = texture_create("../res/textures/container-diffuse.png");
-    Texture *texContSpec = texture_create("../res/textures/container-specular.png");
+    Texture *texBrickDiff = texture_create("../res/textures/brickwall/diffuse.png");
+    Texture *texBrickNorm = texture_create("../res/textures/brickwall/normal.png");
+
+    Texture *texContDiff = texture_create("../res/textures/container/diffuse.png");
+    Texture *texContSpec = texture_create("../res/textures/container/specular.png");
 
     ShaderProgram *shaderSuzanne =
         shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matSuzanne =
-        material_create(shaderSuzanne, 2, texContDiff, texContSpec);
+        material_create(shaderSuzanne, 2, texBrickDiff, texBrickNorm);
 
     Mesh *meshSuzanne =
         mesh_create_obj(matSuzanne , "../res/models/suzanne.obj", 1.0f,

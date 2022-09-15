@@ -58,7 +58,8 @@ in VS_OUT {
 
 // default bindings (requires 4.2+)
 layout(binding = 0) uniform sampler2D t_Diffuse;
-layout(binding = 1) uniform sampler2D t_Specular;
+layout(binding = 1) uniform sampler2D t_Normal;
+layout(binding = 2) uniform sampler2D t_Specular;
 
 out vec4 FragColor;
 
