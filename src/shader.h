@@ -4,15 +4,20 @@
 #include <util/sysdefs.h>
 #include "gfx.h"
 
-typedef struct _shaderSource ShaderSource;
+typedef struct _shaderProgram   ShaderProgram;
+typedef struct _shaderSource    ShaderSource;
 
-struct _shaderSource 
-{
-   char* shaderVertex;
-   char* shaderFragment;
+struct _shaderProgram {
+    ui32 id;
+    ShaderSource *shaderSource;
 };
 
-ShaderSource *ParseShader(const char *path);
-unsigned int CreateShader(const char *source);
+struct _shaderSource {
+   char *shaderVertex, *shaderFragment;
+};
+
+ShaderProgram *shader_create_program(const char *path);
+void shader_use(ShaderProgram *shader);
+void shader_uniform(ShaderProgram *shader, ui32 type, void* data);
 
 #endif

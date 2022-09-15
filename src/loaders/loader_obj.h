@@ -3,8 +3,9 @@
 
 //#include "../glbuffer/glbuffer.h"
 #include <glbuffer/glbuffer.h>
+#include <util/sysdefs.h>
+#include <model/mesh.h>
 
-VAO* load_obj(const char* path);
-
+Model* load_obj(const char* path);
 
 #endif /* LOADER_OBJ_H */

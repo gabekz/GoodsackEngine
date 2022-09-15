@@ -7,10 +7,9 @@
 
 #define TEXTURE_WRAPPING  GL_REPEAT
 
-Texture *texture_create(const char *path, ui32 slot) {
+Texture *texture_create(const char *path) {
     Texture *tex = malloc(sizeof(Texture));
     tex->filePath = path;
-    tex->slot = slot; // TODO: add bounds-check
 
     stbi_set_flip_vertically_on_load(1);
 
@@ -44,8 +43,9 @@ Texture *texture_create(const char *path, ui32 slot) {
     return tex;
 }
 
-void texture_bind(Texture *self) {
-    glActiveTexture(GL_TEXTURE0 + self->slot);
+void texture_bind(Texture *self, ui32 slot) {
+    self->activeSlot = slot;
+    glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, self->id);
 }
 

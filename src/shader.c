@@ -9,10 +9,13 @@
 #include <stdio.h>
 #include <string.h>
 
-static unsigned int CompileShader(unsigned int type, const char* source) {
+/* Compile single shader type (vertex, fragment, etc.) and return
+ * the id from OpenGL.
+ */ 
+static unsigned int CompileSingleShader(unsigned int type, const char* path) {
     unsigned int id = glCreateShader(type);
     //const char* src = &source[0];
-    glShaderSource(id, 1, &source, NULL);
+    glShaderSource(id, 1, &path, NULL);
     glCompileShader(id);
 
     /* Error handling */ 
@@ -24,7 +27,7 @@ static unsigned int CompileShader(unsigned int type, const char* source) {
        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
        char* message = (char *)alloca(length * sizeof(char));
        glGetShaderInfoLog(id, length, &length, message);
-       printf("Error at: %s\n", source);
+       printf("Error at: %s\n", path);
        printf("Failed to compile %s shader.\n Error output: %s\n", typeStr, message);
        glDeleteShader(id);
        return 0;
@@ -32,8 +35,11 @@ static unsigned int CompileShader(unsigned int type, const char* source) {
     return id;
 }
 
-
-ShaderSource *ParseShader(const char *path) {
+/* Parse shader source. As per current spec, this can contain both vertex
+ * and fragment shaders in one file.
+ * Returns the source object containing id's and compiled sources.
+ */ 
+static ShaderSource *ParseShader(const char *path) {
    // File in 
    FILE* fptr = NULL;
    char line[256];
@@ -44,9 +50,6 @@ ShaderSource *ParseShader(const char *path) {
    size_t vertLen, fragLen;
    
    short mode = -1; /* -1: NONE | 0: Vert | 1: Frag */
-
-   //MyShaderStruct ss;
-   //ss.a = 3;
 
    if((fptr = fopen(path, "rb")) == NULL)
    {
@@ -112,12 +115,12 @@ ShaderSource *ParseShader(const char *path) {
 }
 
 
-unsigned int CreateShader(const char *source) {
-    ShaderSource *ss = ParseShader(source);
+ShaderProgram *shader_create_program(const char *path) {
+    ShaderSource *ss = ParseShader(path);
 
     ui32 program = glCreateProgram();   
-    ui32 vs = CompileShader(GL_VERTEX_SHADER, ss->shaderVertex);
-    ui32 fs = CompileShader(GL_FRAGMENT_SHADER, ss->shaderFragment);
+    ui32 vs = CompileSingleShader(GL_VERTEX_SHADER, ss->shaderVertex);
+    ui32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss->shaderFragment);
 
     // TODO: Read documentation on these functions
     glAttachShader(program, vs);
@@ -127,5 +130,13 @@ unsigned int CreateShader(const char *source) {
 
     glDeleteShader(vs);
     glDeleteShader(fs);
-    return program;
+
+    ShaderProgram *ret = malloc(sizeof(ShaderProgram)); 
+    ret->id = program;
+    ret->shaderSource = ss;
+    return ret;
+}
+
+void shader_use(ShaderProgram *shader) {
+    glUseProgram(shader->id);
 }

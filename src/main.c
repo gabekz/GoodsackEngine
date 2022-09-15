@@ -17,11 +17,13 @@
 #include "gfx.h" // GLFW & glad headers
 #include "shader.h"
 
-#include "glbuffer/glbuffer.h"
-#include "mesh.h"
+#include <glbuffer/glbuffer.h>
 #include "texture.h"
 
-#include "primitives.h"
+#include <model/material.h>
+#include <model/mesh.h>
+#include <model/primitives.h>
+
 #include "camera.h"
 
 #include "loaders/loader_obj.h"
@@ -29,6 +31,8 @@
 
 static int winWidth  = DEFAULT_WINDOW_WIDTH;
 static int winHeight = DEFAULT_WINDOW_HEIGHT;
+
+#define MESH_ABSTRACTION
 
 /* ~~~ CALLBACKS ~~~ */
 
@@ -143,44 +147,23 @@ int main(void) {
 // Initialize the Post Processing Framebuffer
     postbuffer_init(winWidth, winHeight);
 
-#if 0
-    Material myMaterial = material_create(
-        "../res/shaders/lit-diffuse.shader",
-        "../res/textures/bricks.png",
-        "../res/textures/bricks-specular.png",
-        "../res/textures/bricks-normals.png",
-        );
-    Mesh *myMesh = mesh_create(myMaterial, "../res/models/suzanne.obj");
+// Create suzanne object
+    Texture *tex = texture_create("../res/textures/bricks.png");
+    ShaderProgram *shaderSuzanne =
+        shader_create_program("../res/shaders/lit-diffuse.shader");
+    Material *matSuzanne =
+        material_create(shaderSuzanne, 1, tex);
 
-    // down in render..
-    mesh_draw(myMesh);
-    // or
-    mesh_draw_instanced(myMesh, 1000);
-#endif
+    Mesh *meshSuzanne =
+        mesh_create_obj(matSuzanne , "../res/models/suzanne.obj",
+            1, GL_FRONT, GL_CW);
 
-// Create an object with the OBJ Loader
-    VAO *vaoSuzanne = load_obj("../res/models/suzanne.obj");
-    // Create texture
-    Texture *tex =
-        texture_create( "../res/textures/bricks.png", 0);
-    // Shader
-    unsigned int shaderSuzanne =
-        CreateShader("../res/shaders/lit-diffuse.shader");
-    glUseProgram(shaderSuzanne);
-    // Send texture location to shader
-    //glUniform1i(glGetUniformLocation(shaderSuzanne, "u_Texture"), 0);
-
-// Create the point-light object
-   VAO *vaoLight = vao_create();
-   vao_bind(vaoLight);
-    // Cube for point-light
-    float *lightPositions = prim_vert_cube(0.03f);
-    VBO *vboLight = vbo_create(lightPositions, (3 * 8) * sizeof(float));
-    free(lightPositions);
-    vbo_push(vboLight, 3, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vaoLight, vboLight);
-    // Shader
-    unsigned int shaderLightObj = CreateShader("../res/shaders/white.shader");
+// Create light object
+    ShaderProgram *shaderLight = shader_create_program("../res/shaders/white.shader");
+    Material *matLight = material_create(shaderLight, 1, tex); 
+    Mesh *meshLight =
+        mesh_create_primitive(matLight, PRIMITIVE_CUBE, 0.03f, 0, 0, 0);
+    //Mesh *meshLight    = mesh_create_obj(matLight, "../res/models/cube-triangulated.obj", 1, GL_FRONT, GL_CW);
 
 // Clearing GL State
     clearGL();
@@ -203,28 +186,21 @@ int main(void) {
     // Update the view and projection based on the camera data
         camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
 
-    // Drawing our first object
-        glUseProgram(shaderSuzanne);
-        // Calculating model
+        shader_use(shaderSuzanne);
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         glm_rotate(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
-        int modelLoc = glGetUniformLocation(shaderSuzanne, "u_Model");
+        int modelLoc = glGetUniformLocation(shaderSuzanne->id, "u_Model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
-        // Bind and draw
-        vao_bind(vaoSuzanne);
-        texture_bind(tex);
-        glDrawArrays(DRAWING_MODE, 0, 23232);
+        //shader_uniform(matSuzanne->shaderProgram->id, "u_Model", (float *)model);
+        mesh_draw(meshSuzanne);
 
-    // drawing our second object
-        glUseProgram(shaderLightObj);
-        // Calculating model
+        shader_use(shaderLight);
         mat4 model2 = GLM_MAT4_IDENTITY_INIT;
         glm_translate(model2, lightPos);
-        glUniformMatrix4fv(glGetUniformLocation(shaderLightObj, "u_Model"),
+        glUniformMatrix4fv(
+          glGetUniformLocation(matLight->shaderProgram->id, "u_Model"),
           1, GL_FALSE, (float *)model2);
-        // Bind and draw
-        vao_bind(vaoLight);
-        glDrawArrays(DRAWING_MODE, 0, 24);
+        mesh_draw(meshLight);
 
 // Second pass [Post Processing is drawn to backbuffer]
     postbuffer_draw();
@@ -236,9 +212,15 @@ int main(void) {
     }
 
 // Clean-up 
-    glDeleteProgram(shaderSuzanne);
-    glDeleteProgram(shaderLightObj);
-    // TODO: destory buffers HERE
+    free(tex);
+    free(shaderSuzanne);
+    free(matSuzanne);
+    free(meshSuzanne);
+
+    free(shaderLight);
+    free(matLight);
+    free(meshLight);
+
     glfwDestroyWindow(window);
     glfwTerminate();
 

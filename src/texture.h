@@ -12,12 +12,12 @@ struct _texture {
   si32 bpp;
   si32 width, height;
   ui32 id;
-  ui32 slot;
+  ui32 activeSlot;
 };
 
-Texture *texture_create(const char *path, ui32 slot);
+Texture *texture_create(const char *path);
 
-void texture_bind(Texture *self);
+void texture_bind(Texture *self, ui32 slot);
 void texture_unbind();
 
 #endif

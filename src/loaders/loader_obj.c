@@ -1,10 +1,12 @@
-#include "loader_obj.h"
+#include <loaders/loader_obj.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-VAO* load_obj(const char* path) {
+#include <model/mesh.h>
+
+Model* load_obj(const char* path) {
 
     FILE* stream = NULL;
     char line[256]; // 256 = MAX line_length
@@ -14,9 +16,10 @@ VAO* load_obj(const char* path) {
         exit(1);
     }
 
-    int vC  = 20000;
-    int vtC = 20000;
-    int vnC = 20000;
+    // TODO: scaling
+    int vC  = 50000;
+    int vtC = 50000;
+    int vnC = 50000;
 
     // Buffers for storing input
     float *v  = malloc(vC * sizeof(float));
@@ -29,8 +32,8 @@ VAO* load_obj(const char* path) {
     int fL  = 0;
 
     // Buffers for output
-    int outC = 25000;
-    int outIndicesC = 25000;
+    int outC = 50000;
+    int outIndicesC = 50000;
 
     float *out = malloc(outC * sizeof(float));
     unsigned int *outIndices = malloc(outIndicesC * sizeof(unsigned int));
@@ -81,25 +84,30 @@ VAO* load_obj(const char* path) {
         }
         if(strstr(def, "f") != NULL) {
             char *collection = split;
+#ifdef LOGGING
+            printf("\ncollection: %s", collection);
+#endif
             // Create the "collections" for each face
             while(collection != NULL) {
-            //for(int i = 0; i < 3; i++) {
-                //printf("Collection: %s\n", collection);
 
                 // Go through each collection and grab the vertex
                 char elemDem[] = "/";
                 char *ptr = collection;
                 char *posn = NULL;
                 char *element = strtok_r(ptr, elemDem, &posn);
+
+
+                // Go through each element in the collection
+                // TODO: change to 1 for only vertex
                 for(int j = 0; j < 3; j++) {
-                    //printf("%s", element);
                     int saved = atoi(element);
+#ifdef LOGGING
+                    printf(" [%d],", saved);
+#endif
 
                     // Vertex
                     if(j == 0) {
                         int loc = saved*3-3;
-                        //printf("%.03f, %.03f, %.02f,\t", 
-                        //  v[loc], v[loc+1], v[loc+2]);
 // Add vertex to positions
                         out[outI] = v[loc];
                         out[outI+1] = v[loc+1];
@@ -111,20 +119,18 @@ VAO* load_obj(const char* path) {
                         outIndices[outIndicesI] = ind;
                         outIndicesI++;
                     }
+                    // Texture
                     else if(j == 1) {
                         int loc = saved*2-2;
-                        //printf("%f, %f,\t", 
-                        //  vt[loc], vt[loc+1]);
 
                         out[outI] = vt[loc];
                         out[outI+1] = vt[loc+1];
                         outI += 2;
 
                     }
+                    // Normal
                     else if(j == 2) {
                         int loc = saved*3-3;
-                        //printf("%f, %f, %f\n", 
-                        //  vn[loc], vn[loc+1], vn[loc+2]);
 
                         out[outI] = vn[loc];
                         out[outI+1] = vn[loc+1];
@@ -176,9 +182,10 @@ VAO* load_obj(const char* path) {
 
     VBO* vbo = vbo_create(out, outI * sizeof(float));
     //VBO* vbo = vbo_create(v, 24 * sizeof(float));
-    IBO* ibo = ibo_create(outIndices, (outIndicesI) * sizeof(unsigned int));
+    //IBO* ibo = ibo_create(outIndices, (outIndicesI) * sizeof(unsigned int));
 
     // Push our data into our single VBO
+    // NOTE: For only vertex we must disable the following two pushes
     vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
     vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
     vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
@@ -187,7 +194,7 @@ VAO* load_obj(const char* path) {
     vao_add_buffer(vao, vbo);
 
 #if 0
-    printf("Indiceis [count: %d]:\n", outIndicesI);
+    printf("Indices [count: %d]:\n", outIndicesI);
     for(int i = 0; i < outIndicesI; i++) {
         printf("%d, ", outIndices[i]);
     }
@@ -195,6 +202,12 @@ VAO* load_obj(const char* path) {
 #endif
 
     printf("\nsize of OUT: %d\n", outI);
+
+    // Output
+    Model *ret = malloc(sizeof(Model));
+    ret->vao = vao;
+    ret->vertexCount = outI;
+
     //glBindVertexArray(0);
     // Free a lot of memory....
     free(v);
@@ -204,9 +217,9 @@ VAO* load_obj(const char* path) {
     //free(outIndices);
     // .. and some more.
     free(vbo);
-    free(ibo);
+    //free(ibo);
 
     fclose(stream);
 
-    return vao;
+    return ret;
 }

@@ -4,33 +4,41 @@
 #include "../glbuffer/glbuffer.h"
 #include "../gfx.h"
 #include "../shader.h"
-#include "../primitives.h"
+#include <model/primitives.h>
 
 #include <util/sysdefs.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 
-static ui32 shaderId, textureId, fboId;
+static ShaderProgram *shader;
 static VAO *vaoRect;
+static ui32 textureId, fboId;
 
 void postbuffer_init(ui32 winWidth, ui32 winHeight) {
     // Shader
-    shaderId = CreateShader("../res/shaders/framebuffer.shader");
-    glUseProgram(shaderId);
-    glUniform1i(glGetUniformLocation(shaderId, "u_ScreenTexture"), 0);
+    shader = shader_create_program("../res/shaders/framebuffer.shader");
+    shader_use(shader);
+    glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
 
     // Create Rectangle
     vaoRect = vao_create();
     vao_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
 
+#if 1
     VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
     vbo_bind(vboRect);
     vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     vao_add_buffer(vaoRect, vboRect);
     free(rectPositions);
+#else
+    Material *matFrame = material_create(shader);
+    Mesh *frameMesh = mesh_create_primitive(matFrame, PRIMITIVE_PLANE, 1.0f,
+            0, 0, 0);
+#endif
+
 
     // Create Texture
     glGenTextures(1, &textureId);
@@ -85,10 +93,10 @@ void postbuffer_draw() {
         glActiveTexture(GL_TEXTURE0);
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
-        glUseProgram(shaderId);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        shader_use(shader);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 }
 
 void postbuffer_cleanup() {
-    glDeleteProgram(shaderId);
+    glDeleteProgram(shader->id);
 }
