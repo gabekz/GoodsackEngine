@@ -123,7 +123,7 @@ int main(void) {
       (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
 
 // Lighting information
-    float* lightPos     = (vec3){0.0f, 0.5f, 0.4f};
+    float* lightPos     = (vec3){0.0f, 0.2f, 0.4f};
     float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
 
 // UBO Lighting
@@ -149,10 +149,14 @@ int main(void) {
 
 // Create suzanne object
     Texture *tex = texture_create("../res/textures/bricks.png");
+
+    Texture *texContDiff = texture_create("../res/textures/container-diffuse.png");
+    Texture *texContSpec = texture_create("../res/textures/container-specular.png");
+
     ShaderProgram *shaderSuzanne =
         shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matSuzanne =
-        material_create(shaderSuzanne, 1, tex);
+        material_create(shaderSuzanne, 2, texContDiff, texContSpec);
 
     Mesh *meshSuzanne =
         mesh_create_obj(matSuzanne , "../res/models/suzanne.obj", 1.0f,
@@ -164,6 +168,8 @@ int main(void) {
     Mesh *meshLight =
         mesh_create_primitive(matLight, PRIMITIVE_PYRAMID, 0.03f, 0, 0, 0);
     //Mesh *meshLight    = mesh_create_obj(matLight, "../res/models/cube-triangulated.obj", 1, GL_FRONT, GL_CW);
+
+// Create plane
 
 // Clearing GL State
     clearGL();

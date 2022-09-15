@@ -56,7 +56,9 @@ in VS_OUT {
     vec3 camPos;
 } fs_in;
 
-uniform sampler2D u_Texture;
+// default bindings (requires 4.2+)
+layout(binding = 0) uniform sampler2D t_Diffuse;
+layout(binding = 1) uniform sampler2D t_Specular;
 
 out vec4 FragColor;
 
@@ -65,7 +67,7 @@ vec4 pointLight() {
     // Light attenuation
     vec3 lightVec = (s_Light.position - fs_in.crntPos);
     float dist = length(lightVec);
-    float a = 5.00f;
+    float a = 2.00f;
     float b = 1.00f;
     float inten = 1.0f / (a * dist * dist + b * dist + 1.0f);
 
@@ -77,7 +79,7 @@ vec4 pointLight() {
     float ambient = 0.2f;
 
     // Specular Light
-    float specularLight = 0.50f;
+    float specularLight = 1.00f * texture(t_Specular, fs_in.texCoords).r;
     vec3 viewDirection = normalize(fs_in.camPos - fs_in.crntPos);
     vec3 reflectionDirection = reflect(-lightDirection, fs_in.normal);
     float specularAmount =
@@ -88,6 +90,6 @@ vec4 pointLight() {
 }
 
 void main() {
-    vec4 texColor = texture(u_Texture, fs_in.texCoords);
+    vec4 texColor = texture(t_Diffuse, fs_in.texCoords);
     FragColor = texColor * pointLight();
 }
