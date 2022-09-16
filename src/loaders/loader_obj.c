@@ -231,16 +231,16 @@ Model* load_obj(const char* path, float scale) {
         float *pos1 = (vec3){out[inc], out[inc+1], out[inc+2]};
         float *pos2 = (vec3){out[8+inc], out[8+inc+1], out[8+inc+2]};
         float *pos3 = (vec3){out[16+inc+1], out[16+inc+2], out[16+inc+3]};
-        printf("pos1: %f,%f,%f\n", pos1[0], pos1[1], pos1[2]);
-        printf("pos2: %f,%f,%f\n", pos2[0], pos2[1], pos2[2]);
-        printf("pos3: %f,%f,%f\n", pos3[0], pos3[1], pos3[2]);
+        //printf("pos1: %f,%f,%f\n", pos1[0], pos1[1], pos1[2]);
+        //printf("pos2: %f,%f,%f\n", pos2[0], pos2[1], pos2[2]);
+        //printf("pos3: %f,%f,%f\n", pos3[0], pos3[1], pos3[2]);
 
         float *uv1 = (vec2){out[3+inc], out[3+inc+1]};
         float *uv2 = (vec2){out[11+inc], out[11+inc+1]};
         float *uv3 = (vec2){out[19+inc], out[19+inc+1]};
-        printf("\nvt1 %f %f ", uv1[0], uv1[1]);
-        printf("\nvt2 %f %f ", uv2[0], uv2[1]);
-        printf("\nvt3 %f %f ", uv3[0], uv3[1]);
+        //printf("\nvt1 %f %f ", uv1[0], uv1[1]);
+        //printf("\nvt2 %f %f ", uv2[0], uv2[1]);
+        //printf("\nvt3 %f %f ", uv3[0], uv3[1]);
 
         // solve for edge
         glm_vec3_sub(pos2, pos1, edge1);
@@ -275,11 +275,7 @@ Model* load_obj(const char* path, float scale) {
 
         }
 
-        printf("\n%d", i);
-        outTC++;
-        //printf("\ntangent:\t(%f, %f, %f)\n", tang[0], tang[1], tang[2]);
-        //printf("bitangent:\t(%f, %f, %f)\n", btang[0], btang[1], btang[2]);
-        //printf("[out] bitangent:\t(%f, %f, %f)\n", outTBN[b+3], outTBN[b+4], outTBN[b+5]);
+        //printf("\n%d", i);
     }
     //VBO *vboTBN = vbo_create(outTBN, 2 * 3 * totalTriangles * sizeof(float));
     VBO *vboTBN = vbo_create(outTBN, totalTriangles * 3 * 2 * sizeof(GLfloat));

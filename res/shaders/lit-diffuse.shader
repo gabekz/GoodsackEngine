@@ -95,7 +95,7 @@ vec4 pointLight() {
     float diffuse = max(dot(fs_in.normal * calcNormal(1.0), lightDirection), 0.0f);
 
     // Ambient Light
-    float ambient = 0.2f;
+    float ambient = 0.1f;
 
     // Specular Light
     float specular = 0;
