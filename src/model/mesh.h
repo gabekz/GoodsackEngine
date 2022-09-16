@@ -33,5 +33,6 @@ Mesh *mesh_create_primitive(Material *material, ui32 primitive, float scale,
         ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace);
 
 void mesh_draw(Mesh *self);
+void mesh_draw_explicit(Mesh *self, Material *material);
 
 #endif // H_MESH

@@ -115,22 +115,31 @@ Mesh *mesh_create_primitive(Material *material, ui32 primitive, float scale,
     return ret;
 }
 
-void mesh_draw(Mesh *self) {
-    if(self->cullEnable == GL_TRUE) {
+static void SetCulling(ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace) {
+    if(cullEnable == GL_TRUE) {
         glEnable(GL_CULL_FACE);
-        glCullFace(self->cullFace);
-        glFrontFace(self->cullFrontFace);
+        glCullFace(cullFace);
+        glFrontFace(cullFrontFace);
     }
     else {
         glDisable(GL_CULL_FACE);
     }
+}
 
-    material_use(self->material);
+void mesh_draw(Mesh *self) {
+    mesh_draw_explicit(self, self->material);
+}
+
+void mesh_draw_explicit(Mesh *self, Material *material) {
+    SetCulling(self->cullEnable, self->cullFace, self->cullFrontFace);
+
+    material_use(material);
     vao_bind(self->model->vao);
 
     ui32 mode = self->drawingMode;
     ui32 vertices = self->model->vertexCount;
     ui32 indices = self->model->indicesCount;
+
     switch(mode) {
         case DRAW_MODE_ELEMENTS:
             glDrawElements(self->renderingMode, indices, GL_UNSIGNED_INT, NULL);
@@ -140,4 +149,4 @@ void mesh_draw(Mesh *self) {
             glDrawArrays(self->renderingMode, 0, vertices);
             break;
     }
-}
+};
