@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "math.h"
 
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
@@ -210,8 +211,12 @@ Model* load_obj(const char* path, float scale) {
     //float* outTBN = malloc(2 * 3 * totalTriangles * sizeof(float));
     float* outTBN = malloc(totalTriangles * 3 * 2 * sizeof(GLfloat));
     ui32 cntTriangle = 0;
-    for(int i = 0; i < totalTriangles; i++) {
-        ui32 inc = i + (3 * cntTriangle);
+    int outTC = 0;
+    for(int i = 0; i < totalTriangles; i+=3) {
+
+        //if(i != 2684) continue;
+
+        //ui32 inc = i + (3 * i);
 
         vec3 edge1 = GLM_VEC3_ZERO_INIT;
         vec3 edge2 = GLM_VEC3_ZERO_INIT;
@@ -222,14 +227,20 @@ Model* load_obj(const char* path, float scale) {
         vec2 del1 = GLM_VEC2_ZERO_INIT;
         vec2 del2 = GLM_VEC2_ZERO_INIT;
 
+        int inc = i + (7 * i);
         float *pos1 = (vec3){out[inc], out[inc+1], out[inc+2]};
         float *pos2 = (vec3){out[8+inc], out[8+inc+1], out[8+inc+2]};
-        float *pos3 = (vec3){out[16+inc+3], out[16+inc+4], out[16+inc+5]};
-        //printf("pos2: %f,%f,%f\n", pos2[0], pos2[1], pos2[2]);
+        float *pos3 = (vec3){out[16+inc+1], out[16+inc+2], out[16+inc+3]};
+        printf("pos1: %f,%f,%f\n", pos1[0], pos1[1], pos1[2]);
+        printf("pos2: %f,%f,%f\n", pos2[0], pos2[1], pos2[2]);
+        printf("pos3: %f,%f,%f\n", pos3[0], pos3[1], pos3[2]);
 
         float *uv1 = (vec2){out[3+inc], out[3+inc+1]};
         float *uv2 = (vec2){out[11+inc], out[11+inc+1]};
         float *uv3 = (vec2){out[19+inc], out[19+inc+1]};
+        printf("\nvt1 %f %f ", uv1[0], uv1[1]);
+        printf("\nvt2 %f %f ", uv2[0], uv2[1]);
+        printf("\nvt3 %f %f ", uv3[0], uv3[1]);
 
         // solve for edge
         glm_vec3_sub(pos2, pos1, edge1);
@@ -238,10 +249,9 @@ Model* load_obj(const char* path, float scale) {
         // solve for delta
         glm_vec2_sub(uv2, uv1, del1);
         glm_vec2_sub(uv3, uv1, del2);
-        //printf("vt1 %f %f ", vt[0], vt[1]);
-        //printf("vt2 %f %f ", vt[2], vt[3]);
 
         float f = 1.0f / (del1[0] * del2[1] - del2[0] * del1[1]);
+        //float f = (isinf(d) || isnan(d)) ? 1.0f : d;
         //printf("\nd1 %f %f ", del1[0], del1[1]);
         //printf("\nd2 %f %f ", del2[0], del2[1]);
         //printf("\nF: %f", f);
@@ -252,7 +262,7 @@ Model* load_obj(const char* path, float scale) {
             btang[k] = f * (-del2[0] * edge1[k] + del1[0] * edge2[k]);
         }
 
-        int b = i + (5 * i);
+        int b = outTC + (5 * outTC);
         outTBN[b+0] = tang[0];
         outTBN[b+1] = tang[1];
         outTBN[b+2] = tang[2];
@@ -261,11 +271,11 @@ Model* load_obj(const char* path, float scale) {
         outTBN[b+4] = btang[1];
         outTBN[b+5] = btang[2];
 
+        printf("\n%d", i);
+        outTC++;
         //printf("\ntangent:\t(%f, %f, %f)\n", tang[0], tang[1], tang[2]);
         //printf("bitangent:\t(%f, %f, %f)\n", btang[0], btang[1], btang[2]);
         //printf("[out] bitangent:\t(%f, %f, %f)\n", outTBN[b+3], outTBN[b+4], outTBN[b+5]);
-
-        cntTriangle++;
     }
     //VBO *vboTBN = vbo_create(outTBN, 2 * 3 * totalTriangles * sizeof(float));
     VBO *vboTBN = vbo_create(outTBN, totalTriangles * 3 * 2 * sizeof(GLfloat));
