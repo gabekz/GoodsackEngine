@@ -20,23 +20,21 @@
 #include <util/sysdefs.h>
 #include <util/debug.h>
 
+#include <renderer/renderer.h>
 #include "gfx.h" // GLFW & glad headers
-#include "shader.h"
+#include "camera.h"
 
 #include <glbuffer/glbuffer.h>
+#include "shader.h"
 #include "texture.h"
 
 #include <model/material.h>
 #include <model/mesh.h>
 #include <model/primitives.h>
 
-#include "camera.h"
 
 #include "loaders/loader_obj.h"
 #include "renderer/postbuffer.h"
-
-static int winWidth  = DEFAULT_WINDOW_WIDTH;
-static int winHeight = DEFAULT_WINDOW_HEIGHT;
 
 #define MESH_ABSTRACTION
 
@@ -57,41 +55,10 @@ static void _resize_callback(GLFWwindow* window, int widthRe, int heightRe) {
 /* ~~~ MAIN ~~~ */
 
 int main(void) {
-   glfwSetErrorCallback(_error_callback);
-   if(!glfwInit()) { // Initialization failed
-        printf("Failed to initialize glfw");
-   }
-
-   // Minimum OpenGL version required
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, DEBUG);
-
-   int winWidth    = DEFAULT_WINDOW_WIDTH;
-   int winHeight   = DEFAULT_WINDOW_HEIGHT;
-
-   GLFWwindow* window =
-      glfwCreateWindow(winWidth, winHeight, "My Title", NULL, NULL);
-
-   if(!window) printf("Failed to create window");
-
-   // Set the context and load GL [Note: different for Vk]
-   glfwMakeContextCurrent(window);
-   gladLoadGL(glfwGetProcAddress);
-
-   glfwGetFramebufferSize(window, &winWidth, &winHeight);
-   glfwSetFramebufferSizeCallback(window, _resize_callback);
-   glfwSetKeyCallback(window, _key_callback);
-
-    // Initialize GL debug callback
-    glDebugInit();
-
-   // Get current OpenGL version
-   printf("%s\n", glGetString(GL_VERSION));
-
-   // Refresh rate 
-   glfwSwapInterval(1);
+// Renderer initialization
+    Renderer *renderer = renderer_init();
+    int winWidth = renderer->windowWidth;
+    int winHeight = renderer->windowHeight;
 
 // Create the Camera, containing starting-position and up-axis coords.
     // TODO: Update camera when window is resized
@@ -161,7 +128,7 @@ int main(void) {
 /*------------------------------------------- 
 |   Render Loop
 */
-    while(!glfwWindowShouldClose(window)) {
+    while(!glfwWindowShouldClose(renderer->window)) {
     /*------------------------------------------- 
     |   Pass #1 - Direction Shadowmap 
     */
@@ -203,9 +170,9 @@ int main(void) {
     postbuffer_draw();
 
 // Swap backbuffer + poll for events
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(renderer->window);
         glfwPollEvents();
-        camera_input(camera, window);
+        camera_input(camera, renderer->window);
     }
 
 // Clean-up 
@@ -218,7 +185,7 @@ int main(void) {
     free(matLight);
     free(meshLight);
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(renderer->window);
     glfwTerminate();
 
 } /* end of main.c */
