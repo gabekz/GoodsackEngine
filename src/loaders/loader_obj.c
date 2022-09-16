@@ -7,6 +7,7 @@
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
 
+#include "gfx.h"
 #include <model/mesh.h>
 
 Model* load_obj(const char* path, float scale) {
@@ -205,11 +206,11 @@ Model* load_obj(const char* path, float scale) {
     ret->vertexCount = outI;
 
 #if 1 // Calcuate TBN for each triangle/vertex
-    ui32 totalTriangles = vL / 3;
+    ui32 totalTriangles = vL * 3;
     //float* outTBN = malloc(2 * 3 * totalTriangles * sizeof(float));
-    float* outTBN = malloc(12 * 3 * 2 * sizeof(float));
+    float* outTBN = malloc(totalTriangles * 3 * 2 * sizeof(GLfloat));
     ui32 cntTriangle = 0;
-    for(int i = 0; i < 12; i++) {
+    for(int i = 0; i < totalTriangles; i++) {
         ui32 inc = i + (3 * cntTriangle);
 
         vec3 edge1 = GLM_VEC3_ZERO_INIT;
@@ -241,9 +242,9 @@ Model* load_obj(const char* path, float scale) {
         //printf("vt2 %f %f ", vt[2], vt[3]);
 
         float f = 1.0f / (del1[0] * del2[1] - del2[0] * del1[1]);
-        printf("\nd1 %f %f ", del1[0], del1[1]);
-        printf("\nd2 %f %f ", del2[0], del2[1]);
-        printf("\nF: %f", f);
+        //printf("\nd1 %f %f ", del1[0], del1[1]);
+        //printf("\nd2 %f %f ", del2[0], del2[1]);
+        //printf("\nF: %f", f);
 
         // loop for coordinates - x=0, y=1, z=2
         for(int k = 0; k < 3; k++) {
@@ -251,7 +252,7 @@ Model* load_obj(const char* path, float scale) {
             btang[k] = f * (-del2[0] * edge1[k] + del1[0] * edge2[k]);
         }
 
-        ui32 b = i + (5 * i);
+        int b = i + (5 * i);
         outTBN[b+0] = tang[0];
         outTBN[b+1] = tang[1];
         outTBN[b+2] = tang[2];
@@ -260,14 +261,14 @@ Model* load_obj(const char* path, float scale) {
         outTBN[b+4] = btang[1];
         outTBN[b+5] = btang[2];
 
-        printf("\ntangent:\t(%f, %f, %f)\n", tang[0], tang[1], tang[2]);
-        printf("bitangent:\t(%f, %f, %f)\n", btang[0], btang[1], btang[2]);
+        //printf("\ntangent:\t(%f, %f, %f)\n", tang[0], tang[1], tang[2]);
+        //printf("bitangent:\t(%f, %f, %f)\n", btang[0], btang[1], btang[2]);
         //printf("[out] bitangent:\t(%f, %f, %f)\n", outTBN[b+3], outTBN[b+4], outTBN[b+5]);
 
         cntTriangle++;
     }
     //VBO *vboTBN = vbo_create(outTBN, 2 * 3 * totalTriangles * sizeof(float));
-    VBO *vboTBN = vbo_create(outTBN, 12 * 3 * 2 * sizeof(float));
+    VBO *vboTBN = vbo_create(outTBN, totalTriangles * 3 * 2 * sizeof(GLfloat));
     vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); /* tangent */
     vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); /* bitangent */
     vao_add_buffer(vao, vboTBN);
