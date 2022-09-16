@@ -98,12 +98,19 @@ vec4 pointLight() {
     float ambient = 0.2f;
 
     // Specular Light
-    float specularLight = 1.00f * texture(t_Specular, fs_in.texCoords).r;
-    vec3 viewDirection = normalize(fs_in.camPos - fs_in.crntPos);
-    vec3 reflectionDirection = reflect(-lightDirection, fs_in.normal);
-    float specularAmount =
-      pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
-    float specular = specularAmount * specularLight;
+    float specular = 0;
+    if(diffuse != 0) {
+        float specularLight = 1.00f * texture(t_Specular, fs_in.texCoords).r;
+        vec3 viewDirection = normalize(fs_in.camPos - fs_in.crntPos);
+        vec3 reflectionDirection = reflect(-lightDirection, fs_in.normal);
+
+        vec3 halfway = normalize(viewDirection + lightDirection);
+
+        float specularAmount =
+          //pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
+          pow(max(dot(fs_in.normal, halfway), 0.0f), 8);
+        specular = specularAmount * specularLight;
+    }
 
     return ((diffuse * inten + ambient) + (specular * inten)) * s_Light.color;
 }

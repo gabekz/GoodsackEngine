@@ -206,7 +206,7 @@ Model* load_obj(const char* path, float scale) {
     ret->vertexCount = outI;
 
 #if 1 // Calcuate TBN for each triangle/vertex
-    ui32 totalTriangles = vL * 3;
+    ui32 totalTriangles = fL * 3;
     //float* outTBN = malloc(2 * 3 * totalTriangles * sizeof(float));
     float* outTBN = malloc(totalTriangles * 3 * 2 * sizeof(GLfloat));
     ui32 cntTriangle = 0;
