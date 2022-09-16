@@ -32,6 +32,8 @@ void main() {
     vec3 t = normalize(vec3(u_Model * vec4(a_Tangent,   0.0)));
     vec3 b = normalize(vec3(u_Model * vec4(a_Bitangent, 0.0)));
     vec3 n = normalize(vec3(u_Model * vec4(a_Normal,    0.0)));
+    //t = normalize(t - dot(t, n) * n);
+    //vec3 b = cross(n, t);
     vs_out.tbn= mat3(t, b, n);
 
     // transposing the inverse of the normals
@@ -74,7 +76,7 @@ layout(binding = 2) uniform sampler2D t_Specular;
 out vec4 FragColor;
 
 vec3 calcNormal(float strength){
-    vec3 n = texture(t_Normal ,fs_in.texCoords).xyz;
+    vec3 n = texture(t_Normal ,fs_in.texCoords).rgb;
     n = n * 2.0 - 1.0;
     n.xy *= strength;
     n = normalize(fs_in.tbn * n);
@@ -82,24 +84,30 @@ vec3 calcNormal(float strength){
 }
 
 // Note: Directional Light is a static lightposition w/o inten
-vec4 pointLight() {
+vec4 light(int type) {
     // Light attenuation
-    vec3 lightVec = (s_Light.position - fs_in.crntPos);
-    float dist = length(lightVec);
-    float a = 2.00f;
-    float b = 1.00f;
-    float inten = 1.0f / (a * dist * dist + b * dist + 1.0f);
+    vec3 lightVec = vec3(1.0f, 1.0f, 0.0f); // default (for directional)
+    float inten = 0.2f;
+    if(type > 0) {
+        lightVec = (s_Light.position - fs_in.crntPos);
+
+        float dist = length(lightVec);
+        float a = 2.00f;
+        float b = 1.00f;
+        inten = 1.0f / (a * dist * dist + b * dist + 1.0f);
+    }
 
     // Diffuse Lighting
     vec3 lightDirection = normalize(lightVec);
+    //vec3 lightDirection = normalize(max(-lightVec * -fs_in.normal, 0.0f));
     float diffuse = max(dot(fs_in.normal * calcNormal(1.0), lightDirection), 0.0f);
 
     // Ambient Light
-    float ambient = 0.1f;
+    float ambient = 0.2f;
 
     // Specular Light
-    float specular = 0;
-    if(diffuse != 0) {
+    float specular = 0.0f;
+    if(diffuse != 0.0f) {
         float specularLight = 1.00f * texture(t_Specular, fs_in.texCoords).r;
         vec3 viewDirection = normalize(fs_in.camPos - fs_in.crntPos);
         vec3 reflectionDirection = reflect(-lightDirection, fs_in.normal);
@@ -117,5 +125,5 @@ vec4 pointLight() {
 
 void main() {
     vec4 texColor = texture(t_Diffuse, fs_in.texCoords);
-    FragColor = texColor * pointLight();
+    FragColor = texColor * light(1);
 }
