@@ -1,5 +1,7 @@
 #include "renderer.h"
 
+#include<stdio.h>
+
 #include "gfx.h" // GLFW & glad headers
 #include <util/debug.h>
 #include <util/sysdefs.h>
@@ -53,12 +55,52 @@ Renderer* renderer_init() {
    // Refresh rate 
    glfwSwapInterval(1);
 
+// Create the initial scene
+    Scene *scene = malloc(sizeof(Scene));
+
+    scene->meshL = calloc(1, sizeof(Mesh*));
+    scene->meshC = 0;
+
+    scene->lightL = calloc(1, sizeof(Light*));
+    scene->lightC = 0;
+
+    Scene **sceneList = malloc(sizeof(Scene*));
+    *(sceneList) = scene;
+
+
     Renderer *ret = malloc(sizeof(Renderer));
-    ret->window = window;
-    ret->windowWidth = winWidth;
+    ret->window       = window;
+    ret->windowWidth  = winWidth;
     ret->windowHeight = winHeight;
 
+    ret->sceneL      = sceneList;
+    ret->sceneC      = 1;
+    ret->activeScene = 0;
+
     return ret;
+}
+
+void renderer_active_scene(Renderer* self, ui16 sceneIndex) {
+    ui32 sceneCount = self->sceneC;
+    if(sceneCount < sceneIndex + 1) {
+        void *p = (void *)self->sceneL;
+        self->sceneL = realloc(p, sceneCount + sceneIndex * sizeof(Scene*));
+    }
+
+    self->activeScene = sceneIndex;
+
+    // TODO: add checks here and cleanup from previous scene for switching.
+}
+
+void renderer_add_mesh(Renderer *self, Mesh* mesh) {
+    Scene* scene = self->sceneL[self->activeScene];
+    int count = scene->meshC + 1;
+
+    void *p = (void *)scene->meshL;
+    scene->meshL = realloc(p, count * sizeof(Mesh*));
+    scene->meshC = count;
+
+    scene->meshL[count-1] = mesh;
 }
 
 #if 0

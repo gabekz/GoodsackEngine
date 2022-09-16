@@ -44,6 +44,10 @@ int main(void) {
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
 
+    renderer_active_scene(renderer, 0);
+
+    //Scene *scene1 = scene_create();
+
 // Create the Camera, containing starting-position and up-axis coords.
     // TODO: Update camera when window is resized
     Camera* camera = camera_create(winWidth, winHeight,
@@ -144,6 +148,10 @@ int main(void) {
     Mesh *meshLight =
         mesh_create_primitive(matLight, PRIMITIVE_PYRAMID, 0.03f, 0, 0, 0);
     //Mesh *meshLight    = mesh_create_obj(matLight, "../res/models/cube-triangulated.obj", 1, GL_FRONT, GL_CW);
+
+// Send models to the renderer
+    //renderer_add_mesh(renderer, meshSuzanne);
+    //renderer_add_mesh(renderer, meshLight);
 
     clearGLState();
 

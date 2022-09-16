@@ -1,5 +1,5 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef H_RENDERER
+#define H_RENDERER
 
 #include "gfx.h"
 #include "camera.h"
@@ -8,10 +8,10 @@
 
 #include <util/sysdefs.h>
 
-typedef struct _renderer Renderer;
+#include "../scene.h"
 
+typedef struct _renderer Renderer;
 typedef struct _light Light;
-typedef struct _scene Scene;
 
 struct _renderer {
     GLFWwindow *window;
@@ -19,11 +19,14 @@ struct _renderer {
 
     Camera *activeCamera;
 
-    Scene *sceneList;
-    ui16  sceneCount, sceneIndex;
+    Scene **sceneL;
+    ui16  sceneC, activeScene;
 };
 
 Renderer* renderer_init();
+
+void renderer_add_mesh(Renderer* self, Mesh* mesh);
+void renderer_add_light();
 
 // Logical
 void renderer_fixedupdate();
@@ -31,23 +34,9 @@ void renderer_update();
 
 // Rendering Loop
 void renderer_tick();
+
+/* scene management */
+void renderer_active_scene(Renderer* self, ui16 sceneIndex);
 //-------------------------------
 
-struct _scene {
-    ui32 id;
-    Mesh **meshL;
-    Light **lightL;
-
-    /* scene steps::
-     * 1) Initialize and set active camera
-     * 2) Create Light information
-     [Standard]
-     * 3) Renderer tick [all logic updates + shader updates]
-     * 4) Render [all meshes in meshList]
-     [ECS]
-     * 3) Process Systems
-     */
-};
-
-
-#endif
+#endif // H_RENDERER
