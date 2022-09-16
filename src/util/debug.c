@@ -65,3 +65,20 @@ void glDebugInit() {
                       0, NULL, GL_TRUE); 
     }
 }
+// ~~~
+void _error_callback
+(int error, const char* description) {
+   fprintf(stderr, "Error %s\n", description);
+}
+
+
+void GLClearError() {
+   while(glGetError() != GL_NO_ERROR);
+}
+
+void GLCheckError() {
+   GLenum error = glGetError();
+   while(error) {
+      printf("\n|OpenGL Error| (%s)\n", error);
+   }
+}

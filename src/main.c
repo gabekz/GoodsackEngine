@@ -1,8 +1,14 @@
-/* -- main.c
-
-   Main entry. Handling initialization.
-
-*/
+/*H**********************************************************************
+* FILENAME :        main.c
+*
+* DESCRIPTION :
+*       Program entry.
+*
+* NOTES :
+*       notes 
+*       notes 
+*
+***********************************************************************H*/
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -36,11 +42,6 @@ static int winHeight = DEFAULT_WINDOW_HEIGHT;
 
 /* ~~~ CALLBACKS ~~~ */
 
-static void _error_callback
-(int error, const char* description) {
-   fprintf(stderr, "Error %s\n", description);
-}
-
 static void _key_callback 
 (GLFWwindow* window, int key, int scancode, int action, int mods) {
    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -51,31 +52,6 @@ static void _key_callback
 static void _resize_callback(GLFWwindow* window, int widthRe, int heightRe) {
     printf("window resize: %d and %d\n", widthRe, heightRe);
     glViewport(0, 0, widthRe, heightRe);
-}
-
-/* ~~~ ERROR HANDLING ~~~ */
-
-static void GLClearError() {
-   while(glGetError() != GL_NO_ERROR);
-}
-
-static void GLCheckError() {
-   GLenum error = glGetError();
-   while(error) {
-      printf("\n|OpenGL Error| (%s)\n", error);
-   }
-}
-
-/* ~~ Clear ~~ */
-void clearGL() {
-    glUseProgram(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);            // unbind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);    // unbind IBO
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 /* ~~~ MAIN ~~~ */
@@ -175,19 +151,24 @@ int main(void) {
         mesh_create_primitive(matLight, PRIMITIVE_PYRAMID, 0.03f, 0, 0, 0);
     //Mesh *meshLight    = mesh_create_obj(matLight, "../res/models/cube-triangulated.obj", 1, GL_FRONT, GL_CW);
 
-// Create plane
-
-// Clearing GL State
-    clearGL();
+    clearGLState();
 
 // Rotation parametes for the render loop
     float  rotation     = 0.0f;
     float  rotationInc  = 0.5f;
     double timePrev     = -1.0f;
 
-// Render Loop
+/*------------------------------------------- 
+|   Render Loop
+*/
     while(!glfwWindowShouldClose(window)) {
-    // Bind the Framebuffer
+    /*------------------------------------------- 
+    |   Pass #1 - Direction Shadowmap 
+    */
+
+    /*------------------------------------------- 
+    |   Pass #2 - PostProcessing Buffer
+    */
         postbuffer_bind();
 
     // rotation logic for model 
@@ -198,14 +179,16 @@ int main(void) {
     // Update the view and projection based on the camera data
         camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
 
+    // Object
         shader_use(shaderSuzanne);
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         glm_rotate(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
         int modelLoc = glGetUniformLocation(shaderSuzanne->id, "u_Model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
-        //shader_uniform(matSuzanne->shaderProgram->id, "u_Model", (float *)model);
+        // shader_uniform(matSuzanne->shaderProgram->id, "u_Model", (float *)model);
         mesh_draw(meshSuzanne);
 
+    // Object
         shader_use(shaderLight);
         mat4 model2 = GLM_MAT4_IDENTITY_INIT;
         glm_translate(model2, lightPos);
@@ -214,7 +197,9 @@ int main(void) {
           1, GL_FALSE, (float *)model2);
         mesh_draw(meshLight);
 
-// Second pass [Post Processing is drawn to backbuffer]
+    /*------------------------------------------- 
+    |   Pass #3 - Draw to backbuffer
+    */
     postbuffer_draw();
 
 // Swap backbuffer + poll for events

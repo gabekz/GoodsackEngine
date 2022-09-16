@@ -14,5 +14,11 @@ void APIENTRY glDebugOutput(GLenum source,
                             const void *userParam);
 
 void glDebugInit();
+// ~~~
+void _error_callback
+(int error, const char* description);
+
+void GLClearError();
+void GLCheckError();
 
 #endif
