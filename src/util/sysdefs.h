@@ -26,6 +26,9 @@
 typedef int si32;
 typedef unsigned int ui32;
 
+typedef short si16;
+typedef unsigned short ui16;
+
 typedef signed char schr;
 typedef unsigned char byte;
 typedef unsigned long ulng;

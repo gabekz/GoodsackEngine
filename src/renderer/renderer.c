@@ -60,3 +60,47 @@ Renderer* renderer_init() {
 
     return ret;
 }
+
+#if 0
+void renderer_tick(Renderer *renderer) {
+
+    // create shadowmap
+    shadowmap_create();
+
+    // create postprocess buffer
+    postbuffer_create();
+
+    while(!glfwWindowShouldClose(renderer->window)) {
+
+        camera_send_matrix(cameraIndex);
+        
+        renderer_update();
+
+        // calculate deltaTime()
+        if(deltaTimeTick) {
+            renderer_fixedupdate();
+        }
+        //
+
+        //PASS 1 Shadowmap
+        shadowmap_bind();
+        scene_draw(sceneIndex);
+
+        for(int i = 0; i < meshCount; i++) {
+            mesh_draw(meshL[i]);
+        }
+
+        //PASS 2 PostProcessing
+        postbuffer_bind();
+        scene_draw(sceneIndex);
+        //
+
+        //PASS 3 Backbuffer
+        // -- TODO: set glFramebuffer
+        glfwSwapBuffers(renderer->window);
+        glfwPollEvents(); // + TODO: camera_input()
+    }
+
+    // Cleanup
+}
+#endif
