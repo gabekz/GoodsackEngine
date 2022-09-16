@@ -262,14 +262,18 @@ Model* load_obj(const char* path, float scale) {
             btang[k] = f * (-del2[0] * edge1[k] + del1[0] * edge2[k]);
         }
 
-        int b = outTC + (5 * outTC);
-        outTBN[b+0] = tang[0];
-        outTBN[b+1] = tang[1];
-        outTBN[b+2] = tang[2];
+        //int b = outTC + (5 * outTC);
+        for(int m = 0; m < 3; m++) {
+            int b = i + m + (i * 5) + (m * 5);
+            outTBN[b+0] = tang[0];
+            outTBN[b+1] = tang[1];
+            outTBN[b+2] = tang[2];
 
-        outTBN[b+3] = btang[0];
-        outTBN[b+4] = btang[1];
-        outTBN[b+5] = btang[2];
+            outTBN[b+3] = btang[0];
+            outTBN[b+4] = btang[1];
+            outTBN[b+5] = btang[2];
+
+        }
 
         printf("\n%d", i);
         outTC++;
