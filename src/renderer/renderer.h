@@ -4,6 +4,7 @@
 #include "gfx.h"
 #include "camera.h"
 #include <model/mesh.h>
+#include <lighting/lighting.h>
 
 #include <util/sysdefs.h>
 
@@ -48,13 +49,5 @@ struct _scene {
      */
 };
 
-typedef enum e_lightType LightType;
-enum e_lightType { Directional = 0, Point = 1, Spot = 2 };
-
-struct _light {
-    vec3 position;
-    vec4 color;
-    LightType type;
-};
 
 #endif

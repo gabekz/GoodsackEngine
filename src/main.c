@@ -36,22 +36,6 @@
 #include "loaders/loader_obj.h"
 #include "renderer/postbuffer.h"
 
-#define MESH_ABSTRACTION
-
-/* ~~~ CALLBACKS ~~~ */
-
-static void _key_callback 
-(GLFWwindow* window, int key, int scancode, int action, int mods) {
-   if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-      glfwSetWindowShouldClose(window, GLFW_TRUE);
-   }
-}
-
-static void _resize_callback(GLFWwindow* window, int widthRe, int heightRe) {
-    printf("window resize: %d and %d\n", widthRe, heightRe);
-    glViewport(0, 0, widthRe, heightRe);
-}
-
 /* ~~~ MAIN ~~~ */
 
 int main(void) {
@@ -68,6 +52,9 @@ int main(void) {
 // Lighting information
     float* lightPos     = (vec3){0.0f, 0.1f, 0.4f};
     float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
+
+    //Light *light = light_create(lightPos, lightColor, Point);
+    //free(light);
 
 // UBO Lighting
     ui32 uboLight;
@@ -89,6 +76,8 @@ int main(void) {
 
 // Initialize the Post Processing Framebuffer
     postbuffer_init(winWidth, winHeight);
+
+// Initialize the shadowmap
 
 // Create suzanne object
     Texture *tex = texture_create("../res/textures/bricks.png");
