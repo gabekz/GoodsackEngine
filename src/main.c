@@ -93,8 +93,9 @@ int main(void) {
     Material *matSuzanne =
         material_create(shaderSuzanne, 2, texEarthDiff, texEarthNorm);
     Mesh *meshSuzanne =
-        mesh_create_obj(matSuzanne , "../res/models/taurus.obj", 1.0f,
+        mesh_create_obj(matSuzanne , "../res/models/sphere.obj", 1.0f,
             1, GL_FRONT, GL_CW);
+
 
 // Create light object
     ShaderProgram *shaderLight = shader_create_program("../res/shaders/white.shader");
@@ -105,6 +106,14 @@ int main(void) {
 // Send models to the renderer
     renderer_add_mesh(renderer, meshSuzanne);
     renderer_add_mesh(renderer, meshLight);
+
+    renderer_active_scene(renderer, 1);
+    Mesh *meshTaurus=
+        mesh_create_obj(matLight, "../res/models/taurus.obj", 1.0f,
+            1, GL_FRONT, GL_CW);
+    renderer_add_mesh(renderer, meshTaurus);
+
+    renderer_active_scene(renderer, 0);
 
 // Render Loop
     renderer_tick(renderer, camera);

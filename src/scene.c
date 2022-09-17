@@ -16,12 +16,15 @@ void scene_update(Scene *self) {
         glGetUniformLocation(self->meshL[0]->material->shaderProgram->id, "u_Model"),
         1, GL_FALSE, (float *)suzanne);
 
-    shader_use(self->meshL[1]->material->shaderProgram);
-    mat4 lightObj = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(lightObj, (vec3){0.0f, 0.1f, 0.4f});
-    glUniformMatrix4fv(
-        glGetUniformLocation(self->meshL[1]->material->shaderProgram->id, "u_Model"),
-        1, GL_FALSE, (float *)lightObj);
+    if(self->id == 0) {
+        shader_use(self->meshL[1]->material->shaderProgram);
+        mat4 lightObj = GLM_MAT4_IDENTITY_INIT;
+        glm_translate(lightObj, (vec3){0.0f, 0.1f, 0.4f});
+        glUniformMatrix4fv(
+            glGetUniformLocation(self->meshL[1]->material->shaderProgram->id, "u_Model"),
+            1, GL_FALSE, (float *)lightObj);
+
+    }
 }
 
 void scene_draw(Scene *self) {

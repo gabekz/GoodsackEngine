@@ -63,10 +63,10 @@ Renderer* renderer_init() {
     Scene *scene = malloc(sizeof(Scene));
 
     scene->meshL = calloc(1, sizeof(Mesh*));
-    scene->meshC = 0;
-
     scene->lightL = calloc(1, sizeof(Light*));
+    scene->meshC = 0;
     scene->lightC = 0;
+    scene->id = 0;
 
     Scene **sceneList = malloc(sizeof(Scene*));
     *(sceneList) = scene;
@@ -84,11 +84,25 @@ Renderer* renderer_init() {
     return ret;
 }
 
+// TODO: fix broken realloc..
 void renderer_active_scene(Renderer* self, ui16 sceneIndex) {
     ui32 sceneCount = self->sceneC;
     if(sceneCount < sceneIndex + 1) {
-        void *p = (void *)self->sceneL;
-        self->sceneL = realloc(p, sceneCount + sceneIndex * sizeof(Scene*));
+        ui32 newCount = sceneCount + sceneIndex;
+
+        // Create a new, empty scene
+        Scene *newScene = malloc(sizeof(Scene));
+        newScene->meshL = calloc(1, sizeof(Mesh*));
+        newScene->lightL = calloc(1, sizeof(Light*));
+        newScene->meshC = 0; newScene->lightC = 0;
+        newScene->id = newCount;
+
+        // Update the scene list
+        Scene **p = self->sceneL;
+        printf("\n%p \n%p", p, *p);
+        self->sceneL = realloc(p, newCount * sizeof(Scene*));
+        self->sceneL[newCount-1] = newScene;
+        self->sceneC = newCount;
     }
 
     self->activeScene = sceneIndex;
