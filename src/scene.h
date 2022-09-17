@@ -26,4 +26,7 @@ struct _scene {
     Light **lightL;
 };
 
+void scene_update(Scene *self);
+void scene_draw(Scene *self);
+
 #endif // H_SCENE

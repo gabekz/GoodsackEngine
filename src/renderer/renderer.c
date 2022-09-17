@@ -6,6 +6,10 @@
 #include <util/debug.h>
 #include <util/sysdefs.h>
 
+#include "../camera.h"
+
+#include "postbuffer.h"
+
 static void _resize_callback(GLFWwindow* window, int widthRe, int heightRe) {
     printf("window resize: %d and %d\n", widthRe, heightRe);
     glViewport(0, 0, widthRe, heightRe);
@@ -103,46 +107,35 @@ void renderer_add_mesh(Renderer *self, Mesh* mesh) {
     scene->meshL[count-1] = mesh;
 }
 
-#if 0
-void renderer_tick(Renderer *renderer) {
+void renderer_tick(Renderer *renderer, Camera *camera) {
+
+    Scene *scene = renderer->sceneL[renderer->activeScene];
 
     // create shadowmap
-    shadowmap_create();
+    //shadowmap_create();
 
     // create postprocess buffer
-    postbuffer_create();
+    //postbuffer_create();
 
     while(!glfwWindowShouldClose(renderer->window)) {
 
-        camera_send_matrix(cameraIndex);
-        
-        renderer_update();
+    float  rotation     = 0.0f;
+    float  rotationInc  = 0.5f;
+    double timePrev     = -1.0f;
 
-        // calculate deltaTime()
-        if(deltaTimeTick) {
-            renderer_fixedupdate();
-        }
-        //
+    camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
 
-        //PASS 1 Shadowmap
-        shadowmap_bind();
-        scene_draw(sceneIndex);
-
-        for(int i = 0; i < meshCount; i++) {
-            mesh_draw(meshL[i]);
-        }
-
-        //PASS 2 PostProcessing
-        postbuffer_bind();
-        scene_draw(sceneIndex);
-        //
-
-        //PASS 3 Backbuffer
-        // -- TODO: set glFramebuffer
-        glfwSwapBuffers(renderer->window);
-        glfwPollEvents(); // + TODO: camera_input()
+/*------------------------------------------- 
+    |Pass #1 - Directional Shadowmap 
+*/ 
+    postbuffer_bind();
+    scene_update(scene);
+    scene_draw(scene);
+    postbuffer_draw();
+    glfwSwapBuffers(renderer->window);
+    glfwPollEvents();
+    camera_input(camera, renderer->window);
     }
 
     // Cleanup
 }
-#endif

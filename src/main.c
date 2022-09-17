@@ -36,6 +36,8 @@
 #include "loaders/loader_obj.h"
 #include "renderer/postbuffer.h"
 
+#define USE_RENDERER
+
 /* ~~~ MAIN ~~~ */
 
 int main(void) {
@@ -44,7 +46,9 @@ int main(void) {
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
 
+#ifdef USE_RENDERER
     renderer_active_scene(renderer, 0);
+#endif
 
     //Scene *scene1 = scene_create();
 
@@ -149,9 +153,11 @@ int main(void) {
         mesh_create_primitive(matLight, PRIMITIVE_PYRAMID, 0.03f, 0, 0, 0);
     //Mesh *meshLight    = mesh_create_obj(matLight, "../res/models/cube-triangulated.obj", 1, GL_FRONT, GL_CW);
 
+#ifdef USE_RENDERER
 // Send models to the renderer
-    //renderer_add_mesh(renderer, meshSuzanne);
-    //renderer_add_mesh(renderer, meshLight);
+    renderer_add_mesh(renderer, meshSuzanne);
+    renderer_add_mesh(renderer, meshLight);
+#endif
 
     clearGLState();
 
@@ -160,14 +166,17 @@ int main(void) {
     float  rotationInc  = 0.5f;
     double timePrev     = -1.0f;
 
+    //renderer_tick(renderer, camera);
 /*------------------------------------------- 
 |   Render Loop
 */
+#ifdef USE_RENDERER 
+    renderer_tick(renderer, camera);
+#else
     while(!glfwWindowShouldClose(renderer->window)) {
     /*------------------------------------------- 
-    |   Pass #1 - Direction Shadowmap 
-    */
-        shader_use(shaderDepthMap);
+    |   Pass #1 - Directional Shadowmap 
+    */ shader_use(shaderDepthMap);
         glUniformMatrix4fv(
             glGetUniformLocation(shaderDepthMap->id, "u_LightSpaceMatrix"),
             1, GL_FALSE, (float *)lightSpaceMatrix);
@@ -197,25 +206,27 @@ int main(void) {
             rotation += rotationInc;
         }
 
-    // Update the view and projection based on the camera data
-        camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
-
-    // Object
         shader_use(shaderSuzanne);
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         glm_rotate(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
         int modelLoc = glGetUniformLocation(shaderSuzanne->id, "u_Model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
-        // shader_uniform(matSuzanne->shaderProgram->id, "u_Model", (float *)model);
-        mesh_draw(meshSuzanne);
 
-    // Object
         shader_use(shaderLight);
         mat4 model2 = GLM_MAT4_IDENTITY_INIT;
         glm_translate(model2, lightPos);
         glUniformMatrix4fv(
           glGetUniformLocation(matLight->shaderProgram->id, "u_Model"),
           1, GL_FALSE, (float *)model2);
+
+    // Update the view and projection based on the camera data
+        camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
+
+    // Object
+        // shader_uniform(matSuzanne->shaderProgram->id, "u_Model", (float *)model);
+        mesh_draw(meshSuzanne);
+
+    // Object
         mesh_draw(meshLight);
 
     /*------------------------------------------- 
@@ -227,7 +238,9 @@ int main(void) {
         glfwSwapBuffers(renderer->window);
         glfwPollEvents();
         camera_input(camera, renderer->window);
-    }
+}
+
+#endif
 
 // Clean-up 
     free(tex);
