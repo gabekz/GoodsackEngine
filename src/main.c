@@ -36,21 +36,14 @@
 #include "loaders/loader_obj.h"
 #include "renderer/postbuffer.h"
 
-#define USE_RENDERER
-
 /* ~~~ MAIN ~~~ */
-
 int main(void) {
 // Renderer initialization
     Renderer *renderer = renderer_init();
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
 
-#ifdef USE_RENDERER
     renderer_active_scene(renderer, 0);
-#endif
-
-    //Scene *scene1 = scene_create();
 
 // Create the Camera, containing starting-position and up-axis coords.
     // TODO: Update camera when window is resized
@@ -82,50 +75,7 @@ int main(void) {
         lightColor);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-// Initialize the Post Processing Framebuffer
-    postbuffer_init(winWidth, winHeight);
-
-// Initialize the shadowmap
-    ui32 depthMapFBO;
-    glGenFramebuffers(1, &depthMapFBO);
-    // Texture
-    const ui32 SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-    ui32 depthMap;
-    glGenTextures(1, &depthMap);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-        SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-            GL_TEXTURE_2D, depthMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    mat4 lightProjection    = GLM_MAT4_ZERO_INIT;
-    mat4 lightView          = GLM_MAT4_ZERO_INIT;
-    mat4 lightSpaceMatrix   = GLM_MAT4_ZERO_INIT;
-    float nearPlane = 1.0f, farPlane = 7.5f;
-    glm_ortho(-10.0f, 10.0f, -10.0f, 10.0f,
-        nearPlane, farPlane, lightProjection);
-    glm_lookat(
-            (vec3){-2.0f, 4.0f, -1.0f},
-            (vec3){0.0f, 0.0f, 0.0f},
-            (vec3){0.0f, 1.0f, 0.0f}, lightView);
-    glm_mat4_mul(lightProjection, lightView, lightSpaceMatrix);
-
-    ShaderProgram *shaderDepthMap =
-        shader_create_program("../res/shaders/depth-map.shader");
-
-    Material *materialDepthMap = material_create(shaderDepthMap, 0);
-
-
-// Create suzanne object
+// Creating a set of textures
     Texture *tex = texture_create("../res/textures/bricks.png");
 
     Texture *texBrickDiff = texture_create("../res/textures/brickwall/diffuse.png");
@@ -137,13 +87,13 @@ int main(void) {
     Texture *texEarthDiff = texture_create("../res/textures/earth/diffuse.png");
     Texture *texEarthNorm = texture_create("../res/textures/earth/normal.png");
 
+// Create the suzanne object
     ShaderProgram *shaderSuzanne =
         shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matSuzanne =
         material_create(shaderSuzanne, 2, texEarthDiff, texEarthNorm);
-
     Mesh *meshSuzanne =
-        mesh_create_obj(matSuzanne , "../res/models/sphere.obj", 1.0f,
+        mesh_create_obj(matSuzanne , "../res/models/taurus.obj", 1.0f,
             1, GL_FRONT, GL_CW);
 
 // Create light object
@@ -151,96 +101,13 @@ int main(void) {
     Material *matLight = material_create(shaderLight, 1, tex); 
     Mesh *meshLight =
         mesh_create_primitive(matLight, PRIMITIVE_PYRAMID, 0.03f, 0, 0, 0);
-    //Mesh *meshLight    = mesh_create_obj(matLight, "../res/models/cube-triangulated.obj", 1, GL_FRONT, GL_CW);
 
-#ifdef USE_RENDERER
 // Send models to the renderer
     renderer_add_mesh(renderer, meshSuzanne);
     renderer_add_mesh(renderer, meshLight);
-#endif
 
-    clearGLState();
-
-// Rotation parametes for the render loop
-    float  rotation     = 0.0f;
-    float  rotationInc  = 0.5f;
-    double timePrev     = -1.0f;
-
-    //renderer_tick(renderer, camera);
-/*------------------------------------------- 
-|   Render Loop
-*/
-#ifdef USE_RENDERER 
+// Render Loop
     renderer_tick(renderer, camera);
-#else
-    while(!glfwWindowShouldClose(renderer->window)) {
-    /*------------------------------------------- 
-    |   Pass #1 - Directional Shadowmap 
-    */ shader_use(shaderDepthMap);
-        glUniformMatrix4fv(
-            glGetUniformLocation(shaderDepthMap->id, "u_LightSpaceMatrix"),
-            1, GL_FALSE, (float *)lightSpaceMatrix);
-
-        glEnable(GL_DEPTH_TEST);
-        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-        glClear(GL_DEPTH_BUFFER_BIT);
-
-        mat4 modelD = GLM_MAT4_IDENTITY_INIT;
-        glm_rotate(modelD, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
-        int modelLocD = glGetUniformLocation(shaderDepthMap->id, "u_Model");
-        glUniformMatrix4fv(modelLocD, 1, GL_FALSE, (float *)modelD);
-        mesh_draw_explicit(meshSuzanne, materialDepthMap);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        glViewport(0, 0, winWidth, winHeight);
-
-    /*------------------------------------------- 
-    |   Pass #2 - PostProcessing Buffer
-    */
-        postbuffer_bind();
-
-    // rotation logic for model 
-        if((glfwGetTime() - timePrev) >= (1.0f / 60.0f)) {
-            rotation += rotationInc;
-        }
-
-        shader_use(shaderSuzanne);
-        mat4 model = GLM_MAT4_IDENTITY_INIT;
-        glm_rotate(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
-        int modelLoc = glGetUniformLocation(shaderSuzanne->id, "u_Model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float *)model);
-
-        shader_use(shaderLight);
-        mat4 model2 = GLM_MAT4_IDENTITY_INIT;
-        glm_translate(model2, lightPos);
-        glUniformMatrix4fv(
-          glGetUniformLocation(matLight->shaderProgram->id, "u_Model"),
-          1, GL_FALSE, (float *)model2);
-
-    // Update the view and projection based on the camera data
-        camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
-
-    // Object
-        // shader_uniform(matSuzanne->shaderProgram->id, "u_Model", (float *)model);
-        mesh_draw(meshSuzanne);
-
-    // Object
-        mesh_draw(meshLight);
-
-    /*------------------------------------------- 
-    |   Pass #3 - Draw to backbuffer
-    */
-    postbuffer_draw();
-
-// Swap backbuffer + poll for events
-        glfwSwapBuffers(renderer->window);
-        glfwPollEvents();
-        camera_input(camera, renderer->window);
-}
-
-#endif
 
 // Clean-up 
     free(tex);
@@ -253,6 +120,7 @@ int main(void) {
     free(meshLight);
 
     glfwDestroyWindow(renderer->window);
+    free(renderer);
     glfwTerminate();
 
 } /* end of main.c */
