@@ -87,6 +87,14 @@ int main(void) {
     Texture *texEarthDiff = texture_create("../res/textures/earth/diffuse.png");
     Texture *texEarthNorm = texture_create("../res/textures/earth/normal.png");
 
+    Texture *texWoodDiff = texture_create("../res/textures/earth/diffuse.png");
+    Texture *texWoodSpec = texture_create("../res/textures/earth/normal.png");
+
+    // defaults
+    Texture *texDefNorm =
+        texture_create("../res/textures/defaults/normal.png");
+
+
 // Create the suzanne object
     ShaderProgram *shaderSuzanne =
         shader_create_program("../res/shaders/lit-diffuse.shader");
@@ -108,13 +116,40 @@ int main(void) {
     renderer_add_mesh(renderer, meshLight);
 
     renderer_active_scene(renderer, 1);
-    Mesh *meshTaurus=
-        mesh_create_obj(matSuzanne, "../res/models/taurus.obj", 1.0f,
-            1, GL_FRONT, GL_CW);
-    renderer_add_mesh(renderer, meshTaurus);
 
-    renderer_active_scene(renderer, 0);
+    ShaderProgram *shaderFloor=
+        shader_create_program("../res/shaders/lit-diffuse.shader");
+    Material *matFloor = material_create(shaderFloor, 2, texBrickDiff, texBrickNorm); 
+    Mesh *meshFloor =
+        mesh_create_obj(matFloor, "../res/models/plane.obj", 10.00f, 0, 0, 0);
 
+    shader_use(shaderFloor);
+    mat4 floorT = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(floorT, (vec3){0.0f, -0.3f, 0.0f});
+    //glm_rotate(floorT, glm_rad(90.0f), (vec3){1.0f, 0.0f, 0.0f});
+    glUniformMatrix4fv(
+        glGetUniformLocation(shaderFloor->id, "u_Model"),
+        1, GL_FALSE, (float *)floorT);
+
+    ShaderProgram *shaderBox=
+        shader_create_program("../res/shaders/lit-diffuse.shader");
+    Material *matBox = 
+        material_create(shaderBox, 3, texContDiff, texDefNorm, texContSpec); 
+    Mesh *meshBox =
+        mesh_create_obj(matBox, "../res/models/cube-triangulated.obj",
+                        0.70f, 0, 0, 0);
+    shader_use(shaderBox);
+    mat4 boxT = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(boxT, (vec3){0.0f, 0.3f, 0.0f});
+    glUniformMatrix4fv(
+        glGetUniformLocation(shaderBox->id, "u_Model"),
+        1, GL_FALSE, (float *)boxT);
+
+    renderer_add_mesh(renderer, meshFloor);
+    renderer_add_mesh(renderer, meshBox);
+
+
+    renderer_active_scene(renderer, 1);
 // Render Loop
     renderer_tick(renderer, camera);
 

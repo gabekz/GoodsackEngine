@@ -87,7 +87,7 @@ vec3 calcNormal(float strength){
 vec4 light(int type) {
     // Light attenuation
     vec3 lightVec = vec3(1.0f, 1.0f, 0.0f); // default (for directional)
-    float inten = 0.2f;
+    float inten = 0.9f;
     if(type > 0) {
         lightVec = (s_Light.position - fs_in.crntPos);
 
@@ -98,8 +98,8 @@ vec4 light(int type) {
     }
 
     // Diffuse Lighting
-    vec3 lightDirection = normalize(lightVec);
-    //vec3 lightDirection = normalize(max(-lightVec * -fs_in.normal, 0.0f));
+    //vec3 lightDirection = normalize(lightVec);
+    vec3 lightDirection = normalize(max(-lightVec * -fs_in.normal, 0.0f));
     float diffuse = max(dot(fs_in.normal * calcNormal(1.0), lightDirection), 0.0f);
 
     // Ambient Light
@@ -125,5 +125,5 @@ vec4 light(int type) {
 
 void main() {
     vec4 texColor = texture(t_Diffuse, fs_in.texCoords);
-    FragColor = texColor * light(1);
+    FragColor = texColor * light(0);
 }
