@@ -195,7 +195,7 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        //scene_draw_explicit(renderer, materialDepthMap);
+        scene_draw(scene, true, materialDepthMap);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -205,7 +205,7 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
     Pass #2 - Post Processing Pass 
 */ 
         postbuffer_bind();
-        scene_draw(scene);
+        scene_draw(scene, false, NULL);
 /*------------------------------------------- 
     Pass #3 - Final: Backbuffer draw
 */ 

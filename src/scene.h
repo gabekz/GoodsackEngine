@@ -27,6 +27,6 @@ struct _scene {
 };
 
 void scene_update(Scene *self);
-void scene_draw(Scene *self);
+void scene_draw(Scene *self, bool isExplicit, Material *override);
 
 #endif // H_SCENE

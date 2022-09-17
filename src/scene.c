@@ -25,8 +25,21 @@ void scene_update(Scene *self) {
     }
 }
 
-void scene_draw(Scene *self) {
+void scene_draw(Scene *self, bool isExplicit, Material *override) {
     for (int i = 0; i < self->meshC; i++){
-        mesh_draw(self->meshL[i]);
+        (isExplicit)
+            ? mesh_draw_explicit(self->meshL[i], override)
+            : mesh_draw(self->meshL[i]);
+
+        if(isExplicit) {
+            ShaderProgram *shader = override->shaderProgram;
+            shader_use(shader);
+            mat4 floorT = GLM_MAT4_IDENTITY_INIT;
+            glm_translate(floorT, (vec3){0.0f, -0.3f, 0.0f});
+            //glm_rotate(floorT, glm_rad(90.0f), (vec3){1.0f, 0.0f, 0.0f});
+            glUniformMatrix4fv(
+                glGetUniformLocation(shader->id, "u_Model"),
+                1, GL_FALSE, (float *)floorT);
+        }
     }
 }
