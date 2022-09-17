@@ -92,8 +92,8 @@ void postbuffer_bind() {
 void postbuffer_draw() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
         vao_bind(vaoRect);
-        glBindTexture(GL_TEXTURE_2D, textureId);
         glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureId);
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         shader_use(shader);

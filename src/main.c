@@ -109,7 +109,7 @@ int main(void) {
 
     renderer_active_scene(renderer, 1);
     Mesh *meshTaurus=
-        mesh_create_obj(matLight, "../res/models/taurus.obj", 1.0f,
+        mesh_create_obj(matSuzanne, "../res/models/taurus.obj", 1.0f,
             1, GL_FRONT, GL_CW);
     renderer_add_mesh(renderer, meshTaurus);
 
