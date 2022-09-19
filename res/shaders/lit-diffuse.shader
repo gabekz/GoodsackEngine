@@ -23,7 +23,10 @@ out VS_OUT {
     vec3 crntPos;
     vec3 camPos;
     mat3 tbn;
+    vec4 fragLightSpace;
 } vs_out;
+
+uniform mat4 u_LightSpaceMatrix;
 
 void main() {
    gl_Position = s_Camera.projection * s_Camera.view * u_Model *
@@ -45,6 +48,8 @@ void main() {
    vs_out.crntPos = vec3(u_Model * vec4(a_Position, 1.0));
    vs_out.texCoords = a_TexCoords;
    vs_out.camPos = s_Camera.position;
+
+   vs_out.fragLightSpace = u_LightSpaceMatrix * vec4(vs_out.crntPos, 1.0f);
 }
 
 // ---------------------- Fragment -----------------
@@ -66,7 +71,11 @@ in VS_OUT {
     vec3 crntPos;
     vec3 camPos;
     mat3 tbn;
+    vec4 fragLightSpace;
 } fs_in;
+
+
+layout(binding = 6) uniform sampler2D shadowMap;
 
 // default bindings (requires 4.2+)
 layout(binding = 0) uniform sampler2D t_Diffuse;
@@ -83,10 +92,22 @@ vec3 calcNormal(float strength){
     return n;
 }
 
+float calcShadow(vec4 fragLightSpace) {
+
+    vec3 projCoords = fragLightSpace.xyz / fragLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+    float shadow = currentDepth > closestDepth ? 1.0f : 0.0f;
+
+    return shadow;
+}
+
 // Note: Directional Light is a static lightposition w/o inten
 vec4 light(int type) {
     // Light attenuation
-    vec3 lightVec = vec3(1.0f, 1.0f, 0.0f); // default (for directional)
+    vec3 lightVec = vec3(1.0f, 1.0f, 1.0f); // default (for directional)
     float inten = 0.9f;
     if(type > 0) {
         lightVec = (s_Light.position - fs_in.crntPos);
@@ -120,10 +141,12 @@ vec4 light(int type) {
         specular = specularAmount * specularLight;
     }
 
-    return ((diffuse * inten + ambient) + (specular * inten)) * s_Light.color;
+    float shadow = calcShadow(fs_in.fragLightSpace);
+    //return ((diffuse * inten + (ambient + (1.0f - shadow))) + (specular * inten)) * s_Light.color;
+    return (ambient + (1.0 - shadow) * diffuse * inten + (specular * inten)) * s_Light.color;
 }
 
 void main() {
     vec4 texColor = texture(t_Diffuse, fs_in.texCoords);
-    FragColor = texColor * light(1);
+    FragColor = texColor * light(0);
 }

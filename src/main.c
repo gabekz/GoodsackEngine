@@ -143,7 +143,7 @@ int main(void) {
                         0.70f, 0, 0, 0);
     shader_use(shaderBox);
     mat4 boxT = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(boxT, (vec3){0.0f, 0.3f, 0.0f});
+    glm_translate(boxT, (vec3){0.0f, 0.0f, 0.0f});
     glUniformMatrix4fv(
         glGetUniformLocation(shaderBox->id, "u_Model"),
         1, GL_FALSE, (float *)boxT);

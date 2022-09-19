@@ -155,7 +155,7 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
     glm_ortho(-10.0f, 10.0f, -10.0f, 10.0f,
         nearPlane, farPlane, lightProjection);
     glm_lookat(
-            (vec3){-2.0f, 4.0f, -1.0f},
+            (vec3){1.0f, 1.0f, 1.0f},
             (vec3){0.0f, 0.0f, 0.0f},
             (vec3){0.0f, 1.0f, 0.0f}, lightView);
     glm_mat4_mul(lightProjection, lightView, lightSpaceMatrix);
@@ -164,6 +164,16 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
         shader_create_program("../res/shaders/depth-map.shader");
 
     Material *materialDepthMap = material_create(shaderDepthMap, 0);
+
+// TEST for lightspace matrix
+    for(int i = 0; i < scene->meshC; i++) {
+        ShaderProgram *shader = scene->meshL[i]->material->shaderProgram;
+        shader_use(shader);
+
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
+            1, GL_FALSE, (float *)lightSpaceMatrix);
+    }
 
 // Create the post buffer
     postbuffer_init(renderer->windowWidth, renderer->windowHeight);
@@ -209,12 +219,16 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.05f, 1.0f);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
 
         scene_draw(scene, false, NULL);
 /*------------------------------------------- 
     Pass #3 - Final: Backbuffer draw
 */ 
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
         postbuffer_draw();
         glfwSwapBuffers(renderer->window);
     }
