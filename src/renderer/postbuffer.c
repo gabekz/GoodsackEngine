@@ -63,7 +63,7 @@ void postbuffer_init(ui32 winWidth, ui32 winHeight) {
     glBindRenderbuffer(GL_RENDERBUFFER, RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
         winWidth, winHeight);
-    //glBindRenderbuffer(GL_RENDERBUFFER, 0); -- This doesn't have to be done?
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
     // Attach Renderbuffer
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
         GL_RENDERBUFFER, RBO);
@@ -78,25 +78,16 @@ void postbuffer_init(ui32 winWidth, ui32 winHeight) {
 void postbuffer_bind() {
     //glDebugMessageInsert(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_MARKER, 0,                       
     //    GL_DEBUG_SEVERITY_NOTIFICATION, -1, "Post Processing buffer init");
-
     glBindFramebuffer(GL_FRAMEBUFFER, fboId);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-    glFrontFace(GL_CW);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 0.0f, 0.00f, 1.0f);
 }
 
 void postbuffer_draw() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
         vao_bind(vaoRect);
+        shader_use(shader);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureId);
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
-        shader_use(shader);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 }
 

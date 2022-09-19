@@ -87,8 +87,8 @@ int main(void) {
     Texture *texEarthDiff = texture_create("../res/textures/earth/diffuse.png");
     Texture *texEarthNorm = texture_create("../res/textures/earth/normal.png");
 
-    Texture *texWoodDiff = texture_create("../res/textures/earth/diffuse.png");
-    Texture *texWoodSpec = texture_create("../res/textures/earth/normal.png");
+    //Texture *texWoodDiff = texture_create("../res/textures/wood/diffuse.png");
+    //Texture *texWoodSpec = texture_create("../res/textures/wood/normal.png");
 
     // defaults
     Texture *texDefNorm =
@@ -111,9 +111,12 @@ int main(void) {
     Mesh *meshLight =
         mesh_create_primitive(matLight, PRIMITIVE_PYRAMID, 0.03f, 0, 0, 0);
 
+// Update transform for material
+//    transform_position(shaderSuzanne, (vec3){0.0f, 0.1f, 0.4f});
+
 // Send models to the renderer
     renderer_add_mesh(renderer, meshSuzanne);
-    renderer_add_mesh(renderer, meshLight);
+    //renderer_add_mesh(renderer, meshLight);
 
     renderer_active_scene(renderer, 1);
 

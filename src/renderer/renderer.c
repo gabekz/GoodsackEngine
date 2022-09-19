@@ -205,10 +205,16 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
     Pass #2 - Post Processing Pass 
 */ 
         postbuffer_bind();
+
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.0f, 0.0f, 0.05f, 1.0f);
+
         scene_draw(scene, false, NULL);
 /*------------------------------------------- 
     Pass #3 - Final: Backbuffer draw
 */ 
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
         postbuffer_draw();
         glfwSwapBuffers(renderer->window);
     }

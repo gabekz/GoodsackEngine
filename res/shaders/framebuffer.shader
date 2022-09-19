@@ -65,7 +65,7 @@ vec4 kernel() {
         1, 1, 1
     );
 
-    float kern[] = edgeKernel;
+    float kern[] = randKernel;
 
     vec3 sampleTex[9];
     for(int i = 0; i < 9; i++) {
@@ -83,5 +83,5 @@ void main()
 {
     FragColor = texture(u_ScreenTexture, texCoords);
     //FragColor = vec4(vec3(1.0 - texture(u_ScreenTexture, texCoords)), 1.0);
-    //FragColor = kernel();
+    //FragColor = grayscale();
 }
