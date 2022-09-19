@@ -36,6 +36,9 @@
 #include "loaders/loader_obj.h"
 #include "renderer/postbuffer.h"
 
+#define texture_create_d(x) texture_create(x, GL_SRGB8)
+#define texture_create_n(x) texture_create(x, GL_RGB8)
+
 /* ~~~ MAIN ~~~ */
 int main(void) {
 // Renderer initialization
@@ -76,23 +79,26 @@ int main(void) {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 // Creating a set of textures
-    Texture *tex = texture_create("../res/textures/bricks.png");
+    Texture *tex = texture_create_d("../res/textures/bricks.png");
 
-    Texture *texBrickDiff = texture_create("../res/textures/brickwall/diffuse.png");
-    Texture *texBrickNorm = texture_create("../res/textures/brickwall/normal.png");
+    Texture *texBrickDiff =
+        texture_create_d("../res/textures/brickwall/diffuse.png");
+    Texture *texBrickNorm =
+        texture_create_n("../res/textures/brickwall/normal.png");
 
-    Texture *texContDiff = texture_create("../res/textures/container/diffuse.png");
-    Texture *texContSpec = texture_create("../res/textures/container/specular.png");
+    Texture *texContDiff = texture_create_d("../res/textures/container/diffuse.png");
+    Texture *texContSpec = texture_create_n("../res/textures/container/specular.png");
 
-    Texture *texEarthDiff = texture_create("../res/textures/earth/diffuse.png");
-    Texture *texEarthNorm = texture_create("../res/textures/earth/normal.png");
+    Texture *texEarthDiff = texture_create_d("../res/textures/earth/diffuse.png");
+    Texture *texEarthNorm = texture_create_n("../res/textures/earth/normal.png");
 
-    //Texture *texWoodDiff = texture_create("../res/textures/wood/diffuse.png");
-    //Texture *texWoodSpec = texture_create("../res/textures/wood/normal.png");
+    Texture *texWoodDiff = texture_create_d("../res/textures/wood/diffuse.png");
+    Texture *texWoodNorm = texture_create_n("../res/textures/wood/normal.png");
+    Texture *texWoodSpec = texture_create_n("../res/textures/wood/specular.png");
 
     // defaults
     Texture *texDefNorm =
-        texture_create("../res/textures/defaults/normal.png");
+        texture_create("../res/textures/defaults/normal.png", GL_RGB8);
 
 
 // Create the suzanne object
@@ -122,7 +128,8 @@ int main(void) {
 
     ShaderProgram *shaderFloor=
         shader_create_program("../res/shaders/lit-diffuse.shader");
-    Material *matFloor = material_create(shaderFloor, 2, texBrickDiff, texBrickNorm); 
+    Material *matFloor = 
+        material_create(shaderFloor, 2, texBrickDiff, texBrickNorm); 
     Mesh *meshFloor =
         mesh_create_obj(matFloor, "../res/models/plane.obj", 10.00f, 0, 0, 0);
 

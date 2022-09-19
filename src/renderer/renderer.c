@@ -181,6 +181,9 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
 // Clear GL state
     clearGLState();
 
+// Enable Gamma correction
+    glEnable(GL_FRAMEBUFFER_SRGB);
+
 /*------------------------------------------- 
 |   Render Loop
 */

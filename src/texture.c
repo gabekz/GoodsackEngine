@@ -7,7 +7,7 @@
 
 #define TEXTURE_WRAPPING  GL_REPEAT
 
-Texture *texture_create(const char *path) {
+Texture *texture_create(const char *path, ui32 format) {
     Texture *tex = malloc(sizeof(Texture));
     tex->filePath = path;
 
@@ -25,7 +25,7 @@ Texture *texture_create(const char *path) {
         localBuffer = NULL;
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex->width, tex->height, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, format, tex->width, tex->height, 0,
         GL_RGBA, GL_UNSIGNED_BYTE, localBuffer);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
