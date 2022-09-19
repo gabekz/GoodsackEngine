@@ -92,14 +92,31 @@ vec3 calcNormal(float strength){
     return n;
 }
 
-float calcShadow(vec4 fragLightSpace) {
+float calcShadow(vec4 fragLightSpace, vec3 lightDir, bool pcf) {
 
     vec3 projCoords = fragLightSpace.xyz / fragLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
 
     float closestDepth = texture(shadowMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
-    float shadow = currentDepth > closestDepth ? 1.0f : 0.0f;
+
+    float bias = max(0.05 * (1.0 - dot(fs_in.normal, lightDir)), 0.005);
+    float shadow = 0;
+    if(pcf) {
+        vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+        for(int x = -1; x <= 1; ++x) {
+            for(int y = -1; y<= 1; ++y) {
+                float pcfDepth = 
+                    texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+                shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+            }
+        }
+        shadow /= 9.0;
+        return shadow;
+
+    } else {
+        shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
+    }
 
     return shadow;
 }
@@ -141,9 +158,9 @@ vec4 light(int type) {
         specular = specularAmount * specularLight;
     }
 
-    float shadow = calcShadow(fs_in.fragLightSpace);
-    //return ((diffuse * inten + (ambient + (1.0f - shadow))) + (specular * inten)) * s_Light.color;
-    return (ambient + (1.0 - shadow) * diffuse * inten + (specular * inten)) * s_Light.color;
+    float shadow = calcShadow(fs_in.fragLightSpace, lightDirection, true);
+    return ((diffuse * inten + (ambient + (1.0f - shadow))) + (specular * inten)) * s_Light.color;
+    //return (ambient + (1.0 - shadow) * diffuse * inten + (specular * inten)) * s_Light.color;
 }
 
 void main() {

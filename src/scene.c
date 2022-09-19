@@ -43,7 +43,7 @@ void scene_draw(Scene *self, bool isExplicit, Material *override) {
             }
             if(i == 1) { // box
             mat4 boxT = GLM_MAT4_IDENTITY_INIT;
-                glm_translate(boxT, (vec3){0.0f, 0.0f, 0.0f});
+                glm_translate(boxT, (vec3){0.0f, -0.42f, 0.0f});
             glUniformMatrix4fv(
                 glGetUniformLocation(shader->id, "u_Model"),
                 1, GL_FALSE, (float *)boxT);

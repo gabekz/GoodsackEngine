@@ -130,7 +130,7 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
     ui32 depthMapFBO;
     glGenFramebuffers(1, &depthMapFBO);
     // Texture
-    const ui32 SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+    const ui32 SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
     ui32 depthMap;
     glGenTextures(1, &depthMap);
     glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -152,7 +152,7 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
     mat4 lightView          = GLM_MAT4_ZERO_INIT;
     mat4 lightSpaceMatrix   = GLM_MAT4_ZERO_INIT;
     float nearPlane = 1.0f, farPlane = 7.5f;
-    glm_ortho(-10.0f, 10.0f, -10.0f, 10.0f,
+    glm_ortho(-5.0f, 5.0f, -5.0f, 5.0f,
         nearPlane, farPlane, lightProjection);
     glm_lookat(
             (vec3){1.0f, 1.0f, 1.0f},

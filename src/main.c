@@ -129,7 +129,6 @@ int main(void) {
     shader_use(shaderFloor);
     mat4 floorT = GLM_MAT4_IDENTITY_INIT;
     glm_translate(floorT, (vec3){0.0f, -0.3f, 0.0f});
-    //glm_rotate(floorT, glm_rad(90.0f), (vec3){1.0f, 0.0f, 0.0f});
     glUniformMatrix4fv(
         glGetUniformLocation(shaderFloor->id, "u_Model"),
         1, GL_FALSE, (float *)floorT);
@@ -139,11 +138,11 @@ int main(void) {
     Material *matBox = 
         material_create(shaderBox, 3, texContDiff, texDefNorm, texContSpec); 
     Mesh *meshBox =
-        mesh_create_obj(matBox, "../res/models/cube-triangulated.obj",
-                        0.70f, 0, 0, 0);
+        mesh_create_obj(matBox, "../res/models/bunny.obj",
+                        20, 0, 0, 0);
     shader_use(shaderBox);
     mat4 boxT = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(boxT, (vec3){0.0f, 0.0f, 0.0f});
+    glm_translate(boxT, (vec3){0.0f, -0.42f, 0.0f});
     glUniformMatrix4fv(
         glGetUniformLocation(shaderBox->id, "u_Model"),
         1, GL_FALSE, (float *)boxT);
