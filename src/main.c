@@ -118,7 +118,9 @@ int main(void) {
         mesh_create_primitive(matLight, PRIMITIVE_PYRAMID, 0.03f, 0, 0, 0);
 
 // Update transform for material
-//    transform_position(shaderSuzanne, (vec3){0.0f, 0.1f, 0.4f});
+    mat4 suzanneT = GLM_MAT4_IDENTITY_INIT;
+    model_set_matrix(meshSuzanne->model, suzanneT);
+    model_send_matrix(meshSuzanne->model, shaderSuzanne);
 
 // Send models to the renderer
     renderer_add_mesh(renderer, meshSuzanne);
@@ -137,7 +139,7 @@ int main(void) {
 // Send transform to mesh->model and shader
     mat4 floorT = GLM_MAT4_IDENTITY_INIT;
     glm_translate(floorT, (vec3){0.0f, -0.3f, 0.0f});
-    model_set_matrix(meshFloor->model, (float*)floorT);
+    model_set_matrix(meshFloor->model, floorT);
     model_send_matrix(meshFloor->model, shaderFloor);
 
 // Create the box mesh
@@ -152,7 +154,7 @@ int main(void) {
     // Send transform to mesh->model and shader
     mat4 boxT = GLM_MAT4_IDENTITY_INIT;
     glm_translate(boxT, (vec3){0.0f, -0.09f, 0.0f});
-    model_set_matrix(meshBox->model, (float*)boxT);
+    model_set_matrix(meshBox->model, boxT);
     model_send_matrix(meshBox->model, shaderBox);
 
     renderer_add_mesh(renderer, meshFloor);

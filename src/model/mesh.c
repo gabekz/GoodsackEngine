@@ -13,6 +13,10 @@ Mesh *mesh_create_obj(Material *material, const char* modelPath, float scale,
     Mesh *ret = malloc(sizeof(Mesh));
     ret->model = model;
 
+    // default model matrix TODO: Move to ecs?
+    //mat4 modelMatrix = GM_MAT4_IDENTITY_INIT;
+    //model_set_matrix(modelMatrix);
+
     // TODO: FIX THIS when IBO implemented for .obj files.
     //ret->drawingMode = 
     //    (model->indicesCount <= 0) ? DRAW_MODE_ARRAYS: DRAW_MODE_ELEMENTS;
@@ -151,7 +155,7 @@ void mesh_draw_explicit(Mesh *self, Material *material) {
     }
 };
 
-void model_set_matrix(Model *self, float* matrix) {
+void model_set_matrix(Model *self, mat4 matrix) {
     self->modelMatrix = matrix;
 }
 
@@ -160,5 +164,5 @@ void model_send_matrix(Model *self, ShaderProgram *shader) {
     shader_use(shader);
     glUniformMatrix4fv(
         glGetUniformLocation(shader->id, "u_Model"),
-        1, GL_FALSE, self->modelMatrix);
+        1, GL_FALSE, (float*)self->modelMatrix);
 }

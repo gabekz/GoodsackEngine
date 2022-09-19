@@ -221,7 +221,7 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
 
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f, 0.0f, 0.05f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, depthMap);
 

@@ -24,7 +24,7 @@ struct _model {
     ui32 vertexCount;
     ui32 indicesCount;
     const char *modelPath;
-    float *modelMatrix;
+    mat4 *modelMatrix;
 };
 
 Mesh *mesh_create_obj(Material *material, const char* modelPath, float scale,
@@ -36,7 +36,7 @@ Mesh *mesh_create_primitive(Material *material, ui32 primitive, float scale,
 void mesh_draw(Mesh *self);
 void mesh_draw_explicit(Mesh *self, Material *material);
 
-void model_set_matrix(Model *self, float* matrix);
+void model_set_matrix(Model *self, mat4 matrix);
 void model_send_matrix(Model *self, ShaderProgram *shader);
 
 #endif // H_MESH
