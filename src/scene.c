@@ -32,23 +32,7 @@ void scene_draw(Scene *self, bool isExplicit, Material *override) {
 
         // TEST: Send transform to shadowmap
         if(isExplicit) {
-            ShaderProgram *shader = override->shaderProgram;
-            shader_use(shader);
-            if(i == 0) { // floor
-            mat4 floorT = GLM_MAT4_IDENTITY_INIT;
-                glm_translate(floorT, (vec3){0.0f, -0.3f, 0.0f});
-            glUniformMatrix4fv(
-                glGetUniformLocation(shader->id, "u_Model"),
-                1, GL_FALSE, (float *)floorT);
-            }
-            if(i == 1) { // box
-            mat4 boxT = GLM_MAT4_IDENTITY_INIT;
-                glm_translate(boxT, (vec3){0.0f, -0.09f, 0.0f});
-            glUniformMatrix4fv(
-                glGetUniformLocation(shader->id, "u_Model"),
-                1, GL_FALSE, (float *)boxT);
-
-            } // box 
+            model_send_matrix(self->meshL[i]->model, override->shaderProgram);
         }
 
         (isExplicit)

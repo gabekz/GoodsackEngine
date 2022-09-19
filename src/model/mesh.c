@@ -150,3 +150,15 @@ void mesh_draw_explicit(Mesh *self, Material *material) {
             break;
     }
 };
+
+void model_set_matrix(Model *self, float* matrix) {
+    self->modelMatrix = matrix;
+}
+
+// Weird implementation.
+void model_send_matrix(Model *self, ShaderProgram *shader) {
+    shader_use(shader);
+    glUniformMatrix4fv(
+        glGetUniformLocation(shader->id, "u_Model"),
+        1, GL_FALSE, self->modelMatrix);
+}

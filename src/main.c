@@ -126,6 +126,7 @@ int main(void) {
 
     renderer_active_scene(renderer, 1);
 
+// Create the floor mesh
     ShaderProgram *shaderFloor=
         shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matFloor = 
@@ -133,13 +134,13 @@ int main(void) {
     Mesh *meshFloor =
         mesh_create_obj(matFloor, "../res/models/plane.obj", 10.00f, 0, 0, 0);
 
-    shader_use(shaderFloor);
+// Send transform to mesh->model and shader
     mat4 floorT = GLM_MAT4_IDENTITY_INIT;
     glm_translate(floorT, (vec3){0.0f, -0.3f, 0.0f});
-    glUniformMatrix4fv(
-        glGetUniformLocation(shaderFloor->id, "u_Model"),
-        1, GL_FALSE, (float *)floorT);
+    model_set_matrix(meshFloor->model, (float*)floorT);
+    model_send_matrix(meshFloor->model, shaderFloor);
 
+// Create the box mesh
     ShaderProgram *shaderBox=
         shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matBox = 
@@ -147,12 +148,12 @@ int main(void) {
     Mesh *meshBox =
         mesh_create_obj(matBox, "../res/models/cube-triangulated.obj",
                         1.0f, 0, 0, 0);
-    shader_use(shaderBox);
+
+    // Send transform to mesh->model and shader
     mat4 boxT = GLM_MAT4_IDENTITY_INIT;
     glm_translate(boxT, (vec3){0.0f, -0.09f, 0.0f});
-    glUniformMatrix4fv(
-        glGetUniformLocation(shaderBox->id, "u_Model"),
-        1, GL_FALSE, (float *)boxT);
+    model_set_matrix(meshBox->model, (float*)boxT);
+    model_send_matrix(meshBox->model, shaderBox);
 
     renderer_add_mesh(renderer, meshFloor);
     renderer_add_mesh(renderer, meshBox);
