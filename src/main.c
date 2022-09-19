@@ -138,11 +138,11 @@ int main(void) {
     Material *matBox = 
         material_create(shaderBox, 3, texContDiff, texDefNorm, texContSpec); 
     Mesh *meshBox =
-        mesh_create_obj(matBox, "../res/models/bunny.obj",
-                        20, 0, 0, 0);
+        mesh_create_obj(matBox, "../res/models/cube-triangulated.obj",
+                        1.0f, 0, 0, 0);
     shader_use(shaderBox);
     mat4 boxT = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(boxT, (vec3){0.0f, -0.42f, 0.0f});
+    glm_translate(boxT, (vec3){0.0f, -0.09f, 0.0f});
     glUniformMatrix4fv(
         glGetUniformLocation(shaderBox->id, "u_Model"),
         1, GL_FALSE, (float *)boxT);

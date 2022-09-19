@@ -159,8 +159,8 @@ vec4 light(int type) {
     }
 
     float shadow = calcShadow(fs_in.fragLightSpace, lightDirection, true);
-    return ((diffuse * inten + (ambient + (1.0f - shadow))) + (specular * inten)) * s_Light.color;
-    //return (ambient + (1.0 - shadow) * diffuse * inten + (specular * inten)) * s_Light.color;
+    //return ((diffuse * inten + (ambient + (1.0f - shadow))) + (specular * inten)) * s_Light.color;
+    return (ambient + (1.0 - shadow) * diffuse * inten + (specular * inten)) * s_Light.color;
 }
 
 void main() {
