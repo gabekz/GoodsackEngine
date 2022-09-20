@@ -15,7 +15,8 @@ struct _texture {
   ui32 activeSlot;
 };
 
-Texture *texture_create(const char *path, ui32 format);
+Texture *texture_create(const char *path, ui32 format,
+        ui16 genMipMaps, float afRange);
 
 void texture_bind(Texture *self, ui32 slot);
 void texture_unbind();

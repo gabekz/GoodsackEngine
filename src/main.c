@@ -36,8 +36,8 @@
 #include "loaders/loader_obj.h"
 #include "renderer/postbuffer.h"
 
-#define texture_create_d(x) texture_create(x, GL_SRGB8)
-#define texture_create_n(x) texture_create(x, GL_RGB8)
+#define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16.0f)
+#define texture_create_n(x) texture_create(x, GL_RGB8, false, 0.0f)
 
 /* ~~~ MAIN ~~~ */
 int main(void) {
@@ -91,9 +91,9 @@ int main(void) {
 
     // defaults
     Texture *texDefNorm =
-        texture_create("../res/textures/defaults/normal.png", GL_RGB);
+        texture_create_n("../res/textures/defaults/normal.png");
     Texture *texDefSpec =
-        texture_create("../res/textures/defaults/specular.png", GL_RGB);
+        texture_create_n("../res/textures/defaults/specular.png");
 
 // Create the suzanne object
     ShaderProgram *shaderSuzanne =

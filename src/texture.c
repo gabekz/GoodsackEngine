@@ -7,7 +7,8 @@
 
 #define TEXTURE_WRAPPING  GL_REPEAT
 
-Texture *texture_create(const char *path, ui32 format) {
+Texture *texture_create(const char *path, ui32 format,
+        ui16 genMipMaps, float afRange) {
     Texture *tex = malloc(sizeof(Texture));
     tex->filePath = path;
 
@@ -28,13 +29,25 @@ Texture *texture_create(const char *path, ui32 format) {
     glTexImage2D(GL_TEXTURE_2D, 0, format, tex->width, tex->height, 0,
         GL_RGBA, GL_UNSIGNED_BYTE, localBuffer);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+    // Wrapping
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, TEXTURE_WRAPPING);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_WRAPPING);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // Mipmaps
+    if(genMipMaps >= 0) {
+        glGenerateTextureMipmap(tex->id);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+            GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+            GL_LINEAR);
+    }
+    else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+
+    // Anistropic Filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, afRange);
 
     if(localBuffer) {
       stbi_image_free(localBuffer);
