@@ -78,9 +78,6 @@ int main(void) {
         lightColor);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-// Creating a set of textures
-    Texture *tex = texture_create_d("../res/textures/bricks.png");
-
     Texture *texBrickDiff =
         texture_create_d("../res/textures/brickwall/diffuse.png");
     Texture *texBrickNorm =
@@ -92,16 +89,11 @@ int main(void) {
     Texture *texEarthDiff = texture_create_d("../res/textures/earth/diffuse.png");
     Texture *texEarthNorm = texture_create_n("../res/textures/earth/normal.png");
 
-    Texture *texWoodDiff = texture_create_d("../res/textures/wood/diffuse.png");
-    Texture *texWoodNorm = texture_create_n("../res/textures/wood/normal.png");
-    Texture *texWoodSpec = texture_create_n("../res/textures/wood/specular.png");
-
     // defaults
     Texture *texDefNorm =
         texture_create("../res/textures/defaults/normal.png", GL_RGB);
     Texture *texDefSpec =
         texture_create("../res/textures/defaults/specular.png", GL_RGB);
-
 
 // Create the suzanne object
     ShaderProgram *shaderSuzanne =
@@ -115,7 +107,7 @@ int main(void) {
 
 // Create light object
     ShaderProgram *shaderLight = shader_create_program("../res/shaders/white.shader");
-    Material *matLight = material_create(shaderLight, 1, tex); 
+    Material *matLight = material_create(shaderLight, 0); 
     Mesh *meshLight =
         mesh_create_primitive(matLight, PRIMITIVE_PYRAMID, 0.03f, 0, 0, 0);
 
@@ -129,6 +121,10 @@ int main(void) {
     //renderer_add_mesh(renderer, meshLight);
 
     renderer_active_scene(renderer, 1);
+
+    // TODO:
+    // - Move shader path to material_create.
+    // - Move model_send_matrix to mesh_send_matrix. Model is not the same here.
 
 // Create the floor mesh
     ShaderProgram *shaderFloor=
@@ -155,7 +151,7 @@ int main(void) {
 
     // Send transform to mesh->model and shader
     mat4 boxT = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(boxT, (vec3){0.0f, 0.09f, 0.0f});
+    glm_translate(boxT, (vec3){0.0f, -0.085f, 0.0f});
     model_set_matrix(meshBox->model, boxT);
     model_send_matrix(meshBox->model, shaderBox);
 
@@ -168,7 +164,6 @@ int main(void) {
     renderer_tick(renderer, camera);
 
 // Clean-up 
-    free(tex);
     free(shaderSuzanne);
     free(matSuzanne);
     free(meshSuzanne);
