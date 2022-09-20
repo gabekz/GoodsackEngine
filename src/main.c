@@ -98,14 +98,16 @@ int main(void) {
 
     // defaults
     Texture *texDefNorm =
-        texture_create("../res/textures/defaults/normal.png", GL_RGB8);
+        texture_create("../res/textures/defaults/normal.png", GL_RGB);
+    Texture *texDefSpec =
+        texture_create("../res/textures/defaults/specular.png", GL_RGB);
 
 
 // Create the suzanne object
     ShaderProgram *shaderSuzanne =
         shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matSuzanne =
-        material_create(shaderSuzanne, 2, texEarthDiff, texEarthNorm);
+        material_create(shaderSuzanne, 3, texEarthDiff, texEarthNorm, texDefSpec);
     Mesh *meshSuzanne =
         mesh_create_obj(matSuzanne , "../res/models/sphere.obj", 1.0f,
             1, GL_FRONT, GL_CW);
@@ -132,7 +134,7 @@ int main(void) {
     ShaderProgram *shaderFloor=
         shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matFloor = 
-        material_create(shaderFloor, 2, texBrickDiff, texBrickNorm); 
+        material_create(shaderFloor, 3, texBrickDiff, texBrickNorm, texDefSpec); 
     Mesh *meshFloor =
         mesh_create_obj(matFloor, "../res/models/plane.obj", 10.00f, 0, 0, 0);
 
@@ -148,17 +150,17 @@ int main(void) {
     Material *matBox = 
         material_create(shaderBox, 3, texContDiff, texDefNorm, texContSpec); 
     Mesh *meshBox =
-        mesh_create_obj(matBox, "../res/models/cube-triangulated.obj",
+        mesh_create_obj(matBox, "../res/models/cube-test.obj",
                         1.0f, 0, 0, 0);
 
     // Send transform to mesh->model and shader
     mat4 boxT = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(boxT, (vec3){0.0f, -0.09f, 0.0f});
+    glm_translate(boxT, (vec3){0.0f, 0.09f, 0.0f});
     model_set_matrix(meshBox->model, boxT);
     model_send_matrix(meshBox->model, shaderBox);
 
-    renderer_add_mesh(renderer, meshFloor);
     renderer_add_mesh(renderer, meshBox);
+    renderer_add_mesh(renderer, meshFloor);
 
 
     renderer_active_scene(renderer, 1);

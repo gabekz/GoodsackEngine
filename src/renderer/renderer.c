@@ -151,8 +151,9 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
     mat4 lightProjection    = GLM_MAT4_ZERO_INIT;
     mat4 lightView          = GLM_MAT4_ZERO_INIT;
     mat4 lightSpaceMatrix   = GLM_MAT4_ZERO_INIT;
-    float nearPlane = 1.0f, farPlane = 7.5f;
-    glm_ortho(-5.0f, 5.0f, -5.0f, 5.0f,
+    float nearPlane = 0.5f, farPlane = 7.5f;
+    float camSize = 10.0f;
+    glm_ortho(-camSize, camSize, -camSize, camSize,
         nearPlane, farPlane, lightProjection);
     glm_lookat(
             (vec3){1.0f, 1.0f, 1.0f},
@@ -222,6 +223,8 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+        // Bind the shadowmap to texture slot 6
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, depthMap);
 
@@ -230,8 +233,6 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
     Pass #3 - Final: Backbuffer draw
 */ 
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
         postbuffer_draw();
         glfwSwapBuffers(renderer->window);
     }
