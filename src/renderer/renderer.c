@@ -235,8 +235,8 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
 /*------------------------------------------- 
     Pass #3 - Final: Backbuffer draw
 */ 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
-        postbuffer_draw();
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
+        postbuffer_draw(renderer->windowWidth, renderer->windowHeight);
         glfwSwapBuffers(renderer->window);
     }
 

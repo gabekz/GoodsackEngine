@@ -18,6 +18,8 @@ static ui32 msTexture, sbTexture;
 static ShaderProgram *shader;
 static VAO *vaoRect;
 
+static ui32 windowWidth, windowHeight;
+
 static void CreateMultisampleBuffer(ui32 samples, ui32 width, ui32 height) {
 // Create texture
     glGenTextures(1, &msTexture);
@@ -81,6 +83,9 @@ static void CreateScreenBuffer(ui32 width, ui32 height) {
 }
 
 void postbuffer_init(ui32 winWidth, ui32 winHeight) {
+    windowWidth = winWidth;
+    windowHeight = winHeight;
+
 // Shader
     shader = shader_create_program("../res/shaders/framebuffer.shader");
     shader_use(shader);
@@ -99,15 +104,26 @@ void postbuffer_init(ui32 winWidth, ui32 winHeight) {
 
 // Create Framebuffer
     CreateScreenBuffer(winWidth, winHeight);
+// Create MSAA buffer
+    CreateMultisampleBuffer(4, winWidth, winHeight);
 }
 
 void postbuffer_bind() {
     //glDebugMessageInsert(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_MARKER, 0,                       
     //    GL_DEBUG_SEVERITY_NOTIFICATION, -1, "Post Processing buffer init");
-    glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
+    //glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
+    glEnable(GL_MULTISAMPLE);
+    glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
 }
 
-void postbuffer_draw() {
+void postbuffer_draw(ui32 winWidth, ui32 winHeight) {
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, winWidth, winHeight,
+        0, 0, winWidth, winHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    /*
         vao_bind(vaoRect);
         shader_use(shader);
         glActiveTexture(GL_TEXTURE0);
@@ -115,6 +131,7 @@ void postbuffer_draw() {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+    */
 }
 
 void postbuffer_cleanup() {
