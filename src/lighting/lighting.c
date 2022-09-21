@@ -13,8 +13,7 @@ Light *light_create(float *position, float *color, LightType type) {
     return ret;
 }
 
-#if 0
-void lighting_update_data() {
+void lighting_initialize(float *lightPos, float *lightColor) {
 
     ui32 uboLight;
     ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
@@ -33,4 +32,3 @@ void lighting_update_data() {
         lightColor);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
-#endif

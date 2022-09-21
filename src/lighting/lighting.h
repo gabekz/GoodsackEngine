@@ -16,7 +16,6 @@ struct _light {
 };
 
 Light *light_create(float *position, float *color, LightType type);
-
-void lighting_update_data();
+void lighting_initialize(float *lightPos, float *lightColor);
 
 #endif // H_LIGHTING
