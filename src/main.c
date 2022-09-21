@@ -37,8 +37,12 @@
 #include "loaders/loader_obj.h"
 #include "renderer/postbuffer.h"
 
+#include <ecs/ecs.h>
+
 #define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16.0f)
 #define texture_create_n(x) texture_create(x, GL_RGB8, false, 0.0f)
+
+#define USE_ECS
 
 /* ~~~ MAIN ~~~ */
 int main(void) {
@@ -46,6 +50,19 @@ int main(void) {
     Renderer *renderer = renderer_init();
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
+
+#ifdef USE_ECS
+/*------------------------------------------- 
+|   ECS Testing
+*/
+    ECS *ecs = ecs_init();
+
+    Entity test = ecs_new(ecs);
+
+    ecs_event(ecs, ECS_INIT);
+
+#endif
+
 
 // Create the Camera, containing starting-position and up-axis coords.
     // TODO: Update camera when window is resized
@@ -133,6 +150,7 @@ int main(void) {
 
     glfwDestroyWindow(renderer->window);
     free(renderer);
+    free(ecs);
     glfwTerminate();
 
 } /* end of main.c */

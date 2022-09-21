@@ -21,7 +21,7 @@
 #define DRAW_MODE_ELEMENTS   0xD001
 
 #define LOG_LEVEL   0
-#define DEBUG       1
+#define DEBUG       0
 
 typedef int si32;
 typedef unsigned int ui32;
@@ -33,11 +33,11 @@ typedef signed char schr;
 typedef unsigned char byte;
 typedef unsigned long ulng;
 
-#if 0
+#if 0 // 32-bit
 typedef long si64;
 typedef unsigned long ui64;
 #endif
-#if 0
+#if 1 // 64-bit
 typedef long long si64;
 typedef unsigned long long ui64;
 #endif

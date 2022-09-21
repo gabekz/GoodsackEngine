@@ -99,7 +99,6 @@ void renderer_active_scene(Renderer* self, ui16 sceneIndex) {
 
         // Update the scene list
         Scene **p = self->sceneL;
-        printf("\n%p \n%p", p, *p);
         self->sceneL = realloc(p, newCount * sizeof(Scene*));
         self->sceneL[newCount-1] = newScene;
         self->sceneC = newCount;

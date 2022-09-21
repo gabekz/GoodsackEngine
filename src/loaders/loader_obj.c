@@ -88,9 +88,6 @@ Model* load_obj(const char* path, float scale) {
         }
         if(strstr(def, "f") != NULL) {
             char *collection = split;
-#ifdef LOGGING
-            printf("\ncollection: %s", collection);
-#endif
             // Create the "collections" for each face
             while(collection != NULL) {
 
@@ -106,9 +103,6 @@ Model* load_obj(const char* path, float scale) {
                 int inc = ((vL > 0) + (vtL > 0) + (vnL > 0));
                 for(int j = 0; j < inc; j++) {
                     int saved = atoi(element);
-#ifdef LOGGING
-                    printf(" [%d],", saved);
-#endif
 
                     // Vertex
                     if(j == 0 && vL > 0) {
@@ -176,7 +170,7 @@ Model* load_obj(const char* path, float scale) {
     }
 #endif
 
-#if 1 
+#ifdef LOGGING_OBJ 
     printf("\n-------------------------------------\n[OBJ Loader]\n");
     printf("path: \t\t%s", path);
     printf("\n\nVertice Count\nPosition:\t%d\nTexture:\t%d\nNormal:\t\t%d\n\nFaces:\t\t%d\n\n",
