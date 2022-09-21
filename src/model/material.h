@@ -15,7 +15,8 @@ struct _material {
     ui32 texturesCount;
 };
 
-Material *material_create(ShaderProgram *shader, ui32 textureCount, ...);
+Material *material_create(
+    ShaderProgram *shader, const char *shaderPath, ui32 textureCount, ...);
 void material_use(Material *self);
 
 #endif // H_MATERIAL

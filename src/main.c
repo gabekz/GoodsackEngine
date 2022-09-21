@@ -96,25 +96,22 @@ int main(void) {
         texture_create_n("../res/textures/defaults/specular.png");
 
 // Create the suzanne object
-    ShaderProgram *shaderSuzanne =
-        shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matSuzanne =
-        material_create(shaderSuzanne, 3, texEarthDiff, texEarthNorm, texDefSpec);
+        material_create(NULL, "../res/shaders/lit-diffuse.shader", 3,
+        texEarthDiff, texEarthNorm, texDefSpec);
     Mesh *meshSuzanne =
         mesh_create_obj(matSuzanne , "../res/models/sphere.obj", 1.0f,
             1, GL_FRONT, GL_CW);
 
 
 // Create light object
-    ShaderProgram *shaderLight = shader_create_program("../res/shaders/white.shader");
-    Material *matLight = material_create(shaderLight, 0); 
+    Material *matLight = material_create(NULL, "../res/shaders/white.shader", 0); 
     Mesh *meshLight =
         mesh_create_primitive(matLight, PRIMITIVE_PYRAMID, 0.03f, 0, 0, 0);
 
 // Update transform for material
     mat4 suzanneT = GLM_MAT4_IDENTITY_INIT;
-    model_set_matrix(meshSuzanne->model, suzanneT);
-    model_send_matrix(meshSuzanne->model, shaderSuzanne);
+    mesh_set_matrix(meshSuzanne, suzanneT);
 
 // Send models to the renderer
     renderer_add_mesh(renderer, meshSuzanne);
@@ -122,53 +119,40 @@ int main(void) {
 
     renderer_active_scene(renderer, 1);
 
-    // TODO:
-    // - Move shader path to material_create.
-    // - Move model_send_matrix to mesh_send_matrix. Model is not the same here.
-
 // Create the floor mesh
-    ShaderProgram *shaderFloor=
-        shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matFloor = 
-        material_create(shaderFloor, 3, texBrickDiff, texBrickNorm, texDefSpec); 
+        material_create(NULL, "../res/shaders/lit-diffuse.shader",
+        3, texBrickDiff, texBrickNorm, texDefSpec); 
     Mesh *meshFloor =
         mesh_create_obj(matFloor, "../res/models/plane.obj", 10.00f, 0, 0, 0);
-
-// Send transform to mesh->model and shader
+    // Send transform to mesh->model and shader
     mat4 floorT = GLM_MAT4_IDENTITY_INIT;
     glm_translate(floorT, (vec3){0.0f, -0.3f, 0.0f});
-    model_set_matrix(meshFloor->model, floorT);
-    model_send_matrix(meshFloor->model, shaderFloor);
+    mesh_set_matrix(meshFloor, floorT);
 
 // Create the box mesh
-    ShaderProgram *shaderBox=
-        shader_create_program("../res/shaders/lit-diffuse.shader");
     Material *matBox = 
-        material_create(shaderBox, 3, texContDiff, texDefNorm, texContSpec); 
+        material_create(NULL, "../res/shaders/lit-diffuse.shader", 3, texContDiff, texDefNorm, texContSpec); 
     Mesh *meshBox =
         mesh_create_obj(matBox, "../res/models/cube-test.obj",
                         1.0f, 0, 0, 0);
-
     // Send transform to mesh->model and shader
     mat4 boxT = GLM_MAT4_IDENTITY_INIT;
     glm_translate(boxT, (vec3){0.0f, -0.085f, 0.0f});
-    model_set_matrix(meshBox->model, boxT);
-    model_send_matrix(meshBox->model, shaderBox);
+    mesh_set_matrix(meshBox, boxT);
 
+// Add meshes to scene
     renderer_add_mesh(renderer, meshBox);
     renderer_add_mesh(renderer, meshFloor);
 
-
-    renderer_active_scene(renderer, 1);
 // Render Loop
+    renderer_active_scene(renderer, 1);
     renderer_tick(renderer, camera);
 
 // Clean-up 
-    free(shaderSuzanne);
     free(matSuzanne);
     free(meshSuzanne);
 
-    free(shaderLight);
     free(matLight);
     free(meshLight);
 

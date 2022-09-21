@@ -14,6 +14,7 @@ typedef struct _model Model;
 struct _mesh {
     Material *material;
     Model *model;
+    mat4 *modelMatrix;
 
     ui32 cullEnable, cullFace, cullFrontFace;
     ui32 drawingMode, renderingMode;
@@ -24,7 +25,6 @@ struct _model {
     ui32 vertexCount;
     ui32 indicesCount;
     const char *modelPath;
-    mat4 *modelMatrix;
 };
 
 Mesh *mesh_create_obj(Material *material, const char* modelPath, float scale,
@@ -36,7 +36,8 @@ Mesh *mesh_create_primitive(Material *material, ui32 primitive, float scale,
 void mesh_draw(Mesh *self);
 void mesh_draw_explicit(Mesh *self, Material *material);
 
-void model_set_matrix(Model *self, mat4 matrix);
-void model_send_matrix(Model *self, ShaderProgram *shader);
+void mesh_set_matrix(Mesh *self, mat4 matrix);
+// Weird implementation.
+void mesh_send_matrix(Mesh *self, ShaderProgram *shader);
 
 #endif // H_MESH

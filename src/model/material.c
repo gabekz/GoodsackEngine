@@ -2,11 +2,25 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "texture.h"
+#include "shader.h"
+
 #include <gfx.h>
 
-Material *material_create(ShaderProgram *shader, ui32 textureCount, ...) {
+Material *material_create(
+    ShaderProgram *shader, const char *shaderPath, ui32 textureCount, ...) {
+
     Material *ret = malloc(sizeof(Material));
-    ret->shaderProgram = shader;
+    if(shader) {
+        ret->shaderProgram = shader;
+    } 
+    else if (shaderPath != "" || shaderPath != NULL) {
+        ret->shaderProgram = shader_create_program(shaderPath);
+    }
+    else {
+        printf("\nERROR: [material] You need to pass either a ShaderProgram or a valid path\n");
+        return NULL;
+    }
 
     //ret->textures = textures;
     ret->texturesCount = textureCount;

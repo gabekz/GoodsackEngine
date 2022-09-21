@@ -167,7 +167,7 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
     ShaderProgram *shaderDepthMap =
         shader_create_program("../res/shaders/depth-map.shader");
 
-    Material *materialDepthMap = material_create(shaderDepthMap, 0);
+    Material *materialDepthMap = material_create(shaderDepthMap, NULL, 0);
 
 // TEST for lightspace matrix
     for(int i = 0; i < scene->meshC; i++) {

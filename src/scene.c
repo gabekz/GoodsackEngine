@@ -24,7 +24,7 @@ void scene_draw(Scene *self, bool isExplicit, Material *override) {
 
         // TEST: Send transform to shadowmap
         if(isExplicit) {
-            model_send_matrix(self->meshL[i]->model, override->shaderProgram);
+            mesh_send_matrix(self->meshL[i], override->shaderProgram);
         }
 
         (isExplicit)
