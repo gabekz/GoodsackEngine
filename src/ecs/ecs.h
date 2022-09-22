@@ -10,7 +10,7 @@ typedef union _ecs_system ECSSystem;
 typedef enum _ecs_component ECSComponent;
 typedef struct _ecs_component_list ECSComponentList;
 
-typedef void (*ECSSubscriber)(Entity);
+typedef void (*ECSSubscriber)();
 typedef ui64 EntityId;
 
 #define ECSEVENT_LAST ECS_UPDATE
@@ -33,7 +33,8 @@ struct _ecs_entity {
 
 struct _ecs_component_list {
     void *components;
-    ui64 components_size;
+    ui64 component_size;
+    //ui64 components_size;
     ui64 *entity_index_list;
 };
 

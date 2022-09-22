@@ -36,14 +36,14 @@ static void test_main() {
     printf("%x", c.properties.drawMode);
 }
 
-static void init(Entity entity){
+static void init(){
     // components required
     //struct ComponentTest test = ecs_get(entity, C_TEST);
 
     printf("\nInit from s_test\n");
 }
 
-static void update(Entity entity){
+static void update(){
     printf("Update from s_test");
     /*
     ENTITY_QUERY(CMP_HUMAN) {
