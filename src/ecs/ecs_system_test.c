@@ -37,6 +37,9 @@ static void test_main() {
 }
 
 static void init(Entity entity){
+    // components required
+    //struct ComponentTest test = ecs_get(entity, C_TEST);
+
     printf("\nInit from s_test\n");
 }
 

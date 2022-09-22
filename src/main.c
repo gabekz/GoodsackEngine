@@ -55,9 +55,21 @@ int main(void) {
 /*------------------------------------------- 
 |   ECS Testing
 */
+
+    // define a component
+    struct ComponentTest {
+        ui32 x, y;
+    };
+
+    // Initialize ECS and all ECS Systems.
     ECS *ecs = ecs_init();
 
+    // Test entity
     Entity test = ecs_new(ecs);
+    ecs_add(test, C_TEST, ((struct ComponentTest) {
+        .x = 0,
+        .y = 12,
+    }));
 
     ecs_event(ecs, ECS_INIT);
 
