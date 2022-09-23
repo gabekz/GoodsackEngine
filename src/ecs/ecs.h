@@ -3,6 +3,10 @@
 
 #include <util/sysdefs.h>
 
+#define ECS_TAG_SIZE 1
+#define ECS_TAG_UNUSED  0b00000000
+#define ECS_TAG_USED    0b00110000
+
 
 typedef struct _ecs ECS;
 typedef struct _ecs_entity Entity;
@@ -79,6 +83,7 @@ ECS *ecs_init();
 Entity ecs_new(ECS *self);
 void *ecs_get(Entity entity, ECSComponent component_id);
 void ecs_system_register(ECS *self, ECSSystem system);
+void ecs_component_register(ECS *self, ui32 component_id, ui64 size);
 void ecs_event(ECS *self, enum ECSEvent event);
 
 #endif // H_ECS

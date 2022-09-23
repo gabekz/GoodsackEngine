@@ -55,14 +55,24 @@ int main(void) {
 /*------------------------------------------- 
 |   ECS Testing
 */
+    // Initialize ECS and all ECS Systems.
+    ECS *ecs = ecs_init();
 
     // define a component
     struct ComponentTest {
         ui32 x, y;
     };
+    ecs_component_register(ecs, C_TEST, sizeof(struct ComponentTest));
 
-    // Initialize ECS and all ECS Systems.
-    ECS *ecs = ecs_init();
+    // From internal
+    struct ComponentTest *testCopy = 
+        (struct ComponentTest *)(ecs->component_lists[C_TEST].components);
+    // From internal
+    char *testCopyTags =
+        (char *)(ecs->component_lists[C_TEST].components+0+sizeof(
+        struct ComponentTest));
+
+    printf("data: %d, %d. Tag: %x", testCopy->x, testCopy->y, *testCopyTags & 0xff);
 
     // Test entity
     Entity test = ecs_new(ecs);
@@ -70,6 +80,13 @@ int main(void) {
         .x = 0,
         .y = 12,
     }));
+
+    ui32 size = ecs->component_lists[C_TEST].component_size;
+    struct ComponentTest *testCopyReal = 
+        (struct ComponentTest *)(
+        //(char *)(ecs->component_lists[C_TEST].components+size+ECS_TAG_SIZE));
+        (char *)(ecs->component_lists[C_TEST].components+0));
+    printf("\nindex: %d\ndata: %d, %d.\n tag: %x", size+ECS_TAG_SIZE, testCopyReal->x, testCopyReal->y, *((char *)testCopyReal+size) & 0xff);
 
     ecs_event(ecs, ECS_INIT);
 

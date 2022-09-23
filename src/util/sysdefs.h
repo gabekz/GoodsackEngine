@@ -23,6 +23,7 @@
 #define LOG_LEVEL   0
 #define DEBUG       0
 
+
 typedef int si32;
 typedef unsigned int ui32;
 
@@ -32,6 +33,7 @@ typedef unsigned short ui16;
 typedef signed char schr;
 typedef unsigned char byte;
 typedef unsigned long ulng;
+
 
 #if 0 // 32-bit
 typedef long si64;
