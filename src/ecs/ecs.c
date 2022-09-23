@@ -15,28 +15,10 @@ ECS *ecs_init() {
     ecs->capacity = capacity;
     ecs->nextId = 1;
 
-    // Initialize systems
+    // Initialize systems and components
     ecs->systems_size = 0;
     ecs->systems = malloc(1 * sizeof(ECSSystem));
     _ecs_init_internal(ecs);
-
-    // TODO: Declare all component-types here
-
-    // Allocate storage for component lists
-    /*
-    for(int i = 0; i < ECSCOMPONENT_LAST+1; i++) {
-        ui32 size = ecs->component_lists[i].component_size + ECS_TAG_SIZE;
-        ecs->component_lists[i].components = calloc(capacity, size);
-
-        printf("\n%d size", size);
-
-        unsigned char *tag = (unsigned char *)(ecs->component_lists[i].components+size);
-        *tag = ECS_TAG_USED;
-        
-
-        //printf("%01x\n", *(components+0+ECS_TAG_SIZE));
-    }
-    */
 
     return ecs;
 }
@@ -67,12 +49,6 @@ Entity ecs_new(ECS *self) {
     return entity;
 }
 
-#define ECSCL_ELEMENT_SIZE(_plist) ((_plist)->components_size)
-#define ECSCL_GET(_plist, _i) ({\
-        ECSComponentList *_pl = (_plist);\
-        ((_pl)->components) + ((_i) * ECSCL_ELEMENT_SIZE(_pl));\
-    })
-
 //void _ecs_get_test() {
     // GETTING
     /*
@@ -101,8 +77,25 @@ void _ecs_add_internal(Entity entity, ui32 component_id, void *value) {
     }
 }
 
+int ecs_has(Entity entity, ECSComponent component_id) {
+
+    ui32 size =
+        // NOTE: side should                    be entity INDEX+1....        with ecs_tag append as INDEX+0
+    entity.ecs->component_lists[component_id].component_size * (entity.id) + (ECS_TAG_SIZE * (entity.id - 1) );
+    printf("\n\nsize from has: %d\n", size);
+
+    int value = (*(char *)(entity.ecs->component_lists[component_id].components+size) & ECS_TAG_USED);
+    //return value;
+
+    return (value > 0) ? 1 : 0;
+
+}
+
 void *ecs_get(Entity entity, ECSComponent component_id) {
-    //assert(ecs_has(entity, component));
+    assert(ecs_has(entity, component_id));
+    ui32 size =
+    entity.ecs->component_lists[component_id].component_size * (entity.id - 1) + (ECS_TAG_SIZE * entity.id - ECS_TAG_SIZE);
+    return (entity.ecs->component_lists[component_id].components+size);
     //return ECSCL_GET(&entity.ecs->component_lists[component_id], entity.id);
 }
 

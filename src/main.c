@@ -39,10 +39,10 @@
 
 #include <ecs/ecs.h>
 
+#define USE_ECS
+
 #define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16.0f)
 #define texture_create_n(x) texture_create(x, GL_RGB8, false, 0.0f)
-
-#define USE_ECS
 
 /* ~~~ MAIN ~~~ */
 int main(void) {
@@ -64,29 +64,20 @@ int main(void) {
     };
     ecs_component_register(ecs, C_TEST, sizeof(struct ComponentTest));
 
-    // From internal
-    struct ComponentTest *testCopy = 
-        (struct ComponentTest *)(ecs->component_lists[C_TEST].components);
-    // From internal
-    char *testCopyTags =
-        (char *)(ecs->component_lists[C_TEST].components+0+sizeof(
-        struct ComponentTest));
-
-    printf("data: %d, %d. Tag: %x", testCopy->x, testCopy->y, *testCopyTags & 0xff);
-
     // Test entity
     Entity test = ecs_new(ecs);
     ecs_add(test, C_TEST, ((struct ComponentTest) {
-        .x = 0,
+        .x = 500,
         .y = 12,
     }));
+    struct ComponentTest *testCopyReal = ecs_get(test, C_TEST);
 
-    ui32 size = ecs->component_lists[C_TEST].component_size;
-    struct ComponentTest *testCopyReal = 
-        (struct ComponentTest *)(
-        //(char *)(ecs->component_lists[C_TEST].components+size+ECS_TAG_SIZE));
-        (char *)(ecs->component_lists[C_TEST].components+0));
-    printf("\nindex: %d\ndata: %d, %d.\n tag: %x", size+ECS_TAG_SIZE, testCopyReal->x, testCopyReal->y, *((char *)testCopyReal+size) & 0xff);
+    //(*(char *)(ecs->component_lists[C_TEST].components+size)) = 0; SET TAG
+    printf("\ndata: %d, %d.", testCopyReal->x, testCopyReal->y /**/);
+        // tag... *((char *)testCopyReal+size) & 0xff);
+
+
+    printf("\n entity has C_TEST?: %d ", ecs_has(test, C_TEST));
 
     ecs_event(ecs, ECS_INIT);
 
