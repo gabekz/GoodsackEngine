@@ -5,6 +5,7 @@
 #include "gfx.h" // GLFW & glad headers
 #include <util/debug.h>
 #include <util/sysdefs.h>
+#include <ecs/ecs.h>
 
 #include "../camera.h"
 
@@ -120,10 +121,11 @@ void renderer_add_mesh(Renderer *self, Mesh* mesh) {
     scene->meshL[count-1] = mesh;
 }
 
-void renderer_tick(Renderer *renderer, Camera *camera) {
+void renderer_tick(Renderer *renderer, ECS *ecs, Camera *camera) {
 
 // Scene initialization
     Scene *scene = renderer->sceneL[renderer->activeScene];
+    ecs_event(ecs, ECS_INIT);
 
 // Create the depthmap 
     ui32 depthMapFBO;
@@ -195,6 +197,7 @@ void renderer_tick(Renderer *renderer, Camera *camera) {
     Scene Logic/Data update
 */ 
         glfwPollEvents();
+        ecs_event(ecs, ECS_UPDATE);
         camera_input(camera, renderer->window);
         camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
         scene_update(scene);

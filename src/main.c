@@ -78,8 +78,6 @@ int main(void) {
 
     printf("\n entity has C_TEST?: %d ", ecs_has(test, C_TEST));
 
-    ecs_event(ecs, ECS_INIT);
-
 #endif
 
 
@@ -165,7 +163,7 @@ int main(void) {
 |   Render Loop
 */
     renderer_active_scene(renderer, 1);
-    renderer_tick(renderer, camera);
+    renderer_tick(renderer, ecs, camera);
 
     glfwDestroyWindow(renderer->window);
     free(renderer);

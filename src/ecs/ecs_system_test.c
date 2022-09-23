@@ -21,6 +21,10 @@ struct ComponentMesh {
     ui32 vbo;
 };
 
+struct ComponentTest {
+    ui32 x, y;
+};
+
 static void test_main() {
 
     struct ComponentMesh c = ((struct ComponentMesh){
@@ -41,9 +45,8 @@ static void init(Entity entity){
     //struct ComponentTest test = ecs_get(entity, C_TEST);
 
     // temp definition for testing (init can be found in main)
-    struct ComponentTest {
-        ui32 x, y;
-    };
+
+    if(!(ecs_has(entity, C_TEST))) return;
 
     struct ComponentTest *t = ecs_get(entity, C_TEST);
     printf("\nEntity id: %d:\n data: %d, %d\n", (int)entity.id, t->x, t->y);
@@ -52,7 +55,12 @@ static void init(Entity entity){
 }
 
 static void update(Entity entity){
-    printf("Update from s_test");
+    if(!(ecs_has(entity, C_TEST))) return;
+    //if(!(ecs_has(entity, C_TEST2))) return;
+
+    struct ComponentTest *t = ecs_get(entity, C_TEST);
+    t->x += 1;
+    printf("\n\n%d, ", t->x);
     /*
     ENTITY_QUERY(CMP_HUMAN) {
         if(entity.health <= 0) {
@@ -62,7 +70,7 @@ static void update(Entity entity){
         }
     }
     */
-} 
+}
 
 void s_test_init(ECS *ecs) {
     ecs_system_register(ecs, ((ECSSystem){

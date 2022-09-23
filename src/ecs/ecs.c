@@ -69,7 +69,7 @@ int ecs_has(Entity entity, ECSComponent component_id) {
 
     ui32 size =
         // NOTE: side should                    be entity INDEX+1....        with ecs_tag append as INDEX+0
-    entity.ecs->component_lists[component_id].component_size * (entity.id) + (ECS_TAG_SIZE * (entity.id - 1) );
+    entity.ecs->component_lists[component_id].component_size * (entity.index+1) + (ECS_TAG_SIZE * (entity.index) );
     printf("\n\nsize from has: %d\n", size);
 
     int value = (*(char *)(entity.ecs->component_lists[component_id].components+size) & ECS_TAG_USED);
@@ -82,7 +82,7 @@ int ecs_has(Entity entity, ECSComponent component_id) {
 void *ecs_get(Entity entity, ECSComponent component_id) {
     assert(ecs_has(entity, component_id));
     ui32 size =
-    entity.ecs->component_lists[component_id].component_size * (entity.id - 1) + (ECS_TAG_SIZE * entity.id - ECS_TAG_SIZE);
+    entity.ecs->component_lists[component_id].component_size * (entity.index) + (ECS_TAG_SIZE * (entity.index+1)- ECS_TAG_SIZE);
     return (entity.ecs->component_lists[component_id].components+size);
     //return ECSCL_GET(&entity.ecs->component_lists[component_id], entity.id);
 }
