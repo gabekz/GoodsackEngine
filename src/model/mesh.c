@@ -3,7 +3,7 @@
 
 #include <loaders/loader_obj.h>
 #include <model/primitives.h>
-#include "gfx.h"
+#include <util/gfx.h>
 
 Mesh *mesh_create_obj(Material *material, const char* modelPath, float scale,
         ui32 cullEnable, ui32 cullFace, ui32 cullFrontFace) {

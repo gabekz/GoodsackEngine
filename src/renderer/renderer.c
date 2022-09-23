@@ -2,8 +2,8 @@
 
 #include<stdio.h>
 
-#include "gfx.h" // GLFW & glad headers
 #include <util/debug.h>
+#include <util/gfx.h>
 #include <util/sysdefs.h>
 #include <ecs/ecs.h>
 

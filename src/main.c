@@ -17,11 +17,11 @@
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
 
-#include <util/sysdefs.h>
 #include <util/debug.h>
+#include <util/gfx.h> // GLFW & glad headers
+#include <util/sysdefs.h>
 
 #include <renderer/renderer.h>
-#include "gfx.h" // GLFW & glad headers
 #include "camera.h"
 
 #include <glbuffer/glbuffer.h>

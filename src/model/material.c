@@ -5,7 +5,7 @@
 #include "texture.h"
 #include "shader.h"
 
-#include <gfx.h>
+#include <util/gfx.h>
 
 Material *material_create(
     ShaderProgram *shader, const char *shaderPath, ui32 textureCount, ...) {

@@ -1,4 +1,5 @@
 #include "glbuffer.h"
+
 #include <stdlib.h>
 
 VBO *vbo_create(const void* data, unsigned int size) {

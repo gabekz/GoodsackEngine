@@ -1,7 +1,7 @@
 #include "lighting.h"
 
-#include <gfx.h>
 #include <util/sysdefs.h>
+#include <util/gfx.h>
 
 Light *light_create(float *position, float *color, LightType type) {
 

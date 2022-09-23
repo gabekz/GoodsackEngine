@@ -5,7 +5,7 @@
 #ifndef GLBUFFER_H
 #define GLBUFFER_H
 
-#include "gfx.h"
+#include <util/gfx.h>
 
 typedef struct _VAO VAO;
 typedef struct _VBO VBO;

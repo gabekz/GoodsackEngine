@@ -1,12 +1,12 @@
 #ifndef H_RENDERER
 #define H_RENDERER
 
-#include "gfx.h"
 #include "camera.h"
 #include <model/mesh.h>
 #include <lighting/lighting.h>
 
 #include <util/sysdefs.h>
+#include <util/gfx.h>
 
 #include "../scene.h"
 

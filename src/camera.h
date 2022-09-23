@@ -1,11 +1,12 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "gfx.h"
 #include "shader.h"
 
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
+
+#include <util/gfx.h>
 
 typedef struct _camera Camera;
 

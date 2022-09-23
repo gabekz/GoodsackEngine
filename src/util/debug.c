@@ -1,8 +1,11 @@
 // Debugging APIENTRY
 
-#include "../gfx.h"
+#include "debug.h"
+
 #include<stdio.h>
 #include<stdlib.h>
+
+#include <util/gfx.h>
 
 void APIENTRY glDebugOutput(GLenum source, 
                             GLenum type, 

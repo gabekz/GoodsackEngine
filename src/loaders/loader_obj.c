@@ -8,7 +8,7 @@
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
 
-#include "gfx.h"
+#include <util/gfx.h>
 #include <model/mesh.h>
 
 Model* load_obj(const char* path, float scale) {

@@ -2,7 +2,7 @@
 #define _SHADER_
 
 #include <util/sysdefs.h>
-#include "gfx.h"
+#include <util/gfx.h>
 
 typedef struct _shaderProgram   ShaderProgram;
 typedef struct _shaderSource    ShaderSource;

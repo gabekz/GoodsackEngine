@@ -1,9 +1,7 @@
 #ifndef H_DEBUG
 #define H_DEBUG
 
-#include "../gfx.h"
-#include<stdio.h>
-#include<stdlib.h>
+#include <util/gfx.h>
 
 void APIENTRY glDebugOutput(GLenum source, 
                             GLenum type, 

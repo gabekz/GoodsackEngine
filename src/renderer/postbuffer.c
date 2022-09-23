@@ -1,15 +1,17 @@
 /* postbuffer.c ~ singleton framebuffer program */
 
 #include "postbuffer.h"
-#include "../glbuffer/glbuffer.h"
-#include "../gfx.h"
-#include "../shader.h"
-#include <model/primitives.h>
-
-#include <util/sysdefs.h>
 
 #include <stdlib.h>
 #include <stdio.h>
+
+#include <glbuffer/glbuffer.h>
+#include <model/primitives.h>
+#include "../shader.h"
+
+#include <util/sysdefs.h>
+#include <util/gfx.h>
+
 
 static ui32 msFBO, sbFBO;
 static ui32 msRBO, sbRBO;

@@ -1,8 +1,9 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include "gfx.h"
-#include "stdlib.h"
+#include <stdlib.h>
+
+#include <util/gfx.h>
 #include <util/sysdefs.h>
 
 typedef struct _texture Texture;
