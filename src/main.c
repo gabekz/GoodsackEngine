@@ -22,7 +22,8 @@
 #include <util/sysdefs.h>
 
 #include <renderer/renderer.h>
-#include "camera.h"
+#include <components/c_camera.h>
+//#include "camera.h"
 
 #include <glbuffer/glbuffer.h>
 #include "shader.h"
@@ -56,7 +57,7 @@ int main(void) {
 |   ECS Testing
 */
     // Initialize ECS and all ECS Systems.
-    ECS *ecs = ecs_init();
+    ECS *ecs = ecs_init(renderer);
 
     // define a component
     struct ComponentTest {
@@ -80,11 +81,15 @@ int main(void) {
 
 #endif
 
-
 // Create the Camera, containing starting-position and up-axis coords.
+    Entity camera = ecs_new(ecs);
+    ecs_add(camera, C_CAMERA, ((struct ComponentCamera) {
+        .position = (vec3){0.0f, 0.0f, 2.0f},
+        .axisUp   = (vec3){0.0f, 1.0f, 0.0f}
+    }));
     // TODO: Update camera when window is resized
-    Camera* camera = camera_create(winWidth, winHeight,
-      (vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
+    //Camera* camera = camera_create(winWidth, winHeight,
+      //(vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
 
 // Lighting information
     float* lightPos     = (vec3){0.0f, 0.1f, 0.4f};

@@ -7,8 +7,6 @@
 #include <util/sysdefs.h>
 #include <ecs/ecs.h>
 
-#include "../camera.h"
-
 #include "postbuffer.h"
 
 static void _resize_callback(GLFWwindow* window, int widthRe, int heightRe) {
@@ -121,7 +119,7 @@ void renderer_add_mesh(Renderer *self, Mesh* mesh) {
     scene->meshL[count-1] = mesh;
 }
 
-void renderer_tick(Renderer *renderer, ECS *ecs, Camera *camera) {
+void renderer_tick(Renderer *renderer, ECS *ecs) {
 
 // Scene initialization
     Scene *scene = renderer->sceneL[renderer->activeScene];
@@ -198,8 +196,6 @@ void renderer_tick(Renderer *renderer, ECS *ecs, Camera *camera) {
 */ 
         glfwPollEvents();
         ecs_event(ecs, ECS_UPDATE);
-        camera_input(camera, renderer->window);
-        camera_send_matrix(camera, 45.0f, 0.1f, 100.0f);
         scene_update(scene);
 /*------------------------------------------- 
     Pass #1 - Directional Shadowmap 

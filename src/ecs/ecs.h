@@ -1,6 +1,7 @@
 #ifndef H_ECS
 #define H_ECS
 
+#include <renderer/renderer.h>
 #include <util/sysdefs.h>
 
 #define ECS_TAG_SIZE 1
@@ -27,11 +28,10 @@ enum ECSEvent {
     ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE
 };
 
-#define ECSCOMPONENT_LAST C_TEST3
+#define ECSCOMPONENT_LAST C_CAMERA
 enum _ecs_component {
     C_TEST = 0,
-    C_TEST2,
-    C_TEST3
+    C_CAMERA
 };
 
 /*-------------------------------------------*/
@@ -53,10 +53,12 @@ struct _ecs_component_list {
 
 struct _ecs {
     EntityId *ids, nextId;
+    ui32 nextIndex;
     ui32 capacity;
 
-    ECSComponentList component_lists[ECSCOMPONENT_LAST+1];
+    Renderer *renderer;
 
+    ECSComponentList component_lists[ECSCOMPONENT_LAST+1];
     ECSSystem *systems;
     ui32 systems_size;
 
@@ -81,6 +83,7 @@ union _ecs_system {
 // Declare systems here
 static inline void _ecs_init_internal(ECS *ecs) {
     _ECS_DECL_SYSTEM(s_test);
+    _ECS_DECL_SYSTEM(s_camera);
 }
 
 /*-------------------------------------------*/
@@ -95,7 +98,7 @@ void _ecs_add_internal(Entity entity, ui32 component_id, void *value);
 
 /*-------------------------------------------*/
 
-ECS *ecs_init();
+ECS *ecs_init(Renderer *renderer);
 
 Entity ecs_new(ECS *self);
 int ecs_has(Entity entity, ECSComponent component_id);

@@ -37,7 +37,7 @@ static void test_main() {
         }
     });
 
-    printf("%x", c.properties.drawMode);
+    //printf("%x", c.properties.drawMode);
 }
 
 static void init(Entity entity){
@@ -49,9 +49,9 @@ static void init(Entity entity){
     if(!(ecs_has(entity, C_TEST))) return;
 
     struct ComponentTest *t = ecs_get(entity, C_TEST);
-    printf("\nEntity id: %d:\n data: %d, %d\n", (int)entity.id, t->x, t->y);
+    //printf("\nEntity id: %d:\n data: %d, %d\n", (int)entity.id, t->x, t->y);
 
-    printf("\nInit from s_test\n");
+    //printf("\nInit from s_test\n");
 }
 
 static void update(Entity entity){
@@ -60,7 +60,7 @@ static void update(Entity entity){
 
     struct ComponentTest *t = ecs_get(entity, C_TEST);
     t->x += 1;
-    printf("\n\n%d, ", t->x);
+    //printf("\n\n%d, ", t->x);
     /*
     ENTITY_QUERY(CMP_HUMAN) {
         if(entity.health <= 0) {
