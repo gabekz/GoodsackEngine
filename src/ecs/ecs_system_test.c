@@ -36,14 +36,22 @@ static void test_main() {
     printf("%x", c.properties.drawMode);
 }
 
-static void init(){
+static void init(Entity entity){
     // components required
     //struct ComponentTest test = ecs_get(entity, C_TEST);
+
+    // temp definition for testing (init can be found in main)
+    struct ComponentTest {
+        ui32 x, y;
+    };
+
+    struct ComponentTest *t = ecs_get(entity, C_TEST);
+    printf("\nEntity id: %d:\n data: %d, %d\n", (int)entity.id, t->x, t->y);
 
     printf("\nInit from s_test\n");
 }
 
-static void update(){
+static void update(Entity entity){
     printf("Update from s_test");
     /*
     ENTITY_QUERY(CMP_HUMAN) {
@@ -54,7 +62,7 @@ static void update(){
         }
     }
     */
-}
+} 
 
 void s_test_init(ECS *ecs) {
     ecs_system_register(ecs, ((ECSSystem){

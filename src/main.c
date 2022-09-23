@@ -76,7 +76,6 @@ int main(void) {
     printf("\ndata: %d, %d.", testCopyReal->x, testCopyReal->y /**/);
         // tag... *((char *)testCopyReal+size) & 0xff);
 
-
     printf("\n entity has C_TEST?: %d ", ecs_has(test, C_TEST));
 
     ecs_event(ecs, ECS_INIT);

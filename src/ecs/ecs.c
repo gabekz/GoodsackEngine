@@ -33,6 +33,7 @@ Entity ecs_new(ECS *self) {
 
     Entity entity = (Entity) {
         .id  = self->nextId,
+        .index = self->nextId-1, // TODO: alignment (for deletion)
         .ecs = self
     };
 
@@ -41,21 +42,8 @@ Entity ecs_new(ECS *self) {
     self->ids[self->nextId-1] = entity.id;
     self->nextId++; 
 
-    // update componentlist tags
-    for(int i = 0; i < ECSCOMPONENT_LAST+1; i++) {
-        // TODO: mark here as "unused"
-    }
-
     return entity;
 }
-
-//void _ecs_get_test() {
-    // GETTING
-    /*
-    for(int i = 0; i < list.components_size; i++) {
-    }
-    */
-//}
 
 void _ecs_add_internal(Entity entity, ui32 component_id, void *value) {
     ECS *ecs = entity.ecs;
@@ -63,12 +51,12 @@ void _ecs_add_internal(Entity entity, ui32 component_id, void *value) {
 
     // TODO: entityId should actually be it's index (for deletions)
     unsigned char *tag = (unsigned char *)(list->components+(entity.id));
-    printf("old tag: %x", *tag & 0xff);
+    //printf("old tag: %x", *tag & 0xff);
     assert(! (*tag & ECS_TAG_USED));
     *tag |= ECS_TAG_USED;
-    printf("new tag: %x", *tag & 0xff);
+    //printf("new tag: %x", *tag & 0xff);
 
-    printf("entity ID is %d", entity.id);
+    //printf("entity ID is %d", (int)entity.id);
 
     //void *component = list->components+(entity.id-1);
     if(value != NULL) {
@@ -128,19 +116,24 @@ void ecs_event(ECS *self, enum ECSEvent event) {
     // Loop through each system, fire the appropriate event
     for(int i = 0; i < systemsCount; i++) {
         ECSSubscriber func = self->systems[i].subscribers[event];
+#if 0
+        // Call the function per-system
         if (func != NULL) {
             func();
             //continue;
         }
-        // Call the system for every entity
-        /*
-        for (int j = 0; j < entityCount; j++) {
-            f((Entity) { .id = self->ids[j], .ecs = self });
+#else
+        if (func == NULL) {
+            //func();
+            continue;
         }
-        */
+        // Call the function per-entity
+        for (int j = 0; j < entityCount; j++) {
+            func((Entity) { .id = self->ids[j], .ecs = self });
+        }
+#endif
 
     }
-
 
     // TODO: determine whether or not there is a required component.
     // Go through that list instead of every entity.
