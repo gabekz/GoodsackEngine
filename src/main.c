@@ -50,25 +50,8 @@ int main(void) {
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
 
-    // Initialize ECS and all ECS Systems.
+// Initialize ECS and all ECS Systems. Passing over the renderer.
     ECS *ecs = ecs_init(renderer);
-
-#if 1 // ECS-testing
-    // define a component
-    struct ComponentTest {
-        ui32 x, y;
-    };
-    ecs_component_register(ecs, C_TEST, sizeof(struct ComponentTest));
-
-    // Test entity
-    Entity test = ecs_new(ecs);
-    ecs_add(test, C_TEST, ((struct ComponentTest) {
-        .x = 500,
-        .y = 12,
-    }));
-    struct ComponentTest *testCopyReal = ecs_get(test, C_TEST);
-
-#endif
 
 // Create the Camera, containing starting-position and up-axis coords.
     Entity camera = ecs_new(ecs);

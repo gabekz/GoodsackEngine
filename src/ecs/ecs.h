@@ -30,8 +30,7 @@ enum ECSEvent {
 
 #define ECSCOMPONENT_LAST C_CAMERA
 enum _ecs_component {
-    C_TEST = 0,
-    C_CAMERA
+    C_CAMERA = 0,
 };
 
 /*-------------------------------------------*/
@@ -82,7 +81,6 @@ union _ecs_system {
 
 // Declare systems here
 static inline void _ecs_init_internal(ECS *ecs) {
-    _ECS_DECL_SYSTEM(s_test);
     _ECS_DECL_SYSTEM(s_camera);
 }
 
