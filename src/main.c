@@ -40,8 +40,6 @@
 
 #include <ecs/ecs.h>
 
-#define USE_ECS
-
 #define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16.0f)
 #define texture_create_n(x) texture_create(x, GL_RGB8, false, 0.0f)
 
@@ -52,13 +50,10 @@ int main(void) {
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
 
-#ifdef USE_ECS
-/*------------------------------------------- 
-|   ECS Testing
-*/
     // Initialize ECS and all ECS Systems.
     ECS *ecs = ecs_init(renderer);
 
+#if 1 // ECS-testing
     // define a component
     struct ComponentTest {
         ui32 x, y;
@@ -73,23 +68,15 @@ int main(void) {
     }));
     struct ComponentTest *testCopyReal = ecs_get(test, C_TEST);
 
-    //(*(char *)(ecs->component_lists[C_TEST].components+size)) = 0; SET TAG
-    printf("\ndata: %d, %d.", testCopyReal->x, testCopyReal->y /**/);
-        // tag... *((char *)testCopyReal+size) & 0xff);
-
-    printf("\n entity has C_TEST?: %d ", ecs_has(test, C_TEST));
-
 #endif
 
 // Create the Camera, containing starting-position and up-axis coords.
     Entity camera = ecs_new(ecs);
     ecs_add(camera, C_CAMERA, ((struct ComponentCamera) {
-        .position = (vec3){0.0f, 0.0f, 2.0f},
-        .axisUp   = (vec3){0.0f, 1.0f, 0.0f}
+        .position = {0.0f, 0.0f, 2.0f},
+        .axisUp   = {0.0f, 1.0f, 0.0f},
+        .speed    = 0.05f,
     }));
-    // TODO: Update camera when window is resized
-    //Camera* camera = camera_create(winWidth, winHeight,
-      //(vec3){0.0f, 0.0f, 2.0f}, (vec3){0.0f, 1.0f, 0.0f});
 
 // Lighting information
     float* lightPos     = (vec3){0.0f, 0.1f, 0.4f};

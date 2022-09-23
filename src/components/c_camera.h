@@ -6,7 +6,7 @@
 
 struct ComponentCamera {
 
-    float *position, *axisUp;
+    vec3 position, axisUp;
     float speed, sensitivity;
     ui32 uboId;
 

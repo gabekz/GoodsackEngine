@@ -54,7 +54,7 @@ void _ecs_add_internal(Entity entity, ui32 component_id, void *value) {
     ECSComponentList* list = &ecs->component_lists[component_id];
     ui32 size =
         (entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index+1));
-    printf("index of tag for Entity [%d]: %d", entity.index, size);
+    //printf("index of tag for Entity [%d]: %d", entity.index, size);
 
     char *tag = (char *)(list->components+size);
     *tag |= ECS_TAG_USED;
@@ -82,7 +82,7 @@ int ecs_has(Entity entity, ECSComponent component_id) {
     //printf("index of tag for Entity [%d]: %d", entity.index, size);
     char *tag = (char *)(list->components+size);
     int value = *tag;
-    printf("\necs_has - component: %d, index %d, entity index: %d\n", component_id, size, entity.index);
+    //printf("\necs_has - component: %d, index %d, entity index: %d\n", component_id, size, entity.index);
     //return value;
 
     return (value > 0) ? 1 : 0;
@@ -95,7 +95,7 @@ void *ecs_get(Entity entity, ECSComponent component_id) {
 
     ui32 size =
         (list->component_size * (entity.index));
-    printf("\necs_get - id: %d, index %d, id: %d", component_id, size, entity.id);
+    //printf("\necs_get - id: %d, index %d, id: %d", component_id, size, entity.id);
     return (entity.ecs->component_lists[component_id].components+size);
     //return ECSCL_GET(&entity.ecs->component_lists[component_id], entity.id);
 }
