@@ -1,7 +1,6 @@
 #ifndef H_RENDERER
 #define H_RENDERER
 
-#include "camera.h"
 #include <model/mesh.h>
 #include <lighting/lighting.h>
 
@@ -16,8 +15,6 @@ typedef struct _light Light;
 struct _renderer {
     GLFWwindow *window;
     int windowWidth, windowHeight;
-
-    Camera *activeCamera;
 
     Scene **sceneL;
     ui16  sceneC, activeScene;

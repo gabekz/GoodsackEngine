@@ -22,7 +22,7 @@
 #include <util/sysdefs.h>
 
 #include <renderer/renderer.h>
-#include <components/c_camera.h>
+#include <components/camera.h>
 //#include "camera.h"
 
 #include <glbuffer/glbuffer.h>
