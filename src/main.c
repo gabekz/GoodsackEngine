@@ -34,7 +34,6 @@
 
 #include <loaders/loader_obj.h>
 
-
 #define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16.0f)
 #define texture_create_n(x) texture_create(x, GL_RGB8, false, 0.0f)
 

@@ -28,9 +28,10 @@ enum ECSEvent {
     ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE
 };
 
-#define ECSCOMPONENT_LAST C_CAMERA
+#define ECSCOMPONENT_LAST C_TRANSFORM
 enum _ecs_component {
     C_CAMERA = 0,
+    C_TRANSFORM,
 };
 
 /*-------------------------------------------*/
@@ -97,12 +98,14 @@ void _ecs_add_internal(Entity entity, ui32 component_id, void *value);
 /*-------------------------------------------*/
 
 ECS *ecs_init(Renderer *renderer);
-
 Entity ecs_new(ECS *self);
+
 int ecs_has(Entity entity, ECSComponent component_id);
 void *ecs_get(Entity entity, ECSComponent component_id);
+
 void ecs_system_register(ECS *self, ECSSystem system);
 void ecs_component_register(ECS *self, ui32 component_id, ui64 size);
+
 void ecs_event(ECS *self, enum ECSEvent event);
 
 #endif // H_ECS
