@@ -19,6 +19,7 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
+#include <components/mesh.h>
 #include <components/camera.h>
 
 #include <core/api/opengl/glbuffer.h>
@@ -36,6 +37,9 @@
 
 #define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16.0f)
 #define texture_create_n(x) texture_create(x, GL_RGB8, false, 0.0f)
+
+#define ECS_MESH_ENABLE
+//#define ECS_LIGHT_ENABLE
 
 /* ~~~ MAIN ~~~ */
 int main(void) {
@@ -55,12 +59,21 @@ int main(void) {
         .speed    = 0.05f,
     }));
 
+#ifdef ECS_LIGHT_ENABLE
+    Entity sun = ecs_new(ecs);
+    ecs_add(sun, C_LIGHT, ((struct ComponentLight) {
+        .type  = DirectionalLight;
+        .color = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
+    }));
+#else
 // Lighting information
     float* lightPos     = (vec3){0.0f, 0.1f, 0.4f};
     float* lightColor   = (vec4){1.0f, 1.0f, 1.0f, 1.0f};
 
 // UBO Lighting
     lighting_initialize(lightPos, lightColor);
+#endif
+
 
 // Textures
     Texture *texBrickDiff =
@@ -87,6 +100,9 @@ int main(void) {
     Material *matSuzanne =
         material_create(NULL, "../res/shaders/lit-diffuse.shader", 3,
         texEarthDiff, texEarthNorm, texDefSpec);
+
+#ifndef ECS_MESH_ENABLE
+
     Mesh *meshSuzanne =
         mesh_create_obj(matSuzanne , "../res/models/sphere.obj", 1.0f,
             1, GL_FRONT, GL_CW);
@@ -97,6 +113,19 @@ int main(void) {
 
 // Send models to the renderer
     renderer_add_mesh(renderer, meshSuzanne);
+
+#else
+    Entity suzanneObject = ecs_new(ecs);
+    ecs_add(suzanneObject, C_TRANSFORM);
+    ecs_add(suzanneObject, C_MESH, ((struct ComponentMesh) {
+        .material = matSuzanne,
+        .modelPath = "../res/models/sphere.obj",
+        .properties = {
+            .drawMode = DRAW_ARRAYS,
+            .cullMode = CULL_CW | CULL_FORWARD,
+        }
+    }));
+#endif
 
 /*------------------------------------------- 
 |   Scene #2 Objects
@@ -131,7 +160,7 @@ int main(void) {
 /*------------------------------------------- 
 |   Render Loop
 */
-    renderer_active_scene(renderer, 1);
+    renderer_active_scene(renderer, 0);
     renderer_tick(renderer, ecs, camera);
 
     glfwDestroyWindow(renderer->window);

@@ -9,6 +9,7 @@ void scene_update(Scene *self) {
         rotation += rotationInc;
     }
 
+#if 0
     if(self->id == 0) {
         shader_use(self->meshL[0]->material->shaderProgram);
         mat4 suzanne = GLM_MAT4_IDENTITY_INIT;
@@ -17,6 +18,7 @@ void scene_update(Scene *self) {
         glGetUniformLocation(self->meshL[0]->material->shaderProgram->id, "u_Model"),
         1, GL_FALSE, (float *)suzanne);
     }
+#endif
 }
 
 void scene_draw(Scene *self, bool isExplicit, Material *override) {

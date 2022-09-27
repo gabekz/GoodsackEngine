@@ -208,6 +208,10 @@ void renderer_tick(Renderer *renderer, ECS *ecs) {
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
 
+        renderer->currentPass = SHADOW;
+        renderer->explicitMaterial = materialDepthMap;
+        ecs_event(ecs, ECS_RENDER);
+
         scene_draw(scene, true, materialDepthMap);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -226,6 +230,9 @@ void renderer_tick(Renderer *renderer, ECS *ecs) {
         // Bind the shadowmap to texture slot 6
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, depthMap);
+
+        renderer->currentPass = REGULAR;
+        ecs_event(ecs, ECS_RENDER);
 
         scene_draw(scene, false, NULL);
     /*------------------------------------------- 

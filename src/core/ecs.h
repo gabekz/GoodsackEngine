@@ -28,11 +28,25 @@ enum ECSEvent {
     ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE
 };
 
-#define ECSCOMPONENT_LAST C_TRANSFORM
+#define ECSCOMPONENT_LAST C_MESH 
 enum _ecs_component {
-    C_CAMERA = 0,
-    C_TRANSFORM,
+    C_TRANSFORM = 0,
+    C_CAMERA, 
+    C_MESH,
 };
+
+/*-------------------------------------------*/
+
+#define _ECS_DECL_SYSTEM(_name)\
+    extern void _name##_init();\
+    _name##_init(ecs);
+
+// Declare systems here
+static inline void _ecs_init_internal(ECS *ecs) {
+    _ECS_DECL_SYSTEM(s_transform);
+    _ECS_DECL_SYSTEM(s_camera);
+    _ECS_DECL_SYSTEM(s_draw_mesh);
+}
 
 /*-------------------------------------------*/
 
@@ -73,19 +87,6 @@ union _ecs_system {
 
     ECSSubscriber subscribers[ECSEVENT_LAST + 1];
 };
-
-/*-------------------------------------------*/
-
-#define _ECS_DECL_SYSTEM(_name)\
-    extern void _name##_init();\
-    _name##_init(ecs);
-
-// Declare systems here
-static inline void _ecs_init_internal(ECS *ecs) {
-    _ECS_DECL_SYSTEM(s_camera);
-}
-
-/*-------------------------------------------*/
 
 void _ecs_add_internal(Entity entity, ui32 component_id, void *value);
 

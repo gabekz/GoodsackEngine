@@ -65,6 +65,5 @@ void s_camera_init(ECS *ecs) {
         .destroy    = NULL,
         .render     = NULL,
         .update     = (ECSSubscriber) update,
-
     }));
 }
