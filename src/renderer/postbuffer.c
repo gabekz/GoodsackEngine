@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <glbuffer/glbuffer.h>
+#include <core/opengl/glbuffer.h>
 #include <model/primitives.h>
 #include "../shader.h"
 

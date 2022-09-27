@@ -2,7 +2,7 @@
 #define H_MESH
 
 #include <util/sysdefs.h>
-#include <glbuffer/glbuffer.h>
+#include <core/opengl/glbuffer.h>
 
 #include <model/material.h>
 #include "texture.h"

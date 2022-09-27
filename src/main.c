@@ -25,7 +25,7 @@
 #include <components/camera.h>
 //#include "camera.h"
 
-#include <glbuffer/glbuffer.h>
+#include <core/opengl/glbuffer.h>
 #include "shader.h"
 #include "texture.h"
 
