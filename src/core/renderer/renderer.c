@@ -9,8 +9,8 @@
 #include "postbuffer.h"
 #include <core/ecs.h>
 
-
-static void _resize_callback(GLFWwindow* window, int widthRe, int heightRe) {
+static void _resize_callback
+(GLFWwindow* window, int widthRe, int heightRe) {
     printf("window resize: %d and %d\n", widthRe, heightRe);
     glViewport(0, 0, widthRe, heightRe);
 }
@@ -71,7 +71,6 @@ Renderer* renderer_init() {
     Scene **sceneList = malloc(sizeof(Scene*));
     *(sceneList) = scene;
 
-
     Renderer *ret = malloc(sizeof(Renderer));
     ret->window       = window;
     ret->windowWidth  = winWidth;
@@ -84,7 +83,6 @@ Renderer* renderer_init() {
     return ret;
 }
 
-// TODO: fix broken realloc..
 void renderer_active_scene(Renderer* self, ui16 sceneIndex) {
     ui32 sceneCount = self->sceneC;
     if(sceneCount < sceneIndex + 1) {
@@ -121,7 +119,6 @@ void renderer_add_mesh(Renderer *self, Mesh* mesh) {
 }
 
 void renderer_tick(Renderer *renderer, ECS *ecs) {
-
 // Scene initialization
     Scene *scene = renderer->sceneL[renderer->activeScene];
     ecs_event(ecs, ECS_INIT);
@@ -192,15 +189,15 @@ void renderer_tick(Renderer *renderer, ECS *ecs) {
 |   Render Loop
 */
     while(!glfwWindowShouldClose(renderer->window)) {
-/*------------------------------------------- 
-    Scene Logic/Data update
-*/ 
+    /*------------------------------------------- 
+        Scene Logic/Data update
+    */ 
         glfwPollEvents();
         ecs_event(ecs, ECS_UPDATE);
         scene_update(scene);
-/*------------------------------------------- 
-    Pass #1 - Directional Shadowmap 
-*/ 
+    /*------------------------------------------- 
+        Pass #1 - Directional Shadowmap 
+    */ 
         shader_use(shaderDepthMap);
         glUniformMatrix4fv(
             glGetUniformLocation(shaderDepthMap->id, "u_LightSpaceMatrix"),
@@ -217,9 +214,9 @@ void renderer_tick(Renderer *renderer, ECS *ecs) {
 
         glViewport(0, 0, renderer->windowWidth, renderer->windowHeight);
 
-/*------------------------------------------- 
-    Pass #2 - Post Processing Pass 
-*/ 
+    /*------------------------------------------- 
+        Pass #2 - Post Processing Pass 
+    */ 
         postbuffer_bind();
 
         glEnable(GL_DEPTH_TEST);
@@ -231,9 +228,9 @@ void renderer_tick(Renderer *renderer, ECS *ecs) {
         glBindTexture(GL_TEXTURE_2D, depthMap);
 
         scene_draw(scene, false, NULL);
-/*------------------------------------------- 
-    Pass #3 - Final: Backbuffer draw
-*/ 
+    /*------------------------------------------- 
+        Pass #3 - Final: Backbuffer draw
+    */ 
         //glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
         postbuffer_draw(renderer->windowWidth, renderer->windowHeight);
         glfwSwapBuffers(renderer->window);

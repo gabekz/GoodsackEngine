@@ -8,6 +8,7 @@
 #include <core/scene.h>
 #include <model/mesh.h>
 
+
 typedef struct _renderer Renderer;
 typedef struct _light Light;
 
