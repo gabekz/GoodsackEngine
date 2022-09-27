@@ -2,11 +2,12 @@
 
 #include<stdio.h>
 
-#include "postbuffer.h"
-#include <ecs/ecs.h>
 #include <util/debug.h>
 #include <util/gfx.h>
 #include <util/sysdefs.h>
+
+#include "postbuffer.h"
+#include <core/ecs.h>
 
 
 static void _resize_callback(GLFWwindow* window, int widthRe, int heightRe) {

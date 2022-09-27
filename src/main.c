@@ -21,11 +21,12 @@
 
 #include <components/camera.h>
 
-#include <core/renderer.h>
 #include <core/api/opengl/glbuffer.h>
+#include <core/ecs.h>
+#include <core/lighting.h>
+#include <core/renderer.h>
 #include <core/shader.h>
 #include <core/texture.h>
-#include <core/lighting.h>
 
 #include <model/material.h>
 #include <model/mesh.h>
@@ -33,7 +34,6 @@
 
 #include <loaders/loader_obj.h>
 
-#include <ecs/ecs.h>
 
 #define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16.0f)
 #define texture_create_n(x) texture_create(x, GL_RGB8, false, 0.0f)
