@@ -1,11 +1,13 @@
 #include "material.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "texture.h"
-#include "shader.h"
-
 #include <util/gfx.h>
+
+#include <core/texture.h>
+#include <core/shader.h>
+
 
 Material *material_create(
     ShaderProgram *shader, const char *shaderPath, ui32 textureCount, ...) {

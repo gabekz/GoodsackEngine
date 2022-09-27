@@ -14,26 +14,22 @@
 #include<stdlib.h>
 #include<string.h>
 
-#include <cglm/cglm.h>
-#include <cglm/struct.h>
-
 #include <util/debug.h>
-#include <util/gfx.h> // GLFW & glad headers
+#include <util/gfx.h>
+#include <util/maths.h>
 #include <util/sysdefs.h>
 
-#include <core/renderer.h>
 #include <components/camera.h>
-//#include "camera.h"
 
-#include <core/opengl/glbuffer.h>
-#include "shader.h"
-#include "texture.h"
+#include <core/renderer.h>
+#include <core/api/opengl/glbuffer.h>
+#include <core/shader.h>
+#include <core/texture.h>
+#include <core/lighting.h>
 
 #include <model/material.h>
 #include <model/mesh.h>
 #include <model/primitives.h>
-
-#include <core/lighting.h>
 
 #include <loaders/loader_obj.h>
 

@@ -1,4 +1,4 @@
-#include "scene.h"
+#include "../scene.h"
 
 static float  rotation     = 0.0f;
 static float  rotationInc  = 0.5f;

@@ -2,10 +2,9 @@
 #define H_MATERIAL
 
 #include <util/sysdefs.h>
-#include <cglm/cglm.h>
-#include <cglm/struct.h>
-#include "texture.h"
-#include "shader.h"
+
+#include <core/texture.h>
+#include <core/shader.h>
 
 typedef struct _material Material;
 

@@ -2,11 +2,12 @@
 #define H_MESH
 
 #include <util/sysdefs.h>
-#include <core/opengl/glbuffer.h>
+#include <util/maths.h>
 
+#include <core/api/opengl/glbuffer.h>
+#include <core/texture.h>
+#include <core/shader.h>
 #include <model/material.h>
-#include "texture.h"
-#include "shader.h"
 
 typedef struct _mesh Mesh;
 typedef struct _model Model;
