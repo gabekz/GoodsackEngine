@@ -2,7 +2,7 @@
 #define H_RENDERER
 
 #include <model/mesh.h>
-#include <lighting/lighting.h>
+#include <renderer/lighting.h>
 
 #include <util/sysdefs.h>
 #include <util/gfx.h>

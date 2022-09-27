@@ -15,7 +15,7 @@
 #include <util/sysdefs.h>
 
 #include <model/mesh.h>
-#include <lighting/lighting.h>
+#include <renderer/lighting.h>
 
 typedef struct _scene Scene;
 

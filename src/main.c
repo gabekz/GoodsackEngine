@@ -33,10 +33,10 @@
 #include <model/mesh.h>
 #include <model/primitives.h>
 
-#include <lighting/lighting.h>
+#include <renderer/lighting.h>
+#include <renderer/postbuffer.h>
 
-#include "loaders/loader_obj.h"
-#include "renderer/postbuffer.h"
+#include <loaders/loader_obj.h>
 
 #include <ecs/ecs.h>
 
