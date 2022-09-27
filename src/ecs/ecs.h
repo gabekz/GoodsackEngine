@@ -1,7 +1,7 @@
 #ifndef H_ECS
 #define H_ECS
 
-#include <renderer/renderer.h>
+#include <core/renderer.h>
 #include <util/sysdefs.h>
 
 #define ECS_TAG_SIZE 1

@@ -21,7 +21,7 @@
 #include <util/gfx.h> // GLFW & glad headers
 #include <util/sysdefs.h>
 
-#include <renderer/renderer.h>
+#include <core/renderer.h>
 #include <components/camera.h>
 //#include "camera.h"
 
@@ -33,8 +33,7 @@
 #include <model/mesh.h>
 #include <model/primitives.h>
 
-#include <renderer/lighting.h>
-#include <renderer/postbuffer.h>
+#include <core/lighting.h>
 
 #include <loaders/loader_obj.h>
 

@@ -7,7 +7,7 @@
 
 #include <core/opengl/glbuffer.h>
 #include <model/primitives.h>
-#include "../shader.h"
+#include <shader.h>
 
 #include <util/sysdefs.h>
 #include <util/gfx.h>

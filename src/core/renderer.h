@@ -2,12 +2,12 @@
 #define H_RENDERER
 
 #include <model/mesh.h>
-#include <renderer/lighting.h>
+#include <core/lighting.h>
 
 #include <util/sysdefs.h>
 #include <util/gfx.h>
 
-#include "../scene.h"
+#include <scene.h>
 
 typedef struct _renderer Renderer;
 typedef struct _light Light;
