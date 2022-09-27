@@ -6,7 +6,7 @@
 struct ComponentTransform {
     vec3 position, scale, rotation;
     struct {
-        mat4 *matrix; 
+        mat4 matrix; 
     } mvp;
 };
 

@@ -20,9 +20,16 @@ static void init(Entity e) {
     // TODO: send model matrix to shader
 }
 
-static void DrawMesh(struct ComponentMesh *mesh, Material *material) {
+static void DrawMesh(
+        struct ComponentMesh *mesh,
+        struct ComponentTransform *transform,
+        Material *material) {
 
     material_use(material);
+    glUniformMatrix4fv(
+    glGetUniformLocation(material->shaderProgram->id, "u_Model"),
+    1, GL_FALSE, (float *)transform->mvp.matrix);
+
     vao_bind(mesh->model->vao);
 
     ui32 vertices = mesh->model->vertexCount;
@@ -51,24 +58,11 @@ static void render(Entity e) {
     if(pass == SHADOW) {
         Material *override = e.ecs->renderer->explicitMaterial;
 
-        DrawMesh(mesh, override);
+        DrawMesh(mesh, transform, override);
         return;
     }
-    shader_use(mesh->material->shaderProgram);
-    // send matrix
-    mat4 suzanne = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(suzanne, (vec3){0.0f, 0.0f, 0.0f});
-    glUniformMatrix4fv(
-    glGetUniformLocation(mesh->material->shaderProgram->id, "u_Model"),
-    1, GL_FALSE, (float *)suzanne);
-
     // TODO: send lightspace matrix here
-    DrawMesh(mesh, mesh->material);
-
-    /*
-    }
-    */
-
+    DrawMesh(mesh, transform, mesh->material);
 }
 
 void s_draw_mesh_init(ECS *ecs) {

@@ -101,20 +101,6 @@ int main(void) {
         material_create(NULL, "../res/shaders/lit-diffuse.shader", 3,
         texEarthDiff, texEarthNorm, texDefSpec);
 
-#ifndef ECS_MESH_ENABLE
-
-    Mesh *meshSuzanne =
-        mesh_create_obj(matSuzanne , "../res/models/sphere.obj", 1.0f,
-            1, GL_FRONT, GL_CW);
-    // Update transform
-    mat4 suzanneT = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(suzanneT, (vec3){0.0f, 0.0f, 0.0f});
-    mesh_set_matrix(meshSuzanne, suzanneT);
-
-// Send models to the renderer
-    renderer_add_mesh(renderer, meshSuzanne);
-
-#else
     Entity suzanneObject = ecs_new(ecs);
     ecs_add(suzanneObject, C_TRANSFORM);
     ecs_add(suzanneObject, C_MESH, ((struct ComponentMesh) {
@@ -125,7 +111,6 @@ int main(void) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
-#endif
 
 /*------------------------------------------- 
 |   Scene #2 Objects

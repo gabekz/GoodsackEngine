@@ -4,15 +4,14 @@
 #include <core/shader.h>
 
 void transform_translate(struct ComponentTransform *transform, vec3 position) {
-    glm_translate(*transform->mvp.matrix, position);
+    glm_translate(transform->mvp.matrix, position);
 }
 
 void transform_position(struct ComponentTransform *transform, vec3 position) {
     mat4 matrix = GLM_MAT4_IDENTITY_INIT;
     glm_translate(matrix, position);
-
-    //transform->position = position;
-    transform->mvp.matrix = &matrix;
+    glm_mat4_copy(matrix, transform->mvp.matrix);
+    glm_vec3_copy(position, transform->position);
 }
 
 /*
@@ -26,15 +25,8 @@ static void init(Entity e) {
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
     mat4 matrix = GLM_MAT4_IDENTITY_INIT;
-    transform->mvp.matrix = &matrix;
-
-    transform_translate(transform, transform->position);
-
-    /*
-    printf("position is: %f, %f, %f \n",
-        transform->position[0], transform->position[1], transform->position[2]);
-    */
-
+    glm_translate(matrix, (vec3){0.0f, 0.0f, 0.0f});
+    glm_mat4_copy(matrix, transform->mvp.matrix);
 }
 
 void s_transform_init(ECS *ecs) {
