@@ -14,6 +14,8 @@
 #include<stdlib.h>
 #include<string.h>
 
+#include <cglm/io.h>
+
 #include <util/debug.h>
 #include <util/gfx.h>
 #include <util/maths.h>
@@ -36,11 +38,13 @@
 
 #include <loaders/loader_obj.h>
 
-#define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16.0f)
-#define texture_create_n(x) texture_create(x, GL_RGB8, false, 0.0f)
+#define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16)
+#define texture_create_n(x) texture_create(x, GL_RGB8, false, 0)
 
 #define ECS_MESH_ENABLE
 //#define ECS_LIGHT_ENABLE
+
+#define CGLM_ALL_UNALIGNED
 
 /* ~~~ MAIN ~~~ */
 int main(void) {
@@ -102,6 +106,7 @@ int main(void) {
         material_create(NULL, "../res/shaders/lit-diffuse.shader", 3,
         texEarthDiff, texEarthNorm, texDefSpec);
 
+#if 1
     Entity suzanneObject = ecs_new(ecs);
     ecs_add(suzanneObject, C_TRANSFORM);
     ecs_add(suzanneObject, C_MESH, ((struct ComponentMesh) {
@@ -112,19 +117,41 @@ int main(void) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
+#endif
 
-/* TODO: This seems to break the suzanne Entity
+#if 1
+//   TODO: This seems to break the suzanne Entity
     Material *matLight =
         material_create(NULL, "../res/shaders/white.shader", 0);
     Entity entityLight = ecs_new(ecs);
+    #if 0
+    ecs_add(entityLight, C_TRANSFORM);
+    #else
     ecs_add(entityLight, C_TRANSFORM, ((struct ComponentTransform) {
-        .position = {0.0f, 1.0f, 0.0f}
+        .position = {0.0f, 1.0f, 0.0f},
+        .test = 30,
     }));
+    #endif
+    #if 1
     ecs_add(entityLight, C_MESH, ((struct ComponentMesh) {
         .material = matLight,
         .modelPath = "../res/models/cube-triangulated.obj",
     }));
-*/
+    #endif
+#endif
+
+#if 0
+    struct ComponentTransform *transform = ecs_get(entityLight, C_TRANSFORM);
+    mat4 test = GLM_MAT4_IDENTITY_INIT;
+    /*
+    transform->mvp.matrix[3][0] = test[3][0];
+    transform->mvp.matrix[3][1] = test[3][1];
+    transform->mvp.matrix[3][2] = test[3][2];
+    transform->mvp.matrix[3][3] = test[3][3];
+    */
+    //glm_mat4_copy(test, transform->mvp.matrix);
+    //printf("\n%f,", test[0][0]);
+#endif
 
 /*------------------------------------------- 
 |   Scene #2 Objects

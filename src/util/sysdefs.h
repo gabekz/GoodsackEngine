@@ -21,7 +21,7 @@
 #define DRAW_MODE_ELEMENTS   0xD001
 
 #define LOG_LEVEL   0
-#define DEBUG       0
+#define DEBUG       1
 
 
 typedef int si32;

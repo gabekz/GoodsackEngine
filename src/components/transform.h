@@ -4,10 +4,11 @@
 #include <util/maths.h>
 
 struct ComponentTransform {
-    vec3 position, scale, rotation;
+    vec3 position;
     struct {
-        mat4 matrix; 
+        mat4 model; 
     } mvp;
+    float test;
 };
 
 void transform_translate(struct ComponentTransform *transform, vec3 position);

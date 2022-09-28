@@ -47,7 +47,9 @@ Texture *texture_create(const char *path, ui32 format,
     }
 
     // Anistropic Filtering
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, afRange);
+    if (afRange > 0) {
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, afRange);
+    }
 
     if(localBuffer) {
       stbi_image_free(localBuffer);

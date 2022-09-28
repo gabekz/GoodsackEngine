@@ -11,7 +11,7 @@ ECS *ecs_init(Renderer *renderer) {
     ECS *ecs = malloc(sizeof(ECS));
 
     // Initialize entity capacity
-    ui32 capacity = 4;
+    ui32 capacity = 64;
     ecs->ids = malloc(capacity * sizeof(EntityId));
     ecs->capacity = capacity;
     ecs->nextId = 1;
@@ -67,10 +67,10 @@ void _ecs_add_internal(Entity entity, ui32 component_id, void *value) {
     //printf("entity ID is %d", (int)entity.id);
 
     //void *component = list->components+(entity.id-1);
-    ui32 size2 =
-        (list->component_size * (entity.index));
+    ui32 index =
+        (entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index));
     if(value != NULL) {
-        memcpy(list->components+size2, value, list->component_size);
+        memcpy(list->components+index, value, list->component_size);
         //list = realloc(list, list.components_size+1 * sizeof());
     }
 }
@@ -83,7 +83,8 @@ int ecs_has(Entity entity, ECSComponent component_id) {
     //printf("index of tag for Entity [%d]: %d", entity.index, size);
     char *tag = (char *)(list->components+size);
     int value = *tag;
-    //printf("\necs_has - component: %d, index %d, entity index: %d\n", component_id, size, entity.index);
+    //if(value > 0 && entity.index == 1)
+        //printf("\necs_has - component: %d, index %d, entity index: %d\n", component_id, size, entity.index);
     //return value;
 
     return (value > 0) ? 1 : 0;
@@ -95,7 +96,9 @@ void *ecs_get(Entity entity, ECSComponent component_id) {
     ECSComponentList* list = &entity.ecs->component_lists[component_id];
 
     ui32 size =
-        (list->component_size * (entity.index));
+        ((entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index)));
+        //size = size - (list->component_size - 1);
+        //(list->component_size * (entity.index));
     //printf("\necs_get - id: %d, index %d, id: %d", component_id, size, entity.id);
     return (entity.ecs->component_lists[component_id].components+size);
     //return ECSCL_GET(&entity.ecs->component_lists[component_id], entity.id);
@@ -113,10 +116,9 @@ void ecs_system_register(ECS *self, ECSSystem system) {
 
 void ecs_component_register(ECS *self, ui32 component_id, ui64 size) {
     self->component_lists[component_id].component_size = size;
-
-    // aligned with tag
     ui32 aSize = size + ECS_TAG_SIZE;
-    self->component_lists[component_id].components = calloc(self->capacity, size);
+
+    self->component_lists[component_id].components = calloc(self->capacity, aSize);
 
     //printf("\n%d size", aSize);
 

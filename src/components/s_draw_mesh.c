@@ -36,7 +36,7 @@ static void DrawMesh(
     material_use(material);
     glUniformMatrix4fv(
     glGetUniformLocation(material->shaderProgram->id, "u_Model"),
-    1, GL_FALSE, (float *)transform->mvp.matrix);
+    1, GL_FALSE, (float *)transform->mvp.model);
 
     vao_bind(mesh->model->vao);
 

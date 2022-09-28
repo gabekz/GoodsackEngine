@@ -17,6 +17,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.h" "src/*.c" "src/*.cpp")
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "${SRC_DIR}")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
+target_compile_options(${PROJECT_NAME} PRIVATE -O0)
 
 # stb
 set(STB_DIR "${LIB_DIR}/stb")
@@ -26,6 +27,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${STB_DIR}")
 set(CGLM_DIR "${LIB_DIR}/cglm")
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
 target_link_libraries(${PROJECT_NAME} "cglm" cglm_headers) 
+target_compile_definitions(${PROJECT_NAME} PRIVATE "CGLM_ALL_UNALIGNED")
 
 # glfw
 set(GLFW_DIR "${LIB_DIR}/glfw")
