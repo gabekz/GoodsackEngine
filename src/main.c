@@ -119,7 +119,7 @@ int main(void) {
     }));
 #endif
 
-#if 1
+#if 0
 //   TODO: This seems to break the suzanne Entity
     Material *matLight =
         material_create(NULL, "../res/shaders/white.shader", 0);
@@ -128,8 +128,7 @@ int main(void) {
     ecs_add(entityLight, C_TRANSFORM);
     #else
     ecs_add(entityLight, C_TRANSFORM, ((struct ComponentTransform) {
-        .position = {0.0f, 1.0f, 0.0f},
-        .test = 30,
+        .position = *lightPos,
     }));
     #endif
     #if 1
@@ -140,19 +139,6 @@ int main(void) {
     #endif
 #endif
 
-#if 0
-    struct ComponentTransform *transform = ecs_get(entityLight, C_TRANSFORM);
-    mat4 test = GLM_MAT4_IDENTITY_INIT;
-    /*
-    transform->mvp.matrix[3][0] = test[3][0];
-    transform->mvp.matrix[3][1] = test[3][1];
-    transform->mvp.matrix[3][2] = test[3][2];
-    transform->mvp.matrix[3][3] = test[3][3];
-    */
-    //glm_mat4_copy(test, transform->mvp.matrix);
-    //printf("\n%f,", test[0][0]);
-#endif
-
 /*------------------------------------------- 
 |   Scene #2 Objects
 */  renderer_active_scene(renderer, 1);
@@ -160,33 +146,43 @@ int main(void) {
     Material *matFloor = 
         material_create(NULL, "../res/shaders/lit-diffuse.shader",
         3, texBrickDiff, texBrickNorm, texDefSpec); 
-    Mesh *meshFloor =
-        mesh_create_obj(matFloor, "../res/models/plane.obj", 10.00f, 0, 0, 0);
-    // Send transform to mesh->model and shader
-    mat4 floorT = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(floorT, (vec3){0.0f, -0.3f, 0.0f});
-    mesh_set_matrix(meshFloor, floorT);
+
+    Entity floorEntity = ecs_new(ecs);
+    ecs_add(floorEntity, C_TRANSFORM, ((struct ComponentTransform) {
+            .position = {0.0f, -0.3f, 0.0f},
+            .scale = {10.0f, 10.0f, 10.0f},
+        }));
+    ecs_add(floorEntity, C_MESH, ((struct ComponentMesh) {
+        .material = matFloor,
+        .modelPath = "../res/models/plane.obj",
+        .properties = {
+            .drawMode = DRAW_ARRAYS,
+            .cullMode = CULL_CW | CULL_FORWARD,
+        }
+    }));
 
 // Create the box mesh
     Material *matBox = 
         material_create(NULL, "../res/shaders/lit-diffuse.shader",
         3, texContDiff, texDefNorm, texContSpec); 
-    Mesh *meshBox =
-        mesh_create_obj(matBox, "../res/models/cube-test.obj",
-            1.0f, 0, 0, 0);
-    // Send transform to mesh->model and shader
-    mat4 boxT = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(boxT, (vec3){0.0f, -0.085f, 0.0f});
-    mesh_set_matrix(meshBox, boxT);
 
-// Add meshes to scene
-    renderer_add_mesh(renderer, meshBox);
-    renderer_add_mesh(renderer, meshFloor);
+    Entity boxEntity = ecs_new(ecs);
+    ecs_add(boxEntity , C_TRANSFORM, ((struct ComponentTransform) {
+            .position = {0.0f, -0.085f, 0.0f},
+        }));
+    ecs_add(boxEntity, C_MESH, ((struct ComponentMesh) {
+        .material = matBox,
+        .modelPath = "../res/models/cube-test.obj",
+        .properties = {
+            .drawMode = DRAW_ARRAYS,
+            .cullMode = CULL_CW | CULL_FORWARD,
+        }
+    }));
 
 /*------------------------------------------- 
 |   Render Loop
 */
-    renderer_active_scene(renderer, 0);
+    renderer_active_scene(renderer, 1);
     renderer_tick(renderer, ecs, camera);
 
     glfwDestroyWindow(renderer->window);

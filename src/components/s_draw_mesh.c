@@ -11,10 +11,11 @@ static void init(Entity e) {
     if(!(ecs_has(e, C_TRANSFORM))) return;
     if(!(ecs_has(e, C_MESH))) return;
 
-    struct ComponentCamera *transform = ecs_get(e, C_TRANSFORM);
+    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
     struct ComponentMesh *mesh = ecs_get(e, C_MESH);
 
-    Model *model = load_obj(mesh->modelPath, 1.0f);
+    // TODO: stupid hack grabbing only scale.x...
+    Model *model = load_obj(mesh->modelPath, transform->scale[0]);
 
     mesh->model = model;
 

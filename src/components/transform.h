@@ -4,7 +4,7 @@
 #include <util/maths.h>
 
 struct ComponentTransform {
-    vec3 position;
+    vec3 position, scale;
     struct {
         mat4 model; 
     } mvp;
