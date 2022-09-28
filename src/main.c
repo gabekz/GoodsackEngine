@@ -49,18 +49,7 @@ int main(void) {
     Renderer *renderer = renderer_init();
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
-
-    ECS *ecs;
-    ecs = renderer_active_scene(renderer, 0);
-// Initialize ECS and all ECS Systems. Passing over the renderer.
-
-// Create the Camera, containing starting-position and up-axis coords.
-    Entity camera = ecs_new(ecs);
-    ecs_add(camera, C_CAMERA, ((struct ComponentCamera) {
-        .position = {0.0f, 0.0f, 2.0f},
-        .axisUp   = {0.0f, 1.0f, 0.0f},
-        .speed    = 0.05f,
-    }));
+    ECS *ecs; // set by active scene
 
 #ifdef ECS_LIGHT_ENABLE
     Entity sun = ecs_new(ecs);
@@ -96,14 +85,21 @@ int main(void) {
         texture_create_n("../res/textures/defaults/specular.png");
 
 /*------------------------------------------- 
-|   Scene #1 Objects
-*/  renderer_active_scene(renderer, 0);
+|   Scene #1
+*/  ecs = renderer_active_scene(renderer, 0);
 
     Material *matSuzanne =
         material_create(NULL, "../res/shaders/lit-diffuse.shader", 3,
         texEarthDiff, texEarthNorm, texDefSpec);
 
-#if 1
+// Create the Camera, containing starting-position and up-axis coords.
+    Entity camera = ecs_new(ecs);
+    ecs_add(camera, C_CAMERA, ((struct ComponentCamera) {
+        .position = {0.0f, 0.0f, 2.0f},
+        .axisUp   = {0.0f, 1.0f, 0.0f},
+        .speed    = 0.05f,
+    }));
+
     Entity suzanneObject = ecs_new(ecs);
     ecs_add(suzanneObject, C_TRANSFORM);
     ecs_add(suzanneObject, C_MESH, ((struct ComponentMesh) {
@@ -114,32 +110,18 @@ int main(void) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
-#endif
-
-#if 0
-//   TODO: This seems to break the suzanne Entity
-    Material *matLight =
-        material_create(NULL, "../res/shaders/white.shader", 0);
-    Entity entityLight = ecs_new(ecs);
-    #if 0
-    ecs_add(entityLight, C_TRANSFORM);
-    #else
-    ecs_add(entityLight, C_TRANSFORM, ((struct ComponentTransform) {
-        .position = *lightPos,
-    }));
-    #endif
-    #if 1
-    ecs_add(entityLight, C_MESH, ((struct ComponentMesh) {
-        .material = matLight,
-        .modelPath = "../res/models/cube-triangulated.obj",
-    }));
-    #endif
-#endif
 
 /*------------------------------------------- 
-|   Scene #2 Objects
+|   Scene #2
 */
     ecs = renderer_active_scene(renderer, 1);
+
+    Material *matFloor = 
+        material_create(NULL, "../res/shaders/lit-diffuse.shader",
+        3, texBrickDiff, texBrickNorm, texDefSpec); 
+    Material *matBox = 
+        material_create(NULL, "../res/shaders/lit-diffuse.shader",
+        3, texContDiff, texDefNorm, texContSpec); 
 
     Entity camera2 = ecs_new(ecs);
     ecs_add(camera2, C_CAMERA, ((struct ComponentCamera) {
@@ -147,10 +129,6 @@ int main(void) {
         .axisUp   = {0.0f, 1.0f, 0.0f},
         .speed    = 0.05f,
     }));
-
-    Material *matFloor = 
-        material_create(NULL, "../res/shaders/lit-diffuse.shader",
-        3, texBrickDiff, texBrickNorm, texDefSpec); 
 
     Entity floorEntity = ecs_new(ecs);
     ecs_add(floorEntity, C_TRANSFORM, ((struct ComponentTransform) {
@@ -165,11 +143,6 @@ int main(void) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
-
-// Create the box mesh
-    Material *matBox = 
-        material_create(NULL, "../res/shaders/lit-diffuse.shader",
-        3, texContDiff, texDefNorm, texContSpec); 
 
     Entity boxEntity = ecs_new(ecs);
     ecs_add(boxEntity , C_TRANSFORM, ((struct ComponentTransform) {
@@ -187,7 +160,7 @@ int main(void) {
 /*------------------------------------------- 
 |   Render Loop
 */
-    renderer_active_scene(renderer, 1);
+    renderer_active_scene(renderer, 0);
     renderer_tick(renderer);
 
     glfwDestroyWindow(renderer->window);
