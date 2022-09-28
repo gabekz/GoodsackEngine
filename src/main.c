@@ -19,6 +19,7 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
+#include <components/transform.h>
 #include <components/mesh.h>
 #include <components/camera.h>
 
@@ -111,6 +112,19 @@ int main(void) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
+
+/* TODO: This seems to break the suzanne Entity
+    Material *matLight =
+        material_create(NULL, "../res/shaders/white.shader", 0);
+    Entity entityLight = ecs_new(ecs);
+    ecs_add(entityLight, C_TRANSFORM, ((struct ComponentTransform) {
+        .position = {0.0f, 1.0f, 0.0f}
+    }));
+    ecs_add(entityLight, C_MESH, ((struct ComponentMesh) {
+        .material = matLight,
+        .modelPath = "../res/models/cube-triangulated.obj",
+    }));
+*/
 
 /*------------------------------------------- 
 |   Scene #2 Objects

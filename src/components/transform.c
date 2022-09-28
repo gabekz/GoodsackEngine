@@ -25,7 +25,7 @@ static void init(Entity e) {
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
     mat4 matrix = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(matrix, (vec3){0.0f, 0.0f, 0.0f});
+    glm_translate(matrix, transform->position);
     glm_mat4_copy(matrix, transform->mvp.matrix);
 }
 
