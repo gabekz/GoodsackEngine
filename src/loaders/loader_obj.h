@@ -4,7 +4,7 @@
 //#include "../glbuffer/glbuffer.h"
 #include <core/api/opengl/glbuffer.h>
 #include <util/sysdefs.h>
-#include <model/mesh.h>
+#include <model/model.h>
 
 Model* load_obj(const char* path, float scale);
 

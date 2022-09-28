@@ -7,7 +7,6 @@
 #include <core/scene.h>
 
 #include <core/lighting.h>
-#include <model/mesh.h>
 #include <model/material.h>
 
 
@@ -30,7 +29,6 @@ struct _renderer {
 
 Renderer* renderer_init();
 
-void renderer_add_mesh(Renderer* self, Mesh* mesh);
 void renderer_add_light();
 
 // Logical

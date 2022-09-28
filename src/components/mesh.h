@@ -1,7 +1,7 @@
 #ifndef H_C_MESH
 #define H_C_MESH
 
-#include <model/mesh.h> // TODO: remove for confusion avoidance
+#include <model/model.h>
 #include <model/material.h>
 
 #define DRAW_ARRAYS     0x00

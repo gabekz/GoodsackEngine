@@ -1,7 +1,7 @@
 #include "mesh.h"
 #include "transform.h"
 
-#include <model/mesh.h> // CONFUSUIOn
+#include <model/model.h>
 #include <loaders/loader_obj.h>
 
 #include <core/ecs.h>

@@ -67,9 +67,7 @@ Renderer* renderer_init() {
 // Create the initial scene
     Scene *scene = malloc(sizeof(Scene));
 
-    scene->meshL = calloc(1, sizeof(Mesh*));
     scene->lightL = calloc(1, sizeof(Light*));
-    scene->meshC = 0;
     scene->lightC = 0;
     scene->id = 0;
     scene->ecs = ecs_init(ret);
@@ -92,9 +90,7 @@ ECS *renderer_active_scene(Renderer* self, ui16 sceneIndex) {
 
         // Create a new, empty scene
         Scene *newScene = malloc(sizeof(Scene));
-        newScene->meshL = calloc(1, sizeof(Mesh*));
         newScene->lightL = calloc(1, sizeof(Light*));
-        newScene->meshC = 0; newScene->lightC = 0;
         newScene->id = newCount;
         newScene->ecs = ecs_init(self);
 
@@ -110,17 +106,6 @@ ECS *renderer_active_scene(Renderer* self, ui16 sceneIndex) {
     return self->sceneL[sceneIndex]->ecs;
 
     // TODO: add checks here and cleanup from previous scene for switching.
-}
-
-void renderer_add_mesh(Renderer *self, Mesh* mesh) {
-    Scene* scene = self->sceneL[self->activeScene];
-    int count = scene->meshC + 1;
-
-    void *p = (void *)scene->meshL;
-    scene->meshL = realloc(p, count * sizeof(Mesh*));
-    scene->meshC = count;
-
-    scene->meshL[count-1] = mesh;
 }
 
 void renderer_tick(Renderer *renderer) {
@@ -178,17 +163,6 @@ void renderer_tick(Renderer *renderer) {
 // Send ECS event init
     ecs_event(ecs, ECS_INIT);
 
-
-// TEST for lightspace matrix
-    for(int i = 0; i < scene->meshC; i++) {
-        ShaderProgram *shader = scene->meshL[i]->material->shaderProgram;
-        shader_use(shader);
-
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
-            1, GL_FALSE, (float *)lightSpaceMatrix);
-    }
-
 // Create the post buffer
     postbuffer_init(renderer->windowWidth, renderer->windowHeight);
 
@@ -207,7 +181,6 @@ void renderer_tick(Renderer *renderer) {
     */ 
         glfwPollEvents();
         ecs_event(ecs, ECS_UPDATE);
-        scene_update(scene);
     /*------------------------------------------- 
         Pass #1 - Directional Shadowmap 
     */ 
@@ -224,8 +197,6 @@ void renderer_tick(Renderer *renderer) {
         renderer->currentPass = SHADOW;
         renderer->explicitMaterial = materialDepthMap;
         ecs_event(ecs, ECS_RENDER);
-
-        scene_draw(scene, true, materialDepthMap);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -247,7 +218,6 @@ void renderer_tick(Renderer *renderer) {
         renderer->currentPass = REGULAR;
         ecs_event(ecs, ECS_RENDER);
 
-        scene_draw(scene, false, NULL);
     /*------------------------------------------- 
         Pass #3 - Final: Backbuffer draw
     */ 

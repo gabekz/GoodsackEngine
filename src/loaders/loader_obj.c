@@ -3,13 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "math.h"
 
-#include <cglm/cglm.h>
-#include <cglm/struct.h>
-
+#include <util/maths.h>
 #include <util/gfx.h>
-#include <model/mesh.h>
+
+#include <model/model.h>
 
 Model* load_obj(const char* path, float scale) {
 

@@ -13,8 +13,6 @@
      */
 
 #include <util/sysdefs.h>
-
-#include <model/mesh.h>
 #include <core/lighting.h>
 
 typedef struct _scene Scene;
@@ -23,13 +21,9 @@ struct _scene {
     ui32 id;
 
     ui32 meshC, lightC;
-    Mesh **meshL;
     Light **lightL;
 
     struct _ecs *ecs;
 };
-
-void scene_update(Scene *self);
-void scene_draw(Scene *self, bool isExplicit, Material *override);
 
 #endif // H_SCENE

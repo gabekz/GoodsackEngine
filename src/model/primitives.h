@@ -2,7 +2,7 @@
 #define PRIMITIVES_H
 
 #include <util/sysdefs.h>
-#include <model/mesh.h>
+#include <model/model.h>
 
 #define PRIMITIVE_PLANE     0xAB00
 #define PRIMITIVE_CUBE      0xAB01

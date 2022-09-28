@@ -3,5 +3,6 @@
 
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
+#include "math.h"
 
 #endif // H_MATHS
