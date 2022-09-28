@@ -24,6 +24,7 @@ struct _renderer {
 
     RenderPass currentPass;
     Material *explicitMaterial;
+    mat4 lightSpaceMatrix;
 };
 
 Renderer* renderer_init();

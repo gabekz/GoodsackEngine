@@ -121,7 +121,6 @@ void renderer_add_mesh(Renderer *self, Mesh* mesh) {
 void renderer_tick(Renderer *renderer, ECS *ecs) {
 // Scene initialization
     Scene *scene = renderer->sceneL[renderer->activeScene];
-    ecs_event(ecs, ECS_INIT);
 
 // Create the depthmap 
     ui32 depthMapFBO;
@@ -161,10 +160,18 @@ void renderer_tick(Renderer *renderer, ECS *ecs) {
             (vec3){0.0f, 1.0f, 0.0f}, lightView);
     glm_mat4_mul(lightProjection, lightView, lightSpaceMatrix);
 
+    // send to renderer
+    // TODO: Change this crap
+    glm_mat4_copy(lightSpaceMatrix, renderer->lightSpaceMatrix);
+
     ShaderProgram *shaderDepthMap =
         shader_create_program("../res/shaders/depth-map.shader");
 
     Material *materialDepthMap = material_create(shaderDepthMap, NULL, 0);
+
+// Send ECS event init
+    ecs_event(ecs, ECS_INIT);
+
 
 // TEST for lightspace matrix
     for(int i = 0; i < scene->meshC; i++) {

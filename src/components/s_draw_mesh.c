@@ -5,6 +5,7 @@
 #include <loaders/loader_obj.h>
 
 #include <core/ecs.h>
+#include <core/shader.h>
 
 static void init(Entity e) {
     if(!(ecs_has(e, C_TRANSFORM))) return;
@@ -16,6 +17,13 @@ static void init(Entity e) {
     Model *model = load_obj(mesh->modelPath, 1.0f);
 
     mesh->model = model;
+
+    // send lightspace matrix from renderer to entity shader
+    ShaderProgram *shader = mesh->material->shaderProgram;
+    shader_use(shader);
+    glUniformMatrix4fv(
+        glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
+        1, GL_FALSE, (float *)e.ecs->renderer->lightSpaceMatrix);
 
     // TODO: send model matrix to shader
 }
@@ -55,14 +63,15 @@ static void render(Entity e) {
     struct ComponentMesh *mesh = ecs_get(e, C_MESH);
 
     RenderPass pass = e.ecs->renderer->currentPass;
-    if(pass == SHADOW) {
-        Material *override = e.ecs->renderer->explicitMaterial;
 
-        DrawMesh(mesh, transform, override);
+    // TODO: get lightspace matrix
+
+    if(pass == REGULAR) {
+        DrawMesh(mesh, transform, mesh->material);
         return;
     }
-    // TODO: send lightspace matrix here
-    DrawMesh(mesh, transform, mesh->material);
+    Material *override = e.ecs->renderer->explicitMaterial;
+    DrawMesh(mesh, transform, override);
 }
 
 void s_draw_mesh_init(ECS *ecs) {
