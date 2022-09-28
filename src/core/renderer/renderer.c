@@ -59,6 +59,11 @@ Renderer* renderer_init() {
    // Refresh rate 
    glfwSwapInterval(1);
 
+    Renderer *ret = malloc(sizeof(Renderer));
+    ret->window       = window;
+    ret->windowWidth  = winWidth;
+    ret->windowHeight = winHeight;
+
 // Create the initial scene
     Scene *scene = malloc(sizeof(Scene));
 
@@ -67,14 +72,11 @@ Renderer* renderer_init() {
     scene->meshC = 0;
     scene->lightC = 0;
     scene->id = 0;
+    scene->ecs = ecs_init(ret);
 
     Scene **sceneList = malloc(sizeof(Scene*));
     *(sceneList) = scene;
 
-    Renderer *ret = malloc(sizeof(Renderer));
-    ret->window       = window;
-    ret->windowWidth  = winWidth;
-    ret->windowHeight = winHeight;
 
     ret->sceneL      = sceneList;
     ret->sceneC      = 1;
@@ -83,7 +85,7 @@ Renderer* renderer_init() {
     return ret;
 }
 
-void renderer_active_scene(Renderer* self, ui16 sceneIndex) {
+ECS *renderer_active_scene(Renderer* self, ui16 sceneIndex) {
     ui32 sceneCount = self->sceneC;
     if(sceneCount < sceneIndex + 1) {
         ui32 newCount = sceneCount + sceneIndex;
@@ -94,6 +96,7 @@ void renderer_active_scene(Renderer* self, ui16 sceneIndex) {
         newScene->lightL = calloc(1, sizeof(Light*));
         newScene->meshC = 0; newScene->lightC = 0;
         newScene->id = newCount;
+        newScene->ecs = ecs_init(self);
 
         // Update the scene list
         Scene **p = self->sceneL;
@@ -103,6 +106,8 @@ void renderer_active_scene(Renderer* self, ui16 sceneIndex) {
     }
 
     self->activeScene = sceneIndex;
+
+    return self->sceneL[sceneIndex]->ecs;
 
     // TODO: add checks here and cleanup from previous scene for switching.
 }
@@ -118,9 +123,10 @@ void renderer_add_mesh(Renderer *self, Mesh* mesh) {
     scene->meshL[count-1] = mesh;
 }
 
-void renderer_tick(Renderer *renderer, ECS *ecs) {
+void renderer_tick(Renderer *renderer) {
 // Scene initialization
     Scene *scene = renderer->sceneL[renderer->activeScene];
+    ECS *ecs = scene->ecs;
 
 // Create the depthmap 
     ui32 depthMapFBO;

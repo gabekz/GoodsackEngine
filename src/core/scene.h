@@ -21,9 +21,12 @@ typedef struct _scene Scene;
 
 struct _scene {
     ui32 id;
+
     ui32 meshC, lightC;
     Mesh **meshL;
     Light **lightL;
+
+    struct _ecs *ecs;
 };
 
 void scene_update(Scene *self);

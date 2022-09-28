@@ -4,8 +4,9 @@
 #include <util/sysdefs.h>
 #include <util/gfx.h>
 
-#include <core/lighting.h>
 #include <core/scene.h>
+
+#include <core/lighting.h>
 #include <model/mesh.h>
 #include <model/material.h>
 
@@ -37,10 +38,10 @@ void renderer_fixedupdate();
 void renderer_update();
 
 // Rendering Loop
-void renderer_tick();
+void renderer_tick(Renderer *renderer);
 
 /* scene management */
-void renderer_active_scene(Renderer* self, ui16 sceneIndex);
+struct _ecs *renderer_active_scene(Renderer* self, ui16 sceneIndex);
 //-------------------------------
 
 #endif // H_RENDERER

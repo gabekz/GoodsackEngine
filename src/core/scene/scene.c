@@ -1,5 +1,7 @@
 #include "../scene.h"
 
+#include <core/renderer.h>
+
 static float  rotation     = 0.0f;
 static float  rotationInc  = 0.5f;
 static double timePrev     = -1.0f;

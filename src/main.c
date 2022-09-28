@@ -41,10 +41,7 @@
 #define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB8, false, 0)
 
-#define ECS_MESH_ENABLE
 //#define ECS_LIGHT_ENABLE
-
-#define CGLM_ALL_UNALIGNED
 
 /* ~~~ MAIN ~~~ */
 int main(void) {
@@ -53,8 +50,9 @@ int main(void) {
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
 
+    ECS *ecs;
+    ecs = renderer_active_scene(renderer, 0);
 // Initialize ECS and all ECS Systems. Passing over the renderer.
-    ECS *ecs = ecs_init(renderer);
 
 // Create the Camera, containing starting-position and up-axis coords.
     Entity camera = ecs_new(ecs);
@@ -78,7 +76,6 @@ int main(void) {
 // UBO Lighting
     lighting_initialize(lightPos, lightColor);
 #endif
-
 
 // Textures
     Texture *texBrickDiff =
@@ -141,7 +138,15 @@ int main(void) {
 
 /*------------------------------------------- 
 |   Scene #2 Objects
-*/  renderer_active_scene(renderer, 1);
+*/
+    ecs = renderer_active_scene(renderer, 1);
+
+    Entity camera2 = ecs_new(ecs);
+    ecs_add(camera2, C_CAMERA, ((struct ComponentCamera) {
+        .position = {0.0f, 0.0f, 2.0f},
+        .axisUp   = {0.0f, 1.0f, 0.0f},
+        .speed    = 0.05f,
+    }));
 
     Material *matFloor = 
         material_create(NULL, "../res/shaders/lit-diffuse.shader",
@@ -183,7 +188,7 @@ int main(void) {
 |   Render Loop
 */
     renderer_active_scene(renderer, 1);
-    renderer_tick(renderer, ecs, camera);
+    renderer_tick(renderer);
 
     glfwDestroyWindow(renderer->window);
     free(renderer);
