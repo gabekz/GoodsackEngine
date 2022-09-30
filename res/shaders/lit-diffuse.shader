@@ -172,5 +172,5 @@ vec4 light(int type) {
 
 void main() {
     vec4 texColor = texture(t_Diffuse, fs_in.texCoords);
-    FragColor = texColor * light(0);
+    FragColor = texColor * light(1);
 }

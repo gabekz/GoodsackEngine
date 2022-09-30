@@ -44,9 +44,9 @@ int main(int argc, char *argv[]) {
     ImGuiIO &io = ImGui::GetIO();
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
-    ImGui_ImplOpenGL3_Init("440");
+    ImGui_ImplOpenGL3_Init("#version 330");
     // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
+    ImGui::StyleColorsClassic();
 #endif
 
 // Initialize ECS
@@ -150,11 +150,33 @@ int main(int argc, char *argv[]) {
 
     renderer_start(renderer); // Initialization for the render loop
     while(!glfwWindowShouldClose(renderer->window)) {
+
         renderer_tick(renderer);
+        // feed inputs to dear imgui, start new frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // render your GUI
+        ImGui::Begin("Light Position");
+        ImGui::SliderFloat3("Light Position", (float *)lightPos, 0, 2 * 3.141592f);
+        ImGui::ColorEdit3("Light Color", (float *)lightColor);
+        //ImGui::ShowDemoWindow();
+        ImGui::End();
+
+        // Render dear imgui into screen
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(renderer->window); // we need to swap.
     }
 
 // Cleanup
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     glfwDestroyWindow(renderer->window);
     free(renderer);
     free(ecs);
