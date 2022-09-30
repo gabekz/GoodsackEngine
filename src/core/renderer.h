@@ -3,15 +3,14 @@
 
 #include <util/sysdefs.h>
 #include <util/gfx.h>
+#include <util/maths.h>
 
 #include <core/scene.h>
 
-#include <core/lighting.h>
 #include <model/material.h>
 
 
 typedef struct _renderer Renderer;
-typedef struct _light Light;
 
 typedef enum renderPass {REGULAR = 0, SHADOW} RenderPass;
 

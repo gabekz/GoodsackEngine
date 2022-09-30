@@ -67,8 +67,6 @@ Renderer* renderer_init() {
 // Create the initial scene
     Scene *scene = malloc(sizeof(Scene));
 
-    scene->lightL = calloc(1, sizeof(Light*));
-    scene->lightC = 0;
     scene->id = 0;
     scene->ecs = ecs_init(ret);
 
@@ -90,7 +88,6 @@ ECS *renderer_active_scene(Renderer* self, ui16 sceneIndex) {
 
         // Create a new, empty scene
         Scene *newScene = malloc(sizeof(Scene));
-        newScene->lightL = calloc(1, sizeof(Light*));
         newScene->id = newCount;
         newScene->ecs = ecs_init(self);
 

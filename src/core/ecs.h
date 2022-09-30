@@ -1,27 +1,36 @@
 #ifndef H_ECS
 #define H_ECS
 
-#include <core/renderer.h>
 #include <util/sysdefs.h>
+
+#define _ECS_DECL_SYSTEM(_name)\
+    extern void _name##_init();\
 
 #define ECS_TAG_SIZE 1
 #define ECS_TAG_UNUSED  0b00000000
 #define ECS_TAG_USED    0b00110000
 
-#define ECSCL_ELEMENT_SIZE(_plist) ((_plist)->component_size + ECS_TAG_SIZE)
-#define ECSCL_GET(_plist, _i) ({\
-        ECSComponentList *_pl = (_plist);\
-        ((_pl)->components) + ((_i) * ECSCL_ELEMENT_SIZE(_pl)) + ECS_TAG_SIZE;\
-    })
+#define _ecs_add3(e, c, v) ({ __typeof__(v) _v = (v); _ecs_add_internal((e), (c), &_v); })
+#define _ecs_add2(e, c) _ecs_add_internal((e), (c), NULL)
 
-typedef struct _ecs ECS;
+#define _ecs_add_overload(_1,_2,_3,NAME,...) NAME
+#define ecs_add(...) _ecs_add_overload(__VA_ARGS__, _ecs_add3, _ecs_add2)(__VA_ARGS__)
+
 typedef struct _ecs_entity Entity;
 typedef union _ecs_system ECSSystem;
-typedef enum _ecs_component ECSComponent;
 typedef struct _ecs_component_list ECSComponentList;
 
 typedef void (*ECSSubscriber)(Entity);
 typedef ui64 EntityId;
+
+typedef struct _ecs ECS;
+
+#ifdef __cplusplus
+
+extern "C" {
+#endif
+
+#include <core/renderer.h>
 
 #define ECSEVENT_LAST ECS_UPDATE
 enum ECSEvent {
@@ -34,19 +43,30 @@ enum _ecs_component {
     C_CAMERA, 
     C_MESH,
 };
+typedef enum _ecs_component ECSComponent;
 
 /*-------------------------------------------*/
 
-#define _ECS_DECL_SYSTEM(_name)\
-    extern void _name##_init();\
-    _name##_init(ecs);
+/*
+#ifdef __cplusplus
+}
+
+namespace {
+#endif
 
 // Declare systems here
-static inline void _ecs_init_internal(ECS *ecs) {
+inline void _ecs_init_internal(ECS *ecs) {
     _ECS_DECL_SYSTEM(s_transform);
     _ECS_DECL_SYSTEM(s_camera);
     _ECS_DECL_SYSTEM(s_draw_mesh);
 }
+
+
+#ifdef __cplusplus
+}
+extern "C" {
+#endif
+*/
 
 /*-------------------------------------------*/
 
@@ -90,12 +110,6 @@ union _ecs_system {
 
 void _ecs_add_internal(Entity entity, ui32 component_id, void *value);
 
-#define _ecs_add3(e, c, v) ({ __typeof__(v) _v = (v); _ecs_add_internal((e), (c), &_v); })
-#define _ecs_add2(e, c) _ecs_add_internal((e), (c), NULL)
-
-#define _ecs_add_overload(_1,_2,_3,NAME,...) NAME
-#define ecs_add(...) _ecs_add_overload(__VA_ARGS__, _ecs_add3, _ecs_add2)(__VA_ARGS__)
-
 /*-------------------------------------------*/
 
 ECS *ecs_init(Renderer *renderer);
@@ -108,5 +122,9 @@ void ecs_system_register(ECS *self, ECSSystem system);
 void ecs_component_register(ECS *self, ui32 component_id, ui64 size);
 
 void ecs_event(ECS *self, enum ECSEvent event);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // H_ECS

@@ -4,6 +4,8 @@
 #include <model/model.h>
 #include <model/material.h>
 
+#include <core/ecs.h>
+
 #define DRAW_ARRAYS     0x00
 #define DRAW_ELEMENTS   0x01
 
@@ -26,5 +28,7 @@ struct ComponentMesh {
 
     ui32 vbo;
 };
+
+void s_draw_mesh_init(ECS *ecs);
 
 #endif // H_C_MESH

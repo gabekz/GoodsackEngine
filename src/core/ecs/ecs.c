@@ -7,6 +7,10 @@
 
 #include <util/sysdefs.h>
 
+#include <components/transform.h>
+#include <components/mesh.h>
+#include <components/camera.h>
+
 ECS *ecs_init(Renderer *renderer) {
     ECS *ecs = malloc(sizeof(ECS));
 
@@ -22,7 +26,17 @@ ECS *ecs_init(Renderer *renderer) {
     // Initialize systems and components
     ecs->systems_size = 0;
     ecs->systems = malloc(1 * sizeof(ECSSystem));
-    _ecs_init_internal(ecs);
+
+    _ECS_DECL_SYSTEM(s_transform);
+    _ECS_DECL_SYSTEM(s_camera);
+    _ECS_DECL_SYSTEM(s_draw_mesh);
+    //s_transform_init(ecs);
+    //s_camera_init(ecs);
+    //s_draw_mesh_init(ecs);
+    //s_camera_init(ecs);
+    //s_mesh_draw_init(ecs);
+
+    //_ecs_init_internal(ecs);
 
     return ecs;
 }

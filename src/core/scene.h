@@ -13,7 +13,6 @@
      */
 
 #include <util/sysdefs.h>
-#include <core/lighting.h>
 
 typedef struct _scene Scene;
 
@@ -21,7 +20,6 @@ struct _scene {
     ui32 id;
 
     ui32 meshC, lightC;
-    Light **lightL;
 
     struct _ecs *ecs;
 };

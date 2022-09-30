@@ -5,9 +5,8 @@
 #include <cglm/struct.h>
 
 typedef struct _light Light;
-typedef enum e_lightType LightType;
 
-enum e_lightType { Directional = 0, Point = 1, Spot = 2 };
+typedef enum e_lightType { Directional = 0, Point = 1, Spot = 2 } LightType;
 
 struct _light {
     float* position;

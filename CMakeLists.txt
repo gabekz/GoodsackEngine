@@ -3,7 +3,7 @@ project(game)
 
 # C flags
 set(CMAKE_C_FLAGS "-g")
-set(CMAKE_CXX_FLAGS "-g")
+set(CMAKE_CXX_FLAGS "-g -std=c++11 -O0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS "1")
 
 # Source files
@@ -11,9 +11,10 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 #set(SOURCES "${SRC_DIR}/*.c")
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.h" "src/*.c" "src/*.cpp")
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.c" "src/*.cpp")
 
 # Executable definition and properties
+project(${PROJECT_NAME} C CXX)
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "${SRC_DIR}")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
