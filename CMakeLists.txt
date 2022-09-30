@@ -47,3 +47,13 @@ add_library("glad" "${GLAD_DIR}/src/gl.c")
 target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
+
+# IMGUI
+set(IMGUI_PATH "${LIB_DIR}/imgui")
+    
+# Compile as static library 
+file(GLOB IMGUI_SOURCES ${IMGUI_PATH}/*.cpp) 
+add_library("ImGui" STATIC ${IMGUI_SOURCES})
+target_include_directories("ImGui" PRIVATE ${IMGUI_PATH})
+target_link_libraries(${PROJECT_NAME} "ImGui")
+#target_link_libraries(${PROJECT_NAME} PRIVATE ImGui)
