@@ -1,34 +1,61 @@
 #include <iostream>
+#include <string>
 
 #include <util/sysdefs.h>
 #include <util/maths.h>
 
-extern "C" {
-#include <core/renderer.h>
-#include <core/lighting.h>
 #include <core/ecs.h>
+#include <core/renderer.h>
+
+extern "C" {
+#include <core/lighting.h>
 
 #include <components/transform.h>
 #include <components/camera.h>
 #include <components/mesh.h>
 }
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB8, false, 0)
 
-int main() {
-    std::cout << "Hello world!" << std::endl;
+int main(int argc, char *argv[]) {
+    if(argc > 1) {
+        for(int i = 0; i < argc; i++) {
 
+            if(std::string(argv[i]) == "--debug") {
+                // do something
+            }
+        }
+    }
+
+// Initialize Renderer
     Renderer *renderer = renderer_init();
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
-    ECS *ecs; // set by active scene
 
+#ifdef DEBUG 
+// Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
+    ImGui_ImplOpenGL3_Init("440");
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+#endif
+
+// Initialize ECS
+    ECS *ecs;
     ecs = renderer_active_scene(renderer, 0);
 
 // Lighting information
-    float lightPos[3]     = {0.0f, 0.1f, 0.4f};
-    float lightColor[4]   = {1.0f, 1.0f, 1.0f, 1.0f};
+    vec3 lightPos     = {0.0f, 0.1f, 0.4f};
+    vec4 lightColor   = {1.0f, 1.0f, 1.0f, 1.0f};
 
 // UBO Lighting
     lighting_initialize(lightPos, lightColor);
@@ -118,15 +145,20 @@ int main() {
         }
     }));
 
-    /* Render loop */
-
+/* Render loop */
     renderer_active_scene(renderer, 1);
-    renderer_tick(renderer);
 
+    renderer_start(renderer); // Initialization for the render loop
+    while(!glfwWindowShouldClose(renderer->window)) {
+        renderer_tick(renderer);
+        glfwSwapBuffers(renderer->window); // we need to swap.
+    }
+
+// Cleanup
     glfwDestroyWindow(renderer->window);
     free(renderer);
     free(ecs);
     glfwTerminate();
 
-    return 1;
+    return 0;
 }

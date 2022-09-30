@@ -37,7 +37,7 @@ enum ECSEvent {
     ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE
 };
 
-#define ECSCOMPONENT_LAST C_MESH 
+#define ECSCOMPONENT_LAST C_MESH
 enum _ecs_component {
     C_TRANSFORM = 0,
     C_CAMERA, 

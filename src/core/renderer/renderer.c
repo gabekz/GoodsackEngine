@@ -105,7 +105,7 @@ ECS *renderer_active_scene(Renderer* self, ui16 sceneIndex) {
     // TODO: add checks here and cleanup from previous scene for switching.
 }
 
-void renderer_tick(Renderer *renderer) {
+void renderer_start(Renderer *renderer) {
 // Scene initialization
     Scene *scene = renderer->sceneL[renderer->activeScene];
     ECS *ecs = scene->ecs;
@@ -114,7 +114,6 @@ void renderer_tick(Renderer *renderer) {
     ui32 depthMapFBO;
     glGenFramebuffers(1, &depthMapFBO);
     // Texture
-    const ui32 SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
     ui32 depthMap;
     glGenTextures(1, &depthMap);
     glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -148,14 +147,17 @@ void renderer_tick(Renderer *renderer) {
             (vec3){0.0f, 1.0f, 0.0f}, lightView);
     glm_mat4_mul(lightProjection, lightView, lightSpaceMatrix);
 
-    // send to renderer
-    // TODO: Change this crap
-    glm_mat4_copy(lightSpaceMatrix, renderer->lightSpaceMatrix);
-
     ShaderProgram *shaderDepthMap =
         shader_create_program("../res/shaders/depth-map.shader");
 
     Material *materialDepthMap = material_create(shaderDepthMap, NULL, 0);
+
+    // TODO: Again, keeping the hacky shit up here.
+    renderer->shaderDepthMap = shaderDepthMap;
+    renderer->materialDepthMap = materialDepthMap;
+    renderer->depthMapFBO = depthMapFBO;
+    renderer->depthMapTexture = depthMap;
+    glm_mat4_copy(lightSpaceMatrix, renderer->lightSpaceMatrix);
 
 // Send ECS event init
     ecs_event(ecs, ECS_INIT);
@@ -169,59 +171,66 @@ void renderer_tick(Renderer *renderer) {
 // Enable Gamma correction
     glEnable(GL_FRAMEBUFFER_SRGB);
 
+}
+
+/* Render Functions for the pipeline */
+
+void renderer_tick(Renderer *renderer) {
+    Scene *scene = renderer->sceneL[renderer->activeScene];
+    ECS *ecs = scene->ecs;
+
+    // TODO: Keeping some pointers up here so we know where the hacky shit is.
+    ShaderProgram *shaderDepthMap = renderer->shaderDepthMap;
+    Material *materialDepthMap = renderer->materialDepthMap;
+    ui32 depthMapFBO = renderer->depthMapFBO;
+    ui32 depthMapTexture = renderer->depthMapTexture;
+
 /*------------------------------------------- 
-|   Render Loop
-*/
-    while(!glfwWindowShouldClose(renderer->window)) {
-    /*------------------------------------------- 
-        Scene Logic/Data update
-    */ 
-        glfwPollEvents();
-        ecs_event(ecs, ECS_UPDATE);
-    /*------------------------------------------- 
-        Pass #1 - Directional Shadowmap 
-    */ 
-        shader_use(shaderDepthMap);
-        glUniformMatrix4fv(
-            glGetUniformLocation(shaderDepthMap->id, "u_LightSpaceMatrix"),
-            1, GL_FALSE, (float *)lightSpaceMatrix);
+    Scene Logic/Data update
+*/ 
+    glfwPollEvents();
+    ecs_event(ecs, ECS_UPDATE);
 
-        glEnable(GL_DEPTH_TEST);
-        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-        glClear(GL_DEPTH_BUFFER_BIT);
+/*------------------------------------------- 
+    Pass #1 - Directional Shadowmap 
+*/ 
+    shader_use(shaderDepthMap);
+    glUniformMatrix4fv(
+        glGetUniformLocation(shaderDepthMap->id, "u_LightSpaceMatrix"),
+        1, GL_FALSE, (float *)renderer->lightSpaceMatrix);
 
-        renderer->currentPass = SHADOW;
-        renderer->explicitMaterial = materialDepthMap;
-        ecs_event(ecs, ECS_RENDER);
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    renderer->currentPass = SHADOW;
+    renderer->explicitMaterial = materialDepthMap;
+    ecs_event(ecs, ECS_RENDER);
 
-        glViewport(0, 0, renderer->windowWidth, renderer->windowHeight);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    /*------------------------------------------- 
-        Pass #2 - Post Processing Pass 
-    */ 
-        postbuffer_bind();
+    glViewport(0, 0, renderer->windowWidth, renderer->windowHeight);
 
-        glEnable(GL_DEPTH_TEST);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+/*------------------------------------------- 
+    Pass #2 - Post Processing Pass 
+*/ 
+    postbuffer_bind();
 
-        // Bind the shadowmap to texture slot 6
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        renderer->currentPass = REGULAR;
-        ecs_event(ecs, ECS_RENDER);
+    // Bind the shadowmap to texture slot 6
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_2D, depthMapTexture);
 
-    /*------------------------------------------- 
-        Pass #3 - Final: Backbuffer draw
-    */ 
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
-        postbuffer_draw(renderer->windowWidth, renderer->windowHeight);
-        glfwSwapBuffers(renderer->window);
-    }
+    renderer->currentPass = REGULAR;
+    ecs_event(ecs, ECS_RENDER);
 
-    // Cleanup
+/*------------------------------------------- 
+    Pass #3 - Final: Backbuffer draw
+*/ 
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
+    postbuffer_draw(renderer->windowWidth, renderer->windowHeight);
 }

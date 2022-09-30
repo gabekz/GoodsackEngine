@@ -20,6 +20,9 @@
 #define DRAW_MODE_ARRAYS     0xD000
 #define DRAW_MODE_ELEMENTS   0xD001
 
+#define SHADOW_WIDTH    2048
+#define SHADOW_HEIGHT   2048
+
 #define LOG_LEVEL   0
 #define DEBUG       1
 
