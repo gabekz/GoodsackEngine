@@ -27,12 +27,9 @@ ECS *ecs_init(Renderer *renderer) {
     ecs->systems_size = 0;
     ecs->systems = malloc(1 * sizeof(ECSSystem));
 
-    _ECS_DECL_SYSTEM(s_transform);
-    _ECS_DECL_SYSTEM(s_camera);
-    _ECS_DECL_SYSTEM(s_draw_mesh);
-    //s_transform_init(ecs);
-    //s_camera_init(ecs);
-    //s_draw_mesh_init(ecs);
+    s_transform_init(ecs);
+    s_camera_init(ecs);
+    s_draw_mesh_init(ecs);
     //s_camera_init(ecs);
     //s_mesh_draw_init(ecs);
 

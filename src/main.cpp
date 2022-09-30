@@ -33,10 +33,21 @@ int main() {
 // UBO Lighting
     lighting_initialize(lightPos, lightColor);
 
-    Texture *texEarthDiff = texture_create_d("../res/textures/earth/diffuse.png");
-    Texture *texEarthNorm = texture_create_n("../res/textures/earth/normal.png");
     Texture *texDefSpec =
         texture_create_n("../res/textures/defaults/specular.png");
+    Texture *texDefNorm =
+        texture_create_n("../res/textures/defaults/normal.png");
+
+    Texture *texEarthDiff = texture_create_d("../res/textures/earth/diffuse.png");
+    Texture *texEarthNorm = texture_create_n("../res/textures/earth/normal.png");
+
+    Texture *texContDiff = texture_create_d("../res/textures/container/diffuse.png");
+    Texture *texContSpec = texture_create_n("../res/textures/container/specular.png");
+
+    Texture *texBrickDiff =
+        texture_create_d("../res/textures/brickwall/diffuse.png");
+    Texture *texBrickNorm =
+        texture_create_n("../res/textures/brickwall/normal.png");
 
     Material *matSuzanne =
         material_create(NULL, "../res/shaders/lit-diffuse.shader", 3,
@@ -61,9 +72,55 @@ int main() {
         }
     }));
 
+/*------------------------------------------- 
+|   Scene #2
+*/
+    ecs = renderer_active_scene(renderer, 1);
+
+    Material *matFloor = 
+        material_create(NULL, "../res/shaders/lit-diffuse.shader",
+        3, texBrickDiff, texBrickNorm, texDefSpec); 
+    Material *matBox = 
+        material_create(NULL, "../res/shaders/lit-diffuse.shader",
+        3, texContDiff, texDefNorm, texContSpec); 
+
+    Entity camera2 = ecs_new(ecs);
+    ecs_add(camera2, C_CAMERA, ((struct ComponentCamera) {
+        .position = {0.0f, 0.0f, 2.0f},
+        .axisUp   = {0.0f, 1.0f, 0.0f},
+        .speed    = 0.05f,
+    }));
+
+    Entity floorEntity = ecs_new(ecs);
+    ecs_add(floorEntity, C_TRANSFORM, ((struct ComponentTransform) {
+            .position = {0.0f, -0.3f, 0.0f},
+            .scale = {10.0f, 10.0f, 10.0f},
+        }));
+    ecs_add(floorEntity, C_MESH, ((struct ComponentMesh) {
+        .material = matFloor,
+        .modelPath = "../res/models/plane.obj",
+        .properties = {
+            .drawMode = DRAW_ARRAYS,
+            .cullMode = CULL_CW | CULL_FORWARD,
+        }
+    }));
+
+    Entity boxEntity = ecs_new(ecs);
+    ecs_add(boxEntity , C_TRANSFORM, ((struct ComponentTransform) {
+            .position = {0.0f, -0.085f, 0.0f},
+        }));
+    ecs_add(boxEntity, C_MESH, ((struct ComponentMesh) {
+        .material = matBox,
+        .modelPath = "../res/models/cube-test.obj",
+        .properties = {
+            .drawMode = DRAW_ARRAYS,
+            .cullMode = CULL_CW | CULL_FORWARD,
+        }
+    }));
+
     /* Render loop */
 
-    renderer_active_scene(renderer, 0);
+    renderer_active_scene(renderer, 1);
     renderer_tick(renderer);
 
     glfwDestroyWindow(renderer->window);
