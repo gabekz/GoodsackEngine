@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
     // Setup Dear ImGui style
-    ImGui::StyleColorsClassic();
+    ImGui::StyleColorsDark();
 #endif
 
 // Initialize ECS
@@ -161,8 +161,31 @@ int main(int argc, char *argv[]) {
         ImGui::Begin("Light Position");
         ImGui::SliderFloat3("Light Position", (float *)lightPos, 0, 2 * 3.141592f);
         ImGui::ColorEdit3("Light Color", (float *)lightColor);
-        //ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
         ImGui::End();
+
+        if(ImGui::BeginMainMenuBar())
+            {
+              if (ImGui::BeginMenu("File"))
+              {
+                 if(ImGui::MenuItem("Exit"))
+                 {
+                    glfwSetWindowShouldClose(renderer->window, GLFW_TRUE);
+                 }
+                 ImGui::EndMenu();
+               }
+
+              if (ImGui::BeginMenu("Debug"))
+              {
+                 if(ImGui::MenuItem("New"))
+                 {
+                    //Do something
+                 }
+                 ImGui::EndMenu();
+               }
+            
+               ImGui::EndMainMenuBar();
+            }
 
         // Render dear imgui into screen
         ImGui::Render();
