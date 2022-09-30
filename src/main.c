@@ -152,7 +152,7 @@ int main(void) {
 /*------------------------------------------- 
 |   Render Loop
 */
-    renderer_active_scene(renderer, 0);
+    renderer_active_scene(renderer, 1);
     renderer_tick(renderer);
 
     glfwDestroyWindow(renderer->window);

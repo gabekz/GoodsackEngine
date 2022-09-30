@@ -34,6 +34,13 @@ static void DrawMesh(
         struct ComponentTransform *transform,
         Material *material) {
 
+    // Handle culling
+    /*
+    if((mesh->properties.cullMode | CULL_DISABLED)) {
+        printf("Disable culling");
+    }
+    */
+
     material_use(material);
     glUniformMatrix4fv(
     glGetUniformLocation(material->shaderProgram->id, "u_Model"),
@@ -44,7 +51,7 @@ static void DrawMesh(
     ui32 vertices = mesh->model->vertexCount;
     ui32 indices  = mesh->model->indicesCount;
 
-    ui16 drawMode = 0x00;
+    ui16 drawMode = mesh->properties.drawMode;
 
     switch(drawMode) {
         case DRAW_ELEMENTS:
