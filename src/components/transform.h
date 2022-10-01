@@ -12,6 +12,7 @@ struct ComponentTransform {
     float test;
 };
 
+void transform_position(struct ComponentTransform *transform, vec3 position);
 void transform_translate(struct ComponentTransform *transform, vec3 position);
 void transform_rotate(struct ComponentTransform *transform, vec3 rotation);
 void transform_scale(struct ComponentTransform *transform);

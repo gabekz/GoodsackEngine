@@ -1,6 +1,6 @@
-/* postbuffer.c ~ singleton framebuffer program */
+/* Final screen pass (Post Processing + MSAA applied) */
 
-#include "postbuffer.h"
+#include "../pipeline.h"
 
 #include <stdlib.h>
 #include <stdio.h>

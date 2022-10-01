@@ -15,6 +15,8 @@ extern "C" {
 #include <components/mesh.h>
 }
 
+#include <debug/navbar.h>
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -145,6 +147,10 @@ int main(int argc, char *argv[]) {
         }
     }));
 
+    // imgui testing
+    struct ComponentTransform *boxTe = (ComponentTransform *)ecs_get(boxEntity, C_TRANSFORM);
+    vec3 *testP = &boxTe->position;
+
 /* Render loop */
     renderer_active_scene(renderer, 1);
 
@@ -157,35 +163,23 @@ int main(int argc, char *argv[]) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // render your GUI
-        ImGui::Begin("Light Position");
-        ImGui::SliderFloat3("Light Position", (float *)lightPos, 0, 2 * 3.141592f);
-        ImGui::ColorEdit3("Light Color", (float *)lightColor);
+        ImGui::Begin("Crate");
+        ImGui::SliderFloat3("Crate Position", (float *)testP, -2, 2 * 3.141592f);
+        transform_position(boxTe, *testP);
         ImGui::ShowDemoWindow();
         ImGui::End();
 
-        if(ImGui::BeginMainMenuBar())
-            {
-              if (ImGui::BeginMenu("File"))
-              {
-                 if(ImGui::MenuItem("Exit"))
-                 {
-                    glfwSetWindowShouldClose(renderer->window, GLFW_TRUE);
-                 }
-                 ImGui::EndMenu();
-               }
+        vec4 test;
+        ImGui::Begin("Entity Viewer");
+        // Go through each entity
+        for(int i = 0; i < ecs->nextId; i++) {
 
-              if (ImGui::BeginMenu("Debug"))
-              {
-                 if(ImGui::MenuItem("New"))
-                 {
-                    //Do something
-                 }
-                 ImGui::EndMenu();
-               }
-            
-               ImGui::EndMainMenuBar();
-            }
+            ImGui::ColorEdit3("Crate Position", test);
+
+        }
+        ImGui::End();
+
+        navbar_render(renderer);
 
         // Render dear imgui into screen
         ImGui::Render();

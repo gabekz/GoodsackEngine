@@ -4,14 +4,13 @@
 #include <core/shader.h>
 
 void transform_translate(struct ComponentTransform *transform, vec3 position) {
-    //glm_translate(transform->mvp.matrix, position);
 }
 
 void transform_position(struct ComponentTransform *transform, vec3 position) {
     mat4 matrix = GLM_MAT4_IDENTITY_INIT;
     glm_translate(matrix, position);
-    //glm_mat4_copy(matrix, transform->mvp.matrix);
     glm_vec3_copy(position, transform->position);
+    glm_mat4_copy(matrix, transform->mvp.model);
 }
 
 /*
