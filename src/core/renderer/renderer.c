@@ -115,18 +115,14 @@ void renderer_start(Renderer *renderer) {
     glm_mat4_zero(renderer->lightSpaceMatrix);
     glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
 
+    postbuffer_init(renderer->windowWidth, renderer->windowHeight);
+
+
 // Send ECS event init
     ecs_event(ecs, ECS_INIT);
 
-// Create the post buffer
-    postbuffer_init(renderer->windowWidth, renderer->windowHeight);
-
-// Clear GL state
-    clearGLState();
-
-// Enable Gamma correction
     glEnable(GL_FRAMEBUFFER_SRGB);
-
+    clearGLState();
 }
 
 /* Render Functions for the pipeline */

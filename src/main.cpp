@@ -158,11 +158,14 @@ int main(int argc, char *argv[]) {
     while(!glfwWindowShouldClose(renderer->window)) {
 
         renderer_tick(renderer);
+
+#ifdef DEBUG
         // feed inputs to dear imgui, start new frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+#if 0
         ImGui::Begin("Crate");
         ImGui::SliderFloat3("Crate Position", (float *)testP, -2, 2 * 3.141592f);
         transform_position(boxTe, *testP);
@@ -178,12 +181,14 @@ int main(int argc, char *argv[]) {
 
         }
         ImGui::End();
+#endif
 
         navbar_render(renderer);
 
         // Render dear imgui into screen
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
 
         glfwSwapBuffers(renderer->window); // we need to swap.
     }
