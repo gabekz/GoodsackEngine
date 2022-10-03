@@ -73,7 +73,6 @@ Renderer* renderer_init() {
     Scene **sceneList = malloc(sizeof(Scene*));
     *(sceneList) = scene;
 
-
     ret->sceneL      = sceneList;
     ret->sceneC      = 1;
     ret->activeScene = 0;

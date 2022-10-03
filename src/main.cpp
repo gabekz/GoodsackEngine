@@ -194,10 +194,11 @@ int main(int argc, char *argv[]) {
     }
 
 // Cleanup
-
+#ifdef DEBUG 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+#endif
 
     glfwDestroyWindow(renderer->window);
     free(renderer);
