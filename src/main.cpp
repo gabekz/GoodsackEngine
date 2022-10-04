@@ -15,7 +15,7 @@ extern "C" {
 #include <components/mesh.h>
 }
 
-#include <debug/navbar.h>
+#include <debug/debugview.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -38,18 +38,6 @@ int main(int argc, char *argv[]) {
     Renderer *renderer = renderer_init();
     int winWidth = renderer->windowWidth;
     int winHeight = renderer->windowHeight;
-
-#ifdef DEBUG 
-// Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-#endif
 
 // Initialize ECS
     ECS *ecs;
@@ -124,7 +112,7 @@ int main(int argc, char *argv[]) {
     ecs_add(floorEntity, C_TRANSFORM, ((struct ComponentTransform) {
             .position = {0.0f, -0.3f, 0.0f},
             .scale = {10.0f, 10.0f, 10.0f},
-        }));
+    }));
     ecs_add(floorEntity, C_MESH, ((struct ComponentMesh) {
         .material = matFloor,
         .modelPath = "../res/models/plane.obj",
@@ -136,8 +124,8 @@ int main(int argc, char *argv[]) {
 
     Entity boxEntity = ecs_new(ecs);
     ecs_add(boxEntity , C_TRANSFORM, ((struct ComponentTransform) {
-            .position = {0.0f, -0.085f, 0.0f},
-        }));
+        .position = {0.0f, -0.085f, 0.0f},
+    }));
     ecs_add(boxEntity, C_MESH, ((struct ComponentMesh) {
         .material = matBox,
         .modelPath = "../res/models/cube-test.obj",
@@ -146,10 +134,10 @@ int main(int argc, char *argv[]) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
-
-    // imgui testing
-    struct ComponentTransform *boxTe = (ComponentTransform *)ecs_get(boxEntity, C_TRANSFORM);
-    vec3 *testP = &boxTe->position;
+    
+// TESTING
+    static bool showWindow = true;
+    DebugGui *debugGui = new DebugGui(renderer);
 
 /* Render loop */
     renderer_active_scene(renderer, 1);
@@ -159,46 +147,13 @@ int main(int argc, char *argv[]) {
 
         renderer_tick(renderer);
 
-#ifdef DEBUG
-        // feed inputs to dear imgui, start new frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-#if 0
-        ImGui::Begin("Crate");
-        ImGui::SliderFloat3("Crate Position", (float *)testP, -2, 2 * 3.141592f);
-        transform_position(boxTe, *testP);
-        ImGui::ShowDemoWindow();
-        ImGui::End();
-
-        vec4 test;
-        ImGui::Begin("Entity Viewer");
-        // Go through each entity
-        for(int i = 0; i < ecs->nextId; i++) {
-
-            ImGui::ColorEdit3("Crate Position", test);
-
-        }
-        ImGui::End();
-#endif
-
-        navbar_render(renderer);
-
-        // Render dear imgui into screen
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-#endif
+        debugGui->Render();
 
         glfwSwapBuffers(renderer->window); // we need to swap.
     }
 
 // Cleanup
-#ifdef DEBUG 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-#endif
+    delete(debugGui);
 
     glfwDestroyWindow(renderer->window);
     free(renderer);

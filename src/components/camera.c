@@ -24,19 +24,21 @@ static void init(Entity e) {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboId, 0, uboSize);
     camera->uboId = uboId;
-}
-
-static void update(Entity e) {
-    if(!(ecs_has(e, C_CAMERA))) return;
-    struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
 
     float *axisUp = camera->axisUp;
     float *center = GLM_VEC3_ZERO; // position + orientation _v
     glm_vec3_mul(camera->position, (vec3){0.0f, 0.0f, -1.0f}, center);
 
-// lookat [Todo: should be something like camera_update ??]
+}
+
+static void update(Entity e) {
+    if(!(ecs_has(e, C_CAMERA))) return;
+    struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
+    
+    float *axisUp = camera->axisUp;
+    float *center = GLM_VEC3_ZERO; // position + orientation _v
+    glm_vec3_mul(camera->position, (vec3){0.0f, 0.0f, -1.0f}, center);
     glm_lookat(camera->position, center, axisUp, camera->mvp.view);
-    //glm_translate(view, (vec3){0.0f, -0.5f, -2.0f}); ~ old but perhaps better
 
     float aspectRatio = (float)camera->screen.width / (float)camera->screen.height;
     glm_perspective(glm_rad(45.0f), aspectRatio, 0.1f, 100.0f, camera->mvp.proj);
