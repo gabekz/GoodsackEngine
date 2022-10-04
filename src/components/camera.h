@@ -9,6 +9,7 @@
 
 struct ComponentCamera {
     vec3 position, axisUp;
+    float fov;
     float speed, sensitivity;
     ui32 uboId;
     struct {
@@ -20,7 +21,6 @@ struct ComponentCamera {
 };
 
 void camera_input(struct ComponentCamera*, GLFWwindow*);
-
 void s_camera_init(ECS *ecs);
 
 #endif // H_C_CAMERA

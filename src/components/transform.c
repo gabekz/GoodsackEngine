@@ -41,12 +41,20 @@ static void init(Entity e) {
     //transform->mvp.matrix = matrix;
 }
 
+static void update(Entity e) {
+    if(!(ecs_has(e, C_TRANSFORM))) return;
+    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    mat4 m4i = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(m4i, transform->position);
+    glm_mat4_copy(m4i, transform->mvp.model);
+}
+
 void s_transform_init(ECS *ecs) {
     ecs_component_register(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
     ecs_system_register(ecs, ((ECSSystem){
         .init       = (ECSSubscriber) init,
         .destroy    = NULL,
         .render     = NULL,
-        .update     = NULL,
+        .update     = (ECSSubscriber) update,
     }));
 }
