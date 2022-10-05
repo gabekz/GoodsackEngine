@@ -10,8 +10,15 @@ static void init(Entity e) {
     camera->screen.width  = e.ecs->renderer->windowWidth;
     camera->screen.height = e.ecs->renderer->windowHeight;
 
+    // Defaults
     if(camera->fov <= 0) {
-        camera->fov = 45.0f; // default
+        camera->fov = 45.0f;
+    }
+    if(camera->clipping.nearZ <= 0) {
+        camera->clipping.nearZ = 0.1f;
+    }
+    if(camera->clipping.farZ <= 0) {
+        camera->clipping.farZ = 100.0f;
     }
 
 // initialize default view and projection matrices
@@ -45,7 +52,8 @@ static void update(Entity e) {
     glm_lookat(camera->position, center, axisUp, camera->mvp.view);
 
     float aspectRatio = (float)camera->screen.width / (float)camera->screen.height;
-    glm_perspective(glm_rad(camera->fov), aspectRatio, 0.1f, 100.0f, camera->mvp.proj);
+    glm_perspective(glm_rad(camera->fov), aspectRatio,
+            camera->clipping.nearZ, camera->clipping.farZ, camera->mvp.proj);
 
 // Update camera UBO
         glBindBuffer(GL_UNIFORM_BUFFER, camera->uboId);

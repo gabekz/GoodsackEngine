@@ -23,7 +23,8 @@ DebugGui::DebugGui(Renderer *renderer) {
     ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
     // Setup Dear ImGui style
-    ImGui::StyleColorsClassic();
+    ImGui::StyleColorsDark();
+    //SetStyle();
 
     m_renderer = renderer;
     m_showEntityViewer = true;
@@ -43,6 +44,7 @@ void DebugGui::Render() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    //ImGui::GetIO().FontGlobalScale = 1.2f;
 
 // Draw Navbar
     if(ImGui::BeginMainMenuBar()) {
@@ -120,7 +122,9 @@ void DebugGui::Render() {
 
         if(ecs_has(e, C_TRANSFORM)) {
             ImGui::BeginChild("Transform", ImVec2(0, ImGui::GetFontSize() * 8.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
             ImGui::Text("Transform Component");
+            ImGui::PopStyleColor();
             ImGui::Separator();
             // wow, this is ridiculous..
             struct ComponentTransform &p =
@@ -128,12 +132,16 @@ void DebugGui::Render() {
                 ecs_get(e, C_TRANSFORM)
             ));
             ImGui::DragFloat3("Position", p.position, 0.1f, -3000, 3000);
+            ImGui::BeginDisabled();
             ImGui::DragFloat3("Scale", p.scale, -1, 1);
+            ImGui::EndDisabled();
             ImGui::EndChild();
         }
         if(ecs_has(e, C_MESH)) {
             ImGui::BeginChild("Mesh", ImVec2(0, ImGui::GetFontSize() * 8.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
             ImGui::Text("Mesh Component");
+            ImGui::PopStyleColor();
             ImGui::Separator();
             // wow, this is ridiculous..
             struct ComponentMesh &p =
@@ -150,8 +158,10 @@ void DebugGui::Render() {
             ImGui::EndChild();
         }
         if(ecs_has(e, C_CAMERA)) {
-            ImGui::BeginChild("Camera", ImVec2(0, ImGui::GetFontSize() * 8.0f), true);
+            ImGui::BeginChild("Camera", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
             ImGui::Text("Camera Component");
+            ImGui::PopStyleColor();
             ImGui::Separator();
             // wow, this is ridiculous..
             struct ComponentCamera &p =
@@ -160,6 +170,11 @@ void DebugGui::Render() {
             ));
             ImGui::DragFloat("FOV", &p.fov, 0.45f, 0.9f);
             ImGui::DragFloat("Speed", &p.speed, 0.01, 0, 1.0f);
+            ImGui::Text("Clipping");
+            ImGui::PushItemWidth(100);
+            ImGui::DragFloat("", &p.clipping.nearZ, 0.01, 0, 10);
+            ImGui::SameLine();
+            ImGui::DragFloat("", &p.clipping.farZ, 1, 0, 1000);
             ImGui::EndChild();
         }
 

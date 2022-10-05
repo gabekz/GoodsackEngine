@@ -5,7 +5,7 @@
 #include <core/ecs.h>
 
 struct ComponentTransform {
-    vec3 position, scale;
+    vec3 position, orientation, scale;
     struct {
         mat4 model; 
     } mvp;

@@ -83,7 +83,7 @@ Renderer* renderer_init() {
 ECS *renderer_active_scene(Renderer* self, ui16 sceneIndex) {
     ui32 sceneCount = self->sceneC;
     if(sceneCount < sceneIndex + 1) {
-        ui32 newCount = sceneCount + sceneIndex;
+        ui32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
 
         // Create a new, empty scene
         Scene *newScene = malloc(sizeof(Scene));

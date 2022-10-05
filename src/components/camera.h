@@ -13,6 +13,9 @@ struct ComponentCamera {
     float speed, sensitivity;
     ui32 uboId;
     struct {
+        float nearZ, farZ;
+    } clipping;
+    struct {
         mat4 view, proj;
     } mvp;
     struct {

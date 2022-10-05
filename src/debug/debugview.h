@@ -9,6 +9,7 @@ public:
     DebugGui(Renderer* renderer);
     ~DebugGui();
     void Render();
+    void SetStyle();
 
 protected:
     Renderer *m_renderer;

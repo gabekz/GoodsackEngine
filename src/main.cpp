@@ -134,13 +134,41 @@ int main(int argc, char *argv[]) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
+
+/*------------------------------------------- 
+|   Scene #3
+*/
+    ecs = renderer_active_scene(renderer, 2);
+    Entity camera3 = ecs_new(ecs);
+    ecs_add(camera3, C_CAMERA, ((struct ComponentCamera) {
+        .position = {0.0f, 0.0f, 2.0f},
+        .axisUp   = {0.0f, 1.0f, 0.0f},
+        .speed    = 0.05f,
+    }));
+
+    Entity sphereEntity = ecs_new(ecs);
+    ecs_add(sphereEntity, C_TRANSFORM, ((struct ComponentTransform) {
+        .position = {0.0f, 0.0f, 0.0f},
+    }));
+
+    Material *matSphere= 
+        material_create(NULL, "../res/shaders/pbr.shader",
+        0);
+    ecs_add(sphereEntity, C_MESH, ((struct ComponentMesh) {
+        .material = matSphere,
+        .modelPath = "../res/models/sphere.obj",
+        .properties = {
+            .drawMode = DRAW_ARRAYS,
+            .cullMode = CULL_CW | CULL_FORWARD,
+        }
+    }));
     
 // TESTING
     static bool showWindow = true;
     DebugGui *debugGui = new DebugGui(renderer);
 
 /* Render loop */
-    renderer_active_scene(renderer, 1);
+    renderer_active_scene(renderer, 2);
 
     renderer_start(renderer); // Initialization for the render loop
     while(!glfwWindowShouldClose(renderer->window)) {
