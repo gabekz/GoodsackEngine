@@ -20,7 +20,8 @@ mat3 mat3_emu(mat4 m4) {
 void main() {
     TexCoords = aPos;
     mat4 view = mat4(mat3_emu(s_Camera.view));
-    gl_Position = s_Camera.projection * view * vec4(aPos, 1.0);
+    vec4 pos = s_Camera.projection * view * vec4(aPos, 1.0);
+    gl_Position = pos.xyww;
 }
 
 #shader fragment

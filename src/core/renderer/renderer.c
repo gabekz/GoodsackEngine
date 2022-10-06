@@ -170,15 +170,10 @@ void renderer_tick(Renderer *renderer) {
     Pass #2 - Post Processing Pass 
 */ 
     postbuffer_bind();
+    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Skybox test
-    glDepthMask(GL_FALSE);
-    glDisable(GL_DEPTH_TEST);
-    skybox_draw(renderer->skybox);
-    glDepthMask(GL_TRUE);
-
-    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // binding the shadowmap to texture slot 6 (TODO:) for meshes
@@ -186,6 +181,11 @@ void renderer_tick(Renderer *renderer) {
 
     renderer->currentPass = REGULAR;
     ecs_event(ecs, ECS_RENDER);
+
+    // Skybox test
+    glDepthFunc(GL_LEQUAL);
+    skybox_draw(renderer->skybox);
+    glDepthFunc(GL_LESS);
 
 /*------------------------------------------- 
     Pass #3 - Final: Backbuffer draw

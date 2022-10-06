@@ -149,7 +149,7 @@ vec4 light(int type) {
     float diffuse = max(dot(fs_in.normal * calcNormal(1.0), lightDirection), 0.0f);
 
     // Ambient Light
-    float ambient = 0.05f;
+    float ambient = 0.15f;
 
     // Specular Light
     float specular = 0.0f;
