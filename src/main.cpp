@@ -22,7 +22,7 @@ extern "C" {
 #include "imgui_impl_opengl3.h"
 
 #define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16)
-#define texture_create_n(x) texture_create(x, GL_RGB8, false, 0)
+#define texture_create_n(x) texture_create(x, GL_RGB8, false, 1)
 
 int main(int argc, char *argv[]) {
     if(argc > 1) {
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     ecs = renderer_active_scene(renderer, 0);
 
 // Lighting information
-    vec3 lightPos     = {0.0f, 0.1f, 0.4f};
+    vec3 lightPos     = {1.0f, 2.8f, -0.2f};
     vec4 lightColor   = {1.0f, 1.0f, 1.0f, 1.0f};
 
 // UBO Lighting
@@ -151,11 +151,37 @@ int main(int argc, char *argv[]) {
         .position = {0.0f, 0.0f, 0.0f},
     }));
 
-    Material *matSphere= 
+    Texture *texGraniteAlbedo =
+        texture_create_d("../res/textures/pbr/granite/albedo.png");
+    Texture *texGraniteMetallic =
+        texture_create_n("../res/textures/pbr/granite/metallic.png");
+    Texture *texGraniteSpecular =
+        texture_create_n("../res/textures/pbr/granite/roughness.png");
+    Texture *texGraniteAo = 
+        texture_create_n("../res/textures/pbr/granite/ao.png");
+    Material *matGranite = 
         material_create(NULL, "../res/shaders/pbr.shader",
-        0);
+        4,
+        texGraniteAlbedo, texGraniteMetallic, texGraniteSpecular,texGraniteAo 
+    );
+
+    Texture *texPbrAlbedo =
+        texture_create_d("../res/textures/pbr/rust/albedo.png");
+    Texture *texPbrMetallic =
+        texture_create_n("../res/textures/pbr/rust/metallic.png");
+    Texture *texPbrSpecular =
+        texture_create_n("../res/textures/pbr/rust/roughness.png");
+    Texture *texPbrAo = 
+        texture_create_n("../res/textures/default/white.png");
+    Material *matRust = 
+        material_create(NULL, "../res/shaders/pbr.shader",
+        4,
+        texPbrAlbedo, texPbrMetallic, texPbrSpecular, texPbrAo
+    );
+
+
     ecs_add(sphereEntity, C_MESH, ((struct ComponentMesh) {
-        .material = matSphere,
+        .material = matGranite,
         .modelPath = "../res/models/sphere.obj",
         .properties = {
             .drawMode = DRAW_ARRAYS,
