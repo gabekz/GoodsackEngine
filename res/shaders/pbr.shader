@@ -5,6 +5,9 @@ layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec2 a_TexCoords;
 layout(location = 2) in vec3 a_Normal;
 
+layout(location = 3) in vec3 a_Tangent;
+layout(location = 4) in vec3 a_Bitangent;
+
 layout (std140, binding = 0) uniform Camera {
     vec3 position;
     mat4 projection;
@@ -22,22 +25,31 @@ out VS_OUT {
     vec3 position;
     vec2 texCoords;
     vec3 normal;
+    mat3 tbn;
     vec3 camPos;
     vec3 lightPos;
     vec3 lightColor;
 } vs_out;
 
 void main() {
-    vs_out.texCoords = a_TexCoords;
-    vs_out.normal = a_Normal;
-
     gl_Position = s_Camera.projection * s_Camera.view * u_Model * vec4(a_Position, 1.0);
+    vs_out.texCoords = a_TexCoords;
+
+    // TODO: get true worldPosition
     vs_out.position = vec3(0);
 
     vs_out.camPos = s_Camera.position;
 
     vs_out.lightPos = s_Light.position;
     vs_out.lightColor = s_Light.color.xyz;
+
+    vec3 t = normalize(vec3(u_Model * vec4(a_Tangent,   0.0)));
+    vec3 b = normalize(vec3(u_Model * vec4(a_Bitangent, 0.0)));
+    vec3 n = normalize(vec3(u_Model * vec4(a_Normal,    0.0)));
+    //t = normalize(t - dot(t, n) * n);
+    //vec3 b = cross(n, t);
+    vs_out.tbn= mat3(t, b, n);
+    vs_out.normal = a_Normal;
 }
 
 // ---------------------- Fragment -----------------
@@ -45,14 +57,16 @@ void main() {
 #version 420 core
 
 layout(binding = 0) uniform sampler2D t_Albedo;
-layout(binding = 1) uniform sampler2D t_Metallic;
-layout(binding = 2) uniform sampler2D t_Specular;
-layout(binding = 3) uniform sampler2D t_Ao;
+layout(binding = 1) uniform sampler2D t_Normal;
+layout(binding = 2) uniform sampler2D t_Metallic;
+layout(binding = 3) uniform sampler2D t_Specular;
+layout(binding = 4) uniform sampler2D t_Ao;
 
 in VS_OUT {
     vec3 position;
     vec2 texCoords;
     vec3 normal;
+    mat3 tbn;
     vec3 camPos;
     vec3 lightPos;
     vec3 lightColor;
@@ -75,6 +89,16 @@ float ao = texture(t_Ao, fs_in.texCoords).r;
 
 //layout(location = 0) out vec4 color;
 out vec4 FragColor;
+
+//TODO: Move this to a separate fg shader
+//----------------
+vec3 calcNormal(float strength){
+    vec3 n = texture(t_Normal, fs_in.texCoords).rgb;
+    n = n * 2.0 - 1.0;
+    n.xy *= strength;
+    n = normalize(fs_in.tbn * n);
+    return n;
+}
 
 //------------------
 float distributionGGX(float NdotH, float r) {
@@ -103,7 +127,8 @@ vec3 fresnelSchlick(float HdotV, vec3 bR) {
 
 void main() {
 
-    vec3 N = normalize(fs_in.normal);
+    //vec3 N = normalize(fs_in.normal);
+    vec3 N = calcNormal(1.0);
     vec3 V = normalize(fs_in.camPos - fs_in.position);
 
     // calculate reflectance at normal incidence; if dia-electric
@@ -119,7 +144,7 @@ void main() {
     vec3 L = normalize(fs_in.lightPos - fs_in.position);
     vec3 H = normalize(V + L);
     float distance = length(fs_in.lightPos - fs_in.position);
-    float attenuation = 1.0 / (distance * distance);
+    float attenuation = 1.0 / (distance); // distance^2 for non-SRGB
     vec3 radiance = fs_in.lightColor * attenuation;
 
     // Cook-Torrance BRDF

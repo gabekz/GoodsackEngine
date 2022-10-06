@@ -84,8 +84,9 @@ layout(binding = 2) uniform sampler2D t_Specular;
 
 out vec4 FragColor;
 
+//TODO: Move this to a separate fg shader
 vec3 calcNormal(float strength){
-    vec3 n = texture(t_Normal ,fs_in.texCoords).rgb;
+    vec3 n = texture(t_Normal, fs_in.texCoords).rgb;
     n = n * 2.0 - 1.0;
     n.xy *= strength;
     n = normalize(fs_in.tbn * n);
