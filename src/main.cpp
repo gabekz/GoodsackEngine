@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
     );
 
     ecs_add(sphereEntity, C_MESH, ((struct ComponentMesh) {
-        .material = matGranite,
+        .material = matRust,
         .modelPath = "../res/models/sphere.obj",
         .properties = {
             .drawMode = DRAW_ARRAYS,
@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
     DebugGui *debugGui = new DebugGui(renderer);
 
 /* Render loop */
-    renderer_active_scene(renderer, 2);
+    renderer_active_scene(renderer, 1);
 
     renderer_start(renderer); // Initialization for the render loop
     while(!glfwWindowShouldClose(renderer->window)) {

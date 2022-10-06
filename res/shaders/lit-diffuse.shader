@@ -133,7 +133,7 @@ float calcShadow(vec4 fragLightSpace, vec3 lightDir, bool pcf) {
 vec4 light(int type) {
     // Light attenuation
     vec3 lightVec = vec3(1.0f, 1.0f, 1.0f); // default (for directional)
-    float inten = 0.9f;
+    float inten = 1.9f;
     if(type > 0) {
         lightVec = (s_Light.position - fs_in.crntPos);
 

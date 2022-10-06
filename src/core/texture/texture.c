@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include <stdarg.h>
 #include <util/sysdefs.h>
 
 #define TEXTURE_WRAPPING  GL_REPEAT
@@ -12,11 +13,10 @@ Texture *texture_create(const char *path, ui32 format,
     Texture *tex = malloc(sizeof(Texture));
     tex->filePath = path;
 
-    stbi_set_flip_vertically_on_load(1);
-
     glGenTextures(1, &tex->id);
     glBindTexture(GL_TEXTURE_2D, tex->id);
 
+    stbi_set_flip_vertically_on_load(1);
     unsigned char *localBuffer;
     if(path != NULL) {
         localBuffer = stbi_load(tex->filePath, &tex->width,
@@ -54,6 +54,41 @@ Texture *texture_create(const char *path, ui32 format,
     if(localBuffer) {
       stbi_image_free(localBuffer);
     }
+
+    return tex;
+}
+
+Texture *texture_create_cubemap(ui32 faceCount, ...) {
+    ui32 textureId;
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+
+    Texture *tex = malloc(sizeof(Texture));
+    tex->id = textureId;
+
+    va_list ap;
+    va_start(ap, faceCount);
+    va_end(ap);
+
+    stbi_set_flip_vertically_on_load(0);
+    for(int i = 0; i < faceCount; i++) {
+        unsigned char *data;
+        const char *path = va_arg(ap, const char*);
+        if(path != NULL) {
+            data = stbi_load(path, &tex->width,
+            &tex->height, &tex->bpp, /*RGBA*/ 0);
+
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB,
+                tex->width, tex->height, 0, GL_RGB, GL_UNSIGNED_BYTE, data 
+            );
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     return tex;
 }

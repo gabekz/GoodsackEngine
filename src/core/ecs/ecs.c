@@ -10,6 +10,7 @@
 #include <components/transform.h>
 #include <components/mesh.h>
 #include <components/camera.h>
+#include <components/skybox.h>
 
 ECS *ecs_init(Renderer *renderer) {
     ECS *ecs = malloc(sizeof(ECS));

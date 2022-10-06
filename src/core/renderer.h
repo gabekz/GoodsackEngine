@@ -6,6 +6,8 @@
 #include <util/maths.h>
 
 #include <core/scene.h>
+#include <core/lighting.h>
+
 #include <model/material.h>
 
 typedef enum renderPass {REGULAR = 0, SHADOW} RenderPass;
@@ -45,6 +47,9 @@ struct _renderer {
 
     RenderPass currentPass;
     Material *explicitMaterial;
+
+    // Skybox test
+    Skybox *skybox;
 
     // Hacky shit for temporary shadowmap values
     ShaderProgram *shaderDepthMap;

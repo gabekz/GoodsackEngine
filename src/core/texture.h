@@ -19,6 +19,8 @@ struct _texture {
 Texture *texture_create(const char *path, ui32 format,
         ui16 genMipMaps, float afRange);
 
+Texture *texture_create_cubemap(ui32 faceCount, ...);
+
 void texture_bind(Texture *self, ui32 slot);
 void texture_unbind();
 

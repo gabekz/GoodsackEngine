@@ -8,6 +8,10 @@
 #include <util/sysdefs.h>
 
 #include <core/ecs.h>
+#include <core/lighting.h>
+
+// Skybox test
+#include <core/texture.h>
 
 static void _resize_callback
 (GLFWwindow* window, int widthRe, int heightRe) {
@@ -117,6 +121,16 @@ void renderer_start(Renderer *renderer) {
 
     postbuffer_init(renderer->windowWidth, renderer->windowHeight);
 
+    // SKYBOX TEST
+    Texture *skyboxCubemap = texture_create_cubemap(6, 
+        "../res/textures/skybox/right.jpg",
+        "../res/textures/skybox/left.jpg",
+        "../res/textures/skybox/top.jpg",
+        "../res/textures/skybox/bottom.jpg",
+        "../res/textures/skybox/front.jpg",
+        "../res/textures/skybox/back.jpg"
+    );
+    renderer->skybox = skybox_create(skyboxCubemap);
 
 // Send ECS event init
     ecs_event(ecs, ECS_INIT);
@@ -156,10 +170,16 @@ void renderer_tick(Renderer *renderer) {
     Pass #2 - Post Processing Pass 
 */ 
     postbuffer_bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Skybox test
+    glDepthMask(GL_FALSE);
+    glDisable(GL_DEPTH_TEST);
+    skybox_draw(renderer->skybox);
+    glDepthMask(GL_TRUE);
 
     glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // binding the shadowmap to texture slot 6 (TODO:) for meshes
     shadowmap_bind_texture();
