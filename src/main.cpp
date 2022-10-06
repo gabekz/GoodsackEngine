@@ -151,7 +151,6 @@ int main(int argc, char *argv[]) {
         .position = {0.0f, 0.0f, 0.0f},
     }));
 
-    /*
     Texture *texGraniteAlbedo =
         texture_create_d("../res/textures/pbr/granite/albedo.png");
     Texture *texGraniteNormal =
@@ -168,7 +167,6 @@ int main(int argc, char *argv[]) {
         texGraniteAlbedo, texGraniteNormal, 
         texGraniteMetallic, texGraniteSpecular, texGraniteAo 
     );
-    */
 
     Texture *texPbrAlbedo =
         texture_create_d("../res/textures/pbr/rust/albedo.png");
@@ -188,7 +186,7 @@ int main(int argc, char *argv[]) {
     );
 
     ecs_add(sphereEntity, C_MESH, ((struct ComponentMesh) {
-        .material = matRust,
+        .material = matGranite,
         .modelPath = "../res/models/sphere.obj",
         .properties = {
             .drawMode = DRAW_ARRAYS,
