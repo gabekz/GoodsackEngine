@@ -144,7 +144,7 @@ void main() {
     vec3 L = normalize(fs_in.lightPos - fs_in.position);
     vec3 H = normalize(V + L);
     float distance = length(fs_in.lightPos - fs_in.position);
-    float attenuation = 1.0 / (distance); // distance^2 for non-SRGB
+    float attenuation = 1.0 / (distance * distance); // distance^2 for non-SRGB
     vec3 radiance = fs_in.lightColor * attenuation;
 
     // Cook-Torrance BRDF
@@ -177,12 +177,12 @@ void main() {
 // end of lighting equation
 
     // ambient lighting
-    vec3 ambient = vec3(0, 0.001, 0.003) * albedo * ao;
+    vec3 ambient = vec3(0, 0.0001, 0.0003) * albedo * ao;
     vec3 color = ambient + Lo;
     // HDR
-    color = color / (color + vec3(0.3));
+    color = color / (color + vec3(0.1));
     // Gamma
-    //color = pow(color, vec3(1.0/2.2));
+    color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(color, 1.0);
 }

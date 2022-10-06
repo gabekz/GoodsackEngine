@@ -140,7 +140,7 @@ vec4 light(int type) {
         float dist = length(lightVec);
         float a = 2.00f;
         float b = 1.00f;
-        inten = 1.0f / (a * dist * dist + b * dist + 1.0f);
+        inten = 1.0f / (a * dist + b + 1.0f);
     }
 
     // Diffuse Lighting
@@ -149,7 +149,7 @@ vec4 light(int type) {
     float diffuse = max(dot(fs_in.normal * calcNormal(1.0), lightDirection), 0.0f);
 
     // Ambient Light
-    float ambient = 0.1f;
+    float ambient = 0.05f;
 
     // Specular Light
     float specular = 0.0f;
@@ -172,6 +172,8 @@ vec4 light(int type) {
 }
 
 void main() {
-    vec4 texColor = texture(t_Diffuse, fs_in.texCoords);
-    FragColor = texColor * light(0);
+    vec4 texColor = texture(t_Diffuse, fs_in.texCoords) * light(0);
+
+    float gamma = 2.2;
+    FragColor.rgb = pow(texColor.rgb, vec3(1.0/gamma));
 }

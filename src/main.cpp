@@ -21,7 +21,7 @@ extern "C" {
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#define texture_create_d(x) texture_create(x, GL_SRGB8, true, 16)
+#define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
 
 int main(int argc, char *argv[]) {

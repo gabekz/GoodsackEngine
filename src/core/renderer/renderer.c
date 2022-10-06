@@ -121,7 +121,7 @@ void renderer_start(Renderer *renderer) {
 // Send ECS event init
     ecs_event(ecs, ECS_INIT);
 
-    glEnable(GL_FRAMEBUFFER_SRGB);
+    //glEnable(GL_FRAMEBUFFER_SRGB);
     clearGLState();
 }
 
