@@ -17,10 +17,6 @@ extern "C" {
 
 #include <debug/debugview.h>
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
 
@@ -186,8 +182,21 @@ int main(int argc, char *argv[]) {
     );
 
     ecs_add(sphereEntity, C_MESH, ((struct ComponentMesh) {
-        .material = matRust,
+        .material = matGranite,
         .modelPath = "../res/models/sphere.obj",
+        .properties = {
+            .drawMode = DRAW_ARRAYS,
+            .cullMode = CULL_CW | CULL_FORWARD,
+        }
+    }));
+    Entity floorEntity2 = ecs_new(ecs);
+    ecs_add(floorEntity2, C_TRANSFORM, ((struct ComponentTransform) {
+            .position = {0.0f, -0.3f, 0.0f},
+            .scale = {10.0f, 10.0f, 10.0f},
+    }));
+    ecs_add(floorEntity2, C_MESH, ((struct ComponentMesh) {
+        .material = matFloor,
+        .modelPath = "../res/models/plane.obj",
         .properties = {
             .drawMode = DRAW_ARRAYS,
             .cullMode = CULL_CW | CULL_FORWARD,

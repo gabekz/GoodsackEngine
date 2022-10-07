@@ -34,7 +34,7 @@ Renderer* renderer_init() {
 
    // Minimum OpenGL version required
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
    // debug ALL OpenGL Errors
    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, DEBUG);
@@ -170,10 +170,10 @@ void renderer_tick(Renderer *renderer) {
     Pass #2 - Post Processing Pass 
 */ 
     postbuffer_bind();
-    glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // binding the shadowmap to texture slot 6 (TODO:) for meshes
@@ -182,7 +182,8 @@ void renderer_tick(Renderer *renderer) {
     renderer->currentPass = REGULAR;
     ecs_event(ecs, ECS_RENDER);
 
-    // Skybox test
+    // Render skybox (NOTE: Look into whether we want to keep this in
+    // the postprocessing buffer as it is now)
     glDepthFunc(GL_LEQUAL);
     skybox_draw(renderer->skybox);
     glDepthFunc(GL_LESS);

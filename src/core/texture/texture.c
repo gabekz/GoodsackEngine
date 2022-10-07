@@ -93,6 +93,16 @@ Texture *texture_create_cubemap(ui32 faceCount, ...) {
     return tex;
 }
 
+Texture *texture_create_hdr(const char *path) {
+    ui32 textureId;
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+
+    Texture *tex = malloc(sizeof(Texture));
+    tex->id = textureId;
+
+}
+
 void texture_bind(Texture *self, ui32 slot) {
     self->activeSlot = slot;
     glActiveTexture(GL_TEXTURE0 + slot);
