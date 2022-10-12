@@ -48,17 +48,6 @@ target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
 
-# IMGUI
-#set(IMGUI_PATH "${LIB_DIR}/imgui")
-#file(GLOB IMGUI_SOURCES
-#    ${IMGUI_PATH}/*.cpp
-#    ) 
-#add_library("ImGui" ${IMGUI_SOURCES})
-#target_link_libraries("ImGui" "glfw")
-#target_include_directories("ImGui" PRIVATE "${IMGUI_PATH}" "${IMGUI_PATH}/backends")
-#target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_PATH}" "${IMGUI_PATH}/backends")
-#target_link_libraries(${PROJECT_NAME} "ImGui")
-
 set(IMGUI_DIR "${LIB_DIR}/imgui")
 
 add_library("imgui" "${IMGUI_DIR}/imgui.cpp"
@@ -76,3 +65,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/backends")
 target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
 target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
+
+# Lua
+find_package(Lua51 REQUIRED)
+include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})

@@ -13,6 +13,10 @@ extern "C" {
 #include <components/transform.h>
 #include <components/camera.h>
 #include <components/mesh.h>
+
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 }
 
 #include <debug/debugview.h>
@@ -29,6 +33,18 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+
+    lua_State *L = luaL_newstate();
+    int r = luaL_dofile(L, "../test.lua");
+    if(r == LUA_OK) {
+        lua_getglobal(L, "a");
+        if(lua_isnumber(L, -1)) {
+            printf("%f", (float)lua_tonumber(L, -1));
+        }
+        //printf("[Lua OK]: %d", r);
+    }
+    else printf("%s", lua_tostring(L, -1));
+    printf("\n");
 
 // Initialize Renderer
     Renderer *renderer = renderer_init();
@@ -208,7 +224,7 @@ int main(int argc, char *argv[]) {
     DebugGui *debugGui = new DebugGui(renderer);
 
 /* Render loop */
-    renderer_active_scene(renderer, 1);
+    renderer_active_scene(renderer, 2);
 
     renderer_start(renderer); // Initialization for the render loop
     while(!glfwWindowShouldClose(renderer->window)) {
