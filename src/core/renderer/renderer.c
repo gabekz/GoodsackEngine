@@ -122,7 +122,8 @@ void renderer_start(Renderer *renderer) {
     postbuffer_init(renderer->windowWidth, renderer->windowHeight);
 
     // SKYBOX TEST
-    Texture *skyboxCubemap = texture_create_cubemap(6, 
+    /*
+    Texture *skyboxCubemap1 = texture_create_cubemap(6, 
         "../res/textures/skybox/right.jpg",
         "../res/textures/skybox/left.jpg",
         "../res/textures/skybox/top.jpg",
@@ -130,6 +131,8 @@ void renderer_start(Renderer *renderer) {
         "../res/textures/skybox/front.jpg",
         "../res/textures/skybox/back.jpg"
     );
+    */
+    Texture *skyboxCubemap = texture_create_hdr("../res/textures/hdr/ice_lake.hdr");
     renderer->skybox = skybox_create(skyboxCubemap);
 
 // Send ECS event init

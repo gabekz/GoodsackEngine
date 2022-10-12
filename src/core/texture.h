@@ -20,6 +20,7 @@ Texture *texture_create(const char *path, ui32 format,
         ui16 genMipMaps, float afRange);
 
 Texture *texture_create_cubemap(ui32 faceCount, ...);
+Texture *texture_create_hdr(const char *path);
 
 void texture_bind(Texture *self, ui32 slot);
 void texture_unbind();

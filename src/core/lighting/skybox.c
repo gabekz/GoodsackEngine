@@ -30,7 +30,7 @@ void skybox_draw(Skybox *self) {
 
     //glDepthMask(GL_FALSE);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, self->cubemap->id);
+    glBindTexture(GL_TEXTURE_2D, self->cubemap->id);
 
     shader_use(self->shader);
     vao_bind(self->vao);
