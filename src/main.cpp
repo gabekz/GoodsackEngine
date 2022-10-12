@@ -24,6 +24,64 @@ extern "C" {
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
 
+static int CheckLua(lua_State *L, int r) {
+    if(r != LUA_OK) {
+        const char *err = lua_tostring(L, -1);
+        printf("[Lua Error]: %s", err);
+        return 0;
+    }
+    return 1;
+}
+
+static void LuaTest() {
+
+    struct Player {
+        const char* name;
+        int age;
+    };
+
+    struct Player player = {"Undefined", 69};
+
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+
+    if (CheckLua(L, luaL_dofile(L, "../test.lua"))) {
+        lua_getglobal(L, "a");
+        if(lua_isnumber(L, -1)) {
+            printf("%f", (float)lua_tonumber(L, -1));
+        }
+
+        lua_getglobal(L, "PlayerName");
+        if(lua_isstring(L, -1)) {
+            player.name = lua_tostring(L, -1);
+        }
+
+        lua_getglobal(L, "Player");
+        if(lua_istable(L, -1)) {
+            lua_pushstring(L, "Name");
+            lua_gettable(L, -2);
+            player.name = lua_tostring(L, -1);
+            lua_pop(L, 1);
+        }
+
+        lua_getglobal(L, "Add");
+        if(lua_isfunction(L, -1)) {
+            lua_pushnumber(L, 52);
+            lua_pushnumber(L, 12);
+
+            if(CheckLua(L, lua_pcall(L, 2, 1, 0))) {
+                printf("\nFrom C, Lua Add(): %f.", lua_tonumber(L, -1));
+            }
+
+        }
+    }
+
+    printf("\nPlayer name: %s", player.name);
+    printf("\n");
+
+    lua_close(L);
+}
+
 int main(int argc, char *argv[]) {
     if(argc > 1) {
         for(int i = 0; i < argc; i++) {
@@ -34,17 +92,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    lua_State *L = luaL_newstate();
-    int r = luaL_dofile(L, "../test.lua");
-    if(r == LUA_OK) {
-        lua_getglobal(L, "a");
-        if(lua_isnumber(L, -1)) {
-            printf("%f", (float)lua_tonumber(L, -1));
-        }
-        //printf("[Lua OK]: %d", r);
-    }
-    else printf("%s", lua_tostring(L, -1));
-    printf("\n");
+// Call lua foundation-test
+    LuaTest();
 
 // Initialize Renderer
     Renderer *renderer = renderer_init();
