@@ -34,7 +34,10 @@ int main(int argc, char *argv[]) {
     }
 
 // Call lua foundation-test
-    LuaTest("../test.lua");
+    LuaTest("../src/lua/tests/test.lua");
+
+// Main Lua entry
+    LuaInit("../src/lua/tests/demo/main.lua");
 
 // Initialize Renderer
     Renderer *renderer = renderer_init();

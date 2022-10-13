@@ -179,11 +179,51 @@ void func(lua_State *L) {
     }
 }
 
+static int tb;
+
+int _lua_test_ecs_register_system(lua_State *L) {
+    lua_rawgeti(L,LUA_REGISTRYINDEX, tb); // retrieve table for functions
+
+    lua_getfield(L, -2, "start");
+    if(lua_isfunction(L, -1)) {
+        int t = luaL_ref(L,-2);
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+    return 1;
+}
+
+void LuaInit(const char *file) {
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+
+    // create function store
+    lua_newtable(L);
+    tb = luaL_ref(L,LUA_REGISTRYINDEX);
+    dumpstack(L, "from funcStore ref");
+
+
+    lua_register(L, "_ECS_RegisterSystem", _lua_test_ecs_register_system);
+
+    if(CheckLua(L, luaL_dofile(L, file))) {
+
+        lua_getglobal(L, "main");
+        if(lua_isfunction(L, -1)) {
+            if(CheckLua(L, lua_pcall(L, 0, 1, 0))) {
+            }
+        }
+    }
+
+    lua_close(L);
+}
+
 void LuaTest(const char *file) {
     struct Player player = {"Undefined", 69};
 
     lua_State *L = luaL_newstate();
     luaL_openlibs(L);
+
 
     if (CheckLua(L, luaL_dofile(L, file))) {
 #if 1

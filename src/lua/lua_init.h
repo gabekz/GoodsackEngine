@@ -17,5 +17,6 @@ struct MyStruct {
 };
 
 void LuaTest(const char* file);
+void LuaInit(const char *file);
 
 #endif // H_LUA_INIT
