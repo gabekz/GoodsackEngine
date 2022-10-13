@@ -23,7 +23,10 @@ struct MyStruct {
 };
 
 struct Lua_ECSEventStore {
-    ui32 storeId;
+    int tableId;
+
+    int *functions;
+    int n_functions;
 };
 
 
@@ -33,7 +36,7 @@ void LuaInit(const char *file);
 int CheckLua(lua_State *L, int r);
 void dumpstack (lua_State *L, const char *message);
 
-extern int luaopen_luamylib(lua_State *L);
+extern int luaopen_luaprintlib(lua_State *L);
 
 
 #endif // H_LUA_INIT

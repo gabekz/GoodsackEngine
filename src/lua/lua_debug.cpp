@@ -69,7 +69,7 @@ static const struct luaL_Reg printlib [] = {
   {NULL, NULL} /* end of array */
 };
 
-extern int luaopen_luamylib(lua_State *L) {
+extern int luaopen_luaprintlib(lua_State *L) {
   lua_getglobal(L, "_G");
   luaL_setfuncs(L, printlib, 0);
   lua_pop(L, 1);

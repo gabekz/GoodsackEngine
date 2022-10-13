@@ -21,8 +21,6 @@ extern "C" {
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
 
-
-
 int main(int argc, char *argv[]) {
     if(argc > 1) {
         for(int i = 0; i < argc; i++) {
@@ -217,7 +215,7 @@ int main(int argc, char *argv[]) {
     DebugGui *debugGui = new DebugGui(renderer);
 
 /* Render loop */
-    renderer_active_scene(renderer, 2);
+    renderer_active_scene(renderer, 1);
 
     renderer_start(renderer); // Initialization for the render loop
     while(!glfwWindowShouldClose(renderer->window)) {
