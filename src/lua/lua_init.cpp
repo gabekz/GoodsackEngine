@@ -49,12 +49,24 @@ static void dumpstack (lua_State *L, const char *message) {
 
 int _lua_MyStruct_index(lua_State *L) {
     struct MyStruct *t = (struct MyStruct *)luaL_checkudata(L, 1, "MyStruct");
+    dumpstack(L, "index");
     const char *k = luaL_checkstring(L, -1);
+    //dumpstack(L, "index");
     if(!strcmp(k, "value")) {
         lua_pushnumber(L, t->value);
     }
     else if(!strcmp(k, "rand")) {
         lua_pushnumber(L, t->rand);
+    }
+    else if(!strcmp(k, "subset")) {
+        //lua_rawgeti(L, -1, 1);
+
+        //luaL_checktype(L, -1, LUA_TTABLE);
+        //luaL_getmetatable(L, "MyStruct");
+        //lua_getfield(L, -1, "subset");
+        //luaL_getsubtable(L, -1, "subset");
+        //luaL_getmetafield(L, 1, "health");
+        dumpstack(L, "note: subset gettable");
     }
     else {
         lua_pushnil(L);
@@ -64,9 +76,9 @@ int _lua_MyStruct_index(lua_State *L) {
 
 int _lua_MyStruct_newindex(lua_State *L) {
     struct MyStruct *t = (struct MyStruct *)luaL_checkudata(L, 1, "MyStruct");
-    dumpstack(L, "MyStruct_newindex");
+    //dumpstack(L, "MyStruct_newindex");
     const char *k = luaL_checkstring(L, -2);
-    dumpstack(L, "MyStruct_newindex");
+    //dumpstack(L, "MyStruct_newindex");
 
     if(!strcmp(k, "value")) {
         t->value = luaL_checknumber(L, -1);
@@ -146,6 +158,18 @@ void LuaTest(const char *file) {
         lua_pushcfunction(L, _lua_MyStruct_newindex);
         lua_setfield(L, -2, "__newindex");
         lua_pop(L, 1);
+
+        lua_getglobal(L, "system");
+        //lua_pushstring(L, "test");
+        //lua_gettable(L, -2);
+        lua_getfield(L, -1, "test");
+        dumpstack(L, "system getglobal");
+        if(lua_isfunction(L, -1)) printf("Function");
+        lua_pop(L, 2);
+        dumpstack(L, "pop");
+
+        //const char *k = luaL_checkstring(L, -2);
+        //dumpstack(L, "system getglobal");
     }
 
 #endif

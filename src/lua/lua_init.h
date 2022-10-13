@@ -9,6 +9,11 @@ struct Player {
 struct MyStruct {
     float value;
     int rand;
+
+    struct {
+        int health;
+
+    } subset;
 };
 
 void LuaTest(const char* file);

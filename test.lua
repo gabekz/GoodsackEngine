@@ -18,10 +18,18 @@ end
 --- Testing metatables for data-overwrite
 
 function Update(e)
+    -- metatable __index
     print(e.value)
     print(e.rand)
+
+    print(e.subset.health)
+
+
+    -- metatable __newindex
     e.value = 8
     e.rand = 9
 end
 
-return system
+function system.test()
+
+end
