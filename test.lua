@@ -19,15 +19,17 @@ end
 
 function Update(e)
     -- metatable __index
-    print(e.value)
-    print(e.rand)
+    --print(e.value)
+    --print(e.rand)
+    print(e.id)
+    print(e.data.value)
 
-    print(e.subset.health)
+    --print(e.subset.health)
 
 
     -- metatable __newindex
-    e.value = 8
-    e.rand = 9
+    e.data.value = 8
+    e.data.rand = 9
 end
 
 function system.test()

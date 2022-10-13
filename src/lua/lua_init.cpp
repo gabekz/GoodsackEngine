@@ -47,6 +47,50 @@ static void dumpstack (lua_State *L, const char *message) {
   printf("-------------------------\n\n");
 }
 
+int _lua_MyStruct_subset_index(lua_State *L) {
+    luaL_checkudata(L, 1, "MyStruct.subset");
+    const char *k = lua_tostring(L, -1);
+
+    if(!strcmp(k, "health")) {
+        //lua_pushnumber(L, t->value);
+        dumpstack(L, "got health");
+    }
+    else {
+        lua_pushnil(L);
+    }
+
+    return 1;
+}
+
+static void iterate_and_print(lua_State *L, int index)
+{
+    // Push another reference to the table on top of the stack (so we know
+    // where it is, and this function can work for negative, positive and
+    // pseudo indices
+    lua_pushvalue(L, index);
+    // stack now contains: -1 => table
+    lua_pushnil(L);
+    // stack now contains: -1 => nil; -2 => table
+    while (lua_next(L, -2))
+    {
+        // stack now contains: -1 => value; -2 => key; -3 => table
+        // copy the key so that lua_tostring does not modify the original
+        lua_pushvalue(L, -2);
+        // stack now contains: -1 => key; -2 => value; -3 => key; -4 => table
+        const char *key = lua_tostring(L, -1);
+        const char *value = lua_tostring(L, -2);
+        printf("%s => %s\n", key, value);
+        // pop value + copy of key, leaving original key
+        lua_pop(L, 2);
+        // stack now contains: -1 => key; -2 => table
+    }
+    // stack now contains: -1 => table (when lua_next returns 0 it pops the key
+    // but does not push anything.)
+    // Pop table
+    lua_pop(L, 1);
+    // Stack is now the same as it was on entry to this function
+}
+
 int _lua_MyStruct_index(lua_State *L) {
     struct MyStruct *t = (struct MyStruct *)luaL_checkudata(L, 1, "MyStruct");
     dumpstack(L, "index");
@@ -66,6 +110,9 @@ int _lua_MyStruct_index(lua_State *L) {
         //lua_getfield(L, -1, "subset");
         //luaL_getsubtable(L, -1, "subset");
         //luaL_getmetafield(L, 1, "health");
+        //
+        //iterate_and_print(L, -1);
+
         dumpstack(L, "note: subset gettable");
     }
     else {
@@ -99,11 +146,31 @@ void func(lua_State *L) {
     // so we don't need to worry about freeing it
     //
     // MyStruct_new()
+
+    // Create an "entity" which will be a container for 'MyStruct' and value id
+    lua_newtable(L);
+    lua_pushstring(L, "id");
+    lua_pushnumber(L, 0);
+    lua_settable(L, -3);
+    //lua_pop(L, 2);
+
+    // Test for ID
+    lua_getfield(L, -1, "id");
+    lua_pop(L, 1);
+
+    lua_pushstring(L, "data");
     struct MyStruct *var = (struct MyStruct *)lua_newuserdata(L, sizeof *var);
     luaL_setmetatable(L, "MyStruct");
+    //dumpstack(L, "func");
+    lua_settable(L, -3);
+    //lua_settable(L, -3);
     var->value = 5;
 
+    //var->subset = (float *)lua_newuserdata(L, 4);
+    //luaL_setmetatable(L, "MyStruct.subset");
+
     lua_getglobal(L, "Update");
+    dumpstack(L, "push");
     lua_pushvalue(L, -2); // push `var` to lua, somehow
 
     if(CheckLua(L, lua_pcall(L, 1, 0, 0))) {
@@ -119,37 +186,6 @@ void LuaTest(const char *file) {
     luaL_openlibs(L);
 
     if (CheckLua(L, luaL_dofile(L, file))) {
-#if 0
-        lua_getglobal(L, "a");
-        if(lua_isnumber(L, -1)) {
-            printf("%f", (float)lua_tonumber(L, -1));
-        }
-
-        lua_getglobal(L, "PlayerName");
-        if(lua_isstring(L, -1)) {
-            player.name = lua_tostring(L, -1);
-        }
-
-        lua_getglobal(L, "Player");
-        if(lua_istable(L, -1)) {
-            lua_pushstring(L, "Name");
-            lua_gettable(L, -2);
-            player.name = lua_tostring(L, -1);
-            lua_pop(L, 1);
-        }
-
-        lua_getglobal(L, "Add");
-        if(lua_isfunction(L, -1)) {
-            lua_pushnumber(L, 52);
-            lua_pushnumber(L, 12);
-
-            if(CheckLua(L, lua_pcall(L, 2, 1, 0))) {
-                printf("\nFrom C, Lua Add(): %f.", lua_tonumber(L, -1));
-            }
-        }
-
-#endif
-
 #if 1
         // One-time setup that needs to happen before you first call MyStruct_new
         luaL_newmetatable(L, "MyStruct");
@@ -159,6 +195,11 @@ void LuaTest(const char *file) {
         lua_setfield(L, -2, "__newindex");
         lua_pop(L, 1);
 
+        luaL_newmetatable(L, "MyStruct.subset");
+        lua_pushcfunction(L, _lua_MyStruct_subset_index);
+        lua_setfield(L, -2, "__index");
+        lua_pop(L, 1);
+
         lua_getglobal(L, "system");
         //lua_pushstring(L, "test");
         //lua_gettable(L, -2);
@@ -166,7 +207,6 @@ void LuaTest(const char *file) {
         dumpstack(L, "system getglobal");
         if(lua_isfunction(L, -1)) printf("Function");
         lua_pop(L, 2);
-        dumpstack(L, "pop");
 
         //const char *k = luaL_checkstring(L, -2);
         //dumpstack(L, "system getglobal");
