@@ -2,6 +2,8 @@ a = 5 + 52
 
 PlayerName = "E"
 
+system = {}
+
 Player = {
     Age = 32,
     Name = "Edward"
@@ -17,6 +19,9 @@ end
 
 function Update(e)
     print(e.value)
+    print(e.rand)
     e.value = 8
     e.rand = 9
 end
+
+return system

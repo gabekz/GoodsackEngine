@@ -47,10 +47,9 @@ static void dumpstack (lua_State *L, const char *message) {
   printf("-------------------------\n\n");
 }
 
-int MyStruct_index(lua_State *L) {
+int _lua_MyStruct_index(lua_State *L) {
     struct MyStruct *t = (struct MyStruct *)luaL_checkudata(L, 1, "MyStruct");
-    const char *k = luaL_checkstring(L, 2);
-    dumpstack(L, "MyStruct_index");
+    const char *k = luaL_checkstring(L, -1);
     if(!strcmp(k, "value")) {
         lua_pushnumber(L, t->value);
     }
@@ -63,23 +62,23 @@ int MyStruct_index(lua_State *L) {
     return 1;
 }
 
-int MyStruct_newindex(lua_State *L) {
+int _lua_MyStruct_newindex(lua_State *L) {
     struct MyStruct *t = (struct MyStruct *)luaL_checkudata(L, 1, "MyStruct");
-    const char *k = luaL_checkstring(L, 2);
-
+    dumpstack(L, "MyStruct_newindex");
+    const char *k = luaL_checkstring(L, -2);
     dumpstack(L, "MyStruct_newindex");
 
     if(!strcmp(k, "value")) {
-        t->value = luaL_checknumber(L, 3);
+        t->value = luaL_checknumber(L, -1);
         return 0;
     }
     else if(!strcmp(k, "rand")) {
-        t->rand = luaL_checknumber(L, 3);
+        t->rand = luaL_checknumber(L, -1);
         return 0;
     }
     else {
         return luaL_argerror(
-            L, 2, lua_pushfstring(L, "invalid option '%s'", k));
+            L, -2, lua_pushfstring(L, "invalid option '%s'", k));
     }
 }
 
@@ -95,10 +94,10 @@ void func(lua_State *L) {
     lua_getglobal(L, "Update");
     lua_pushvalue(L, -2); // push `var` to lua, somehow
 
-    lua_call(L, 1, 0); // prints "5"
-
-    // now, var->value has changed 
-    printf("\nMyStruct value is: %f", var->value);
+    if(CheckLua(L, lua_pcall(L, 1, 0, 0))) {
+        // now, var->value has changed 
+        printf("\nMyStruct value is: %f", var->value);
+    }
 }
 
 void LuaTest(const char *file) {
@@ -137,26 +136,16 @@ void LuaTest(const char *file) {
             }
         }
 
-        lua_getglobal(L, "Update");
-        if(lua_isfunction(L, -1)) {
-            lua_pushlightuserdata(L, &player);
-
-            if(CheckLua(L, lua_pcall(L, 1, 0, 0))) {
-                printf("\nFrom C, Lua Update(&player): %s.", player.name);
-            }
-        }
 #endif
 
 #if 1
         // One-time setup that needs to happen before you first call MyStruct_new
         luaL_newmetatable(L, "MyStruct");
-        lua_pushcfunction(L, MyStruct_index);
+        lua_pushcfunction(L, _lua_MyStruct_index);
         lua_setfield(L, -2, "__index");
-        lua_pushcfunction(L, MyStruct_newindex);
+        lua_pushcfunction(L, _lua_MyStruct_newindex);
         lua_setfield(L, -2, "__newindex");
-        //dumpstack(L);
         lua_pop(L, 1);
-        //dumpstack(L);
     }
 
 #endif
