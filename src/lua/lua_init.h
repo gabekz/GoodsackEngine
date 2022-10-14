@@ -27,6 +27,9 @@ struct Lua_ECSEventStore {
 
     int *functions;
     int n_functions;
+
+    int *functions2;
+    int n_functions2;
 };
 
 
