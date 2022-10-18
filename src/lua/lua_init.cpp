@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 extern "C" {
     #include "lua.h"
     #include "lauxlib.h"
     #include "lualib.h"
+    #include <core/ecs/ecs_lua.h>
 }
 
 int _lua_MyStruct_index(lua_State *L) {
@@ -230,6 +232,9 @@ void LuaInit(const char *file) {
     // TODO: change from gloal struct to something.. beter.
     store = create_ecs_eventstore(L);
 
+    struct TLua_ECSEventStore *t = Tcreate_ecs_eventstore(L);
+    ecs_lua_event(L, t, ECS_INIT, (Entity){.id = 0});
+
     // add the global C function (register system) to lua
     lua_register(L, "_ECS_RegisterSystem", _lua_test_ecs_register_system);
 
@@ -238,7 +243,7 @@ void LuaInit(const char *file) {
         // entry from lua [function main()]
         lua_getglobal(L, "main");
         if(lua_isfunction(L, -1)) {
-            CheckLua(L, lua_pcall(L, 0, 1, 0));
+            CheckLua(L, lua_pcall(L, 0, 0, 0));
         }
         dumpstack(L, "before");
 
@@ -259,9 +264,10 @@ void LuaInit(const char *file) {
                 (CheckLua(L, lua_pcall(L, 1, 0, 0)));
             }
         }
-        lua_pop(L, 1);
-        // register-table
+        lua_pop(L, 2);
+        // <empty>
 
+        lua_rawgeti(L,LUA_REGISTRYINDEX, store->tableId); // retrieve function table
         // update 
         lua_getfield(L, -1, "update"); // retrieve all "start" functions
         for(int i = 0; i < store->n_functions2; i++) {
@@ -273,10 +279,8 @@ void LuaInit(const char *file) {
                 (CheckLua(L, lua_pcall(L, 1, 0, 0)));
             }
         }
-        lua_pop(L, 1);
-        // register-table
-
-        lua_pop(L, 1); // pop register-table
+        lua_pop(L, 2);
+        // <empty>
 
         dumpstack(L, "end");
     }

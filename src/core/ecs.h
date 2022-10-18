@@ -32,6 +32,7 @@ extern "C" {
 
 #include <core/renderer.h>
 
+#define ECSEVENT_FIRST ECS_INIT
 #define ECSEVENT_LAST ECS_UPDATE
 enum ECSEvent {
     ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE
@@ -122,6 +123,7 @@ void ecs_system_register(ECS *self, ECSSystem system);
 void ecs_component_register(ECS *self, ui32 component_id, ui64 size);
 
 void ecs_event(ECS *self, enum ECSEvent event);
+void lua_ecs_event(enum ECSEvent event, Entity e);
 
 #ifdef __cplusplus
 }

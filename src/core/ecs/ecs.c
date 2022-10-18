@@ -143,23 +143,15 @@ void ecs_event(ECS *self, enum ECSEvent event) {
     // Loop through each system, fire the appropriate event
     for(int i = 0; i < self->systems_size ; i++) {
         ECSSubscriber func = self->systems[i].subscribers[event];
-#if 0
-        // Call the function per-system
-        if (func != NULL) {
-            func();
-            //continue;
-        }
-#else
         if (func == NULL) {
             //func();
             continue;
         }
         // Call the function per-entity
         for (int j = 0; j < self->nextIndex; j++) {
-            func((Entity) { .id = self->ids[j], .index = j, .ecs = self });
+            Entity e = (Entity){.id = self->ids[j], .index = j, .ecs = self };
+            func(e);
         }
-#endif
-
     }
 
     // TODO: determine whether or not there is a required component.
