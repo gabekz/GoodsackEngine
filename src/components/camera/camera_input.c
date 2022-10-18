@@ -1,5 +1,4 @@
-#include "camera.h"
-#include <util/gfx.h>
+#include "camera_input.h"
 
 void camera_input(struct ComponentCamera *self, GLFWwindow *window) {
     float *p = GLM_VEC3_ZERO;

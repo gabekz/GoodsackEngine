@@ -7,10 +7,9 @@
 
 #include <util/sysdefs.h>
 
-#include <components/transform.h>
-#include <components/mesh.h>
-#include <components/camera.h>
-#include <components/skybox.h>
+#include <components/transform/transform.h>
+#include <components/mesh/mesh_draw.h>
+#include <components/camera/camera.h>
 
 ECS *ecs_init(Renderer *renderer) {
     ECS *ecs = malloc(sizeof(ECS));
@@ -30,7 +29,7 @@ ECS *ecs_init(Renderer *renderer) {
 
     s_transform_init(ecs);
     s_camera_init(ecs);
-    s_draw_mesh_init(ecs);
+    s_mesh_draw_init(ecs);
     //s_camera_init(ecs);
     //s_mesh_draw_init(ecs);
 

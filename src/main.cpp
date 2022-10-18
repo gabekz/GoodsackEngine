@@ -10,9 +10,9 @@
 extern "C" {
 #include <core/lighting/lighting.h>
 
-#include <components/transform.h>
-#include <components/camera.h>
-#include <components/mesh.h>
+#include <components/transform/transform.h>
+#include <components/camera/camera.h>
+#include <components/mesh/mesh.h>
 }
 
 #include <debug/debugview.hpp>

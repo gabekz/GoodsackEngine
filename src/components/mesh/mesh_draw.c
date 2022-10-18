@@ -1,5 +1,7 @@
+#include "mesh_draw.h"
 #include "mesh.h"
-#include "transform.h"
+
+#include <components/transform/transform.h>
 
 #include <core/shader/shader.h>
 #include <ecs/ecs.h>
@@ -81,7 +83,7 @@ static void render(Entity e) {
     DrawMesh(mesh, transform, override);
 }
 
-void s_draw_mesh_init(ECS *ecs) {
+void s_mesh_draw_init(ECS *ecs) {
     ecs_component_register(ecs, C_MESH, sizeof(struct ComponentMesh));
     ecs_system_register(ecs, ((ECSSystem){
         .init       = (ECSSubscriber) init,

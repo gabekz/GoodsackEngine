@@ -23,7 +23,6 @@ struct ComponentCamera {
     } screen;
 };
 
-void camera_input(struct ComponentCamera*, GLFWwindow*);
 void s_camera_init(ECS *ecs);
 
 #endif // H_C_CAMERA

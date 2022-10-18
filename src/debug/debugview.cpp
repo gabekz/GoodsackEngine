@@ -7,9 +7,9 @@
 
 #include <ecs/ecs.h>
 
-#include <components/transform.h>
-#include <components/mesh.h>
-#include <components/camera.h>
+#include <components/transform/transform.h>
+#include <components/mesh/mesh.h>
+#include <components/camera/camera.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"

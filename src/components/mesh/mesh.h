@@ -29,6 +29,4 @@ struct ComponentMesh {
     ui32 vbo;
 };
 
-void s_draw_mesh_init(ECS *ecs);
-
 #endif // H_C_MESH
