@@ -5,8 +5,8 @@
 
 #include <util/gfx.h>
 
-#include <core/texture.h>
-#include <core/shader.h>
+#include <core/texture/texture.h>
+#include <core/shader/shader.h>
 
 
 Material *material_create(

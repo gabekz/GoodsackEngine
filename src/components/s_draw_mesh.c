@@ -1,11 +1,10 @@
 #include "mesh.h"
 #include "transform.h"
 
-#include <model/model.h>
+#include <core/shader/shader.h>
+#include <ecs/ecs.h>
 #include <loaders/loader_obj.h>
-
-#include <core/ecs.h>
-#include <core/shader.h>
+#include <model/model.h>
 
 static void init(Entity e) {
     if(!(ecs_has(e, C_TRANSFORM))) return;

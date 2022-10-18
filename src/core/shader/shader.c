@@ -3,7 +3,7 @@
    Shader function' implmenetations.
 
 */
-#include "../shader.h"
+#include "shader.h"
 
 #include <stdlib.h>
 #include <stdio.h>

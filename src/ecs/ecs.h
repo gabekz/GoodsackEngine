@@ -30,7 +30,7 @@ typedef struct _ecs ECS;
 extern "C" {
 #endif
 
-#include <core/renderer.h>
+#include <core/renderer/renderer.h>
 
 #define ECSEVENT_FIRST ECS_INIT
 #define ECSEVENT_LAST ECS_UPDATE

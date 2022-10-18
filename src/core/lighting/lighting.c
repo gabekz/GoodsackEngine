@@ -1,4 +1,4 @@
-#include "../lighting.h"
+#include "lighting.h"
 
 #include <util/sysdefs.h>
 #include <util/gfx.h>

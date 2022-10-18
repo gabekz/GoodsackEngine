@@ -1,17 +1,15 @@
 /* Final screen pass (Post Processing + MSAA applied) */
-
-#include "../pipeline.h"
+#include "pass_screen.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #include <core/api/opengl/glbuffer.h>
+#include <core/shader/shader.h>
 #include <model/primitives.h>
-#include <core/shader.h>
 
 #include <util/sysdefs.h>
 #include <util/gfx.h>
-
 
 static ui32 msFBO, sbFBO;
 static ui32 msRBO, sbRBO;

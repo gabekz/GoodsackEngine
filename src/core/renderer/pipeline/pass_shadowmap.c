@@ -1,13 +1,12 @@
 /* Shadowmap depth-texture pass */
-
-#include "../pipeline.h"
+#include "pass_shadowmap.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #include <core/api/opengl/glbuffer.h>
 #include <model/material.h>
-#include <core/shader.h>
+#include <core/shader/shader.h>
 
 #include <util/maths.h>
 #include <util/sysdefs.h>

@@ -1,7 +1,7 @@
 #include "transform.h"
 
-#include <core/ecs.h>
-#include <core/shader.h>
+#include <ecs/ecs.h>
+#include <core/shader/shader.h>
 
 void transform_translate(struct ComponentTransform *transform, vec3 position) {
 }

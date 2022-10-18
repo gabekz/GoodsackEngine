@@ -5,7 +5,7 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
-#include <core/ecs.h>
+#include <ecs/ecs.h>
 
 struct ComponentCamera {
     vec3 position, axisUp;

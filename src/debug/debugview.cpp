@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include <core/ecs.h>
+#include <ecs/ecs.h>
 
 #include <components/transform.h>
 #include <components/mesh.h>

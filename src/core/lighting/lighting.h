@@ -5,8 +5,8 @@
 #include <cglm/struct.h>
 
 #include <core/api/opengl/glbuffer.h>
-#include <core/texture.h>
-#include <core/shader.h>
+#include <core/texture/texture.h>
+#include <core/shader/shader.h>
 
 typedef struct _light Light;
 typedef struct _skybox Skybox;

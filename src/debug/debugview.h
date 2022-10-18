@@ -1,8 +1,8 @@
 #ifndef H_DEBUGVIEW
 #define H_DEBUGVIEW
 
-#include <core/renderer.h>
-#include <core/ecs.h>
+#include <core/renderer/renderer.h>
+#include <ecs/ecs.h>
 
 class DebugGui {
 public:

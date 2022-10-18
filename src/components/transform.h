@@ -2,7 +2,7 @@
 #define H_C_TRANSFORM
 
 #include <util/maths.h>
-#include <core/ecs.h>
+#include <ecs/ecs.h>
 
 struct ComponentTransform {
     vec3 position, orientation, scale;

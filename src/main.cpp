@@ -4,11 +4,11 @@
 #include <util/sysdefs.h>
 #include <util/maths.h>
 
-#include <core/ecs.h>
-#include <core/renderer.h>
+#include <ecs/ecs.h>
+#include <core/renderer/renderer.h>
 
 extern "C" {
-#include <core/lighting.h>
+#include <core/lighting/lighting.h>
 
 #include <components/transform.h>
 #include <components/camera.h>

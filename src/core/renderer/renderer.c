@@ -1,5 +1,5 @@
-#include "../renderer.h"
-#include "pipeline.h"
+#include "renderer.h"
+#include "pipeline/pipeline.h"
 
 #include<stdio.h>
 
@@ -7,11 +7,11 @@
 #include <util/gfx.h>
 #include <util/sysdefs.h>
 
-#include <core/ecs.h>
-#include <core/lighting.h>
+#include <ecs/ecs.h>
+#include <core/lighting/lighting.h>
 
 // Skybox test
-#include <core/texture.h>
+#include <core/texture/texture.h>
 
 static void _resize_callback
 (GLFWwindow* window, int widthRe, int heightRe) {

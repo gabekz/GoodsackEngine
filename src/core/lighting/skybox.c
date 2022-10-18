@@ -1,9 +1,8 @@
-#include "../lighting.h"
+#include "lighting.h"
 
 #include <core/api/opengl/glbuffer.h>
+#include <core/shader/shader.h>
 #include <model/primitives.h>
-
-#include <core/shader.h>
 
 Skybox *skybox_create(Texture *cubemap) {
 

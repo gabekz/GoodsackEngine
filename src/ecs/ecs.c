@@ -1,4 +1,4 @@
-#include "../ecs.h"
+#include "ecs.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -8,7 +8,7 @@ extern "C" {
     #include "lua.h"
     #include "lauxlib.h"
     #include "lualib.h"
-    #include <core/ecs/ecs_lua.h>
+    #include <ecs/ecs_lua.h>
 }
 
 int _lua_MyStruct_index(lua_State *L) {

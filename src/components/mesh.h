@@ -4,7 +4,7 @@
 #include <model/model.h>
 #include <model/material.h>
 
-#include <core/ecs.h>
+#include <ecs/ecs.h>
 
 #define DRAW_ARRAYS     0x00
 #define DRAW_ELEMENTS   0x01

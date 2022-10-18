@@ -4,7 +4,7 @@
 #include <util/sysdefs.h>
 
 #include <core/api/opengl/glbuffer.h>
-#include <core/texture.h>
+#include <core/texture/texture.h>
 
 typedef struct _model Model;
 

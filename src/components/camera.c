@@ -1,7 +1,7 @@
 #include "camera.h"
 
 #include <util/gfx.h>
-#include <core/ecs.h>
+#include <ecs/ecs.h>
 
 static void init(Entity e) {
     if(!(ecs_has(e, C_CAMERA))) return;
