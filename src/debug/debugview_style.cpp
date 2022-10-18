@@ -1,4 +1,4 @@
-#include "debugview.h"
+#include "debugview.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"

@@ -15,7 +15,7 @@ extern "C" {
 #include <components/mesh.h>
 }
 
-#include <debug/debugview.h>
+#include <debug/debugview.hpp>
 #include <lua/lua_init.h>
 
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
