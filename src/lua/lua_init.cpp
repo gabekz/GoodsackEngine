@@ -7,9 +7,10 @@ extern "C" {
     #include "lua.h"
     #include "lauxlib.h"
     #include "lualib.h"
-
-    #include <ecs/lua/ecs_lua.h>
 }
+
+// Testing
+#include <ecs/lua/eventstore.hpp>
 
 #include <lua/debug.h>
 #include <lua/print.h>
@@ -133,6 +134,7 @@ void LuaTest(const char *file) {
 //----------------------------------------------------------------------
 
 static struct Lua_ECSEventStore *store;
+static int storeId;
 
 static struct Lua_ECSEventStore* create_ecs_eventstore(lua_State *L) {
     struct Lua_ECSEventStore *store = 
@@ -179,7 +181,8 @@ static void add_ecs_eventstore(const char *event, int fn) {
 }
 
 int _lua_test_ecs_register_system(lua_State *L) {
-    lua_rawgeti(L,LUA_REGISTRYINDEX, store->tableId); // retrieve table for functions
+    //lua_rawgeti(L,LUA_REGISTRYINDEX, store->tableId); // retrieve table for functions
+    lua_rawgeti(L,LUA_REGISTRYINDEX, storeId); // retrieve table for functions
     // <args>, register-table
 
     /* start() function */
@@ -190,9 +193,10 @@ int _lua_test_ecs_register_system(lua_State *L) {
     // <args>, register-table, table, function
 
     if(lua_isfunction(L, -1)) {
+        dumpstack(L, "test");
         int f = luaL_ref(L, -2); // register to table "start"
 
-        add_ecs_eventstore("start", f);
+        //add_ecs_eventstore("start", f);
     }
     else {
         // we want to pop this if not a function. Registering as
@@ -212,7 +216,7 @@ int _lua_test_ecs_register_system(lua_State *L) {
     if(lua_isfunction(L, -1)) {
         int f = luaL_ref(L, -2); // register to table "start"
 
-        add_ecs_eventstore("update", f);
+        //add_ecs_eventstore("update", f);
     }
     else {
         // we want to pop this if not a function. Registering as
@@ -233,13 +237,22 @@ void LuaInit(const char *file) {
     luaopen_luaprintlib(L);
 
     // TODO: change from gloal struct to something.. beter.
-    store = create_ecs_eventstore(L);
+    //store = create_ecs_eventstore(L);
 
-    struct TLua_ECSEventStore *t = Tcreate_ecs_eventstore(L);
-    ecs_lua_event(L, t, ECS_INIT, (Entity){.id = 0});
+    // TESTING OLD
+    //struct TLua_ECSEventStore *t = Tcreate_ecs_eventstore(L);
+    //ecs_lua_event(L, t, ECS_INIT, (Entity){.id = 0});
+
+    ECSEventStore *eventStore = new ECSEventStore(L);
+    eventStore->ECSEvent(L, ECS_INIT);
+    storeId = eventStore->m_tableId;
+
+    //delete(eventStore);
 
     // add the global C function (register system) to lua
     lua_register(L, "_ECS_RegisterSystem", _lua_test_ecs_register_system);
+    //void *t = fps(L, eventStore, &ECSEventStore::Lua_ECSRegisterSystem);
+    //lua_register(L, "_ECS_RegisterSystem", t);
 
     if(CheckLua(L, luaL_dofile(L, file))) {
 
@@ -254,6 +267,7 @@ void LuaInit(const char *file) {
         //printf("Calling stored functions from C:\n");
         //lua_rawgeti(L, LUA_REGISTRYINDEX, store->tableId); // retrieve function table
 
+        /*
         lua_rawgeti(L,LUA_REGISTRYINDEX, store->tableId); // retrieve function table
 
         // start
@@ -284,14 +298,15 @@ void LuaInit(const char *file) {
         }
         lua_pop(L, 2);
         // <empty>
+        */
 
         dumpstack(L, "end");
     }
 
 // cleanup
-    free(store->functions);
-    free(store->functions2);
-    free(store);
+    //free(store->functions);
+    //free(store->functions2);
+    //free(store);
 
     lua_close(L);
 }

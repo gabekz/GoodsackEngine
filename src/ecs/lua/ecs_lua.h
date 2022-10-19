@@ -4,31 +4,12 @@
 #include <ecs/ecs.h>
 #include <util/lua_deps.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct Lua_Functions {
+/*
+struct TLua_Functions {
     int size;
     int *functions;
 };
-
-#ifdef __cplusplus
-}
-
-class ECSEventStore {
-public:
-    ECSEventStore(lua_State *L);
-    ~ECSEventStore();
-protected:
-    int _lua_ECSRegisterSystem(lua_State *L);
-    void _lua_ECSEvent(lua_State *L, enum ECSEvent event, Entity e);
-private:
-    int m_tableId;
-    struct Lua_Functions **functionList;
-};
-
-#endif // C++ only
+*/
 
 struct TLua_ECSEventStore {
     int tableId;

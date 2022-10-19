@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+/*
 
 static const char* EventToString(enum ECSEvent event) {
     switch(event) {
@@ -21,8 +22,8 @@ struct TLua_ECSEventStore* Tcreate_ecs_eventstore(lua_State *L) {
     lua_newtable(L);
     //dumpstack(L, "new");
 
-    struct Lua_Functions **functions;
-    functions = malloc(sizeof(struct Lua_Functions*) * ECSEVENT_LAST+1);
+    struct TLua_Functions **functions;
+    functions = malloc(sizeof(struct TLua_Functions*) * ECSEVENT_LAST+1);
 
 
     for(int i = 0; i < ECSEVENT_LAST+1; i++) {
@@ -32,7 +33,7 @@ struct TLua_ECSEventStore* Tcreate_ecs_eventstore(lua_State *L) {
         lua_settable(L, -3);
 
         // empty malloc
-        functions[i] = malloc(sizeof(struct Lua_Functions));
+        functions[i] = malloc(sizeof(struct TLua_Functions));
         functions[i]->size = 0;
 
     //dumpstack(L, "settable start");
@@ -94,3 +95,4 @@ void ecs_lua_event(lua_State *L, struct TLua_ECSEventStore *store,
     lua_pop(L, 2);
     // <empty>
 }
+*/
