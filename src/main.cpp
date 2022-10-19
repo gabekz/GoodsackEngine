@@ -16,7 +16,7 @@ extern "C" {
 }
 
 #include <debug/debugview.hpp>
-#include <lua/lua_init.h>
+#include <lua/lua_init.hpp>
 
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)

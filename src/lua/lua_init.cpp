@@ -1,8 +1,7 @@
-#include "lua_init.h"
+#include "lua_init.hpp"
 
 #include <stdlib.h>
 #include <string.h>
-
 
 extern "C" {
     #include "lua.h"
@@ -10,6 +9,9 @@ extern "C" {
     #include "lualib.h"
     #include <ecs/ecs_lua.h>
 }
+
+#include <lua/lua_debug.h>
+
 
 int _lua_MyStruct_index(lua_State *L) {
     struct MyStruct *t = (struct MyStruct *)luaL_checkudata(L, 1, "MyStruct");

@@ -1,10 +1,8 @@
-#include "lua_init.h"
+#include "lua_debug.h"
 
-extern "C" {
-    #include "lua.h"
-    #include "lauxlib.h"
-    #include "lualib.h"
-}
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 
 int CheckLua(lua_State *L, int r) {
     if(r != LUA_OK) {

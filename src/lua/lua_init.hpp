@@ -3,10 +3,6 @@
 
 #include <util/sysdefs.h>
 
-extern "C" {
-    #include "lua.h" 
-}
-
 struct Player {
     const char* name;
     int age;
@@ -35,11 +31,5 @@ struct Lua_ECSEventStore {
 
 void LuaTest(const char* file);
 void LuaInit(const char *file);
-
-int CheckLua(lua_State *L, int r);
-void dumpstack (lua_State *L, const char *message);
-
-extern int luaopen_luaprintlib(lua_State *L);
-
 
 #endif // H_LUA_INIT
