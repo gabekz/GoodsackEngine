@@ -11,20 +11,26 @@ struct Lua_Functions {
 
 class ECSEventStore {
 public:
-    ECSEventStore(lua_State *L);
-    ~ECSEventStore();
+    ECSEventStore(const ECSEventStore&) = delete;
 
-    void ECSEvent(lua_State *L, enum ECSEvent event);
-    int Lua_ECSRegisterSystem(lua_State *L);
-    static ECSEventStore GetInstance();
-    int m_tableId;
+    static ECSEventStore& GetInstance();
+    static void Initialize(lua_State *L);
+    static void ECSEvent(enum ECSEvent event);
+
     static const char* EventToString(int event);
+
+    int GetLuaTable();
+
+    int m_tableId;
+    lua_State *m_Lua;
+    struct Lua_Functions **m_functionList;
+
 protected:
     //void ECSEvent(lua_State *L, enum ECSEvent event, Entity e);
 private:
+    ECSEventStore();
     static ECSEventStore s_Instance;
     //int m_tableId;
-    struct Lua_Functions **m_functionList;
 };
 
 #endif // HPP_EVENTSTORE
