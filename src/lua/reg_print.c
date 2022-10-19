@@ -1,4 +1,4 @@
-#include "print.h"
+#include "reg_print.h"
 
 static int lua_print(lua_State* L) {
     int nargs = lua_gettop(L);

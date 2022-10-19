@@ -1,5 +1,5 @@
-#ifndef H_PRINT
-#define H_PRINT
+#ifndef H_REG_PRINT
+#define H_REG_PRINT
 
 #include <util/lua_deps.h>
 
@@ -13,4 +13,4 @@ extern int luaopen_luaprintlib(lua_State *L);
 }
 #endif
 
-#endif // H_PRINT
+#endif // H_REG_PRINT

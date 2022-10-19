@@ -4,17 +4,12 @@
 #include <util/sysdefs.h>
 #include <util/maths.h>
 
-#include <ecs/ecs.h>
-#include <core/renderer/renderer.h>
-
 #include <components/components.h>
-
-extern "C" {
+#include <core/renderer/renderer.h>
 #include <core/lighting/lighting.h>
-}
-
 #include <debug/debugview.hpp>
 #include <lua/lua_init.hpp>
+#include <ecs/ecs.h>
 
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
@@ -28,9 +23,6 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-
-// Call lua foundation-test
-    LuaTest("../src/lua/tests/test.lua");
 
 // Main Lua entry
     LuaInit("../src/lua/tests/demo/main.lua");
