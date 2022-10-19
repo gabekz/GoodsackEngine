@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <components/camera/camera_input.h>
 
 #include <util/gfx.h>
 #include <ecs/ecs.h>

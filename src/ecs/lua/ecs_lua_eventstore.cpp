@@ -1,3 +1,4 @@
+/*
 #include "ecs_lua.h"
 #include "ecs.h" // definitions
 
@@ -14,7 +15,6 @@ const char* EventToString(enum ECSEvent event) {
     }
 }
 
-/*
 ECSEventStore::ECSEventStore(lua_State *L) {
     m_tableId = 0;
     // create function store

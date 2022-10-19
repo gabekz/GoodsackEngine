@@ -7,12 +7,10 @@
 #include <ecs/ecs.h>
 #include <core/renderer/renderer.h>
 
+#include <components/components.h>
+
 extern "C" {
 #include <core/lighting/lighting.h>
-
-#include <components/transform/transform.h>
-#include <components/camera/camera.h>
-#include <components/mesh/mesh.h>
 }
 
 #include <debug/debugview.hpp>

@@ -1,5 +1,5 @@
 #include "ecs_lua.h"
-#include "ecs.h" // definitions
+#include <ecs/ecs.h>
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,13 +1,12 @@
-#include "ecs.h"
+#ifndef H_ECS_LUA
+#define H_ECS_LUA
 
+#include <ecs/ecs.h>
+#include <util/lua_deps.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
 
 struct Lua_Functions {
     int size;
@@ -41,4 +40,4 @@ void ecs_lua_event(
         lua_State *L, struct TLua_ECSEventStore *store,
         enum ECSEvent event, Entity e);
 
-
+#endif // H_ECS_LUA

@@ -7,11 +7,12 @@ extern "C" {
     #include "lua.h"
     #include "lauxlib.h"
     #include "lualib.h"
-    #include <ecs/ecs_lua.h>
+
+    #include <ecs/lua/ecs_lua.h>
 }
 
-#include <lua/lua_debug.h>
-
+#include <lua/debug.h>
+#include <lua/print.h>
 
 int _lua_MyStruct_index(lua_State *L) {
     struct MyStruct *t = (struct MyStruct *)luaL_checkudata(L, 1, "MyStruct");

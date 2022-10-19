@@ -25,10 +25,18 @@ struct _skybox {
     ShaderProgram *shader;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 Light *light_create(float *position, float *color, LightType type);
 void lighting_initialize(float *lightPos, float *lightColor);
 
 Skybox *skybox_create(Texture *cubemap);
 void skybox_draw(Skybox *self);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // H_LIGHTING
