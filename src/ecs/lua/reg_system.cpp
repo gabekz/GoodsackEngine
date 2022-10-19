@@ -3,13 +3,13 @@
 #include <ecs/lua/eventstore.hpp>
 
 int Lua_ECSRegisterSystem(lua_State *L) {
-    ECSEventStore &store = ECSEventStore::GetInstance();
+    ecs::LuaEventStore &store = ecs::LuaEventStore::GetInstance();
 
     // retrieve table for functions
-    store.GetLuaTable();
+    store.RetrieveLuaTable();
 
     for(int i = 0; i < ECSEVENT_LAST+1; i++) {
-        const char *fName = ECSEventStore::EventToString(i);
+        const char *fName = ecs::LuaEventStore::EventToString(i);
         lua_getfield(L, -1, fName);
         // <args>, register-table, table
         lua_getfield(L, -3, fName); // get function from <args>
@@ -20,8 +20,8 @@ int Lua_ECSRegisterSystem(lua_State *L) {
             int f = luaL_ref(L, -2); // register to table "start"
             // TODO: Add ECS Event Store (add_ecs_eventstore)
             //int s = ++store.m_functionList[i]->size;
-            Lua_Functions **fList = store.m_functionList;
-            store.m_functionList[i]->functions = (int*)realloc(
+            ecs::LuaEventStore::Lua_Functions **fList = store.getFunctionList();
+            fList[i]->functions = (int*)realloc(
                 fList[i]->functions, ++fList[i]->size * sizeof(int));
             fList[i]->functions[(fList[i]->size)-1] = f;
         }

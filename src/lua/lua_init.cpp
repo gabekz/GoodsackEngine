@@ -139,7 +139,7 @@ void LuaInit(const char *file) {
     luaL_openlibs(L);
     luaopen_luaprintlib(L);
 
-    ECSEventStore::Initialize(L);
+    ecs::LuaEventStore::Initialize(L);
 
     // add the global C function (register system) to lua
     lua_register(L, "_ECS_RegisterSystem", Lua_ECSRegisterSystem);
@@ -153,8 +153,8 @@ void LuaInit(const char *file) {
         }
         dumpstack(L, "before");
 
-    ECSEventStore::ECSEvent(ECS_INIT);
-    ECSEventStore::ECSEvent(ECS_UPDATE);
+    ecs::LuaEventStore::ECSEvent(ECS_INIT);
+    ecs::LuaEventStore::ECSEvent(ECS_UPDATE);
     dumpstack(L, "end");
 
     }

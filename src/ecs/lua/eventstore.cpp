@@ -8,45 +8,15 @@
 #include <util/lua_deps.h>
 #include <lua/debug.h>
 
-/*
-ECSEventStore::ECSEventStore(lua_State *L) {
-    // create function store
-    lua_newtable(L);
-    //dumpstack(L, "new");
-
-    m_functionList = (struct Lua_Functions**)malloc(
-        sizeof(struct Lua_Functions*) * ECSEVENT_LAST+1);
-
-
-    for(int i = 0; i < ECSEVENT_LAST+1; i++) {
-        // create a table for each event
-        lua_pushstring(L, ECSEventStore::EventToString(ECSEVENT_FIRST+i));
-        dumpstack(L, "settable pushstring");
-        lua_newtable(L);
-        lua_settable(L, -3);
-
-        // empty malloc
-        m_functionList[i] = (struct Lua_Functions*)malloc(sizeof(struct Lua_Functions));
-        m_functionList[i]->size = 0;
-
-    }
-
-    m_tableId = luaL_ref(L, LUA_REGISTRYINDEX);
-    //dumpstack(L, "settable tableId");
-}
-
-ECSEventStore::~ECSEventStore() {
-    // TODO: cleanup
-}
-*/
+using namespace ecs;
 
 // Forward declaration
-ECSEventStore::ECSEventStore() {};
-ECSEventStore ECSEventStore::s_Instance;
+LuaEventStore::LuaEventStore() {};
+LuaEventStore LuaEventStore::s_Instance;
 
-ECSEventStore& ECSEventStore::GetInstance() { return s_Instance; }
+LuaEventStore& LuaEventStore::GetInstance() { return s_Instance; }
 
-void ECSEventStore::Initialize(lua_State *L) {
+void LuaEventStore::Initialize(lua_State *L) {
     // create function store
     lua_newtable(L);
     //dumpstack(L, "new");
@@ -57,7 +27,7 @@ void ECSEventStore::Initialize(lua_State *L) {
 
     for(int i = 0; i < ECSEVENT_LAST+1; i++) {
         // create a table for each event
-        lua_pushstring(L, ECSEventStore::EventToString(ECSEVENT_FIRST+i));
+        lua_pushstring(L, LuaEventStore::EventToString(ECSEVENT_FIRST+i));
         dumpstack(L, "settable pushstring");
         lua_newtable(L);
         lua_settable(L, -3);
@@ -74,12 +44,12 @@ void ECSEventStore::Initialize(lua_State *L) {
     //dumpstack(L, "settable tableId");
 }
 
-void ECSEventStore::ECSEvent(enum ECSEvent event) {
+void LuaEventStore::ECSEvent(enum ECSEvent event) {
 
-    ECSEventStore &store = ECSEventStore::GetInstance();
+    LuaEventStore &store = LuaEventStore::GetInstance();
     lua_State *L = store.m_Lua;
 
-    const char *fName = ECSEventStore::EventToString(event);
+    const char *fName = LuaEventStore::EventToString(event);
     lua_rawgeti(L, LUA_REGISTRYINDEX, store.m_tableId); // retrieve function table
 
     lua_getfield(L, -1, fName); // retrieve all functions of 'fName'
@@ -98,14 +68,14 @@ void ECSEventStore::ECSEvent(enum ECSEvent event) {
     // <empty>
 }
 
-int ECSEventStore::GetLuaTable() {
-    ECSEventStore &store = ECSEventStore::GetInstance();
+int LuaEventStore::RetrieveLuaTable() {
+    LuaEventStore &store = LuaEventStore::GetInstance();
     return lua_rawgeti(
         store.m_Lua, LUA_REGISTRYINDEX,
-        ECSEventStore::GetInstance().m_tableId);
+        LuaEventStore::GetInstance().m_tableId);
 }
 
-const char* ECSEventStore::EventToString(int event) {
+const char* LuaEventStore::EventToString(int event) {
     switch(event) {
         case ECS_INIT:      return "start";
         case ECS_DESTROY:   return "destroy";

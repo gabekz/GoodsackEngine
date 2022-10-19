@@ -4,33 +4,38 @@
 #include <util/lua_deps.h>
 #include <ecs/ecs.h>
 
-struct Lua_Functions {
-    int size;
-    int *functions;
-};
+namespace ecs {
 
-class ECSEventStore {
+
+class LuaEventStore {
 public:
-    ECSEventStore(const ECSEventStore&) = delete;
+    LuaEventStore(const LuaEventStore&) = delete;
 
-    static ECSEventStore& GetInstance();
+    static LuaEventStore& GetInstance();
     static void Initialize(lua_State *L);
     static void ECSEvent(enum ECSEvent event);
 
     static const char* EventToString(int event);
 
-    int GetLuaTable();
+    struct Lua_Functions {
+        int size;
+        int *functions;
+    };
+
+    int RetrieveLuaTable();
+    struct Lua_Functions **getFunctionList() { return m_functionList; };
+
+protected:
+    struct Lua_Functions **m_functionList;
+
+private:
+    LuaEventStore();
+    static LuaEventStore s_Instance;
 
     int m_tableId;
     lua_State *m_Lua;
-    struct Lua_Functions **m_functionList;
-
-protected:
-    //void ECSEvent(lua_State *L, enum ECSEvent event, Entity e);
-private:
-    ECSEventStore();
-    static ECSEventStore s_Instance;
-    //int m_tableId;
 };
+
+} // namespace
 
 #endif // HPP_EVENTSTORE
