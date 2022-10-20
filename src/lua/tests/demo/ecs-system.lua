@@ -6,12 +6,12 @@ local system = {}
 
 function system.start(e)
     print("From start()")
-    print("received "..e.."")
+    print("received "..e.ComponentTransform.test.."")
 end
 
 function system.update(e)
     print("From update()")
-    print("received "..e.."")
+    --print("received "..e.."")
 end
 
 system.run = function() _ECS_RegisterSystem(system) end

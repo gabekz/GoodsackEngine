@@ -17,6 +17,9 @@ public:
 
     static const char* EventToString(int event);
 
+    // TEST
+    static Entity entity;
+
     struct Lua_Functions {
         int size;
         int *functions;

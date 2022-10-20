@@ -7,3 +7,6 @@
 [submodule "lib/imgui"]
 	path = lib/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "lib/json"]
+	path = lib/json
+	url = https://www.github.com/nlohmann/json.git

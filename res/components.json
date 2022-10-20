@@ -1,0 +1,18 @@
+{
+    "ComponentTransform": {
+        "vec3": [ "position", "axisUp" ],
+        "int": [ "uboId" ]
+    },
+
+    "ComponentCamera": {
+        "vec3": [ "position", "rotation", "scale" ],
+        "float": [ "fov", "speed", "sensitivity" ],
+
+        "mvp": {
+            "mat4": [ "view", "projection" ],
+
+            "Material": ["material"],
+            "Model": ["model"]
+        }
+    }
+}

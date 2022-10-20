@@ -1,12 +1,16 @@
 #include "eventstore.hpp"
 #include "../ecs.h" // definitions
 
+#include <iostream>
+
 #include <stdlib.h>
 #include <stdio.h>
-#include <iostream>
+#include <string.h>
 
 #include <util/lua_deps.h>
 #include <lua/debug.h>
+
+#include <components/transform/transform.h>
 
 using namespace ecs;
 
@@ -44,6 +48,58 @@ void LuaEventStore::Initialize(lua_State *L) {
     //dumpstack(L, "settable tableId");
 }
 
+int _lua_Transform_index(lua_State *L) {
+    struct ComponentTransform *t = (struct ComponentTransform*)luaL_checkudata(L, 1, "ComponentTransform");
+    //dumpstack(L, "index");
+    const char *k = luaL_checkstring(L, -1);
+    //dumpstack(L, "index");
+    if(!strcmp(k, "test")) {
+        lua_pushnumber(L, t->test);
+    }
+    else if(!strcmp(k, "subset")) {
+        //lua_rawgeti(L, -1, 1);
+
+        //luaL_checktype(L, -1, LUA_TTABLE);
+        //luaL_getmetatable(L, "MyStruct");
+        //lua_getfield(L, -1, "subset");
+        //luaL_getsubtable(L, -1, "subset");
+        //luaL_getmetafield(L, 1, "health");
+        //
+        //iterate_and_print(L, -1);
+
+        //dumpstack(L, "note: subset gettable");
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static void pushEntity(lua_State *L) {
+
+    // test structure
+    struct ComponentTransform *t = (struct ComponentTransform*)malloc(sizeof(struct ComponentTransform));
+    t->test = 80;
+
+    // Create "entity" as container-table
+    lua_newtable(L);
+    lua_pushstring(L, "id");
+    lua_pushnumber(L, 19);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "ComponentTransform"); // temp
+
+    // Create new metatable
+    luaL_newmetatable(L, "ComponentTransform");
+    lua_pushcfunction(L, _lua_Transform_index);
+    lua_setfield(L, -2, "__index");
+    lua_pop(L, 1);
+
+    lua_pushlightuserdata(L, t);
+    luaL_setmetatable(L, "ComponentTransform");
+    lua_settable(L, -3);
+}
+
 void LuaEventStore::ECSEvent(enum ECSEvent event) {
 
     LuaEventStore &store = LuaEventStore::GetInstance();
@@ -59,7 +115,8 @@ void LuaEventStore::ECSEvent(enum ECSEvent event) {
         dumpstack(L, "getfunctionfromlist");
         if(lua_isfunction(L, -1)) {
             // send data to function
-            lua_pushnumber(L, 12);
+            pushEntity(L);
+            //lua_pushnumber(L, 12);
             // call event function
             (CheckLua(L, lua_pcall(L, 1, 0, 0)));
         }

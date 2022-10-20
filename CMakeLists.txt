@@ -70,3 +70,9 @@ target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
 find_package(Lua51 REQUIRED)
 include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
+
+# JSON
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_INSTALL OFF CACHE INTERNAL "")
+add_subdirectory("${LIB_DIR}/json")
+target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
