@@ -17,6 +17,7 @@ public:
     void SetData(std::map<std::string, Accessor> data);
 
     // getters
+    std::map<std::string, Accessor> GetData() { return m_Variables; };
     Accessor getAccessor(std::string var) { return m_Variables[var]; };
     ulong getSizeReq() { return m_SizeReq; };
     const char* getName() { return m_Name; };
@@ -33,13 +34,15 @@ public:
 
     template<typename T> int GetVariable(const char *var, T *destination);
     void SetVariable(const char *var, void *value);
+    const char* getName() { return m_ComponentLayout.getName(); };
 
 private:
     ComponentLayout &m_ComponentLayout;
     struct { void *mem; int size, index; } m_Data;
 };
 
-void ParseComponents(const char *path);
+
+std::map<std::string, ComponentLayout*> ParseComponents(const char *path);
 
 }
 

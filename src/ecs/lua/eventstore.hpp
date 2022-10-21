@@ -3,6 +3,10 @@
 
 #include <util/lua_deps.h>
 #include <ecs/ecs.h>
+#include <ecs/component.hpp>
+
+#include <string>
+#include <map>
 
 namespace ecs {
 
@@ -17,6 +21,10 @@ public:
 
     static const char* EventToString(int event);
 
+    static ComponentLayout &getLayout(const char* layout) {
+        return *LuaEventStore::GetInstance().m_Layouts[layout];
+    };
+
     // TEST
     static Entity entity;
 
@@ -28,12 +36,14 @@ public:
     int RetrieveLuaTable();
     struct Lua_Functions **getFunctionList() { return m_functionList; };
 
+
 protected:
     struct Lua_Functions **m_functionList;
 
 private:
     LuaEventStore();
     static LuaEventStore s_Instance;
+    std::map<std::string, ComponentLayout*> m_Layouts; 
 
     int m_tableId;
     lua_State *m_Lua;

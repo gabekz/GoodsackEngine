@@ -10,10 +10,10 @@
 #include <lua/debug.h>
 
 #include <ecs/ecs.h>
-#include <ecs/component.hpp>
 
 #include <components/transform/transform.h>
 
+using Component = ecs::Component;
 using namespace ecs;
 
 // Forward declaration
@@ -25,7 +25,6 @@ LuaEventStore& LuaEventStore::GetInstance() { return s_Instance; }
 void LuaEventStore::Initialize(lua_State *L) {
     // create function store
     lua_newtable(L);
-    //dumpstack(L, "new");
 
     s_Instance.m_functionList = (struct Lua_Functions**)malloc(
         sizeof(struct Lua_Functions*) * ECSEVENT_LAST+1);
@@ -34,7 +33,6 @@ void LuaEventStore::Initialize(lua_State *L) {
     for(int i = 0; i < ECSEVENT_LAST+1; i++) {
         // create a table for each event
         lua_pushstring(L, LuaEventStore::EventToString(ECSEVENT_FIRST+i));
-        dumpstack(L, "settable pushstring");
         lua_newtable(L);
         lua_settable(L, -3);
 
@@ -46,39 +44,40 @@ void LuaEventStore::Initialize(lua_State *L) {
 
     s_Instance.m_tableId = luaL_ref(L, LUA_REGISTRYINDEX);
     s_Instance.m_Lua = L;
-    //dumpstack(L, "settable tableId");
+    
+    LuaEventStore::GetInstance().m_Layouts =
+        ecs::ParseComponents("../res/components.json");
+}
+
+int _meta_Component_newindex(lua_State *L) {
+    Component *c;
+    if(lua_isuserdata(L, 1)) {
+        c = (Component *)lua_topointer(L, 1);
+    }
+
+    const char *k = luaL_checkstring(L, -2);
+    int var;
+    if(c->GetVariable(k, &var)) {
+        var = luaL_checknumber(L, -1);
+        c->SetVariable(k, &var);
+        return 0;
+    }
+    else {
+        return luaL_argerror(
+            L, -2, lua_pushfstring(L, "component does not contain '%s'", k));
+    }
 }
 
 int _meta_Component_index(lua_State *L) {
-    return -1;
-    
-    // 1. Grab the entity from args
-    // 2. use the ID for checkudata to reference the saved pointer
-
-    //Component *c = (Component *)luaL_checkudata(L, 1, "ComponentTransform");
-
-}
-
-int _lua_Transform_index(lua_State *L) {
-    struct ComponentTransform *t = (struct ComponentTransform*)luaL_checkudata(L, 1, "ComponentTransform");
-    //dumpstack(L, "index");
-    const char *k = luaL_checkstring(L, -1);
-    //dumpstack(L, "index");
-    if(!strcmp(k, "test")) {
-        lua_pushnumber(L, t->test);
+    Component *c;
+    if(lua_isuserdata(L, 1)) {
+        c = (Component *)lua_topointer(L, 1);
     }
-    else if(!strcmp(k, "subset")) {
-        //lua_rawgeti(L, -1, 1);
 
-        //luaL_checktype(L, -1, LUA_TTABLE);
-        //luaL_getmetatable(L, "MyStruct");
-        //lua_getfield(L, -1, "subset");
-        //luaL_getsubtable(L, -1, "subset");
-        //luaL_getmetafield(L, 1, "health");
-        //
-        //iterate_and_print(L, -1);
-
-        //dumpstack(L, "note: subset gettable");
+    const char *k = luaL_checkstring(L, -1);
+    int var;
+    if(c->GetVariable(k, &var)) {
+        lua_pushnumber(L, var);
     }
     else {
         lua_pushnil(L);
@@ -86,37 +85,12 @@ int _lua_Transform_index(lua_State *L) {
     return 1;
 }
 
-// Creates a Lua entity with metatables
-static void pushEntity(lua_State *L) {
+void pushEntity(lua_State *L, Entity entity, ComponentLayout &layout) {
 
-    // test structure
-    struct ComponentTransform *t = (struct ComponentTransform*)malloc(sizeof(struct ComponentTransform));
-    t->test = 80;
+    Component *t = new Component(layout);
 
-    // Create "entity" as container-table
-    lua_newtable(L);
-    lua_pushstring(L, "id");
-    lua_pushnumber(L, 19);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "ComponentTransform"); // temp
-
-    // Create new metatable
-    luaL_newmetatable(L, "ComponentTransform");
-    lua_pushcfunction(L, _lua_Transform_index);
-    lua_setfield(L, -2, "__index");
-    lua_pop(L, 1);
-
-    lua_pushlightuserdata(L, t);
-    luaL_setmetatable(L, "ComponentTransform");
-    lua_settable(L, -3);
-}
-
-/*
-// Creates a Lua entity with metatables
-static void pushEntity2(lua_State *L) {
-
-    t->test = 80;
+    std::string a = std::to_string(entity.id);
+    const char *tableName = a.append(layout.getName()).c_str();
 
     // Create "entity" as container-table
     lua_newtable(L);
@@ -124,20 +98,25 @@ static void pushEntity2(lua_State *L) {
     lua_pushnumber(L, 19);
     lua_settable(L, -3);
 
-    lua_pushstring(L, "ComponentTransform"); // temp
+    lua_pushstring(L, "ComponentCamera"); // temp
+    
+    /*
+    int speed = 32;
+    t->SetVariable("speed", &speed);
+    */
 
     // Create new metatable
-    luaL_newmetatable(L, "ComponentTransform");
-    lua_pushcfunction(L, _lua_Transform_index);
+    luaL_newmetatable(L, tableName);
+    lua_pushcfunction(L, _meta_Component_index);
     lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, _meta_Component_newindex);
+    lua_setfield(L, -2, "__newindex");
     lua_pop(L, 1);
 
     lua_pushlightuserdata(L, t);
-    luaL_setmetatable(L, "ComponentTransform");
+    luaL_setmetatable(L, tableName);
     lua_settable(L, -3);
-
 }
-*/
 
 void LuaEventStore::ECSEvent(enum ECSEvent event) {
 
@@ -151,10 +130,10 @@ void LuaEventStore::ECSEvent(enum ECSEvent event) {
     for(int i = 0; i < store.m_functionList[event]->size; i++) {
         // retreive function
         lua_rawgeti(L, -1, store.m_functionList[event]->functions[i]);
-        dumpstack(L, "getfunctionfromlist");
         if(lua_isfunction(L, -1)) {
             // send data to function
-            pushEntity(L);
+            //pushEntity(L);
+            pushEntity(L, (Entity){.id = 19}, LuaEventStore::getLayout("ComponentCamera"));
             //lua_pushnumber(L, 12);
             // call event function
             (CheckLua(L, lua_pcall(L, 1, 0, 0)));

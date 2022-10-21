@@ -49,7 +49,7 @@ void Component::SetVariable(const char *var, void *value) {
     }
 }
 
-void ecs::ParseComponents(const char *path) {
+std::map<std::string, ComponentLayout*> ecs::ParseComponents(const char *path) {
 
     std::ifstream file(path);
     json JSON = json::parse(file);
@@ -88,14 +88,11 @@ void ecs::ParseComponents(const char *path) {
                     continue;
                 }
 
-                data[JData[i]] = (Accessor){0, type.second.size, type.second.stride};
+                data[JData[i]] = (Accessor){
+                    0, type.second.size, type.second.stride };
                 //std::cout << type.first << ": " << JData[i] << std::endl;
             }
         }
-
-        //std::cout << data["position"].size << std::endl;
-        //std::cout << data["rotation"].size << std::endl;
-        //std::cout << data["scale"].size << std::endl;
 
         component->SetData(data);
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
@@ -103,43 +100,11 @@ void ecs::ParseComponents(const char *path) {
 
     Component *p = new Component(*layouts["ComponentCamera"]);
 
-    int newSpeed = 69;
+    int value, newSpeed = 69;
     p->SetVariable("speed", &newSpeed);
-    
-    int value;
     if(p->GetVariable("speed", &value)) {
         std::cout << value << std::endl;
     }
 
-    /*
-    for(auto i : componentsList) {
-        std::cout << i->getName() << std::endl;
-        int setDtr = 3;
-        i->SetVariable("fov", &setDtr);
-        setDtr = 5;
-        i->SetVariable("speed", &setDtr);
-
-        int t;
-        if(i->GetVariable("speed", &t)) {
-            std::cout << t << std::endl;
-        }
-
-        int z;
-        if(i->GetVariable("fov", &z)) {
-            std::cout << z << std::endl;
-        } 
-        vec3 v = {2, 9, 1};
-        i->SetVariable("position", &v);
-        if(i->GetVariable("position", v)) {
-            std::cout << v[0] << v[1] << v[2] << std::endl;
-        }
-
-        int test = 15;
-        i->SetVariable("speed", &test);
-        if(i->GetVariable("speed", &test)) {
-            std::cout << " template: " << test << std::endl;
-
-        }
-    }
-    */
+    return layouts;
 }

@@ -6,7 +6,10 @@ local system = {}
 
 function system.start(e)
     print("From start()")
-    print("received "..e.ComponentTransform.test.."")
+
+    e.ComponentCamera.speed = 200
+    print("received "..e.ComponentCamera.speed.."")
+
 end
 
 function system.update(e)

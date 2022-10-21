@@ -28,7 +28,6 @@ void LuaInit(const char *file) {
         if(lua_isfunction(L, -1)) {
             CheckLua(L, lua_pcall(L, 0, 0, 0));
         }
-        dumpstack(L, "before");
 
     ecs::LuaEventStore::ECSEvent(ECS_INIT);
     ecs::LuaEventStore::ECSEvent(ECS_UPDATE);
