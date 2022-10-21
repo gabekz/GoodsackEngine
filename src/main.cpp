@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
 // Main Lua entry
     LuaInit("../src/lua/tests/demo/main.lua");
-    cmptest::run();
+    ecs::ParseComponents("../res/components.json");
 
 // Initialize Renderer
     Renderer *renderer = renderer_init();

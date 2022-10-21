@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-namespace cmptest {
+namespace ecs {
 
 typedef struct _datatype { int size, stride; } DataType;
 typedef struct _accessor { int position, size, stride ; } Accessor;
@@ -12,10 +12,11 @@ typedef struct _accessor { int position, size, stride ; } Accessor;
 class ComponentLayout {
 public:
     ComponentLayout(const char *name);
+    ~ComponentLayout();
 
     void SetData(std::map<std::string, Accessor> data);
 
-    void* GetVariable(const char *var);
+    template<typename T> int GetVariable(const char *var, T *destination);
     void SetVariable(const char *var, void *value);
 
     const char* getName() { return m_Name; };
@@ -32,7 +33,7 @@ private:
     } m_Data;
 };
 
-void run();
+void ParseComponents(const char *path);
 
 }
 

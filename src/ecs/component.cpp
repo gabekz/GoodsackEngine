@@ -7,12 +7,19 @@
 
 #include <stdlib.h>
 
+#include <util/maths.h>
+
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-using namespace cmptest;
+using namespace ecs;
 
 ComponentLayout::ComponentLayout(const char *name) { m_Name = name; }
+
+ComponentLayout::~ComponentLayout() {
+    free(m_DataArray);
+    free(m_Data.mem);
+}
 
 void ComponentLayout::SetData(std::map<std::string, Accessor> data) {
     ulong sizeReq = 0;
@@ -26,12 +33,14 @@ void ComponentLayout::SetData(std::map<std::string, Accessor> data) {
     m_Data.size = sizeReq;
 }
 
-void* ComponentLayout::GetVariable(const char *var) {
+template <typename T>
+int ComponentLayout::GetVariable(const char *var, T *destination) {
     if(m_Variables[var].size) {
         //std::cout << m_Variables[var].size << std::endl;
-        return (void *)((char *)m_Data.mem+m_Variables[var].position);
+        *destination = *(T *)((char *)m_Data.mem+m_Variables[var].position);
+        return 1;
     }
-    return nullptr;
+    return 0;
 }
 
 void ComponentLayout::SetVariable(const char *var, void *value) {
@@ -41,9 +50,9 @@ void ComponentLayout::SetVariable(const char *var, void *value) {
     }
 }
 
-void cmptest::run() {
+void ecs::ParseComponents(const char *path) {
 
-    std::ifstream file("../res/components.json");
+    std::ifstream file(path);
     json JSON = json::parse(file);
     //std::cout << JSON.items() << std::endl;
     
@@ -75,6 +84,7 @@ void cmptest::run() {
 
                 if(!strcmp(type.first.c_str(), "string")) {
                     // TODO: handle
+                    //data[JData[i]] = (Accessor){0, type.second.size, type.second.stride};
                     continue;
                 }
 
@@ -95,7 +105,29 @@ void cmptest::run() {
         std::cout << i->getName() << std::endl;
         int setDtr = 3;
         i->SetVariable("fov", &setDtr);
-        int *t = (int *)i->GetVariable("fov");
-        if(t)  std::cout << *t << std::endl;
+        setDtr = 5;
+        i->SetVariable("speed", &setDtr);
+
+        int t;
+        if(i->GetVariable("speed", &t)) {
+            std::cout << t << std::endl;
+        }
+
+        int z;
+        if(i->GetVariable("fov", &z)) {
+            std::cout << z << std::endl;
+        } 
+        vec3 v = {2, 9, 1};
+        i->SetVariable("position", &v);
+        if(i->GetVariable("position", v)) {
+            std::cout << v[0] << v[1] << v[2] << std::endl;
+        }
+
+        int test = 15;
+        i->SetVariable("speed", &test);
+        if(i->GetVariable("speed", &test)) {
+            std::cout << " template: " << test << std::endl;
+
+        }
     }
 }
