@@ -16,21 +16,27 @@ public:
 
     void SetData(std::map<std::string, Accessor> data);
 
-    template<typename T> int GetVariable(const char *var, T *destination);
-    void SetVariable(const char *var, void *value);
-
+    // getters
+    Accessor getAccessor(std::string var) { return m_Variables[var]; };
+    ulong getSizeReq() { return m_SizeReq; };
     const char* getName() { return m_Name; };
 
 private:
     std::map<std::string, Accessor> m_Variables;
+    ulong m_SizeReq;
     const char *m_Name;
-    void *m_DataArray;
+};
 
-    struct {
-        void *mem;
-        int size;
-        int index;
-    } m_Data;
+class Component {
+public:
+    Component(ComponentLayout &layout);
+
+    template<typename T> int GetVariable(const char *var, T *destination);
+    void SetVariable(const char *var, void *value);
+
+private:
+    ComponentLayout &m_ComponentLayout;
+    struct { void *mem; int size, index; } m_Data;
 };
 
 void ParseComponents(const char *path);

@@ -1,5 +1,4 @@
 #include "eventstore.hpp"
-#include "../ecs.h" // definitions
 
 #include <iostream>
 
@@ -9,6 +8,9 @@
 
 #include <util/lua_deps.h>
 #include <lua/debug.h>
+
+#include <ecs/ecs.h>
+#include <ecs/component.hpp>
 
 #include <components/transform/transform.h>
 
@@ -40,12 +42,21 @@ void LuaEventStore::Initialize(lua_State *L) {
         s_Instance.m_functionList[i] = (struct Lua_Functions*)malloc(sizeof(struct Lua_Functions*));
         s_Instance.m_functionList[i]->size = 0;
         s_Instance.m_functionList[i]->functions = (int *)calloc(0, sizeof(int));
-
     }
 
     s_Instance.m_tableId = luaL_ref(L, LUA_REGISTRYINDEX);
     s_Instance.m_Lua = L;
     //dumpstack(L, "settable tableId");
+}
+
+int _meta_Component_index(lua_State *L) {
+    return -1;
+    
+    // 1. Grab the entity from args
+    // 2. use the ID for checkudata to reference the saved pointer
+
+    //Component *c = (Component *)luaL_checkudata(L, 1, "ComponentTransform");
+
 }
 
 int _lua_Transform_index(lua_State *L) {
@@ -75,6 +86,7 @@ int _lua_Transform_index(lua_State *L) {
     return 1;
 }
 
+// Creates a Lua entity with metatables
 static void pushEntity(lua_State *L) {
 
     // test structure
@@ -99,6 +111,33 @@ static void pushEntity(lua_State *L) {
     luaL_setmetatable(L, "ComponentTransform");
     lua_settable(L, -3);
 }
+
+/*
+// Creates a Lua entity with metatables
+static void pushEntity2(lua_State *L) {
+
+    t->test = 80;
+
+    // Create "entity" as container-table
+    lua_newtable(L);
+    lua_pushstring(L, "id");
+    lua_pushnumber(L, 19);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "ComponentTransform"); // temp
+
+    // Create new metatable
+    luaL_newmetatable(L, "ComponentTransform");
+    lua_pushcfunction(L, _lua_Transform_index);
+    lua_setfield(L, -2, "__index");
+    lua_pop(L, 1);
+
+    lua_pushlightuserdata(L, t);
+    luaL_setmetatable(L, "ComponentTransform");
+    lua_settable(L, -3);
+
+}
+*/
 
 void LuaEventStore::ECSEvent(enum ECSEvent event) {
 

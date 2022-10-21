@@ -16,11 +16,6 @@ using namespace ecs;
 
 ComponentLayout::ComponentLayout(const char *name) { m_Name = name; }
 
-ComponentLayout::~ComponentLayout() {
-    free(m_DataArray);
-    free(m_Data.mem);
-}
-
 void ComponentLayout::SetData(std::map<std::string, Accessor> data) {
     ulong sizeReq = 0;
     for(auto& var : data) {
@@ -29,23 +24,27 @@ void ComponentLayout::SetData(std::map<std::string, Accessor> data) {
     }
 
     m_Variables = data;
-    m_Data.mem = malloc((char)sizeReq);
-    m_Data.size = sizeReq;
+    m_SizeReq   = sizeReq;
+}
+
+Component::Component(ComponentLayout &layout) : m_ComponentLayout(layout) {
+    m_Data.mem = malloc((char)layout.getSizeReq());
+    m_Data.size = layout.getSizeReq();
 }
 
 template <typename T>
-int ComponentLayout::GetVariable(const char *var, T *destination) {
-    if(m_Variables[var].size) {
-        //std::cout << m_Variables[var].size << std::endl;
-        *destination = *(T *)((char *)m_Data.mem+m_Variables[var].position);
+int Component::GetVariable(const char *var, T *destination) {
+    Accessor acr = m_ComponentLayout.getAccessor(var);
+    if(acr.size) {
+        *destination = *(T *)((char *)m_Data.mem+acr.position);
         return 1;
     }
     return 0;
 }
 
-void ComponentLayout::SetVariable(const char *var, void *value) {
-    if(m_Variables[var].size) {
-        Accessor acr = m_Variables[var];
+void Component::SetVariable(const char *var, void *value) {
+    Accessor acr = m_ComponentLayout.getAccessor(var);
+    if(acr.size) {
         memcpy((char *)m_Data.mem+acr.position, value, acr.size * acr.stride);
     }
 }
@@ -65,7 +64,8 @@ void ecs::ParseComponents(const char *path) {
     // strings are handled differently
 
 
-    std::vector<ComponentLayout*> componentsList;
+    //std::vector<ComponentLayout*> layouts;
+    std::map<std::string, ComponentLayout*> layouts;
 
     // Loop through every component
     for(auto& cmp : JSON.items()) {
@@ -98,9 +98,20 @@ void ecs::ParseComponents(const char *path) {
         //std::cout << data["scale"].size << std::endl;
 
         component->SetData(data);
-        componentsList.push_back(component);
+        layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
 
+    Component *p = new Component(*layouts["ComponentCamera"]);
+
+    int newSpeed = 69;
+    p->SetVariable("speed", &newSpeed);
+    
+    int value;
+    if(p->GetVariable("speed", &value)) {
+        std::cout << value << std::endl;
+    }
+
+    /*
     for(auto i : componentsList) {
         std::cout << i->getName() << std::endl;
         int setDtr = 3;
@@ -130,4 +141,5 @@ void ecs::ParseComponents(const char *path) {
 
         }
     }
+    */
 }
