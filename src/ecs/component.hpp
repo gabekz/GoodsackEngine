@@ -1,50 +1,36 @@
-#ifndef H_COMPONENT
-#define H_COMPONENT
+#ifndef HPP_COMPONENT
+#define HPP_COMPONENT
 
 #include <string>
 #include <map>
 
+#include <ecs/component_layout.hpp>
+
 namespace ecs {
-
-typedef struct _datatype { int size, stride; } DataType;
-typedef struct _accessor { int position, size, stride ; } Accessor;
-
-class ComponentLayout {
-public:
-    ComponentLayout(const char *name);
-    ~ComponentLayout();
-
-    void SetData(std::map<std::string, Accessor> data);
-
-    // getters
-    std::map<std::string, Accessor> GetData() { return m_Variables; };
-    Accessor getAccessor(std::string var) { return m_Variables[var]; };
-    ulong getSizeReq() { return m_SizeReq; };
-    const char* getName() { return m_Name; };
-
-private:
-    std::map<std::string, Accessor> m_Variables;
-    ulong m_SizeReq;
-    const char *m_Name;
-};
 
 class Component {
 public:
     Component(ComponentLayout &layout);
 
-    template<typename T> int GetVariable(const char *var, T *destination);
-    void SetVariable(const char *var, void *value);
+    void SetVariable(std::string var, void *value);
     const char* getName() { return m_ComponentLayout.getName(); };
+
+    template <typename T>
+    int GetVariable(std::string var, T *destination) {
+        Accessor acr = m_ComponentLayout.getAccessor(var);
+        if(acr.size) {
+            *destination = *(T *)((char *)m_Data.mem+acr.position);
+            return 1;
+        }
+        return 0;
+    }
 
 private:
     ComponentLayout &m_ComponentLayout;
     struct { void *mem; int size, index; } m_Data;
 };
 
-
-std::map<std::string, ComponentLayout*> ParseComponents(const char *path);
-
 }
 
 
-#endif // H_COMPONENT
+#endif // HPP_COMPONENT

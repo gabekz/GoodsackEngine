@@ -9,11 +9,12 @@
 #include <util/lua_deps.h>
 #include <lua/debug.h>
 
-#include <ecs/ecs.h>
+#include <ecs/component.hpp>
+#include <ecs/component_layout.hpp>
+#include <ecs/parse_components.hpp>
 
 #include <components/transform/transform.h>
 
-using Component = ecs::Component;
 using namespace ecs;
 
 // Forward declaration
@@ -52,7 +53,7 @@ void LuaEventStore::Initialize(lua_State *L) {
 int _meta_Component_newindex(lua_State *L) {
     Component *c;
     if(lua_isuserdata(L, 1)) {
-        c = (Component *)lua_topointer(L, 1);
+        c = (Component*)lua_topointer(L, 1);
     }
 
     const char *k = luaL_checkstring(L, -2);

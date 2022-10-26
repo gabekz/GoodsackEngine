@@ -4,12 +4,12 @@
 #include <util/lua_deps.h>
 #include <ecs/ecs.h>
 #include <ecs/component.hpp>
+#include <ecs/component_layout.hpp>
 
 #include <string>
 #include <map>
 
 namespace ecs {
-
 
 class LuaEventStore {
 public:
@@ -49,6 +49,6 @@ private:
     lua_State *m_Lua;
 };
 
-} // namespace
+}; // namespace
 
 #endif // HPP_EVENTSTORE

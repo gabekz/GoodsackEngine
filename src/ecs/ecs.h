@@ -1,14 +1,11 @@
 #ifndef H_ECS
 #define H_ECS
 
+#include <ecs/ecsdefs.h>
 #include <util/sysdefs.h>
 
 #define _ECS_DECL_SYSTEM(_name)\
     extern void _name##_init();\
-
-#define ECS_TAG_SIZE 1
-#define ECS_TAG_UNUSED  0b00000000
-#define ECS_TAG_USED    0b00110000
 
 #define _ecs_add3(e, c, v) ({ __typeof__(v) _v = (v); _ecs_add_internal((e), (c), &_v); })
 #define _ecs_add2(e, c) _ecs_add_internal((e), (c), NULL)
@@ -32,12 +29,6 @@ extern "C" {
 
 #include <core/renderer/renderer.h>
 
-#define ECSEVENT_FIRST ECS_INIT
-#define ECSEVENT_LAST ECS_UPDATE
-enum ECSEvent {
-    ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE
-};
-
 #define ECSCOMPONENT_LAST C_MESH
 enum _ecs_component {
     C_TRANSFORM = 0,
@@ -49,24 +40,12 @@ typedef enum _ecs_component ECSComponent;
 /*-------------------------------------------*/
 
 /*
-#ifdef __cplusplus
-}
-
-namespace {
-#endif
-
 // Declare systems here
 inline void _ecs_init_internal(ECS *ecs) {
     _ECS_DECL_SYSTEM(s_transform);
     _ECS_DECL_SYSTEM(s_camera);
     _ECS_DECL_SYSTEM(s_draw_mesh);
 }
-
-
-#ifdef __cplusplus
-}
-extern "C" {
-#endif
 */
 
 /*-------------------------------------------*/
