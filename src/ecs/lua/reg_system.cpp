@@ -9,7 +9,7 @@ int Lua_ECSRegisterSystem(lua_State *L) {
     store.RetrieveLuaTable();
 
     for(int i = 0; i < ECSEVENT_LAST+1; i++) {
-        const char *fName = ecs::LuaEventStore::EventToString(i);
+        const char *fName = ecs::EventToString(i);
         lua_getfield(L, -1, fName);
         // <args>, register-table, table
         lua_getfield(L, -3, fName); // get function from <args>

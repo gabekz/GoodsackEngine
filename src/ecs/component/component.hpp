@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#include <ecs/component_layout.hpp>
+#include <ecs/component/layout.hpp>
 
 namespace ecs {
 

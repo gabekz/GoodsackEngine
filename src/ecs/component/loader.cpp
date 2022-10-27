@@ -1,4 +1,4 @@
-#include "parse_components.hpp"
+#include "loader.hpp"
 
 #include <iostream>
 #include <string>
@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <nlohmann/json.hpp>
 
-#include <ecs/component.hpp>
-#include <ecs/component_layout.hpp>
+#include <ecs/component/component.hpp>
+#include <ecs/component/layout.hpp>
 
 using json = nlohmann::json;
 using namespace ecs;

@@ -1,10 +1,10 @@
-#ifndef H_PARSE_COMPONENTS
-#define H_PARSE_COMPONENTS
+#ifndef HPP_ECS_LOADER
+#define HPP_ECS_LOADER
 
 #include <string>
 #include <map>
 
-#include <ecs/component_layout.hpp>
+#include <ecs/component/layout.hpp>
 
 namespace ecs {
 
@@ -13,4 +13,4 @@ std::map<std::string, ComponentLayout*>
 
 };
 
-#endif // H
+#endif // HPP_ECS_LOADER

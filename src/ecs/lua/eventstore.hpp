@@ -3,8 +3,8 @@
 
 #include <util/lua_deps.h>
 #include <ecs/ecs.h>
-#include <ecs/component.hpp>
-#include <ecs/component_layout.hpp>
+#include <ecs/component/component.hpp>
+#include <ecs/component/loader.hpp>
 
 #include <string>
 #include <map>
@@ -12,7 +12,7 @@
 namespace ecs {
 
 class LuaEventStore {
-public:
+  public:
     LuaEventStore(const LuaEventStore&) = delete;
 
     static LuaEventStore& GetInstance();
@@ -36,11 +36,10 @@ public:
     int RetrieveLuaTable();
     struct Lua_Functions **getFunctionList() { return m_functionList; };
 
-
-protected:
+  protected:
     struct Lua_Functions **m_functionList;
 
-private:
+  private:
     LuaEventStore();
     static LuaEventStore s_Instance;
     std::map<std::string, ComponentLayout*> m_Layouts; 
@@ -49,6 +48,6 @@ private:
     lua_State *m_Lua;
 };
 
-}; // namespace
+} // namespace
 
 #endif // HPP_EVENTSTORE

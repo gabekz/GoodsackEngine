@@ -11,8 +11,6 @@
 #include <lua/lua_init.hpp>
 #include <ecs/ecs.h>
 
-#include <ecs/component.hpp>
-
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
 

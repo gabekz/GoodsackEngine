@@ -7,28 +7,27 @@
 namespace ecs {
 
 typedef struct _datatype { int size, stride; } DataType;
-typedef struct _accessor { int position, size, stride ; } Accessor;
+typedef struct _accessor { int position, size, stride; } Accessor;
 
 
 class ComponentLayout {
-public:
+  public:
     ComponentLayout(const char *name);
     ~ComponentLayout();
 
     void SetData(std::map<std::string, Accessor> data);
 
-    // getters
-    std::map<std::string, Accessor> GetData() { return m_Variables; };
+    std::map<std::string, Accessor> getData() { return m_Variables; };
     Accessor getAccessor(std::string var) { return m_Variables[var]; };
     ulong getSizeReq() { return m_SizeReq; };
     const char* getName() { return m_Name; };
 
-private:
+  private:
     std::map<std::string, Accessor> m_Variables;
     ulong m_SizeReq;
     const char *m_Name;
 };
 
-};
+} // namespace
 
 #endif // H

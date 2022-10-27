@@ -9,9 +9,9 @@
 #include <util/lua_deps.h>
 #include <lua/debug.h>
 
-#include <ecs/component.hpp>
-#include <ecs/component_layout.hpp>
-#include <ecs/parse_components.hpp>
+#include <ecs/component/component.hpp>
+#include <ecs/component/layout.hpp>
+#include <ecs/component/loader.hpp>
 
 #include <components/transform/transform.h>
 
@@ -33,7 +33,7 @@ void LuaEventStore::Initialize(lua_State *L) {
 
     for(int i = 0; i < ECSEVENT_LAST+1; i++) {
         // create a table for each event
-        lua_pushstring(L, LuaEventStore::EventToString(ECSEVENT_FIRST+i));
+        lua_pushstring(L, ecs::EventToString(ECSEVENT_FIRST+i));
         lua_newtable(L);
         lua_settable(L, -3);
 
@@ -58,6 +58,7 @@ int _meta_Component_newindex(lua_State *L) {
 
     const char *k = luaL_checkstring(L, -2);
     int var;
+
     if(c->GetVariable(k, &var)) {
         var = luaL_checknumber(L, -1);
         c->SetVariable(k, &var);
@@ -124,7 +125,7 @@ void LuaEventStore::ECSEvent(enum ECSEvent event) {
     LuaEventStore &store = LuaEventStore::GetInstance();
     lua_State *L = store.m_Lua;
 
-    const char *fName = LuaEventStore::EventToString(event);
+    const char *fName = ecs::EventToString(event);
     lua_rawgeti(L, LUA_REGISTRYINDEX, store.m_tableId); // retrieve function table
 
     lua_getfield(L, -1, fName); // retrieve all functions of 'fName'
@@ -151,12 +152,3 @@ int LuaEventStore::RetrieveLuaTable() {
         LuaEventStore::GetInstance().m_tableId);
 }
 
-const char* LuaEventStore::EventToString(int event) {
-    switch(event) {
-        case ECS_INIT:      return "start";
-        case ECS_DESTROY:   return "destroy";
-        case ECS_RENDER:    return "render";
-        case ECS_UPDATE:    return "update";
-        default:            return "";
-    }
-}
