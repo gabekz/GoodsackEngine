@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 #include <ecs/ecs.h>
 
+#include <stdlib.h>
+
 TEST(HELLOGROUP, TestName) {
-    EXPECT_EQ(1, 1);
+    Entity e = { .id = 32 };
+    EXPECT_EQ(e.id, 32);
 }
