@@ -1,36 +1,63 @@
 cmake_minimum_required(VERSION 3.1)
 project(game)
 
-# C flags
+#################################################################
+# Compiler flags
+#################################################################
 set(CMAKE_C_FLAGS "-g")
-set(CMAKE_CXX_FLAGS "-g -std=c++11 -O0")
+set(CMAKE_CXX_FLAGS "-g -std=c++14 -O0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS "1")
 
+#################################################################
 # Source files
+#################################################################
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
-#set(SOURCES "${SRC_DIR}/*.c")
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.c" "src/*.cpp")
+#file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${SUB_FOLDERS}/*.c" "${SUB_FOLDERS}/*.cpp")
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${SRC_DIR}/*.c" "${SRC_DIR}/*.cpp")
+file(GLOB ${TEST_SOURCES} CONFIGURE_DEPENDS "")
 
+set(TEST_SUBDIR_NAME ".*__tests__.*")
+# For each item in our list
+foreach (item ${SOURCES})
+    # Check if our items matches our regular expression
+    if ("${item}" MATCHES ${TEST_SUBDIR_NAME})
+        # Remove current item from our list
+        list (REMOVE_ITEM SOURCES "${item}")
+        list (APPEND TEST_SOURCES "${item}")
+    endif ("${item}" MATCHES ${TEST_SUBDIR_NAME})
+endforeach(item)
+
+#################################################################
 # Executable definition and properties
+#################################################################
 project(${PROJECT_NAME} C CXX)
 add_executable(${PROJECT_NAME} ${SOURCES})
+
+add_library(mylib ${SOURCES})
+
 target_include_directories(${PROJECT_NAME} PRIVATE "${SRC_DIR}")
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
 target_compile_options(${PROJECT_NAME} PRIVATE -O0)
 
-# stb
+#################################################################
+# Library: STB Image
+#################################################################
 set(STB_DIR "${LIB_DIR}/stb")
 target_include_directories(${PROJECT_NAME} PRIVATE "${STB_DIR}")
 
-# cglm
+#################################################################
+# Library: CGLM
+#################################################################
 set(CGLM_DIR "${LIB_DIR}/cglm")
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
 target_link_libraries(${PROJECT_NAME} "cglm" cglm_headers) 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "CGLM_ALL_UNALIGNED")
 
-# glfw
+#################################################################
+# Library: GLFW
+#################################################################
 set(GLFW_DIR "${LIB_DIR}/glfw")
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
 set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
@@ -41,15 +68,19 @@ target_link_libraries(${PROJECT_NAME} "glfw" "${GLFW_LIBRARIES}" "${CMAKE_DL_LIB
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLFW_DIR}/include")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "GLFW_INCLUDE_NONE")
 
-# glad
+#################################################################
+# Library: GLAD
+#################################################################
 set(GLAD_DIR "${LIB_DIR}/glad")
 add_library("glad" "${GLAD_DIR}/src/gl.c")
 target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
 
+#################################################################
+# Library: ImGui
+#################################################################
 set(IMGUI_DIR "${LIB_DIR}/imgui")
-
 add_library("imgui" "${IMGUI_DIR}/imgui.cpp"
                   "${IMGUI_DIR}/imgui_demo.cpp"
                   "${IMGUI_DIR}/imgui_draw.cpp"
@@ -66,13 +97,41 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/backends")
 target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
 target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
 
-# Lua
+#################################################################
+# Library: Lua
+#################################################################
 find_package(Lua51 REQUIRED)
 include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
 
-# JSON
+#################################################################
+# Library: JSON
+#################################################################
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(JSON_INSTALL OFF CACHE INTERNAL "")
 add_subdirectory("${LIB_DIR}/json")
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
+
+#################################################################
+# Library: Google Test
+#################################################################
+set(GTEST_DIR "${LIB_DIR}/googletest") 
+add_subdirectory(${GTEST_DIR})
+enable_testing()
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${GTEST_DIR}" 
+    "${GTEST_DIR}/googletest"
+    "${GTEST_DIR}/googletest/include"
+    "${GTEST_DIR}/googlemock"
+    "${GTEST_DIR}/googlemock/include"
+    )
+#target_include_directories(${PROJECT_NAME} PRIVATE "${GTEST_DIR}/include")
+#target_include_directories(${PROJECT_NAME} PRIVATE "${GTEST_DIR}")
+
+#################################################################
+# UNIT TESTING
+#################################################################
+add_executable( runUnitTests ${TEST_SOURCES} )
+# Link test executable against gtest & gtest_main
+target_link_libraries(runUnitTests gtest gtest_main) 
+add_test( runUnitTests runUnitTests )
