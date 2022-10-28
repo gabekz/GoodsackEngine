@@ -9,6 +9,13 @@
 
 struct TestEventStore : testing::Test {
 
+    TestEventStore() {
+
+    };
+
+    virtual ~TestEventStore() {
+
+    }
 
 };
 
