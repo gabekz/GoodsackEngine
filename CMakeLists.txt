@@ -2,8 +2,12 @@
 # "Below" Game Engine - CMake Configuration
 # https://www.github.com/gabekz/gl-renderer
 
-cmake_minimum_required(VERSION 3.1)
-project(below-engine VERSION 0.8)
+cmake_minimum_required(VERSION 3.14)
+project(
+    below-engine 
+    VERSION 0.8.0.0
+    DESCRIPTION "Realtime 3D Rendering Engine"
+    HOMEPAGE_URL "github.com/gabekz/gl-renderer")
 
 set(GAME_EXE_NAME "game")
 set(TEST_EXE_NAME "testRunner")
@@ -159,9 +163,11 @@ target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
 # Library: Lua
 # TODO: Currently this only works for linux
 #################################################################
-find_package(Lua51 REQUIRED)
-include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
+if(UNIX AND NOT APPLE)
+    find_package(Lua51 REQUIRED)
+    include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
+endif()
 
 #################################################################
 # Library: JSON
