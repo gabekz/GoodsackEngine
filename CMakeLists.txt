@@ -3,7 +3,7 @@
 # https://www.github.com/gabekz/gl-renderer
 
 cmake_minimum_required(VERSION 3.1)
-project(below-eng VERSION 0.8)
+project(below-engine VERSION 0.8)
 
 set(GAME_EXE_NAME "game")
 set(TEST_EXE_NAME "testRunner")
@@ -41,11 +41,13 @@ endif()
 #################################################################
 set(CMAKE_EXPORT_COMPILE_COMMANDS "1")
 
-set(CMAKE_C_FLAGS_RELEASE "-g -O3")
-set(CMAKE_C_FLAGS_DEBUG "-g -O0 -DNDEBUG")
+#set(CMAKE_C_FLAGS_RELEASE "-g -O3 - DNDEBUG")
+#set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-g -std=c++14 -O3 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++14 -O0")
+set(CMAKE_C_FLAGS "-g -O0")
+set(CMAKE_CXX_FLAGS "-g -std=c++14 -O0")
+#set(CMAKE_CXX_FLAGS_RELEASE "-g -std=c++14 -O3 -DNDEBUG")
+#set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++14 -O0")
 
 #################################################################
 # Source files
@@ -81,12 +83,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${SRC_DIR}")
 add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main.cpp")
 target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME})
 
-if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE "BUILD_DEBUG")
-endif()
-
-#set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
-#target_compile_options(${PROJECT_NAME} PUBLIC -O0)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
+target_compile_options(${PROJECT_NAME} PUBLIC -O0)
 
 #################################################################
 # TestRunner Executable
@@ -159,6 +157,7 @@ target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
 
 #################################################################
 # Library: Lua
+# TODO: Currently this only works for linux
 #################################################################
 find_package(Lua51 REQUIRED)
 include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
