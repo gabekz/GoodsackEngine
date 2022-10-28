@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
-project(game)
+project(below-eng)
+
+set(GAME_EXE_NAME "game")
+set(TEST_EXE_NAME "testRunner")
 
 #################################################################
 # Compiler flags
@@ -37,8 +40,8 @@ project(${PROJECT_NAME} C CXX)
 add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC "${SRC_DIR}")
 
-add_executable(execute "${SRC_DIR}/main.cpp")
-target_link_libraries(execute ${PROJECT_NAME})
+add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main.cpp")
+target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
 target_compile_options(${PROJECT_NAME} PUBLIC -O0)
@@ -133,9 +136,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 #################################################################
 # UNIT TESTING
 #################################################################
-add_executable( runUnitTests ${TEST_SOURCES} )
+add_executable(${TEST_EXE_NAME} ${TEST_SOURCES} )
 # Link test executable against gtest & gtest_main
-target_link_libraries(runUnitTests gtest gtest_main)
-target_link_libraries(runUnitTests ${PROJECT_NAME}) 
-target_include_directories(runUnitTests PRIVATE "${SRC_DIR}")
-add_test( runUnitTests runUnitTests )
+target_link_libraries(${TEST_EXE_NAME} gtest gtest_main)
+target_link_libraries(${TEST_EXE_NAME} ${PROJECT_NAME}) 
+target_include_directories(${TEST_EXE_NAME} PRIVATE "${SRC_DIR}")
+add_test(${TEST_EXE_NAME} ${TEST_EXE_NAME})
