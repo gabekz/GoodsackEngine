@@ -15,17 +15,14 @@
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
 
 int main(int argc, char *argv[]) {
-    if(argc > 1) {
-        for(int i = 0; i < argc; i++) {
-
-            if(std::string(argv[i]) == "--debug") {
-                // do something
-            }
+    if(argc > 1) { for(int i = 0; i < argc; i++) {
+        if(std::string(argv[i]) == "--debug") {
+            // do something
         }
-    }
+    }}
 
 // Main Lua entry
-    LuaInit("../src/lua/tests/demo/main.lua");
+    LuaInit("../src/lua/demo/main.lua");
 
 // Initialize Renderer
     Renderer *renderer = renderer_init();

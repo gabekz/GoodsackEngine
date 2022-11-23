@@ -1,5 +1,5 @@
 -- creating an eventlist for future reference
-package.path = '../src/lua/tests/demo/?.lua;' .. package.path
+package.path = '../src/lua/demo/?.lua;' .. package.path
 
 -- setup systems to run
 require("ecs-system").run()

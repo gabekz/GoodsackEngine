@@ -5,7 +5,7 @@
 
 #include <core/shader/shader.h>
 #include <ecs/ecs.h>
-#include <loaders/loader_obj.h>
+#include <import/loader_obj.h>
 #include <model/model.h>
 
 static void init(Entity e) {

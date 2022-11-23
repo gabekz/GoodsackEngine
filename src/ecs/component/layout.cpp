@@ -13,7 +13,7 @@ using namespace ecs;
 ComponentLayout::ComponentLayout(const char *name) { m_Name = name; }
 
 void ComponentLayout::SetData(std::map<std::string, Accessor> data) {
-    ulong sizeReq = 0;
+    ulong sizeReq = 1; // TODO: Look into this, just to double check.
     for(auto& var : data) {
         var.second.position = sizeReq;
         sizeReq += var.second.size;

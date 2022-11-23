@@ -50,6 +50,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS "1")
 
 set(CMAKE_C_FLAGS "-g -O0")
 set(CMAKE_CXX_FLAGS "-g -std=c++14 -O0")
+set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 #set(CMAKE_CXX_FLAGS_RELEASE "-g -std=c++14 -O3 -DNDEBUG")
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++14 -O0")
 
@@ -76,6 +77,8 @@ endforeach()
 
 ######## EXECUTABLES ############################################
 
+set(compile_options_special -O0 -ftest-coverage -fprofile-arcs --coverage)
+
 #################################################################
 # Executable definition and properties
 #################################################################
@@ -85,20 +88,25 @@ add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC "${SRC_DIR}")
 
 add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main.cpp")
-target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME})
+target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME} gcov)
+target_compile_options(${GAME_EXE_NAME} PUBLIC ${compile_options_special})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
-target_compile_options(${PROJECT_NAME} PUBLIC -O0)
+target_compile_options(${PROJECT_NAME} PUBLIC ${compile_options_special})
 
 #################################################################
 # TestRunner Executable
 #################################################################
 add_executable(${TEST_EXE_NAME} ${TEST_SOURCES} )
 # Link test executable against gtest & gtest_main
-target_link_libraries(${TEST_EXE_NAME} gtest gtest_main)
+target_link_libraries(${TEST_EXE_NAME} gtest gcov gtest_main)
 target_link_libraries(${TEST_EXE_NAME} ${PROJECT_NAME}) 
 target_include_directories(${TEST_EXE_NAME} PRIVATE "${SRC_DIR}")
 add_test(${TEST_EXE_NAME} ${TEST_EXE_NAME})
+set_tests_properties(${TEST_EXE_NAME} PROPERTIES
+    WORKING_DIRECTORY "${SRC_DIR}")
+set_property(TARGET ${TEST_EXE_NAME} PROPERTY CXX_STANDARD 14)
+target_compile_options(${TEST_EXE_NAME} PUBLIC ${compile_options_special})
 
 ######## LIBRARIES ##############################################
 
@@ -114,7 +122,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${STB_DIR}")
 set(CGLM_DIR "${LIB_DIR}/cglm")
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
 target_link_libraries(${PROJECT_NAME} "cglm" cglm_headers) 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "CGLM_ALL_UNALIGNED")
+target_compile_definitions(${PROJECT_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
+#target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 
 #################################################################
 # Library: GLFW

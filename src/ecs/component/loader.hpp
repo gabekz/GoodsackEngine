@@ -6,10 +6,12 @@
 
 #include <ecs/component/layout.hpp>
 
+#include <util/sysdefs.h>
+
 namespace ecs {
 
 std::map<std::string, ComponentLayout*>
-    ParseComponents(const char *path);
+    ParseComponents(const char *path, ui32 rawData = 0);
 
 };
 

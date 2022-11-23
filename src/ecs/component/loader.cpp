@@ -5,6 +5,8 @@
 #include <map>
 #include <fstream>
 
+#include <util/maths.h>
+
 #include <stdlib.h>
 #include <nlohmann/json.hpp>
 
@@ -14,20 +16,32 @@
 using json = nlohmann::json;
 using namespace ecs;
 
-std::map<std::string, ComponentLayout*> ecs::ParseComponents(const char *path) {
+std::map<std::string, ComponentLayout*> ecs::ParseComponents(const char *path, ui32 rawData) {
 
-    std::ifstream file(path);
-    json JSON = json::parse(file);
+    json JSON;
+
+    if(rawData <= 0) {
+        std::ifstream file(path);
+        JSON = json::parse(file);
+    }
+    else {
+        JSON = json::parse(path);
+    }
     //std::cout << JSON.items() << std::endl;
     
     //std::vector<std::string> types = {"vec3", "float", "int"};
 
     std::map<std::string, DataType> dataTypes;
-    dataTypes["float"]  = (DataType){sizeof(float), 1};
-    dataTypes["vec3"]   = (DataType){sizeof(float), 3};
     dataTypes["int"]    = (DataType){sizeof(int),   1};
-    // strings are handled differently
+    dataTypes["float"]  = (DataType){sizeof(float), 1};
 
+    //dataTypes["vec2"]   = (DataType){sizeof(float), 2};
+    dataTypes["vec3"]   = (DataType){sizeof(float), 3};
+    dataTypes["vec4"]   = (DataType){sizeof(float), 4};
+
+    //dataTypes["mat3"]   = (DataType){sizeof(vec3) * 4,  3};
+    dataTypes["mat4"]   = (DataType){sizeof(vec4),  4};
+    // strings are handled differently
 
     //std::vector<ComponentLayout*> layouts;
     std::map<std::string, ComponentLayout*> layouts;
@@ -36,7 +50,7 @@ std::map<std::string, ComponentLayout*> ecs::ParseComponents(const char *path) {
     for(auto& cmp : JSON.items()) {
         std::map<std::string, Accessor> data;
 
-        std::cout << cmp.key() << std::endl;
+        //std::cout << cmp.key() << std::endl;
 
         ComponentLayout *component = new ComponentLayout(cmp.key().c_str());
 
@@ -63,13 +77,19 @@ std::map<std::string, ComponentLayout*> ecs::ParseComponents(const char *path) {
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
 
+    /*
     Component *p = new Component(*layouts["ComponentCamera"]);
 
-    int value, newSpeed = 69;
-    p->SetVariable("speed", &newSpeed);
-    if(p->GetVariable("speed", &value)) {
-        std::cout << value << std::endl;
-    }
+    vec3 vectorA = {0.25f, 5.8f, 1.0f};
+    vec3 asgn = GLM_VEC3_ZERO_INIT;
+
+    p->SetVariable("position", vectorA);
+    p->GetVariable("position", &asgn);
+    //Accessor acr = layouts["ComponentCamera"]->getAccessor("position");
+    //glm_vec3_copy((float *)((char *)p->m_Data.mem+acr.position), asgn);
+
+    printf("\n%f, %f, %f",asgn[0], asgn[1], asgn[2]);
+    */
 
     return layouts;
 }

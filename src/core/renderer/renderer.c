@@ -37,7 +37,7 @@ Renderer* renderer_init() {
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
    // debug ALL OpenGL Errors
-   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, DEBUG);
+   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, SYS_DEBUG);
 
    int winWidth    = DEFAULT_WINDOW_WIDTH;
    int winHeight   = DEFAULT_WINDOW_HEIGHT;
@@ -121,9 +121,8 @@ void renderer_start(Renderer *renderer) {
 
     postbuffer_init(renderer->windowWidth, renderer->windowHeight);
 
-    // SKYBOX TEST
-    /*
-    Texture *skyboxCubemap1 = texture_create_cubemap(6, 
+#if 1
+    Texture *skyboxCubemap = texture_create_cubemap(6, 
         "../res/textures/skybox/right.jpg",
         "../res/textures/skybox/left.jpg",
         "../res/textures/skybox/top.jpg",
@@ -131,8 +130,10 @@ void renderer_start(Renderer *renderer) {
         "../res/textures/skybox/front.jpg",
         "../res/textures/skybox/back.jpg"
     );
-    */
+#else
     Texture *skyboxCubemap = texture_create_hdr("../res/textures/hdr/ice_lake.hdr");
+#endif
+
     renderer->skybox = skybox_create(skyboxCubemap);
 
 // Send ECS event init

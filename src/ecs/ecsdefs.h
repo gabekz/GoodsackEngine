@@ -7,6 +7,10 @@ enum ECSEvent {
     ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE
 };
 
+#define ECS_TAG_SIZE 1 // Tag size as bytes
+#define ECS_TAG_UNUSED  0b00000000
+#define ECS_TAG_USED    0b00110000
+
 #ifdef __cplusplus
 namespace ecs {
 #endif
@@ -25,9 +29,5 @@ inline const char* EventToString(int event) {
 #ifdef __cplusplus
 } // namespace
 #endif
-
-#define ECS_TAG_SIZE 1 // Tag size as bytes
-#define ECS_TAG_UNUSED  0b00000000
-#define ECS_TAG_USED    0b00110000
 
 #endif // H_ECSDEFS

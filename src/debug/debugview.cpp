@@ -7,6 +7,10 @@
 
 #include <ecs/ecs.h>
 
+extern "C" {
+    #include <core/renderer/renderer.h>
+}
+
 #include <components/transform/transform.h>
 #include <components/mesh/mesh.h>
 #include <components/camera/camera.h>
@@ -30,6 +34,7 @@ DebugGui::DebugGui(Renderer *renderer) {
     m_showEntityViewer = true;
     m_showComponentViewer = false;
     m_showSceneViewer = false;
+    m_showSceneLighting = false;
     m_showExample = false;
 }
 
@@ -62,6 +67,9 @@ void DebugGui::Render() {
             if(ImGui::MenuItem("Change Scene")) {
                 m_showSceneViewer = true;
             }
+            if(ImGui::MenuItem("Lighting")) {
+                m_showSceneLighting = true;
+            }
             if(ImGui::MenuItem("Entities")) {
                 m_showEntityViewer = true;
             }
@@ -74,6 +82,28 @@ void DebugGui::Render() {
 // Draw Panels
     if(m_showExample) {
         ImGui::ShowDemoWindow(&m_showExample);
+    }
+    if(m_showSceneViewer) {
+        ImGui::BeginGroup();
+        ImGui::Begin("Change Scene", &m_showSceneViewer);
+            if (ImGui::Button("Scene 0")) {
+                renderer_active_scene(m_renderer, 0);
+                renderer_start(m_renderer);
+            }
+            if (ImGui::Button("Scene 1")) {
+                renderer_active_scene(m_renderer, 1);
+                renderer_start(m_renderer);
+            }
+            if (ImGui::Button("Scene 2")) {
+                renderer_active_scene(m_renderer, 2);
+                renderer_start(m_renderer);
+            }
+        ImGui::EndGroup();
+    }
+    if(m_showSceneLighting) {
+        ImGui::BeginGroup();
+        ImGui::Begin("Lighting", &m_showSceneLighting);
+        ImGui::EndGroup();
     }
     if(m_showEntityViewer) {
         // Get current scene

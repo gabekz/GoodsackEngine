@@ -1,4 +1,4 @@
-#include <loaders/loader_obj.h>
+#include "loader_obj.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -46,8 +46,7 @@ void LuaEventStore::Initialize(lua_State *L) {
     s_Instance.m_tableId = luaL_ref(L, LUA_REGISTRYINDEX);
     s_Instance.m_Lua = L;
     
-    LuaEventStore::GetInstance().m_Layouts =
-        ecs::ParseComponents("../res/components.json");
+    s_Instance.m_Layouts = ecs::ParseComponents("../res/components.json");
 }
 
 int _meta_Component_newindex(lua_State *L) {
