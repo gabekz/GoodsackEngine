@@ -1,0 +1,4 @@
+#ifndef H_VULKAN_CONTEXT
+#define H_VULKAN_CONTEXT
+
+#endif // H_VULKAN_CONTEXT

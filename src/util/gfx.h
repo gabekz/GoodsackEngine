@@ -9,6 +9,9 @@
 #include<glad/gl.h>
 #include<GLFW/glfw3.h>
 
+#ifdef USING_VULKAN
+#endif
+
 static inline void clearGLState() {
     glUseProgram(0);
     glBindTexture(GL_TEXTURE_2D, 0);

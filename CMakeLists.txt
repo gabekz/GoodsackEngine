@@ -110,6 +110,10 @@ target_compile_options(${TEST_EXE_NAME} PUBLIC ${compile_options_special})
 
 ######## LIBRARIES ##############################################
 
+# Options
+option(AUTO_LOCATE_LUA "AUTO_LOCATE_LUA" ON)
+option(AUTO_LOCATE_VULKAN "AUTO_LOCATE_VULKAN" ON)
+
 #################################################################
 # Library: STB Image
 #################################################################
@@ -149,6 +153,51 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
 
 #################################################################
+# Library: VulkanSDK
+#################################################################
+if(AUTO_LOCATE_VULKAN)
+    message(STATUS "(Vulkan) Attempting auto locate Vulkan using CMake.....")
+
+    # Find Vulkan Path using CMake's Vulkan Module
+	# This will return Boolean 'Vulkan_FOUND' indicating the status
+    # of find as success(ON) or fail(OFF).
+	# Include directory path - 'Vulkan_INCLUDE_DIRS' and 'Vulkan_LIBRARY'
+    # with required libraries.
+    find_package(Vulkan)
+
+	# Try extracting VulkanSDK path from ${Vulkan_INCLUDE_DIRS}
+	if (NOT ${Vulkan_INCLUDE_DIRS} STREQUAL "")
+		set(VULKAN_PATH ${Vulkan_INCLUDE_DIRS})
+		STRING(REGEX REPLACE "/Include" "" VULKAN_PATH ${VULKAN_PATH})
+	endif()
+	if(NOT Vulkan_FOUND)
+		# CMake may fail to locate the libraries but could be able to 
+		# provide some path in Vulkan SDK include directory variable
+		# 'Vulkan_INCLUDE_DIRS', try to extract path from this.
+		message(STATUS "Failed to locate Vulkan SDK, retrying again...")
+		if(EXISTS "${VULKAN_PATH}")
+			message(STATUS "Successfully located the Vulkan SDK: ${VULKAN_PATH}")
+		else()
+			message("Error: Unable to locate Vulkan SDK. Please turn off auto locate option by specifying 'AUTO_LOCATE_VULKAN' as 'OFF'")
+			message("and specify manually path using 'VULKAN_SDK' and 'VULKAN_VERSION' variables in the CMakeLists.txt.")
+			return()
+		endif()
+	endif()
+else()
+    message(STATUS "(Vulkan) Using manual specified path: ${VULKAN_DIR}")
+    set(VULKAN_DIR "${LIB_DIR}/VulkanSDK")
+    set(VULKAN_PATH "${VULKAN_DIR}")
+    set(VULKAN_VERSION "1.0.33.0")
+    set(VULKAN_PATH "${VULKAN_DIR}/${VULKAN_VERSION}")
+endif()
+
+set(VULKAN_LIB_LIST "vulkan")
+target_include_directories(${PROJECT_NAME} PRIVATE "${VULKAN_PATH}/Include")
+# Link directory for vulkan-1
+link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
+target_link_libraries(${PROJECT_NAME} ${VULKAN_LIB_LIST})
+
+#################################################################
 # Library: ImGui
 #################################################################
 set(IMGUI_DIR "${LIB_DIR}/imgui")
@@ -159,7 +208,8 @@ add_library("imgui" "${IMGUI_DIR}/imgui.cpp"
                   "${IMGUI_DIR}/imgui_widgets.cpp"
                   
                   "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
-                  "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp")
+                  "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
+                  "${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp")
 
 target_include_directories("imgui" PRIVATE "${IMGUI_DIR}")
 target_include_directories("imgui" PRIVATE "${IMGUI_DIR}/backends")
@@ -172,10 +222,13 @@ target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
 # Library: Lua
 # TODO: Currently this only works for linux
 #################################################################
-if(UNIX AND NOT APPLE)
-    find_package(Lua51 REQUIRED)
-    include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
-    target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
+if(AUTO_LOCATE_LUA)
+    message(STATUS "(Lua) Attempting auto locate Lua using CMake.....")
+    if(UNIX AND NOT APPLE)
+        find_package(Lua51 REQUIRED)
+        include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
+        target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
+    endif()
 endif()
 
 #################################################################

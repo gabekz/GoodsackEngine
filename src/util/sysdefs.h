@@ -56,6 +56,8 @@
 #define SYS_API_DX12        0xF0F04
 #define SYS_API_RENDERER    OPEN_GL
 
+#define USING_VULKAN
+
 // Drawing modes
 #define SYS_GPU_DRAW_MODE_ARRAYS     0xD000
 #define SYS_GPU_DRAW_MODE_ELEMENTS   0xD001
