@@ -14,7 +14,8 @@ Light *light_create(float *position, float *color, LightType type) {
 }
 
 void lighting_initialize(float *lightPos, float *lightColor) {
-
+// OPENGL
+#ifndef USING_VULKAN
     ui32 uboLight;
     ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
     glGenBuffers(1, &uboLight);
@@ -31,4 +32,5 @@ void lighting_initialize(float *lightPos, float *lightColor) {
         sizeof(vec3) + 4, sizeof(vec4),
         lightColor);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
+#endif
 }

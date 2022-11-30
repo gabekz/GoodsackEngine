@@ -9,7 +9,6 @@ static int lua_print(lua_State* L) {
             printf("\033[1;33m");
             printf("[Lua] (print): %s\n", lua_tostring(L, -1));
             printf("\033[0m");
-
         }
         else {
         /* Do something with non-strings if you like */

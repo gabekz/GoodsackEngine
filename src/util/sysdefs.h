@@ -22,6 +22,8 @@
 // Unix definitions
 #if defined(__GNUC__) || defined(__linux__) || defined(__unix__)
 #define SYS_ENV_UNIX
+#define _GNU_SOURCE_
+
 #if defined(__x86_64__) || defined(__ppc64__)
 #define SYS_ENV_64
 #else
