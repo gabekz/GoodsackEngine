@@ -6,11 +6,20 @@
 
 #include <vulkan/vulkan.h>
 
-typedef struct _contextProperties{
-   VkInstance *vulkanInstance; 
-} ContextProperties;
+typedef struct _applicationProperties ApplicationProperties;
+
+struct _applicationProperties {
+    const char *title;
+    const char *description;
+
+    struct {
+        int major: 1;
+        int minor: 1;
+    } version;
+
+};
 
 GLFWwindow* createWindow(int winWidth, int winHeight);
-void cleanup(ContextProperties *contextProperties);
+//void cleanup(ContextProperties *contextProperties);
 
 #endif // H_CONTEXT

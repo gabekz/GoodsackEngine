@@ -6,8 +6,13 @@
 #define GLFW_INCLUDE_NONE
 #endif
 
+#ifdef USING_VULKAN
+#define GLFW_INCLUDE_VULKAN
+#endif
+
 #include<glad/gl.h>
 #include<GLFW/glfw3.h>
+#include<GLFW/glfw3native.h>
 
 #ifdef USING_VULKAN
 #endif
