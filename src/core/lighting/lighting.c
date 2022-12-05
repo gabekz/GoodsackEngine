@@ -14,8 +14,7 @@ Light *light_create(float *position, float *color, LightType type) {
 }
 
 void lighting_initialize(float *lightPos, float *lightColor) {
-// OPENGL
-#ifndef USING_VULKAN
+#if defined(SYS_API_OPENGL)
     ui32 uboLight;
     ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
     glGenBuffers(1, &uboLight);

@@ -1,12 +1,12 @@
 #include "vulkan_device.h"
 
 #define VK_USE_PLATFORM_XCB_KHR
-#define GLFW_INCLUDE_VULKAN
 #define GLFW_EXPOSE_NATIVE_XCB
 
 #include <xcb/xcb.h>
-#define VK_KHR_xcb_surface
 #include <xcb/xcb.h>
+
+#include <util/sysdefs.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -15,44 +15,11 @@
 #include <util/debug.h>
 #include <util/logging.h>
 
-#include <util/sysdefs.h>
-
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan_xcb.h>
-#include <vulkan/vk_sdk_platform.h>
+#include <core/api/vulkan/vulkan_support.h>
+#include <core/api/vulkan/vulkan_swapchain.h>
 
 
 /* static */
-
-static int _checkValidationLayerSupport(const char *validationLayers[], ui32 count) {
-    ui32 layerCount;
-    vkEnumerateInstanceLayerProperties(&layerCount, NULL);
-    VkLayerProperties availableLayers[layerCount];
-
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers);
-
-    for(int i = 0; i < count; i++) {
-        int layerFound = 0;
-
-        for(int j = 0; j < count; j++) {
-            if(strcmp(validationLayers[i], availableLayers[j].layerName) == 0) {
-                layerFound = 1;
-                break;
-            }
-        }
-
-        if(!layerFound) {
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-static int _isDeviceSuitable(VkPhysicalDevice device) {
-    // TODO: Device-ranking
-    return 1;
-}
 
 static ui32 _findQueueFamilies(VkPhysicalDevice device) {
     ui32 graphicsFamily;
@@ -69,6 +36,98 @@ static ui32 _findQueueFamilies(VkPhysicalDevice device) {
     }
 
     return graphicsFamily;
+}
+
+static int _checkValidationLayerSupport(const char *validationLayers[], ui32 count) {
+    ui32 layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, NULL);
+
+    VkLayerProperties availableLayers[layerCount];
+
+    if(vkEnumerateInstanceLayerProperties(&layerCount, availableLayers) != VK_SUCCESS) {
+        LOG_ERROR("Failed to enumerate instanced layer properties!");
+    }
+
+#if 0 // Print all available layers
+    LOG_INFO("Available Validation Layers (%d): ", layerCount);
+    for(int i = 0; i < layerCount; i++) {
+        LOG_INFO("\t%s", availableLayers[i].layerName);
+    }
+#endif
+
+    for(int i = 0; i < count; i++) {
+        int layerFound = 0;
+#if 0
+            LOG_INFO("Checking validation layer %s", validationLayers[i]);
+#endif
+
+        for(int j = 0; j < layerCount; j++) {
+            if(strcmp(validationLayers[i], availableLayers[j].layerName) == 0) {
+                layerFound = 1;
+                LOG_INFO("Validation Layer found: %s", validationLayers[i]);
+                break;
+            }
+        }
+
+        if(!layerFound) {
+            LOG_WARN("Validation layer UNAVAILABLE: %s", validationLayers[i]);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+static int _checkDeviceExtensionSupport(const char *extensions[], ui32 count, VkPhysicalDevice device) {
+    ui32 extensionsCount;
+    vkEnumerateDeviceExtensionProperties(device, NULL, &extensionsCount, NULL);
+
+    VkExtensionProperties availableExtensions[extensionsCount];
+    vkEnumerateDeviceExtensionProperties(
+        device, NULL, &extensionsCount, availableExtensions);
+
+#if 0 // Print all available device extensions
+    LOG_INFO("Available Device Extensions (%d): ", extensionsCount);
+    for(int i = 0; i < extensionsCount ; i++) {
+        LOG_INFO("\t%s", availableExtensions[i].extensionName);
+    }
+#endif
+
+    for(int i = 0; i < count; i++) {
+        int extensionFound = 0;
+        for(int j = 0; j < extensionsCount; j++) {
+            if(strcmp(extensions[i], availableExtensions[j].extensionName) == 0) {
+                extensionFound = 1;
+                LOG_INFO("Device Extension found: %s", extensions[i]);
+                break;
+            }
+        }
+
+        if(!extensionFound)
+            LOG_WARN("Device Extension UNAVAILABLE: %s", extensions[i]);
+            return 0;
+    }
+
+    return 1;
+}
+
+static int _isDeviceSuitable(VkPhysicalDevice device) {
+    // TODO: Device-ranking support
+
+    // Swapchain support
+    // const char *validationLayers[VK_REQ_VALIDATION_SIZE] = VK_REQ_VALIDATION_LIST;
+    const char *deviceExtensions[VK_REQ_DEVICE_EXT_SIZE] = VK_REQ_DEVICE_EXT;
+
+    ui32 indices = _findQueueFamilies(device);
+    int extensionsSupported = _checkDeviceExtensionSupport(deviceExtensions, 1, device);
+
+    int swapChainAdequate = 0;
+    if(extensionsSupported) {
+        //swapChainAdequate = _querySwapChainSupport(device);
+
+    }
+
+    return 1;
 }
 
 /* implement */
@@ -100,10 +159,10 @@ VulkanDeviceContext *vulkan_device_create() {
 
 // New Vulkan Instance
     VulkanDeviceContext *ret = malloc(sizeof(VulkanDeviceContext));
-    ret->vulkanInstance = malloc(sizeof(VkInstance));
-    ret->device = malloc(sizeof(VkDevice));
-    VkResult result = vkCreateInstance(&createInfo, NULL, ret->vulkanInstance);
-    if (vkCreateInstance(&createInfo, NULL, ret->vulkanInstance) != VK_SUCCESS) {
+    //ret->vulkanInstance = malloc(sizeof(VkInstance));
+    //ret->device = malloc(sizeof(VkDevice));
+    VkResult result = vkCreateInstance(&createInfo, NULL, &ret->vulkanInstance);
+    if (vkCreateInstance(&createInfo, NULL, &ret->vulkanInstance) != VK_SUCCESS) {
         printf("Failed to initialize Vulkan Instance!");
         return NULL;
     }
@@ -112,32 +171,30 @@ VulkanDeviceContext *vulkan_device_create() {
     }
 
 // Validation Layer Handling
-    const char *validationLayers[3] = {
-        "VK_LAYERS_KHRONOS_validation",
-        "VK_EXT_DEBUG_UTILS_EXTENSION_NAME",
-        "VK_KHR_XCB_SURFACE_EXTENSION_NAME"
+    const char *validationLayers[1] = {
+        "VK_LAYER_KHRONOS_validation",
     };
     const unsigned char kEnableValidationLayers = 1;
 
     if(kEnableValidationLayers) {
-        if(_checkValidationLayerSupport(validationLayers, 3)) {
+        if(!_checkValidationLayerSupport(validationLayers, 1)) {
             LOG_ERROR("Validation layer requested, but not available!");
         }
-        createInfo.enabledLayerCount = 3;
+        createInfo.enabledLayerCount = 1;
         createInfo.ppEnabledLayerNames = validationLayers;
     }
 
-// Validate Physical Device
+// Physical Device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     ui32 deviceCount = 0;
-    vkEnumeratePhysicalDevices(*ret->vulkanInstance, &deviceCount, NULL);
+    vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, NULL);
 
     if(deviceCount == 0) {
         printf("failed to find GPUs with Vulkan support!");
     }
 
     VkPhysicalDevice devices[15];
-    vkEnumeratePhysicalDevices(*ret->vulkanInstance, &deviceCount, devices);
+    vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, devices);
 
     // TODO: This does not list all devices before picking suitable
     for(int i = 0; i < deviceCount; i++) {
@@ -171,54 +228,30 @@ VulkanDeviceContext *vulkan_device_create() {
     logicCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     logicCreateInfo.pQueueCreateInfos = &queueCreateInfo;
     logicCreateInfo.queueCreateInfoCount = 1;
-    
     logicCreateInfo.pEnabledFeatures = &deviceFeatures;
-    logicCreateInfo.enabledExtensionCount = 0;
+
+    // Device Extensions
+    const char *extensions[VK_REQ_DEVICE_EXT_SIZE] = VK_REQ_DEVICE_EXT;
+    logicCreateInfo.enabledExtensionCount = VK_REQ_DEVICE_EXT_SIZE;
+    logicCreateInfo.ppEnabledExtensionNames = extensions;
 
     if(vkCreateDevice(
-      physicalDevice, &logicCreateInfo, NULL, ret->device) != VK_SUCCESS) {
+      physicalDevice, &logicCreateInfo, NULL, &ret->device) != VK_SUCCESS) {
         LOG_ERROR("Failed to create Logical Device!");
     }
+    ret->physicalDevice = physicalDevice;
 
-    vkGetDeviceQueue(*ret->device, graphicsFamily, 0, &ret->graphicsQueue);
+    vkGetDeviceQueue(ret->device, graphicsFamily, 0, &ret->graphicsQueue);
 
     return ret;
 }
 
-void vulkan_device_surface(VulkanDeviceContext* context) {
+void vulkan_device_cleanup(VulkanDeviceContext* context) {
+    vkDestroyDevice(context->device, NULL);
+    vkDestroySurfaceKHR(context->vulkanInstance, context->surface, NULL);
+    vkDestroyInstance(context->vulkanInstance, NULL);
 
-#if defined(SYS_ENV_WIN)
-    VkWin32SurfaceCreateInfoKHR createInfo {};
-
-#elif defined(SYS_ENV_UNIX)
-    //VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-    VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.pNext = NULL;
-    surfaceCreateInfo.flags = 0;
-    //surfaceCreateInfo.window = window;
-    //surfaceCreateInfo.connection = connection;
-    //surfaceCreateInfo.window = window;
-
-    /*
-    VkSurfaceKHR surface;
-    if(vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, NULL, &surface)
-      != VK_SUCCESS) {
-        LOG_ERROR("Failed to produce XCB Surface!");
-
-    }
-assert(result == VK_SUCCESS);
-*/
-
-#endif
-
-}
-
-void cleanup(VulkanDeviceContext* context) {
-    vkDestroyInstance(*context->vulkanInstance, NULL);
-    vkDestroyDevice(*context->device, NULL);
-
-    free(context->vulkanInstance);
-    free(context->device);
+    //free(context->vulkanInstance);
+    //free(context->device);
     free(context);
 }

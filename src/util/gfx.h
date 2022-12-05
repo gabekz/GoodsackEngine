@@ -1,21 +1,23 @@
-#ifndef _GFX_
-#define _GFX_
+#ifndef H_GFX
+#define H_GFX
+
+#include <util/sysdefs.h> // TODO: Move def to build-system
 
 // Only include this once as well
 #ifndef GLFW_INCLUDE_NONE
-#define GLFW_INCLUDE_NONE
+ #define GLFW_INCLUDE_NONE
 #endif
 
-#ifdef USING_VULKAN
-#define GLFW_INCLUDE_VULKAN
+#if defined(SYS_API_VULKAN)
+ #define GLFW_INCLUDE_VULKAN
+ #include <vulkan/vulkan.h>
+ #include <vulkan/vk_sdk_platform.h>
+ //#include <vulkan/vulkan_xcb.h>
 #endif
 
-#include<glad/gl.h>
+#include<glad/gl.h> // TODO: Move to #defined
 #include<GLFW/glfw3.h>
 #include<GLFW/glfw3native.h>
-
-#ifdef USING_VULKAN
-#endif
 
 static inline void clearGLState() {
     glUseProgram(0);
@@ -28,4 +30,4 @@ static inline void clearGLState() {
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
-#endif
+#endif // H_GFX

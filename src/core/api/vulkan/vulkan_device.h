@@ -4,7 +4,7 @@
 #include <util/gfx.h>
 #include <util/sysdefs.h>
 
-#include <vulkan/vulkan.h>
+#include <core/api/vulkan/vulkan_swapchain.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,17 +13,31 @@ extern "C" {
 typedef struct _vulkanDeviceContext VulkanDeviceContext;
 
 struct _vulkanDeviceContext {
-    VkInstance *vulkanInstance;
-    VkDevice *device;
+    VkDevice device;
+    VkPhysicalDevice physicalDevice;
     VkSurfaceKHR surface;
+    VkInstance vulkanInstance;
 
     VkQueue graphicsQueue;
+    //VkQueue presentQueue;
     ui32 graphicsFamily;
+
+    VulkanSwapChainDetails *swapChainDetails;
 };
 
 VulkanDeviceContext* vulkan_device_create();
+void vulkan_device_cleanup(VulkanDeviceContext* context);
 
-void vulkan_device_surface(VulkanDeviceContext* context);
+#if 0
+static inline void init_vulkan() {
+    createInstance();
+    setupDebugMessenger();
+    createSurface();
+    pickPhysicalDevice();
+    createLogicalDevice();
+    createSwapChain();
+}
+#endif
 
 #ifdef __cplusplus
 }

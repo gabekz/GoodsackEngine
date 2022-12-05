@@ -46,9 +46,8 @@ GLFWwindow* createWindow(int winWidth, int winHeight) {
    */
 
 // OpenGL
-#ifndef USING_VULKAN
-   // Minimum OpenGL version required
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+#if defined(SYS_API_OPENGL)
+   // Minimum OpenGL version required glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
    // debug ALL OpenGL Errors
@@ -75,21 +74,32 @@ GLFWwindow* createWindow(int winWidth, int winHeight) {
    glfwSwapInterval(1);
 
 // Vulkan
-#else
+#elif defined(SYS_API_VULKAN)
    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-   GLFWwindow* window =
+    GLFWwindow* window =
       glfwCreateWindow(winWidth, winHeight, "Title", NULL, NULL);
 
-   VulkanDeviceContext *vulkanDevice = vulkan_device_create();
+    VulkanDeviceContext *vulkanDevice = vulkan_device_create();
 
-if (glfwCreateWindowSurface(*vulkanDevice->vulkanInstance, window, NULL, &vulkanDevice->surface) != VK_SUCCESS) {
-        LOG_ERROR("failed to create window surface!");
+    if (glfwCreateWindowSurface(vulkanDevice->vulkanInstance, window, NULL, &vulkanDevice->surface) != VK_SUCCESS) {
+            LOG_ERROR("failed to create window surface!");
     }
 
+    vulkanDevice->swapChainDetails = vulkan_swapchain_create(
+        vulkanDevice->device, vulkanDevice->physicalDevice,
+        vulkanDevice->surface, window);
 
-#endif /* USING_VULKAN */
+#if 0
+    while(!glfwWindowShouldClose(window)) {
+        
+    }
+
+#endif
+    vulkan_device_cleanup(vulkanDevice);
+
+#endif /* SYS_API */
 
    return window;
 

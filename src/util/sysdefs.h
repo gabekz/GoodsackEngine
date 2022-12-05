@@ -52,13 +52,14 @@
 
 #define DRAWING_MODE GL_TRIANGLES
 
-#define SYS_API_OPENGL      0xF0F01
-#define SYS_API_VULKAN      0xF0F02
-#define SYS_API_DX11        0xF0F03
-#define SYS_API_DX12        0xF0F04
-#define SYS_API_RENDERER    OPEN_GL
+//#define SYS_API_OPENGL      0xF0F01
+//#define SYS_API_VULKAN      0xF0F02
+//#define SYS_API_DX11        0xF0F03
+//#define SYS_API_DX12        0xF0F04
+//#define SYS_API_RENDERER    OPEN_GL
 
-#define USING_VULKAN
+//#define USING_VULKAN
+#define SYS_API_VULKAN
 
 // Drawing modes
 #define SYS_GPU_DRAW_MODE_ARRAYS     0xD000

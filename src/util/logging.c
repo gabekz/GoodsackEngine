@@ -258,7 +258,7 @@ void logger_log(LogLevel level, const char* file, int line, const char* fmt, ...
     lock();
     if (hasFlag(s_logger, kConsoleLogger)) {
         va_start(carg, fmt);
-        vflog(s_clog.output, levelc, timestamp, threadID,
+        vflog(s_clog.output, levelc, "-", threadID,
                 file, line, fmt, carg, currentTime, &s_clog.flushedTime);
         va_end(carg);
     }
