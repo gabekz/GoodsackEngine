@@ -22,6 +22,8 @@ struct _vulkanSwapChainDetails {
     VkSurfaceFormatKHR *formats;
     VkPresentModeKHR *presentModes;
     VkSurfaceCapabilitiesKHR capabilities;
+
+    VkFramebuffer *swapchainFramebuffers;
 };
 
 // Create Swapchain

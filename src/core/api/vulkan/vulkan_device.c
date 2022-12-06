@@ -291,6 +291,193 @@ VulkanDeviceContext *vulkan_device_create() {
     return ret;
 }
 
+static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex) {
+
+    VkCommandBufferBeginInfo beginInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = 0, // Optional
+        .pInheritanceInfo = NULL, // Optional
+    };
+    
+    if (vkBeginCommandBuffer(context->commandBuffer, &beginInfo) != VK_SUCCESS) {
+        LOG_ERROR("Failed to begin recording command buffer!");
+    }
+
+    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+
+    VkRenderPassBeginInfo renderPassInfo = {
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = context->pipelineDetails->renderPass,
+        .framebuffer = context->swapChainDetails->swapchainFramebuffers[imageIndex],
+        .renderArea.offset = {0, 0},
+        .renderArea.extent = context->swapChainDetails->swapchainExtent,
+
+        .clearValueCount = 1,
+        .pClearValues = &clearColor
+    };
+
+    vkCmdBeginRenderPass(context->commandBuffer,
+        &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(context->commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        context->pipelineDetails->graphicsPipeline);
+
+    // Set viewports and scissors (again?)
+    VkViewport viewport = {
+        .x = 0.0f,
+        .y = 0.0f,
+        .width = (float)context->swapChainDetails->swapchainExtent.width,
+        .height = (float)context->swapChainDetails->swapchainExtent.height,
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+    };
+    vkCmdSetViewport(context->commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor = {
+        .offset = {0, 0},
+        .extent = context->swapChainDetails->swapchainExtent
+    };
+    vkCmdSetScissor(context->commandBuffer, 0, 1, &scissor);
+
+    vkCmdDraw(context->commandBuffer, 3, 1, 0, 0);
+
+    vkCmdEndRenderPass(context->commandBuffer);
+
+    if (vkEndCommandBuffer(context->commandBuffer) != VK_SUCCESS) {
+        LOG_ERROR("Failed to record command buffer!");
+    }
+}
+
+void vulkan_context_create_framebuffers(VulkanDeviceContext *context) {
+
+    VkFramebuffer *swapchainFramebuffers = malloc(sizeof(VkFramebuffer) *
+            context->swapChainDetails->swapchainImageCount);
+
+    for(int i = 0; i < context->swapChainDetails->swapchainImageCount; i++) {
+        VkImageView attachments[] = {
+        context->swapChainDetails->swapchainImageViews[i]};
+
+        VkFramebufferCreateInfo framebufferInfo = {
+            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+            .renderPass = context->pipelineDetails->renderPass,
+            .attachmentCount = 1,
+            .pAttachments = attachments,
+            .width = context->swapChainDetails->swapchainExtent.width,
+            .height = context->swapChainDetails->swapchainExtent.height,
+            .layers = 1
+        };
+
+        if (vkCreateFramebuffer(context->device, &framebufferInfo, NULL, &swapchainFramebuffers[i]) != VK_SUCCESS) {
+            LOG_ERROR("failed to create framebuffer!");
+        }
+    }
+
+    context->swapChainDetails->swapchainFramebuffers = swapchainFramebuffers;
+
+}
+
+void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
+
+    ui32 indices = _findQueueFamilies(context->physicalDevice);
+
+// Command Pool
+    VkCommandPoolCreateInfo poolInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = indices
+    };
+
+    if (vkCreateCommandPool(context->device, &poolInfo, NULL, &context->commandPool) != VK_SUCCESS) {
+        LOG_ERROR("Failed to create command pool!");
+    }
+
+// Command Buffer
+    VkCommandBufferAllocateInfo allocInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = context->commandPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1
+    };
+
+    if (vkAllocateCommandBuffers(context->device, &allocInfo, &context->commandBuffer) != VK_SUCCESS) {
+        LOG_ERROR("Failed to allocate command buffers!");
+    }
+}
+
+void vulkan_context_create_sync(VulkanDeviceContext *context) {
+
+    VkSemaphoreCreateInfo semaphoreInfo = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO
+    };
+
+    VkFenceCreateInfo fenceInfo = {
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = VK_FENCE_CREATE_SIGNALED_BIT
+    };
+
+if (vkCreateSemaphore(context->device, &semaphoreInfo, NULL,
+    &context->imageAvailableSemaphore) != VK_SUCCESS ||
+    vkCreateSemaphore(context->device, &semaphoreInfo, NULL,
+    &context->renderFinishedSemaphore) != VK_SUCCESS ||
+    vkCreateFence(context->device, &fenceInfo, NULL,
+    &context->inFlightFence) != VK_SUCCESS) {
+        LOG_ERROR("failed to create semaphores!");
+    }
+
+}
+
+void vulkan_drawFrame(VulkanDeviceContext *context) {
+    vkWaitForFences(context->device, 1,
+            &context->inFlightFence, VK_TRUE, UINT64_MAX);
+
+    vkResetFences(context->device, 1, &context->inFlightFence);
+
+    ui32 imageIndex;
+    vkAcquireNextImageKHR(context->device,
+            context->swapChainDetails->swapchain, UINT64_MAX,
+            context->imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+    vkResetCommandBuffer(context->commandBuffer, 0);
+    _recordCommandBuffer(context, imageIndex);
+
+    VkSemaphore waitSemaphores[] = {context->imageAvailableSemaphore};
+    VkSemaphore signalSemaphores[] = {context->renderFinishedSemaphore};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+    VkSubmitInfo submitInfo = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = waitSemaphores,
+        .pWaitDstStageMask = waitStages,
+
+        .commandBufferCount = 1,
+        .pCommandBuffers = &context->commandBuffer,
+
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = signalSemaphores
+    };
+
+    if (vkQueueSubmit(context->graphicsQueue, 1, &submitInfo, context->inFlightFence) != VK_SUCCESS) {
+        LOG_ERROR("Failed to submit draw command buffer!");
+    }
+
+    VkSwapchainKHR swapChains[] = {context->swapChainDetails->swapchain};
+
+    VkPresentInfoKHR presentInfo = {
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = signalSemaphores,
+
+        .swapchainCount = 1,
+        .pSwapchains = swapChains,
+        .pImageIndices = &imageIndex,
+
+        .pResults = NULL // Optional
+    };
+
+    vkQueuePresentKHR(context->graphicsQueue, &presentInfo);
+}
 
 void vulkan_device_cleanup(VulkanDeviceContext* context) {
 
@@ -298,6 +485,12 @@ void vulkan_device_cleanup(VulkanDeviceContext* context) {
     for(int i = 0; i < context->swapChainDetails->swapchainImageCount; i++) {
         vkDestroyImageView(context->device, context->swapChainDetails->swapchainImageViews[i], NULL);
     }
+
+    vkDestroySemaphore(context->device, context->imageAvailableSemaphore, NULL);
+    vkDestroySemaphore(context->device, context->renderFinishedSemaphore, NULL);
+    vkDestroyFence(context->device, context->inFlightFence, NULL);
+
+    vkDestroyCommandPool(context->device, context->commandPool, NULL);
 
     vkDestroyPipeline(context->device, context->pipelineDetails->graphicsPipeline, NULL);
     vkDestroyPipelineLayout(context->device, context->pipelineDetails->pipelineLayout, NULL);

@@ -114,6 +114,7 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .minDepth = 0.0f,
         .maxDepth = 1.0f
     };
+
     VkRect2D scissor = {
         .offset = {0, 0},
         .extent = swapchainExtent
@@ -224,13 +225,28 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .pColorAttachments = &colorAttachmentRef
     };
 
+    // Render Pass (dependency)
+    VkSubpassDependency dependency = {
+        .srcSubpass = VK_SUBPASS_EXTERNAL,
+        .dstSubpass = 0,
+
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = 0,
+
+        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+    };
+
     // Render Pass
     VkRenderPassCreateInfo renderPassInfo = {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         .attachmentCount = 1,
         .pAttachments = &colorAttachment,
         .subpassCount = 1,
-        .pSubpasses = &subpass
+        .pSubpasses = &subpass,
+
+        .dependencyCount = 1,
+        .pDependencies = &dependency
     };
 
     if(vkCreateRenderPass(device, &renderPassInfo, NULL, &details->renderPass) != VK_SUCCESS) {

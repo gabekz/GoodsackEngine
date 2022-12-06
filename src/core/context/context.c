@@ -96,10 +96,17 @@ GLFWwindow* createWindow(int winWidth, int winHeight) {
         vulkanDevice->swapChainDetails->swapchainImageFormat,
         vulkanDevice->swapChainDetails->swapchainExtent);
 
-#if 0
+    vulkan_context_create_framebuffers(vulkanDevice);
+    vulkan_context_create_command_pool(vulkanDevice);
+    vulkan_context_create_sync(vulkanDevice);
+
+#if 1
     while(!glfwWindowShouldClose(window)) {
-        
+        glfwPollEvents();
+        vulkan_drawFrame(vulkanDevice);
     }
+
+    vkDeviceWaitIdle(vulkanDevice->device);
 
 #endif
     vulkan_device_cleanup(vulkanDevice);

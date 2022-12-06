@@ -27,10 +27,23 @@ struct _vulkanDeviceContext {
 
     VulkanSwapChainDetails *swapChainDetails;
     VulkanPipelineDetails *pipelineDetails;
+
+    VkCommandPool commandPool;
+    VkCommandBuffer commandBuffer;
+
+    VkSemaphore imageAvailableSemaphore;
+    VkSemaphore renderFinishedSemaphore;
+    VkFence inFlightFence;
 };
 
 VulkanDeviceContext* vulkan_device_create();
 void vulkan_device_cleanup(VulkanDeviceContext* context);
+
+void vulkan_context_create_framebuffers(VulkanDeviceContext *context);
+void vulkan_context_create_command_pool(VulkanDeviceContext *context);
+void vulkan_context_create_sync(VulkanDeviceContext *context);
+
+void vulkan_drawFrame(VulkanDeviceContext *context);
 
 #if 0
 static inline void init_vulkan() {
