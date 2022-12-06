@@ -101,7 +101,6 @@ VulkanSwapChainDetails* vulkan_swapchain_create(
         .minImageCount = imageCount,
         .imageFormat = format.format,
         .imageColorSpace = format.colorSpace,
-        .imageExtent = extent,
         .imageArrayLayers = 1,
         .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 

@@ -3,9 +3,6 @@
 #define VK_USE_PLATFORM_XCB_KHR
 #define GLFW_EXPOSE_NATIVE_XCB
 
-#include <xcb/xcb.h>
-#include <xcb/xcb.h>
-
 #include <util/sysdefs.h>
 
 #include <stdlib.h>
@@ -130,6 +127,41 @@ static int _isDeviceSuitable(VkPhysicalDevice device) {
     return 1;
 }
 
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData) {
+
+    LOG_ERROR("Validation layer: %s", pCallbackData->pMessage);
+
+    return VK_FALSE;
+}
+
+static VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+    PFN_vkCreateDebugUtilsMessengerEXT p =
+        (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+        instance, "vkCreateDebugUtilsMessengerEXT");
+    if(p == NULL) {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    }
+    return p(instance, pCreateInfo, pAllocator, pDebugMessenger);
+}
+
+static void createMessenger(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger) {
+    VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.pfnUserCallback = debugCallback;
+    createInfo.pUserData = NULL; // Optional
+    
+    if(createDebugUtilsMessengerEXT(instance, &createInfo, NULL, &debugMessenger) != VK_SUCCESS) {
+        LOG_ERROR("Failed to create debug utils messenger!");
+    }
+}
+
 /* implement */
 
 VulkanDeviceContext *vulkan_device_create() {
@@ -147,15 +179,41 @@ VulkanDeviceContext *vulkan_device_create() {
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
 
+// Validation Layer + Extension Handling for Instance
+    const unsigned char kEnableValidationLayers = 1;
+
     ui32 glfwExtensionCount = 0;
     const char **glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
     //vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
     //printf("\n%d extensions supported", extensionCount);
     
-    createInfo.enabledExtensionCount = glfwExtensionCount;
-    createInfo.ppEnabledExtensionNames = glfwExtensions;
-    createInfo.enabledLayerCount = 0;
+    const char *extensionTest[3] = {
+        "VK_KHR_surface",
+        "VK_KHR_xcb_surface",
+        VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+    };
+
+    const char *validationLayers[VK_REQ_VALIDATION_SIZE] = 
+        VK_REQ_VALIDATION_LIST;
+
+    if(kEnableValidationLayers) {
+        if(!_checkValidationLayerSupport(validationLayers, 1)) {
+            LOG_ERROR("Validation layer requested, but not available!");
+        }
+        createInfo.ppEnabledLayerNames = validationLayers;
+        createInfo.enabledLayerCount = VK_REQ_VALIDATION_SIZE;
+    }
+    else {
+        createInfo.enabledLayerCount = 0;
+
+    }
+
+    //createInfo.enabledExtensionCount = glfwExtensionCount;
+    //createInfo.ppEnabledExtensionNames = glfwExtensions;
+    createInfo.enabledExtensionCount = 3;
+    createInfo.ppEnabledExtensionNames = extensionTest;
+
 
 // New Vulkan Instance
     VulkanDeviceContext *ret = malloc(sizeof(VulkanDeviceContext));
@@ -170,19 +228,8 @@ VulkanDeviceContext *vulkan_device_create() {
         printf("Successfully created Vulkan Instance!");
     }
 
-// Validation Layer Handling
-    const char *validationLayers[1] = {
-        "VK_LAYER_KHRONOS_validation",
-    };
-    const unsigned char kEnableValidationLayers = 1;
-
-    if(kEnableValidationLayers) {
-        if(!_checkValidationLayerSupport(validationLayers, 1)) {
-            LOG_ERROR("Validation layer requested, but not available!");
-        }
-        createInfo.enabledLayerCount = 1;
-        createInfo.ppEnabledLayerNames = validationLayers;
-    }
+// Create Debug Messenger
+    createMessenger(ret->vulkanInstance, ret->debugMessenger);
 
 // Physical Device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;

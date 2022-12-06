@@ -18,6 +18,8 @@ struct _vulkanDeviceContext {
     VkSurfaceKHR surface;
     VkInstance vulkanInstance;
 
+    VkDebugUtilsMessengerEXT debugMessenger;
+
     VkQueue graphicsQueue;
     //VkQueue presentQueue;
     ui32 graphicsFamily;
