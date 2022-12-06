@@ -5,6 +5,7 @@
 #include <util/sysdefs.h>
 
 #include <core/api/vulkan/vulkan_swapchain.h>
+#include <core/api/vulkan/vulkan_pipeline.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,6 +26,7 @@ struct _vulkanDeviceContext {
     ui32 graphicsFamily;
 
     VulkanSwapChainDetails *swapChainDetails;
+    VulkanPipelineDetails *pipelineDetails;
 };
 
 VulkanDeviceContext* vulkan_device_create();

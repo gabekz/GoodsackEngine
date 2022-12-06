@@ -11,6 +11,7 @@
 #include <util/sysdefs.h>
 
 #include <core/api/vulkan/vulkan_device.h>
+#include <core/api/vulkan/vulkan_pipeline.h>
 
 
 static void _resize_callback
@@ -90,6 +91,10 @@ GLFWwindow* createWindow(int winWidth, int winHeight) {
     vulkanDevice->swapChainDetails = vulkan_swapchain_create(
         vulkanDevice->device, vulkanDevice->physicalDevice,
         vulkanDevice->surface, window);
+
+    vulkanDevice->pipelineDetails = vulkan_pipeline_create(vulkanDevice->device,
+        vulkanDevice->swapChainDetails->swapchainImageFormat,
+        vulkanDevice->swapChainDetails->swapchainExtent);
 
 #if 0
     while(!glfwWindowShouldClose(window)) {

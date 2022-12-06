@@ -94,6 +94,16 @@ static char getLevelChar(LogLevel level) {
         default: return ' ';
     }
 }
+static const char* getLevelStr(LogLevel level) {
+    switch (level) {
+        case LogLevel_TRACE: return "Trace";
+        case LogLevel_DEBUG: return "Debug";
+        case LogLevel_INFO:  return "Info";
+        case LogLevel_WARN:  return "Warning";
+        case LogLevel_ERROR: return "Error";
+        default: return "";
+    }
+}
 
 static void lock(void) {
 #if defined(_WIN32) || defined(_WIN64)
@@ -167,7 +177,12 @@ static long vflog(FILE* fp, char levelc, const char* timestamp, long threadID,
     int size;
     long totalsize = 0;
 
-    if ((size = fprintf(fp, "%c %s %ld %s:%d: ", levelc, timestamp, threadID, file, line)) > 0) {
+    /*
+    if ((size = fprintf(fp, "[%s] %s %ld %s:%d: ", levelstr, timestamp, threadID, file, line)) > 0) {
+        totalsize += size;
+    }
+    */
+    if ((size = fprintf(fp, "[%c] %s:%d: ", levelc, file, line)) > 0) {
         totalsize += size;
     }
     if ((size = vfprintf(fp, fmt, arg)) > 0) {
@@ -237,6 +252,7 @@ void logger_flush() {
 void logger_log(LogLevel level, const char* file, int line, const char* fmt, ...) {
     struct timeval now;
     unsigned long long currentTime; /* milliseconds */
+    const char* levelStr = getLevelStr(level);
     char levelc;
     char timestamp[32];
     long threadID;
@@ -258,7 +274,7 @@ void logger_log(LogLevel level, const char* file, int line, const char* fmt, ...
     lock();
     if (hasFlag(s_logger, kConsoleLogger)) {
         va_start(carg, fmt);
-        vflog(s_clog.output, levelc, "-", threadID,
+        vflog(s_clog.output, levelc, timestamp, threadID,
                 file, line, fmt, carg, currentTime, &s_clog.flushedTime);
         va_end(carg);
     }

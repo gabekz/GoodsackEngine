@@ -131,7 +131,6 @@ VulkanSwapChainDetails* vulkan_swapchain_create(
 
 // Craete Image Views
     details->swapchainImageViews = malloc(sizeof(VkImageView) * imageCount);
-    details->swapchainImageCount = imageCount;
 
     for(int i = 0; i < imageCount; i++) {
         VkImageViewCreateInfo createInfo = {
@@ -153,7 +152,7 @@ VulkanSwapChainDetails* vulkan_swapchain_create(
         };
 
         if(vkCreateImageView(device, &createInfo, NULL, &details->swapchainImageViews[i]) != VK_SUCCESS) {
-            LOG_ERROR("Failed to create image views!");
+            LOG_ERROR("Failed to create image views!"); 
         }
     }
 

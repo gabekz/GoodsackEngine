@@ -203,22 +203,18 @@ VulkanDeviceContext *vulkan_device_create() {
         }
         createInfo.ppEnabledLayerNames = validationLayers;
         createInfo.enabledLayerCount = VK_REQ_VALIDATION_SIZE;
+
+        createInfo.enabledExtensionCount = 3;
+        createInfo.ppEnabledExtensionNames = extensionTest;
     }
     else {
         createInfo.enabledLayerCount = 0;
-
+        createInfo.enabledExtensionCount = glfwExtensionCount;
+        createInfo.ppEnabledExtensionNames = glfwExtensions;
     }
 
-    //createInfo.enabledExtensionCount = glfwExtensionCount;
-    //createInfo.ppEnabledExtensionNames = glfwExtensions;
-    createInfo.enabledExtensionCount = 3;
-    createInfo.ppEnabledExtensionNames = extensionTest;
-
-
-// New Vulkan Instance
+    // Create Instance
     VulkanDeviceContext *ret = malloc(sizeof(VulkanDeviceContext));
-    //ret->vulkanInstance = malloc(sizeof(VkInstance));
-    //ret->device = malloc(sizeof(VkDevice));
     VkResult result = vkCreateInstance(&createInfo, NULL, &ret->vulkanInstance);
     if (vkCreateInstance(&createInfo, NULL, &ret->vulkanInstance) != VK_SUCCESS) {
         printf("Failed to initialize Vulkan Instance!");
@@ -229,7 +225,9 @@ VulkanDeviceContext *vulkan_device_create() {
     }
 
 // Create Debug Messenger
-    createMessenger(ret->vulkanInstance, ret->debugMessenger);
+    if(kEnableValidationLayers) {
+        createMessenger(ret->vulkanInstance, ret->debugMessenger);
+    }
 
 // Physical Device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -293,9 +291,21 @@ VulkanDeviceContext *vulkan_device_create() {
     return ret;
 }
 
+
 void vulkan_device_cleanup(VulkanDeviceContext* context) {
+
+    // Cleanup image views
+    for(int i = 0; i < context->swapChainDetails->swapchainImageCount; i++) {
+        vkDestroyImageView(context->device, context->swapChainDetails->swapchainImageViews[i], NULL);
+    }
+
+    vkDestroyPipeline(context->device, context->pipelineDetails->graphicsPipeline, NULL);
+    vkDestroyPipelineLayout(context->device, context->pipelineDetails->pipelineLayout, NULL);
+    vkDestroyRenderPass(context->device, context->pipelineDetails->renderPass, NULL);
+
     vkDestroyDevice(context->device, NULL);
     vkDestroySurfaceKHR(context->vulkanInstance, context->surface, NULL);
+    //DestroyDebugUtilsMessengerEXT(context->instance, context->debugMessenger, NULL); // TODO: if enabled validation
     vkDestroyInstance(context->vulkanInstance, NULL);
 
     //free(context->vulkanInstance);

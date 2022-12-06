@@ -12,20 +12,31 @@ typedef struct _vulkanSwapChainDetails VulkanSwapChainDetails;
 
 struct _vulkanSwapChainDetails {
     VkSwapchainKHR swapchain;
+    ui32 swapchainImageCount;
+    VkImage *swapchainImages;
+    VkFormat swapchainImageFormat;
+    VkExtent2D swapchainExtent;
+
+    VkImageView *swapchainImageViews;
+
     VkSurfaceFormatKHR *formats;
     VkPresentModeKHR *presentModes;
     VkSurfaceCapabilitiesKHR capabilities;
 };
 
+// Create Swapchain
 VulkanSwapChainDetails* vulkan_swapchain_create(
         VkDevice device, VkPhysicalDevice physicalDevice,
         VkSurfaceKHR surface, GLFWwindow *window);
 
-// Helpers
-
 // Create Swapchain Details structure
 VulkanSwapChainDetails* vulkan_swapchain_query_details(
         VkPhysicalDevice device, VkSurfaceKHR surface);
+
+// Create Swapchain Image Views
+void vulkan_swapchain_create_image_views(VulkanSwapChainDetails *details);
+
+// Helpers
 
 VkSurfaceFormatKHR vulkan_swapchain_choose_format(
         VkSurfaceFormatKHR *formats, int count);
