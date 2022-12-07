@@ -41,6 +41,13 @@
 #define PRIM_ARR_I_CUBE (ui32[]){ \
     0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1}
 
+#define PRIM_SIZ_TEST 15
+#define PRIM_ARR_TEST (float[]){           \
+	 0.0f, -0.5f,    1.0f, 0.0f,  0.0f,    \
+	 0.5f,  0.5f,    0.0f, 1.0f,  0.0f,    \
+	-0.5f,  0.5f,    0.0f, 0.0f,  1.0f,    \
+}\
+
 /*
          ------- Pyramid
 

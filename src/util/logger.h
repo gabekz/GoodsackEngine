@@ -12,6 +12,7 @@ extern "C" {
 #define LOG_INFO(fmt, ...)  logger_log(LogLevel_INFO , __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define LOG_WARN(fmt, ...)  logger_log(LogLevel_WARN , __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define LOG_ERROR(fmt, ...) logger_log(LogLevel_ERROR, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_CRITICAL(fmt, ...) logger_log(LogLevel_CRITICAL, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
 
 typedef enum {
     LogLevel_TRACE,
@@ -19,6 +20,7 @@ typedef enum {
     LogLevel_INFO,
     LogLevel_WARN,
     LogLevel_ERROR,
+    LogLevel_CRITICAL,
 } LogLevel;
 
 typedef enum {

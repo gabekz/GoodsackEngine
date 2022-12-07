@@ -88,11 +88,12 @@ static int hasFlag(int flags, int flag) {
 
 static char getLevelChar(LogLevel level) {
     switch (level) {
-        case LogLevel_TRACE: return 'T';
-        case LogLevel_DEBUG: return 'D';
-        case LogLevel_INFO:  return 'I';
-        case LogLevel_WARN:  return 'W';
-        case LogLevel_ERROR: return 'E';
+        case LogLevel_TRACE:    return 'T';
+        case LogLevel_DEBUG:    return 'D';
+        case LogLevel_INFO:     return 'I';
+        case LogLevel_WARN:     return 'W';
+        case LogLevel_ERROR:    return 'E';
+        case LogLevel_CRITICAL: return 'C';
         default: return ' ';
     }
 }
@@ -119,6 +120,10 @@ static void setLevelStr(LogLevel level, int colored, char *dest) {
             break;
         case LogLevel_ERROR:
             levelStr = "Error";
+            levelCol = MAG;
+            break;
+        case LogLevel_CRITICAL:
+            levelStr = "Critical";
             levelCol = RED;
             break;
         default: return;

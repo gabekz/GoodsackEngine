@@ -142,7 +142,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
         default:
-        LOG_ERROR("[Validation Layer] %s", pCallbackData->pMessage);
+        LOG_CRITICAL("[Validation Layer] %s", pCallbackData->pMessage);
     }
 
 
@@ -328,6 +328,7 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex) 
 
     vkCmdBeginRenderPass(context->commandBuffer,
         &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
     vkCmdBindPipeline(context->commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         context->pipelineDetails->graphicsPipeline);
@@ -353,22 +354,13 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex) 
     vkCmdDraw(context->commandBuffer, 3, 1, 0, 0);
 #else
 
-
-    float *vertices = PRIM_ARR_V_CUBE;
-    int size = PRIM_SIZ_V_CUBE;
-
-    VulkanVertexBuffer *vb = 
-        vulkan_vertex_buffer_create(
-                context->physicalDevice,
-                context->device, 
-                vertices,
-                size);
-
-    VkBuffer vertexBuffers[] = {vb->buffer};
+    LOG_DEBUG("Binding Vertex Buffer");
+    VkBuffer vertexBuffers[] = {context->vertexBuffer->buffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(context->commandBuffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdDraw(context->commandBuffer, vb->size, 1, 0, 0);
+    LOG_DEBUG("Drawing Vertex Buffer");
+    vkCmdDraw(context->commandBuffer, context->vertexBuffer->size, 1, 0, 0);
 #endif
 
     vkCmdEndRenderPass(context->commandBuffer);
@@ -421,6 +413,21 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
         LOG_ERROR("Failed to create command pool!");
     }
 
+// Create a VERTEX BUFFER
+
+    float *vertices = PRIM_ARR_TEST;
+    int size = PRIM_SIZ_TEST * sizeof(float);
+
+    LOG_DEBUG("Create vertex buffer");
+    VulkanVertexBuffer *vb = 
+        vulkan_vertex_buffer_create(
+                context->physicalDevice,
+                context->device, 
+                vertices,
+                size);
+
+    context->vertexBuffer = vb;
+
 // Command Buffer
     VkCommandBufferAllocateInfo allocInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -453,19 +460,27 @@ if (vkCreateSemaphore(context->device, &semaphoreInfo, NULL,
     &context->inFlightFence) != VK_SUCCESS) {
         LOG_ERROR("failed to create semaphores!");
     }
-
 }
 
 void vulkan_drawFrame(VulkanDeviceContext *context) {
-    vkWaitForFences(context->device, 1,
-            &context->inFlightFence, VK_TRUE, UINT64_MAX);
+    if(vkWaitForFences(context->device, 1,
+                &context->inFlightFence, VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
+        LOG_ERROR("vkWaitForFences Failed!");
+    }
 
     vkResetFences(context->device, 1, &context->inFlightFence);
 
     ui32 imageIndex;
-    vkAcquireNextImageKHR(context->device,
+    VkResult result = vkAcquireNextImageKHR(context->device,
             context->swapChainDetails->swapchain, UINT64_MAX,
             context->imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+    if(result == VK_ERROR_OUT_OF_DATE_KHR) {
+        LOG_WARN("Cannot acquire next image. Try recreating the swapchain?");
+    }
+    else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        LOG_ERROR("Failed to acquire next image!");
+    }
 
     vkResetCommandBuffer(context->commandBuffer, 0);
     _recordCommandBuffer(context, imageIndex);

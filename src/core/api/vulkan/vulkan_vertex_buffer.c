@@ -8,7 +8,7 @@
 VkVertexInputBindingDescription vulkan_vertex_buffer_get_binding_description() {
     VkVertexInputBindingDescription bindingDescription = {
         .binding = 0,
-        .stride = sizeof(float),
+        .stride = (sizeof(float) * 2 + sizeof(float) * 3),
         .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
     };
     return bindingDescription;
@@ -22,13 +22,13 @@ VkVertexInputAttributeDescription* vulkan_vertex_buffer_get_attribute_descriptio
         .binding = 0,
         .location = 0,
         .format = VK_FORMAT_R32G32_SFLOAT,
-        .offset = sizeof(float) // position
+        .offset = 0 // position
     };
     attributeDescriptions[1] = (VkVertexInputAttributeDescription){
         .binding = 0,
         .location = 1,
-        .format = VK_FORMAT_R32G32_SFLOAT,
-        .offset = sizeof(float) // color
+        .format = VK_FORMAT_R32G32B32_SFLOAT,
+        .offset = 2 * sizeof(float)
     };
 
     return attributeDescriptions;
@@ -54,6 +54,7 @@ static ui32 _findMemoryType(VkPhysicalDevice physicalDevice,
 VulkanVertexBuffer* vulkan_vertex_buffer_create(VkPhysicalDevice physicalDevice, VkDevice device, void *data, ui32 size) {
 
     VulkanVertexBuffer *vertexBuffer = malloc(sizeof(VulkanVertexBuffer));
+    vertexBuffer->data = data;
 
     VkBufferCreateInfo bufferInfo = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -82,14 +83,20 @@ VulkanVertexBuffer* vulkan_vertex_buffer_create(VkPhysicalDevice physicalDevice,
         LOG_ERROR("Failed to allocate vertex buffer memory!");
     }
 
-    vkBindBufferMemory(device, vertexBuffer->buffer, vertexBuffer->bufferMemory, 0);
-    vkMapMemory(device, vertexBuffer->bufferMemory, 0, bufferInfo.size, 0, &data);
+    if(vkBindBufferMemory(device, vertexBuffer->buffer, vertexBuffer->bufferMemory, 0) != VK_SUCCESS) {
+        LOG_ERROR("Failed to bind vertex buffer memory!");
+    }
 
-    // send to structure
-    vertexBuffer->data = malloc(bufferInfo.size);
-    memcpy(data, vertexBuffer->data, bufferInfo.size);
-
+    void *pData;
+    if(vkMapMemory(device, vertexBuffer->bufferMemory, 0, bufferInfo.size, 0, &pData) != VK_SUCCESS) {
+        LOG_ERROR("Failed to map vertex buffer memory!");
+    };
+    // send to memory map 
+    memcpy(pData, vertexBuffer->data, bufferInfo.size);
     vkUnmapMemory(device, vertexBuffer->bufferMemory);
+
+    // Fuck you
+    vertexBuffer->size = bufferInfo.size;
 
     // NOTE:
     // Option 1): VK_MEMORY_PROPERTY_HOST_COHERENT_BIT

@@ -6,6 +6,9 @@
 
 #include <core/api/vulkan/vulkan_swapchain.h>
 #include <core/api/vulkan/vulkan_pipeline.h>
+#include <core/api/vulkan/vulkan_vertex_buffer.h>
+
+#define MAX_FRAMES_IN_FLIGHT 2
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,6 +30,9 @@ struct _vulkanDeviceContext {
 
     VulkanSwapChainDetails *swapChainDetails;
     VulkanPipelineDetails *pipelineDetails;
+
+    // Temporary vertex buffer for testing
+    VulkanVertexBuffer *vertexBuffer;
 
     VkCommandPool commandPool;
     VkCommandBuffer commandBuffer;
