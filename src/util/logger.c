@@ -1,10 +1,11 @@
-#include "logging.h"
+#include "logger.h"
 
 #include <assert.h>
 #include <time.h>
 #include <string.h>
 #include <stdarg.h>
 
+#include <util/ansi_colors.h>
 #include <util/sysdefs.h>
 
 #ifdef SYS_ENV_WIN
@@ -48,6 +49,7 @@ static struct {
 
 static volatile int s_logger;
 static volatile LogLevel s_logLevel = LogLevel_INFO;;
+static volatile LogDetail s_logDetail = LogDetail_SIMPLE;;
 static volatile long s_flushInterval = 0; /* msec, 0 is auto flush off */
 static volatile int s_initialized = 0; /* false */
 
@@ -94,14 +96,39 @@ static char getLevelChar(LogLevel level) {
         default: return ' ';
     }
 }
-static const char* getLevelStr(LogLevel level) {
+static void setLevelStr(LogLevel level, int colored, char *dest) {
+    char *levelStr;
+    char *levelCol;
+
     switch (level) {
-        case LogLevel_TRACE: return "Trace";
-        case LogLevel_DEBUG: return "Debug";
-        case LogLevel_INFO:  return "Info";
-        case LogLevel_WARN:  return "Warning";
-        case LogLevel_ERROR: return "Error";
-        default: return "";
+        case LogLevel_TRACE:
+            levelStr = "Trace";
+            levelCol = BLU;
+            break;
+        case LogLevel_DEBUG:
+            levelStr = "Debug";
+            levelCol = YEL;
+            break;
+        case LogLevel_INFO: 
+            levelStr = "Info";
+            levelCol = GRN;
+            break;
+        case LogLevel_WARN: 
+            levelStr = "Warning";
+            levelCol = YEL;
+            break;
+        case LogLevel_ERROR:
+            levelStr = "Error";
+            levelCol = RED;
+            break;
+        default: return;
+    }
+
+    if(colored) {
+        dest[0] = '\0';
+        strncpy(dest, levelCol, 32);
+        strncat(dest, levelStr, 32);
+        strncat(dest, COLOR_RESET, 32);
     }
 }
 
@@ -171,20 +198,27 @@ static long getFileSize(const char* filename) {
     return size;
 }
 
-static long vflog(FILE* fp, char levelc, const char* timestamp, long threadID,
+static long vflog(FILE* fp, const char* levelStr, const char* timestamp, long threadID,
         const char* file, int line, const char* fmt, va_list arg,
         unsigned long long currentTime, unsigned long long* flushedTime) {
     int size;
     long totalsize = 0;
 
-    /*
-    if ((size = fprintf(fp, "[%s] %s %ld %s:%d: ", levelstr, timestamp, threadID, file, line)) > 0) {
+    if(s_logDetail == LogDetail_SIMPLE) {
+        size = fprintf(
+            fp, "[%s] ",
+            levelStr);
+    }
+    else {
+        size = fprintf(
+            fp, "[%s] %s %ld %s:%d: ",
+            levelStr, timestamp, threadID, file, line);
+    }
+
+    if(size > 0) {
         totalsize += size;
     }
-    */
-    if ((size = fprintf(fp, "[%c] %s:%d: ", levelc, file, line)) > 0) {
-        totalsize += size;
-    }
+
     if ((size = vfprintf(fp, fmt, arg)) > 0) {
         totalsize += size;
     }
@@ -252,7 +286,7 @@ void logger_flush() {
 void logger_log(LogLevel level, const char* file, int line, const char* fmt, ...) {
     struct timeval now;
     unsigned long long currentTime; /* milliseconds */
-    const char* levelStr = getLevelStr(level);
+    char levelStr[32];
     char levelc;
     char timestamp[32];
     long threadID;
@@ -266,22 +300,30 @@ void logger_log(LogLevel level, const char* file, int line, const char* fmt, ...
     if (!logger_isEnabled(level)) {
         return;
     }
+
+    if(level == LogLevel_INFO) { // TODO: Fix stupid hack
+        logger_setDetail(LogDetail_SIMPLE);
+    } else {
+        logger_setDetail(LogDetail_EXTENDED);
+    }
+
     gettimeofday(&now, NULL);
     currentTime = now.tv_sec * 1000 + now.tv_usec / 1000;
     levelc = getLevelChar(level);
+    setLevelStr(level, 1, levelStr);
     getTimestamp(&now, timestamp, sizeof(timestamp));
     threadID = getCurrentThreadID();
     lock();
     if (hasFlag(s_logger, kConsoleLogger)) {
         va_start(carg, fmt);
-        vflog(s_clog.output, levelc, timestamp, threadID,
+        vflog(s_clog.output, levelStr, timestamp, threadID,
                 file, line, fmt, carg, currentTime, &s_clog.flushedTime);
         va_end(carg);
     }
     if (hasFlag(s_logger, kFileLogger)) {
         if (rotateLogFiles()) {
             va_start(farg, fmt);
-            s_flog.currentFileSize += vflog(s_flog.output, levelc, timestamp, threadID,
+            s_flog.currentFileSize += vflog(s_flog.output, levelStr, timestamp, threadID,
                     file, line, fmt, farg, currentTime, &s_flog.flushedTime);
             va_end(farg);
         }
@@ -311,6 +353,14 @@ void logger_setLevel(LogLevel level) {
 
 LogLevel logger_getLevel() { 
     return s_logLevel;
+}
+
+void logger_setDetail(LogDetail detail) {
+    s_logDetail = detail;
+}
+
+LogDetail logger_getDetail() { 
+    return s_logDetail;
 }
 
 int logger_initFileLogger(const char* filename, long maxFileSize, unsigned char maxBackupFiles) {

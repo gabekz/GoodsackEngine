@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include <util/maths.h>
-#include <util/logging.h>
+#include <util/logger.h>
 
 VulkanSwapChainDetails* vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface) {
 

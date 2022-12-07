@@ -6,7 +6,7 @@
 
 #include <util/gfx.h>
 #include <util/debug.h>
-#include <util/logging.h>
+#include <util/logger.h>
 
 #include <util/sysdefs.h>
 
@@ -35,20 +35,9 @@ GLFWwindow* createWindow(int winWidth, int winHeight) {
         printf("Failed to initialize glfw");
    }
 
-   /*
-   ApplicationProperties props = {
-       .title = "Test",
-       .description = "Test",
-       .version = {
-           .major = 0,
-           .minor = 3,
-       },
-   };
-   */
-
 // OpenGL
 #if defined(SYS_API_OPENGL)
-   // Minimum OpenGL version required glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
    // debug ALL OpenGL Errors
@@ -75,6 +64,7 @@ GLFWwindow* createWindow(int winWidth, int winHeight) {
    glfwSwapInterval(1);
 
 // Vulkan
+//if(deviceAPI(DEVICE_API_VULKAN))
 #elif defined(SYS_API_VULKAN)
    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);

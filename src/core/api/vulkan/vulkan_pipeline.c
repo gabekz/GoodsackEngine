@@ -1,7 +1,9 @@
 #include "vulkan_pipeline.h"
 
 #include <stdlib.h>
-#include <util/logging.h>
+#include <util/logger.h>
+
+#include <core/api/vulkan/vulkan_vertex_buffer.h>
 
 struct FileDescriptor {
     char *buffer;
@@ -55,7 +57,7 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
     VulkanPipelineDetails *details = malloc(sizeof(VulkanPipelineDetails));
 
     VkShaderModule vertShaderModule = _createShaderModule(device,
-            "../res/shaders/vulkan/vert.spv");
+            "../res/shaders/vulkan/shader_inputs_vert.spv");
     VkShaderModule fragShaderModule = _createShaderModule(device,
             "../res/shaders/vulkan/frag.spv");
 
@@ -88,6 +90,7 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
     };
 
 // Vertex Input
+#if 0 // Empty vertex input
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 
@@ -97,6 +100,22 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .vertexAttributeDescriptionCount = 0,
         .pVertexAttributeDescriptions = NULL
     };
+#else // Descriptor
+    VkVertexInputBindingDescription bindingDescription = 
+        vulkan_vertex_buffer_get_binding_description();
+    VkVertexInputAttributeDescription *attributeDescriptions = 
+        vulkan_vertex_buffer_get_attribute_descriptions();
+
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+
+        .vertexBindingDescriptionCount = 1,
+        .pVertexBindingDescriptions = &bindingDescription,
+
+        .vertexAttributeDescriptionCount = 2,
+        .pVertexAttributeDescriptions = attributeDescriptions,
+    };
+#endif
 
 // Input Assembly
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {

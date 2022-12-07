@@ -59,7 +59,13 @@
 //#define SYS_API_RENDERER    OPEN_GL
 
 //#define USING_VULKAN
-#define SYS_API_VULKAN
+//#define SYS_API_OPENGL
+
+// Default Graphics API
+#if defined(SYS_API_OPENGL) || defined(SYS_API_VULKAN)
+#else
+#define SYS_API_VULKAN // Default
+#endif
 
 // Drawing modes
 #define SYS_GPU_DRAW_MODE_ARRAYS     0xD000

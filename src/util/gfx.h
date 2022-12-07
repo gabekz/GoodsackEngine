@@ -10,14 +10,15 @@
 
 #if defined(SYS_API_VULKAN)
  #define GLFW_INCLUDE_VULKAN
- #include <vulkan/vulkan.h>
- #include <vulkan/vk_sdk_platform.h>
- //#include <vulkan/vulkan_xcb.h>
 #endif
+
+#include <vulkan/vulkan.h>
+#include <vulkan/vk_sdk_platform.h>
+//#include <vulkan/vulkan_xcb.h>
 
 #include<glad/gl.h> // TODO: Move to #defined
 #include<GLFW/glfw3.h>
-#include<GLFW/glfw3native.h>
+//#include<GLFW/glfw3native.h>
 
 static inline void clearGLState() {
     glUseProgram(0);

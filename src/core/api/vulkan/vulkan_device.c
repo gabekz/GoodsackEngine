@@ -10,11 +10,13 @@
 
 #include <util/gfx.h>
 #include <util/debug.h>
-#include <util/logging.h>
+#include <util/logger.h>
 
 #include <core/api/vulkan/vulkan_support.h>
 #include <core/api/vulkan/vulkan_swapchain.h>
+#include <core/api/vulkan/vulkan_vertex_buffer.h>
 
+#include <model/primitives.h>
 
 /* static */
 
@@ -134,7 +136,15 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
 
-    LOG_ERROR("Validation layer: %s", pCallbackData->pMessage);
+    switch(messageSeverity) {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        LOG_WARN("[Validation Layer] %s", pCallbackData->pMessage);
+        break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        default:
+        LOG_ERROR("[Validation Layer] %s", pCallbackData->pMessage);
+    }
+
 
     return VK_FALSE;
 }
@@ -339,7 +349,27 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex) 
     };
     vkCmdSetScissor(context->commandBuffer, 0, 1, &scissor);
 
+#if 0
     vkCmdDraw(context->commandBuffer, 3, 1, 0, 0);
+#else
+
+
+    float *vertices = PRIM_ARR_V_CUBE;
+    int size = PRIM_SIZ_V_CUBE;
+
+    VulkanVertexBuffer *vb = 
+        vulkan_vertex_buffer_create(
+                context->physicalDevice,
+                context->device, 
+                vertices,
+                size);
+
+    VkBuffer vertexBuffers[] = {vb->buffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(context->commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdDraw(context->commandBuffer, vb->size, 1, 0, 0);
+#endif
 
     vkCmdEndRenderPass(context->commandBuffer);
 
@@ -484,6 +514,7 @@ void vulkan_device_cleanup(VulkanDeviceContext* context) {
     // Cleanup image views
     for(int i = 0; i < context->swapChainDetails->swapchainImageCount; i++) {
         vkDestroyImageView(context->device, context->swapChainDetails->swapchainImageViews[i], NULL);
+        vkDestroyFramebuffer(context->device, context->swapChainDetails->swapchainFramebuffers[i], NULL);
     }
 
     vkDestroySemaphore(context->device, context->imageAvailableSemaphore, NULL);

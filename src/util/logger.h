@@ -21,6 +21,11 @@ typedef enum {
     LogLevel_ERROR,
 } LogLevel;
 
+typedef enum {
+    LogDetail_SIMPLE,
+    LogDetail_EXTENDED
+} LogDetail;
+
 /**
  * Initialize the logger as a console logger.
  * If the file pointer is NULL, stdout will be used.
@@ -50,6 +55,9 @@ int logger_initFileLogger(const char* filename, long maxFileSize, unsigned char 
  */
 void logger_setLevel(LogLevel level);
 LogLevel logger_getLevel();
+
+void logger_setDetail(LogDetail detail);
+LogDetail logger_SetDetail();
 
 void logger_flush();
 int logger_isEnabled(LogLevel level);

@@ -11,7 +11,7 @@
 #include <lua/lua_init.hpp>
 #include <ecs/ecs.h>
 
-#include <util/logging.h>
+#include <util/logger.h>
 
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
@@ -23,8 +23,13 @@ int main(int argc, char *argv[]) {
         }
     }}
 
-    logger_initConsoleLogger(stderr);
-    logger_setLevel(LogLevel_DEBUG);
+// Logger
+    int logStat = logger_initConsoleLogger(stderr);
+    logger_setLevel(LogLevel_TRACE);
+    logger_setDetail(LogDetail_SIMPLE);
+    if(logStat != 0) {
+        LOG_INFO("Initialized Console Logger");
+    }
 
 // Main Lua entry
     LuaInit("../src/lua/demo/main.lua");
