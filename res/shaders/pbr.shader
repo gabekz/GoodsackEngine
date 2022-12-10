@@ -41,7 +41,7 @@ void main() {
     vs_out.camPos = s_Camera.position;
 
     vs_out.lightPos = s_Light.position;
-    vs_out.lightColor = s_Light.color.xyz;
+    vs_out.lightColor = s_Light.color.xyz * 4;
 
     vec3 t = normalize(vec3(u_Model * vec4(a_Tangent,   0.0)));
     vec3 b = normalize(vec3(u_Model * vec4(a_Bitangent, 0.0)));

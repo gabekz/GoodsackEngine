@@ -206,13 +206,52 @@ int main(int argc, char *argv[]) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
+/*------------------------------------------- 
+|   Scene #4
+*/
+    ecs = renderer_active_scene(renderer, 3);
+    Entity camera4 = ecs_new(ecs);
+    ecs_add(camera4, C_CAMERA, ((struct ComponentCamera) {
+        .position = {0.0f, 0.0f, 2.0f},
+        .axisUp   = {0.0f, 1.0f, 0.0f},
+        .speed    = 0.05f,
+    }));
+
+    Texture *texCerbA=
+        texture_create_d("../res/textures/pbr/cerberus/Cerberus_A.tga");
+    Texture *texCerbN=
+        texture_create_n("../res/textures/pbr/cerberus/Cerberus_N.tga");
+    Texture *texCerbM=
+        texture_create_n("../res/textures/pbr/cerberus/Cerberus_M.tga");
+    Texture *texCerbS=
+        texture_create_n("../res/textures/pbr/cerberus/Cerberus_R.tga");
+    Material *matCerb = 
+        material_create(NULL, "../res/shaders/pbr.shader",
+        5,
+        texCerbA, texCerbN, 
+        texCerbM, texCerbS, texPbrAo
+    );
+
+    Entity entCerb = ecs_new(ecs);
+    ecs_add(entCerb, C_TRANSFORM, ((struct ComponentTransform) {
+            .position = {0.0f, 0.0f, 0.0f},
+            .scale = {1.0f, 1.0f, 1.0f},
+    }));
+    ecs_add(entCerb, C_MESH, ((struct ComponentMesh) {
+        .material = matCerb,
+        .modelPath = "../res/models/cerberus-triang.obj",
+        .properties = {
+            .drawMode = DRAW_ARRAYS,
+            .cullMode = CULL_CW | CULL_FORWARD,
+        }
+    }));
     
 // TESTING
     static bool showWindow = true;
     DebugGui *debugGui = new DebugGui(renderer);
 
 /* Render loop */
-    renderer_active_scene(renderer, 1);
+    renderer_active_scene(renderer, 3);
 
     renderer_start(renderer); // Initialization for the render loop
     while(!glfwWindowShouldClose(renderer->window)) {

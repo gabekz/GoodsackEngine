@@ -13,6 +13,9 @@ struct _vulkanPipelineDetails {
     VkPipeline graphicsPipeline;
     VkRenderPass renderPass;
     VkPipelineLayout pipelineLayout;
+
+    VkShaderModule vertShaderModule;
+    VkShaderModule fragShaderModule;
 };
 
 VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,

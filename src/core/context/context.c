@@ -46,7 +46,7 @@ GLFWwindow* createWindow(int winWidth, int winHeight) {
    GLFWwindow* window =
       glfwCreateWindow(winWidth, winHeight, "Title", NULL, NULL);
 
-   if(!window) printf("Failed to create window");
+   if(!window) LOG_ERROR("Failed to create window");
 
    // Set the context and load GL [Note: different for Vk]
    glfwMakeContextCurrent(window);
@@ -59,7 +59,7 @@ GLFWwindow* createWindow(int winWidth, int winHeight) {
     // Initialize GL debug callback
     glDebugInit();
    // Get current OpenGL version
-   printf("%s\n", glGetString(GL_VERSION));
+   LOG_INFO("%s\n", glGetString(GL_VERSION));
    // Refresh rate 
    glfwSwapInterval(1);
 

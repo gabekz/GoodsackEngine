@@ -64,6 +64,7 @@
 // Default Graphics API
 #if defined(SYS_API_OPENGL) || defined(SYS_API_VULKAN)
 #else
+//#define SYS_API_OPENGL
 #define SYS_API_VULKAN // Default
 #endif
 

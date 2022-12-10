@@ -350,18 +350,13 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex) 
     };
     vkCmdSetScissor(context->commandBuffer, 0, 1, &scissor);
 
-#if 0
-    vkCmdDraw(context->commandBuffer, 3, 1, 0, 0);
-#else
-
-    LOG_DEBUG("Binding Vertex Buffer");
+    //LOG_DEBUG("Binding Vertex Buffer");
     VkBuffer vertexBuffers[] = {context->vertexBuffer->buffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(context->commandBuffer, 0, 1, vertexBuffers, offsets);
 
-    LOG_DEBUG("Drawing Vertex Buffer");
+    //LOG_DEBUG("Drawing Vertex Buffer");
     vkCmdDraw(context->commandBuffer, context->vertexBuffer->size, 1, 0, 0);
-#endif
 
     vkCmdEndRenderPass(context->commandBuffer);
 
@@ -532,11 +527,16 @@ void vulkan_device_cleanup(VulkanDeviceContext* context) {
         vkDestroyFramebuffer(context->device, context->swapChainDetails->swapchainFramebuffers[i], NULL);
     }
 
+    vkDestroyBuffer(context->device, context->vertexBuffer->buffer, NULL);
+    vkFreeMemory(context->device, context->vertexBuffer->bufferMemory, NULL);
+
     vkDestroySemaphore(context->device, context->imageAvailableSemaphore, NULL);
     vkDestroySemaphore(context->device, context->renderFinishedSemaphore, NULL);
     vkDestroyFence(context->device, context->inFlightFence, NULL);
-
     vkDestroyCommandPool(context->device, context->commandPool, NULL);
+
+    vkDestroyShaderModule(context->device, context->pipelineDetails->vertShaderModule, NULL);
+    vkDestroyShaderModule(context->device, context->pipelineDetails->fragShaderModule, NULL);
 
     vkDestroyPipeline(context->device, context->pipelineDetails->graphicsPipeline, NULL);
     vkDestroyPipelineLayout(context->device, context->pipelineDetails->pipelineLayout, NULL);
@@ -547,7 +547,7 @@ void vulkan_device_cleanup(VulkanDeviceContext* context) {
     //DestroyDebugUtilsMessengerEXT(context->instance, context->debugMessenger, NULL); // TODO: if enabled validation
     vkDestroyInstance(context->vulkanInstance, NULL);
 
-    //free(context->vulkanInstance);
-    //free(context->device);
     free(context);
+    free(context->swapChainDetails);
+    free(context->pipelineDetails);
 }

@@ -4,6 +4,7 @@
 #include<stdio.h>
 
 #include <util/debug.h>
+#include <util/logger.h>
 #include <util/gfx.h>
 #include <util/sysdefs.h>
 
@@ -46,8 +47,10 @@ Renderer* renderer_init() {
 }
 
 ECS *renderer_active_scene(Renderer* self, ui16 sceneIndex) {
+    LOG_INFO("Loading scene: id %d", sceneIndex);
     ui32 sceneCount = self->sceneC;
     if(sceneCount < sceneIndex + 1) {
+        LOG_INFO("Scene %d does not exist. Creating Scene %d", sceneIndex, sceneIndex);
         ui32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
 
         // Create a new, empty scene

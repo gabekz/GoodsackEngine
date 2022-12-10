@@ -56,21 +56,21 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
 
     VulkanPipelineDetails *details = malloc(sizeof(VulkanPipelineDetails));
 
-    VkShaderModule vertShaderModule = _createShaderModule(device,
+    details->vertShaderModule = _createShaderModule(device,
             "../res/shaders/vulkan/shader_inputs_vert.spv");
-    VkShaderModule fragShaderModule = _createShaderModule(device,
+    details->fragShaderModule = _createShaderModule(device,
             "../res/shaders/vulkan/frag.spv");
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
         .stage = VK_SHADER_STAGE_VERTEX_BIT,
-        .module = vertShaderModule,
+        .module = details->vertShaderModule,
         .pName = "main" 
     };
     VkPipelineShaderStageCreateInfo fragShaderStageInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
         .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-        .module = fragShaderModule,
+        .module = details->fragShaderModule,
         .pName = "main"
     };
 

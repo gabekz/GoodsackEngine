@@ -4,6 +4,8 @@
 #include "stb_image.h"
 
 #include <stdarg.h>
+
+#include <util/logger.h>
 #include <util/sysdefs.h>
 
 #define TEXTURE_WRAPPING  GL_REPEAT
@@ -19,6 +21,10 @@ Texture *texture_create(const char *path, ui32 format,
     stbi_set_flip_vertically_on_load(1);
     unsigned char *localBuffer;
     if(path != NULL) {
+        LOG_INFO("Loading Image at path: %s", path);
+        // LOG_DEBUG("Format: %d, GenMips: %d, AFRange: %f",
+        //         format, genMipMaps, afRange);
+
         localBuffer = stbi_load(tex->filePath, &tex->width,
         &tex->height, &tex->bpp, /*RGBA*/ 4);
     }

@@ -4,10 +4,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <util/maths.h>
+#include <util/logger.h>
 #include <util/gfx.h>
+#include <util/maths.h>
 
 #include <model/model.h>
+
+#define LOGGING_OBJ
 
 Model* load_obj(const char* path, float scale) {
 
@@ -15,14 +18,18 @@ Model* load_obj(const char* path, float scale) {
     char line[256]; // 256 = MAX line_length
 
     if((stream = fopen(path, "rb")) == NULL) {
-        printf("Error opening %s\n", path);
+        LOG_CRITICAL("Error opening %s\n", path);
         exit(1);
     }
 
+#ifdef LOGGING_OBJ 
+    LOG_INFO("Loading OBJ at path: %s", path);
+#endif
+
     // TODO: scaling
-    int vC  = 50000;
-    int vtC = 50000;
-    int vnC = 50000;
+    int vC  = 1000000;
+    int vtC = 1000000;
+    int vnC = 1000000;
 
     // Buffers for storing input
     float *v  = malloc(vC * sizeof(float));
@@ -35,8 +42,8 @@ Model* load_obj(const char* path, float scale) {
     int fL  = 0;
 
     // Buffers for output
-    int outC = 50000;
-    int outIndicesC = 50000;
+    int outC = 1000000;
+    int outIndicesC = 1000000;
 
     float *out = malloc(outC * sizeof(float));
     unsigned int *outIndices = malloc(outIndicesC * sizeof(unsigned int));
@@ -94,7 +101,6 @@ Model* load_obj(const char* path, float scale) {
                 char *ptr = collection;
                 char *posn = NULL;
                 char *element = strtok_r(ptr, elemDem, &posn);
-
 
             // Go through each element in the collection
                 // Get the incremental steps for the components we need
@@ -169,7 +175,7 @@ Model* load_obj(const char* path, float scale) {
 #endif
 
 #ifdef LOGGING_OBJ 
-    printf("\n-------------------------------------\n[OBJ Loader]\n");
+    printf("-------------------------------------\n[OBJ Loader]\n");
     printf("path: \t\t%s", path);
     printf("\n\nVertice Count\nPosition:\t%d\nTexture:\t%d\nNormal:\t\t%d\n\nFaces:\t\t%d\n\n",
       vL/3, vtL/2, vnL/3, fL);
