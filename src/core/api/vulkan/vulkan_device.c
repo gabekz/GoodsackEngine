@@ -16,6 +16,7 @@
 #include <core/api/vulkan/vulkan_swapchain.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 
+#include <import/loader_obj.h>
 #include <model/primitives.h>
 
 /* static */
@@ -407,14 +408,19 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 
 // Create a VERTEX BUFFER
 
-    float *vertices = PRIM_ARR_TEST;
-    int size = PRIM_SIZ_TEST * sizeof(float);
+    ModelData *modelDataTest = load_obj("../res/models/suzanne.obj", 1);
+    //float *vertices = PRIM_ARR_TEST;
+    //int size = PRIM_SIZ_TEST * sizeof(float);
+    float *vertices = modelDataTest->buffers.out;
+    int size = modelDataTest->buffers.outI * sizeof(float);
 
     LOG_DEBUG("Create vertex buffer");
     VulkanVertexBuffer *vb = 
         vulkan_vertex_buffer_create(
                 context->physicalDevice,
                 context->device, 
+                context->graphicsQueue,
+                context->commandPool,
                 vertices,
                 size);
 

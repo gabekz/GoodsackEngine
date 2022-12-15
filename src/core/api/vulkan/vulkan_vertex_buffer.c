@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <core/api/vulkan/vulkan_buffer.h>
+#include <core/api/vulkan/vulkan_support.h>
 #include <util/logger.h>
 
 VkVertexInputBindingDescription vulkan_vertex_buffer_get_binding_description() {
@@ -34,81 +37,45 @@ VkVertexInputAttributeDescription* vulkan_vertex_buffer_get_attribute_descriptio
     return attributeDescriptions;
 }
 
-static ui32 _findMemoryType(VkPhysicalDevice physicalDevice, 
-        ui32 typeFilter, VkMemoryPropertyFlags properties) {
-
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-    for(ui32 i = 0; i < memProperties.memoryTypeCount; i++) {
-        if((typeFilter & (1 << i)) && 
-                (memProperties.memoryTypes[i].propertyFlags & properties) ==
-                properties) {
-            return i;
-        }
-    }
-    LOG_ERROR("Failed to find suitable memory type!");
-    return 0;
-}
-
-VulkanVertexBuffer* vulkan_vertex_buffer_create(VkPhysicalDevice physicalDevice, VkDevice device, void *data, ui32 size) {
+VulkanVertexBuffer* vulkan_vertex_buffer_create(
+        VkPhysicalDevice physicalDevice, VkDevice device,
+        VkQueue graphicsQueue, VkCommandPool commandPool,
+        void *data, VkDeviceSize size) {
 
     VulkanVertexBuffer *vertexBuffer = malloc(sizeof(VulkanVertexBuffer));
+
     vertexBuffer->data = data;
-
-    VkBufferCreateInfo bufferInfo = {
-        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = size,
-        .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
-    };
-
-    if(vkCreateBuffer(device, &bufferInfo, NULL, &vertexBuffer->buffer) != VK_SUCCESS) {
-        LOG_ERROR("Failed to create vertex buffer!");
-    }
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device, vertexBuffer->buffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo = {
-        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-        .allocationSize = memRequirements.size,
-        .memoryTypeIndex = _findMemoryType(physicalDevice,
-                memRequirements.memoryTypeBits, 
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
-                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
-    };
-
-    if(vkAllocateMemory(device, &allocInfo, NULL, &vertexBuffer->bufferMemory) != VK_SUCCESS) {
-        LOG_ERROR("Failed to allocate vertex buffer memory!");
-    }
-
-    if(vkBindBufferMemory(device, vertexBuffer->buffer, vertexBuffer->bufferMemory, 0) != VK_SUCCESS) {
-        LOG_ERROR("Failed to bind vertex buffer memory!");
-    }
-
+    vertexBuffer->size = size;
     void *pData;
-    if(vkMapMemory(device, vertexBuffer->bufferMemory, 0, bufferInfo.size, 0, &pData) != VK_SUCCESS) {
-        LOG_ERROR("Failed to map vertex buffer memory!");
-    };
-    // send to memory map 
-    memcpy(pData, vertexBuffer->data, bufferInfo.size);
-    vkUnmapMemory(device, vertexBuffer->bufferMemory);
 
-    // Fuck you
-    vertexBuffer->size = bufferInfo.size;
 
-    // NOTE:
-    // Option 1): VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    // Option 2):
-    // Call vkFlushMappedMemoryRanges after writing to the mapped memory,
-    // and call vkInvalidateMappedMemoryRanges before reading from the
-    // mapped memory
+    // Staging Buffer
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    vulkan_buffer_create(physicalDevice, device, size,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            &stagingBuffer, &stagingBufferMemory);
+
+    VK_CHECK(vkMapMemory(device, stagingBufferMemory, 0, size, 0, &pData));
+    memcpy(pData, vertexBuffer->data, size);
+    vkUnmapMemory(device, stagingBufferMemory);
+
+    vulkan_buffer_create(physicalDevice, device, size,
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            &vertexBuffer->buffer, &vertexBuffer->bufferMemory);
+
+    vulkan_buffer_copy(device, graphicsQueue, commandPool, 
+            stagingBuffer, vertexBuffer->buffer, size);
+
+    vkDestroyBuffer(device, stagingBuffer, NULL);
+    vkFreeMemory(device, stagingBufferMemory, NULL);
 
     //VulkanVertexBuffer *vertexBuffer = malloc(sizeof(VulkanVertexBuffer));
-
-
-
+ 
     return vertexBuffer;
 }
 

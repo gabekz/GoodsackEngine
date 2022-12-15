@@ -18,7 +18,6 @@
 		if (err)                                                    \
 		{                                                           \
             LOG_CRITICAL("Vulkan error: %s", x);                    \
-			abort();                                                \
 		}                                                           \
     } while (0)
 

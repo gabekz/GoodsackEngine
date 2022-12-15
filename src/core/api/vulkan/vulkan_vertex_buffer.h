@@ -18,7 +18,11 @@ struct VulkanVertexBuffer {
     ui32 size;
 };
 
-VulkanVertexBuffer* vulkan_vertex_buffer_create(VkPhysicalDevice physicalDevice, VkDevice device, void *data, ui32 size);
+VulkanVertexBuffer* vulkan_vertex_buffer_create(
+        VkPhysicalDevice physicalDevice, VkDevice device,
+        VkQueue graphicsQueue, VkCommandPool commandPool,
+        void *data, VkDeviceSize size);
+
 void vulkan_vertex_buffer_cleanup(VkDevice device, VkBuffer buffer);
 
 VkVertexInputBindingDescription vulkan_vertex_buffer_get_binding_description();
