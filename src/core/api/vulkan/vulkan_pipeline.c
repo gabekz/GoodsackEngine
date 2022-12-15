@@ -10,6 +10,7 @@ struct FileDescriptor {
     long filelen;
 };
 
+// Parses SPIR-V files
 static struct FileDescriptor *_parseShader(const char *path) {
     FILE *fileptr;
     char *buffer;
@@ -23,9 +24,6 @@ static struct FileDescriptor *_parseShader(const char *path) {
     buffer = (char *)malloc(filelen * sizeof(char)); // Enough memory for the file
     fread(buffer, filelen, 1, fileptr); // Read in the entire file
     fclose(fileptr); // Close the file
-
-    // LOG_DEBUG("Contents: %s", buffer);
-    // LOG_DEBUG("Filelen: %d", filelen);
 
     struct FileDescriptor *ret = malloc(sizeof(struct FileDescriptor));
     ret->buffer = buffer;

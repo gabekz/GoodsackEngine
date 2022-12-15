@@ -12,7 +12,7 @@
 
 #define LOGGING_OBJ
 
-Model* load_obj(const char* path, float scale) {
+ModelData* load_obj(const char* path, float scale) {
 
     FILE* stream = NULL;
     char line[256]; // 256 = MAX line_length
@@ -174,34 +174,8 @@ Model* load_obj(const char* path, float scale) {
     }
 #endif
 
-#ifdef LOGGING_OBJ 
-    printf("-------------------------------------\n[OBJ Loader]\n");
-    printf("path: \t\t%s", path);
-    printf("\n\nVertice Count\nPosition:\t%d\nTexture:\t%d\nNormal:\t\t%d\n\nFaces:\t\t%d\n\n",
-      vL/3, vtL/2, vnL/3, fL);
-    printf("Output Buffer Size: %.2f KB\n", (float)outI / 1000);
-    printf("-------------------------------------\n\n");
-#endif
-
-    // Create the VAO
-    VAO* vao = vao_create();
-    vao_bind(vao);
-
-    VBO* vbo = vbo_create(out, outI * sizeof(float));
-    //VBO* vbo = vbo_create(v, 24 * sizeof(float));
-    //IBO* ibo = ibo_create(outIndices, (outIndicesI) * sizeof(unsigned int));
-
-    // Push our data into our single VBO
-    if(vL  > 0)  vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
-    if(vtL > 0)  vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
-    if(vnL > 0)  vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
-
-    // VBO push -> VAO
-    vao_add_buffer(vao, vbo);
-
     // Output
-    Model *ret = malloc(sizeof(Model));
-    ret->vao = vao;
+    ModelData *ret = malloc(sizeof(ModelData));
     ret->vertexCount = outI;
 
 #if 1 // Calcuate TBN for each triangle/vertex
@@ -209,8 +183,7 @@ Model* load_obj(const char* path, float scale) {
     //float* outTBN = malloc(2 * 3 * totalTriangles * sizeof(float));
     float* outTBN = malloc(totalTriangles * 3 * 2 * sizeof(GLfloat));
     ui32 cntTriangle = 0;
-    int outTC = 0;
-    for(int i = 0; i < totalTriangles; i+=3) {
+    for(int i = 0; i < totalTriangles; i += 3) {
 
         //if(i != 2684) continue;
 
@@ -260,7 +233,6 @@ Model* load_obj(const char* path, float scale) {
             btang[k] = f * (-del2[0] * edge1[k] + del1[0] * edge2[k]);
         }
 
-        //int b = outTC + (5 * outTC);
         for(int m = 0; m < 3; m++) {
             int b = i + m + (i * 5) + (m * 5);
             outTBN[b+0] = tang[0];
@@ -275,27 +247,42 @@ Model* load_obj(const char* path, float scale) {
 
         //printf("\n%d", i);
     }
-    //VBO *vboTBN = vbo_create(outTBN, 2 * 3 * totalTriangles * sizeof(float));
-    VBO *vboTBN = vbo_create(outTBN, totalTriangles * 3 * 2 * sizeof(GLfloat));
-    vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); /* tangent */
-    vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); /* bitangent */
-    vao_add_buffer(vao, vboTBN);
-    free(outTBN);
     //free(vboTBN);
 #endif
 
-    //VBO* vboNormals = vbo_create(, vL * 2 * sizeof(float));
+#ifdef LOGGING_OBJ 
+    printf("-------------------------------------\n[OBJ Loader]\n");
+    printf("path: \t\t%s", path);
+    printf("\n\nVertice Count\nPosition:\t%d\nTexture:\t%d\nNormal:\t\t%d\n\nFaces:\t\t%d\nTris:\t\t%d\n\n",
+      vL/3, vtL/2, vnL/3, fL, totalTriangles);
+    printf("Output Buffer Size: %.2f KB\n", (float)outI / 1000);
+    printf("-------------------------------------\n\n");
+#endif
+
+    ret->modelPath = path;
+    ret->totalTriangles = totalTriangles;
+
+    ret->buffers.v = v; 
+    ret->buffers.vt = vt; 
+    ret->buffers.vn = vn; 
+
+    ret->buffers.vL = vL;
+    ret->buffers.vtL = vtL;
+    ret->buffers.vnL = vnL;
+
+    ret->buffers.out = out;
+    ret->buffers.outI = outI;
+    ret->buffers.outTBN = outTBN;
 
     //glBindVertexArray(0);
     // Free a lot of memory....
-    free(v);
-    free(vt);
-    free(vn);
-    free(out);
-    free(outIndices);
+    //free(v);
+    //free(vt);
+    //free(vn);
+    //free(out);
+    //free(outIndices);
     //free(outIndices);
     // .. and some more.
-    free(vbo);
     //free(ibo);
 
     fclose(stream);

@@ -114,7 +114,6 @@ static ShaderSource *ParseShader(const char *path) {
    return ss;
 }
 
-
 ShaderProgram *shader_create_program(const char *path) {
     ShaderSource *ss = ParseShader(path);
 

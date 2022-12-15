@@ -9,8 +9,8 @@ Model *primitive_model_create(ui32 shape, float scale) {
 
     switch(shape) {
         case PRIMITIVE_CUBE:
-            ret->vertexCount  = PRIM_SIZ_V_CUBE;
-            ret->indicesCount = PRIM_SIZ_I_CUBE;
+            ret->modelData->vertexCount  = PRIM_SIZ_V_CUBE;
+            ret->modelData->indicesCount = PRIM_SIZ_I_CUBE;
             break;
     }
 

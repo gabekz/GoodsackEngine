@@ -16,9 +16,9 @@ static void init(Entity e) {
     struct ComponentMesh *mesh = ecs_get(e, C_MESH);
 
     // TODO: stupid hack grabbing only scale.x...
-    Model *model = load_obj(mesh->modelPath, transform->scale[0]);
+    //mesh->model = load_obj(mesh->modelPath, transform->scale[0]);
 
-    mesh->model = model;
+    mesh->model = model_assemble(mesh->modelPath, transform->scale[0]);
 
     // send lightspace matrix from renderer to entity shader
     ShaderProgram *shader = mesh->material->shaderProgram;
@@ -49,8 +49,9 @@ static void DrawMesh(
 
     vao_bind(mesh->model->vao);
 
-    ui32 vertices = mesh->model->vertexCount;
-    ui32 indices  = mesh->model->indicesCount;
+    ModelData *data = mesh->model->modelData;
+    ui32 vertices = data->vertexCount;
+    ui32 indices  = data->indicesCount;
 
     ui16 drawMode = mesh->properties.drawMode;
 

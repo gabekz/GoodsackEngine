@@ -11,4 +11,15 @@
 #define VK_REQ_DEVICE_EXT {     \
     "VK_KHR_swapchain"}
 
+#define VK_CHECK(x)                                                 \
+	do                                                              \
+	{                                                               \
+		VkResult err = x;                                           \
+		if (err)                                                    \
+		{                                                           \
+            LOG_CRITICAL("Vulkan error: %s", x);                    \
+			abort();                                                \
+		}                                                           \
+    } while (0)
+
 #endif // H_VULKAN_SUPPORT

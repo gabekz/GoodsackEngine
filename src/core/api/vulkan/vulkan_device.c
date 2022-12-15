@@ -167,9 +167,7 @@ static void createMessenger(VkInstance instance, VkDebugUtilsMessengerEXT debugM
     createInfo.pfnUserCallback = debugCallback;
     createInfo.pUserData = NULL; // Optional
     
-    if(createDebugUtilsMessengerEXT(instance, &createInfo, NULL, &debugMessenger) != VK_SUCCESS) {
-        LOG_ERROR("Failed to create debug utils messenger!");
-    }
+    VK_CHECK(createDebugUtilsMessengerEXT(instance, &createInfo, NULL, &debugMessenger));
 }
 
 /* implement */
@@ -290,10 +288,9 @@ VulkanDeviceContext *vulkan_device_create() {
     logicCreateInfo.enabledExtensionCount = VK_REQ_DEVICE_EXT_SIZE;
     logicCreateInfo.ppEnabledExtensionNames = extensions;
 
-    if(vkCreateDevice(
-      physicalDevice, &logicCreateInfo, NULL, &ret->device) != VK_SUCCESS) {
-        LOG_ERROR("Failed to create Logical Device!");
-    }
+    VK_CHECK(vkCreateDevice(
+      physicalDevice, &logicCreateInfo, NULL, &ret->device));
+
     ret->physicalDevice = physicalDevice;
 
     vkGetDeviceQueue(ret->device, graphicsFamily, 0, &ret->graphicsQueue);
@@ -431,9 +428,8 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
         .commandBufferCount = 1
     };
 
-    if (vkAllocateCommandBuffers(context->device, &allocInfo, &context->commandBuffer) != VK_SUCCESS) {
-        LOG_ERROR("Failed to allocate command buffers!");
-    }
+    VK_CHECK(vkAllocateCommandBuffers(
+            context->device, &allocInfo, &context->commandBuffer));
 }
 
 void vulkan_context_create_sync(VulkanDeviceContext *context) {
@@ -458,10 +454,8 @@ if (vkCreateSemaphore(context->device, &semaphoreInfo, NULL,
 }
 
 void vulkan_drawFrame(VulkanDeviceContext *context) {
-    if(vkWaitForFences(context->device, 1,
-                &context->inFlightFence, VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
-        LOG_ERROR("vkWaitForFences Failed!");
-    }
+    VK_CHECK(vkWaitForFences(context->device, 1,
+                &context->inFlightFence, VK_TRUE, UINT64_MAX));
 
     vkResetFences(context->device, 1, &context->inFlightFence);
 
@@ -497,9 +491,8 @@ void vulkan_drawFrame(VulkanDeviceContext *context) {
         .pSignalSemaphores = signalSemaphores
     };
 
-    if (vkQueueSubmit(context->graphicsQueue, 1, &submitInfo, context->inFlightFence) != VK_SUCCESS) {
-        LOG_ERROR("Failed to submit draw command buffer!");
-    }
+    VK_CHECK(vkQueueSubmit(context->graphicsQueue, 1,
+                &submitInfo, context->inFlightFence));
 
     VkSwapchainKHR swapChains[] = {context->swapChainDetails->swapchain};
 
