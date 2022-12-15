@@ -22,6 +22,9 @@ protected:
     bool m_showComponentViewer;
 
     Entity m_selectedEntity;
+
+private:
+    int m_sceneQueued;
 };
 
 #endif // H_DEBUGVIEW

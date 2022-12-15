@@ -66,6 +66,7 @@ void DebugGui::Render() {
          if (ImGui::BeginMenu("Scene")) {
             if(ImGui::MenuItem("Change Scene")) {
                 m_showSceneViewer = true;
+                m_sceneQueued = 0;
             }
             if(ImGui::MenuItem("Lighting")) {
                 m_showSceneLighting = true;
@@ -86,23 +87,34 @@ void DebugGui::Render() {
     if(m_showSceneViewer) {
         ImGui::BeginGroup();
         ImGui::Begin("Change Scene", &m_showSceneViewer);
-            if (ImGui::Button("Scene 0")) {
-                renderer_active_scene(m_renderer, 0);
-                renderer_start(m_renderer);
-            }
-            if (ImGui::Button("Scene 1")) {
-                renderer_active_scene(m_renderer, 1);
-                renderer_start(m_renderer);
-            }
-            if (ImGui::Button("Scene 2")) {
-                renderer_active_scene(m_renderer, 2);
-                renderer_start(m_renderer);
-            }
+
+        ImGui::Text("Total Scene Count: %d", m_renderer->sceneC);
+        ImGui::Separator();
+        ImGui::Text("Active Scene (index): %d", m_renderer->activeScene);
+
+        ImGui::PushButtonRepeat(true);
+        if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { m_sceneQueued--; }
+        ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+        if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { m_sceneQueued++; }
+        ImGui::PopButtonRepeat();
+        ImGui::SameLine();
+        ImGui::Text("index %d", m_sceneQueued);
+
+        ImGui::SameLine();
+        if (ImGui::Button("Load Scene")) {
+            renderer_active_scene(m_renderer, m_sceneQueued);
+            renderer_start(m_renderer);
+            m_sceneQueued = m_renderer->activeScene;
+        }
         ImGui::EndGroup();
     }
     if(m_showSceneLighting) {
         ImGui::BeginGroup();
         ImGui::Begin("Lighting", &m_showSceneLighting);
+
+        ImGui::Text("Directional Light");
+        //ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
+
         ImGui::EndGroup();
     }
     if(m_showEntityViewer) {
