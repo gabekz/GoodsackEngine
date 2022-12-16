@@ -10,6 +10,8 @@
 
 #include <model/material.h>
 
+#include <core/api/vulkan/vulkan_device.h>
+
 typedef enum renderPass {REGULAR = 0, SHADOW} RenderPass;
 
 /*
@@ -57,6 +59,9 @@ struct _renderer {
     ui32 depthMapFBO;
     ui32 depthMapTexture;
     mat4 lightSpaceMatrix;
+
+    // TODO: still hacky shit
+    VulkanDeviceContext *vulkanDevice;
 };
 
 Renderer* renderer_init();

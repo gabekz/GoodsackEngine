@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <core/api/device_api.h>
+#include <util/logger.h>
+
 /* Compile single shader type (vertex, fragment, etc.) and return
  * the id from OpenGL.
  */ 
@@ -115,25 +118,33 @@ static ShaderSource *ParseShader(const char *path) {
 }
 
 ShaderProgram *shader_create_program(const char *path) {
-    ShaderSource *ss = ParseShader(path);
+    if(DEVICE_API_OPENGL) {
+        ShaderSource *ss = ParseShader(path);
 
-    ui32 program = glCreateProgram();   
-    ui32 vs = CompileSingleShader(GL_VERTEX_SHADER, ss->shaderVertex);
-    ui32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss->shaderFragment);
+        ui32 program = glCreateProgram();   
+        ui32 vs = CompileSingleShader(GL_VERTEX_SHADER, ss->shaderVertex);
+        ui32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss->shaderFragment);
 
-    // TODO: Read documentation on these functions
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    glValidateProgram(program);
+        // TODO: Read documentation on these functions
+        glAttachShader(program, vs);
+        glAttachShader(program, fs);
+        glLinkProgram(program);
+        glValidateProgram(program);
 
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+        glDeleteShader(vs);
+        glDeleteShader(fs);
 
-    ShaderProgram *ret = malloc(sizeof(ShaderProgram)); 
-    ret->id = program;
-    ret->shaderSource = ss;
-    return ret;
+        ShaderProgram *ret = malloc(sizeof(ShaderProgram)); 
+        ret->id = program;
+        ret->shaderSource = ss;
+        return ret;
+
+    }
+    else if(DEVICE_API_VULKAN) {
+        LOG_DEBUG("Shader not implemented for Vulkan");
+        return NULL;
+    }
+    return NULL;
 }
 
 void shader_use(ShaderProgram *shader) {

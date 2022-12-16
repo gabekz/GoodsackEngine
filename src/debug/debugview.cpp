@@ -11,6 +11,8 @@ extern "C" {
     #include <core/renderer/renderer.h>
 }
 
+#include <core/api/device_api.h>
+
 #include <components/transform/transform.h>
 #include <components/mesh/mesh.h>
 #include <components/camera/camera.h>
@@ -18,6 +20,7 @@ extern "C" {
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "imgui_impl_vulkan.h"
 
 DebugGui::DebugGui(Renderer *renderer) {
     IMGUI_CHECKVERSION();
@@ -45,6 +48,8 @@ DebugGui::~DebugGui() {
 }
 
 void DebugGui::Render() {
+    if(DEVICE_API_VULKAN) return; // TODO
+
 // Create new frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();

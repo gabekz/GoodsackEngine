@@ -13,6 +13,8 @@
 
 #include <util/logger.h>
 
+#include <core/api/device_api.h>
+
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
 
@@ -33,6 +35,8 @@ int main(int argc, char *argv[]) {
 
 // Main Lua entry
     LuaInit("../src/lua/demo/main.lua");
+
+    LOG_INFO("Device API is: %d", device_api_getGraphics());
 
 // Initialize Renderer
     Renderer *renderer = renderer_init();
@@ -260,11 +264,19 @@ int main(int argc, char *argv[]) {
 
         debugGui->Render();
 
-        glfwSwapBuffers(renderer->window); // we need to swap.
+        if(DEVICE_API_OPENGL) {
+            glfwSwapBuffers(renderer->window); // we need to swap.
+        }
     }
 
 // Cleanup
+    if(DEVICE_API_VULKAN) {
+        vkDeviceWaitIdle(renderer->vulkanDevice->device);
+        vulkan_device_cleanup(renderer->vulkanDevice);
+    }
+
     delete(debugGui);
+
 
     glfwDestroyWindow(renderer->window);
     free(renderer);

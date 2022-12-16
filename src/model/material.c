@@ -4,10 +4,11 @@
 #include <stdarg.h>
 
 #include <util/gfx.h>
+#include <util/logger.h>
 
+#include <core/api/device_api.h>
 #include <core/texture/texture.h>
 #include <core/shader/shader.h>
-
 
 Material *material_create(
     ShaderProgram *shader, const char *shaderPath, ui32 textureCount, ...) {
@@ -20,7 +21,7 @@ Material *material_create(
         ret->shaderProgram = shader_create_program(shaderPath);
     }
     else {
-        printf("\nERROR: [material] You need to pass either a ShaderProgram or a valid path\n");
+        LOG_ERROR("You need to pass either a ShaderProgram or a valid path");
         return NULL;
     }
 
@@ -45,10 +46,15 @@ Material *material_create(
 }
 
 void material_use(Material *self) {
-    if(self->texturesCount > 0) {
-        for(int i = 0; i < self->texturesCount; i++) {
-            texture_bind(self->textures[i], i);
+    if(DEVICE_API_OPENGL) {
+        if(self->texturesCount > 0) {
+            for(int i = 0; i < self->texturesCount; i++) {
+                texture_bind(self->textures[i], i);
+            }
         }
+        shader_use(self->shaderProgram);
     }
-    shader_use(self->shaderProgram);
+    else if(DEVICE_API_VULKAN) {
+        LOG_DEBUG("Material not implemented for Vulkan");
+    }
 }

@@ -8,15 +8,14 @@
 #include <util/logger.h>
 #include <util/sysdefs.h>
 
+#include <core/api/device_api.h>
+
 #define TEXTURE_WRAPPING  GL_REPEAT
 
 Texture *texture_create(const char *path, ui32 format,
         ui16 genMipMaps, float afRange) {
     Texture *tex = malloc(sizeof(Texture));
     tex->filePath = path;
-
-    glGenTextures(1, &tex->id);
-    glBindTexture(GL_TEXTURE_2D, tex->id);
 
     stbi_set_flip_vertically_on_load(1);
     unsigned char *localBuffer;
@@ -32,29 +31,34 @@ Texture *texture_create(const char *path, ui32 format,
         localBuffer = NULL;
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, tex->width, tex->height, 0,
-        GL_RGBA, GL_UNSIGNED_BYTE, localBuffer);
+    if(DEVICE_API_OPENGL) {
+        glGenTextures(1, &tex->id);
+        glBindTexture(GL_TEXTURE_2D, tex->id);
 
-    // Wrapping
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, TEXTURE_WRAPPING);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_WRAPPING);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, tex->width, tex->height, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, localBuffer);
 
-    // Mipmaps
-    if(genMipMaps >= 0) {
-        glGenerateTextureMipmap(tex->id);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-            GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-            GL_LINEAR);
-    }
-    else {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
+        // Wrapping
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, TEXTURE_WRAPPING);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_WRAPPING);
 
-    // Anistropic Filtering
-    if (afRange > 0) {
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, afRange);
+        // Mipmaps
+        if(genMipMaps >= 0) {
+            glGenerateTextureMipmap(tex->id);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                GL_LINEAR);
+        }
+        else {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+
+        // Anistropic Filtering
+        if (afRange > 0) {
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, afRange);
+        }
     }
 
     if(localBuffer) {

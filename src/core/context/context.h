@@ -4,7 +4,7 @@
 #include <util/gfx.h>
 #include <util/sysdefs.h>
 
-#include <vulkan/vulkan.h>
+#include <core/api/vulkan/vulkan_device.h>
 
 typedef struct _applicationProperties ApplicationProperties;
 
@@ -19,7 +19,8 @@ struct _applicationProperties {
 
 };
 
-GLFWwindow* createWindow(int winWidth, int winHeight);
+GLFWwindow* createWindow(int winWidth, int winHeight,
+        VulkanDeviceContext **vkd);
 //void cleanup(ContextProperties *contextProperties);
 
 #endif // H_CONTEXT

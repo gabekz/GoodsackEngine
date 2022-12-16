@@ -1,19 +1,15 @@
 #ifndef H_GFX
 #define H_GFX
 
-#include <util/sysdefs.h> // TODO: Move def to build-system
-
 // Only include this once as well
 #ifndef GLFW_INCLUDE_NONE
  #define GLFW_INCLUDE_NONE
 #endif
 
-#if defined(SYS_API_VULKAN)
- #define GLFW_INCLUDE_VULKAN
-#endif
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
+#define GLFW_INCLUDE_VULKAN
 //#include <vulkan/vulkan_xcb.h>
 
 #include<glad/gl.h> // TODO: Move to #defined

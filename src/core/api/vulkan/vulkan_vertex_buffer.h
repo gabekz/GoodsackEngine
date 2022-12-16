@@ -2,6 +2,7 @@
 #define H_VULKAN_VERTEX_BUFFER
 
 #include <util/gfx.h>
+#include <util/sysdefs.h>
 
 #if __cplusplus
 extern "C" {
