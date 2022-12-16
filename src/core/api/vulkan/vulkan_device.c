@@ -15,6 +15,7 @@
 #include <core/api/vulkan/vulkan_support.h>
 #include <core/api/vulkan/vulkan_swapchain.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
+#include <core/api/vulkan/vulkan_uniform_buffer.h>
 
 #include <import/loader_obj.h>
 #include <model/primitives.h>
@@ -408,6 +409,7 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
     }
 
 // Create a VERTEX BUFFER
+    LOG_DEBUG("Create vertex buffer");
 
     ModelData *modelDataTest = load_obj("../res/models/suzanne.obj", 1);
     //float *vertices = PRIM_ARR_TEST;
@@ -415,7 +417,6 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
     float *vertices = modelDataTest->buffers.out;
     int size = modelDataTest->buffers.outI * sizeof(float);
 
-    LOG_DEBUG("Create vertex buffer");
     VulkanVertexBuffer *vb = 
         vulkan_vertex_buffer_create(
                 context->physicalDevice,
@@ -426,6 +427,12 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
                 size);
 
     context->vertexBuffer = vb;
+
+// Create UNIFORM BUFFERS
+    LOG_DEBUG("Create uniform buffers");
+    vulkan_uniform_buffer_create(context->physicalDevice, context->device,
+           context->uniformBuffers, context->uniformBuffersMemory,
+           &context->uniformBuffersMapped);
 
 // Create Command Buffers
     context->commandBuffers = malloc(
@@ -502,6 +509,11 @@ void vulkan_drawFrame(VulkanDeviceContext *context) {
     VkSemaphore waitSemaphores[] = {context->imageAvailableSemaphores[context->currentFrame]};
     VkSemaphore signalSemaphores[] = {context->renderFinishedSemaphores[context->currentFrame]};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+    // Update UBO data
+    LOG_DEBUG("update uniform buffers");
+    vulkan_uniform_buffer_update(context->currentFrame,
+            context->uniformBuffersMapped);
 
     VkSubmitInfo submitInfo = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,

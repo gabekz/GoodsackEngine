@@ -4,6 +4,7 @@
 #include <util/logger.h>
 
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
+#include <core/api/vulkan/vulkan_uniform_buffer.h>
 
 struct FileDescriptor {
     char *buffer;
@@ -202,11 +203,15 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .blendConstants[3] = 0.0f,
     };
 
+// Create DescriptorSet Layout [UBO Descriptor]
+    vulkan_uniform_buffer_create_descriptor(
+        device, &details->descriptorSetLayout);
+
 // Pipeline Layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .setLayoutCount = 0,
-        .pSetLayouts = NULL,
+        .setLayoutCount = 1,
+        .pSetLayouts = &details->descriptorSetLayout,
         .pushConstantRangeCount = 0,
         .pPushConstantRanges = NULL,
     };

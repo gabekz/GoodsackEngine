@@ -48,7 +48,6 @@ VulkanVertexBuffer* vulkan_vertex_buffer_create(
     vertexBuffer->size = size;
     void *pData;
 
-
     // Staging Buffer
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;

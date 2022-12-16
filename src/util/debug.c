@@ -6,6 +6,7 @@
 #include<stdlib.h>
 
 #include <util/gfx.h>
+#include <util/logger.h>
 
 void APIENTRY glDebugOutput(GLenum source, 
                             GLenum type, 
@@ -71,7 +72,7 @@ void glDebugInit() {
 // ~~~
 void _error_callback
 (int error, const char* description) {
-   fprintf(stderr, "Error %s\n", description);
+   LOG_ERROR("%s", description);
 }
 
 
@@ -82,6 +83,6 @@ void GLClearError() {
 void GLCheckError() {
    GLenum error = glGetError();
    while(error) {
-      printf("\n|OpenGL Error| (%s)\n", error);
+      LOG_ERROR("|OpenGL Error| (%s)", error);
    }
 }

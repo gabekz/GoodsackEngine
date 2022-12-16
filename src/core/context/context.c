@@ -89,7 +89,8 @@ GLFWwindow* createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
             vulkanDevice->device, vulkanDevice->physicalDevice,
             vulkanDevice->surface, window);
 
-        vulkanDevice->pipelineDetails = vulkan_pipeline_create(vulkanDevice->device,
+        vulkanDevice->pipelineDetails = vulkan_pipeline_create(
+            vulkanDevice->device,
             vulkanDevice->swapChainDetails->swapchainImageFormat,
             vulkanDevice->swapChainDetails->swapchainExtent);
 

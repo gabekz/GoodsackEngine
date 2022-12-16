@@ -165,11 +165,15 @@ static void renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs) {
 */ 
     //glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
     postbuffer_draw(renderer->windowWidth, renderer->windowHeight);
-
 }
 
-void renderer_tick_VULKAN(Renderer *renderer) {
+void renderer_tick_VULKAN(Renderer *renderer, ECS *ecs) {
     glfwPollEvents();
+    //ecs_event(ecs, ECS_UPDATE);
+
+    //renderer->currentPass = REGULAR;
+    //ecs_event(ecs, ECS_RENDER);
+
     vulkan_drawFrame(renderer->vulkanDevice);
 
 }
@@ -182,6 +186,6 @@ void renderer_tick(Renderer *renderer) {
         renderer_tick_OPENGL(renderer, scene, ecs);
     }
     else if(DEVICE_API_VULKAN) {
-        renderer_tick_VULKAN(renderer);
+        renderer_tick_VULKAN(renderer, ecs);
     }
 }

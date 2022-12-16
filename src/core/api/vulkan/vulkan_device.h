@@ -32,6 +32,11 @@ struct _vulkanDeviceContext {
     // Temporary vertex buffer for testing
     VulkanVertexBuffer *vertexBuffer;
 
+    // UBO
+    VkBuffer *uniformBuffers;
+    VkDeviceMemory *uniformBuffersMemory;
+    void **uniformBuffersMapped;
+
     VkCommandPool commandPool;
     VkCommandBuffer *commandBuffers;
 

@@ -12,6 +12,8 @@ typedef struct _vulkanPipelineDetails VulkanPipelineDetails;
 struct _vulkanPipelineDetails {
     VkPipeline graphicsPipeline;
     VkRenderPass renderPass;
+
+    VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
 
     VkShaderModule vertShaderModule;
