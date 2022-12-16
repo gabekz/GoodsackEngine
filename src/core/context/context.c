@@ -97,18 +97,6 @@ GLFWwindow* createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
         vulkan_context_create_command_pool(vulkanDevice);
         vulkan_context_create_sync(vulkanDevice);
 
-#if 0
-        while(!glfwWindowShouldClose(window)) {
-            glfwPollEvents();
-            vulkan_drawFrame(vulkanDevice);
-        }
-
-        vkDeviceWaitIdle(vulkanDevice->device);
-#endif
-
-        //vulkan_device_cleanup(vulkanDevice);
-
-        //vkd = vulkanDevice;
         return window;
     }
     LOG_ERROR("Failed to create window. Graphics API not specified!");

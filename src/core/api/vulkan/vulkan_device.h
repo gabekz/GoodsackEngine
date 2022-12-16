@@ -8,8 +8,6 @@
 #include <core/api/vulkan/vulkan_pipeline.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 
-#define MAX_FRAMES_IN_FLIGHT 2
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -35,11 +33,12 @@ struct _vulkanDeviceContext {
     VulkanVertexBuffer *vertexBuffer;
 
     VkCommandPool commandPool;
-    VkCommandBuffer commandBuffer;
+    VkCommandBuffer *commandBuffers;
 
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
-    VkFence inFlightFence;
+    ui32 currentFrame;
+    VkSemaphore *imageAvailableSemaphores;
+    VkSemaphore *renderFinishedSemaphores;
+    VkFence *inFlightFences;
 };
 
 VulkanDeviceContext* vulkan_device_create();

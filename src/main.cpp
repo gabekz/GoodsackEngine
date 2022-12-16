@@ -20,8 +20,11 @@
 
 int main(int argc, char *argv[]) {
     if(argc > 1) { for(int i = 0; i < argc; i++) {
-        if(std::string(argv[i]) == "--debug") {
-            // do something
+        if(std::string(argv[i]) == "--vulkan") {
+            device_api_setGraphics(GRAPHICS_API_VULKAN);
+        }
+        else if(std::string(argv[i]) == "--opengl") {
+            device_api_setGraphics(GRAPHICS_API_OPENGL);
         }
     }}
 
