@@ -16,6 +16,7 @@
 #include <core/api/vulkan/vulkan_swapchain.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 #include <core/api/vulkan/vulkan_uniform_buffer.h>
+#include <core/api/vulkan/vulkan_descriptor.h>
 
 #include <import/loader_obj.h>
 #include <model/primitives.h>
@@ -231,7 +232,7 @@ VulkanDeviceContext *vulkan_device_create() {
         return NULL;
     }
     else {
-        printf("Successfully created Vulkan Instance!");
+        LOG_INFO("Successfully created Vulkan Instance!");
     }
 
 // Create Debug Messenger
@@ -302,6 +303,7 @@ VulkanDeviceContext *vulkan_device_create() {
 }
 
 static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, VkCommandBuffer *commandBuffer) {
+    LOG_DEBUG("RECORDING command buffer");
 
     VkCommandBufferBeginInfo beginInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -354,6 +356,10 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, 
     VkBuffer vertexBuffers[] = {context->vertexBuffer->buffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(*commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdBindDescriptorSets(*commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+            context->pipelineDetails->pipelineLayout, 0, 1,
+            &context->descriptorSets[context->currentFrame], 0, NULL);
 
     //LOG_DEBUG("Drawing Vertex Buffer");
     vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
@@ -412,10 +418,10 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
     LOG_DEBUG("Create vertex buffer");
 
     ModelData *modelDataTest = load_obj("../res/models/suzanne.obj", 1);
-    //float *vertices = PRIM_ARR_TEST;
-    //int size = PRIM_SIZ_TEST * sizeof(float);
-    float *vertices = modelDataTest->buffers.out;
-    int size = modelDataTest->buffers.outI * sizeof(float);
+    float *vertices = PRIM_ARR_TEST;
+    int size = PRIM_SIZ_TEST * sizeof(float);
+    //float *vertices = modelDataTest->buffers.out;
+    //int size = modelDataTest->buffers.outI * sizeof(float);
 
     VulkanVertexBuffer *vb = 
         vulkan_vertex_buffer_create(
@@ -431,10 +437,24 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 // Create UNIFORM BUFFERS
     LOG_DEBUG("Create uniform buffers");
     vulkan_uniform_buffer_create(context->physicalDevice, context->device,
-           context->uniformBuffers, context->uniformBuffersMemory,
+           &context->uniformBuffers, &context->uniformBuffersMemory,
            &context->uniformBuffersMapped);
 
+// Create Descriptor Pool
+    LOG_DEBUG("Create descriptor pool");
+    vulkan_descriptor_pool_create(context->device, &context->descriptorPool, 
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+// Create Descriptor Sets
+// NOTE: Error
+    LOG_DEBUG("Create descriptor sets");
+    vulkan_descriptor_sets_create(context->device, context->descriptorPool,
+        &context->descriptorSets, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        context->uniformBuffers, sizeof(UniformBufferObject),
+        context->pipelineDetails->descriptorSetLayout);
+
 // Create Command Buffers
+    LOG_DEBUG("Create command buffers");
     context->commandBuffers = malloc(
             sizeof(VkCommandBuffer) * MAX_FRAMES_IN_FLIGHT);
 

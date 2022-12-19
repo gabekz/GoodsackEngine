@@ -40,6 +40,9 @@ struct _vulkanDeviceContext {
     VkCommandPool commandPool;
     VkCommandBuffer *commandBuffers;
 
+    VkDescriptorPool descriptorPool;
+    VkDescriptorSet *descriptorSets;
+
     ui32 currentFrame;
     VkSemaphore *imageAvailableSemaphores;
     VkSemaphore *renderFinishedSemaphores;

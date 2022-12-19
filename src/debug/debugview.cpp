@@ -27,8 +27,10 @@ DebugGui::DebugGui(Renderer *renderer) {
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    if(DEVICE_API_OPENGL) {
+        ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
+        ImGui_ImplOpenGL3_Init("#version 330");
+    }
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     //SetStyle();

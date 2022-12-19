@@ -56,7 +56,7 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
     VulkanPipelineDetails *details = malloc(sizeof(VulkanPipelineDetails));
 
     details->vertShaderModule = _createShaderModule(device,
-            "../res/shaders/vulkan/shader_inputs_vert.spv");
+            "../res/shaders/vulkan/uniform_vert.spv");
     details->fragShaderModule = _createShaderModule(device,
             "../res/shaders/vulkan/frag.spv");
 
@@ -156,7 +156,7 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .lineWidth = 1.0f,
 
         .cullMode = VK_CULL_MODE_BACK_BIT,
-        .frontFace = VK_FRONT_FACE_CLOCKWISE,
+        .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
 
         .depthBiasEnable = VK_FALSE,
         .depthBiasConstantFactor = 0.0f,

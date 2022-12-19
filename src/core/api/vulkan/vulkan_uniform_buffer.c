@@ -30,13 +30,16 @@ void vulkan_uniform_buffer_create_descriptor(VkDevice device, VkDescriptorSetLay
 
 void vulkan_uniform_buffer_create(
         VkPhysicalDevice physicalDevice, VkDevice device,
-        VkBuffer *uniformBuffers, VkDeviceMemory *uniformBuffersMemory,
+        VkBuffer **uniformBuffers, VkDeviceMemory **uniformBuffersMemory,
         void ***pMappedList)
 {
     VkDeviceSize size = sizeof(UniformBufferObject);
 
-    uniformBuffers = malloc(sizeof(VkBuffer) * MAX_FRAMES_IN_FLIGHT);
-    uniformBuffersMemory = malloc(sizeof(VkDeviceMemory) * MAX_FRAMES_IN_FLIGHT);
+    VkBuffer *buffers = malloc(sizeof(VkBuffer) * MAX_FRAMES_IN_FLIGHT);
+    VkDeviceMemory *buffersMemory = malloc(sizeof(VkDeviceMemory) * MAX_FRAMES_IN_FLIGHT);
+
+    //*uniformBuffers = malloc(sizeof(VkBuffer) * MAX_FRAMES_IN_FLIGHT);
+    //*uniformBuffersMemory = malloc(sizeof(VkDeviceMemory) * MAX_FRAMES_IN_FLIGHT);
 
     void **uniformBuffersMapped = malloc(sizeof(void *) * MAX_FRAMES_IN_FLIGHT);
     *pMappedList = uniformBuffersMapped;
@@ -47,11 +50,15 @@ void vulkan_uniform_buffer_create(
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                &uniformBuffers[i], &uniformBuffersMemory[i]);
+                (&buffers[i]), (&buffersMemory[i]));
 
-        VK_CHECK(vkMapMemory(device, uniformBuffersMemory[i], 0, size, 0, 
+        VK_CHECK(vkMapMemory(device, buffersMemory[i], 0, size, 0, 
                 &uniformBuffersMapped[i]));
     }
+    *uniformBuffers = buffers;
+    *uniformBuffersMemory = buffersMemory;
+
+    *pMappedList = uniformBuffersMapped;
 }
 
 void vulkan_uniform_buffer_update(ui32 currentImage, void **uniformBuffersMapped) {

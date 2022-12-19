@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
 // Logger
     int logStat = logger_initConsoleLogger(stderr);
-    logger_setLevel(LogLevel_TRACE);
+    logger_setLevel(LogLevel_ERROR);
     logger_setDetail(LogDetail_SIMPLE);
     if(logStat != 0) {
         LOG_INFO("Initialized Console Logger");

@@ -19,7 +19,7 @@ void vulkan_uniform_buffer_create_descriptor(
 
 void vulkan_uniform_buffer_create(
         VkPhysicalDevice physicalDevice, VkDevice device,
-        VkBuffer *uniformBuffers, VkDeviceMemory *uniformBuffersMemory,
+        VkBuffer **uniformBuffers, VkDeviceMemory **uniformBuffersMemory,
         void ***pMappedList);
 
 void vulkan_uniform_buffer_update(ui32 currentImage,
