@@ -446,7 +446,6 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
 // Create Descriptor Sets
-// NOTE: Error
     LOG_DEBUG("Create descriptor sets");
     vulkan_descriptor_sets_create(context->device, context->descriptorPool,
         &context->descriptorSets, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -533,7 +532,7 @@ void vulkan_drawFrame(VulkanDeviceContext *context) {
     // Update UBO data
     LOG_DEBUG("update uniform buffers");
     vulkan_uniform_buffer_update(context->currentFrame,
-            context->uniformBuffersMapped);
+            context->uniformBuffersMapped, context->swapChainDetails->swapchainExtent);
 
     VkSubmitInfo submitInfo = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,

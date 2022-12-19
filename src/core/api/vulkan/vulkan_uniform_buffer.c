@@ -61,12 +61,19 @@ void vulkan_uniform_buffer_create(
     *pMappedList = uniformBuffersMapped;
 }
 
-void vulkan_uniform_buffer_update(ui32 currentImage, void **uniformBuffersMapped) {
+void vulkan_uniform_buffer_update(ui32 currentImage, void **uniformBuffersMapped, VkExtent2D swapchainExtent) {
     mat4 init = GLM_MAT4_IDENTITY_INIT;
     UniformBufferObject ubo = {};
     glm_mat4_copy(init, ubo.model);
     glm_mat4_copy(init, ubo.proj);
     glm_mat4_copy(init, ubo.view);
+
+    glm_lookat((vec3){2.0f, 2.0f, 2.0f}, (vec3){0, 0, 0}, (vec3){0, 0, 1}, ubo.view);
+
+    glm_perspective(glm_rad(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height,
+            0.1f, 10.0f, ubo.proj);
+
+    ubo.proj[1][1] *= -1;
 
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(UniformBufferObject));
 }

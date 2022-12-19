@@ -22,8 +22,8 @@ void vulkan_uniform_buffer_create(
         VkBuffer **uniformBuffers, VkDeviceMemory **uniformBuffersMemory,
         void ***pMappedList);
 
-void vulkan_uniform_buffer_update(ui32 currentImage,
-        void **uniformBuffersMapped);
+void vulkan_uniform_buffer_update(ui32 currentImage, 
+        void **uniformBuffersMapped, VkExtent2D swapchainExtent);
 
 #ifdef __cplusplus
 }
