@@ -20,6 +20,11 @@ struct _texture {
   si32 width, height;
   ui32 id;
   ui32 activeSlot;
+
+  struct {
+    VkImage textureImage;
+    VkDeviceMemory textureImageMemory;
+  } vulkan;
 };
 
 Texture *texture_create(const char *path, ui32 format,
@@ -30,6 +35,8 @@ Texture *texture_create_hdr(const char *path);
 
 void texture_bind(Texture *self, ui32 slot);
 void texture_unbind();
+
+void texture_cleanup(Texture *self, VulkanDeviceContext *vkDevice);
 
 #ifdef __cplusplus
 }

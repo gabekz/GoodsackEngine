@@ -52,6 +52,8 @@ struct _vulkanDeviceContext {
 VulkanDeviceContext* vulkan_device_create();
 void vulkan_device_cleanup(VulkanDeviceContext* context);
 
+ui32 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice);
+
 void vulkan_context_create_framebuffers(VulkanDeviceContext *context);
 void vulkan_context_create_command_pool(VulkanDeviceContext *context);
 void vulkan_context_create_sync(VulkanDeviceContext *context);

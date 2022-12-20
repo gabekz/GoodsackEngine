@@ -16,10 +16,12 @@ void vulkan_image_create(VkPhysicalDevice physicalDevice, VkDevice device,
         VkImageTiling tiling, VkImageUsageFlags usage,
         VkMemoryPropertyFlags properties);
 
-void vulkan_image_layout_transition(VkImage image, VkFormat format,
+void vulkan_image_layout_transition(VkDevice device, VkCommandPool commandPool,
+        VkQueue graphicsQueue, VkImage image, VkFormat format,
         VkImageLayout prevLayout, VkImageLayout newLayout);
 
-void vulkan_image_copy_from_buffer(VkBuffer buffer, VkImage image,
+void vulkan_image_copy_from_buffer(VkDevice device, VkCommandPool commandPool,
+        VkQueue graphicsQueue, VkBuffer buffer, VkImage image,
         ui32 width, ui32 height);
 
 #ifdef __cplusplus

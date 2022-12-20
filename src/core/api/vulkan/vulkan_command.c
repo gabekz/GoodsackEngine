@@ -1,10 +1,51 @@
 #include "vulkan_command.h"
 
+#include <stdlib.h>
+
+#include <core/api/vulkan/vulkan_device.h>
 #include <core/api/vulkan/vulkan_support.h>
 
-VkCommandBuffer vulkan_command_stc_begin(VkDevice device,
-        VkCommandPool commandPool) {
+VkCommandPool vulkan_command_pool_create(VkPhysicalDevice physicalDevice,
+        VkDevice device)
+{
+    ui32 indices = vulkan_device_find_queue_families(physicalDevice);
 
+    VkCommandPool commandPool;
+
+// Command Pool
+    VkCommandPoolCreateInfo poolInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = indices
+    };
+
+    VK_CHECK(vkCreateCommandPool(device, &poolInfo, NULL, &commandPool));
+
+    return commandPool;
+}
+
+VkCommandBuffer *vulkan_command_buffer_create(VkDevice device,
+        VkCommandPool commandPool)
+{
+    VkCommandBuffer *commandBuffers = malloc(
+            sizeof(VkCommandBuffer) * MAX_FRAMES_IN_FLIGHT);
+
+    VkCommandBufferAllocateInfo allocInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = commandPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = MAX_FRAMES_IN_FLIGHT
+    };
+
+    VK_CHECK(vkAllocateCommandBuffers(
+            device, &allocInfo, commandBuffers));
+
+    return commandBuffers;
+}
+
+VkCommandBuffer vulkan_command_stc_begin(VkDevice device,
+        VkCommandPool commandPool)
+{
     VkCommandBufferAllocateInfo allocInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .commandPool = commandPool,

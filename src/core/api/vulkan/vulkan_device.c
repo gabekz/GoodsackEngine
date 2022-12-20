@@ -12,24 +12,30 @@
 #include <util/debug.h>
 #include <util/logger.h>
 
+#include <core/texture/texture.h>
+
+#include <core/api/vulkan/vulkan_command.h>
+#include <core/api/vulkan/vulkan_descriptor.h>
 #include <core/api/vulkan/vulkan_support.h>
 #include <core/api/vulkan/vulkan_swapchain.h>
-#include <core/api/vulkan/vulkan_vertex_buffer.h>
 #include <core/api/vulkan/vulkan_uniform_buffer.h>
-#include <core/api/vulkan/vulkan_descriptor.h>
+#include <core/api/vulkan/vulkan_vertex_buffer.h>
 
 #include <import/loader_obj.h>
 #include <model/primitives.h>
 
 /* static */
 
-static ui32 _findQueueFamilies(VkPhysicalDevice device) {
+ui32 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
+{
     ui32 graphicsFamily;
     ui32 queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, NULL);
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
+            &queueFamilyCount, NULL);
 
     VkQueueFamilyProperties queueFamilies[queueFamilyCount];
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies);
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
+            &queueFamilyCount, queueFamilies);
 
     for(int i = 0; i < queueFamilyCount; i++) {
         if(queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
@@ -113,15 +119,16 @@ static int _checkDeviceExtensionSupport(const char *extensions[], ui32 count, Vk
     return 1;
 }
 
-static int _isDeviceSuitable(VkPhysicalDevice device) {
+static int _isDeviceSuitable(VkPhysicalDevice physicalDevice) {
     // TODO: Device-ranking support
 
     // Swapchain support
     // const char *validationLayers[VK_REQ_VALIDATION_SIZE] = VK_REQ_VALIDATION_LIST;
     const char *deviceExtensions[VK_REQ_DEVICE_EXT_SIZE] = VK_REQ_DEVICE_EXT;
 
-    ui32 indices = _findQueueFamilies(device);
-    int extensionsSupported = _checkDeviceExtensionSupport(deviceExtensions, 1, device);
+    ui32 indices = vulkan_device_find_queue_families(physicalDevice);
+    int extensionsSupported = _checkDeviceExtensionSupport(
+            deviceExtensions, 1, physicalDevice);
 
     int swapChainAdequate = 0;
     if(extensionsSupported) {
@@ -269,7 +276,7 @@ VulkanDeviceContext *vulkan_device_create() {
     }
 
 // Create Logical Device
-    ui32 graphicsFamily = _findQueueFamilies(physicalDevice);
+    ui32 graphicsFamily = vulkan_device_find_queue_families(physicalDevice);
     float queuePriority = 1.0f;
 
     VkDeviceQueueCreateInfo queueCreateInfo = {};
@@ -303,7 +310,7 @@ VulkanDeviceContext *vulkan_device_create() {
 }
 
 static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, VkCommandBuffer *commandBuffer) {
-    LOG_DEBUG("RECORDING command buffer");
+    //LOG_DEBUG("RECORDING command buffer");
 
     VkCommandBufferBeginInfo beginInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -400,19 +407,14 @@ void vulkan_context_create_framebuffers(VulkanDeviceContext *context) {
 }
 
 void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
-
-    ui32 indices = _findQueueFamilies(context->physicalDevice);
-
-// Command Pool
-    VkCommandPoolCreateInfo poolInfo = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        .queueFamilyIndex = indices
-    };
-
-    if (vkCreateCommandPool(context->device, &poolInfo, NULL, &context->commandPool) != VK_SUCCESS) {
-        LOG_ERROR("Failed to create command pool!");
-    }
+// Create a Command Pool
+    LOG_DEBUG("Create Command Pool");
+    context->commandPool =
+        vulkan_command_pool_create(context->physicalDevice, context->device);
+// Create Command Buffers
+    LOG_DEBUG("Create command buffers");
+    context->commandBuffers = 
+        vulkan_command_buffer_create(context->device, context->commandPool);
 
 // Create a VERTEX BUFFER
     LOG_DEBUG("Create vertex buffer");
@@ -451,20 +453,9 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
         context->uniformBuffers, sizeof(UniformBufferObject),
         context->pipelineDetails->descriptorSetLayout);
 
-// Create Command Buffers
-    LOG_DEBUG("Create command buffers");
-    context->commandBuffers = malloc(
-            sizeof(VkCommandBuffer) * MAX_FRAMES_IN_FLIGHT);
-
-    VkCommandBufferAllocateInfo allocInfo = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = context->commandPool,
-        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = MAX_FRAMES_IN_FLIGHT
-    };
-
-    VK_CHECK(vkAllocateCommandBuffers(
-            context->device, &allocInfo, context->commandBuffers));
+// Create a texture
+    LOG_DEBUG("Create a test texture");
+    texture_create("../res/textures/bricks.png", 0, 0, 0, context);
 }
 
 void vulkan_context_create_sync(VulkanDeviceContext *context) {
@@ -497,7 +488,6 @@ void vulkan_context_create_sync(VulkanDeviceContext *context) {
                     "failed to create synchronization objcets for a frame!");
         }
     }
-
 }
 
 void vulkan_drawFrame(VulkanDeviceContext *context) {
@@ -529,7 +519,7 @@ void vulkan_drawFrame(VulkanDeviceContext *context) {
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
     // Update UBO data
-    LOG_DEBUG("update uniform buffers");
+    //LOG_DEBUG("update uniform buffers");
     vulkan_uniform_buffer_update(context->currentFrame,
             context->uniformBuffersMapped, context->swapChainDetails->swapchainExtent);
 

@@ -8,9 +8,13 @@
 extern "C" {
 #endif // __cplusplus
 
-void vulkan_command_pool_create(VkDevice device, VkCommandPool *pool);
+// Allocate and return a command pool (based on queueFamilyIndices)
+VkCommandPool vulkan_command_pool_create(VkPhysicalDevice physicalDevice,
+        VkDevice device);
 
-void vulkan_command_buffer_create();
+// Allocates a list of command buffers per available MAX_FRAMES_IN_FLIGHT
+VkCommandBuffer *vulkan_command_buffer_create(VkDevice device,
+        VkCommandPool commandPool);
 
 // Begin SingleTimeCommands
 VkCommandBuffer vulkan_command_stc_begin(VkDevice device,

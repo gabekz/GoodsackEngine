@@ -80,10 +80,8 @@ Texture *texture_create(const char *path, ui32 format,
         memcpy(data, localBuffer, (ui32)imageSize);
         vkUnmapMemory(vkDevice->device, stagingBufferMemory);
 
-        VkImage textureImage;
-        VkDeviceMemory textureImageMemory;
         vulkan_image_create(vkDevice->physicalDevice, vkDevice->device,
-                &textureImage, &textureImageMemory,
+                &tex->vulkan.textureImage, &tex->vulkan.textureImageMemory,
                 tex->width, tex->height,
                 VK_FORMAT_R8G8B8A8_SRGB,
                 VK_IMAGE_TILING_OPTIMAL,
@@ -91,6 +89,27 @@ Texture *texture_create(const char *path, ui32 format,
                   VK_IMAGE_USAGE_SAMPLED_BIT,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
         );
+
+        vulkan_image_layout_transition(vkDevice->device, vkDevice->commandPool,
+                vkDevice->graphicsQueue, tex->vulkan.textureImage,
+                VK_FORMAT_R8G8B8A8_SRGB,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+        vulkan_image_copy_from_buffer(vkDevice->device, vkDevice->commandPool,
+                vkDevice->graphicsQueue, stagingBuffer, tex->vulkan.textureImage,
+                (ui32)tex->width, (ui32)tex->height);
+
+        // Final transition for shader access
+        vulkan_image_layout_transition(vkDevice->device, vkDevice->commandPool,
+                vkDevice->graphicsQueue, tex->vulkan.textureImage,
+                VK_FORMAT_R8G8B8A8_SRGB,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+        // Clean-up staging buffer
+        vkDestroyBuffer(vkDevice->device, stagingBuffer, NULL);
+        vkFreeMemory(vkDevice->device, stagingBufferMemory, NULL);
 
     } // DEVICE_API_VULKAN
 
@@ -172,4 +191,11 @@ void texture_bind(Texture *self, ui32 slot) {
 void texture_unbind() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void texture_cleanup(Texture *self, VulkanDeviceContext *vkDevice) {
+    if(DEVICE_API_VULKAN && vkDevice) {
+        vkDestroyImage(vkDevice->device, self->vulkan.textureImage, NULL);
+        vkFreeMemory(vkDevice->device, self->vulkan.textureImageMemory, NULL);
+    }
 }
