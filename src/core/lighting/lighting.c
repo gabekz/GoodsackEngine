@@ -1,6 +1,6 @@
 #include "lighting.h"
 
-#include <core/api/device_api.h>
+#include <core/api/device.h>
 #include <util/sysdefs.h>
 
 Light *light_create(float *position, float *color, LightType type) {

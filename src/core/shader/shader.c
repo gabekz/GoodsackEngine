@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <core/api/device_api.h>
+#include <core/api/device.h>
 #include <util/logger.h>
 
 /* Compile single shader type (vertex, fragment, etc.) and return

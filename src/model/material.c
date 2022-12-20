@@ -6,7 +6,7 @@
 #include <util/gfx.h>
 #include <util/logger.h>
 
-#include <core/api/device_api.h>
+#include <core/api/device.h>
 #include <core/texture/texture.h>
 #include <core/shader/shader.h>
 

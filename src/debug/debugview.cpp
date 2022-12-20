@@ -11,7 +11,7 @@ extern "C" {
     #include <core/renderer/renderer.h>
 }
 
-#include <core/api/device_api.h>
+#include <core/api/device.h>
 
 #include <components/transform/transform.h>
 #include <components/mesh/mesh.h>

@@ -5,8 +5,8 @@
 extern "C" {
 #endif // __cplusplus
 
-#define DEVICE_API_OPENGL device_api_getGraphics() == GRAPHICS_API_OPENGL
-#define DEVICE_API_VULKAN device_api_getGraphics() == GRAPHICS_API_VULKAN
+#define DEVICE_API_OPENGL device_getGraphics() == GRAPHICS_API_OPENGL
+#define DEVICE_API_VULKAN device_getGraphics() == GRAPHICS_API_VULKAN
 
 typedef enum {
     GRAPHICS_API_OPENGL,
@@ -18,8 +18,8 @@ typedef enum {
 } AudioAPI;
 
 
-GraphicsAPI device_api_getGraphics();
-void device_api_setGraphics(GraphicsAPI api);
+GraphicsAPI device_getGraphics();
+void device_setGraphics(GraphicsAPI api);
 
 #ifdef __cplusplus
 }

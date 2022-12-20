@@ -1,10 +1,16 @@
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#ifndef H_TEXTURE
+#define H_TEXTURE
 
 #include <stdlib.h>
 
 #include <util/gfx.h>
 #include <util/sysdefs.h>
+
+#include <core/api/vulkan/vulkan.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 typedef struct _texture Texture;
 
@@ -17,7 +23,7 @@ struct _texture {
 };
 
 Texture *texture_create(const char *path, ui32 format,
-        ui16 genMipMaps, float afRange);
+        ui16 genMipMaps, float afRange, VulkanDeviceContext *vkDevice);
 
 Texture *texture_create_cubemap(ui32 faceCount, ...);
 Texture *texture_create_hdr(const char *path);
@@ -25,4 +31,8 @@ Texture *texture_create_hdr(const char *path);
 void texture_bind(Texture *self, ui32 slot);
 void texture_unbind();
 
-#endif
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // H_TEXTURE

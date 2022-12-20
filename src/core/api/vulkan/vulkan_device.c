@@ -422,7 +422,6 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
     int size = PRIM_SIZ_TEST * sizeof(float);
     //float *vertices = modelDataTest->buffers.out;
     //int size = modelDataTest->buffers.outI * sizeof(float);
-
     VulkanVertexBuffer *vb = 
         vulkan_vertex_buffer_create(
                 context->physicalDevice,

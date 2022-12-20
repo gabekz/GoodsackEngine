@@ -1,0 +1,29 @@
+#ifndef H_VULKAN_IMAGE
+#define H_VULKAN_IMAGE
+
+#include <core/api/vulkan/vulkan_support.h>
+
+#include <util/gfx.h>
+#include <util/sysdefs.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+void vulkan_image_create(VkPhysicalDevice physicalDevice, VkDevice device,
+        VkImage *image, VkDeviceMemory *imageMemory,
+        ui32 width, ui32 height, VkFormat format,
+        VkImageTiling tiling, VkImageUsageFlags usage,
+        VkMemoryPropertyFlags properties);
+
+void vulkan_image_layout_transition(VkImage image, VkFormat format,
+        VkImageLayout prevLayout, VkImageLayout newLayout);
+
+void vulkan_image_copy_from_buffer(VkBuffer buffer, VkImage image,
+        ui32 width, ui32 height);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // H_VULKAN_IMAGE

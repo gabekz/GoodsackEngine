@@ -1,36 +1,34 @@
 #include <iostream>
 #include <string>
 
-#include <util/sysdefs.h>
+#include <util/logger.h>
 #include <util/maths.h>
+#include <util/sysdefs.h>
 
 #include <components/components.h>
+#include <core/api/device.h>
 #include <core/renderer/renderer.h>
 #include <core/lighting/lighting.h>
 #include <debug/debugview.hpp>
-#include <lua/lua_init.hpp>
 #include <ecs/ecs.h>
+#include <lua/lua_init.hpp>
 
-#include <util/logger.h>
-
-#include <core/api/device_api.h>
-
-#define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16)
-#define texture_create_n(x) texture_create(x, GL_RGB, false, 1)
+#define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16, NULL)
+#define texture_create_n(x) texture_create(x, GL_RGB, false, 1, NULL)
 
 int main(int argc, char *argv[]) {
     if(argc > 1) { for(int i = 0; i < argc; i++) {
         if(std::string(argv[i]) == "--vulkan") {
-            device_api_setGraphics(GRAPHICS_API_VULKAN);
+            device_setGraphics(GRAPHICS_API_VULKAN);
         }
         else if(std::string(argv[i]) == "--opengl") {
-            device_api_setGraphics(GRAPHICS_API_OPENGL);
+            device_setGraphics(GRAPHICS_API_OPENGL);
         }
     }}
 
 // Logger
     int logStat = logger_initConsoleLogger(stderr);
-    logger_setLevel(LogLevel_ERROR);
+    logger_setLevel(LogLevel_TRACE);
     logger_setDetail(LogDetail_SIMPLE);
     if(logStat != 0) {
         LOG_INFO("Initialized Console Logger");
@@ -39,7 +37,7 @@ int main(int argc, char *argv[]) {
 // Main Lua entry
     LuaInit("../src/lua/demo/main.lua");
 
-    LOG_INFO("Device API is: %d", device_api_getGraphics());
+    LOG_INFO("Device API is: %d", device_getGraphics());
 
 // Initialize Renderer
     Renderer *renderer = renderer_init();
@@ -62,11 +60,15 @@ int main(int argc, char *argv[]) {
     Texture *texDefNorm =
         texture_create_n("../res/textures/defaults/normal.png");
 
-    Texture *texEarthDiff = texture_create_d("../res/textures/earth/diffuse.png");
-    Texture *texEarthNorm = texture_create_n("../res/textures/earth/normal.png");
+    Texture *texEarthDiff =
+        texture_create_d("../res/textures/earth/diffuse.png");
+    Texture *texEarthNorm =
+        texture_create_n("../res/textures/earth/normal.png");
 
-    Texture *texContDiff = texture_create_d("../res/textures/container/diffuse.png");
-    Texture *texContSpec = texture_create_n("../res/textures/container/specular.png");
+    Texture *texContDiff =
+        texture_create_d("../res/textures/container/diffuse.png");
+    Texture *texContSpec =
+        texture_create_n("../res/textures/container/specular.png");
 
     Texture *texBrickDiff =
         texture_create_d("../res/textures/brickwall/diffuse.png");

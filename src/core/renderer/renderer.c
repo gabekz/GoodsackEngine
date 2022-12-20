@@ -14,7 +14,7 @@
 #include <core/context/context.h>
 
 // API
-#include <core/api/device_api.h>
+#include <core/api/device.h>
 #include <core/api/vulkan/vulkan_device.h>
 
 // Skybox test

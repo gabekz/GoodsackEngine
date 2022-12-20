@@ -1,12 +1,14 @@
 #include "vulkan_buffer.h"
-#include <core/api/vulkan/vulkan_support.h>
 
 #include <string.h>
+
+#include <core/api/vulkan/vulkan_support.h>
+#include <core/api/vulkan/vulkan_command.h>
 
 #include <util/gfx.h>
 #include <util/logger.h>
 
-static ui32 _findMemoryType(VkPhysicalDevice physicalDevice, 
+ui32 vulkan_memory_type(VkPhysicalDevice physicalDevice, 
         ui32 typeFilter, VkMemoryPropertyFlags properties) {
 
     VkPhysicalDeviceMemoryProperties memProperties;
@@ -45,7 +47,7 @@ void vulkan_buffer_create(VkPhysicalDevice physicalDevice,
     VkMemoryAllocateInfo allocInfo = {
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
         .allocationSize = memRequirements.size,
-        .memoryTypeIndex = _findMemoryType(physicalDevice,
+        .memoryTypeIndex = vulkan_memory_type(physicalDevice,
                 memRequirements.memoryTypeBits, 
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
                 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
@@ -64,39 +66,16 @@ void vulkan_buffer_copy(VkDevice device, VkQueue graphicsQueue,
                         VkBuffer dstBuffer,
                         VkDeviceSize size)
 {
-    VkCommandBufferAllocateInfo allocInfo = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandPool = commandPool,
-        .commandBufferCount = 1
-    };
-
-    VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
-
-    VkCommandBufferBeginInfo beginInfo = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-    };
-    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+    VkCommandBuffer commandBuffer =
+        vulkan_command_stc_begin(device, commandPool);
 
     VkBufferCopy copyRegion = {
         .srcOffset = 0, // optional
         .dstOffset = 0, // optional
         .size = size
     };
+
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-    vkEndCommandBuffer(commandBuffer);
-
-    VkSubmitInfo submitInfo = {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &commandBuffer
-    };
-
-    vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(graphicsQueue);
-
-    vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+    vulkan_command_stc_end(device, graphicsQueue, commandBuffer, commandPool);
 }

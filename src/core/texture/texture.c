@@ -8,12 +8,13 @@
 #include <util/logger.h>
 #include <util/sysdefs.h>
 
-#include <core/api/device_api.h>
+#include <core/api/device.h>
+#include <core/api/vulkan/vulkan.h>
 
 #define TEXTURE_WRAPPING  GL_REPEAT
 
 Texture *texture_create(const char *path, ui32 format,
-        ui16 genMipMaps, float afRange) {
+        ui16 genMipMaps, float afRange, VulkanDeviceContext *vkDevice) {
     Texture *tex = malloc(sizeof(Texture));
     tex->filePath = path;
 
@@ -25,7 +26,7 @@ Texture *texture_create(const char *path, ui32 format,
         //         format, genMipMaps, afRange);
 
         localBuffer = stbi_load(tex->filePath, &tex->width,
-        &tex->height, &tex->bpp, /*RGBA*/ 4);
+        &tex->height, &tex->bpp, /*Type*/ STBI_rgb_alpha);
     }
     else {
         localBuffer = NULL;
@@ -59,7 +60,39 @@ Texture *texture_create(const char *path, ui32 format,
         if (afRange > 0) {
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, afRange);
         }
-    }
+    } // DEVICE_API_OPENGL
+
+    else if(DEVICE_API_VULKAN && vkDevice) {
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+
+        VkDeviceSize imageSize = tex->width * tex->height * 4;
+
+        vulkan_buffer_create(vkDevice->physicalDevice, vkDevice->device,
+                imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                &stagingBuffer, &stagingBufferMemory);
+
+        void *data;
+        VK_CHECK(vkMapMemory(vkDevice->device, stagingBufferMemory,
+                0, imageSize, 0, &data));
+        memcpy(data, localBuffer, (ui32)imageSize);
+        vkUnmapMemory(vkDevice->device, stagingBufferMemory);
+
+        VkImage textureImage;
+        VkDeviceMemory textureImageMemory;
+        vulkan_image_create(vkDevice->physicalDevice, vkDevice->device,
+                &textureImage, &textureImageMemory,
+                tex->width, tex->height,
+                VK_FORMAT_R8G8B8A8_SRGB,
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                  VK_IMAGE_USAGE_SAMPLED_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        );
+
+    } // DEVICE_API_VULKAN
 
     if(localBuffer) {
       stbi_image_free(localBuffer);

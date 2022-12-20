@@ -10,10 +10,8 @@
 
 #include <util/sysdefs.h>
 
-#include <core/api/device_api.h>
-#include <core/api/vulkan/vulkan_device.h>
-#include <core/api/vulkan/vulkan_pipeline.h>
-
+#include <core/api/device.h>
+#include <core/api/vulkan/vulkan.h>
 
 static void _resize_callback
 (GLFWwindow* window, int widthRe, int heightRe) {
