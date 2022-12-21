@@ -451,16 +451,18 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
     vulkan_descriptor_pool_create(context->device, &context->descriptorPool, 
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
+// Create a texture
+    LOG_DEBUG("Create a test texture");
+    Texture *texture = 
+        texture_create("../res/textures/bricks.png", 0, 0, 0, context);
+
 // Create Descriptor Sets
     LOG_DEBUG("Create descriptor sets");
     vulkan_descriptor_sets_create(context->device, context->descriptorPool,
         &context->descriptorSets, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         context->uniformBuffers, sizeof(UniformBufferObject),
-        context->pipelineDetails->descriptorSetLayout);
-
-// Create a texture
-    LOG_DEBUG("Create a test texture");
-    texture_create("../res/textures/bricks.png", 0, 0, 0, context);
+        context->pipelineDetails->descriptorSetLayout,
+        texture->vulkan.textureImageView, texture->vulkan.textureSampler);
 }
 
 void vulkan_context_create_sync(VulkanDeviceContext *context) {

@@ -112,11 +112,14 @@ Texture *texture_create(const char *path, ui32 format,
         vkFreeMemory(vkDevice->device, stagingBufferMemory, NULL);
 
         // Create Texture ImageView
-        vulkan_image_view_create(vkDevice->device, tex->vulkan.textureImage,
-                VK_FORMAT_R8G8B8A8_SRGB);
+        tex->vulkan.textureImageView = 
+            vulkan_image_view_create(vkDevice->device,
+                    tex->vulkan.textureImage,
+                    VK_FORMAT_R8G8B8A8_SRGB);
 
         // Create Texture Sampler (for shader access)
-        vulkan_image_texture_sampler(vkDevice->device,
+        tex->vulkan.textureSampler =
+            vulkan_image_texture_sampler(vkDevice->device,
                 vkDevice->physicalDeviceProperties);
 
     } // DEVICE_API_VULKAN
