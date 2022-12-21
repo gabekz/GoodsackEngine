@@ -3,6 +3,9 @@
 #define VK_USE_PLATFORM_XCB_KHR
 #define GLFW_EXPOSE_NATIVE_XCB
 
+#define TEST_RENDER_PRIMITIVE   0   // 0 - Model Loader | 1 - Primitive
+#define TEST_RENDER_MODE        0   // 0 - VkCmdDraw    | 1 - VkCmdDrawIndexed
+
 #include <util/sysdefs.h>
 
 #include <stdlib.h>
@@ -25,26 +28,6 @@
 #include <model/primitives.h>
 
 /* static */
-
-ui32 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
-{
-    ui32 graphicsFamily;
-    ui32 queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
-            &queueFamilyCount, NULL);
-
-    VkQueueFamilyProperties queueFamilies[queueFamilyCount];
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
-            &queueFamilyCount, queueFamilies);
-
-    for(int i = 0; i < queueFamilyCount; i++) {
-        if(queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-            graphicsFamily = i;
-        }
-    }
-
-    return graphicsFamily;
-}
 
 static int _checkValidationLayerSupport(const char *validationLayers[], ui32 count) {
     ui32 layerCount;
@@ -181,6 +164,26 @@ static void createMessenger(VkInstance instance, VkDebugUtilsMessengerEXT debugM
 }
 
 /* implement */
+
+ui32 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
+{
+    ui32 graphicsFamily;
+    ui32 queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
+            &queueFamilyCount, NULL);
+
+    VkQueueFamilyProperties queueFamilies[queueFamilyCount];
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
+            &queueFamilyCount, queueFamilies);
+
+    for(int i = 0; i < queueFamilyCount; i++) {
+        if(queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            graphicsFamily = i;
+        }
+    }
+
+    return graphicsFamily;
+}
 
 VulkanDeviceContext *vulkan_device_create() {
 // Vulkan Application Info
@@ -377,16 +380,21 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, 
     VkBuffer indexBuffer = context->indexBuffer.buffer;
 
     vkCmdBindVertexBuffers(*commandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(*commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
     vkCmdBindDescriptorSets(*commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
             context->pipelineDetails->pipelineLayout, 0, 1,
             &context->descriptorSets[context->currentFrame], 0, NULL);
 
-    //LOG_DEBUG("Drawing Vertex Buffer");
-    //vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
+#if TEST_RENDER_MODE == 0
+
+    vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
+
+#elif TEST_RENDER_MODE == 1
+
+    vkCmdBindIndexBuffer(*commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     vkCmdDrawIndexed(*commandBuffer, context->indexBuffer.indicesCount,
             1, 0, 0, 0);
+#endif
 
     vkCmdEndRenderPass(*commandBuffer);
 
@@ -408,11 +416,19 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 // Create a VERTEX BUFFER
     LOG_DEBUG("Create vertex buffer");
 
-    //ModelData *modelDataTest = load_obj("../res/models/suzanne.obj", 1);
-    float *vertices = PRIM_ARR_TEST_3;
-    int size = PRIM_SIZ_TEST_3 * sizeof(float);
-    //float *vertices = modelDataTest->buffers.out;
-    //int size = modelDataTest->buffers.outI * sizeof(float);
+#if TEST_RENDER_PRIMITIVE == 0
+
+    ModelData *modelDataTest = load_obj("../res/models/suzanne.obj", 1.5f);
+    float *vertices = modelDataTest->buffers.out;
+    int size = modelDataTest->buffers.outI * sizeof(float);
+
+#elif TEST_RENDER_PRIMITIVE == 1
+
+    float *vertices = PRIM_ARR_V_PYRAMID;
+    int size = PRIM_SIZ_V_PYRAMID * sizeof(float);
+
+#endif
+
     VulkanVertexBuffer *vb = 
         vulkan_vertex_buffer_create(
                 context->physicalDevice,
@@ -424,18 +440,20 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 
     context->vertexBuffer = vb;
 
-    ui16 indices[] = {
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4
-    };
+#if TEST_RENDER_MODE == 1
+
+    ui16 *indices = PRIM_ARR_I_PYRAMID;
+    ui32 indicesCount = PRIM_SIZ_I_PYRAMID;
 
     context->indexBuffer = *vulkan_index_buffer_create(
             context->physicalDevice,
             context->device,
             context->commandPool,
             context->graphicsQueue,
-            indices, 12
+            indices, indicesCount
     );
+
+#endif
 
 // Create UNIFORM BUFFERS
     LOG_DEBUG("Create uniform buffers");
@@ -451,7 +469,7 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 // Create a texture
     LOG_DEBUG("Create a test texture");
     Texture *texture = 
-        texture_create("../res/textures/test.png", 0, 0, 0, context);
+        texture_create("../res/textures/bricks.png", 0, 0, 0, context);
 
 // Create Descriptor Sets
     LOG_DEBUG("Create descriptor sets");

@@ -96,7 +96,7 @@
 	 0.0f, 0.8f,  0.0f,     2.5f, 5.0f,      0.0f, 0.5f,  0.8f}
 #define PRIM_SIZ_V_PYRAMID  288
 #define PRIM_SIZ_I_PYRAMID  18
-#define PRIM_ARR_I_PYRAMID (ui32[]){ \
+#define PRIM_ARR_I_PYRAMID (ui16[]){ \
         0, 1, 2, \
 	    0, 2, 3, \
 	    4, 6, 5, \
