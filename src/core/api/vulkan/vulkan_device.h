@@ -15,8 +15,10 @@ extern "C" {
 typedef struct _vulkanDeviceContext VulkanDeviceContext;
 
 struct _vulkanDeviceContext {
-    VkDevice device;
     VkPhysicalDevice physicalDevice;
+    VkPhysicalDeviceProperties physicalDeviceProperties;
+
+    VkDevice device;
     VkSurfaceKHR surface;
     VkInstance vulkanInstance;
 

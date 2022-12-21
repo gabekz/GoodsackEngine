@@ -10,6 +10,7 @@
 extern "C" {
 #endif // __cplusplus
 
+// Create and Allocate a Vulkan VkImage Texture.
 void vulkan_image_create(VkPhysicalDevice physicalDevice, VkDevice device,
         VkImage *image, VkDeviceMemory *imageMemory,
         ui32 width, ui32 height, VkFormat format,
@@ -23,6 +24,14 @@ void vulkan_image_layout_transition(VkDevice device, VkCommandPool commandPool,
 void vulkan_image_copy_from_buffer(VkDevice device, VkCommandPool commandPool,
         VkQueue graphicsQueue, VkBuffer buffer, VkImage image,
         ui32 width, ui32 height);
+
+// ImageViews
+
+VkImageView vulkan_image_view_create(VkDevice device, VkImage textureImage,
+        VkFormat format);
+
+VkSampler vulkan_image_texture_sampler(
+        VkDevice device, VkPhysicalDeviceProperties deviceProperties);
 
 #ifdef __cplusplus
 }

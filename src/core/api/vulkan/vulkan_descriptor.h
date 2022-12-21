@@ -8,7 +8,9 @@
 extern "C" {
 #endif // __cplusplus
 
-void vulkan_descriptor_create_layout();
+// Creates Vulkan DescriptorSet layouts
+void vulkan_descriptor_create_layout(VkDevice device,
+        VkDescriptorSetLayout *descriptorSetLayout);
 
 void vulkan_descriptor_pool_create(VkDevice device,
         VkDescriptorPool *descriptorPool, VkDescriptorType type);

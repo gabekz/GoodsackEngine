@@ -17,15 +17,6 @@
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1, NULL)
 
 int main(int argc, char *argv[]) {
-    if(argc > 1) { for(int i = 0; i < argc; i++) {
-        if(std::string(argv[i]) == "--vulkan") {
-            device_setGraphics(GRAPHICS_API_VULKAN);
-        }
-        else if(std::string(argv[i]) == "--opengl") {
-            device_setGraphics(GRAPHICS_API_OPENGL);
-        }
-    }}
-
 // Logger
     int logStat = logger_initConsoleLogger(stderr);
     logger_setLevel(LogLevel_TRACE);
@@ -33,6 +24,19 @@ int main(int argc, char *argv[]) {
     if(logStat != 0) {
         LOG_INFO("Initialized Console Logger");
     }
+
+    if(argc > 1) { for(int i = 0; i < argc; i++) {
+        if(std::string(argv[i]) == "--vulkan") {
+            device_setGraphics(GRAPHICS_API_VULKAN);
+        }
+        else if(std::string(argv[i]) == "--opengl") {
+            device_setGraphics(GRAPHICS_API_OPENGL);
+        }
+        else if(std::string(argv[i]) == "--errlevel") {
+            logger_setLevel(LogLevel_ERROR);
+        }
+    }}
+
 
 // Main Lua entry
     LuaInit("../src/lua/demo/main.lua");

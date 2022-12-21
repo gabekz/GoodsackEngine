@@ -259,9 +259,10 @@ VulkanDeviceContext *vulkan_device_create() {
     VkPhysicalDevice devices[15];
     vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, devices);
 
+    VkPhysicalDeviceProperties deviceProperties;
+
     // TODO: This does not list all devices before picking suitable
     for(int i = 0; i < deviceCount; i++) {
-        VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
         LOG_INFO("Device Found: %s", deviceProperties.deviceName);
 
@@ -275,6 +276,9 @@ VulkanDeviceContext *vulkan_device_create() {
         LOG_ERROR("Failed to find a Suitable GPU!");
     }
 
+    // Store picked physical device properties here
+    ret->physicalDeviceProperties = deviceProperties;
+
 // Create Logical Device
     ui32 graphicsFamily = vulkan_device_find_queue_families(physicalDevice);
     float queuePriority = 1.0f;
@@ -286,6 +290,7 @@ VulkanDeviceContext *vulkan_device_create() {
     queueCreateInfo.pQueuePriorities = &queuePriority;
 
     VkPhysicalDeviceFeatures deviceFeatures = {};
+    deviceFeatures.samplerAnisotropy = VK_TRUE;
 
     VkDeviceCreateInfo logicCreateInfo = {};
     logicCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

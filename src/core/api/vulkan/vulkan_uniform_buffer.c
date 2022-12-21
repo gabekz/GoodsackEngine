@@ -8,26 +8,6 @@
 #include <util/gfx.h>
 #include <util/maths.h>
 
-void vulkan_uniform_buffer_create_descriptor(VkDevice device, VkDescriptorSetLayout *descriptorSetLayout) {
-    VkDescriptorSetLayoutBinding uboLayoutBinding = {
-        .binding = 0,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = 1, // number of values in the array (e.g, 1 UBO)
-
-        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT, // UBO reference location
-        .pImmutableSamplers = NULL, // optional
-    };
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .bindingCount = 1,
-        .pBindings = &uboLayoutBinding
-    };
-
-    VK_CHECK(vkCreateDescriptorSetLayout(
-            device, &layoutInfo, NULL, descriptorSetLayout));
-}
-
 void vulkan_uniform_buffer_create(
         VkPhysicalDevice physicalDevice, VkDevice device,
         VkBuffer **uniformBuffers, VkDeviceMemory **uniformBuffersMemory,

@@ -1,10 +1,12 @@
 #include "vulkan_pipeline.h"
 
 #include <stdlib.h>
-#include <util/logger.h>
 
+#include <core/api/vulkan/vulkan_descriptor.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 #include <core/api/vulkan/vulkan_uniform_buffer.h>
+
+#include <util/logger.h>
 
 struct FileDescriptor {
     char *buffer;
@@ -204,8 +206,7 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
     };
 
 // Create DescriptorSet Layout [UBO Descriptor]
-    vulkan_uniform_buffer_create_descriptor(
-        device, &details->descriptorSetLayout);
+    vulkan_descriptor_create_layout(device, &details->descriptorSetLayout);
 
 // Pipeline Layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {

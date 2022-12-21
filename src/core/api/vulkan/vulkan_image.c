@@ -139,3 +139,59 @@ void vulkan_image_copy_from_buffer(VkDevice device, VkCommandPool commandPool,
 
     vulkan_command_stc_end(device, graphicsQueue, commandBuffer, commandPool);
 }
+
+VkImageView vulkan_image_view_create(VkDevice device, VkImage textureImage,
+        VkFormat format) {
+    VkImageView imageView;
+    VkImageViewCreateInfo viewInfo = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        .image = textureImage,
+        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+        .format = format,
+
+        .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .subresourceRange.baseMipLevel = 0,
+        .subresourceRange.levelCount = 1,
+        .subresourceRange.baseArrayLayer = 0,
+        .subresourceRange.layerCount = 1,
+    };
+
+    VK_CHECK(vkCreateImageView(device, &viewInfo, NULL, &imageView));
+    return imageView;
+}
+
+VkSampler vulkan_image_texture_sampler(
+        VkDevice device, VkPhysicalDeviceProperties deviceProperties)
+{
+    VkSampler textureSampler;
+
+    VkSamplerCreateInfo samplerInfo = {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = deviceProperties.limits.maxSamplerAnisotropy,
+
+        // color when sampling beyond the image with clamp/border mode
+        .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK, 
+
+        // VK_FALSE = [0, 1] | VK_TRUE = [0, texWidth/texHeight]
+        .unnormalizedCoordinates = VK_FALSE,
+
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .mipLodBias = 0.0f,
+        .minLod = 0.0f,
+        .maxLod = 0.0f
+    };
+
+    VK_CHECK(vkCreateSampler(device, &samplerInfo, NULL, &textureSampler));
+    return textureSampler;
+}

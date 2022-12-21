@@ -3,7 +3,7 @@
 
 #include <util/gfx.h>
 
-#if __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
