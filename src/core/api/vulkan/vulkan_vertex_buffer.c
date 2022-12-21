@@ -47,7 +47,7 @@ VkVertexInputAttributeDescription* vulkan_vertex_buffer_get_attribute_descriptio
         .binding = 0,
         .location = 2,
         .format = VK_FORMAT_R32G32B32_SFLOAT,
-        .offset = 5 * sizeof(float)
+        .offset = 4 * sizeof(float)
     };
 
     return attributeDescriptions;
