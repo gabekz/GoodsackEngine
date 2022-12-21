@@ -8,10 +8,20 @@
 #include <core/api/vulkan/vulkan_support.h>
 #include <util/logger.h>
 
+/*
+#include <util/maths.h>
+
+typedef struct Vertex {
+    vec2 pos;
+    vec3 color;
+    vec2 texCoord;
+} Vertex;
+*/
+
 VkVertexInputBindingDescription vulkan_vertex_buffer_get_binding_description() {
     VkVertexInputBindingDescription bindingDescription = {
         .binding = 0,
-        .stride = (sizeof(float) * 2 + sizeof(float) * 3),
+        .stride = ((sizeof(float) * 2) + (sizeof(float) * 3) + (sizeof(float) * 2)),
         .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
     };
     return bindingDescription;
@@ -19,7 +29,7 @@ VkVertexInputBindingDescription vulkan_vertex_buffer_get_binding_description() {
 
 VkVertexInputAttributeDescription* vulkan_vertex_buffer_get_attribute_descriptions() {
     VkVertexInputAttributeDescription *attributeDescriptions =
-        malloc(sizeof(VkVertexInputAttributeDescription) * 2);
+        malloc(sizeof(VkVertexInputAttributeDescription) * 3);
 
     attributeDescriptions[0] = (VkVertexInputAttributeDescription){
         .binding = 0,
@@ -32,6 +42,12 @@ VkVertexInputAttributeDescription* vulkan_vertex_buffer_get_attribute_descriptio
         .location = 1,
         .format = VK_FORMAT_R32G32B32_SFLOAT,
         .offset = 2 * sizeof(float)
+    };
+    attributeDescriptions[2] = (VkVertexInputAttributeDescription){
+        .binding = 0,
+        .location = 2,
+        .format = VK_FORMAT_R32G32B32_SFLOAT,
+        .offset = 5 * sizeof(float)
     };
 
     return attributeDescriptions;

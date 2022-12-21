@@ -424,9 +424,9 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 // Create a VERTEX BUFFER
     LOG_DEBUG("Create vertex buffer");
 
-    ModelData *modelDataTest = load_obj("../res/models/suzanne.obj", 1);
-    float *vertices = PRIM_ARR_TEST;
-    int size = PRIM_SIZ_TEST * sizeof(float);
+    //ModelData *modelDataTest = load_obj("../res/models/suzanne.obj", 1);
+    float *vertices = PRIM_ARR_TEST_2;
+    int size = PRIM_SIZ_TEST_2 * sizeof(float);
     //float *vertices = modelDataTest->buffers.out;
     //int size = modelDataTest->buffers.outI * sizeof(float);
     VulkanVertexBuffer *vb = 

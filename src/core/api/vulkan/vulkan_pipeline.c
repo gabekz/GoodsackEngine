@@ -58,9 +58,9 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
     VulkanPipelineDetails *details = malloc(sizeof(VulkanPipelineDetails));
 
     details->vertShaderModule = _createShaderModule(device,
-            "../res/shaders/vulkan/uniform_vert.spv");
+            "../res/shaders/vulkan/texture-vert.spv");
     details->fragShaderModule = _createShaderModule(device,
-            "../res/shaders/vulkan/frag.spv");
+            "../res/shaders/vulkan/texture-frag.spv");
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -113,7 +113,7 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .vertexBindingDescriptionCount = 1,
         .pVertexBindingDescriptions = &bindingDescription,
 
-        .vertexAttributeDescriptionCount = 2,
+        .vertexAttributeDescriptionCount = 3,
         .pVertexAttributeDescriptions = attributeDescriptions,
     };
 #endif
