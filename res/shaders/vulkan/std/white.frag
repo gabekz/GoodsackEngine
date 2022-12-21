@@ -10,5 +10,8 @@ layout(location = 0) out vec4 outColor;
 layout(binding = 1) uniform sampler2D texSampler;
 
 void main() {
-    outColor = texture(texSampler, fragTexCoord);
+    vec4 texColor = texture(texSampler, fragTexCoord);
+
+    float gamma = 2.2;
+    outColor.rgb = pow(texColor.rgb, vec3(1.0/gamma));
 }

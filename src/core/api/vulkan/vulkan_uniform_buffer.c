@@ -55,5 +55,7 @@ void vulkan_uniform_buffer_update(ui32 currentImage, void **uniformBuffersMapped
 
     ubo.proj[1][1] *= -1;
 
+    glm_rotate(ubo.model, glm_rad(90.0f), (vec3){1, 0, 0});
+
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(UniformBufferObject));
 }

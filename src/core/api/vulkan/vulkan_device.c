@@ -330,7 +330,7 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, 
         LOG_ERROR("Failed to begin recording command buffer!");
     }
 
-    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    VkClearValue clearColor = {{{0.0f, 0.1f, 0.2f, 1.0f}}};
     VkClearValue depthStencil = {1.0f, 0.0f};
 
     VkClearValue clearValues[] = {
@@ -418,7 +418,9 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 
 #if TEST_RENDER_PRIMITIVE == 0
 
-    ModelData *modelDataTest = load_obj("../res/models/suzanne.obj", 1.5f);
+    ModelData *modelDataTest =
+        load_obj("../res/models/cerberus-triang.obj", 4.0f);
+
     float *vertices = modelDataTest->buffers.out;
     int size = modelDataTest->buffers.outI * sizeof(float);
 
@@ -469,7 +471,8 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 // Create a texture
     LOG_DEBUG("Create a test texture");
     Texture *texture = 
-        texture_create("../res/textures/bricks.png", 0, 0, 0, context);
+        texture_create("../res/textures/pbr/cerberus/Cerberus_A.tga",
+                0, 0, 0, context);
 
 // Create Descriptor Sets
     LOG_DEBUG("Create descriptor sets");
