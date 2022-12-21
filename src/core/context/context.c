@@ -88,8 +88,14 @@ GLFWwindow* createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
             vulkanDevice->surface, window);
 
         vulkanDevice->pipelineDetails = vulkan_pipeline_create(
+            vulkanDevice->physicalDevice,
             vulkanDevice->device,
             vulkanDevice->swapChainDetails->swapchainImageFormat,
+            vulkanDevice->swapChainDetails->swapchainExtent);
+
+        vulkanDevice->depthResources = vulkan_depth_create_resources(
+            vulkanDevice->physicalDevice,
+            vulkanDevice->device,
             vulkanDevice->swapChainDetails->swapchainExtent);
 
         vulkan_context_create_framebuffers(vulkanDevice);

@@ -115,7 +115,8 @@ Texture *texture_create(const char *path, ui32 format,
         tex->vulkan.textureImageView = 
             vulkan_image_view_create(vkDevice->device,
                     tex->vulkan.textureImage,
-                    VK_FORMAT_R8G8B8A8_SRGB);
+                    VK_FORMAT_R8G8B8A8_SRGB,
+                    VK_IMAGE_ASPECT_COLOR_BIT);
 
         // Create Texture Sampler (for shader access)
         tex->vulkan.textureSampler =

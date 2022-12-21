@@ -4,6 +4,7 @@
 #include <util/gfx.h>
 #include <util/sysdefs.h>
 
+#include <core/api/vulkan/vulkan_depth.h>
 #include <core/api/vulkan/vulkan_swapchain.h>
 #include <core/api/vulkan/vulkan_pipeline.h>
 #include <core/api/vulkan/vulkan_index_buffer.h>
@@ -51,6 +52,9 @@ struct _vulkanDeviceContext {
     VkSemaphore *imageAvailableSemaphores;
     VkSemaphore *renderFinishedSemaphores;
     VkFence *inFlightFences;
+
+    // Depth Buffer information
+    VulkanDepthResources *depthResources;
 };
 
 VulkanDeviceContext* vulkan_device_create();

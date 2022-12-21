@@ -8,9 +8,9 @@
 
 VulkanIndexBuffer *vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
         VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue,
-        ui16 *indices, ui32 indicesCount)
+        ui16 *indices, ui16 indicesCount)
 {
-    VkDeviceSize bufferSize = indicesCount * sizeof(ui32);
+    VkDeviceSize bufferSize = indicesCount * sizeof(ui16);
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -35,7 +35,7 @@ VulkanIndexBuffer *vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
             &ret->buffer, &ret->bufferMemory);
 
     vulkan_buffer_copy(device, graphicsQueue, commandPool,
-            stagingBuffer, ret->buffer, bufferSize);
+            stagingBuffer, ret->buffer, (ui32)bufferSize);
 
     vkDestroyBuffer(device, stagingBuffer, NULL);
     vkFreeMemory(device, stagingBufferMemory, NULL);

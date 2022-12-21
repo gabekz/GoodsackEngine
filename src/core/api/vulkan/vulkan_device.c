@@ -328,6 +328,12 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, 
     }
 
     VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    VkClearValue depthStencil = {1.0f, 0.0f};
+
+    VkClearValue clearValues[] = {
+        clearColor,
+        depthStencil
+    };
 
     VkRenderPassBeginInfo renderPassInfo = {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -336,8 +342,8 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, 
         .renderArea.offset = {0, 0},
         .renderArea.extent = context->swapChainDetails->swapchainExtent,
 
-        .clearValueCount = 1,
-        .pClearValues = &clearColor
+        .clearValueCount = 2,
+        .pClearValues = clearValues
     };
 
     vkCmdBeginRenderPass(*commandBuffer,
@@ -390,27 +396,28 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, 
 }
 
 void vulkan_context_create_framebuffers(VulkanDeviceContext *context) {
-
-    VkFramebuffer *swapchainFramebuffers = malloc(sizeof(VkFramebuffer) *
+    VkFramebuffer *swapchainFramebuffers = malloc(
+            sizeof(VkFramebuffer) *
             context->swapChainDetails->swapchainImageCount);
 
     for(int i = 0; i < context->swapChainDetails->swapchainImageCount; i++) {
         VkImageView attachments[] = {
-        context->swapChainDetails->swapchainImageViews[i]};
+        context->swapChainDetails->swapchainImageViews[i],
+        context->depthResources->depthImageView};
 
         VkFramebufferCreateInfo framebufferInfo = {
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .renderPass = context->pipelineDetails->renderPass,
-            .attachmentCount = 1,
+            .attachmentCount = 2,
             .pAttachments = attachments,
             .width = context->swapChainDetails->swapchainExtent.width,
             .height = context->swapChainDetails->swapchainExtent.height,
             .layers = 1
         };
 
-        if (vkCreateFramebuffer(context->device, &framebufferInfo, NULL, &swapchainFramebuffers[i]) != VK_SUCCESS) {
-            LOG_ERROR("failed to create framebuffer!");
-        }
+        VK_CHECK(vkCreateFramebuffer(
+                    context->device, &framebufferInfo,
+                    NULL, &swapchainFramebuffers[i]));
     }
 
     context->swapChainDetails->swapchainFramebuffers = swapchainFramebuffers;
@@ -431,8 +438,8 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
     LOG_DEBUG("Create vertex buffer");
 
     //ModelData *modelDataTest = load_obj("../res/models/suzanne.obj", 1);
-    float *vertices = PRIM_ARR_TEST_2;
-    int size = PRIM_SIZ_TEST_2 * sizeof(float);
+    float *vertices = PRIM_ARR_TEST_3;
+    int size = PRIM_SIZ_TEST_3 * sizeof(float);
     //float *vertices = modelDataTest->buffers.out;
     //int size = modelDataTest->buffers.outI * sizeof(float);
     VulkanVertexBuffer *vb = 
@@ -446,14 +453,17 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 
     context->vertexBuffer = vb;
 
-    ui16 indices[] = {0, 1, 2, 2, 3, 0};
+    ui16 indices[] = {
+        0, 1, 2, 2, 3, 0,
+        4, 5, 6, 6, 7, 4
+    };
 
     context->indexBuffer = *vulkan_index_buffer_create(
             context->physicalDevice,
             context->device,
             context->commandPool,
             context->graphicsQueue,
-            indices, 6
+            indices, 12
     );
 
 // Create UNIFORM BUFFERS
@@ -470,7 +480,7 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 // Create a texture
     LOG_DEBUG("Create a test texture");
     Texture *texture = 
-        texture_create("../res/textures/bricks.png", 0, 0, 0, context);
+        texture_create("../res/textures/test.png", 0, 0, 0, context);
 
 // Create Descriptor Sets
     LOG_DEBUG("Create descriptor sets");

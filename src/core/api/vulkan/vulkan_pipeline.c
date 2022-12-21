@@ -5,6 +5,7 @@
 #include <core/api/vulkan/vulkan_descriptor.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 #include <core/api/vulkan/vulkan_uniform_buffer.h>
+#include <core/api/vulkan/vulkan_depth.h>
 
 #include <util/logger.h>
 
@@ -52,8 +53,9 @@ static VkShaderModule _createShaderModule(VkDevice device, const char *path) {
     return ret;
 }
 
-VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
-    VkFormat swapchainImageFormat, VkExtent2D swapchainExtent) {
+VulkanPipelineDetails *vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
+    VkDevice device, VkFormat swapchainImageFormat,
+    VkExtent2D swapchainExtent) {
 
     VulkanPipelineDetails *details = malloc(sizeof(VulkanPipelineDetails));
 
@@ -177,8 +179,22 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .alphaToOneEnable = VK_FALSE
     };
 
-// Depth & Stencil Testing
-    VkPipelineDepthStencilStateCreateInfo depthStencil;
+// Depth Stencil State
+    VkPipelineDepthStencilStateCreateInfo depthStencil = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+        .depthTestEnable = VK_TRUE,
+        .depthWriteEnable = VK_TRUE,
+
+        .depthCompareOp = VK_COMPARE_OP_LESS,
+
+        .depthBoundsTestEnable = VK_FALSE,
+        .minDepthBounds = 0.0f, // Optional
+        .maxDepthBounds = 1.0f, // Optional
+
+        .stencilTestEnable = VK_FALSE,
+        .front = {}, // Optional
+        .back = {}, // Optional
+    };
 
 // Color Blending
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {
@@ -223,6 +239,8 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
     }
 
 // Create Renderpass
+
+    // Color Attachment
     VkAttachmentDescription colorAttachment = {
         .format = swapchainImageFormat,
         .samples = VK_SAMPLE_COUNT_1_BIT,
@@ -242,10 +260,29 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
     };
 
+    // Depth Attachment
+    VkAttachmentDescription depthAttachment = {
+        .format = vulkan_depth_find_format(physicalDevice),
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
+
+    VkAttachmentReference depthAttachmentRef = {
+        .attachment = 1,
+        .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
+
     VkSubpassDescription subpass = {
         .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
         .colorAttachmentCount = 1,
-        .pColorAttachments = &colorAttachmentRef
+        .pColorAttachments = &colorAttachmentRef,
+        .pDepthStencilAttachment = &depthAttachmentRef
     };
 
     // Render Pass (dependency)
@@ -253,18 +290,26 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .srcSubpass = VK_SUBPASS_EXTERNAL,
         .dstSubpass = 0,
 
-        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
         .srcAccessMask = 0,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
 
-        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
     };
 
-    // Render Pass
+// Render Pass
+    
+    VkAttachmentDescription attachments[2] = 
+        {colorAttachment, depthAttachment};
+
     VkRenderPassCreateInfo renderPassInfo = {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = 1,
-        .pAttachments = &colorAttachment,
+        .attachmentCount = 2,
+        .pAttachments = attachments,
         .subpassCount = 1,
         .pSubpasses = &subpass,
 
@@ -287,7 +332,7 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
         .pViewportState         = &viewportState,
         .pRasterizationState    = &rasterizer,
         .pMultisampleState      = &multisampling,
-        .pDepthStencilState     = NULL, // Optional
+        .pDepthStencilState     = &depthStencil,
         .pColorBlendState       = &colorBlending,
         .pDynamicState          = &dynamicState,
 

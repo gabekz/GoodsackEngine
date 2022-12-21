@@ -141,7 +141,7 @@ void vulkan_image_copy_from_buffer(VkDevice device, VkCommandPool commandPool,
 }
 
 VkImageView vulkan_image_view_create(VkDevice device, VkImage textureImage,
-        VkFormat format) {
+        VkFormat format, VkImageAspectFlags aspectFlags) {
     VkImageView imageView;
     VkImageViewCreateInfo viewInfo = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -149,7 +149,7 @@ VkImageView vulkan_image_view_create(VkDevice device, VkImage textureImage,
         .viewType = VK_IMAGE_VIEW_TYPE_2D,
         .format = format,
 
-        .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .subresourceRange.aspectMask = aspectFlags, // e.g, VK_IMAGE_ASPECT_COLOR_BIT,
         .subresourceRange.baseMipLevel = 0,
         .subresourceRange.levelCount = 1,
         .subresourceRange.baseArrayLayer = 0,

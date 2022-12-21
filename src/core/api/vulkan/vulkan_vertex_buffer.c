@@ -21,7 +21,7 @@ typedef struct Vertex {
 VkVertexInputBindingDescription vulkan_vertex_buffer_get_binding_description() {
     VkVertexInputBindingDescription bindingDescription = {
         .binding = 0,
-        .stride = ((sizeof(float) * 2) + (sizeof(float) * 3) + (sizeof(float) * 2)),
+        .stride = ((sizeof(float) * 3) + (sizeof(float) * 3) + (sizeof(float) * 2)),
         .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
     };
     return bindingDescription;
@@ -34,20 +34,20 @@ VkVertexInputAttributeDescription* vulkan_vertex_buffer_get_attribute_descriptio
     attributeDescriptions[0] = (VkVertexInputAttributeDescription){
         .binding = 0,
         .location = 0,
-        .format = VK_FORMAT_R32G32_SFLOAT,
+        .format = VK_FORMAT_R32G32B32_SFLOAT,
         .offset = 0 // position
     };
     attributeDescriptions[1] = (VkVertexInputAttributeDescription){
         .binding = 0,
         .location = 1,
         .format = VK_FORMAT_R32G32B32_SFLOAT,
-        .offset = 2 * sizeof(float)
+        .offset = 3 * sizeof(float)
     };
     attributeDescriptions[2] = (VkVertexInputAttributeDescription){
         .binding = 0,
         .location = 2,
         .format = VK_FORMAT_R32G32B32_SFLOAT,
-        .offset = 4 * sizeof(float)
+        .offset = 5 * sizeof(float)
     };
 
     return attributeDescriptions;

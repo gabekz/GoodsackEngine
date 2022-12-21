@@ -10,6 +10,7 @@
 extern "C" {
 #endif // __cplusplus
 
+// TODO: Move to vulkan_texture.*
 // Create and Allocate a Vulkan VkImage Texture.
 void vulkan_image_create(VkPhysicalDevice physicalDevice, VkDevice device,
         VkImage *image, VkDeviceMemory *imageMemory,
@@ -28,7 +29,7 @@ void vulkan_image_copy_from_buffer(VkDevice device, VkCommandPool commandPool,
 // ImageViews
 
 VkImageView vulkan_image_view_create(VkDevice device, VkImage textureImage,
-        VkFormat format);
+        VkFormat format, VkImageAspectFlags aspectFlags);
 
 VkSampler vulkan_image_texture_sampler(
         VkDevice device, VkPhysicalDeviceProperties deviceProperties);

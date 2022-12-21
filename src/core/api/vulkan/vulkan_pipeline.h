@@ -20,8 +20,9 @@ struct _vulkanPipelineDetails {
     VkShaderModule fragShaderModule;
 };
 
-VulkanPipelineDetails *vulkan_pipeline_create(VkDevice device,
-    VkFormat swapchainImageFormat, VkExtent2D swapchainExtent);
+VulkanPipelineDetails *vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
+    VkDevice device, VkFormat swapchainImageFormat,
+    VkExtent2D swapchainExtent);
 
 #if __cplusplus
 }
