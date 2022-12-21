@@ -3,9 +3,6 @@
 #define VK_USE_PLATFORM_XCB_KHR
 #define GLFW_EXPOSE_NATIVE_XCB
 
-#define TEST_RENDER_PRIMITIVE   0   // 0 - Model Loader | 1 - Primitive
-#define TEST_RENDER_MODE        0   // 0 - VkCmdDraw    | 1 - VkCmdDrawIndexed
-
 #include <util/sysdefs.h>
 
 #include <stdlib.h>
@@ -21,7 +18,6 @@
 #include <core/api/vulkan/vulkan_descriptor.h>
 #include <core/api/vulkan/vulkan_support.h>
 #include <core/api/vulkan/vulkan_swapchain.h>
-#include <core/api/vulkan/vulkan_uniform_buffer.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 
 #include <import/loader_obj.h>
@@ -317,172 +313,6 @@ VulkanDeviceContext *vulkan_device_create() {
     return ret;
 }
 
-static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, VkCommandBuffer *commandBuffer) {
-    //LOG_DEBUG("RECORDING command buffer");
-
-    VkCommandBufferBeginInfo beginInfo = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = 0, // Optional
-        .pInheritanceInfo = NULL, // Optional
-    };
-    
-    if (vkBeginCommandBuffer(*commandBuffer, &beginInfo) != VK_SUCCESS) {
-        LOG_ERROR("Failed to begin recording command buffer!");
-    }
-
-    VkClearValue clearColor = {{{0.0f, 0.1f, 0.2f, 1.0f}}};
-    VkClearValue depthStencil = {1.0f, 0.0f};
-
-    VkClearValue clearValues[] = {
-        clearColor,
-        depthStencil
-    };
-
-    VkRenderPassBeginInfo renderPassInfo = {
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = context->pipelineDetails->renderPass,
-        .framebuffer = context->swapChainDetails->swapchainFramebuffers[imageIndex],
-        .renderArea.offset = {0, 0},
-        .renderArea.extent = context->swapChainDetails->swapchainExtent,
-
-        .clearValueCount = 2,
-        .pClearValues = clearValues
-    };
-
-    vkCmdBeginRenderPass(*commandBuffer,
-        &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdBindPipeline(*commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        context->pipelineDetails->graphicsPipeline);
-
-    // Set viewports and scissors (again?)
-    VkViewport viewport = {
-        .x = 0.0f,
-        .y = 0.0f,
-        .width = (float)context->swapChainDetails->swapchainExtent.width,
-        .height = (float)context->swapChainDetails->swapchainExtent.height,
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f
-    };
-    vkCmdSetViewport(*commandBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor = {
-        .offset = {0, 0},
-        .extent = context->swapChainDetails->swapchainExtent
-    };
-    vkCmdSetScissor(*commandBuffer, 0, 1, &scissor);
-
-    //LOG_DEBUG("Binding Vertex Buffer");
-    VkBuffer vertexBuffers[] = {context->vertexBuffer->buffer};
-    VkDeviceSize offsets[] = {0};
-
-    VkBuffer indexBuffer = context->indexBuffer.buffer;
-
-    vkCmdBindVertexBuffers(*commandBuffer, 0, 1, vertexBuffers, offsets);
-
-    vkCmdBindDescriptorSets(*commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-            context->pipelineDetails->pipelineLayout, 0, 1,
-            &context->descriptorSets[context->currentFrame], 0, NULL);
-
-#if TEST_RENDER_MODE == 0
-
-    vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
-
-#elif TEST_RENDER_MODE == 1
-
-    vkCmdBindIndexBuffer(*commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-    vkCmdDrawIndexed(*commandBuffer, context->indexBuffer.indicesCount,
-            1, 0, 0, 0);
-#endif
-
-    vkCmdEndRenderPass(*commandBuffer);
-
-    if (vkEndCommandBuffer(*commandBuffer) != VK_SUCCESS) {
-        LOG_ERROR("Failed to record command buffer!");
-    }
-}
-
-void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
-// Create a Command Pool
-    LOG_DEBUG("Create Command Pool");
-    context->commandPool =
-        vulkan_command_pool_create(context->physicalDevice, context->device);
-// Create Command Buffers
-    LOG_DEBUG("Create command buffers");
-    context->commandBuffers = 
-        vulkan_command_buffer_create(context->device, context->commandPool);
-
-// Create a VERTEX BUFFER
-    LOG_DEBUG("Create vertex buffer");
-
-#if TEST_RENDER_PRIMITIVE == 0
-
-    ModelData *modelDataTest =
-        load_obj("../res/models/cerberus-triang.obj", 4.0f);
-
-    float *vertices = modelDataTest->buffers.out;
-    int size = modelDataTest->buffers.outI * sizeof(float);
-
-#elif TEST_RENDER_PRIMITIVE == 1
-
-    float *vertices = PRIM_ARR_V_PYRAMID;
-    int size = PRIM_SIZ_V_PYRAMID * sizeof(float);
-
-#endif
-
-    VulkanVertexBuffer *vb = 
-        vulkan_vertex_buffer_create(
-                context->physicalDevice,
-                context->device, 
-                context->graphicsQueue,
-                context->commandPool,
-                vertices,
-                size);
-
-    context->vertexBuffer = vb;
-
-#if TEST_RENDER_MODE == 1
-
-    ui16 *indices = PRIM_ARR_I_PYRAMID;
-    ui32 indicesCount = PRIM_SIZ_I_PYRAMID;
-
-    context->indexBuffer = *vulkan_index_buffer_create(
-            context->physicalDevice,
-            context->device,
-            context->commandPool,
-            context->graphicsQueue,
-            indices, indicesCount
-    );
-
-#endif
-
-// Create UNIFORM BUFFERS
-    LOG_DEBUG("Create uniform buffers");
-    vulkan_uniform_buffer_create(context->physicalDevice, context->device,
-           &context->uniformBuffers, &context->uniformBuffersMemory,
-           &context->uniformBuffersMapped);
-
-// Create Descriptor Pool
-    LOG_DEBUG("Create descriptor pool");
-    vulkan_descriptor_pool_create(context->device, &context->descriptorPool, 
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-
-// Create a texture
-    LOG_DEBUG("Create a test texture");
-    Texture *texture = 
-        texture_create("../res/textures/pbr/cerberus/Cerberus_A.tga",
-                0, 0, 0, context);
-
-// Create Descriptor Sets
-    LOG_DEBUG("Create descriptor sets");
-    vulkan_descriptor_sets_create(context->device, context->descriptorPool,
-        &context->descriptorSets, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        context->uniformBuffers, sizeof(UniformBufferObject),
-        context->pipelineDetails->descriptorSetLayout,
-        texture->vulkan.textureImageView, texture->vulkan.textureSampler);
-}
-
 void vulkan_context_create_sync(VulkanDeviceContext *context) {
 
     context->imageAvailableSemaphores = malloc(
@@ -513,86 +343,6 @@ void vulkan_context_create_sync(VulkanDeviceContext *context) {
                     "failed to create synchronization objcets for a frame!");
         }
     }
-}
-
-void vulkan_drawFrame(VulkanDeviceContext *context, GLFWwindow *window) {
-    VK_CHECK(vkWaitForFences(context->device, 1,
-                &context->inFlightFences[context->currentFrame],
-                VK_TRUE, UINT64_MAX));
-
-    ui32 imageIndex;
-    VkResult result = vkAcquireNextImageKHR(context->device,
-            context->swapChainDetails->swapchain, UINT64_MAX,
-            context->imageAvailableSemaphores[context->currentFrame],
-            VK_NULL_HANDLE, &imageIndex);
-
-    if(result == VK_ERROR_OUT_OF_DATE_KHR) {
-        LOG_DEBUG("VK_ERROR_OUT_OF_DATE_KHR - recreating swapchain");
-        context->swapChainDetails = vulkan_swapchain_recreate(
-                context->physicalDevice,
-                context->device,
-                context->swapChainDetails,
-                context->surface,
-                context->pipelineDetails->renderPass,
-                &context->depthResources,
-                window // TODO: Maybe don't use this??
-        );
-        return; // must pull-out for requeue
-    }
-    else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        LOG_ERROR("Failed to acquire next image!");
-    }
-
-    // Must be done AFTER we potentially recreate the swapchain.
-    // Avoids Fence deadlock.
-    VK_CHECK(vkResetFences(context->device, 1,
-            &context->inFlightFences[context->currentFrame]));
-
-    vkResetCommandBuffer(context->commandBuffers[context->currentFrame], 0);
-    _recordCommandBuffer(context, imageIndex, &context->commandBuffers[context->currentFrame]);
-
-    VkSemaphore waitSemaphores[] = {context->imageAvailableSemaphores[context->currentFrame]};
-    VkSemaphore signalSemaphores[] = {context->renderFinishedSemaphores[context->currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-
-    // Update UBO data
-    //LOG_DEBUG("update uniform buffers");
-    vulkan_uniform_buffer_update(context->currentFrame,
-            context->uniformBuffersMapped, context->swapChainDetails->swapchainExtent);
-
-    VkSubmitInfo submitInfo = {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = waitSemaphores,
-        .pWaitDstStageMask = waitStages,
-
-        .commandBufferCount = 1,
-        .pCommandBuffers = &context->commandBuffers[context->currentFrame],
-
-        .signalSemaphoreCount = 1,
-        .pSignalSemaphores = signalSemaphores
-    };
-
-    VK_CHECK(vkQueueSubmit(context->graphicsQueue, 1,
-                &submitInfo, context->inFlightFences[context->currentFrame]));
-
-    VkSwapchainKHR swapChains[] = {context->swapChainDetails->swapchain};
-
-    VkPresentInfoKHR presentInfo = {
-        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = signalSemaphores,
-
-        .swapchainCount = 1,
-        .pSwapchains = swapChains,
-        .pImageIndices = &imageIndex,
-
-        .pResults = NULL // Optional
-    };
-
-    vkQueuePresentKHR(context->graphicsQueue, &presentInfo);
-    context->currentFrame = (context->currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void vulkan_device_cleanup(VulkanDeviceContext* context) {

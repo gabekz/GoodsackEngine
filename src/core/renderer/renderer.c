@@ -174,7 +174,7 @@ void renderer_tick_VULKAN(Renderer *renderer, ECS *ecs) {
     //renderer->currentPass = REGULAR;
     //ecs_event(ecs, ECS_RENDER);
 
-    vulkan_drawFrame(renderer->vulkanDevice, renderer->window);
+    vulkan_render_draw(renderer->vulkanDevice, renderer->window);
 }
 
 void renderer_tick(Renderer *renderer) {

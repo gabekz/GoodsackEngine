@@ -11,6 +11,7 @@
 
 #include <core/api/vulkan/vulkan_swapchain.h>
 #include <core/api/vulkan/vulkan_pipeline.h>
+#include <core/api/vulkan/vulkan_render.h>
 
 // Buffers
 #include <core/api/vulkan/vulkan_buffer.h>

@@ -62,10 +62,7 @@ void vulkan_device_cleanup(VulkanDeviceContext* context);
 
 ui32 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice);
 
-void vulkan_context_create_command_pool(VulkanDeviceContext *context);
 void vulkan_context_create_sync(VulkanDeviceContext *context);
-
-void vulkan_drawFrame(VulkanDeviceContext *context, GLFWwindow *window);
 
 #if 0
 static inline void init_vulkan() {

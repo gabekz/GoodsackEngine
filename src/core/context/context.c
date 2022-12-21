@@ -108,8 +108,7 @@ GLFWwindow* createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
                 vulkanDevice->pipelineDetails->renderPass
             );
 
-        //vulkan_context_create_framebuffers(vulkanDevice);
-        vulkan_context_create_command_pool(vulkanDevice);
+        vulkan_render_setup(vulkanDevice);
         vulkan_context_create_sync(vulkanDevice);
 
         return window;
