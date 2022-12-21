@@ -367,14 +367,20 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, 
     //LOG_DEBUG("Binding Vertex Buffer");
     VkBuffer vertexBuffers[] = {context->vertexBuffer->buffer};
     VkDeviceSize offsets[] = {0};
+
+    VkBuffer indexBuffer = context->indexBuffer.buffer;
+
     vkCmdBindVertexBuffers(*commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(*commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
     vkCmdBindDescriptorSets(*commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
             context->pipelineDetails->pipelineLayout, 0, 1,
             &context->descriptorSets[context->currentFrame], 0, NULL);
 
     //LOG_DEBUG("Drawing Vertex Buffer");
-    vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
+    //vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
+    vkCmdDrawIndexed(*commandBuffer, context->indexBuffer.indicesCount,
+            1, 0, 0, 0);
 
     vkCmdEndRenderPass(*commandBuffer);
 
@@ -439,6 +445,16 @@ void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
                 size);
 
     context->vertexBuffer = vb;
+
+    ui16 indices[] = {0, 1, 2, 2, 3, 0};
+
+    context->indexBuffer = *vulkan_index_buffer_create(
+            context->physicalDevice,
+            context->device,
+            context->commandPool,
+            context->graphicsQueue,
+            indices, 6
+    );
 
 // Create UNIFORM BUFFERS
     LOG_DEBUG("Create uniform buffers");

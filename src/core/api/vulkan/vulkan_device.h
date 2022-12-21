@@ -6,6 +6,7 @@
 
 #include <core/api/vulkan/vulkan_swapchain.h>
 #include <core/api/vulkan/vulkan_pipeline.h>
+#include <core/api/vulkan/vulkan_index_buffer.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 
 #ifdef __cplusplus
@@ -33,6 +34,7 @@ struct _vulkanDeviceContext {
 
     // Temporary vertex buffer for testing
     VulkanVertexBuffer *vertexBuffer;
+    VulkanIndexBuffer indexBuffer;
 
     // UBO
     VkBuffer *uniformBuffers;
