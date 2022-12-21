@@ -19,4 +19,6 @@
 
 #include <core/api/vulkan/vulkan_image.h>
 
+#include <core/api/vulkan/vulkan_framebuffer.h>
+
 #endif // H_VULKAN

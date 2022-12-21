@@ -4,6 +4,8 @@
 #include <util/gfx.h>
 #include <util/sysdefs.h>
 
+#include <core/api/vulkan/vulkan_depth.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -31,12 +33,24 @@ VulkanSwapChainDetails* vulkan_swapchain_create(
         VkDevice device, VkPhysicalDevice physicalDevice,
         VkSurfaceKHR surface, GLFWwindow *window);
 
+// Recreate the Swapchain
+VulkanSwapChainDetails *vulkan_swapchain_recreate(
+        VkPhysicalDevice physicalDevice, VkDevice device,
+        VulkanSwapChainDetails *swapChainDetails,
+        VkSurfaceKHR surface, VkRenderPass renderPass,
+        VulkanDepthResources **ptrDepthResources,
+        GLFWwindow *window);
+
 // Create Swapchain Details structure
 VulkanSwapChainDetails* vulkan_swapchain_query_details(
         VkPhysicalDevice device, VkSurfaceKHR surface);
 
-// Create Swapchain Image Views
-void vulkan_swapchain_create_image_views(VulkanSwapChainDetails *details);
+// Cleanup
+void vulkan_swapchain_cleanup(VkDevice device,
+        VulkanSwapChainDetails *swapchainDetails);
+
+// TODO: Create Swapchain Image Views
+//void vulkan_swapchain_create_image_views(VulkanSwapChainDetails *details);
 
 // Helpers
 

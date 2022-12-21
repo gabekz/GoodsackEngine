@@ -37,11 +37,17 @@ int main(int argc, char *argv[]) {
         }
     }}
 
-
 // Main Lua entry
     LuaInit("../src/lua/demo/main.lua");
 
-    LOG_INFO("Device API is: %d", device_getGraphics());
+    switch(device_getGraphics()) {
+        case GRAPHICS_API_OPENGL:
+        LOG_INFO("Device API is OpenGL");
+        break;
+        case GRAPHICS_API_VULKAN:
+        LOG_INFO("Device API is Vulkan");
+        break;
+    }
 
 // Initialize Renderer
     Renderer *renderer = renderer_init();
@@ -285,7 +291,6 @@ int main(int argc, char *argv[]) {
     }
 
     delete(debugGui);
-
 
     glfwDestroyWindow(renderer->window);
     free(renderer);

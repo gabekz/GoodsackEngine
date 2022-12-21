@@ -6,6 +6,9 @@
 #include <util/maths.h>
 #include <util/logger.h>
 
+#include <core/api/vulkan/vulkan_depth.h>
+#include <core/api/vulkan/vulkan_framebuffer.h>
+
 VulkanSwapChainDetails* vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface) {
 
     VulkanSwapChainDetails *details = malloc(sizeof(VulkanSwapChainDetails));
@@ -160,6 +163,56 @@ VulkanSwapChainDetails* vulkan_swapchain_create(
     return details;
 }
 
-void vulkan_swapchain_create_image_views(VulkanSwapChainDetails *details) {
+VulkanSwapChainDetails *vulkan_swapchain_recreate(
+        VkPhysicalDevice physicalDevice, VkDevice device,
+        VulkanSwapChainDetails *swapChainDetails,
+        VkSurfaceKHR surface, VkRenderPass renderPass,
+        VulkanDepthResources **ptrDepthResources,
+        GLFWwindow *window)
+{
+    vkDeviceWaitIdle(device);
 
+    // cleanup OLD swapchain
+    vulkan_swapchain_cleanup(device, swapChainDetails);
+    // TODO: Free?
+
+    // Create a NEW swapchain
+    swapChainDetails =
+        vulkan_swapchain_create(device, physicalDevice,
+        surface, window);
+
+    // Recreate depth resources
+    *ptrDepthResources = 
+        vulkan_depth_create_resources(
+                physicalDevice, device, swapChainDetails->swapchainExtent);
+
+    VulkanDepthResources p = **ptrDepthResources;
+    VkImageView depthImageView = p.depthImageView;
+
+    ui32 framebufferCount = swapChainDetails->swapchainImageCount;
+    swapChainDetails->swapchainFramebuffers = 
+        vulkan_framebuffer_create(
+            device,
+            framebufferCount,
+            swapChainDetails->swapchainImageViews,
+            depthImageView,
+            swapChainDetails->swapchainExtent,
+            renderPass
+        );
+
+    return swapChainDetails;
+}
+
+void vulkan_swapchain_cleanup(VkDevice device,
+        VulkanSwapChainDetails *swapchainDetails)
+{
+    // TODO: may be incorrect sizes. i.e. framebuffer is not same count 
+    for(int i = 0; i < swapchainDetails->swapchainImageCount; i++) {
+        vkDestroyFramebuffer(
+                device, swapchainDetails->swapchainFramebuffers[i], NULL);
+        vkDestroyImageView(
+                device, swapchainDetails->swapchainImageViews[i], NULL);
+    }
+
+    vkDestroySwapchainKHR(device, swapchainDetails->swapchain, NULL);
 }

@@ -395,35 +395,6 @@ static void _recordCommandBuffer(VulkanDeviceContext *context, ui32 imageIndex, 
     }
 }
 
-void vulkan_context_create_framebuffers(VulkanDeviceContext *context) {
-    VkFramebuffer *swapchainFramebuffers = malloc(
-            sizeof(VkFramebuffer) *
-            context->swapChainDetails->swapchainImageCount);
-
-    for(int i = 0; i < context->swapChainDetails->swapchainImageCount; i++) {
-        VkImageView attachments[] = {
-        context->swapChainDetails->swapchainImageViews[i],
-        context->depthResources->depthImageView};
-
-        VkFramebufferCreateInfo framebufferInfo = {
-            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-            .renderPass = context->pipelineDetails->renderPass,
-            .attachmentCount = 2,
-            .pAttachments = attachments,
-            .width = context->swapChainDetails->swapchainExtent.width,
-            .height = context->swapChainDetails->swapchainExtent.height,
-            .layers = 1
-        };
-
-        VK_CHECK(vkCreateFramebuffer(
-                    context->device, &framebufferInfo,
-                    NULL, &swapchainFramebuffers[i]));
-    }
-
-    context->swapChainDetails->swapchainFramebuffers = swapchainFramebuffers;
-
-}
-
 void vulkan_context_create_command_pool(VulkanDeviceContext *context) {
 // Create a Command Pool
     LOG_DEBUG("Create Command Pool");
@@ -523,13 +494,10 @@ void vulkan_context_create_sync(VulkanDeviceContext *context) {
     }
 }
 
-void vulkan_drawFrame(VulkanDeviceContext *context) {
+void vulkan_drawFrame(VulkanDeviceContext *context, GLFWwindow *window) {
     VK_CHECK(vkWaitForFences(context->device, 1,
                 &context->inFlightFences[context->currentFrame],
                 VK_TRUE, UINT64_MAX));
-
-    VK_CHECK(vkResetFences(context->device, 1,
-            &context->inFlightFences[context->currentFrame]));
 
     ui32 imageIndex;
     VkResult result = vkAcquireNextImageKHR(context->device,
@@ -538,11 +506,26 @@ void vulkan_drawFrame(VulkanDeviceContext *context) {
             VK_NULL_HANDLE, &imageIndex);
 
     if(result == VK_ERROR_OUT_OF_DATE_KHR) {
-        LOG_WARN("Cannot acquire next image. Try recreating the swapchain?");
+        LOG_DEBUG("VK_ERROR_OUT_OF_DATE_KHR - recreating swapchain");
+        context->swapChainDetails = vulkan_swapchain_recreate(
+                context->physicalDevice,
+                context->device,
+                context->swapChainDetails,
+                context->surface,
+                context->pipelineDetails->renderPass,
+                &context->depthResources,
+                window // TODO: Maybe don't use this??
+        );
+        return; // must pull-out for requeue
     }
     else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         LOG_ERROR("Failed to acquire next image!");
     }
+
+    // Must be done AFTER we potentially recreate the swapchain.
+    // Avoids Fence deadlock.
+    VK_CHECK(vkResetFences(context->device, 1,
+            &context->inFlightFences[context->currentFrame]));
 
     vkResetCommandBuffer(context->commandBuffers[context->currentFrame], 0);
     _recordCommandBuffer(context, imageIndex, &context->commandBuffers[context->currentFrame]);
@@ -593,11 +576,7 @@ void vulkan_drawFrame(VulkanDeviceContext *context) {
 
 void vulkan_device_cleanup(VulkanDeviceContext* context) {
 
-    // Cleanup image views
-    for(int i = 0; i < context->swapChainDetails->swapchainImageCount; i++) {
-        vkDestroyImageView(context->device, context->swapChainDetails->swapchainImageViews[i], NULL);
-        vkDestroyFramebuffer(context->device, context->swapChainDetails->swapchainFramebuffers[i], NULL);
-    }
+    vulkan_swapchain_cleanup(context->device, context->swapChainDetails);
 
     vkDestroyBuffer(context->device, context->vertexBuffer->buffer, NULL);
     vkFreeMemory(context->device, context->vertexBuffer->bufferMemory, NULL);

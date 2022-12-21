@@ -98,7 +98,17 @@ GLFWwindow* createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
             vulkanDevice->device,
             vulkanDevice->swapChainDetails->swapchainExtent);
 
-        vulkan_context_create_framebuffers(vulkanDevice);
+        vulkanDevice->swapChainDetails->swapchainFramebuffers = 
+            vulkan_framebuffer_create(
+                vulkanDevice->device,
+                vulkanDevice->swapChainDetails->swapchainImageCount,
+                vulkanDevice->swapChainDetails->swapchainImageViews,
+                vulkanDevice->depthResources->depthImageView,
+                vulkanDevice->swapChainDetails->swapchainExtent,
+                vulkanDevice->pipelineDetails->renderPass
+            );
+
+        //vulkan_context_create_framebuffers(vulkanDevice);
         vulkan_context_create_command_pool(vulkanDevice);
         vulkan_context_create_sync(vulkanDevice);
 
