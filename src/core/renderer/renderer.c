@@ -24,7 +24,6 @@ Renderer* renderer_init() {
    int winWidth    = DEFAULT_WINDOW_WIDTH;
    int winHeight   = DEFAULT_WINDOW_HEIGHT;
 
-
     Renderer *ret = malloc(sizeof(Renderer));
     GLFWwindow *window = createWindow(winWidth, winHeight, 
             &ret->vulkanDevice);
@@ -80,6 +79,7 @@ void renderer_start(Renderer *renderer) {
     Scene *scene = renderer->sceneL[renderer->activeScene];
     ECS *ecs = scene->ecs;
 
+// Clear FPS/MS Data
     if(DEVICE_API_OPENGL) {
         shadowmap_init();
         // TODO: clean this up. Should be stored in UBO for directional-lights
@@ -110,7 +110,8 @@ void renderer_start(Renderer *renderer) {
         clearGLState();
     }
     else if (DEVICE_API_VULKAN) {
-        LOG_DEBUG("Renderer Start-Phase is not implemented in Vulkan");
+        ecs_event(ecs, ECS_INIT);
+        //LOG_DEBUG("Renderer Start-Phase is not implemented in Vulkan");
     }
 }
 
@@ -168,11 +169,14 @@ static void renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs) {
 }
 
 void renderer_tick_VULKAN(Renderer *renderer, ECS *ecs) {
-    glfwPollEvents();
-    //ecs_event(ecs, ECS_UPDATE);
 
-    //renderer->currentPass = REGULAR;
-    //ecs_event(ecs, ECS_RENDER);
+// Update Analytics Data
+
+    glfwPollEvents();
+
+    ecs_event(ecs, ECS_UPDATE);
+    renderer->currentPass = REGULAR;
+    ecs_event(ecs, ECS_RENDER);
 
     vulkan_render_draw(renderer->vulkanDevice, renderer->window);
 }

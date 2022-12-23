@@ -8,6 +8,73 @@
 #include <import/loader_obj.h>
 #include <model/model.h>
 
+#include <core/api/device.h>
+
+static void DrawMesh(
+        struct ComponentMesh *mesh,
+        struct ComponentTransform *transform,
+        Material *material)
+{
+    if(DEVICE_API_OPENGL) {
+
+        // Handle culling
+        #if 0
+        if((mesh->properties.cullMode | CULL_DISABLED)) {
+            printf("Disable culling");
+        }
+        #endif
+
+        // Enable material + shaders
+        material_use(material);
+
+        // Transform Uniform
+        glUniformMatrix4fv(
+        glGetUniformLocation(material->shaderProgram->id, "u_Model"),
+        1, GL_FALSE, (float *)transform->mvp.model);
+
+        vao_bind(mesh->model->vao);
+
+        ModelData *data = mesh->model->modelData;
+        ui32 vertices = data->vertexCount;
+        ui32 indices  = data->indicesCount;
+
+        ui16 drawMode = mesh->properties.drawMode;
+
+        switch(drawMode) {
+            case DRAW_ELEMENTS:
+                glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
+            break;
+            case DRAW_ARRAYS:
+            default:
+                glDrawArrays(GL_TRIANGLES, 0, vertices);
+            break;
+        }
+
+    }
+    else if(DEVICE_API_VULKAN) {
+    #if 0
+        // Bind transform Model (MVP) and Position (vec3) descriptor set
+        vkCmdBindDescriptorSets(
+                *commandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                context->pipelineDetails->pipelineLayout, 0, 1,
+                &context->descriptorSets[context->currentFrame], 0, NULL);
+        // Bind texture descriptor set
+        vkCmdBindDescriptorSets(
+                *commandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                context->pipelineDetails->pipelineLayout, 0, 1,
+                &context->descriptorSets[context->currentFrame], 0, NULL);
+        // Bind Vertex/Index buffers
+        vkCmdBindVertexBuffers(*commandBuffer, 0, 1, vertexBuffers, offsets);
+
+        // Draw command
+        vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
+    #endif
+    }
+}
+
+
 static void init(Entity e) {
     if(!(ecs_has(e, C_TRANSFORM))) return;
     if(!(ecs_has(e, C_MESH))) return;
@@ -28,42 +95,6 @@ static void init(Entity e) {
         1, GL_FALSE, (float *)e.ecs->renderer->lightSpaceMatrix);
 
     // TODO: send model matrix to shader
-}
-
-static void DrawMesh(
-        struct ComponentMesh *mesh,
-        struct ComponentTransform *transform,
-        Material *material) {
-
-    // Handle culling
-    /*
-    if((mesh->properties.cullMode | CULL_DISABLED)) {
-        printf("Disable culling");
-    }
-    */
-
-    material_use(material);
-    glUniformMatrix4fv(
-    glGetUniformLocation(material->shaderProgram->id, "u_Model"),
-    1, GL_FALSE, (float *)transform->mvp.model);
-
-    vao_bind(mesh->model->vao);
-
-    ModelData *data = mesh->model->modelData;
-    ui32 vertices = data->vertexCount;
-    ui32 indices  = data->indicesCount;
-
-    ui16 drawMode = mesh->properties.drawMode;
-
-    switch(drawMode) {
-        case DRAW_ELEMENTS:
-            glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
-        break;
-        case DRAW_ARRAYS:
-        default:
-            glDrawArrays(GL_TRIANGLES, 0, vertices);
-        break;
-    }
 }
 
 static void render(Entity e) {

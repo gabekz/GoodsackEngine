@@ -43,6 +43,8 @@ Material *material_create(
     ret->textures = textures;
     ret->texturesCount = textureCount;
     return ret;
+
+    // TODO: Create descriptor set
 }
 
 void material_use(Material *self) {
@@ -56,5 +58,7 @@ void material_use(Material *self) {
     }
     else if(DEVICE_API_VULKAN) {
         LOG_DEBUG("Material not implemented for Vulkan");
+
+        // TODO: Bind image descriptor set HERE
     }
 }

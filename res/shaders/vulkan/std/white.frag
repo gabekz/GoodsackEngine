@@ -14,4 +14,5 @@ void main() {
 
     float gamma = 2.2;
     outColor.rgb = pow(texColor.rgb, vec3(1.0/gamma));
+    //outColor.rgb = vec3(0, 1, 1);
 }

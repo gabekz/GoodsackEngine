@@ -9,8 +9,8 @@
 #include <import/loader_obj.h>
 #include <model/primitives.h>
 
-#define TEST_RENDER_PRIMITIVE   1   // 0 - Model Loader | 1 - Primitive
-#define TEST_RENDER_MODE        1   // 0 - VkCmdDraw    | 1 - VkCmdDrawIndexed
+#define TEST_RENDER_PRIMITIVE   0   // 0 - Model Loader | 1 - Primitive
+#define TEST_RENDER_MODE        0   // 0 - VkCmdDraw    | 1 - VkCmdDrawIndexed
 
 void vulkan_render_setup(VulkanDeviceContext *context) {
 // Create a Command Pool
@@ -74,22 +74,23 @@ void vulkan_render_setup(VulkanDeviceContext *context) {
 
 // Create Descriptor Pool
     LOG_DEBUG("Create descriptor pool");
-    vulkan_descriptor_pool_create(context->device, &context->descriptorPool, 
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    context->descriptorPool = vulkan_descriptor_pool_create(context->device);
 
 // Create a texture
     LOG_DEBUG("Create a test texture");
     Texture *texture = 
-        texture_create("../res/textures/bricks.png",
+        texture_create("../res/textures/pbr/cerberus/Cerberus_A.tga",
                 0, 0, 0, context);
 
 // Create Descriptor Sets
     LOG_DEBUG("Create descriptor sets");
-    vulkan_descriptor_sets_create(context->device, context->descriptorPool,
-        &context->descriptorSets, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        context->uniformBuffers, sizeof(UniformBufferObject),
-        context->pipelineDetails->descriptorSetLayout,
-        texture->vulkan.textureImageView, texture->vulkan.textureSampler);
+    context->descriptorSets =
+        vulkan_descriptor_sets_create(context->device,
+                context->descriptorPool,
+                context->pipelineDetails->descriptorSetLayout,
+                context->uniformBuffers, sizeof(UniformBufferObject),
+                texture->vulkan.textureImageView,
+                texture->vulkan.textureSampler);
 }
 
 void vulkan_render_record(VulkanDeviceContext *context, ui32 imageIndex,
@@ -129,6 +130,7 @@ void vulkan_render_record(VulkanDeviceContext *context, ui32 imageIndex,
     vkCmdBeginRenderPass(*commandBuffer,
         &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+    // Bind pipeline (containing loaded shader modules)
     vkCmdBindPipeline(*commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         context->pipelineDetails->graphicsPipeline);
@@ -214,20 +216,28 @@ void vulkan_render_draw(VulkanDeviceContext *context, GLFWwindow *window) {
     VK_CHECK(vkResetFences(context->device, 1,
             &context->inFlightFences[context->currentFrame]));
 
-    vkResetCommandBuffer(context->commandBuffers[context->currentFrame], 0);
+    // Reset before recording
+    VK_CHECK(vkResetCommandBuffer(
+                context->commandBuffers[context->currentFrame], 0));
 
     // Record the command buffer
     vulkan_render_record(context, imageIndex,
             &context->commandBuffers[context->currentFrame]);
 
-    VkSemaphore waitSemaphores[] = {context->imageAvailableSemaphores[context->currentFrame]};
-    VkSemaphore signalSemaphores[] = {context->renderFinishedSemaphores[context->currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkSemaphore waitSemaphores[] =
+        {context->imageAvailableSemaphores[context->currentFrame]};
+    VkSemaphore signalSemaphores[] = 
+        {context->renderFinishedSemaphores[context->currentFrame]};
+    VkPipelineStageFlags waitStages[] =
+        {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
     // Update UBO data
     //LOG_DEBUG("update uniform buffers");
+    /*
     vulkan_uniform_buffer_update(context->currentFrame,
-            context->uniformBuffersMapped, context->swapChainDetails->swapchainExtent);
+            context->uniformBuffersMapped,
+            context->swapChainDetails->swapchainExtent);
+    */
 
     VkSubmitInfo submitInfo = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,

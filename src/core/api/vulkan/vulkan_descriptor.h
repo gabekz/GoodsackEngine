@@ -8,18 +8,21 @@
 extern "C" {
 #endif // __cplusplus
 
-// Creates Vulkan DescriptorSet layouts
-void vulkan_descriptor_create_layout(VkDevice device,
-        VkDescriptorSetLayout *descriptorSetLayout);
+// Create descriptor pool
+VkDescriptorPool vulkan_descriptor_pool_create(VkDevice device);
 
-void vulkan_descriptor_pool_create(VkDevice device,
-        VkDescriptorPool *descriptorPool, VkDescriptorType type);
+// Creates Vulkan DescriptorSet layouts - fit for 1 UBO (MVP) and
+// 1 TextureSampler (albedo)
+VkDescriptorSetLayout vulkan_descriptor_create_layout(VkDevice device);
 
-void vulkan_descriptor_sets_create(VkDevice device,
-        VkDescriptorPool descriptorPool, VkDescriptorSet **descriptorSets,
-        VkDescriptorType type, VkBuffer *uniformBuffers, ui32 structSize,
+// Creates a descriptor set fit for 1 UBO (MVP) and 1 TextureSampler (albedo)
+VkDescriptorSet* vulkan_descriptor_sets_create(VkDevice device,
+        VkDescriptorPool descriptorPool,
         VkDescriptorSetLayout layout,
-        VkImageView textureImageView, VkSampler textureSampler);
+        VkBuffer *uniformBuffers,
+        ui32 structSize,
+        VkImageView textureImageView,
+        VkSampler textureSampler);
 
 #ifdef __cplusplus
 }

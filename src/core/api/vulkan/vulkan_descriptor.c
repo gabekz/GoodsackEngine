@@ -3,14 +3,43 @@
 
 #include <stdlib.h>
 
-#include <util/gfx.h>
+VkDescriptorPool vulkan_descriptor_pool_create(VkDevice device)
+{
+    ui32 poolSizesCount = 11;
+    VkDescriptorPoolSize poolSizes[] =
+    {
+        // Descriptor Type                             Descriptor Count
+        { VK_DESCRIPTOR_TYPE_SAMPLER,                   10 },
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,    10 },
+        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,             10 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,             10 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,      10 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,      10 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,            10 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,            10 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,    10 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,    10 },
+        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,          10 },
+    };
 
-void vulkan_descriptor_create_layout(VkDevice device,
-        VkDescriptorSetLayout *descriptorSetLayout)
+    VkDescriptorPoolCreateInfo poolInfo = {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .poolSizeCount = poolSizesCount,
+        .pPoolSizes = poolSizes,
+        .maxSets = (ui32)MAX_FRAMES_IN_FLIGHT,
+    };
+
+    VkDescriptorPool descriptorPool;
+    VK_CHECK(vkCreateDescriptorPool(
+            device, &poolInfo, NULL, &descriptorPool));
+
+    return descriptorPool;
+}
+
+VkDescriptorSetLayout vulkan_descriptor_create_layout(VkDevice device)
 {
     ui32 bindingCount = 2;
-    VkDescriptorSetLayoutBinding *bindings = malloc(
-            sizeof(VkDescriptorSetLayoutBinding) * bindingCount);
+    VkDescriptorSetLayoutBinding bindings[2];
 
     // UBO Layout
     bindings[0] = (VkDescriptorSetLayoutBinding){
@@ -38,48 +67,27 @@ void vulkan_descriptor_create_layout(VkDevice device,
         .pBindings = bindings 
     };
 
+    VkDescriptorSetLayout descriptorSetLayout;
+
     VK_CHECK(vkCreateDescriptorSetLayout(
-            device, &layoutInfo, NULL, descriptorSetLayout));
+            device, &layoutInfo, NULL, &descriptorSetLayout));
+
+    return descriptorSetLayout;
 }
 
-void vulkan_descriptor_pool_create(VkDevice device,
-        VkDescriptorPool *descriptorPool, VkDescriptorType type)
-{
-    ui32 poolSizeCount = 2;
-    VkDescriptorPoolSize *poolSizes = malloc(
-            sizeof(VkDescriptorPoolSize) * poolSizeCount);
-
-    poolSizes[0] = (VkDescriptorPoolSize){
-        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = (ui32)MAX_FRAMES_IN_FLIGHT,
-    };
-    poolSizes[1] = (VkDescriptorPoolSize){
-        .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        .descriptorCount = (ui32)MAX_FRAMES_IN_FLIGHT,
-    };
-
-    VkDescriptorPoolCreateInfo poolInfo = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .poolSizeCount = poolSizeCount,
-        .pPoolSizes = poolSizes,
-        .maxSets = (ui32)MAX_FRAMES_IN_FLIGHT,
-    };
-
-    VK_CHECK(vkCreateDescriptorPool(
-            device, &poolInfo, NULL, descriptorPool));
-}
-
-void vulkan_descriptor_sets_create(VkDevice device,
-        VkDescriptorPool descriptorPool, VkDescriptorSet **descriptorSets,
-        VkDescriptorType type, VkBuffer *uniformBuffers, ui32 structSize,
+VkDescriptorSet* vulkan_descriptor_sets_create(VkDevice device,
+        VkDescriptorPool descriptorPool,
         VkDescriptorSetLayout layout,
-        VkImageView textureImageView, VkSampler textureSampler)
+        VkBuffer *uniformBuffers,
+        ui32 structSize,
+        VkImageView textureImageView,
+        VkSampler textureSampler)
 {
-    VkDescriptorSetLayout *layouts = malloc(
-            sizeof(VkDescriptorSetLayout) * MAX_FRAMES_IN_FLIGHT);
-    // TODO: FIX THIS SHIT
-    layouts[0] = layout;
-    layouts[1] = layout;
+    // TODO: Make a proper multiplier for the layout
+    VkDescriptorSetLayout layouts[MAX_FRAMES_IN_FLIGHT];
+    for(int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        layouts[i] = layout;
+    }
 
     VkDescriptorSetAllocateInfo allocInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -88,11 +96,10 @@ void vulkan_descriptor_sets_create(VkDevice device,
         .pSetLayouts = layouts,
     };
 
-    VkDescriptorSet *sets = malloc(sizeof(VkDescriptorSet) * MAX_FRAMES_IN_FLIGHT);
+    VkDescriptorSet *sets = malloc(
+            sizeof(VkDescriptorSet) * MAX_FRAMES_IN_FLIGHT);
 
     VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, sets));
-    //descriptorSets = &sets;
-
 
     for(int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         // UBO info (binding 0)
@@ -109,8 +116,7 @@ void vulkan_descriptor_sets_create(VkDevice device,
         };
 
         ui32 descriptorWritesCount = 2;
-        VkWriteDescriptorSet *descriptorWrites = malloc(
-                sizeof(VkWriteDescriptorSet) * descriptorWritesCount);
+        VkWriteDescriptorSet descriptorWrites[descriptorWritesCount];
 
         descriptorWrites[0] = (VkWriteDescriptorSet){
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -143,5 +149,6 @@ void vulkan_descriptor_sets_create(VkDevice device,
                 descriptorWrites, 0, NULL);
     }
 
-    *descriptorSets = sets;
+    return sets;
 }
+

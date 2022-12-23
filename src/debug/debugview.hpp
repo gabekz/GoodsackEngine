@@ -20,6 +20,7 @@ protected:
     bool m_showSceneLighting;
     bool m_showEntityViewer;
     bool m_showComponentViewer;
+    bool m_showProfiler;
 
     Entity m_selectedEntity;
 

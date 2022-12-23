@@ -11,16 +11,28 @@ struct ComponentCamera {
     vec3 position, axisUp;
     float fov;
     float speed, sensitivity;
+
+    // OpenGL
     ui32 uboId;
+    //
+
+    // Vulkan
+    VkBuffer *uniformBuffer;
+    VkDeviceMemory *uniformBufferMemory;
+    void **uniformBufferMapped;
+    //
+
     struct {
         float nearZ, farZ;
     } clipping;
     struct {
-        mat4 view, proj;
-    } mvp;
-    struct {
         int width, height;
     } screen;
+
+    struct {
+        //vec3 position; -- TODO: Should be part of UNIFORM structure
+        mat4 model, view, proj;
+    } uniform;
 };
 
 void s_camera_init(ECS *ecs);

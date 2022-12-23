@@ -1,9 +1,12 @@
 #include "camera_input.h"
 
+#include <util/logger.h>
+
 void camera_input(struct ComponentCamera *self, GLFWwindow *window) {
     float *p = GLM_VEC3_ZERO;
     float *cross = GLM_VEC3_ZERO;
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        //LOG_INFO("PRESS %f%f%f", self->position[0], self->position[1], self->position[2]);
         glm_vec3_scale((vec3){0.0f, 0.0f, -1.0f}, self->speed, p);
         glm_vec3_add(self->position, p, self->position);
     }

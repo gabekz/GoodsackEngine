@@ -14,30 +14,6 @@
 
 typedef enum renderPass {REGULAR = 0, SHADOW} RenderPass;
 
-/*
-#ifdef __cplusplus
-
-class Renderer
-{
-public:
-    Renderer();
-    ~Renderer();
-
-    void SetActiveScene(ui32 scene);
-
-    int getWindowWidth();
-    int getWindowHeight();
-
-protected:
-    GLFWwindow *m_window;
-    int m_windowWidth, m_windowHeight;
-
-private:
-};
-
-#else
-*/
-
 typedef struct _renderer Renderer;
 
 struct _renderer {
@@ -47,7 +23,7 @@ struct _renderer {
     Scene **sceneL;
     ui16  sceneC, activeScene;
 
-    RenderPass currentPass;
+    RenderPass currentPass; // TODO: rename -> RenderStage
     Material *explicitMaterial;
 
     // Skybox test
@@ -64,6 +40,10 @@ struct _renderer {
     VulkanDeviceContext *vulkanDevice;
 };
 
+/**
+ * Initialize the Renderer.
+ * @return allocated Renderer structure
+ */
 Renderer* renderer_init();
 
 void renderer_add_light();

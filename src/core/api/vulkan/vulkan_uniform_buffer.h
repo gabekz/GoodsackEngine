@@ -13,10 +13,6 @@ typedef struct UniformBufferObject {
     mat4 model, view, proj;
 } UniformBufferObject;
 
-void vulkan_uniform_buffer_create_descriptor(
-        VkDevice device,
-        VkDescriptorSetLayout *descriptorSetLayout);
-
 void vulkan_uniform_buffer_create(
         VkPhysicalDevice physicalDevice, VkDevice device,
         VkBuffer **uniformBuffers, VkDeviceMemory **uniformBuffersMemory,

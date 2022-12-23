@@ -39,6 +39,8 @@ static void init(Entity e) {
     //*transform->mvp.matrix = matrix;
     //transform->mvp.matrix = matrix;
     //transform->mvp.matrix = matrix;
+    
+    // TODO: Make descriptor set HERE
 }
 
 static void update(Entity e) {

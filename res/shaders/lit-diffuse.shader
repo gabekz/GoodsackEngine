@@ -16,6 +16,7 @@ layout (std140, binding = 0) uniform Camera {
 } s_Camera;
 
 uniform mat4 u_Model;
+uniform mat4 u_LightSpaceMatrix;
 
 out VS_OUT {
     vec2 texCoords;
@@ -25,8 +26,6 @@ out VS_OUT {
     mat3 tbn;
     vec4 fragLightSpace;
 } vs_out;
-
-uniform mat4 u_LightSpaceMatrix;
 
 void main() {
    gl_Position = s_Camera.projection * s_Camera.view * u_Model *

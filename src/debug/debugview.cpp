@@ -17,19 +17,57 @@ extern "C" {
 #include <components/mesh/mesh.h>
 #include <components/camera/camera.h>
 
+#include <core/api/vulkan/vulkan.h>
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_vulkan.h"
 
-DebugGui::DebugGui(Renderer *renderer) {
+DebugGui::DebugGui(Renderer *renderer)
+{
     IMGUI_CHECKVERSION();
+
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
+
     // Setup Platform/Renderer bindings
     if(DEVICE_API_OPENGL) {
         ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
+    }
+    else if(DEVICE_API_VULKAN) {
+        return;
+        /*
+        ImGui_ImplGlfw_InitForVulkan(renderer->window, true);
+
+        VulkanDeviceContext *vkDevice = renderer->vulkanDevice;
+        ImGui_ImplVulkan_InitInfo info = {
+            .Instance = vkDevice->vulkanInstance,
+            .PhysicalDevice = vkDevice->physicalDevice,
+            .Device = vkDevice->device,
+            .Queue = vkDevice->graphicsQueue,
+            .DescriptorPool = vkDevice->descriptorPool,
+            //.RenderPass = NULL,
+            .MinImageCount = 2,
+            .ImageCount = 2,
+            //.MsaaSamples = VK_SAMPLE_COUNT_1_BIT,
+        };
+        ImGui_ImplVulkan_Init(&info, vkDevice->pipelineDetails->renderPass);
+
+        VkCommandBuffer commandBuffer = vulkan_command_stc_begin(
+                vkDevice->device, vkDevice->commandPool
+        );
+
+        ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+
+        vulkan_command_stc_end(vkDevice->device, vkDevice->graphicsQueue,
+                commandBuffer, vkDevice->commandPool
+        );
+
+        vkDeviceWaitIdle(vkDevice->device);
+        ImGui_ImplVulkan_DestroyFontUploadObjects();
+        */
     }
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -41,6 +79,7 @@ DebugGui::DebugGui(Renderer *renderer) {
     m_showSceneViewer = false;
     m_showSceneLighting = false;
     m_showExample = false;
+    m_showProfiler = false;
 }
 
 DebugGui::~DebugGui() {
@@ -50,17 +89,22 @@ DebugGui::~DebugGui() {
 }
 
 void DebugGui::Render() {
-    if(DEVICE_API_VULKAN) return; // TODO
-
 // Create new frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    if(DEVICE_API_OPENGL) {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+    }
+    else if(DEVICE_API_VULKAN)  {
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+    }
     //ImGui::GetIO().FontGlobalScale = 1.2f;
 
 // Draw Navbar
     if(ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("Window")) {
+        if (ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("ImGui Demo")) {
                 m_showExample = true;
             }
@@ -80,6 +124,12 @@ void DebugGui::Render() {
             }
             if(ImGui::MenuItem("Entities")) {
                 m_showEntityViewer = true;
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Graphics")) {
+            if(ImGui::MenuItem("Profiler")) {
+                m_showProfiler = true;
             }
             ImGui::EndMenu();
         }
@@ -229,8 +279,31 @@ void DebugGui::Render() {
 
         ImGui::End();
     }
+    if(m_showProfiler) {
+        ImGui::BeginGroup();
+        ImGui::Begin("Analytics", &m_showSceneLighting);
+
+        ImGui::Text("Performance");
+        ImGui::Separator();
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
+        ImGui::Text("%f FPS", device_getAnalytics().currentFps);
+        ImGui::Text("%f ms", device_getAnalytics().currentMs);
+        ImGui::PopStyleColor();
+        ImGui::Separator();
+        ImGui::Text("Draw Calls: ");
+        ImGui::Separator();
+        ImGui::Text("Total Vertices: ");
+        ImGui::Text("Total Polygons: ");
+        ImGui::Text("Total Faces: ");
+        //ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
+
+        ImGui::EndGroup();
+    }
 
 // Render
     ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    if(DEVICE_API_OPENGL) {
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
 }

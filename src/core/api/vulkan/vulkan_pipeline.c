@@ -221,8 +221,8 @@ VulkanPipelineDetails *vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
         .blendConstants[3] = 0.0f,
     };
 
-// Create DescriptorSet Layout [UBO Descriptor]
-    vulkan_descriptor_create_layout(device, &details->descriptorSetLayout);
+// Create DescriptorSet Layout [UBO (MVP) + 1 TextureSampler Descriptors]
+    details->descriptorSetLayout = vulkan_descriptor_create_layout(device);
 
 // Pipeline Layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {

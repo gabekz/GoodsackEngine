@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
 // UBO Lighting
     lighting_initialize(lightPos, lightColor);
 
+#if 0
     Texture *texDefSpec =
         texture_create_n("../res/textures/defaults/specular.png");
     Texture *texDefNorm =
@@ -264,22 +265,39 @@ int main(int argc, char *argv[]) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
+
+#endif
+/*------------------------------------------- 
+|   Scene #4
+*/
+    ecs = renderer_active_scene(renderer, 4);
+    Entity camera5 = ecs_new(ecs);
+    ecs_add(camera5, C_CAMERA, ((struct ComponentCamera) {
+        .position = {0.0f, 0.0f, 2.0f},
+        .axisUp   = {0.0f, 1.0f, 0.0f},
+        .speed    = 0.05f,
+    }));
     
 // TESTING
     static bool showWindow = true;
     DebugGui *debugGui = new DebugGui(renderer);
 
+// FPS Counter
+    device_resetAnalytics();
+
 /* Render loop */
-    renderer_active_scene(renderer, 3);
+    renderer_active_scene(renderer, 4);
 
     renderer_start(renderer); // Initialization for the render loop
     while(!glfwWindowShouldClose(renderer->window)) {
 
+        device_updateAnalytics(glfwGetTime());
+        //LOG_INFO("FPS: %f", device_getAnalytics().currentFps);
+
         renderer_tick(renderer);
 
-        debugGui->Render();
-
         if(DEVICE_API_OPENGL) {
+            debugGui->Render();
             glfwSwapBuffers(renderer->window); // we need to swap.
         }
     }
