@@ -30,6 +30,9 @@ struct _vulkanDeviceContext {
     //VkQueue presentQueue;
     ui32 graphicsFamily;
 
+    // TEMPORARY FOR RENDERING TESTS
+    ui32 presentImageIndex;
+
     VulkanSwapChainDetails *swapChainDetails;
     VulkanPipelineDetails *pipelineDetails;
 

@@ -22,16 +22,11 @@ void vulkan_render_setup(VulkanDeviceContext *context) {
     context->commandBuffers = 
         vulkan_command_buffer_create(context->device, context->commandPool);
 
+/*
 // Create a VERTEX BUFFER
     LOG_DEBUG("Create vertex buffer");
 
 #if TEST_RENDER_PRIMITIVE == 0
-
-    ModelData *modelDataTest =
-        load_obj("../res/models/cerberus-triang.obj", 4.0f);
-
-    float *vertices = modelDataTest->buffers.out;
-    int size = modelDataTest->buffers.outI * sizeof(float);
 
 #elif TEST_RENDER_PRIMITIVE == 1
 
@@ -65,6 +60,7 @@ void vulkan_render_setup(VulkanDeviceContext *context) {
     );
 
 #endif
+*/
 
 // Create UNIFORM BUFFERS
     LOG_DEBUG("Create uniform buffers");
@@ -93,14 +89,16 @@ void vulkan_render_setup(VulkanDeviceContext *context) {
                 texture->vulkan.textureSampler);
 }
 
-void vulkan_render_record(VulkanDeviceContext *context, ui32 imageIndex,
+// ------------------------ RECORD ----------------------------------- //
+
+static void vulkan_render_record_begin(VulkanDeviceContext *context, ui32 imageIndex,
         VkCommandBuffer *commandBuffer)
 {
     //LOG_DEBUG("RECORDING command buffer");
 
     VkCommandBufferBeginInfo beginInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = 0, // Optional
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
         .pInheritanceInfo = NULL, // Optional
     };
     
@@ -153,12 +151,12 @@ void vulkan_render_record(VulkanDeviceContext *context, ui32 imageIndex,
     vkCmdSetScissor(*commandBuffer, 0, 1, &scissor);
 
     //LOG_DEBUG("Binding Vertex Buffer");
-    VkBuffer vertexBuffers[] = {context->vertexBuffer->buffer};
+    //VkBuffer vertexBuffers[] = {context->vertexBuffer->buffer};
     VkDeviceSize offsets[] = {0};
 
-    VkBuffer indexBuffer = context->indexBuffer.buffer;
+    //VkBuffer indexBuffer = context->indexBuffer.buffer;
 
-    vkCmdBindVertexBuffers(*commandBuffer, 0, 1, vertexBuffers, offsets);
+    //vkCmdBindVertexBuffers(*commandBuffer, 0, 1, vertexBuffers, offsets);
 
     vkCmdBindDescriptorSets(*commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
             context->pipelineDetails->pipelineLayout, 0, 1,
@@ -166,33 +164,36 @@ void vulkan_render_record(VulkanDeviceContext *context, ui32 imageIndex,
 
 #if TEST_RENDER_MODE == 0
 
-    vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
+    //vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
 
 #elif TEST_RENDER_MODE == 1
 
-    vkCmdBindIndexBuffer(*commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-    vkCmdDrawIndexed(*commandBuffer, context->indexBuffer.indicesCount,
-            1, 0, 0, 0);
+    //vkCmdBindIndexBuffer(*commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    //vkCmdDrawIndexed(*commandBuffer, context->indexBuffer.indicesCount,
+    //        1, 0, 0, 0);
 #endif
 
+}
+
+static void vulkan_render_record_end(VkCommandBuffer *commandBuffer) {
     vkCmdEndRenderPass(*commandBuffer);
 
     if (vkEndCommandBuffer(*commandBuffer) != VK_SUCCESS) {
         LOG_ERROR("Failed to record command buffer!");
     }
-
 }
 
-void vulkan_render_draw(VulkanDeviceContext *context, GLFWwindow *window) {
+// ------------------------ DRAW ------------------------------------- //
+
+void vulkan_render_draw_begin(VulkanDeviceContext *context, GLFWwindow *window) {
     VK_CHECK(vkWaitForFences(context->device, 1,
                 &context->inFlightFences[context->currentFrame],
                 VK_TRUE, UINT64_MAX));
 
-    ui32 imageIndex;
     VkResult result = vkAcquireNextImageKHR(context->device,
             context->swapChainDetails->swapchain, UINT64_MAX,
             context->imageAvailableSemaphores[context->currentFrame],
-            VK_NULL_HANDLE, &imageIndex);
+            VK_NULL_HANDLE, &context->presentImageIndex);
 
     if(result == VK_ERROR_OUT_OF_DATE_KHR) {
         LOG_DEBUG("VK_ERROR_OUT_OF_DATE_KHR - recreating swapchain");
@@ -211,18 +212,26 @@ void vulkan_render_draw(VulkanDeviceContext *context, GLFWwindow *window) {
         LOG_ERROR("Failed to acquire next image!");
     }
 
+    // Record the command buffer
+    vulkan_render_record_begin(context, context->presentImageIndex,
+            &context->commandBuffers[context->currentFrame]);
+}
+
+void vulkan_render_draw_end(VulkanDeviceContext *context, GLFWwindow *window) {
+
+    // End recording
+    vulkan_render_record_end(&context->commandBuffers[context->currentFrame]);
+
     // Must be done AFTER we potentially recreate the swapchain.
     // Avoids Fence deadlock.
     VK_CHECK(vkResetFences(context->device, 1,
             &context->inFlightFences[context->currentFrame]));
 
+    /*
     // Reset before recording
     VK_CHECK(vkResetCommandBuffer(
                 context->commandBuffers[context->currentFrame], 0));
-
-    // Record the command buffer
-    vulkan_render_record(context, imageIndex,
-            &context->commandBuffers[context->currentFrame]);
+    */
 
     VkSemaphore waitSemaphores[] =
         {context->imageAvailableSemaphores[context->currentFrame]};
@@ -265,7 +274,7 @@ void vulkan_render_draw(VulkanDeviceContext *context, GLFWwindow *window) {
 
         .swapchainCount = 1,
         .pSwapchains = swapChains,
-        .pImageIndices = &imageIndex,
+        .pImageIndices = &context->presentImageIndex,
 
         .pResults = NULL // Optional
     };

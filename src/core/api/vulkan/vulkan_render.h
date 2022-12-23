@@ -9,10 +9,13 @@ extern "C" {
 
 void vulkan_render_setup(VulkanDeviceContext *context);
 
-void vulkan_render_record(VulkanDeviceContext *context, ui32 imageIndex,
-        VkCommandBuffer *commandBuffer);
+// void vulkan_render_record(VulkanDeviceContext *context, ui32 imageIndex,
+//         VkCommandBuffer *commandBuffer);
 
-void vulkan_render_draw(VulkanDeviceContext *context, GLFWwindow *window);
+//void vulkan_render_draw(VulkanDeviceContext *context, GLFWwindow *window);
+
+void vulkan_render_draw_begin(VulkanDeviceContext *context, GLFWwindow *window);
+void vulkan_render_draw_end(VulkanDeviceContext *context, GLFWwindow *window);
 
 #ifdef __cplusplus
 }

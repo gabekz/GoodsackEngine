@@ -1,5 +1,5 @@
 #include "renderer.h"
-#include "pipeline/pipeline.h"
+#include <core/renderer/pipeline/pipeline.h>
 
 #include<stdio.h>
 
@@ -168,6 +168,7 @@ static void renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs) {
     postbuffer_draw(renderer->windowWidth, renderer->windowHeight);
 }
 
+/*
 void renderer_tick_VULKAN(Renderer *renderer, ECS *ecs) {
 
 // Update Analytics Data
@@ -180,6 +181,7 @@ void renderer_tick_VULKAN(Renderer *renderer, ECS *ecs) {
 
     vulkan_render_draw(renderer->vulkanDevice, renderer->window);
 }
+*/
 
 void renderer_tick(Renderer *renderer) {
     Scene *scene = renderer->sceneL[renderer->activeScene];
@@ -189,6 +191,6 @@ void renderer_tick(Renderer *renderer) {
         renderer_tick_OPENGL(renderer, scene, ecs);
     }
     else if(DEVICE_API_VULKAN) {
-        renderer_tick_VULKAN(renderer, ecs);
+        //renderer_tick_VULKAN(renderer, ecs);
     }
 }

@@ -4,7 +4,10 @@
 #include <util/sysdefs.h>
 
 #include <core/api/opengl/glbuffer.h>
+#include <core/api/vulkan/vulkan_vertex_buffer.h>
+
 #include <core/texture/texture.h>
+
 
 typedef struct _model Model;
 typedef struct _modelData ModelData;
@@ -12,6 +15,8 @@ typedef struct _modelData ModelData;
 struct _model {
     VAO *vao;
     ModelData *modelData;
+
+    VulkanVertexBuffer *vkVBO;
 };
 
 struct _modelData {

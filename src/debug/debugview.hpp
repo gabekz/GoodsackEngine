@@ -2,7 +2,7 @@
 #define H_DEBUGVIEW
 
 extern "C" {
-    #include <core/renderer/renderer.h>
+    #include <core/renderer/v1/renderer.h>
 }
 #include <ecs/ecs.h>
 

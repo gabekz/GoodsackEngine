@@ -8,7 +8,7 @@
 #include <ecs/ecs.h>
 
 extern "C" {
-    #include <core/renderer/renderer.h>
+    #include <core/renderer/v1/renderer.h>
 }
 
 #include <core/api/device.h>
@@ -37,8 +37,6 @@ DebugGui::DebugGui(Renderer *renderer)
         ImGui_ImplOpenGL3_Init("#version 330");
     }
     else if(DEVICE_API_VULKAN) {
-        return;
-        /*
         ImGui_ImplGlfw_InitForVulkan(renderer->window, true);
 
         VulkanDeviceContext *vkDevice = renderer->vulkanDevice;
@@ -67,7 +65,6 @@ DebugGui::DebugGui(Renderer *renderer)
 
         vkDeviceWaitIdle(vkDevice->device);
         ImGui_ImplVulkan_DestroyFontUploadObjects();
-        */
     }
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -83,7 +80,12 @@ DebugGui::DebugGui(Renderer *renderer)
 }
 
 DebugGui::~DebugGui() {
-    ImGui_ImplOpenGL3_Shutdown();
+    if(DEVICE_API_OPENGL) {
+        ImGui_ImplOpenGL3_Shutdown();
+    }
+    else if(DEVICE_API_VULKAN) {
+        ImGui_ImplVulkan_Shutdown();
+    }
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
@@ -305,5 +307,12 @@ void DebugGui::Render() {
 
     if(DEVICE_API_OPENGL) {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+    else if(DEVICE_API_VULKAN) {
+#if 1
+        VulkanDeviceContext *vkDevice = m_renderer->vulkanDevice;
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
+                vkDevice->commandBuffers[vkDevice->currentFrame]);
+#endif
     }
 }

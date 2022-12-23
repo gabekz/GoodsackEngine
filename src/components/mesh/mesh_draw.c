@@ -13,7 +13,7 @@
 static void DrawMesh(
         struct ComponentMesh *mesh,
         struct ComponentTransform *transform,
-        Material *material)
+        Material *material, VkCommandBuffer commandBuffer)
 {
     if(DEVICE_API_OPENGL) {
 
@@ -52,25 +52,34 @@ static void DrawMesh(
 
     }
     else if(DEVICE_API_VULKAN) {
+
     #if 0
         // Bind transform Model (MVP) and Position (vec3) descriptor set
         vkCmdBindDescriptorSets(
-                *commandBuffer,
+                commandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 context->pipelineDetails->pipelineLayout, 0, 1,
                 &context->descriptorSets[context->currentFrame], 0, NULL);
         // Bind texture descriptor set
         vkCmdBindDescriptorSets(
-                *commandBuffer,
+                commandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 context->pipelineDetails->pipelineLayout, 0, 1,
                 &context->descriptorSets[context->currentFrame], 0, NULL);
         // Bind Vertex/Index buffers
-        vkCmdBindVertexBuffers(*commandBuffer, 0, 1, vertexBuffers, offsets);
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
         // Draw command
-        vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
+        vkCmdDraw(commandBuffer, context->vertexBuffer->size, 1, 0, 0);
     #endif
+
+        // Bind Vertex/Index buffers
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1,
+                &mesh->model->vkVBO->buffer, offsets);
+
+        // Draw command
+        vkCmdDraw(commandBuffer, mesh->model->vkVBO->size, 1, 0, 0);
     }
 }
 
@@ -85,16 +94,32 @@ static void init(Entity e) {
     // TODO: stupid hack grabbing only scale.x...
     //mesh->model = load_obj(mesh->modelPath, transform->scale[0]);
 
-    mesh->model = model_assemble(mesh->modelPath, transform->scale[0]);
+    if(DEVICE_API_OPENGL) {
+        mesh->model = model_assemble(mesh->modelPath, transform->scale[0]);
+        // send lightspace matrix from renderer to entity shader
+        ShaderProgram *shader = mesh->material->shaderProgram;
+        shader_use(shader);
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
+            1, GL_FALSE, (float *)e.ecs->renderer->lightSpaceMatrix);
+        // TODO: send model matrix to shader
+    }
+    else if(DEVICE_API_VULKAN) {
+        mesh->model = malloc(sizeof(Model));
+        mesh->model->modelData =
+            load_obj(mesh->modelPath, transform->scale[0]);
 
-    // send lightspace matrix from renderer to entity shader
-    ShaderProgram *shader = mesh->material->shaderProgram;
-    shader_use(shader);
-    glUniformMatrix4fv(
-        glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
-        1, GL_FALSE, (float *)e.ecs->renderer->lightSpaceMatrix);
+        VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
 
-    // TODO: send model matrix to shader
+        mesh->model->vkVBO = 
+        vulkan_vertex_buffer_create(
+                context->physicalDevice,
+                context->device, 
+                context->graphicsQueue,
+                context->commandPool,
+                mesh->model->modelData->buffers.out,
+                mesh->model->modelData->buffers.outI * sizeof(float));
+    }
 }
 
 static void render(Entity e) {
@@ -106,13 +131,20 @@ static void render(Entity e) {
     RenderPass pass = e.ecs->renderer->currentPass;
 
     // TODO: get lightspace matrix
+    VkCommandBuffer cb = e.ecs->renderer->vulkanDevice->commandBuffers[
+        e.ecs->renderer->vulkanDevice->currentFrame];
 
     if(pass == REGULAR) {
-        DrawMesh(mesh, transform, mesh->material);
+        (DEVICE_API_OPENGL)
+            ? DrawMesh(mesh, transform, mesh->material, NULL)
+            : DrawMesh(mesh, transform, mesh->material, cb);
         return;
     }
     Material *override = e.ecs->renderer->explicitMaterial;
-    DrawMesh(mesh, transform, override);
+
+    (DEVICE_API_OPENGL)
+        ? DrawMesh(mesh, transform, mesh->material, NULL)
+        : DrawMesh(mesh, transform, mesh->material, cb);
 }
 
 void s_mesh_draw_init(ECS *ecs) {

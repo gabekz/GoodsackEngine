@@ -7,11 +7,14 @@
 
 #include <components/components.h>
 #include <core/api/device.h>
-#include <core/renderer/renderer.h>
 #include <core/lighting/lighting.h>
 #include <debug/debugview.hpp>
 #include <ecs/ecs.h>
 #include <lua/lua_init.hpp>
+
+extern "C" {
+  #include <core/renderer/v1/renderer.h>
+}
 
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16, NULL)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1, NULL)
@@ -277,6 +280,20 @@ int main(int argc, char *argv[]) {
         .axisUp   = {0.0f, 1.0f, 0.0f},
         .speed    = 0.05f,
     }));
+
+    Entity entModel = ecs_new(ecs);
+    ecs_add(entModel, C_TRANSFORM, ((struct ComponentTransform) {
+            .position = {0.0f, 0.0f, 0.0f},
+            .scale = {4.0f, 1.0f, 1.0f},
+    }));
+    ecs_add(entModel, C_MESH, ((struct ComponentMesh) {
+        //.material = matCerb,
+        .modelPath = "../res/models/suzanne.obj",
+        .properties = {
+            .drawMode = DRAW_ARRAYS,
+            .cullMode = CULL_CW | CULL_FORWARD,
+        }
+    }));
     
 // TESTING
     static bool showWindow = true;
@@ -294,11 +311,22 @@ int main(int argc, char *argv[]) {
         device_updateAnalytics(glfwGetTime());
         //LOG_INFO("FPS: %f", device_getAnalytics().currentFps);
 
-        renderer_tick(renderer);
 
         if(DEVICE_API_OPENGL) {
+            renderer_tick(renderer);
             debugGui->Render();
             glfwSwapBuffers(renderer->window); // we need to swap.
+        }
+        else if(DEVICE_API_VULKAN) {
+            glfwPollEvents();
+            ecs_event(ecs, ECS_UPDATE);
+
+            vulkan_render_draw_begin(renderer->vulkanDevice, renderer->window);
+            renderer->currentPass = REGULAR;
+            ecs_event(ecs, ECS_RENDER);
+            debugGui->Render();
+            vulkan_render_draw_end(renderer->vulkanDevice, renderer->window);
+
         }
     }
 

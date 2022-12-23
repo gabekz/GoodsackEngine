@@ -5,7 +5,7 @@
 #include <util/gfx.h>
 #include <util/maths.h>
 
-#include <core/renderer/scene.h>
+#include <core/scene/scene.h>
 #include <core/lighting/lighting.h>
 
 #include <model/material.h>

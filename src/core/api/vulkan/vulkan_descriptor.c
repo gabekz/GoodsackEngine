@@ -26,7 +26,7 @@ VkDescriptorPool vulkan_descriptor_pool_create(VkDevice device)
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .poolSizeCount = poolSizesCount,
         .pPoolSizes = poolSizes,
-        .maxSets = (ui32)MAX_FRAMES_IN_FLIGHT,
+        .maxSets = (ui32)MAX_FRAMES_IN_FLIGHT * 10,
     };
 
     VkDescriptorPool descriptorPool;
