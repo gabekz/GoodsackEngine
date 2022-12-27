@@ -92,8 +92,8 @@ static void update(Entity e) {
         // TEST (while we don't have direct descriptor sets for objects)
         mat4 p = GLM_MAT4_IDENTITY_INIT;
         glm_mat4_copy(p, camera->uniform.model);
-        glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1, 0});
-        glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1, 0, 1});
+        //glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1, 0});
+        //glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1, 0, 1});
         camera->uniform.proj[1][1] *= -1;
 
         memcpy(e.ecs->renderer->vulkanDevice->uniformBuffersMapped[

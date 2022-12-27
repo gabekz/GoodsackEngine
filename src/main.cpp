@@ -68,11 +68,28 @@ int main(int argc, char *argv[]) {
 // UBO Lighting
     lighting_initialize(lightPos, lightColor);
 
-#if 0
     Texture *texDefSpec =
         texture_create_n("../res/textures/defaults/specular.png");
     Texture *texDefNorm =
         texture_create_n("../res/textures/defaults/normal.png");
+    Texture *texPbrAo = 
+        texture_create_n("../res/textures/defaults/white.png");
+
+    Texture *texCerbA=
+        texture_create_d("../res/textures/pbr/cerberus/Cerberus_A.tga");
+    Texture *texCerbN=
+        texture_create_n("../res/textures/pbr/cerberus/Cerberus_N.tga");
+    Texture *texCerbM=
+        texture_create_n("../res/textures/pbr/cerberus/Cerberus_M.tga");
+    Texture *texCerbS=
+        texture_create_n("../res/textures/pbr/cerberus/Cerberus_R.tga");
+
+    Material *matCerb = 
+        material_create(NULL, "../res/shaders/pbr.shader",
+        5,
+        texCerbA, texCerbN, 
+        texCerbM, texCerbS, texPbrAo
+    );
 
     Texture *texEarthDiff =
         texture_create_d("../res/textures/earth/diffuse.png");
@@ -199,8 +216,6 @@ int main(int argc, char *argv[]) {
         texture_create_n("../res/textures/pbr/rust/metallic.png");
     Texture *texPbrSpecular =
         texture_create_n("../res/textures/pbr/rust/roughness.png");
-    Texture *texPbrAo = 
-        texture_create_n("../res/textures/defaults/white.png");
     Material *matRust = 
         material_create(NULL, "../res/shaders/pbr.shader",
         5,
@@ -229,6 +244,7 @@ int main(int argc, char *argv[]) {
             .cullMode = CULL_CW | CULL_FORWARD,
         }
     }));
+
 /*------------------------------------------- 
 |   Scene #4
 */
@@ -240,55 +256,14 @@ int main(int argc, char *argv[]) {
         .speed    = 0.05f,
     }));
 
-    Texture *texCerbA=
-        texture_create_d("../res/textures/pbr/cerberus/Cerberus_A.tga");
-    Texture *texCerbN=
-        texture_create_n("../res/textures/pbr/cerberus/Cerberus_N.tga");
-    Texture *texCerbM=
-        texture_create_n("../res/textures/pbr/cerberus/Cerberus_M.tga");
-    Texture *texCerbS=
-        texture_create_n("../res/textures/pbr/cerberus/Cerberus_R.tga");
-    Material *matCerb = 
-        material_create(NULL, "../res/shaders/pbr.shader",
-        5,
-        texCerbA, texCerbN, 
-        texCerbM, texCerbS, texPbrAo
-    );
-
     Entity entCerb = ecs_new(ecs);
     ecs_add(entCerb, C_TRANSFORM, ((struct ComponentTransform) {
             .position = {0.0f, 0.0f, 0.0f},
-            .scale = {1.0f, 1.0f, 1.0f},
+            .scale = {4.0f, 4.0f, 4.0f},
     }));
     ecs_add(entCerb, C_MESH, ((struct ComponentMesh) {
         .material = matCerb,
         .modelPath = "../res/models/cerberus-triang.obj",
-        .properties = {
-            .drawMode = DRAW_ARRAYS,
-            .cullMode = CULL_CW | CULL_FORWARD,
-        }
-    }));
-
-#endif
-/*------------------------------------------- 
-|   Scene #4
-*/
-    ecs = renderer_active_scene(renderer, 4);
-    Entity camera5 = ecs_new(ecs);
-    ecs_add(camera5, C_CAMERA, ((struct ComponentCamera) {
-        .position = {0.0f, 0.0f, 2.0f},
-        .axisUp   = {0.0f, 1.0f, 0.0f},
-        .speed    = 0.05f,
-    }));
-
-    Entity entModel = ecs_new(ecs);
-    ecs_add(entModel, C_TRANSFORM, ((struct ComponentTransform) {
-            .position = {0.0f, 0.0f, 0.0f},
-            .scale = {4.0f, 1.0f, 1.0f},
-    }));
-    ecs_add(entModel, C_MESH, ((struct ComponentMesh) {
-        //.material = matCerb,
-        .modelPath = "../res/models/suzanne.obj",
         .properties = {
             .drawMode = DRAW_ARRAYS,
             .cullMode = CULL_CW | CULL_FORWARD,
@@ -303,14 +278,13 @@ int main(int argc, char *argv[]) {
     device_resetAnalytics();
 
 /* Render loop */
-    renderer_active_scene(renderer, 4);
+    renderer_active_scene(renderer, 3);
 
     renderer_start(renderer); // Initialization for the render loop
     while(!glfwWindowShouldClose(renderer->window)) {
 
         device_updateAnalytics(glfwGetTime());
         //LOG_INFO("FPS: %f", device_getAnalytics().currentFps);
-
 
         if(DEVICE_API_OPENGL) {
             renderer_tick(renderer);
@@ -319,6 +293,7 @@ int main(int argc, char *argv[]) {
         }
         else if(DEVICE_API_VULKAN) {
             glfwPollEvents();
+            //debugGui->Update();
             ecs_event(ecs, ECS_UPDATE);
 
             vulkan_render_draw_begin(renderer->vulkanDevice, renderer->window);
@@ -326,7 +301,6 @@ int main(int argc, char *argv[]) {
             ecs_event(ecs, ECS_RENDER);
             debugGui->Render();
             vulkan_render_draw_end(renderer->vulkanDevice, renderer->window);
-
         }
     }
 

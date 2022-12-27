@@ -131,8 +131,12 @@ static void render(Entity e) {
     RenderPass pass = e.ecs->renderer->currentPass;
 
     // TODO: get lightspace matrix
-    VkCommandBuffer cb = e.ecs->renderer->vulkanDevice->commandBuffers[
-        e.ecs->renderer->vulkanDevice->currentFrame];
+
+    VkCommandBuffer cb;
+    if(DEVICE_API_VULKAN) {
+         cb = e.ecs->renderer->vulkanDevice->commandBuffers[
+            e.ecs->renderer->vulkanDevice->currentFrame];
+    }
 
     if(pass == REGULAR) {
         (DEVICE_API_OPENGL)
@@ -143,8 +147,8 @@ static void render(Entity e) {
     Material *override = e.ecs->renderer->explicitMaterial;
 
     (DEVICE_API_OPENGL)
-        ? DrawMesh(mesh, transform, mesh->material, NULL)
-        : DrawMesh(mesh, transform, mesh->material, cb);
+        ? DrawMesh(mesh, transform, override, NULL)
+        : DrawMesh(mesh, transform, override, cb);
 }
 
 void s_mesh_draw_init(ECS *ecs) {

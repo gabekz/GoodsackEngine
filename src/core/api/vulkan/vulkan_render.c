@@ -98,7 +98,8 @@ static void vulkan_render_record_begin(VulkanDeviceContext *context, ui32 imageI
 
     VkCommandBufferBeginInfo beginInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+        //.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+        .flags = 0,
         .pInheritanceInfo = NULL, // Optional
     };
     

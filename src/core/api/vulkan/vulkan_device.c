@@ -349,8 +349,8 @@ void vulkan_device_cleanup(VulkanDeviceContext* context) {
 
     vulkan_swapchain_cleanup(context->device, context->swapChainDetails);
 
-    vkDestroyBuffer(context->device, context->vertexBuffer->buffer, NULL);
-    vkFreeMemory(context->device, context->vertexBuffer->bufferMemory, NULL);
+    //vkDestroyBuffer(context->device, context->vertexBuffer->buffer, NULL);
+    //vkFreeMemory(context->device, context->vertexBuffer->bufferMemory, NULL);
 
     for(int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(context->device, context->imageAvailableSemaphores[i], NULL);

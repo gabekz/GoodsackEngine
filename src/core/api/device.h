@@ -1,6 +1,8 @@
 #ifndef H_DEVICE_API
 #define H_DEVICE_API
 
+#include <util/sysdefs.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -24,6 +26,8 @@ typedef enum {
 typedef struct Analytics {
     double currentFps;
     double currentMs;
+
+    //ui32 currentDrawCalls;
 } Analytics;
 
 // Functions

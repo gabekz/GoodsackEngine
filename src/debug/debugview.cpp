@@ -77,6 +77,8 @@ DebugGui::DebugGui(Renderer *renderer)
     m_showSceneLighting = false;
     m_showExample = false;
     m_showProfiler = false;
+
+    SetVisibility(true);
 }
 
 DebugGui::~DebugGui() {
@@ -88,6 +90,19 @@ DebugGui::~DebugGui() {
     }
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+}
+
+void DebugGui::SetVisibility(bool value) {
+    m_debugEnabled = value;
+}
+void DebugGui::ToggleVisibility() {
+    m_debugEnabled = !m_debugEnabled;
+}
+
+void DebugGui::Update() {
+    if(glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS) {
+        ToggleVisibility();
+    }
 }
 
 void DebugGui::Render() {
@@ -103,6 +118,7 @@ void DebugGui::Render() {
         ImGui::NewFrame();
     }
     //ImGui::GetIO().FontGlobalScale = 1.2f;
+    if(!m_debugEnabled) return;
 
 // Draw Navbar
     if(ImGui::BeginMainMenuBar()) {
@@ -232,14 +248,16 @@ void DebugGui::Render() {
                 *(static_cast<struct ComponentTransform *>(
                 ecs_get(e, C_TRANSFORM)
             ));
+            vec3 t = GLM_VEC3_ZERO_INIT;
             ImGui::DragFloat3("Position", p.position, 0.1f, -3000, 3000);
             ImGui::BeginDisabled();
+            ImGui::DragFloat3("Rotation", t, 0.1f, -3000, 3000);
             ImGui::DragFloat3("Scale", p.scale, -1, 1);
             ImGui::EndDisabled();
             ImGui::EndChild();
         }
         if(ecs_has(e, C_MESH)) {
-            ImGui::BeginChild("Mesh", ImVec2(0, ImGui::GetFontSize() * 8.0f), true);
+            ImGui::BeginChild("Mesh", ImVec2(0, ImGui::GetFontSize() * 25.0f), true);
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
             ImGui::Text("Mesh Component");
             ImGui::PopStyleColor();
@@ -249,13 +267,49 @@ void DebugGui::Render() {
                 *(static_cast<struct ComponentMesh*>(
                 ecs_get(e, C_MESH)
             ));
-            ImGui::BeginDisabled();
+
+            // Model information
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,255,255));
             ImGui::Text("Model");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            bool shadowVal = true;
+            ImGui::BeginDisabled();
             ImGui::InputText("Model Path", (char *)p.modelPath, 128);
+            ImGui::Checkbox("Receive Shadows", &shadowVal);
+            ImGui::Checkbox("Cast Shadows", &shadowVal);
             ImGui::EndDisabled();
-            //ImGui::Text("Material");
-            //ImGui::InputText("Vertex Shader", (char *)p.material->shaderProgram->shaderSource->shaderVertex, 128);
+
+            ImGui::Separator();
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,255,255));
+            ImGui::Text("Material");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            //ImGui::Text("Shader");
+            //ImGui::InputText("Vertex Shader", (char *)p.material->shaderProgram->shaderSource->shaderPath, 128);
             //ImGui::InputText("Fragment Shader", (char *)p.material->shaderProgram->shaderSource->shaderFragment, 128);
+
+            if(DEVICE_API_OPENGL) {
+                int textureCount = p.material->texturesCount;
+                ImGui::Text("Textures: %d", textureCount);
+                // Display textures
+                for(int i = 0; i < textureCount; i++) {
+                    ImGui::Separator();
+                    ImGui::Image(
+                            (void *)(intptr_t)p.material->textures[i]->id,
+                            ImVec2(200, 200));
+
+                    ImGui::SameLine();
+                    ImGui::Text("File Path: %s\nDimensions: %dx%d\nType: %s",
+                            p.material->textures[i]->filePath,
+                            p.material->textures[i]->width,
+                            p.material->textures[i]->height,
+                            "");
+                }
+            } // DEVICE_API_OPENGL
+
             ImGui::EndChild();
         }
         if(ecs_has(e, C_CAMERA)) {

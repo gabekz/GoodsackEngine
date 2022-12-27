@@ -36,6 +36,10 @@ struct _renderer {
     ui32 depthMapTexture;
     mat4 lightSpaceMatrix;
 
+    ui32 drawCalls;
+    ui32 faces;
+    ui32 totalVertices;
+
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
 };
@@ -55,6 +59,9 @@ void renderer_update();
 // Rendering Loop
 void renderer_start(Renderer *renderer);
 void renderer_tick(Renderer *renderer);
+
+// Analytics
+void renderer_add_draw_data(ui32 drawCalls, ui32 vertices);
 
 /* scene management */
 struct _ecs *renderer_active_scene(Renderer* self, ui16 sceneIndex);

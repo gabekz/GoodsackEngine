@@ -9,6 +9,8 @@ layout(location = 2) in vec3 a_Normal;
 layout(location = 3) in vec3 a_Tangent;
 layout(location = 4) in vec3 a_Bitangent;
 
+// Set 0
+
 layout (std140, binding = 0) uniform Camera {
     vec3 position;
     mat4 projection;
@@ -19,6 +21,8 @@ layout (std140, binding = 1) uniform Light {
     vec3 position;
     vec4 color;
 } s_Light;
+
+// Set 1
 
 uniform mat4 u_Model;
 
@@ -57,11 +61,28 @@ void main() {
 #shader fragment
 #version 420 core
 
+// Set 2
+
 layout(binding = 0) uniform sampler2D t_Albedo;
 layout(binding = 1) uniform sampler2D t_Normal;
 layout(binding = 2) uniform sampler2D t_Metallic;
 layout(binding = 3) uniform sampler2D t_Specular;
 layout(binding = 4) uniform sampler2D t_Ao;
+
+
+/*
+layout (std140, set = 2, binding = 0) uniform ObjectTextures {
+    sampler2D t_Albedo;
+    sampler2D t_Normal;
+    sampler2D t_Metallic;
+    sampler2D t_Specular;
+    sampler2D t_Ao;
+} s_textures;
+
+layout(std140, set = 2, binding = 1) uniform ShadowTex {
+    sampler2D t_ShadowMap;
+};
+*/
 
 in VS_OUT {
     vec3 position;
