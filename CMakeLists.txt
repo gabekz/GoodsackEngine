@@ -112,7 +112,7 @@ target_compile_options(${TEST_EXE_NAME} PUBLIC ${compile_options_special})
 
 # Options
 option(AUTO_LOCATE_LUA "AUTO_LOCATE_LUA" ON)
-option(AUTO_LOCATE_VULKAN "AUTO_LOCATE_VULKAN" ON)
+option(AUTO_LOCATE_VULKAN "AUTO_LOCATE_VULKAN" OFF)
 
 #################################################################
 # Library: STB Image
