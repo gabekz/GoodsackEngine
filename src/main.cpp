@@ -12,12 +12,17 @@
 #include <ecs/ecs.h>
 #include <lua/lua_init.hpp>
 
+#include <asset/asset.hpp>
+
 extern "C" {
   #include <core/renderer/v1/renderer.h>
 }
 
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16, NULL)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1, NULL)
+
+using asset::Asset;
+using asset::TextureProperties;
 
 int main(int argc, char *argv[]) {
 // Logger
@@ -39,6 +44,12 @@ int main(int argc, char *argv[]) {
             logger_setLevel(LogLevel_ERROR);
         }
     }}
+
+    asset::TextureAsset t =
+        asset::TextureAsset((TextureProperties){.bpp = 4});
+
+    Asset *p = &t;
+    p->Load();
 
 // Main Lua entry
     LuaInit("../src/lua/demo/main.lua");
@@ -249,6 +260,7 @@ int main(int argc, char *argv[]) {
 |   Scene #4
 */
     ecs = renderer_active_scene(renderer, 3);
+
     Entity camera4 = ecs_new(ecs);
     ecs_add(camera4, C_CAMERA, ((struct ComponentCamera) {
         .position = {0.0f, 0.0f, 2.0f},

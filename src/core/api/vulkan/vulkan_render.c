@@ -6,7 +6,6 @@
 #include <core/api/vulkan/vulkan_command.h>
 #include <core/api/vulkan/vulkan_support.h>
 
-#include <import/loader_obj.h>
 #include <model/primitives.h>
 
 #define TEST_RENDER_PRIMITIVE   0   // 0 - Model Loader | 1 - Primitive
@@ -84,7 +83,10 @@ void vulkan_render_setup(VulkanDeviceContext *context) {
         vulkan_descriptor_sets_create(context->device,
                 context->descriptorPool,
                 context->pipelineDetails->descriptorSetLayout,
-                context->uniformBuffers, sizeof(UniformBufferObject),
+                // UBO
+                context->uniformBuffers, // 1 UBO per FLIGHT
+                sizeof(UniformBufferObject),
+                // Texture Sampler
                 texture->vulkan.textureImageView,
                 texture->vulkan.textureSampler);
 }

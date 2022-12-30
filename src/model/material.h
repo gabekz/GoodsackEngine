@@ -12,6 +12,10 @@ struct _material {
     ShaderProgram *shaderProgram;
     Texture **textures;
     ui32 texturesCount;
+
+    struct {
+        VkPipelineLayout *pipelineLayout;
+    }vulkan;
 };
 
 Material *material_create(

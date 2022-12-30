@@ -59,6 +59,7 @@ void material_use(Material *self) {
     else if(DEVICE_API_VULKAN) {
         LOG_DEBUG("Material not implemented for Vulkan");
 
+        // Bind Pipeline here? Probably.
         // TODO: Bind image descriptor set HERE
     }
 }

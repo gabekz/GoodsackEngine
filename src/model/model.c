@@ -1,6 +1,6 @@
 #include "model.h"
 
-#include <import/loader_obj.h>
+#include <asset/import/loader_obj.h>
 
 Model *model_assemble(const char *path, float scale) {
 

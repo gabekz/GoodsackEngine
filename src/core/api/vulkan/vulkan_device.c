@@ -15,12 +15,13 @@
 #include <core/texture/texture.h>
 
 #include <core/api/vulkan/vulkan_command.h>
+#include <core/api/vulkan/vulkan_debug.h>
 #include <core/api/vulkan/vulkan_descriptor.h>
 #include <core/api/vulkan/vulkan_support.h>
 #include <core/api/vulkan/vulkan_swapchain.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 
-#include <import/loader_obj.h>
+#include <asset/import/loader_obj.h>
 #include <model/primitives.h>
 
 /* static */
@@ -118,47 +119,6 @@ static int _isDeviceSuitable(VkPhysicalDevice physicalDevice) {
     return 1;
 }
 
-
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-    void* pUserData) {
-
-    switch(messageSeverity) {
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        LOG_WARN("[Validation Layer] %s", pCallbackData->pMessage);
-        break;
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        default:
-        LOG_CRITICAL("[Validation Layer] %s", pCallbackData->pMessage);
-    }
-
-
-    return VK_FALSE;
-}
-
-static VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
-    PFN_vkCreateDebugUtilsMessengerEXT p =
-        (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-        instance, "vkCreateDebugUtilsMessengerEXT");
-    if(p == NULL) {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
-    return p(instance, pCreateInfo, pAllocator, pDebugMessenger);
-}
-
-static void createMessenger(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger) {
-    VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    createInfo.pfnUserCallback = debugCallback;
-    createInfo.pUserData = NULL; // Optional
-    
-    VK_CHECK(createDebugUtilsMessengerEXT(instance, &createInfo, NULL, &debugMessenger));
-}
-
 /* implement */
 
 ui32 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
@@ -243,7 +203,8 @@ VulkanDeviceContext *vulkan_device_create() {
 
 // Create Debug Messenger
     if(kEnableValidationLayers) {
-        createMessenger(ret->vulkanInstance, ret->debugMessenger);
+        vulkan_debug_messenger_create(ret->vulkanInstance,
+                ret->debugMessenger);
     }
 
 // Physical Device

@@ -3,9 +3,9 @@
 
 #include <components/transform/transform.h>
 
+#include <asset/import/loader_obj.h>
 #include <core/shader/shader.h>
 #include <ecs/ecs.h>
-#include <import/loader_obj.h>
 #include <model/model.h>
 
 #include <core/api/device.h>
