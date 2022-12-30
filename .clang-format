@@ -15,8 +15,7 @@ AllowShortCaseLabelsOnASingleLine: true
 
 AllowShortIfStatementsOnASingleLine: WithoutElse
 
-AlwaysBreakAfterDefinitionReturnType: None
-AlwaysBreakAfterReturnType: None
+AlwaysBreakAfterReturnType: TopLevel
 
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
@@ -34,13 +33,15 @@ IndentPPDirectives: None
 DerivePointerAlignment: false
 PointerAlignment: Right
 
+BreakBeforeBraces: Custom
+
 BraceWrapping:
   AfterClass:   false
   AfterControlStatement: false
   AfterEnum:      false
-  AfterFunction:  false
+  AfterFunction:  true
   AfterNamespace: false
-  AfterStruct:    false
+  AfterStruct:    true
   AfterUnion:     false
   BeforeCatch:    false
   BeforeElse:     false
