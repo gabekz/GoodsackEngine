@@ -1,0 +1,60 @@
+---
+AccessModifierOffset: -1
+AlignAfterOpenBracket: Align
+
+AlignConsecutiveMacros: true
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlinesLeft: true
+AlignEscapedNewlines: Left
+AlignOperands: true
+AlignTrailingComments: true
+
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+
+AllowShortIfStatementsOnASingleLine: WithoutElse
+
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+
+BinPackArguments: false
+BinPackParameters: false
+
+BreakAfterJavaFieldAnnotations: true
+BreakBeforeTernaryOperators: true
+BreakStringLiterals: true
+
+IndentCaseLabels: false
+IndentPPDirectives: None
+
+DerivePointerAlignment: false
+PointerAlignment: Right
+
+BraceWrapping:
+  AfterClass:   false
+  AfterControlStatement: false
+  AfterEnum:      false
+  AfterFunction:  false
+  AfterNamespace: false
+  AfterStruct:    false
+  AfterUnion:     false
+  BeforeCatch:    false
+  BeforeElse:     false
+  IndentBraces:   false
+
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceBeforeCpp11BracedList: true
+
+ColumnLimit: 80
+ContinuationIndentWidth: 2
+
+Language:   Cpp
+Standard:   Cpp11
+TabWidth:     4
+IndentWidth:  4
+UseTab:     Never
