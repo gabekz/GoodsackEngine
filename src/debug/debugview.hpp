@@ -2,13 +2,13 @@
 #define H_DEBUGVIEW
 
 extern "C" {
-    #include <core/renderer/v1/renderer.h>
+#include <core/renderer/v1/renderer.h>
 }
 #include <ecs/ecs.h>
 
 class DebugGui {
-public:
-    DebugGui(Renderer* renderer);
+   public:
+    DebugGui(Renderer *renderer);
     ~DebugGui();
     void Update();
     void Render();
@@ -17,7 +17,7 @@ public:
     void SetVisibility(bool value);
     void ToggleVisibility();
 
-protected:
+   protected:
     Renderer *m_renderer;
     bool m_showExample;
     bool m_showSceneViewer;
@@ -30,7 +30,7 @@ protected:
 
     bool m_debugEnabled;
 
-private:
+   private:
     int m_sceneQueued;
 };
 

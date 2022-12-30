@@ -3,8 +3,7 @@
 
 namespace asset {
 
-enum class AssetType : int
-{
+enum class AssetType : int {
     UNKNOWN = 0,
     SHADER,
     MATERIAL,
@@ -14,7 +13,6 @@ enum class AssetType : int
 
 enum class TextureFormat { UNKNOWN = 0, RGBA8, RGB8, SRGBA };
 
-};
-
+}; // namespace asset
 
 #endif // H_ASSET_DEFS

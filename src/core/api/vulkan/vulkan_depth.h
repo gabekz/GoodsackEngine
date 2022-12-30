@@ -7,16 +7,20 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct VulkanDepthResources {
+typedef struct VulkanDepthResources
+{
     VkImage depthImage;
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 } VulkanDepthResources;
 
-VulkanDepthResources *vulkan_depth_create_resources(VkPhysicalDevice physicalDevice,
-        VkDevice device, VkExtent2D swapChainExtent);
+VkFormat
+vulkan_depth_find_format(VkPhysicalDevice physicalDevice);
 
-VkFormat vulkan_depth_find_format(VkPhysicalDevice physicalDevice);
+VulkanDepthResources *
+vulkan_depth_create_resources(VkPhysicalDevice physicalDevice,
+                              VkDevice device,
+                              VkExtent2D swapChainExtent);
 
 #ifdef __cplusplus
 }

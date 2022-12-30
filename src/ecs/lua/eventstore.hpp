@@ -1,34 +1,36 @@
 #ifndef HPP_EVENTSTORE
 #define HPP_EVENTSTORE
 
-#include <util/lua_deps.h>
-#include <ecs/ecs.h>
 #include <ecs/component/component.hpp>
 #include <ecs/component/loader.hpp>
+#include <ecs/ecs.h>
+#include <util/lua_deps.h>
 
-#include <string>
 #include <map>
+#include <string>
 
 namespace ecs {
 
 class LuaEventStore {
-  public:
-    LuaEventStore(const LuaEventStore&) = delete;
+   public:
+    LuaEventStore(const LuaEventStore &) = delete;
 
-    static LuaEventStore& GetInstance();
+    static LuaEventStore &GetInstance();
     static void Initialize(lua_State *L);
     static void ECSEvent(enum ECSEvent event);
 
-    static const char* EventToString(int event);
+    static const char *EventToString(int event);
 
-    static ComponentLayout &getLayout(const char* layout) {
+    static ComponentLayout &getLayout(const char *layout)
+    {
         return *LuaEventStore::GetInstance().m_Layouts[layout];
     };
 
     // TEST
     static Entity entity;
 
-    struct Lua_Functions {
+    struct Lua_Functions
+    {
         int size;
         int *functions;
     };
@@ -36,18 +38,18 @@ class LuaEventStore {
     int RetrieveLuaTable();
     struct Lua_Functions **getFunctionList() { return m_functionList; };
 
-  protected:
+   protected:
     struct Lua_Functions **m_functionList;
 
-  private:
+   private:
     LuaEventStore();
     static LuaEventStore s_Instance;
-    std::map<std::string, ComponentLayout*> m_Layouts; 
+    std::map<std::string, ComponentLayout *> m_Layouts;
 
     int m_tableId;
     lua_State *m_Lua;
 };
 
-} // namespace
+} // namespace ecs
 
 #endif // HPP_EVENTSTORE

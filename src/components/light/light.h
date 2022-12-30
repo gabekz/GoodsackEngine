@@ -4,7 +4,8 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
-struct ComponentLight {
+struct ComponentLight
+{
     vec4 color;
     ui32 type;
 };

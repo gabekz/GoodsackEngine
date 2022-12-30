@@ -9,17 +9,16 @@
 
 #include <ecs/ecsdefs.h>
 
-struct TestEventStore : testing::Test {
+struct TestEventStore : testing::Test
+{
 
-    TestEventStore() {
-    };
+    TestEventStore() {};
 
-    virtual ~TestEventStore() {
-    }
-
+    virtual ~TestEventStore() {}
 };
 
-TEST_F(TestEventStore, Initialization_And_Event) {
+TEST_F(TestEventStore, Initialization_And_Event)
+{
     lua_State *L = luaL_newstate();
     ecs::LuaEventStore::Initialize(L);
 }

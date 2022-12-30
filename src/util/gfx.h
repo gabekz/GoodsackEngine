@@ -3,20 +3,21 @@
 
 // Only include this once as well
 #ifndef GLFW_INCLUDE_NONE
- #define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_NONE
 #endif
 
-
-#include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
+#include <vulkan/vulkan.h>
 #define GLFW_INCLUDE_VULKAN
 //#include <vulkan/vulkan_xcb.h>
 
-#include<glad/gl.h> // TODO: Move to #defined
-#include<GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
+#include <glad/gl.h> // TODO: Move to #defined
 //#include<GLFW/glfw3native.h>
 
-static inline void clearGLState() {
+static inline void
+clearGLState()
+{
     glUseProgram(0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindVertexArray(0);

@@ -10,7 +10,8 @@ extern "C" {
 
 typedef struct VulkanVertexBuffer VulkanVertexBuffer;
 
-struct VulkanVertexBuffer {
+struct VulkanVertexBuffer
+{
 
     VkBuffer buffer;
     VkDeviceMemory bufferMemory;
@@ -19,15 +20,21 @@ struct VulkanVertexBuffer {
     ui32 size;
 };
 
-VulkanVertexBuffer* vulkan_vertex_buffer_create(
-        VkPhysicalDevice physicalDevice, VkDevice device,
-        VkQueue graphicsQueue, VkCommandPool commandPool,
-        void *data, VkDeviceSize size);
+VulkanVertexBuffer *
+vulkan_vertex_buffer_create(VkPhysicalDevice physicalDevice,
+                            VkDevice device,
+                            VkQueue graphicsQueue,
+                            VkCommandPool commandPool,
+                            void *data,
+                            VkDeviceSize size);
 
-void vulkan_vertex_buffer_cleanup(VkDevice device, VkBuffer buffer);
+void
+vulkan_vertex_buffer_cleanup(VkDevice device, VkBuffer buffer);
 
-VkVertexInputBindingDescription vulkan_vertex_buffer_get_binding_description();
-VkVertexInputAttributeDescription* vulkan_vertex_buffer_get_attribute_descriptions();
+VkVertexInputBindingDescription
+vulkan_vertex_buffer_get_binding_description();
+VkVertexInputAttributeDescription *
+vulkan_vertex_buffer_get_attribute_descriptions();
 
 #if __cplusplus
 }

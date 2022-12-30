@@ -7,7 +7,8 @@
 
 #include <ecs/ecs.h>
 
-struct ComponentCamera {
+struct ComponentCamera
+{
     vec3 position, axisUp;
     float fov;
     float speed, sensitivity;
@@ -22,19 +23,23 @@ struct ComponentCamera {
     void **uniformBufferMapped;
     //
 
-    struct {
+    struct
+    {
         float nearZ, farZ;
     } clipping;
-    struct {
+    struct
+    {
         int width, height;
     } screen;
 
-    struct {
-        //vec3 position; -- TODO: Should be part of UNIFORM structure
+    struct
+    {
+        // vec3 position; -- TODO: Should be part of UNIFORM structure
         mat4 model, view, proj;
     } uniform;
 };
 
-void s_camera_init(ECS *ecs);
+void
+s_camera_init(ECS *ecs);
 
 #endif // H_C_CAMERA

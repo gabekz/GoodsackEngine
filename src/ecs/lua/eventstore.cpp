@@ -2,12 +2,12 @@
 
 #include <iostream>
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <util/lua_deps.h>
 #include <lua/debug.h>
+#include <util/lua_deps.h>
 
 #include <ecs/component/component.hpp>
 #include <ecs/component/layout.hpp>
@@ -21,76 +21,82 @@ using namespace ecs;
 LuaEventStore::LuaEventStore() {};
 LuaEventStore LuaEventStore::s_Instance;
 
-LuaEventStore& LuaEventStore::GetInstance() { return s_Instance; }
+LuaEventStore &
+LuaEventStore::GetInstance()
+{
+    return s_Instance;
+}
 
-void LuaEventStore::Initialize(lua_State *L) {
+void
+LuaEventStore::Initialize(lua_State *L)
+{
     // create function store
     lua_newtable(L);
 
-    s_Instance.m_functionList = (struct Lua_Functions**)malloc(
-        sizeof(struct Lua_Functions*) * ECSEVENT_LAST+1);
+    s_Instance.m_functionList = (struct Lua_Functions **)malloc(
+      sizeof(struct Lua_Functions *) * ECSEVENT_LAST + 1);
 
-
-    for(int i = 0; i < ECSEVENT_LAST+1; i++) {
+    for (int i = 0; i < ECSEVENT_LAST + 1; i++) {
         // create a table for each event
-        lua_pushstring(L, ecs::EventToString(ECSEVENT_FIRST+i));
+        lua_pushstring(L, ecs::EventToString(ECSEVENT_FIRST + i));
         lua_newtable(L);
         lua_settable(L, -3);
 
         // empty malloc
-        s_Instance.m_functionList[i] = (struct Lua_Functions*)malloc(sizeof(struct Lua_Functions*));
-        s_Instance.m_functionList[i]->size = 0;
+        s_Instance.m_functionList[i] =
+          (struct Lua_Functions *)malloc(sizeof(struct Lua_Functions *));
+        s_Instance.m_functionList[i]->size      = 0;
         s_Instance.m_functionList[i]->functions = (int *)calloc(0, sizeof(int));
     }
 
     s_Instance.m_tableId = luaL_ref(L, LUA_REGISTRYINDEX);
-    s_Instance.m_Lua = L;
-    
+    s_Instance.m_Lua     = L;
+
     s_Instance.m_Layouts = ecs::ParseComponents("../res/components.json");
 }
 
-int _meta_Component_newindex(lua_State *L) {
+int
+_meta_Component_newindex(lua_State *L)
+{
     Component *c;
-    if(lua_isuserdata(L, 1)) {
-        c = (Component*)lua_topointer(L, 1);
-    }
+    if (lua_isuserdata(L, 1)) { c = (Component *)lua_topointer(L, 1); }
 
     const char *k = luaL_checkstring(L, -2);
     int var;
 
-    if(c->GetVariable(k, &var)) {
+    if (c->GetVariable(k, &var)) {
         var = luaL_checknumber(L, -1);
         c->SetVariable(k, &var);
         return 0;
-    }
-    else {
+    } else {
         return luaL_argerror(
-            L, -2, lua_pushfstring(L, "component does not contain '%s'", k));
+          L, -2, lua_pushfstring(L, "component does not contain '%s'", k));
     }
 }
 
-int _meta_Component_index(lua_State *L) {
+int
+_meta_Component_index(lua_State *L)
+{
     Component *c;
-    if(lua_isuserdata(L, 1)) {
-        c = (Component *)lua_topointer(L, 1);
-    }
+    if (lua_isuserdata(L, 1)) { c = (Component *)lua_topointer(L, 1); }
 
     const char *k = luaL_checkstring(L, -1);
     int var;
-    if(c->GetVariable(k, &var)) {
+    if (c->GetVariable(k, &var)) {
         lua_pushnumber(L, var);
-    }
-    else {
+    } else {
         lua_pushnil(L);
     }
     return 1;
 }
 
-void pushEntity(lua_State *L, Entity entity, ComponentLayout &layout) {
+void
+pushEntity(lua_State *L, Entity entity, ComponentLayout &layout)
+{
 
     Component *t = new Component(layout);
 
-    std::string a = std::to_string(entity.id);
+    std::string a         = std::to_string(entity.id);
     const char *tableName = a.append(layout.getName()).c_str();
 
     // Create "entity" as container-table
@@ -100,7 +106,7 @@ void pushEntity(lua_State *L, Entity entity, ComponentLayout &layout) {
     lua_settable(L, -3);
 
     lua_pushstring(L, "ComponentCamera"); // temp
-    
+
     /*
     int speed = 32;
     t->SetVariable("speed", &speed);
@@ -119,24 +125,29 @@ void pushEntity(lua_State *L, Entity entity, ComponentLayout &layout) {
     lua_settable(L, -3);
 }
 
-void LuaEventStore::ECSEvent(enum ECSEvent event) {
+void
+LuaEventStore::ECSEvent(enum ECSEvent event)
+{
 
     LuaEventStore &store = LuaEventStore::GetInstance();
-    lua_State *L = store.m_Lua;
+    lua_State *L         = store.m_Lua;
 
     const char *fName = ecs::EventToString(event);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, store.m_tableId); // retrieve function table
+    lua_rawgeti(
+      L, LUA_REGISTRYINDEX, store.m_tableId); // retrieve function table
 
     lua_getfield(L, -1, fName); // retrieve all functions of 'fName'
-    for(int i = 0; i < store.m_functionList[event]->size; i++) {
+    for (int i = 0; i < store.m_functionList[event]->size; i++) {
         // retreive function
         lua_rawgeti(L, -1, store.m_functionList[event]->functions[i]);
-        if(lua_isfunction(L, -1)) {
+        if (lua_isfunction(L, -1)) {
             // send data to function
-            //pushEntity(L);
-            pushEntity(L, (Entity){.id = 19}, LuaEventStore::getLayout("ComponentCamera"));
-            //lua_pushnumber(L, 12);
-            // call event function
+            // pushEntity(L);
+            pushEntity(L,
+                       (Entity) {.id = 19},
+                       LuaEventStore::getLayout("ComponentCamera"));
+            // lua_pushnumber(L, 12);
+            //  call event function
             (CheckLua(L, lua_pcall(L, 1, 0, 0)));
         }
     }
@@ -144,10 +155,10 @@ void LuaEventStore::ECSEvent(enum ECSEvent event) {
     // <empty>
 }
 
-int LuaEventStore::RetrieveLuaTable() {
+int
+LuaEventStore::RetrieveLuaTable()
+{
     LuaEventStore &store = LuaEventStore::GetInstance();
     return lua_rawgeti(
-        store.m_Lua, LUA_REGISTRYINDEX,
-        LuaEventStore::GetInstance().m_tableId);
+      store.m_Lua, LUA_REGISTRYINDEX, LuaEventStore::GetInstance().m_tableId);
 }
-

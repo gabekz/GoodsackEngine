@@ -4,20 +4,23 @@
 
 using namespace ecs;
 
-Manager::Manager() {
+Manager::Manager()
+{
 
     ComponentLayout *t;
-    //Component c;
+    // Component c;
 
-    //m_ComponentList = 
-
+    // m_ComponentList =
 }
 
-void Manager::AddEntity(Entity e) {
-
+void
+Manager::AddEntity(Entity e)
+{
 }
 
-void Manager::ECSEvent(enum ECSEvent event) {
+void
+Manager::ECSEvent(enum ECSEvent event)
+{
 
     // Call the Lua functions as well
     LuaEventStore::ECSEvent(event);

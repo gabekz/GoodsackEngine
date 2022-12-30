@@ -5,7 +5,8 @@
 #include <core/texture/texture.h>
 #include <ecs/ecs.h>
 
-struct Skybox {
+struct Skybox
+{
     Texture *cubemap;
     VAO *vao;
 };

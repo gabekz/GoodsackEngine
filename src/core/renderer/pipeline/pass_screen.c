@@ -1,15 +1,15 @@
 /* Final screen pass (Post Processing + MSAA applied) */
 #include "pass_screen.h"
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <core/api/opengl/glbuffer.h>
 #include <core/shader/shader.h>
 #include <model/primitives.h>
 
-#include <util/sysdefs.h>
 #include <util/gfx.h>
+#include <util/sysdefs.h>
 
 static ui32 msFBO, sbFBO;
 static ui32 msRBO, sbRBO;
@@ -20,78 +20,86 @@ static VAO *vaoRect;
 
 static ui32 windowWidth, windowHeight;
 
-static void CreateMultisampleBuffer(ui32 samples, ui32 width, ui32 height) {
-// Create texture
+static void
+CreateMultisampleBuffer(ui32 samples, ui32 width, ui32 height)
+{
+    // Create texture
     glGenTextures(1, &msTexture);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msTexture);
-    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB,
-        width, height, GL_TRUE);
+    glTexImage2DMultisample(
+      GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, width, height, GL_TRUE);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 
-// Create Framebuffer object
+    // Create Framebuffer object
     glGenFramebuffers(1, &msFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
     // Attach texture to FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        GL_TEXTURE_2D_MULTISAMPLE, msTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+                           GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D_MULTISAMPLE,
+                           msTexture,
+                           0);
 
-// Create Renderbuffer object
+    // Create Renderbuffer object
     glGenRenderbuffers(1, &msRBO);
     glBindRenderbuffer(GL_RENDERBUFFER, msRBO);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-        GL_DEPTH24_STENCIL8, width, height);
+    glRenderbufferStorageMultisample(
+      GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, width, height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     // Attach Renderbuffer
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-        GL_RENDERBUFFER, msRBO);
+    glFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRBO);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-static void CreateScreenBuffer(ui32 width, ui32 height) {
-// Create Texture
+static void
+CreateScreenBuffer(ui32 width, ui32 height)
+{
+    // Create Texture
     glGenTextures(1, &sbTexture);
     glBindTexture(GL_TEXTURE_2D, sbTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height,
-        0, GL_RGB, GL_FLOAT, NULL);
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
-// Create Framebuffer object
+    // Create Framebuffer object
     glGenFramebuffers(1, &sbFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
     // Attach texture to FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        GL_TEXTURE_2D, sbTexture, 0);
+    glFramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sbTexture, 0);
 
-// Create Renderbuffer object [Depth]
+    // Create Renderbuffer object [Depth]
     glGenRenderbuffers(1, &sbRBO);
     glBindRenderbuffer(GL_RENDERBUFFER, sbRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
-        width, height);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     // Attach Renderbuffer
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-        GL_RENDERBUFFER, sbRBO);
+    glFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, sbRBO);
 
     // Error checking
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if(status != GL_FRAMEBUFFER_COMPLETE) {
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
         printf("\nFramebuffer ERROR: %u\n", status);
     }
 }
 
-void postbuffer_init(ui32 winWidth, ui32 winHeight) {
-    windowWidth = winWidth;
+void
+postbuffer_init(ui32 winWidth, ui32 winHeight)
+{
+    windowWidth  = winWidth;
     windowHeight = winHeight;
 
-// Shader
+    // Shader
     shader = shader_create_program("../res/shaders/framebuffer.shader");
     shader_use(shader);
     glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
 
-// Create Rectangle
+    // Create Rectangle
     vaoRect = vao_create();
     vao_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
@@ -102,26 +110,38 @@ void postbuffer_init(ui32 winWidth, ui32 winHeight) {
     vao_add_buffer(vaoRect, vboRect);
     free(rectPositions);
 
-// Create Framebuffer
+    // Create Framebuffer
     CreateScreenBuffer(winWidth, winHeight);
-// Create MSAA buffer
+    // Create MSAA buffer
     CreateMultisampleBuffer(16, winWidth, winHeight);
 }
 
-void postbuffer_bind() {
-    //glDebugMessageInsert(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_MARKER, 0,                       
-    //    GL_DEBUG_SEVERITY_NOTIFICATION, -1, "Post Processing buffer init");
-    //glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
+void
+postbuffer_bind()
+{
+    // glDebugMessageInsert(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_MARKER, 0,
+    //     GL_DEBUG_SEVERITY_NOTIFICATION, -1, "Post Processing buffer init");
+    // glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
     glEnable(GL_MULTISAMPLE);
     glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
 }
 
-void postbuffer_draw(ui32 winWidth, ui32 winHeight) {
+void
+postbuffer_draw(ui32 winWidth, ui32 winHeight)
+{
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sbFBO);
-    glBlitFramebuffer(0, 0, winWidth, winHeight,
-        0, 0, winWidth, winHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0,
+                      0,
+                      winWidth,
+                      winHeight,
+                      0,
+                      0,
+                      winWidth,
+                      winHeight,
+                      GL_COLOR_BUFFER_BIT,
+                      GL_NEAREST);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     vao_bind(vaoRect);
@@ -133,6 +153,8 @@ void postbuffer_draw(ui32 winWidth, ui32 winHeight) {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 }
 
-void postbuffer_cleanup() {
+void
+postbuffer_cleanup()
+{
     glDeleteProgram(shader->id);
 }

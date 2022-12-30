@@ -1,17 +1,22 @@
 #ifndef HPP_COMPONENT_LAYOUT
 #define HPP_COMPONENT_LAYOUT
 
-#include <string>
 #include <map>
+#include <string>
 
 namespace ecs {
 
-typedef struct _datatype { int size, stride; } DataType;
-typedef struct _accessor { int position, size, stride; } Accessor;
-
+typedef struct _datatype
+{
+    int size, stride;
+} DataType;
+typedef struct _accessor
+{
+    int position, size, stride;
+} Accessor;
 
 class ComponentLayout {
-  public:
+   public:
     ComponentLayout(const char *name);
     ~ComponentLayout();
 
@@ -20,14 +25,14 @@ class ComponentLayout {
     std::map<std::string, Accessor> getData() { return m_Variables; };
     Accessor getAccessor(std::string var) { return m_Variables[var]; };
     ulong getSizeReq() { return m_SizeReq; };
-    const char* getName() { return m_Name; };
+    const char *getName() { return m_Name; };
 
-  private:
+   private:
     std::map<std::string, Accessor> m_Variables;
     ulong m_SizeReq;
     const char *m_Name;
 };
 
-} // namespace
+} // namespace ecs
 
 #endif // H

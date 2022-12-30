@@ -1,50 +1,54 @@
 #include "vulkan_swapchain.h"
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-#include <util/maths.h>
 #include <util/logger.h>
+#include <util/maths.h>
 
 #include <core/api/vulkan/vulkan_depth.h>
 #include <core/api/vulkan/vulkan_framebuffer.h>
 
-VulkanSwapChainDetails* vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface) {
+VulkanSwapChainDetails *
+vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface)
+{
 
     VulkanSwapChainDetails *details = malloc(sizeof(VulkanSwapChainDetails));
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-        device, surface, &details->capabilities);
+      device, surface, &details->capabilities);
 
     // Store Formats
     ui32 formatCount;
     vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, NULL);
 
-    if(formatCount != 0) {
-        details->formats =
-            malloc(sizeof(VkSurfaceFormatKHR) * formatCount);
+    if (formatCount != 0) {
+        details->formats = malloc(sizeof(VkSurfaceFormatKHR) * formatCount);
 
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface,
-            &formatCount, details->formats);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(
+          device, surface, &formatCount, details->formats);
     }
 
     // Store Present-Modes
     ui32 presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, NULL);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(
+      device, surface, &presentModeCount, NULL);
 
-    if(presentModeCount != 0) {
-        details->presentModes = 
-            malloc(sizeof(VkPresentModeKHR) * presentModeCount);
+    if (presentModeCount != 0) {
+        details->presentModes =
+          malloc(sizeof(VkPresentModeKHR) * presentModeCount);
 
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface,
-            &presentModeCount, details->presentModes);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(
+          device, surface, &presentModeCount, details->presentModes);
     }
 
     return details;
 }
-VkSurfaceFormatKHR vulkan_swapchain_choose_format(VkSurfaceFormatKHR *formats, int count) {
+VkSurfaceFormatKHR
+vulkan_swapchain_choose_format(VkSurfaceFormatKHR *formats, int count)
+{
     // Find preferred format
-    for(int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         if (formats[i].format == VK_FORMAT_B8G8R8A8_SRGB &&
             formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return formats[i];
@@ -53,109 +57,125 @@ VkSurfaceFormatKHR vulkan_swapchain_choose_format(VkSurfaceFormatKHR *formats, i
     return formats[0];
 }
 
-VkPresentModeKHR vulkan_swapchain_choose_present_mode(VkPresentModeKHR *modes, int count) {
-    for(int i = 0; i < count; i++) {
-        if(modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-            return modes[i];
-        }
+VkPresentModeKHR
+vulkan_swapchain_choose_present_mode(VkPresentModeKHR *modes, int count)
+{
+    for (int i = 0; i < count; i++) {
+        if (modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) { return modes[i]; }
     }
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D vulkan_swapchain_choose_extent(VkSurfaceCapabilitiesKHR capabilities, GLFWwindow *window) {
-    if(capabilities.currentExtent.width != UINT32_MAX) {
+VkExtent2D
+vulkan_swapchain_choose_extent(VkSurfaceCapabilitiesKHR capabilities,
+                               GLFWwindow *window)
+{
+    if (capabilities.currentExtent.width != UINT32_MAX) {
         return capabilities.currentExtent;
-    }
-    else {
+    } else {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         VkExtent2D actualExtent = {(ui32)width, (ui32)height};
 
-        actualExtent.width = MIN(MAX(actualExtent.width, capabilities.minImageExtent.width), capabilities.maxImageExtent.width);
-        actualExtent.height= MIN(MAX(actualExtent.height, capabilities.minImageExtent.height), capabilities.maxImageExtent.height);
-        // CLAMP(actualExtent.width, capabilities.minImageExtent.width, capabilities.minImageExtent.width);
-        // CLAMP(actualExtent.height, capabilities.minImageExtent.height, capabilities.minImageExtent.height);
+        actualExtent.width =
+          MIN(MAX(actualExtent.width, capabilities.minImageExtent.width),
+              capabilities.maxImageExtent.width);
+        actualExtent.height =
+          MIN(MAX(actualExtent.height, capabilities.minImageExtent.height),
+              capabilities.maxImageExtent.height);
+        // CLAMP(actualExtent.width, capabilities.minImageExtent.width,
+        // capabilities.minImageExtent.width); CLAMP(actualExtent.height,
+        // capabilities.minImageExtent.height,
+        // capabilities.minImageExtent.height);
 
         return actualExtent;
     }
 }
 
+VulkanSwapChainDetails *
+vulkan_swapchain_create(VkDevice device,
+                        VkPhysicalDevice physicalDevice,
+                        VkSurfaceKHR surface,
+                        GLFWwindow *window)
+{
 
-VulkanSwapChainDetails* vulkan_swapchain_create(
-        VkDevice device, VkPhysicalDevice physicalDevice, 
-        VkSurfaceKHR surface, GLFWwindow *window) {
+    VulkanSwapChainDetails *details =
+      vulkan_swapchain_query_details(physicalDevice, surface);
 
-    VulkanSwapChainDetails *details = vulkan_swapchain_query_details(physicalDevice, surface);
-
-    VkSurfaceFormatKHR format = vulkan_swapchain_choose_format(details->formats, 1);
-    VkPresentModeKHR presentMode = vulkan_swapchain_choose_present_mode(details->presentModes, 1);
-    VkExtent2D extent = vulkan_swapchain_choose_extent(details->capabilities, window);
+    VkSurfaceFormatKHR format =
+      vulkan_swapchain_choose_format(details->formats, 1);
+    VkPresentModeKHR presentMode =
+      vulkan_swapchain_choose_present_mode(details->presentModes, 1);
+    VkExtent2D extent =
+      vulkan_swapchain_choose_extent(details->capabilities, window);
 
     ui32 imageCount = details->capabilities.minImageCount + 1;
 
-    if(details->capabilities.maxImageCount > 0 &&
-    imageCount < details->capabilities.maxImageCount) {
+    if (details->capabilities.maxImageCount > 0 &&
+        imageCount < details->capabilities.maxImageCount) {
         imageCount = details->capabilities.maxImageCount;
     }
 
     VkSwapchainCreateInfoKHR createInfo = {
-        .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface = surface,
-        .minImageCount = imageCount,
-        .imageFormat = format.format,
-        .imageColorSpace = format.colorSpace,
-        .imageExtent = extent,
-        .imageArrayLayers = 1,
-        .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      .sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+      .surface          = surface,
+      .minImageCount    = imageCount,
+      .imageFormat      = format.format,
+      .imageColorSpace  = format.colorSpace,
+      .imageExtent      = extent,
+      .imageArrayLayers = 1,
+      .imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 
-        .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-        .queueFamilyIndexCount = 0,
-        .pQueueFamilyIndices = NULL,
+      .imageSharingMode      = VK_SHARING_MODE_EXCLUSIVE,
+      .queueFamilyIndexCount = 0,
+      .pQueueFamilyIndices   = NULL,
 
-        .preTransform = details->capabilities.currentTransform,
-        .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+      .preTransform   = details->capabilities.currentTransform,
+      .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 
-        .presentMode = presentMode,
-        .clipped = VK_TRUE,
+      .presentMode = presentMode,
+      .clipped     = VK_TRUE,
 
-        .oldSwapchain = VK_NULL_HANDLE
-    };
+      .oldSwapchain = VK_NULL_HANDLE};
 
-    if (vkCreateSwapchainKHR(device, &createInfo, NULL, &details->swapchain) != VK_SUCCESS) {
+    if (vkCreateSwapchainKHR(device, &createInfo, NULL, &details->swapchain) !=
+        VK_SUCCESS) {
         LOG_ERROR("failed to create swap chain!");
     }
 
     vkGetSwapchainImagesKHR(device, details->swapchain, &imageCount, NULL);
     details->swapchainImages = malloc(sizeof(VkImage) * imageCount);
-    vkGetSwapchainImagesKHR(device, details->swapchain, &imageCount, details->swapchainImages);
+    vkGetSwapchainImagesKHR(
+      device, details->swapchain, &imageCount, details->swapchainImages);
 
     details->swapchainImageFormat = format.format;
-    details->swapchainExtent = extent;
+    details->swapchainExtent      = extent;
 
-// Craete Image Views
+    // Craete Image Views
     details->swapchainImageViews = malloc(sizeof(VkImageView) * imageCount);
     details->swapchainImageCount = imageCount;
 
-    for(int i = 0; i < imageCount; i++) {
+    for (int i = 0; i < imageCount; i++) {
         VkImageViewCreateInfo createInfo = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image = details->swapchainImages[i],
-            .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = details->swapchainImageFormat,
+          .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+          .image    = details->swapchainImages[i],
+          .viewType = VK_IMAGE_VIEW_TYPE_2D,
+          .format   = details->swapchainImageFormat,
 
-            .components.r = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .components.g = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .components.b = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .components.a = VK_COMPONENT_SWIZZLE_IDENTITY,
+          .components.r = VK_COMPONENT_SWIZZLE_IDENTITY,
+          .components.g = VK_COMPONENT_SWIZZLE_IDENTITY,
+          .components.b = VK_COMPONENT_SWIZZLE_IDENTITY,
+          .components.a = VK_COMPONENT_SWIZZLE_IDENTITY,
 
-            .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .subresourceRange.baseMipLevel = 0,
-            .subresourceRange.levelCount = 1,
-            .subresourceRange.baseArrayLayer = 0,
-            .subresourceRange.layerCount = 1
-        };
+          .subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+          .subresourceRange.baseMipLevel   = 0,
+          .subresourceRange.levelCount     = 1,
+          .subresourceRange.baseArrayLayer = 0,
+          .subresourceRange.layerCount     = 1};
 
-        if(vkCreateImageView(device, &createInfo, NULL, &details->swapchainImageViews[i]) != VK_SUCCESS) {
+        if (vkCreateImageView(
+              device, &createInfo, NULL, &details->swapchainImageViews[i]) !=
+            VK_SUCCESS) {
             LOG_ERROR("Failed to create image views!");
         }
     }
@@ -163,12 +183,14 @@ VulkanSwapChainDetails* vulkan_swapchain_create(
     return details;
 }
 
-VulkanSwapChainDetails *vulkan_swapchain_recreate(
-        VkPhysicalDevice physicalDevice, VkDevice device,
-        VulkanSwapChainDetails *swapChainDetails,
-        VkSurfaceKHR surface, VkRenderPass renderPass,
-        VulkanDepthResources **ptrDepthResources,
-        GLFWwindow *window)
+VulkanSwapChainDetails *
+vulkan_swapchain_recreate(VkPhysicalDevice physicalDevice,
+                          VkDevice device,
+                          VulkanSwapChainDetails *swapChainDetails,
+                          VkSurfaceKHR surface,
+                          VkRenderPass renderPass,
+                          VulkanDepthResources **ptrDepthResources,
+                          GLFWwindow *window)
 {
     vkDeviceWaitIdle(device);
 
@@ -178,40 +200,37 @@ VulkanSwapChainDetails *vulkan_swapchain_recreate(
 
     // Create a NEW swapchain
     swapChainDetails =
-        vulkan_swapchain_create(device, physicalDevice,
-        surface, window);
+      vulkan_swapchain_create(device, physicalDevice, surface, window);
 
     // Recreate depth resources
-    *ptrDepthResources = 
-        vulkan_depth_create_resources(
-                physicalDevice, device, swapChainDetails->swapchainExtent);
+    *ptrDepthResources = vulkan_depth_create_resources(
+      physicalDevice, device, swapChainDetails->swapchainExtent);
 
-    VulkanDepthResources p = **ptrDepthResources;
+    VulkanDepthResources p     = **ptrDepthResources;
     VkImageView depthImageView = p.depthImageView;
 
     ui32 framebufferCount = swapChainDetails->swapchainImageCount;
-    swapChainDetails->swapchainFramebuffers = 
-        vulkan_framebuffer_create(
-            device,
-            framebufferCount,
-            swapChainDetails->swapchainImageViews,
-            depthImageView,
-            swapChainDetails->swapchainExtent,
-            renderPass
-        );
+    swapChainDetails->swapchainFramebuffers =
+      vulkan_framebuffer_create(device,
+                                framebufferCount,
+                                swapChainDetails->swapchainImageViews,
+                                depthImageView,
+                                swapChainDetails->swapchainExtent,
+                                renderPass);
 
     return swapChainDetails;
 }
 
-void vulkan_swapchain_cleanup(VkDevice device,
-        VulkanSwapChainDetails *swapchainDetails)
+void
+vulkan_swapchain_cleanup(VkDevice device,
+                         VulkanSwapChainDetails *swapchainDetails)
 {
-    // TODO: may be incorrect sizes. i.e. framebuffer is not same count 
-    for(int i = 0; i < swapchainDetails->swapchainImageCount; i++) {
+    // TODO: may be incorrect sizes. i.e. framebuffer is not same count
+    for (int i = 0; i < swapchainDetails->swapchainImageCount; i++) {
         vkDestroyFramebuffer(
-                device, swapchainDetails->swapchainFramebuffers[i], NULL);
+          device, swapchainDetails->swapchainFramebuffers[i], NULL);
         vkDestroyImageView(
-                device, swapchainDetails->swapchainImageViews[i], NULL);
+          device, swapchainDetails->swapchainImageViews[i], NULL);
     }
 
     vkDestroySwapchainKHR(device, swapchainDetails->swapchain, NULL);

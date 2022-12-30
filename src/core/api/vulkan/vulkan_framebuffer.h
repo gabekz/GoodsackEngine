@@ -8,13 +8,13 @@
 extern "C" {
 #endif // __cplusplus
 
-VkFramebuffer *vulkan_framebuffer_create(
-        VkDevice device,
-        ui32 framebufferCount,
-        VkImageView *swapchainImageViews,
-        VkImageView depthImageView,
-        VkExtent2D swapchainExtent,
-        VkRenderPass renderPass);
+VkFramebuffer *
+vulkan_framebuffer_create(VkDevice device,
+                          ui32 framebufferCount,
+                          VkImageView *swapchainImageViews,
+                          VkImageView depthImageView,
+                          VkExtent2D swapchainExtent,
+                          VkRenderPass renderPass);
 
 #ifdef __cplusplus
 }

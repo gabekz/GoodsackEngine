@@ -12,7 +12,8 @@ extern "C" {
 
 typedef struct _vulkanSwapChainDetails VulkanSwapChainDetails;
 
-struct _vulkanSwapChainDetails {
+struct _vulkanSwapChainDetails
+{
     VkSwapchainKHR swapchain;
     ui32 swapchainImageCount;
     VkImage *swapchainImages;
@@ -29,39 +30,45 @@ struct _vulkanSwapChainDetails {
 };
 
 // Create Swapchain
-VulkanSwapChainDetails* vulkan_swapchain_create(
-        VkDevice device, VkPhysicalDevice physicalDevice,
-        VkSurfaceKHR surface, GLFWwindow *window);
+VulkanSwapChainDetails *
+vulkan_swapchain_create(VkDevice device,
+                        VkPhysicalDevice physicalDevice,
+                        VkSurfaceKHR surface,
+                        GLFWwindow *window);
 
 // Recreate the Swapchain
-VulkanSwapChainDetails *vulkan_swapchain_recreate(
-        VkPhysicalDevice physicalDevice, VkDevice device,
-        VulkanSwapChainDetails *swapChainDetails,
-        VkSurfaceKHR surface, VkRenderPass renderPass,
-        VulkanDepthResources **ptrDepthResources,
-        GLFWwindow *window);
+VulkanSwapChainDetails *
+vulkan_swapchain_recreate(VkPhysicalDevice physicalDevice,
+                          VkDevice device,
+                          VulkanSwapChainDetails *swapChainDetails,
+                          VkSurfaceKHR surface,
+                          VkRenderPass renderPass,
+                          VulkanDepthResources **ptrDepthResources,
+                          GLFWwindow *window);
 
 // Create Swapchain Details structure
-VulkanSwapChainDetails* vulkan_swapchain_query_details(
-        VkPhysicalDevice device, VkSurfaceKHR surface);
+VulkanSwapChainDetails *
+vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface);
 
 // Cleanup
-void vulkan_swapchain_cleanup(VkDevice device,
-        VulkanSwapChainDetails *swapchainDetails);
+void
+vulkan_swapchain_cleanup(VkDevice device,
+                         VulkanSwapChainDetails *swapchainDetails);
 
 // TODO: Create Swapchain Image Views
-//void vulkan_swapchain_create_image_views(VulkanSwapChainDetails *details);
+// void vulkan_swapchain_create_image_views(VulkanSwapChainDetails *details);
 
 // Helpers
 
-VkSurfaceFormatKHR vulkan_swapchain_choose_format(
-        VkSurfaceFormatKHR *formats, int count);
+VkSurfaceFormatKHR
+vulkan_swapchain_choose_format(VkSurfaceFormatKHR *formats, int count);
 
-VkPresentModeKHR vulkan_swapchain_choose_present_mode(
-        VkPresentModeKHR *modes, int count);
+VkPresentModeKHR
+vulkan_swapchain_choose_present_mode(VkPresentModeKHR *modes, int count);
 
-VkExtent2D vulkan_swapchain_choose_extent(
-        VkSurfaceCapabilitiesKHR capabilities, GLFWwindow *window);
+VkExtent2D
+vulkan_swapchain_choose_extent(VkSurfaceCapabilitiesKHR capabilities,
+                               GLFWwindow *window);
 
 #ifdef __cplusplus
 }

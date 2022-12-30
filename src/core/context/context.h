@@ -8,19 +8,20 @@
 
 typedef struct _applicationProperties ApplicationProperties;
 
-struct _applicationProperties {
+struct _applicationProperties
+{
     const char *title;
     const char *description;
 
-    struct {
-        int major: 1;
-        int minor: 1;
+    struct
+    {
+        int major : 1;
+        int minor : 1;
     } version;
-
 };
 
-GLFWwindow* createWindow(int winWidth, int winHeight,
-        VulkanDeviceContext **vkd);
-//void cleanup(ContextProperties *contextProperties);
+GLFWwindow *
+createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd);
+// void cleanup(ContextProperties *contextProperties);
 
 #endif // H_CONTEXT

@@ -1,14 +1,14 @@
 #include "loader.hpp"
 
-#include <iostream>
-#include <string>
-#include <map>
 #include <fstream>
+#include <iostream>
+#include <map>
+#include <string>
 
 #include <util/maths.h>
 
-#include <stdlib.h>
 #include <nlohmann/json.hpp>
+#include <stdlib.h>
 
 #include <ecs/component/component.hpp>
 #include <ecs/component/layout.hpp>
@@ -16,60 +16,62 @@
 using json = nlohmann::json;
 using namespace ecs;
 
-std::map<std::string, ComponentLayout*> ecs::ParseComponents(const char *path, ui32 rawData) {
+std::map<std::string, ComponentLayout *>
+ecs::ParseComponents(const char *path, ui32 rawData)
+{
 
     json JSON;
 
-    if(rawData <= 0) {
+    if (rawData <= 0) {
         std::ifstream file(path);
         JSON = json::parse(file);
-    }
-    else {
+    } else {
         JSON = json::parse(path);
     }
-    //std::cout << JSON.items() << std::endl;
-    
-    //std::vector<std::string> types = {"vec3", "float", "int"};
+    // std::cout << JSON.items() << std::endl;
+
+    // std::vector<std::string> types = {"vec3", "float", "int"};
 
     std::map<std::string, DataType> dataTypes;
-    dataTypes["int"]    = (DataType){sizeof(int),   1};
-    dataTypes["float"]  = (DataType){sizeof(float), 1};
+    dataTypes["int"]   = (DataType) {sizeof(int), 1};
+    dataTypes["float"] = (DataType) {sizeof(float), 1};
 
-    //dataTypes["vec2"]   = (DataType){sizeof(float), 2};
-    dataTypes["vec3"]   = (DataType){sizeof(float), 3};
-    dataTypes["vec4"]   = (DataType){sizeof(float), 4};
+    // dataTypes["vec2"]   = (DataType){sizeof(float), 2};
+    dataTypes["vec3"] = (DataType) {sizeof(float), 3};
+    dataTypes["vec4"] = (DataType) {sizeof(float), 4};
 
-    //dataTypes["mat3"]   = (DataType){sizeof(vec3) * 4,  3};
-    dataTypes["mat4"]   = (DataType){sizeof(vec4),  4};
+    // dataTypes["mat3"]   = (DataType){sizeof(vec3) * 4,  3};
+    dataTypes["mat4"] = (DataType) {sizeof(vec4), 4};
     // strings are handled differently
 
-    //std::vector<ComponentLayout*> layouts;
-    std::map<std::string, ComponentLayout*> layouts;
+    // std::vector<ComponentLayout*> layouts;
+    std::map<std::string, ComponentLayout *> layouts;
 
     // Loop through every component
-    for(auto& cmp : JSON.items()) {
+    for (auto &cmp : JSON.items()) {
         std::map<std::string, Accessor> data;
 
-        //std::cout << cmp.key() << std::endl;
+        // std::cout << cmp.key() << std::endl;
 
         ComponentLayout *component = new ComponentLayout(cmp.key().c_str());
 
         // Every type of available data
-        for(auto type : dataTypes) {
+        for (auto type : dataTypes) {
 
             json JData = JSON[cmp.key()][type.first];
             // Every variable of 'type' in the component
-            for(int i = 0; i < JData.size(); i++) {
+            for (int i = 0; i < JData.size(); i++) {
 
-                if(!strcmp(type.first.c_str(), "string")) {
+                if (!strcmp(type.first.c_str(), "string")) {
                     // TODO: handle
-                    //data[JData[i]] = (Accessor){0, type.second.size, type.second.stride};
+                    // data[JData[i]] = (Accessor){0, type.second.size,
+                    // type.second.stride};
                     continue;
                 }
 
-                data[JData[i]] = (Accessor){
-                    0, type.second.size, type.second.stride };
-                //std::cout << type.first << ": " << JData[i] << std::endl;
+                data[JData[i]] =
+                  (Accessor) {0, type.second.size, type.second.stride};
+                // std::cout << type.first << ": " << JData[i] << std::endl;
             }
         }
 

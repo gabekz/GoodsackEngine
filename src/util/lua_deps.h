@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 
-    #include "lua.h"
-    #include "lauxlib.h"
-    #include "lualib.h"
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
 
 #ifdef __cplusplus
 }

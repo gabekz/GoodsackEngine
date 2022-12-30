@@ -8,43 +8,53 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct VulkanDescriptorAllocator {
+typedef struct VulkanDescriptorAllocator
+{
 
-    struct {
+    struct
+    {
         VkDescriptorPool *usedPools;
         VkDescriptorPool *freePools;
     };
 
 } VulkanDescriptorAllocator;
 
-typedef struct VulkanDescriptorLayoutCache {
+typedef struct VulkanDescriptorLayoutCache
+{
     int a;
 } VulkanDescriptorLayoutCache;
 
 // Descriptor Allocator
 
-VulkanDescriptorAllocator* vulkan_descriptor_allocator_init(VkDevice device);
-void vulkan_descriptor_allocator_reset();
+VulkanDescriptorAllocator *
+vulkan_descriptor_allocator_init(VkDevice device);
+void
+vulkan_descriptor_allocator_reset();
 
-int vulkan_descriptor_allocate(VkDescriptorSet *set,
-        VkDescriptorSetLayout layout);
+int
+vulkan_descriptor_allocate(VkDescriptorSet *set, VkDescriptorSetLayout layout);
 
-void vulkan_descriptor_allocator_cleanup(VulkanDescriptorAllocator *self);
+void
+vulkan_descriptor_allocator_cleanup(VulkanDescriptorAllocator *self);
 
 // Descriptor Builder
 
-void vulkan_descriptor_builder_begin(VulkanDescriptorLayoutCache *layoutCache);
-VkDescriptorSet vulkan_descriptor_builder_end();
+void
+vulkan_descriptor_builder_begin(VulkanDescriptorLayoutCache *layoutCache);
+VkDescriptorSet
+vulkan_descriptor_builder_end();
 
-void vulkan_descriptor_builder_bind_buffer(ui32 binding,
-        VkDescriptorBufferInfo *bufferInfo,
-        VkDescriptorType descriptorType,
-        VkShaderStageFlags shaderFlags); 
+void
+vulkan_descriptor_builder_bind_buffer(ui32 binding,
+                                      VkDescriptorBufferInfo *bufferInfo,
+                                      VkDescriptorType descriptorType,
+                                      VkShaderStageFlags shaderFlags);
 
-void vulkan_descriptor_builder_bind_image(ui32 binding,
-        VkDescriptorImageInfo* imageInfo,
-        VkDescriptorType descriptorType,
-        VkShaderStageFlags shaderFlags);
+void
+vulkan_descriptor_builder_bind_image(ui32 binding,
+                                     VkDescriptorImageInfo *imageInfo,
+                                     VkDescriptorType descriptorType,
+                                     VkShaderStageFlags shaderFlags);
 
 #ifdef __cplusplus
 }

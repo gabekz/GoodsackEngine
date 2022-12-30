@@ -7,8 +7,10 @@
 extern "C" {
 #endif
 
-int CheckLua(lua_State *L, int r);
-void dumpstack (lua_State *L, const char *message);
+int
+CheckLua(lua_State *L, int r);
+void
+dumpstack(lua_State *L, const char *message);
 
 #ifdef __cplusplus
 }

@@ -8,20 +8,20 @@
  *
  *T*/
 
-
-#include <stdlib.h>
 #include <gtest/gtest.h>
+#include <stdlib.h>
 
 #include <core/api/vulkan/vulkan_descriptor_builder.h>
 
 #include <util/gfx.h>
 #include <util/maths.h>
 
-struct VulkanDescriptorTest : testing::Test {
-
+struct VulkanDescriptorTest : testing::Test
+{
 };
 
-TEST_F(VulkanDescriptorTest, Allocates_a_Descriptor_Pool) {
+TEST_F(VulkanDescriptorTest, Allocates_a_Descriptor_Pool)
+{
 
     VkDescriptorSet GlobalSet;
     VkDescriptorBufferInfo bufferInfo;
@@ -31,15 +31,15 @@ TEST_F(VulkanDescriptorTest, Allocates_a_Descriptor_Pool) {
 
     vulkan_descriptor_builder_begin(&layoutCache);
     vulkan_descriptor_builder_bind_buffer(
-            0,
-            &bufferInfo,
-            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-            VK_SHADER_STAGE_VERTEX_BIT);
+      0,
+      &bufferInfo,
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+      VK_SHADER_STAGE_VERTEX_BIT);
     vulkan_descriptor_builder_bind_buffer(
-            1,
-            &bufferInfo,
-            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-            VK_SHADER_STAGE_FRAGMENT_BIT);
+      1,
+      &bufferInfo,
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+      VK_SHADER_STAGE_FRAGMENT_BIT);
     GlobalSet = vulkan_descriptor_builder_end();
 
     /*

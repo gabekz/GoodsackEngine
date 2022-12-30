@@ -4,17 +4,21 @@
 
 namespace asset {
 
-TextureAsset::TextureAsset(TextureProperties props) {
+TextureAsset::TextureAsset(TextureProperties props)
+{
     m_properties = props;
     setLoaded(false);
 }
 
-void TextureAsset::Load() {
+void
+TextureAsset::Load()
+{
     LOG_DEBUG("Hello! %d", m_properties.bpp);
 }
 
-void TextureAsset::Unload() {
-
+void
+TextureAsset::Unload()
+{
 }
 
-};
+}; // namespace asset

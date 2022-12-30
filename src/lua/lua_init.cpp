@@ -11,7 +11,9 @@
 #include <lua/debug.h>
 #include <lua/reg_print.h>
 
-void LuaInit(const char *file) {
+void
+LuaInit(const char *file)
+{
     lua_State *L = luaL_newstate();
     luaL_openlibs(L);
     luaopen_luaprintlib(L);
@@ -21,18 +23,15 @@ void LuaInit(const char *file) {
     // add the global C function (register system) to lua
     lua_register(L, "_ECS_RegisterSystem", Lua_ECSRegisterSystem);
 
-    if(CheckLua(L, luaL_dofile(L, file))) {
+    if (CheckLua(L, luaL_dofile(L, file))) {
 
         // entry from lua [function main()]
         lua_getglobal(L, "main");
-        if(lua_isfunction(L, -1)) {
-            CheckLua(L, lua_pcall(L, 0, 0, 0));
-        }
+        if (lua_isfunction(L, -1)) { CheckLua(L, lua_pcall(L, 0, 0, 0)); }
 
-    ecs::LuaEventStore::ECSEvent(ECS_INIT);
-    ecs::LuaEventStore::ECSEvent(ECS_UPDATE);
-    dumpstack(L, "end");
-
+        ecs::LuaEventStore::ECSEvent(ECS_INIT);
+        ecs::LuaEventStore::ECSEvent(ECS_UPDATE);
+        dumpstack(L, "end");
     }
 
     lua_close(L);

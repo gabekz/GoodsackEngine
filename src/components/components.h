@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 
-    #include <components/camera/camera.h>
-    #include <components/mesh/mesh.h>
-    #include <components/transform/transform.h>
+#include <components/camera/camera.h>
+#include <components/mesh/mesh.h>
+#include <components/transform/transform.h>
 
 #ifdef __cplusplus
 }

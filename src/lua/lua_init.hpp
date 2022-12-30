@@ -3,6 +3,7 @@
 
 #include <util/sysdefs.h>
 
-void LuaInit(const char *file);
+void
+LuaInit(const char *file);
 
 #endif // H_LUA_INIT

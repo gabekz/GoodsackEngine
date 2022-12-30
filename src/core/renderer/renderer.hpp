@@ -6,13 +6,10 @@
 
 #include <util/gfx.h>
 
-typedef enum RenderStage {
-    REGULAR = 0,
-    SHADOW
-} RenderStage;
+typedef enum RenderStage { REGULAR = 0, SHADOW } RenderStage;
 
 class Renderer {
-public:
+   public:
     Renderer(int windowWidth, int windowHeight);
     virtual ~Renderer();
 
@@ -24,7 +21,7 @@ public:
 
     void SetActiveScene();
 
-private:
+   private:
     GLFWwindow *m_window;
     int m_windowWidth, m_windowHeight;
 
@@ -33,7 +30,8 @@ private:
 
     VulkanDeviceContext *m_vulkanDevice;
 
-    struct {
+    struct
+    {
         Scene **sceneL;
         int sceneC, activeScene;
     } m_sceneInfo;

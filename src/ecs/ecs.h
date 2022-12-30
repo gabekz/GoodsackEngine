@@ -4,14 +4,18 @@
 #include <ecs/ecsdefs.h>
 #include <util/sysdefs.h>
 
-#define _ECS_DECL_SYSTEM(_name)\
-    extern void _name##_init();\
+#define _ECS_DECL_SYSTEM(_name) extern void _name##_init();
 
-#define _ecs_add3(e, c, v) ({ __typeof__(v) _v = (v); _ecs_add_internal((e), (c), &_v); })
+#define _ecs_add3(e, c, v)                \
+    ({                                    \
+        __typeof__(v) _v = (v);           \
+        _ecs_add_internal((e), (c), &_v); \
+    })
 #define _ecs_add2(e, c) _ecs_add_internal((e), (c), NULL)
 
-#define _ecs_add_overload(_1,_2,_3,NAME,...) NAME
-#define ecs_add(...) _ecs_add_overload(__VA_ARGS__, _ecs_add3, _ecs_add2)(__VA_ARGS__)
+#define _ecs_add_overload(_1, _2, _3, NAME, ...) NAME
+#define ecs_add(...) \
+    _ecs_add_overload(__VA_ARGS__, _ecs_add3, _ecs_add2)(__VA_ARGS__)
 
 typedef struct _ecs_entity Entity;
 typedef union _ecs_system ECSSystem;
@@ -32,7 +36,7 @@ extern "C" {
 #define ECSCOMPONENT_LAST C_MESH
 enum _ecs_component {
     C_TRANSFORM = 0,
-    C_CAMERA, 
+    C_CAMERA,
     C_MESH,
 };
 typedef enum _ecs_component ECSComponent;
@@ -50,7 +54,8 @@ inline void _ecs_init_internal(ECS *ecs) {
 
 /*-------------------------------------------*/
 
-struct _ecs_entity {
+struct _ecs_entity
+{
     EntityId id;
     ui64 index;
     ECS *ecs;
@@ -58,51 +63,62 @@ struct _ecs_entity {
 
 /*-------------------------------------------*/
 
-struct _ecs_component_list {
+struct _ecs_component_list
+{
     void *components;
     ui64 component_size;
-    //ui64 components_size;
+    // ui64 components_size;
     ui64 *entity_index_list;
 };
 
-struct _ecs {
+struct _ecs
+{
     EntityId *ids, nextId;
     ui32 nextIndex;
     ui32 capacity;
 
     Renderer *renderer;
 
-    ECSComponentList component_lists[ECSCOMPONENT_LAST+1];
+    ECSComponentList component_lists[ECSCOMPONENT_LAST + 1];
     ECSSystem *systems;
     ui32 systems_size;
-
 };
 
 /*-------------------------------------------*/
 
 union _ecs_system {
-    struct {
+    struct
+    {
         ECSSubscriber init, destroy, render, update;
     };
 
     ECSSubscriber subscribers[ECSEVENT_LAST + 1];
 };
 
-void _ecs_add_internal(Entity entity, ui32 component_id, void *value);
+void
+_ecs_add_internal(Entity entity, ui32 component_id, void *value);
 
 /*-------------------------------------------*/
 
-ECS *ecs_init(Renderer *renderer);
-Entity ecs_new(ECS *self);
+ECS *
+ecs_init(Renderer *renderer);
+Entity
+ecs_new(ECS *self);
 
-int ecs_has(Entity entity, ECSComponent component_id);
-void *ecs_get(Entity entity, ECSComponent component_id);
+int
+ecs_has(Entity entity, ECSComponent component_id);
+void *
+ecs_get(Entity entity, ECSComponent component_id);
 
-void ecs_system_register(ECS *self, ECSSystem system);
-void ecs_component_register(ECS *self, ui32 component_id, ui64 size);
+void
+ecs_system_register(ECS *self, ECSSystem system);
+void
+ecs_component_register(ECS *self, ui32 component_id, ui64 size);
 
-void ecs_event(ECS *self, enum ECSEvent event);
-void lua_ecs_event(enum ECSEvent event, Entity e);
+void
+ecs_event(ECS *self, enum ECSEvent event);
+void
+lua_ecs_event(enum ECSEvent event, Entity e);
 
 #ifdef __cplusplus
 }

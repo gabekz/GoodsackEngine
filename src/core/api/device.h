@@ -12,10 +12,7 @@ extern "C" {
 #define DEVICE_API_OPENGL device_getGraphics() == GRAPHICS_API_OPENGL
 #define DEVICE_API_VULKAN device_getGraphics() == GRAPHICS_API_VULKAN
 
-typedef enum {
-    GRAPHICS_API_OPENGL,
-    GRAPHICS_API_VULKAN
-} GraphicsAPI;
+typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } GraphicsAPI;
 
 typedef enum {
     OPENAL,
@@ -23,21 +20,27 @@ typedef enum {
 
 // Analytics
 
-typedef struct Analytics {
+typedef struct Analytics
+{
     double currentFps;
     double currentMs;
 
-    //ui32 currentDrawCalls;
+    // ui32 currentDrawCalls;
 } Analytics;
 
 // Functions
 
-GraphicsAPI device_getGraphics();
-void device_setGraphics(GraphicsAPI api);
+GraphicsAPI
+device_getGraphics();
+void
+device_setGraphics(GraphicsAPI api);
 
-Analytics device_getAnalytics();
-void device_resetAnalytics();
-void device_updateAnalytics(double time);
+Analytics
+device_getAnalytics();
+void
+device_resetAnalytics();
+void
+device_updateAnalytics(double time);
 
 #ifdef __cplusplus
 }

@@ -5,9 +5,9 @@
 #include <util/sysdefs.h>
 
 #include <core/api/vulkan/vulkan_depth.h>
-#include <core/api/vulkan/vulkan_swapchain.h>
-#include <core/api/vulkan/vulkan_pipeline.h>
 #include <core/api/vulkan/vulkan_index_buffer.h>
+#include <core/api/vulkan/vulkan_pipeline.h>
+#include <core/api/vulkan/vulkan_swapchain.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 
 #ifdef __cplusplus
@@ -16,7 +16,8 @@ extern "C" {
 
 typedef struct _vulkanDeviceContext VulkanDeviceContext;
 
-struct _vulkanDeviceContext {
+struct _vulkanDeviceContext
+{
     VkPhysicalDevice physicalDevice;
     VkPhysicalDeviceProperties physicalDeviceProperties;
 
@@ -27,7 +28,7 @@ struct _vulkanDeviceContext {
     VkDebugUtilsMessengerEXT debugMessenger;
 
     VkQueue graphicsQueue;
-    //VkQueue presentQueue;
+    // VkQueue presentQueue;
     ui32 graphicsFamily;
 
     // TEMPORARY FOR RENDERING TESTS
@@ -60,12 +61,16 @@ struct _vulkanDeviceContext {
     VulkanDepthResources *depthResources;
 };
 
-VulkanDeviceContext* vulkan_device_create();
-void vulkan_device_cleanup(VulkanDeviceContext* context);
+VulkanDeviceContext *
+vulkan_device_create();
+void
+vulkan_device_cleanup(VulkanDeviceContext *context);
 
-ui32 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice);
+ui32
+vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice);
 
-void vulkan_context_create_sync(VulkanDeviceContext *context);
+void
+vulkan_context_create_sync(VulkanDeviceContext *context);
 
 #if 0
 static inline void init_vulkan() {

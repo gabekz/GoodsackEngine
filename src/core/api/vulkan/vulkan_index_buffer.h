@@ -8,15 +8,20 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct VulkanIndexBuffer {
+typedef struct VulkanIndexBuffer
+{
     VkBuffer buffer;
     VkDeviceMemory bufferMemory;
     ui16 indicesCount;
 } VulkanIndexBuffer;
 
-VulkanIndexBuffer *vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
-        VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue,
-        ui16 *indices, ui16 indicesCount);
+VulkanIndexBuffer *
+vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
+                           VkDevice device,
+                           VkCommandPool commandPool,
+                           VkQueue graphicsQueue,
+                           ui16 *indices,
+                           ui16 indicesCount);
 
 #ifdef __cplusplus
 }

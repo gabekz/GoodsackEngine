@@ -11,47 +11,59 @@
 #include <core/api/device.h>
 #include <core/api/vulkan/vulkan.h>
 
-#define TEXTURE_WRAPPING  GL_REPEAT
+#define TEXTURE_WRAPPING GL_REPEAT
 
-Texture *texture_create(const char *path, ui32 format,
-        ui16 genMipMaps, float afRange, VulkanDeviceContext *vkDevice) {
-    Texture *tex = malloc(sizeof(Texture));
+Texture *
+texture_create(const char *path,
+               ui32 format,
+               ui16 genMipMaps,
+               float afRange,
+               VulkanDeviceContext *vkDevice)
+{
+    Texture *tex  = malloc(sizeof(Texture));
     tex->filePath = path;
 
     stbi_set_flip_vertically_on_load(1);
     unsigned char *localBuffer;
-    if(path != NULL) {
+    if (path != NULL) {
         LOG_INFO("Loading Image at path: %s", path);
         // LOG_DEBUG("Format: %d, GenMips: %d, AFRange: %f",
         //         format, genMipMaps, afRange);
 
-        localBuffer = stbi_load(tex->filePath, &tex->width,
-        &tex->height, &tex->bpp, /*Type*/ STBI_rgb_alpha);
-    }
-    else {
+        localBuffer = stbi_load(tex->filePath,
+                                &tex->width,
+                                &tex->height,
+                                &tex->bpp,
+                                /*Type*/ STBI_rgb_alpha);
+    } else {
         localBuffer = NULL;
     }
 
-    if(DEVICE_API_OPENGL) {
+    if (DEVICE_API_OPENGL) {
         glGenTextures(1, &tex->id);
         glBindTexture(GL_TEXTURE_2D, tex->id);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, format, tex->width, tex->height, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, localBuffer);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     format,
+                     tex->width,
+                     tex->height,
+                     0,
+                     GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     localBuffer);
 
         // Wrapping
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, TEXTURE_WRAPPING);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_WRAPPING);
 
         // Mipmaps
-        if(genMipMaps >= 0) {
+        if (genMipMaps >= 0) {
             glGenerateTextureMipmap(tex->id);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                GL_LINEAR);
-        }
-        else {
+            glTexParameteri(
+              GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        } else {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         }
@@ -62,99 +74,118 @@ Texture *texture_create(const char *path, ui32 format,
         }
     } // DEVICE_API_OPENGL
 
-    else if(DEVICE_API_VULKAN && vkDevice) {
+    else if (DEVICE_API_VULKAN && vkDevice) {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
         VkDeviceSize imageSize = tex->width * tex->height * 4;
 
-        vulkan_buffer_create(vkDevice->physicalDevice, vkDevice->device,
-                imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                &stagingBuffer, &stagingBufferMemory);
+        vulkan_buffer_create(vkDevice->physicalDevice,
+                             vkDevice->device,
+                             imageSize,
+                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                             &stagingBuffer,
+                             &stagingBufferMemory);
 
         void *data;
-        VK_CHECK(vkMapMemory(vkDevice->device, stagingBufferMemory,
-                0, imageSize, 0, &data));
+        VK_CHECK(vkMapMemory(
+          vkDevice->device, stagingBufferMemory, 0, imageSize, 0, &data));
         memcpy(data, localBuffer, (ui32)imageSize);
         vkUnmapMemory(vkDevice->device, stagingBufferMemory);
 
-        vulkan_image_create(vkDevice->physicalDevice, vkDevice->device,
-                &tex->vulkan.textureImage, &tex->vulkan.textureImageMemory,
-                tex->width, tex->height,
-                VK_FORMAT_R8G8B8A8_SRGB,
-                VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-                  VK_IMAGE_USAGE_SAMPLED_BIT,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-        );
+        vulkan_image_create(vkDevice->physicalDevice,
+                            vkDevice->device,
+                            &tex->vulkan.textureImage,
+                            &tex->vulkan.textureImageMemory,
+                            tex->width,
+                            tex->height,
+                            VK_FORMAT_R8G8B8A8_SRGB,
+                            VK_IMAGE_TILING_OPTIMAL,
+                            VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                              VK_IMAGE_USAGE_SAMPLED_BIT,
+                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        vulkan_image_layout_transition(vkDevice->device, vkDevice->commandPool,
-                vkDevice->graphicsQueue, tex->vulkan.textureImage,
-                VK_FORMAT_R8G8B8A8_SRGB,
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vulkan_image_layout_transition(vkDevice->device,
+                                       vkDevice->commandPool,
+                                       vkDevice->graphicsQueue,
+                                       tex->vulkan.textureImage,
+                                       VK_FORMAT_R8G8B8A8_SRGB,
+                                       VK_IMAGE_LAYOUT_UNDEFINED,
+                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-        vulkan_image_copy_from_buffer(vkDevice->device, vkDevice->commandPool,
-                vkDevice->graphicsQueue, stagingBuffer, tex->vulkan.textureImage,
-                (ui32)tex->width, (ui32)tex->height);
+        vulkan_image_copy_from_buffer(vkDevice->device,
+                                      vkDevice->commandPool,
+                                      vkDevice->graphicsQueue,
+                                      stagingBuffer,
+                                      tex->vulkan.textureImage,
+                                      (ui32)tex->width,
+                                      (ui32)tex->height);
 
         // Final transition for shader access
-        vulkan_image_layout_transition(vkDevice->device, vkDevice->commandPool,
-                vkDevice->graphicsQueue, tex->vulkan.textureImage,
-                VK_FORMAT_R8G8B8A8_SRGB,
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        vulkan_image_layout_transition(
+          vkDevice->device,
+          vkDevice->commandPool,
+          vkDevice->graphicsQueue,
+          tex->vulkan.textureImage,
+          VK_FORMAT_R8G8B8A8_SRGB,
+          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         // Clean-up staging buffer
         vkDestroyBuffer(vkDevice->device, stagingBuffer, NULL);
         vkFreeMemory(vkDevice->device, stagingBufferMemory, NULL);
 
         // Create Texture ImageView
-        tex->vulkan.textureImageView = 
-            vulkan_image_view_create(vkDevice->device,
-                    tex->vulkan.textureImage,
-                    VK_FORMAT_R8G8B8A8_SRGB,
-                    VK_IMAGE_ASPECT_COLOR_BIT);
+        tex->vulkan.textureImageView =
+          vulkan_image_view_create(vkDevice->device,
+                                   tex->vulkan.textureImage,
+                                   VK_FORMAT_R8G8B8A8_SRGB,
+                                   VK_IMAGE_ASPECT_COLOR_BIT);
 
         // Create Texture Sampler (for shader access)
-        tex->vulkan.textureSampler =
-            vulkan_image_texture_sampler(vkDevice->device,
-                vkDevice->physicalDeviceProperties);
+        tex->vulkan.textureSampler = vulkan_image_texture_sampler(
+          vkDevice->device, vkDevice->physicalDeviceProperties);
 
     } // DEVICE_API_VULKAN
 
-    if(localBuffer) {
-      stbi_image_free(localBuffer);
-    }
+    if (localBuffer) { stbi_image_free(localBuffer); }
 
     return tex;
 }
 
-Texture *texture_create_cubemap(ui32 faceCount, ...) {
+Texture *
+texture_create_cubemap(ui32 faceCount, ...)
+{
     ui32 textureId;
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
 
     Texture *tex = malloc(sizeof(Texture));
-    tex->id = textureId;
+    tex->id      = textureId;
 
     va_list ap;
     va_start(ap, faceCount);
     va_end(ap);
 
     stbi_set_flip_vertically_on_load(0);
-    for(int i = 0; i < faceCount; i++) {
+    for (int i = 0; i < faceCount; i++) {
         unsigned char *data;
-        const char *path = va_arg(ap, const char*);
-        if(path != NULL) {
-            data = stbi_load(path, &tex->width,
-            &tex->height, &tex->bpp, /*RGBA*/ 0);
+        const char *path = va_arg(ap, const char *);
+        if (path != NULL) {
+            data =
+              stbi_load(path, &tex->width, &tex->height, &tex->bpp, /*RGBA*/ 0);
 
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB,
-                tex->width, tex->height, 0, GL_RGB, GL_UNSIGNED_BYTE, data 
-            );
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                         0,
+                         GL_RGB,
+                         tex->width,
+                         tex->height,
+                         0,
+                         GL_RGB,
+                         GL_UNSIGNED_BYTE,
+                         data);
             stbi_image_free(data);
         }
     }
@@ -167,11 +198,12 @@ Texture *texture_create_cubemap(ui32 faceCount, ...) {
     return tex;
 }
 
-Texture *texture_create_hdr(const char *path) {
+Texture *
+texture_create_hdr(const char *path)
+{
     Texture *tex = malloc(sizeof(Texture));
 
-    float *data = stbi_loadf(path,
-        &tex->width, &tex->height, &tex->bpp, 0);
+    float *data = stbi_loadf(path, &tex->width, &tex->height, &tex->bpp, 0);
 
     assert(data != NULL);
 
@@ -179,34 +211,47 @@ Texture *texture_create_hdr(const char *path) {
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F,
-        tex->width, tex->height, 0, GL_RGB, GL_FLOAT, data);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB16F,
+                 tex->width,
+                 tex->height,
+                 0,
+                 GL_RGB,
+                 GL_FLOAT,
+                 data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    tex->id = textureId;
+    tex->id       = textureId;
     tex->filePath = path;
 
     free(data);
     return tex;
 }
 
-void texture_bind(Texture *self, ui32 slot) {
+void
+texture_bind(Texture *self, ui32 slot)
+{
     self->activeSlot = slot;
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, self->id);
 }
 
-void texture_unbind() {
+void
+texture_unbind()
+{
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void texture_cleanup(Texture *self, VulkanDeviceContext *vkDevice) {
-    if(DEVICE_API_VULKAN && vkDevice) {
+void
+texture_cleanup(Texture *self, VulkanDeviceContext *vkDevice)
+{
+    if (DEVICE_API_VULKAN && vkDevice) {
         vkDestroyImage(vkDevice->device, self->vulkan.textureImage, NULL);
         vkFreeMemory(vkDevice->device, self->vulkan.textureImageMemory, NULL);
     }

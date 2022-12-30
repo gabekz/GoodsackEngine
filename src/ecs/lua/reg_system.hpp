@@ -3,6 +3,7 @@
 
 #include <util/lua_deps.h>
 
-int Lua_ECSRegisterSystem(lua_State *L);
+int
+Lua_ECSRegisterSystem(lua_State *L);
 
 #endif // HPP_REG_SYSTEM

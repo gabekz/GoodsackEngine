@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-extern int luaopen_luaprintlib(lua_State *L);
+extern int
+luaopen_luaprintlib(lua_State *L);
 
 #ifdef __cplusplus
 }

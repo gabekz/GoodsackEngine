@@ -3,26 +3,32 @@
 
 //#define LOGGING
 
-VAO* vao_create() {
-    VAO* ret = malloc(sizeof(VAO));
+VAO *
+vao_create()
+{
+    VAO *ret           = malloc(sizeof(VAO));
     ret->elementsCount = 0;
     glGenVertexArrays(1, &ret->id);
 
     return ret;
 }
 
-void vao_bind(VAO* self) {
+void
+vao_bind(VAO *self)
+{
     glBindVertexArray(self->id);
 }
 
-void vao_add_buffer(VAO* self, VBO* vbo) {
+void
+vao_add_buffer(VAO *self, VBO *vbo)
+{
     vao_bind(self);
     vbo_bind(vbo);
     BufferElement *elements = vbo->elements;
 
-    unsigned int offset = 0;
+    unsigned int offset      = 0;
     unsigned int newElements = 0;
-    for(int i = 0; i < vbo->elementsSize; i++) {
+    for (int i = 0; i < vbo->elementsSize; i++) {
 
         // The offset for any existing VBO's inside this VAO
         unsigned int j = i + self->elementsCount;
@@ -36,8 +42,12 @@ void vao_add_buffer(VAO* self, VBO* vbo) {
         BufferElement element = elements[i];
 
         glEnableVertexAttribArray(j);
-        glVertexAttribPointer(j, element.count, element.type,
-          element.normalized, vbo->stride, (const void*)offset);
+        glVertexAttribPointer(j,
+                              element.count,
+                              element.type,
+                              element.normalized,
+                              vbo->stride,
+                              (const void *)offset);
 
         offset += element.count * getElementTypeSize(element.type);
         newElements++;
@@ -45,5 +55,4 @@ void vao_add_buffer(VAO* self, VBO* vbo) {
 
     // Increment the element count
     self->elementsCount += newElements;
-
 }

@@ -9,17 +9,22 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct UniformBufferObject {
+typedef struct UniformBufferObject
+{
     mat4 model, view, proj;
 } UniformBufferObject;
 
-void vulkan_uniform_buffer_create(
-        VkPhysicalDevice physicalDevice, VkDevice device,
-        VkBuffer **uniformBuffers, VkDeviceMemory **uniformBuffersMemory,
-        void ***pMappedList);
+void
+vulkan_uniform_buffer_create(VkPhysicalDevice physicalDevice,
+                             VkDevice device,
+                             VkBuffer **uniformBuffers,
+                             VkDeviceMemory **uniformBuffersMemory,
+                             void ***pMappedList);
 
-void vulkan_uniform_buffer_update(ui32 currentImage, 
-        void **uniformBuffersMapped, VkExtent2D swapchainExtent);
+void
+vulkan_uniform_buffer_update(ui32 currentImage,
+                             void **uniformBuffersMapped,
+                             VkExtent2D swapchainExtent);
 
 #ifdef __cplusplus
 }

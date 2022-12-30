@@ -3,6 +3,7 @@
 
 #include <ecs/ecs.h>
 
-void s_mesh_draw_init(ECS *ecs);
+void
+s_mesh_draw_init(ECS *ecs);
 
 #endif
