@@ -150,7 +150,7 @@ ecs_component_register(ECS *self, ui32 component_id, ui64 size)
 
     // unsigned char *tag = (unsigned char
     // *)(self->component_lists[component_id].components+size); *tag =
-    //ECS_TAG_UNUSED;
+    // ECS_TAG_UNUSED;
 }
 
 void

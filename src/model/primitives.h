@@ -1,3 +1,5 @@
+// clang-format off
+
 #ifndef PRIMITIVES_H
 #define PRIMITIVES_H
 

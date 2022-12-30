@@ -41,7 +41,7 @@ init(Entity e)
     // glm_mat4_copy(matrix, transform->mvp.matrix);
     // printf("position %f, %f, %f", transform->position[0],
     // transform->position[1], transform->position[2]); *transform->mvp.matrix =
-    //matrix; transform->mvp.matrix = matrix; transform->mvp.matrix = matrix;
+    // matrix; transform->mvp.matrix = matrix; transform->mvp.matrix = matrix;
 
     // TODO: Make descriptor set HERE
 }

@@ -3,23 +3,29 @@
 
 #include <util/sysdefs.h>
 
-#include <core/texture/texture.h>
 #include <core/shader/shader.h>
+#include <core/texture/texture.h>
 
 typedef struct _material Material;
 
-struct _material {
+struct _material
+{
     ShaderProgram *shaderProgram;
     Texture **textures;
     ui32 texturesCount;
 
-    struct {
+    struct
+    {
         VkPipelineLayout *pipelineLayout;
-    }vulkan;
+    } vulkan;
 };
 
-Material *material_create(
-    ShaderProgram *shader, const char *shaderPath, ui32 textureCount, ...);
-void material_use(Material *self);
+Material *
+material_create(ShaderProgram *shader,
+                const char *shaderPath,
+                ui32 textureCount,
+                ...);
+void
+material_use(Material *self);
 
 #endif // H_MATERIAL

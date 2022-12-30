@@ -8,24 +8,26 @@
 
 #include <core/texture/texture.h>
 
-
 typedef struct _model Model;
 typedef struct _modelData ModelData;
 
-struct _model {
+struct _model
+{
     VAO *vao;
     ModelData *modelData;
 
     VulkanVertexBuffer *vkVBO;
 };
 
-struct _modelData {
+struct _modelData
+{
     ui32 vertexCount;
     ui32 indicesCount;
     const char *modelPath;
 
     ui32 totalTriangles;
-    struct {
+    struct
+    {
         float *v, *vt, *vn;
         ui32 vL, vtL, vnL;
 
@@ -36,7 +38,6 @@ struct _modelData {
     } buffers;
 };
 
-
 /**
  * Assemble model per Graphics API spec.
  * Currently, this handles loading the model (.obj) as well.
@@ -45,6 +46,7 @@ struct _modelData {
  * @param[in] vertex scale
  * @return pointer to allocated Model structure.
  */
-Model *model_assemble(const char *path, float scale);
+Model *
+model_assemble(const char *path, float scale);
 
 #endif // H_MODEL
