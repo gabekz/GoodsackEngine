@@ -12,6 +12,10 @@
 
 #include <core/api/vulkan/vulkan_device.h>
 
+#define RENDER_RESOLUTION_OVERRIDE SYS_ENABLED
+#define PSX_WIDTH                  320
+#define PSX_HEIGHT                 240
+
 typedef enum renderPass { REGULAR = 0, SHADOW } RenderPass;
 
 typedef struct _renderer Renderer;
@@ -19,7 +23,8 @@ typedef struct _renderer Renderer;
 struct _renderer
 {
     GLFWwindow *window;
-    int windowWidth, windowHeight;
+    int windowWidth, windowHeight; // window resolution
+    int renderWidth, renderHeight; // render resolution
 
     Scene **sceneL;
     ui16 sceneC, activeScene;

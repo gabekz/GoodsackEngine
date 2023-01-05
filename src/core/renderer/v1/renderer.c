@@ -33,6 +33,12 @@ renderer_init()
     ret->windowWidth  = winWidth;
     ret->windowHeight = winHeight;
 
+    // Set Render Resolution
+    ret->renderWidth =
+      (RENDER_RESOLUTION_OVERRIDE) ? PSX_WIDTH : DEFAULT_WINDOW_WIDTH;
+    ret->renderHeight =
+      (RENDER_RESOLUTION_OVERRIDE) ? PSX_HEIGHT : DEFAULT_WINDOW_HEIGHT;
+
     // Create the initial scene
     Scene *scene = malloc(sizeof(Scene));
 
@@ -92,7 +98,7 @@ renderer_start(Renderer *renderer)
         glm_mat4_zero(renderer->lightSpaceMatrix);
         glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
 
-        postbuffer_init(renderer->windowWidth, renderer->windowHeight);
+        postbuffer_init(renderer->renderWidth, renderer->renderHeight);
 
 #if 1
         Texture *skyboxCubemap =
@@ -145,7 +151,6 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     ecs_event(ecs, ECS_RENDER);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, renderer->windowWidth, renderer->windowHeight);
 
     /*-------------------------------------------
         Pass #2 - Post Processing Pass

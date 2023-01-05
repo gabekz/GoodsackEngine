@@ -18,7 +18,7 @@ static ui32 msTexture, sbTexture;
 static ShaderProgram *shader;
 static VAO *vaoRect;
 
-static ui32 windowWidth, windowHeight;
+static ui32 frameWidth, frameHeight;
 
 static void
 CreateMultisampleBuffer(ui32 samples, ui32 width, ui32 height)
@@ -91,8 +91,8 @@ CreateScreenBuffer(ui32 width, ui32 height)
 void
 postbuffer_init(ui32 winWidth, ui32 winHeight)
 {
-    windowWidth  = winWidth;
-    windowHeight = winHeight;
+    frameWidth  = winWidth;
+    frameHeight = winHeight;
 
     // Shader
     shader = shader_create_program("../res/shaders/framebuffer.shader");
@@ -124,6 +124,8 @@ postbuffer_bind()
     // glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
     glEnable(GL_MULTISAMPLE);
     glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+
+    glViewport(0, 0, frameWidth, frameHeight);
 }
 
 void
@@ -134,16 +136,18 @@ postbuffer_draw(ui32 winWidth, ui32 winHeight)
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sbFBO);
     glBlitFramebuffer(0,
                       0,
-                      winWidth,
-                      winHeight,
+                      frameWidth,
+                      frameHeight,
                       0,
                       0,
-                      winWidth,
-                      winHeight,
+                      frameWidth,
+                      frameHeight,
                       GL_COLOR_BUFFER_BIT,
                       GL_NEAREST);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, winWidth, winHeight);
+
     vao_bind(vaoRect);
     shader_use(shader);
     glActiveTexture(GL_TEXTURE0);
