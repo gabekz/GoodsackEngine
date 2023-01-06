@@ -13,3 +13,6 @@
 [submodule "lib/googletest"]
 	path = lib/googletest
 	url = https://github.com/google/googletest
+[submodule "lib/openal-soft"]
+	path = lib/openal-soft
+	url = https://github.com/kcat/openal-soft
