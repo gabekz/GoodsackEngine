@@ -15,6 +15,8 @@ init(Entity e)
 
     camera->screen.width  = e.ecs->renderer->windowWidth;
     camera->screen.height = e.ecs->renderer->windowHeight;
+    // camera->screen.width = 640;
+    // camera->screen.height = 480;
 
     // Defaults
     if (camera->fov <= 0) { camera->fov = 45.0f; }
@@ -60,9 +62,9 @@ update(Entity e)
     struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
 
     float *axisUp = camera->axisUp;
-    float *center = GLM_VEC3_ZERO; // position + orientation _v
-    glm_vec3_mul(camera->position, (vec3) {0.0f, 0.0f, -1.0f}, center);
-    glm_lookat(camera->position, center, axisUp, camera->uniform.view);
+    glm_vec3_zero(camera->center);
+    glm_vec3_mul(camera->position, (vec3) {0.0f, 0.0f, -1.0f}, camera->center);
+    glm_lookat(camera->position, camera->center, axisUp, camera->uniform.view);
 
     float aspectRatio =
       (float)camera->screen.width / (float)camera->screen.height;

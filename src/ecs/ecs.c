@@ -11,6 +11,9 @@
 #include <components/mesh/mesh_draw.h>
 #include <components/transform/transform.h>
 
+#include <components/audio/audio_listener.h>
+#include <components/audio/audio_source.h>
+
 ECS *
 ecs_init(Renderer *renderer)
 {
@@ -34,6 +37,8 @@ ecs_init(Renderer *renderer)
     s_mesh_draw_init(ecs);
     // s_camera_init(ecs);
     // s_mesh_draw_init(ecs);
+    s_audio_listener_init(ecs);
+    s_audio_source_init(ecs);
 
     //_ecs_init_internal(ecs);
 

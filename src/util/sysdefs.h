@@ -43,37 +43,20 @@
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
 #endif
 
-/*
- * Grapics
- */
+#ifndef __cplusplus // C-Specific
 
-#define DEFAULT_WINDOW_WIDTH  1280
-#define DEFAULT_WINDOW_HEIGHT 720
-
-#define DRAWING_MODE GL_TRIANGLES
-
-//#define SYS_API_OPENGL      0xF0F01
-//#define SYS_API_VULKAN      0xF0F02
-//#define SYS_API_DX11        0xF0F03
-//#define SYS_API_DX12        0xF0F04
-//#define SYS_API_RENDERER    OPEN_GL
-
-//#define USING_VULKAN
-//#define SYS_API_OPENGL
-
-// Default Graphics API
-#if defined(SYS_API_OPENGL) || defined(SYS_API_VULKAN)
-#else
-//#define SYS_API_OPENGL
-#define SYS_API_VULKAN
+#ifdef TRUE
+#undef TRUE
 #endif
 
-// Drawing modes
-#define SYS_GPU_DRAW_MODE_ARRAYS   0xD000
-#define SYS_GPU_DRAW_MODE_ELEMENTS 0xD001
+#ifdef FALSE
+#undef FALSE
+#endif
 
-#define SHADOW_WIDTH  2048
-#define SHADOW_HEIGHT 2048
+#define TRUE  1
+#define FALSE 0
+
+#endif // C-Specific
 
 #define SYS_SUCCESS 1
 #define SYS_FAILURE 0

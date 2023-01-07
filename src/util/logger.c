@@ -245,9 +245,11 @@ vflog(FILE *fp,
 
     if (s_logDetail == LogDetail_SIMPLE) {
         size = fprintf(fp, "[%s] ", levelStr);
-    } else {
+    } else if (s_logDetail == LogDetail_EXTENDED) {
         size = fprintf(
           fp, "[%s] %s %ld %s:%d: ", levelStr, timestamp, threadID, file, line);
+    } else if (s_logDetail == LogDetail_NONE) {
+        size = 0;
     }
 
     if (size > 0) { totalsize += size; }
@@ -339,19 +341,23 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
 
     if (!logger_isEnabled(level)) { return; }
 
-    if (level == LogLevel_INFO) { // TODO: Fix stupid hack
-        logger_setDetail(LogDetail_SIMPLE);
-    } else {
-        logger_setDetail(LogDetail_EXTENDED);
+    switch (level) {
+    case LogLevel_INFO: logger_setDetail(LogDetail_SIMPLE); break;
+    case LogLevel_PRINT: logger_setDetail(LogDetail_NONE); break;
+    default: logger_setDetail(LogDetail_EXTENDED); break;
     }
 
     gettimeofday(&now, NULL);
     currentTime = now.tv_sec * 1000 + now.tv_usec / 1000;
     levelc      = getLevelChar(level);
-    setLevelStr(level, 1, levelStr);
+    threadID    = getCurrentThreadID();
+
+    if (level != LogLevel_PRINT) { setLevelStr(level, 1, levelStr); }
+
     getTimestamp(&now, timestamp, sizeof(timestamp));
-    threadID = getCurrentThreadID();
+
     lock();
+
     if (hasFlag(s_logger, kConsoleLogger)) {
         va_start(carg, fmt);
         vflog(s_clog.output,

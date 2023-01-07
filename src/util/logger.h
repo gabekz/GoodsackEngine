@@ -19,6 +19,8 @@ extern "C" {
     logger_log(LogLevel_ERROR, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define LOG_CRITICAL(fmt, ...) \
     logger_log(LogLevel_CRITICAL, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_PRINT(fmt, ...) \
+    logger_log(LogLevel_PRINT, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
 
 typedef enum {
     LogLevel_TRACE,
@@ -27,9 +29,14 @@ typedef enum {
     LogLevel_WARN,
     LogLevel_ERROR,
     LogLevel_CRITICAL,
+    LogLevel_PRINT,
 } LogLevel;
 
-typedef enum { LogDetail_SIMPLE, LogDetail_EXTENDED } LogDetail;
+typedef enum {
+    LogDetail_SIMPLE,
+    LogDetail_EXTENDED,
+    LogDetail_NONE,
+} LogDetail;
 
 /**
  * Initialize the logger as a console logger.

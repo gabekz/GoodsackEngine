@@ -12,17 +12,12 @@
 #include <ecs/ecs.h>
 #include <lua/lua_init.hpp>
 
-#include <asset/asset.hpp>
-
 extern "C" {
 #include <core/renderer/v1/renderer.h>
 }
 
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16, NULL)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1, NULL)
-
-using asset::Asset;
-using asset::TextureProperties;
 
 int
 main(int argc, char *argv[])
@@ -45,10 +40,8 @@ main(int argc, char *argv[])
         }
     }
 
-    asset::TextureAsset t = asset::TextureAsset((TextureProperties) {.bpp = 4});
-
-    Asset *p = &t;
-    p->Load();
+    //openal_init();
+    //exit(1);
 
     // Main Lua entry
     LuaInit("../src/lua/demo/main.lua");
@@ -98,6 +91,7 @@ main(int argc, char *argv[])
                                         texCerbS,
                                         texPbrAo);
 
+#if 0
     Texture *texEarthDiff =
       texture_create_d("../res/textures/earth/diffuse.png");
     Texture *texEarthNorm =
@@ -278,6 +272,7 @@ main(int argc, char *argv[])
                                        .drawMode = DRAW_ARRAYS,
                                        .cullMode = CULL_CW | CULL_FORWARD,
                                      }}));
+#endif
 
     /*-------------------------------------------
     |   Scene #4
@@ -292,6 +287,7 @@ main(int argc, char *argv[])
               .axisUp   = {0.0f, 1.0f, 0.0f},
               .speed    = 0.05f,
             }));
+    ecs_add(camera4, C_AUDIO_LISTENER); 
 
     Entity entCerb = ecs_new(ecs);
     ecs_add(entCerb,
@@ -308,11 +304,15 @@ main(int argc, char *argv[])
                                .properties = {
                                  .drawMode = DRAW_ARRAYS,
                                  .cullMode = CULL_CW | CULL_FORWARD,
-                               }}));
+                               }
+    }));
+    ecs_add(entCerb,
+            C_AUDIO_SOURCE,
+            ((struct ComponentAudioSource) {
+                .filePath = "../res/audio/test.wav"
+            }));
 
-    // TESTING
-    static bool showWindow = true;
-    DebugGui *debugGui     = new DebugGui(renderer);
+    DebugGui *debugGui = new DebugGui(renderer);
 
     // FPS Counter
     device_resetAnalytics();

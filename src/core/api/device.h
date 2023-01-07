@@ -14,10 +14,6 @@ extern "C" {
 
 typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } GraphicsAPI;
 
-typedef enum {
-    OPENAL,
-} AudioAPI;
-
 // Analytics
 
 typedef struct Analytics

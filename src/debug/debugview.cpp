@@ -12,10 +12,9 @@ extern "C" {
 }
 
 #include <core/api/device.h>
+#include <core/api/openal_soft/openal_debug.h>
 
-#include <components/camera/camera.h>
-#include <components/mesh/mesh.h>
-#include <components/transform/transform.h>
+#include <components/components.h>
 
 #include <core/api/vulkan/vulkan.h>
 
@@ -324,6 +323,43 @@ DebugGui::Render()
             ImGui::DragFloat("", &p.clipping.nearZ, 0.01, 0, 10);
             ImGui::SameLine();
             ImGui::DragFloat("", &p.clipping.farZ, 1, 0, 1000);
+            ImGui::EndChild();
+        }
+
+        if (ecs_has(e, C_AUDIO_LISTENER)) {
+            ImGui::BeginChild("Audio Listener");
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("Audio Listener Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            ImGui::EndChild();
+        }
+        if (ecs_has(e, C_AUDIO_SOURCE)) {
+            ImGui::BeginChild(
+              "Audio Source", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("Audio Source Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            // wow, this is ridiculous..
+            struct ComponentAudioSource &a =
+              *(static_cast<struct ComponentAudioSource *>(
+                ecs_get(e, C_AUDIO_SOURCE)));
+            // ImGui::DragFloat("FOV", &a.volume, 0.45f, 0.9f);
+            // ImGui::DragFloat("Gain", a.gain, 0.1f, -3000, 3000);
+            // ImGui::DragFloat("Pitch", a.pitch, 0.1f, -3000, 3000);
+            ImGui::BeginDisabled();
+            ImGui::InputText("Audio File Path", (char *)a.filePath, 128);
+            ImGui::EndDisabled();
+
+            if (ImGui::Button("Play")) { AL_CHECK(alSourcePlay(a.bufferId)); }
+            ImGui::SameLine();
+            if (ImGui::Button("Stop")) { AL_CHECK(alSourceStop(a.bufferId)); }
+            if (ImGui::Checkbox("Looping", (bool *)&a.looping)) {
+                ;
+                AL_CHECK(alSourcei(a.bufferId, AL_LOOPING, a.looping));
+            }
             ImGui::EndChild();
         }
 

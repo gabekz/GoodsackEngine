@@ -9,6 +9,9 @@ extern "C" {
 #include <components/mesh/mesh.h>
 #include <components/transform/transform.h>
 
+#include <components/audio/audio_listener.h>
+#include <components/audio/audio_source.h>
+
 #ifdef __cplusplus
 }
 #endif

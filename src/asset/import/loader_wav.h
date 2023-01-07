@@ -3,19 +3,20 @@
 
 #include <util/sysdefs.h>
 
-#define SAMPLING_RATE   44100
-#define CHUNK_SIZE      2000
+#define SAMPLING_RATE 44100
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-typedef struct {
-    ui32 channels, samples;
+typedef struct
+{
+    si32 sampleRate;
+    ui32 numChannels, samples, dataSize;
     ui16 *data;
 } AudioData;
 
-// 16-bit 1-Channel PCM .wav file loader.
+// WAV file loader.
 // @return struct AudioData
 AudioData *
 load_wav(const char *filepath);

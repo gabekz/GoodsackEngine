@@ -37,6 +37,8 @@ extern "C" {
 enum _ecs_component {
     C_TRANSFORM = 0,
     C_CAMERA,
+    C_AUDIO_LISTENER,
+    C_AUDIO_SOURCE,
     C_MESH,
 };
 typedef enum _ecs_component ECSComponent;
