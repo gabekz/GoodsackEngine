@@ -112,7 +112,7 @@ target_compile_options(${TEST_EXE_NAME} PUBLIC ${compile_options_special})
 
 # Options
 option(AUTO_LOCATE_LUA "AUTO_LOCATE_LUA" ON)
-option(AUTO_LOCATE_VULKAN "AUTO_LOCATE_VULKAN" OFF)
+option(AUTO_LOCATE_VULKAN "AUTO_LOCATE_VULKAN" ON)
 
 #################################################################
 # Library: STB Image
@@ -229,6 +229,9 @@ if(AUTO_LOCATE_LUA)
         include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
         target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
     endif()
+else()
+    set(LUA_DIR "${LIB_DIR}/lua-5.4.4/src")
+    target_include_directories(${PROJECT_NAME} PUBLIC ${LUA_DIR})
 endif()
 
 #################################################################
@@ -251,3 +254,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${GTEST_DIR}/googletest/include"
     "${GTEST_DIR}/googlemock"
     "${GTEST_DIR}/googlemock/include")
+
+#################################################################
+# Library: OpenAL Soft
+#################################################################
+set(OPENAL_DIR "${LIB_DIR}/openal-soft") 
+add_subdirectory(${OPENAL_DIR})
+target_link_libraries(${PROJECT_NAME} OpenAL)
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${OPENAL_DIR}" 
+    "${OPENAL_DIR}/include")

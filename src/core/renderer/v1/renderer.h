@@ -12,7 +12,7 @@
 
 #include <core/api/vulkan/vulkan_device.h>
 
-#define RENDER_RESOLUTION_OVERRIDE SYS_ENABLED
+#define RENDER_RESOLUTION_OVERRIDE SYS_DISABLED
 #define PSX_WIDTH                  320
 #define PSX_HEIGHT                 240
 

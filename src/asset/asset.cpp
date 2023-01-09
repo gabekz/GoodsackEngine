@@ -2,23 +2,6 @@
 
 #include <util/logger.h>
 
-namespace asset {
+namespace goodsack { namespace asset {
 
-TextureAsset::TextureAsset(TextureProperties props)
-{
-    m_properties = props;
-    setLoaded(false);
-}
-
-void
-TextureAsset::Load()
-{
-    LOG_DEBUG("Hello! %d", m_properties.bpp);
-}
-
-void
-TextureAsset::Unload()
-{
-}
-
-}; // namespace asset
+}}; // namespace
