@@ -2,7 +2,8 @@
 
 #include <util/logger.h>
 
-namespace goodsack { namespace asset {
+namespace goodsack {
+namespace asset {
 
 TextureAsset::TextureAsset(TextureProperties props)
 {
@@ -21,4 +22,5 @@ TextureAsset::Unload()
 {
 }
 
-}};
+} // namespace asset
+}; // namespace goodsack

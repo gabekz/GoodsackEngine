@@ -8,8 +8,7 @@ using namespace goodsack::asset;
 
 TEST(AssetTestSuite, ReferenceInherited)
 {
-    TextureAsset texture =
-        TextureAsset((TextureProperties) {.bpp = 4});
+    TextureAsset texture = TextureAsset((TextureProperties) {.bpp = 4});
 
     Asset *p = &texture;
     EXPECT_EQ(p->IsLoaded(), false);

@@ -4,7 +4,8 @@
 #include <asset/asset.hpp>
 #include <util/sysdefs.h>
 
-namespace goodsack { namespace asset {
+namespace goodsack {
+namespace asset {
 
 enum class TextureFormat { UNKNOWN = 0, RGBA8, RGB8, SRGBA };
 
@@ -27,6 +28,7 @@ class TextureAsset : public Asset {
     TextureProperties m_properties;
 };
 
-}} // namespace
+} // namespace asset
+} // namespace goodsack
 
 #endif

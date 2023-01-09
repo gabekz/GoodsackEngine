@@ -40,8 +40,8 @@ main(int argc, char *argv[])
         }
     }
 
-    //openal_init();
-    //exit(1);
+    // openal_init();
+    // exit(1);
 
     // Main Lua entry
     LuaInit("../src/lua/demo/main.lua");
@@ -287,7 +287,7 @@ main(int argc, char *argv[])
               .axisUp   = {0.0f, 1.0f, 0.0f},
               .speed    = 0.05f,
             }));
-    ecs_add(camera4, C_AUDIO_LISTENER); 
+    ecs_add(camera4, C_AUDIO_LISTENER);
 
     Entity entCerb = ecs_new(ecs);
     ecs_add(entCerb,
@@ -304,13 +304,11 @@ main(int argc, char *argv[])
                                .properties = {
                                  .drawMode = DRAW_ARRAYS,
                                  .cullMode = CULL_CW | CULL_FORWARD,
-                               }
-    }));
-    ecs_add(entCerb,
-            C_AUDIO_SOURCE,
-            ((struct ComponentAudioSource) {
-                .filePath = "../res/audio/test.wav"
-            }));
+                               }}));
+    ecs_add(
+      entCerb,
+      C_AUDIO_SOURCE,
+      ((struct ComponentAudioSource) {.filePath = "../res/audio/test.wav"}));
 
     DebugGui *debugGui = new DebugGui(renderer);
 

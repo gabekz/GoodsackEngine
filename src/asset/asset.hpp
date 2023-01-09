@@ -3,7 +3,8 @@
 
 #include <util/sysdefs.h>
 
-namespace goodsack { namespace asset {
+namespace goodsack {
+namespace asset {
 
 enum class AssetType : int {
     UNKNOWN = 0,
@@ -30,6 +31,7 @@ class Asset {
     ui32 m_assetId;
 }; // class
 
-}}; // namespace
+} // namespace asset
+}; // namespace goodsack
 
 #endif // HPP_ASSET

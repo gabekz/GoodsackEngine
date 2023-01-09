@@ -3,7 +3,8 @@
 
 #include <asset/asset.hpp>
 
-namespace goodsack { namespace asset {
+namespace goodsack {
+namespace asset {
 
 struct ModelProperties
 {
@@ -11,16 +12,17 @@ struct ModelProperties
 };
 
 class ModelAsset : public Asset {
-public:
+   public:
     ModelAsset(ModelProperties props);
 
     void Load();
     void Unload();
 
-private:
+   private:
     ModelProperties m_properties;
 };
 
-}};
+} // namespace asset
+}; // namespace goodsack
 
 #endif

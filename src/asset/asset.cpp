@@ -2,6 +2,8 @@
 
 #include <util/logger.h>
 
-namespace goodsack { namespace asset {
+namespace goodsack {
+namespace asset {
 
-}}; // namespace
+}
+}; // namespace goodsack
