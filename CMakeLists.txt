@@ -111,8 +111,8 @@ target_compile_options(${TEST_EXE_NAME} PUBLIC ${compile_options_special})
 ######## LIBRARIES ##############################################
 
 # Options
-option(AUTO_LOCATE_LUA "AUTO_LOCATE_LUA" ON)
-option(AUTO_LOCATE_VULKAN "AUTO_LOCATE_VULKAN" ON)
+option(AUTO_LOCATE_LUA "AUTO_LOCATE_LUA" OFF)
+option(AUTO_LOCATE_VULKAN "AUTO_LOCATE_VULKAN" OFF)
 
 #################################################################
 # Library: STB Image
@@ -184,8 +184,8 @@ if(AUTO_LOCATE_VULKAN)
 		endif()
 	endif()
 else()
+    set(VULKAN_DIR "${LIB_DIR}/vulkan")
     message(STATUS "(Vulkan) Using manual specified path: ${VULKAN_DIR}")
-    set(VULKAN_DIR "${LIB_DIR}/VulkanSDK")
     set(VULKAN_PATH "${VULKAN_DIR}")
     set(VULKAN_VERSION "1.0.33.0")
     set(VULKAN_PATH "${VULKAN_DIR}/${VULKAN_VERSION}")
@@ -220,18 +220,18 @@ target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
 
 #################################################################
 # Library: Lua
-# TODO: Currently this only works for linux
 #################################################################
-if(AUTO_LOCATE_LUA)
+if(AUTO_LOCATE_LUA AND NOT WIN32)
     message(STATUS "(Lua) Attempting auto locate Lua using CMake.....")
-    if(UNIX AND NOT APPLE)
-        find_package(Lua51 REQUIRED)
-        include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
-        target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
-    endif()
+    find_package(Lua51 REQUIRED)
+    include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
 else()
-    set(LUA_DIR "${LIB_DIR}/lua-5.4.4/src")
-    target_include_directories(${PROJECT_NAME} PUBLIC ${LUA_DIR})
+    set(LUA_DIR "${LIB_DIR}/lua-5.4.4")
+    file(GLOB LUA_LIBRARIES "${LUA_DIR}/src/*.c" "${LUA_DIR}/src/*.h")
+    add_library("lua" ${LUA_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} lua)
+    #target_include_directories(${PROJECT_NAME} PUBLIC ${LUA_DIR})
 endif()
 
 #################################################################
