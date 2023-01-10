@@ -219,6 +219,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/backends")
 target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
 target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
 target_link_libraries("imgui" "vulkan" "${CMAKE_DL_LIBS}")
+target_include_directories("imgui" PRIVATE "${VULKAN_PATH}/include")
 
 #################################################################
 # Library: Lua
