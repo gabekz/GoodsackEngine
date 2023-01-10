@@ -195,7 +195,7 @@ else()
     message(STATUS "(Vulkan) Using manual specified path: ${VULKAN_DIR}")
     add_subdirectory(${VULKAN_DIR})
     target_link_libraries(${PROJECT_NAME} "vulkan")
-    #target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/include")
+    target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/include")
 endif()
 
 #################################################################
