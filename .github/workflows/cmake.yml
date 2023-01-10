@@ -49,11 +49,12 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: build-files
-        path: .dist/
+        path: ${{github.workspace}}/dist/
           
     - name: Show Artifacts
+      working-directory: ${{github.workspace}}/dist
       run: ls -R
           
     - name: Run Tests
-      run: .dist/testRunner
+      run: ${{github.workspace}}/dist/testRunner
           
