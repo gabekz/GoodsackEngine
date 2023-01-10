@@ -87,7 +87,7 @@ project(${PROJECT_NAME} C CXX)
 add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC "${SRC_DIR}")
 
-add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main.cpp")
+add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main/main.cpp")
 target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME} gcov)
 target_compile_options(${GAME_EXE_NAME} PUBLIC ${compile_options_special})
 

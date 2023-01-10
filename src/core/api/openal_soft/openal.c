@@ -89,8 +89,6 @@ openal_generate_source(const char *filepath)
     ALuint buffer = openal_buffer_create(filepath);
     // Bind buffer
     AL_CHECK(alSourcei(source, AL_BUFFER, buffer));
-    // Play audio source
-    alSourcePlay(source);
 
     // cleanup
 

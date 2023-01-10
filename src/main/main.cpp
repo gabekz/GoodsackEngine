@@ -308,7 +308,7 @@ main(int argc, char *argv[])
     ecs_add(
       entCerb,
       C_AUDIO_SOURCE,
-      ((struct ComponentAudioSource) {.filePath = "../res/audio/test.wav"}));
+      ((struct ComponentAudioSource) {.filePath = "../res/audio/opening.wav"}));
 
     DebugGui *debugGui = new DebugGui(renderer);
 
