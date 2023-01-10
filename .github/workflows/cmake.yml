@@ -19,7 +19,7 @@ jobs:
         submodules: recursive
     - uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: xorg-dev libglu1-mesa-dev lua5.3 lua5.3-dev
+        packages: xorg-dev libglu1-mesa-dev
         version: 1.0
 
     - name: Configure CMake
