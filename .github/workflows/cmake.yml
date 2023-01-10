@@ -14,11 +14,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
       with:
         submodules: recursive
 
-    - uses: awalsh128/cache-apt-pkgs-action@latest
+    - name: Package Cache
+      uses: awalsh128/cache-apt-pkgs-action@latest
       with:
         packages: xorg-dev libglu1-mesa-dev libvulkan-dev
         version: 1.0
@@ -35,21 +37,22 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: static-test
-        path: .dist/
+        name: build-files
+        path: ${{github.workspace}}/build
 
-          #  test:
-          #    runs-on: ubuntu-latest
-          #
-          #    steps:
-          #    - uses: actions/download-artifact@v3
-          #      with:
-          #        name: static-test
-          #        path: .dist/
-          #
-          #    - name: Show Artifacts
-          #      run: ls -R
-          #
-          #    - name: Run Tests
-          #    run: .dist/testRunner
-          #
+  test:
+    runs-on: ubuntu-latest
+          
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-files
+        path: .dist/
+          
+    - name: Show Artifacts
+      run: ls -R
+          
+    - name: Run Tests
+      run: .dist/testRunner
+          
