@@ -31,11 +31,5 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-  test:
-    # Runs all tests from Google Test
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Test
+    - name: Run Tests
       run: ${{github.workspace}}/build/testRunner
