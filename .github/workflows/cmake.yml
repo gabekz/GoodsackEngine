@@ -54,6 +54,9 @@ jobs:
     - name: Show Artifacts
       working-directory: ${{github.workspace}}/dist
       run: ls -R
+
+    - name: TestRunner permissions
+      run: chmod +x ${{github.workspace}}/dist/testRunner
           
     - name: Run Tests
       run: ${{github.workspace}}/dist/testRunner
