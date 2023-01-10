@@ -37,10 +37,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Output
-      run: ls
-
     - name: Test
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ./testRunner
+      run: ${{github.workspace}}/build/testRunner
