@@ -50,14 +50,11 @@ jobs:
       with:
         name: build-files
         path: ${{github.workspace}}/dist/
-          
-    - name: Show Artifacts
       working-directory: ${{github.workspace}}/dist
       run: ls -R
 
-    - name: TestRunner permissions
-      run: chmod +x ${{github.workspace}}/dist/testRunner
-          
     - name: Run Tests
+      run: chmod +x ${{github.workspace}}/dist/testRunner
+      working-directory: ${{github.workspace}}/dist
       run: ${{github.workspace}}/dist/testRunner
-          
+
