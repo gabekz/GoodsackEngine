@@ -39,8 +39,8 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: build-files
-        path: ${{github.workspace}}/build
+        name: artifact-build-testRunner
+        path: ${{github.workspace}}/build/testRunner
 
 # Windows Release Build
 #
@@ -72,7 +72,7 @@ jobs:
     - name: Download Artifacts
       uses: actions/download-artifact@v3
       with:
-        name: build-files
+        name: artifact-build-testRunner
         path: ${{github.workspace}}/dist/
 
     - name: Show Artifacts
