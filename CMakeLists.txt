@@ -177,26 +177,26 @@ if(AUTO_LOCATE_VULKAN)
 		message(STATUS "Failed to locate Vulkan SDK, retrying again...")
 		if(EXISTS "${VULKAN_PATH}")
 			message(STATUS "Successfully located the Vulkan SDK: ${VULKAN_PATH}")
-            target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/Include")
 		else()
 			message("Error: Unable to locate Vulkan SDK. Please turn off auto locate option by specifying 'AUTO_LOCATE_VULKAN' as 'OFF'")
 			message("and specify manually path using 'VULKAN_SDK' and 'VULKAN_VERSION' variables in the CMakeLists.txt.")
 			return()
 		endif()
 	endif()
+    target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/Include")
+    set(VULKAN_VERSION "1.0.33.0")
+    set(VULKAN_LIB_LIST "vulkan")
+    # Link directory for vulkan-1
+    link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
+    target_link_libraries(${PROJECT_NAME} ${VULKAN_LIB_LIST})
 else()
     set(VULKAN_DIR "${LIB_DIR}/vulkan")
-    message(STATUS "(Vulkan) Using manual specified path: ${VULKAN_DIR}")
     set(VULKAN_PATH "${VULKAN_DIR}")
-    set(VULKAN_VERSION "1.0.33.0")
-    set(VULKAN_PATH "${VULKAN_DIR}/${VULKAN_VERSION}")
+    message(STATUS "(Vulkan) Using manual specified path: ${VULKAN_DIR}")
+    add_subdirectory(${VULKAN_DIR})
+    #target_link_libraries(${PROJECT_NAME} "vulkan")
+    target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/include")
 endif()
-
-set(VULKAN_LIB_LIST "vulkan")
-target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/include")
-# Link directory for vulkan-1
-link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
-target_link_libraries(${PROJECT_NAME} ${VULKAN_LIB_LIST})
 
 #################################################################
 # Library: ImGui
@@ -218,6 +218,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/backends")
 target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
 target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
+target_link_libraries("imgui" "vulkan" "${CMAKE_DL_LIBS}")
+target_include_directories("imgui" PRIVATE "${VULKAN_PATH}/include")
 
 #################################################################
 # Library: Lua
@@ -232,7 +234,7 @@ else()
     file(GLOB LUA_LIBRARIES "${LUA_DIR}/src/*.c" "${LUA_DIR}/src/*.h")
     add_library("lua" ${LUA_LIBRARIES})
     target_link_libraries(${PROJECT_NAME} lua)
-    #target_include_directories(${PROJECT_NAME} PUBLIC ${LUA_DIR})
+    target_include_directories(${PROJECT_NAME} PUBLIC "${LUA_DIR}/src")
 endif()
 
 #################################################################

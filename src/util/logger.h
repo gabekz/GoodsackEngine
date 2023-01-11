@@ -7,6 +7,10 @@ extern "C" {
 
 #include "stdio.h"
 
+#ifndef __FILE_NAME__
+#define __FILE_NAME__ __FILE__
+#endif
+
 #define LOG_TRACE(fmt, ...) \
     logger_log(LogLevel_TRACE, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define LOG_DEBUG(fmt, ...) \
