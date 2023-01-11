@@ -50,6 +50,8 @@ jobs:
       with:
         name: build-files
         path: ${{github.workspace}}/dist/
+
+    - name: Show Artifacts
       working-directory: ${{github.workspace}}/dist
       run: ls -R
 
