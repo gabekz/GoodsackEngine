@@ -12,6 +12,10 @@ project(
 set(GAME_EXE_NAME "game")
 set(TEST_EXE_NAME "testRunner")
 
+# set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 #################################################################
 # Release Targets (not multi-configuration friendly..)
 # TODO: Change from CMAKE_BUILD_TYPE to something project-specific
@@ -77,40 +81,72 @@ endforeach()
 
 ######## EXECUTABLES ############################################
 
-set(compile_options_special -O0 -ftest-coverage -fprofile-arcs --coverage)
+option(GOODSACK_EXAMPLES "Build eaxmple projects" ON)
+option(GOODSACK_TEST "Build the TestRunner executable" ON)
+option(GOODSACK_TEST_COVERAGE "Collect test coverage files" ON)
 
+# Resources Directory
 #################################################################
-# Executable definition and properties
+# Goodsack Library
 #################################################################
-project(${PROJECT_NAME} C CXX)
-
+set(PROJECT_EXE_OPTIONS -O0 -ftest-coverage -fprofile-arcs --coverage)
 add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC "${SRC_DIR}")
 
-add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main/main.cpp")
-target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME} gcov)
-target_compile_options(${GAME_EXE_NAME} PUBLIC ${compile_options_special})
-
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
-target_compile_options(${PROJECT_NAME} PUBLIC ${compile_options_special})
+target_compile_options(${PROJECT_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
+
+#################################################################
+# Example Projects
+#################################################################
+if(GOODSACK_EXAMPLES)
+    add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main/main.cpp")
+    target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME} gcov)
+    target_compile_options(${GAME_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
+    set_target_properties(${GAME_EXE_NAME}
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
+
+    get_target_property(TESTRESPATH ${GAME_EXE_NAME} RESOURCES_OUTPUT_DIRECTORY)
+    message(STATUS "Resources Path specified at: ${TESTRESPATH}")
+
+    # add_custom_command(TARGET ${GAME_EXE_NAME} POST_BUILD
+    #                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    #                    ${CMAKE_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:${GAME_EXE_NAME}>/Resources)
+    add_custom_command(TARGET ${GAME_EXE_NAME} POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/res/ ${TESTRESPATH}/res)
+endif()
 
 #################################################################
 # TestRunner Executable
 #################################################################
-add_executable(${TEST_EXE_NAME} ${TEST_SOURCES} )
-# Link test executable against gtest & gtest_main
-target_link_libraries(${TEST_EXE_NAME} gtest gcov gtest_main)
-target_link_libraries(${TEST_EXE_NAME} ${PROJECT_NAME}) 
-target_include_directories(${TEST_EXE_NAME} PRIVATE "${SRC_DIR}")
-add_test(${TEST_EXE_NAME} ${TEST_EXE_NAME})
-set_tests_properties(${TEST_EXE_NAME} PROPERTIES
-    WORKING_DIRECTORY "${SRC_DIR}")
-set_property(TARGET ${TEST_EXE_NAME} PROPERTY CXX_STANDARD 14)
-target_compile_options(${TEST_EXE_NAME} PUBLIC ${compile_options_special})
+if(GOODSACK_TEST)
+    set(TEST_EXE_OPTIONS -O0 -ftest-coverage -fprofile-arcs --coverage)
+
+    add_executable(${TEST_EXE_NAME} ${TEST_SOURCES} )
+    target_include_directories(${TEST_EXE_NAME} PRIVATE "${SRC_DIR}")
+    # Link test executable against gtest & gtest_main
+    target_link_libraries(${TEST_EXE_NAME} gtest gcov gtest_main)
+    target_link_libraries(${TEST_EXE_NAME} ${PROJECT_NAME}) 
+    add_test(${TEST_EXE_NAME} ${TEST_EXE_NAME})
+    set_tests_properties(${TEST_EXE_NAME} PROPERTIES
+        WORKING_DIRECTORY "${SRC_DIR}")
+    set_property(TARGET ${TEST_EXE_NAME} PROPERTY CXX_STANDARD 14)
+    target_compile_options(${TEST_EXE_NAME} PUBLIC ${TEST_EXE_OPTIONS})
+    set_target_properties(${TEST_EXE_NAME}
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+endif()
 
 ######## LIBRARIES ##############################################
-
-# Options
 option(AUTO_LOCATE_LUA "AUTO_LOCATE_LUA" OFF)
 option(AUTO_LOCATE_VULKAN "AUTO_LOCATE_VULKAN" OFF)
 
@@ -262,6 +298,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # Library: OpenAL Soft
 #################################################################
 set(OPENAL_DIR "${LIB_DIR}/openal-soft") 
+set(ALSOFT_INSTALL OFF CACHE INTERNAL "Install main library")
+set(ALSOFT_INSTALL_EXAMPLES OFF CACHE INTERNAL "Install example programs (alplay, alstream, ...)")
 add_subdirectory(${OPENAL_DIR})
 target_link_libraries(${PROJECT_NAME} OpenAL)
 target_include_directories(${PROJECT_NAME} PRIVATE
