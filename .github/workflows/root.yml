@@ -1,4 +1,4 @@
-name: Build
+name: Root
 
 on: [push, pull_request]
 
@@ -40,7 +40,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: artifact-build-testRunner
-        path: ${{github.workspace}}/build/testRunner
+        path: ${{github.workspace}}/build/bin/testRunner
 
 # Windows Release Build
 #

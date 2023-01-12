@@ -299,7 +299,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 #################################################################
 set(OPENAL_DIR "${LIB_DIR}/openal-soft") 
 set(ALSOFT_INSTALL OFF CACHE INTERNAL "Install main library")
-set(ALSOFT_INSTALL_EXAMPLES OFF CACHE INTERNAL "Install example programs (alplay, alstream, ...)")
+set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "Build example programs")
+set(ALSOFT_UTILS OFF CACHE INTERNAL "Build utility programs")
+set(ALSOFT_NO_CONFIG_UTIL ON CACHE INTERNAL "Disable building the alsoft-config utility")
 add_subdirectory(${OPENAL_DIR})
 target_link_libraries(${PROJECT_NAME} OpenAL)
 target_include_directories(${PROJECT_NAME} PRIVATE
