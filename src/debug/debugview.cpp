@@ -12,7 +12,7 @@ extern "C" {
 }
 
 #include <core/api/device.h>
-#include <core/api/openal_soft/openal_debug.h>
+#include <core/api/alsoft/alsoft_debug.h>
 
 #include <components/components.h>
 

@@ -1,12 +1,12 @@
-#include "openal.h"
+#include "alsoft.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <core/api/openal_soft/openal_buffer.h>
-#include <core/api/openal_soft/openal_debug.h>
+#include <core/api/alsoft/alsoft_buffer.h>
+#include <core/api/alsoft/alsoft_debug.h>
 
 #include <util/logger.h>
 
