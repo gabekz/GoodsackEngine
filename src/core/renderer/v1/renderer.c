@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 
-#include <util/debug.h>
 #include <util/gfx.h>
 #include <util/logger.h>
 #include <util/sysdefs.h>

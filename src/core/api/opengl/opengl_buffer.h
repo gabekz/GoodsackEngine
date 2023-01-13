@@ -2,8 +2,8 @@
  * VAO, VBO and IBO header
  * --------------------------------------*/
 
-#ifndef GLBUFFER_H
-#define GLBUFFER_H
+#ifndef H_OPENGL_BUFFER
+#define H_OPENGL_BUFFER
 
 #include <util/gfx.h>
 
@@ -73,4 +73,4 @@ ibo_bind(IBO *self);
 void
 ibo_destroy(IBO *self);
 
-#endif // GLBUFFER_H
+#endif // H_OPENGL_BUFFER

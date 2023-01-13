@@ -1,4 +1,4 @@
-#include "debugview.hpp"
+#include "debugui.hpp"
 
 #include <stdio.h>
 
@@ -11,8 +11,8 @@ extern "C" {
 #include <core/renderer/v1/renderer.h>
 }
 
+#include <core/api/alsoft/alsoft_debug.h>
 #include <core/api/device.h>
-#include <core/api/openal_soft/openal_debug.h>
 
 #include <components/components.h>
 

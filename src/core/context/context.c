@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/debug.h>
 #include <util/gfx.h>
 #include <util/logger.h>
 
@@ -12,6 +11,12 @@
 
 #include <core/api/device.h>
 #include <core/api/vulkan/vulkan.h>
+
+static void
+_error_callback(int error, const char *description)
+{
+    LOG_ERROR("%s", description);
+}
 
 static void
 _resize_callback(GLFWwindow *window, int widthRe, int heightRe)

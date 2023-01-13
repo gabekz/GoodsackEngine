@@ -1,8 +1,8 @@
 #include "audio_listener.h"
 
 #include <AL/al.h>
-#include <core/api/openal_soft/openal.h>
-#include <core/api/openal_soft/openal_debug.h>
+#include <core/api/alsoft/alsoft.h>
+#include <core/api/alsoft/alsoft_debug.h>
 
 #include <components/camera/camera.h>
 

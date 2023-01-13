@@ -3,7 +3,7 @@
 
 #include <ecs/ecs.h>
 
-#include <core/api/openal_soft/openal.h>
+#include <core/api/alsoft/alsoft.h>
 
 struct ComponentAudioSource
 {

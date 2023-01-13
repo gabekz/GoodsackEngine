@@ -1,5 +1,5 @@
-#ifndef H_DEBUGVIEW
-#define H_DEBUGVIEW
+#ifndef HPP_DEBUGUI
+#define HPP_DEBUGUI
 
 extern "C" {
 #include <core/renderer/v1/renderer.h>
@@ -34,4 +34,4 @@ class DebugGui {
     int m_sceneQueued;
 };
 
-#endif // H_DEBUGVIEW
+#endif // HPP_DEBUGUI

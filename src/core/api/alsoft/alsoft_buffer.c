@@ -1,7 +1,7 @@
-#include "openal_buffer.h"
+#include "alsoft_buffer.h"
 
 #include <asset/import/loader_wav.h>
-#include <core/api/openal_soft/openal_debug.h>
+#include <core/api/alsoft/alsoft_debug.h>
 
 /* static */
 

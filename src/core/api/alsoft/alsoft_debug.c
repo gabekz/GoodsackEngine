@@ -1,4 +1,4 @@
-#include "openal_debug.h"
+#include "alsoft_debug.h"
 
 #include <stdlib.h>
 #include <string.h>
