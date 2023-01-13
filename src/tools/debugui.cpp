@@ -11,8 +11,8 @@ extern "C" {
 #include <core/renderer/v1/renderer.h>
 }
 
-#include <core/api/device.h>
 #include <core/api/alsoft/alsoft_debug.h>
+#include <core/api/device.h>
 
 #include <components/components.h>
 

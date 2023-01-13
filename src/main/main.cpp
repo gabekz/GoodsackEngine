@@ -8,9 +8,9 @@
 #include <components/components.h>
 #include <core/api/device.h>
 #include <core/lighting/lighting.h>
-#include <tools/debugui.hpp>
 #include <ecs/ecs.h>
 #include <lua/lua_init.hpp>
+#include <tools/debugui.hpp>
 
 extern "C" {
 #include <core/renderer/v1/renderer.h>
