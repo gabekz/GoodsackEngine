@@ -38,19 +38,5 @@ For help, use `beloweng -h` or `-beloweng --help`.
 
 # Usage
 
+
 ## Creating a new Project
-
-
----
-## Dependencies
-- glfw (Window Manager)
-- glad (OpenGL Loader)
-- cglm (Math)
-- lua
-- nlohmann_json
-- Google Test (unit testing framework)
-- ImGui (Fantastic Debug-GUI Library)
-- stb_img (Image Loader)
-
-
-
