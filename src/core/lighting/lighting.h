@@ -4,7 +4,7 @@
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
 
-#include <core/api/opengl/glbuffer.h>
+#include <core/api/opengl/opengl.h>
 #include <core/shader/shader.h>
 #include <core/texture/texture.h>
 

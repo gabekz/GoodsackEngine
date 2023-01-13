@@ -1,6 +1,6 @@
 #include "lighting.h"
 
-#include <core/api/opengl/glbuffer.h>
+#include <core/api/opengl/opengl.h>
 #include <core/shader/shader.h>
 #include <model/primitives.h>
 

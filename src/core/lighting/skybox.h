@@ -1,7 +1,7 @@
 #ifndef H_SKYBOX
 #define H_SKYBOX
 
-#include <core/api/opengl/glbuffer.h>
+#include <core/api/opengl/opengl.h>
 #include <core/texture/texture.h>
 #include <ecs/ecs.h>
 

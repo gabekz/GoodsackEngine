@@ -3,7 +3,7 @@
 
 #include <util/sysdefs.h>
 
-#include <core/api/opengl/glbuffer.h>
+#include <core/api/opengl/opengl.h>
 #include <core/api/vulkan/vulkan_vertex_buffer.h>
 
 #include <core/texture/texture.h>
