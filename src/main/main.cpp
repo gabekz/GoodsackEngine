@@ -8,7 +8,7 @@
 #include <components/components.h>
 #include <core/api/device.h>
 #include <core/lighting/lighting.h>
-#include <debug/debugview.hpp>
+#include <tools/debugui.hpp>
 #include <ecs/ecs.h>
 #include <lua/lua_init.hpp>
 

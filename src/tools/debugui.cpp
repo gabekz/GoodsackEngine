@@ -1,4 +1,4 @@
-#include "debugview.hpp"
+#include "debugui.hpp"
 
 #include <stdio.h>
 
