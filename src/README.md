@@ -1,34 +1,12 @@
-## Below-Engine SRC
+> src/ directory
 
-core/
-|  api/ -- API-specific implementations for abstraction
-|  |  opengl/
-|  |  vulkan/
-|
-|  lighting/
-|
-|  renderer/
-|  |  pipeline/
-|  |
-|
-|  shader/
-|  texture/
-
-components/ -- Native BelowEng components
-
-debug/
-
-ecs/
-| component/
-| lua/
-| depracated/
-
-import/ -- resource loading/parsing
-
-model/
-
-util/ -- precompiled utilities/helpers
-
-lua/
-
-packager/
+    .
+    ├── asset                   # Asset/Resource Management + importers
+    ├── core                    # Core Library - Device API implementation and rendering
+    ├── components              # Built-in ECS Components and Systems
+    ├── debug                   # Editor/Debugging Tools (e.g, DebugGUI)
+    ├── ecs                     # ECS implementation
+    ├── model                   # Model type
+    ├── util                    # Tools and utilities (maths, sysdefs, etc.)
+    ├── LICENSE
+    └── README.md
