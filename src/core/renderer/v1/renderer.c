@@ -8,11 +8,11 @@
 #include <util/sysdefs.h>
 
 #include <core/lighting/lighting.h>
+#include <core/lighting/skybox.h>
 #include <ecs/ecs.h>
 
 #include <core/context/context.h>
 
-// API
 #include <core/api/device.h>
 #include <core/api/vulkan/vulkan_device.h>
 
@@ -90,16 +90,8 @@ renderer_start(Renderer *renderer)
     Scene *scene = renderer->sceneL[renderer->activeScene];
     ECS *ecs     = scene->ecs;
 
-    // Clear FPS/MS Data
     if (DEVICE_API_OPENGL) {
-        shadowmap_init();
-        // TODO: clean this up. Should be stored in UBO for directional-lights
-        glm_mat4_zero(renderer->lightSpaceMatrix);
-        glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
-
-        postbuffer_init(renderer->renderWidth, renderer->renderHeight);
-
-#if 1
+#if 0
         Texture *skyboxCubemap =
           texture_create_cubemap(6,
                                  "../res/textures/skybox/right.jpg",
@@ -108,12 +100,24 @@ renderer_start(Renderer *renderer)
                                  "../res/textures/skybox/bottom.jpg",
                                  "../res/textures/skybox/front.jpg",
                                  "../res/textures/skybox/back.jpg");
-#else
-        Texture *skyboxCubemap =
-          texture_create_hdr("../res/textures/hdr/ice_lake.hdr");
-#endif
 
         renderer->skybox = skybox_create(skyboxCubemap);
+#else
+        Skybox *skybox = skybox_hdr_create();
+        skybox->shader = shader_create_program("../res/shaders/skybox.shader");
+        renderer->skybox = skybox;
+
+        skybox_hdr_projection(renderer->skybox);
+#endif
+
+        shadowmap_init();
+        // TODO: clean this up. Should be stored in UBO for directional-lights
+        glm_mat4_zero(renderer->lightSpaceMatrix);
+        glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
+
+        postbuffer_init(renderer->renderWidth, renderer->renderHeight);
+
+        // renderer->skybox = skybox_create(skyboxCubemap);
 
         // Send ECS event init
         ecs_event(ecs, ECS_INIT);
@@ -170,6 +174,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
     glDepthFunc(GL_LEQUAL);
+    // skybox_draw(renderer->skybox);
     skybox_draw(renderer->skybox);
     glDepthFunc(GL_LESS);
 

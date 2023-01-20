@@ -23,9 +23,12 @@ int
 main(int argc, char *argv[])
 {
     // Logger
-    int logStat = logger_initConsoleLogger(stderr);
+    int logStat = logger_initConsoleLogger(NULL);
+    logger_initFileLogger("logs/logs.txt", 0, 0);
+
     logger_setLevel(LogLevel_TRACE);
     logger_setDetail(LogDetail_SIMPLE);
+
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
 
     if (argc > 1) {
@@ -39,9 +42,6 @@ main(int argc, char *argv[])
             }
         }
     }
-
-    // openal_init();
-    // exit(1);
 
     // Main Lua entry
     LuaInit("../src/lua/demo/main.lua");

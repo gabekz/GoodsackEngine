@@ -6,6 +6,7 @@
 #include <util/sysdefs.h>
 
 #include <core/lighting/lighting.h>
+#include <core/lighting/skybox.h>
 #include <core/scene/scene.h>
 
 #include <model/material.h>
@@ -48,6 +49,7 @@ struct _renderer
 
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
+    ui32 hdrTextureId;
 };
 
 /**
