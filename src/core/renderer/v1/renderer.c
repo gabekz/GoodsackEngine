@@ -168,6 +168,9 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     // binding the shadowmap to texture slot 6 (TODO:) for meshes
     shadowmap_bind_texture();
 
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, renderer->skybox->irradianceMap->id);
+
     renderer->currentPass = REGULAR;
     ecs_event(ecs, ECS_RENDER);
 

@@ -8,6 +8,7 @@
 static ui32 cubemapProjectionFBO;
 static VAO *cubemapProjectionVAO;
 static ShaderProgram *cubemapProjectionShader;
+static ShaderProgram *cubemapShaderConvolute;
 
 Skybox *
 skybox_create(Texture *cubemap)
@@ -93,6 +94,28 @@ skybox_hdr_create()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    // Create irradiance map
+    ui32 irradianceMap;
+    glGenTextures(1, &irradianceMap);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+    for (int i = 0; i < 6; i++) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                     0,
+                     GL_RGB16F,
+                     32,
+                     32,
+                     0,
+                     GL_RGB,
+                     GL_FLOAT,
+                     NULL);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     // Simple cube for rendering
     VAO *vao = vao_create();
     vao_bind(vao);
@@ -109,6 +132,10 @@ skybox_hdr_create()
       shader_create_program("../res/shaders/hdr-cubemap.shader");
     cubemapProjectionShader = shaderP;
 
+    ShaderProgram *shaderConvolute = 
+      shader_create_program("../res/shaders/hdr-convolute.shader");
+    cubemapShaderConvolute = shaderConvolute;
+
     cubemapProjectionFBO = captureFBO;
 
     // Reset
@@ -118,6 +145,8 @@ skybox_hdr_create()
     Skybox *ret      = malloc(sizeof(Skybox));
     ret->cubemap     = malloc(sizeof(Texture));
     ret->cubemap->id = skyboxCubemap;
+    ret->irradianceMap = malloc(sizeof(Texture));
+    ret->irradianceMap->id = irradianceMap;
     ret->vao         = vao;
     ret->hdrTexture  = hdrTexture;
     return ret;
@@ -129,8 +158,10 @@ skybox_hdr_projection(Skybox *skybox)
     ui32 captureFBO         = cubemapProjectionFBO;
     VAO *vao                = cubemapProjectionVAO;
     ShaderProgram *shaderP  = cubemapProjectionShader;
+    ShaderProgram *shaderConvolute = cubemapShaderConvolute;
     Texture *hdrTexture     = skybox->hdrTexture;
     Texture *cubemapTexture = skybox->cubemap;
+    Texture *irradianceMap  = skybox->irradianceMap;
 
     mat4 captureProjection = GLM_MAT4_IDENTITY_INIT;
     glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 10.0f, captureProjection);
@@ -171,7 +202,6 @@ skybox_hdr_projection(Skybox *skybox)
                        1,
                        GL_FALSE,
                        (float *)captureProjection);
-    glUniform1i(glGetUniformLocation(shaderP->id, "skybox"), 0);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hdrTexture->id);
@@ -188,6 +218,36 @@ skybox_hdr_projection(Skybox *skybox)
                                GL_COLOR_ATTACHMENT0,
                                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                                cubemapTexture->id,
+                               0);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // render 1x1 cube
+        vao_bind(vao);
+        glDrawElements(
+          GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
+    }
+    // Convoluted Map
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture->id);
+    shader_use(shaderConvolute);
+    glUniformMatrix4fv(glGetUniformLocation(shaderConvolute->id, "projection"),
+                       1,
+                       GL_FALSE,
+                       (float *)captureProjection);
+
+    glViewport(0, 0, 32, 32);
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    for (int i = 0; i < 6; i++) {
+        glUniformMatrix4fv(glGetUniformLocation(shaderConvolute->id, "view"),
+                           1,
+                           GL_FALSE,
+                           (float *)captureViews[i]);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER,
+                               GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                               irradianceMap->id,
                                0);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

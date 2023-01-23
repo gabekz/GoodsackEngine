@@ -283,7 +283,7 @@ main(int argc, char *argv[])
     ecs_add(camera4,
             C_CAMERA,
             ((struct ComponentCamera) {
-              .position = {0.0f, 0.0f, 2.0f},
+              .position = {-1.5f, 0.0f, 0.0f},
               .axisUp   = {0.0f, 1.0f, 0.0f},
               .speed    = 0.05f,
             }));

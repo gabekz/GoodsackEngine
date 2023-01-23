@@ -14,6 +14,7 @@ typedef struct Skybox
 {
     Texture *cubemap;
     Texture *hdrTexture;
+    Texture *irradianceMap;
     VAO *vao;
     ShaderProgram *shader;
 } Skybox;

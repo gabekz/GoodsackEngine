@@ -69,6 +69,8 @@ layout(binding = 2) uniform sampler2D t_Metallic;
 layout(binding = 3) uniform sampler2D t_Specular;
 layout(binding = 4) uniform sampler2D t_Ao;
 
+layout(binding = 5) uniform samplerCube t_IrradianceMap;
+
 
 /*
 layout (std140, set = 2, binding = 0) uniform ObjectTextures {
@@ -156,7 +158,8 @@ void main() {
     // calculate reflectance at normal incidence; if dia-electric
     // (like plastic) use baseReflectivity of 0.0f and it's a metal,
     // use the albedo color as baseReflectivity (metallic workflow)
-    vec3 bR = mix(vec3(0.04), albedo, metallic);
+    vec3 bR = vec3(0.04);
+    bR = mix(bR, albedo, metallic);
 
     // reflectance equation
     vec3 Lo = vec3(0.0); 
@@ -179,8 +182,13 @@ void main() {
     float G = geometrySmith(NdotV, NdotL, roughness); // smaller more micro-facets
     vec3 F = fresnelSchlick(HdotV, bR); // proportion of spec 
     
+    /*
     vec3 specular = D * G * F;
     specular /= 4.0 * NdotV * NdotL;
+    */
+    vec3 nominator = D * G * F;
+    float denominator = 4 * NdotV * NdotL + 0.001;
+    vec3 specular = nominator / denominator;
 
     // For energy conservation, the diffuse and specular light
     // can't be above 1.0 (unless the surface emits light);
@@ -198,8 +206,11 @@ void main() {
     Lo += (kD * albedo / PI + specular) * radiance * NdotL;
 // end of lighting equation
 
-    // ambient lighting
-    vec3 ambient = vec3(0, 0.0001, 0.0003) * albedo * ao;
+    // ambient lighting from IBL
+    vec3 kD2 = (1.0 - fresnelSchlick(NdotV, bR)) * (1.0 - metallic);
+    vec3 diffuse = texture(t_IrradianceMap, N).rgb * albedo * kD2;
+    //vec3 ambient = vec3(0, 0.0001, 0.0003) * albedo * ao;
+    vec3 ambient = diffuse * ao;
     vec3 color = ambient + Lo;
     // HDR
     color = color / (color + vec3(0.05));

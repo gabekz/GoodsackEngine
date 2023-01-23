@@ -81,6 +81,10 @@ vec4 kernel() {
 
 void main()
 {
+    vec3 hdrColor = texture(u_ScreenTexture, texCoords).rgb;
+    vec3 result = hdrColor / (hdrColor + vec3(1.0));
+    //result = pow(result, vec3(1.0 / 2.2));
+    //FragColor = vec4(result, 1.0);
     FragColor = texture(u_ScreenTexture, texCoords);
     //FragColor = vec4(vec3(1.0 - texture(u_ScreenTexture, texCoords)), 1.0);
     //FragColor = kernel();
