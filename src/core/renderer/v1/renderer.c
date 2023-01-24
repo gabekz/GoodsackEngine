@@ -171,6 +171,12 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     glActiveTexture(GL_TEXTURE5);
     glBindTexture(GL_TEXTURE_CUBE_MAP, renderer->skybox->irradianceMap->id);
 
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, renderer->skybox->prefilterMap->id);
+
+    glActiveTexture(GL_TEXTURE7);
+    glBindTexture(GL_TEXTURE_2D, renderer->skybox->brdfLUTTexture->id);
+
     renderer->currentPass = REGULAR;
     ecs_event(ecs, ECS_RENDER);
 

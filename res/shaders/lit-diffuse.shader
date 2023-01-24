@@ -173,6 +173,7 @@ vec4 light(int type) {
 void main() {
     vec4 texColor = texture(t_Diffuse, fs_in.texCoords) * light(0);
 
-    float gamma = 2.2;
-    FragColor.rgb = pow(texColor.rgb, vec3(1.0/gamma));
+    //float gamma = 2.2;
+    //FragColor.rgb = pow(texColor.rgb, vec3(1.0/gamma));
+    FragColor = texColor;
 }

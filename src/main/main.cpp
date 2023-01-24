@@ -91,7 +91,7 @@ main(int argc, char *argv[])
                                         texCerbS,
                                         texPbrAo);
 
-#if 0
+#if 1
     Texture *texEarthDiff =
       texture_create_d("../res/textures/earth/diffuse.png");
     Texture *texEarthNorm =
@@ -206,13 +206,6 @@ main(int argc, char *argv[])
               .speed    = 0.05f,
             }));
 
-    Entity sphereEntity = ecs_new(ecs);
-    ecs_add(sphereEntity,
-            C_TRANSFORM,
-            ((struct ComponentTransform) {
-              .position = {0.0f, 0.0f, 0.0f},
-            }));
-
     Texture *texGraniteAlbedo =
       texture_create_d("../res/textures/pbr/granite/albedo.png");
     Texture *texGraniteNormal =
@@ -249,6 +242,47 @@ main(int argc, char *argv[])
                                         texPbrSpecular,
                                         texPbrAo);
 
+    Texture *texBrassAlbedo =
+      texture_create_d("../res/textures/pbr/fancybrass/albedo.png");
+    Texture *texBrassNormal =
+      texture_create_n("../res/textures/pbr/fancybrass/normal.png");
+    Texture *texBrassMetallic =
+      texture_create_n("../res/textures/pbr/fancybrass/metallic.png");
+    Texture *texBrassSpecular =
+      texture_create_n("../res/textures/pbr/fancybrass/roughness.png");
+    Texture *texBrassAo =
+      texture_create_n("../res/textures/pbr/fancybrass/ao.png");
+    Material *matBrass = material_create(NULL,
+                                        "../res/shaders/pbr.shader",
+                                        5,
+                                        texBrassAlbedo,
+                                        texBrassNormal,
+                                        texBrassMetallic,
+                                        texBrassSpecular,
+                                        texBrassAo);
+
+    Texture *texGoldAlbedo =
+      texture_create_d("../res/textures/pbr/gold/albedo.png");
+    Texture *texGoldNormal =
+      texture_create_n("../res/textures/pbr/gold/normal.png");
+    Texture *texGoldMetallic =
+      texture_create_n("../res/textures/pbr/gold/metallic.png");
+    Texture *texGoldSpecular =
+      texture_create_n("../res/textures/pbr/gold/roughness.png");
+    Material *matGold = material_create(NULL,
+                                        "../res/shaders/pbr.shader",
+                                        5,
+                                        texGoldAlbedo,
+                                        texGoldNormal,
+                                        texGoldMetallic,
+                                        texGoldSpecular,
+                                        texPbrAo);
+    Entity sphereEntity = ecs_new(ecs);
+    ecs_add(sphereEntity,
+            C_TRANSFORM,
+            ((struct ComponentTransform) {
+              .position = {0.0f, 0.0f, 0.0f},
+            }));
     ecs_add(sphereEntity,
             C_MESH,
             ((struct ComponentMesh) {.material   = matGranite,
@@ -257,6 +291,50 @@ main(int argc, char *argv[])
                                        .drawMode = DRAW_ARRAYS,
                                        .cullMode = CULL_CW | CULL_FORWARD,
                                      }}));
+    Entity sphereEntity2 = ecs_new(ecs);
+    ecs_add(sphereEntity2,
+            C_TRANSFORM,
+            ((struct ComponentTransform) {
+              .position = {-0.5f, 0.0f, 0.0f},
+            }));
+    ecs_add(sphereEntity2,
+            C_MESH,
+            ((struct ComponentMesh) {.material   = matRust,
+                                     .modelPath  = "../res/models/sphere.obj",
+                                     .properties = {
+                                       .drawMode = DRAW_ARRAYS,
+                                       .cullMode = CULL_CW | CULL_FORWARD,
+                                     }}));
+
+    Entity sphereEntity3 = ecs_new(ecs);
+    ecs_add(sphereEntity3,
+            C_TRANSFORM,
+            ((struct ComponentTransform) {
+              .position = {0.5f, 0.0f, 0.0f},
+            }));
+    ecs_add(sphereEntity3,
+            C_MESH,
+            ((struct ComponentMesh) {.material   = matBrass,
+                                     .modelPath  = "../res/models/sphere.obj",
+                                     .properties = {
+                                       .drawMode = DRAW_ARRAYS,
+                                       .cullMode = CULL_CW | CULL_FORWARD,
+                                     }}));
+    Entity sphereEntity4 = ecs_new(ecs);
+    ecs_add(sphereEntity4,
+            C_TRANSFORM,
+            ((struct ComponentTransform) {
+              .position = {1.0f, 0.0f, 0.0f},
+            }));
+    ecs_add(sphereEntity4,
+            C_MESH,
+            ((struct ComponentMesh) {.material   = matGold,
+                                     .modelPath  = "../res/models/sphere.obj",
+                                     .properties = {
+                                       .drawMode = DRAW_ARRAYS,
+                                       .cullMode = CULL_CW | CULL_FORWARD,
+                                     }}));
+
     Entity floorEntity2 = ecs_new(ecs);
     ecs_add(floorEntity2,
             C_TRANSFORM,
