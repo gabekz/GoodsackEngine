@@ -50,6 +50,14 @@ struct _renderer
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
     ui32 hdrTextureId;
+
+    // HDR Settings
+    ui32 tonemapper;
+    float exposure;
+    float maxWhite;
+    float gamma;
+    int gammaEnable;
+    int msaaEnable;
 };
 
 /**

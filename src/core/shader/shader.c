@@ -32,7 +32,7 @@ CompileSingleShader(unsigned int type, const char *path)
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         char *message = (char *)alloca(length * sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
-        printf("Error at: %s\n", path);
+        //printf("Error at: %s\n", path);
         printf("Failed to compile %s shader.\n Error output: %s\n",
                typeStr,
                message);

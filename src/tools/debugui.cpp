@@ -75,6 +75,7 @@ DebugGui::DebugGui(Renderer *renderer)
     m_showSceneLighting   = false;
     m_showExample         = false;
     m_showProfiler        = false;
+    m_showHDR             = false;
 
     SetVisibility(true);
 }
@@ -144,8 +145,9 @@ DebugGui::Render()
             if (ImGui::MenuItem("Entities")) { m_showEntityViewer = true; }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Graphics")) {
+        if (ImGui::BeginMenu("Debug")) {
             if (ImGui::MenuItem("Profiler")) { m_showProfiler = true; }
+            if (ImGui::MenuItem("HDR")) { m_showHDR = true; }
             ImGui::EndMenu();
         }
 
@@ -293,8 +295,7 @@ DebugGui::Render()
                 for (int i = 0; i < textureCount; i++) {
                     ImGui::Separator();
                     ImGui::Image((void *)(intptr_t)p.material->textures[i]->id,
-                                 ImVec2(200, 200));
-
+                                 ImVec2(200, 200), ImVec2(0, 1), ImVec2(1, 0));
                     ImGui::SameLine();
                     ImGui::Text("File Path: %s\nDimensions: %dx%d\nType: %s",
                                 p.material->textures[i]->filePath,
@@ -367,7 +368,7 @@ DebugGui::Render()
     }
     if (m_showProfiler) {
         ImGui::BeginGroup();
-        ImGui::Begin("Analytics", &m_showSceneLighting);
+        ImGui::Begin("Analytics", &m_showProfiler);
 
         ImGui::Text("Performance");
         ImGui::Separator();
@@ -381,6 +382,72 @@ DebugGui::Render()
         ImGui::Text("Total Vertices: ");
         ImGui::Text("Total Polygons: ");
         ImGui::Text("Total Faces: ");
+        // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
+
+        ImGui::EndGroup();
+    }
+    if (m_showHDR) {
+        ImGui::BeginGroup();
+        ImGui::Begin("HDR Debug", &m_showHDR);
+
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+        ImGui::Text("Frame");
+        ImGui::PopStyleColor();
+
+        static ImGuiComboFlags flags = 0;
+        // Using the generic BeginCombo() API, you have full control over how to display the combo contents.
+        // (your selection data could be an index, a pointer to the object, an id for the object, a flag intrusively
+        // stored in the object itself, etc.)
+        const char* items[] = { "Reinhard", "Reinhard (Jodie)", "Reinhard (Extended)", "ACES (Approximate)", "Uncharted 2 Filmic" };
+        static int item_current_idx = 0; // Here we store our selection data as an index.
+        const char* combo_preview_value = items[item_current_idx];  // Pass in the preview value visible before opening the combo (it could be anything)
+        if (ImGui::BeginCombo("Tonemapping", combo_preview_value, flags))
+        {
+            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            {
+                const bool is_selected = (item_current_idx == n);
+                if (ImGui::Selectable(items[n], is_selected)) {
+                    item_current_idx = n;
+                    m_renderer->tonemapper = n;
+                }
+
+                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        if(item_current_idx == 2) { // Reinhard Extended
+            ImGui::SliderFloat("Max White", &m_renderer->maxWhite, 0.0f, 20.0f);
+        }
+
+        ImGui::DragFloat("Exposure", &m_renderer->exposure, 0.1f, 0.0f, 20.0f, "%.1f");
+
+        ImGui::Checkbox("Gamma Correction", (bool *)&m_renderer->gammaEnable);
+        if(!m_renderer->gammaEnable)
+            ImGui::BeginDisabled();
+        ImGui::DragFloat("Gamma", &m_renderer->gamma, 0.1f, 0.0f, 20.0f, "%.1f");
+        if(!m_renderer->gammaEnable)
+            ImGui::EndDisabled();
+
+        ImGui::Separator();
+        ImGui::Checkbox("MSAA", (bool *)&m_renderer->msaaEnable);
+        ImGui::SameLine();
+        int p = 16;
+        ImGui::BeginDisabled();
+        ImGui::DragInt("Samples", &p, 2, 0, 16);
+        ImGui::EndDisabled();
+        ImGui::Separator();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+        ImGui::Text("IBL");
+        ImGui::PopStyleColor();
+
+        ImGui::Image((void *)(intptr_t)m_renderer->skybox->hdrTexture->id,
+            ImVec2(200, 100), ImVec2(1, 1), ImVec2(0, 0));
+        ImGui::Image((void *)(intptr_t)m_renderer->skybox->brdfLUTTexture->id,
+            ImVec2(200, 200), ImVec2(0, 1), ImVec2(1, 0));
+;
         // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
 
         ImGui::EndGroup();

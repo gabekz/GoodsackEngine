@@ -27,7 +27,7 @@ CreateMultisampleBuffer(ui32 samples, ui32 width, ui32 height)
     glGenTextures(1, &msTexture);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msTexture);
     glTexImage2DMultisample(
-      GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, width, height, GL_TRUE);
+      GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA16F, width, height, GL_TRUE);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 
     // Create Framebuffer object
@@ -117,21 +117,26 @@ postbuffer_init(ui32 winWidth, ui32 winHeight)
 }
 
 void
-postbuffer_bind()
+postbuffer_bind(int enableMSAA)
 {
     // glDebugMessageInsert(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_MARKER, 0,
     //     GL_DEBUG_SEVERITY_NOTIFICATION, -1, "Post Processing buffer init");
-    // glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
-    glEnable(GL_MULTISAMPLE);
-    glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+    if(enableMSAA) {
+        glEnable(GL_MULTISAMPLE);
+        glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+    }
+    else {
+        glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
+    }
 
     glViewport(0, 0, frameWidth, frameHeight);
 }
 
 void
-postbuffer_draw(ui32 winWidth, ui32 winHeight)
+postbuffer_draw(ui32 winWidth, ui32 winHeight, int enableMSAA, ui32 tonemapper, float exposure, float maxWhite, float gamma, int gammaEnable)
 {
 
+    if(enableMSAA) {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sbFBO);
     glBlitFramebuffer(0,
@@ -145,11 +150,17 @@ postbuffer_draw(ui32 winWidth, ui32 winHeight)
                       GL_COLOR_BUFFER_BIT,
                       GL_NEAREST);
 
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, winWidth, winHeight);
 
     vao_bind(vaoRect);
     shader_use(shader);
+    glUniform1i(glGetUniformLocation(shader->id, "u_Tonemapper"), tonemapper);
+    glUniform1f(glGetUniformLocation(shader->id, "u_Exposure"), exposure);
+    glUniform1f(glGetUniformLocation(shader->id, "u_MaxWhite"), maxWhite);
+    glUniform1f(glGetUniformLocation(shader->id, "u_Gamma"), gamma);
+    glUniform1i(glGetUniformLocation(shader->id, "u_GammaEnable"), gammaEnable);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sbTexture);
     glDisable(GL_DEPTH_TEST);

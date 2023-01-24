@@ -51,6 +51,13 @@ renderer_init()
     ret->sceneC      = 1;
     ret->activeScene = 0;
 
+    ret->tonemapper = 0;
+    ret->exposure = 2.5f;
+    ret->maxWhite = 1.0f;
+    ret->gamma = 2.2f;
+    ret->gammaEnable = TRUE;
+    ret->msaaEnable = TRUE;
+
     return ret;
 }
 
@@ -158,7 +165,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     /*-------------------------------------------
         Pass #2 - Post Processing Pass
     */
-    postbuffer_bind();
+    postbuffer_bind(renderer->msaaEnable);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -191,7 +198,9 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
         Pass #3 - Final: Backbuffer draw
     */
     // glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
-    postbuffer_draw(renderer->windowWidth, renderer->windowHeight);
+    postbuffer_draw(renderer->windowWidth, renderer->windowHeight,
+            renderer->msaaEnable, renderer->tonemapper, renderer->exposure, renderer->maxWhite,
+            renderer->gamma, renderer->gammaEnable);
 }
 
 /*
