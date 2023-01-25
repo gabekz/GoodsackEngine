@@ -21,7 +21,7 @@ void computebuffer_init() {
     shader2 = shader_create_program("../res/shaders/framebuffer-simple.shader");
 
      // texture size
-    const ui32 TEXTURE_WIDTH = 1000, TEXTURE_HEIGHT = 1000;
+    const ui32 TEXTURE_WIDTH = 320, TEXTURE_HEIGHT = 180;
     
     glGenTextures(1, &csTexture);
     glActiveTexture(GL_TEXTURE0);
@@ -45,14 +45,17 @@ void computebuffer_init() {
     free(rectPositions);
 }
 
+static float totalFrames = 0;
+
 void computebuffer_draw() {
 
+    totalFrames++;
     glBindImageTexture(0, csTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     shader_use(csShader);
     glUniform1f(glGetUniformLocation(csShader->id, "t"),
-            device_getAnalytics().delta);
-    glDispatchCompute((ui32)1000/10, (ui32)1000/10, 1);
+            totalFrames);
+    glDispatchCompute((ui32)320, (ui32)180, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

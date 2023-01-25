@@ -1,10 +1,13 @@
 #shader compute
 #version 460 core
 
-layout(local_size_x = 10, local_size_y = 10, local_size_z = 1) in;
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D imgOutput;
 
 layout (location = 0) uniform float t; 
+
+shared vec2 agentPos[32];
+shared float agentAng[32];
 
 float rand(vec2 co)
 {
@@ -12,14 +15,80 @@ float rand(vec2 co)
 }
 void main()
 {
-    vec4 value = vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 value = vec4(0.0, 0.0, 0.0, 1.0);
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
 
+    uint localID = gl_LocalInvocationID.x;
+
+    if(localID.x == 0) {
+        for(int i = 0; i < 32; i++) {
+            vec2 newDir = vec2(cos(agentAng[i]), sin(agentAng[i]));
+            vec2 newPos = vec2(i * 10 * newDir.x, 15 + t * newDir.y);
+
+            if(newPos.x < 0 || newPos.x >= 320 || newPos.y < 0 || newPos.y >= 160) {
+                newPos.x = min(320-0.01, max(0, newPos.x));
+                newPos.y = min(160-0.01, max(0, newPos.y));
+                agentAng[i] = -0.25;
+            }
+
+            agentPos[i] = newPos;
+        }
+    }
+    memoryBarrierShared();
+    barrier();
+
+    if(gl_GlobalInvocationID.x != 0) {
+        //agentPos[localID] += agentPos[localID - 1];
+        /*
+        if(float(texelCoord.x) == float(agentPos[localID].x) &&
+            float(texelCoord.y) == float(agentPos[localID].y))
+        */
+        texelCoord = ivec2(agentPos[localID].xy);
+        value = vec4(1, 1, 1, 1);
+    }
+
+    imageStore(imgOutput, texelCoord, value);
+
+    texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec4 prev = imageLoad(imgOutput, texelCoord);
+
+    vec4 sum = vec4(0.0);
+    // blur
+    for(int offsetX = -1; offsetX <= 1; offsetX++) {
+        for(int offsetY = -1; offsetY <= 1; offsetY++) {
+            float sampleX = gl_GlobalInvocationID.x + offsetX;
+            float sampleY = gl_GlobalInvocationID.y + offsetY;
+
+            ivec2 diffuseLoc = ivec2(sampleX, sampleY);
+            if(sampleX >= 0 && sampleY >= 0) {
+                sum += imageLoad(imgOutput, diffuseLoc); 
+            }
+        }
+    }
+    vec4 blur = sum / 9;
+
+    // evaporate
+    float diffuse = 0.003;
+    vec4 diffuseValue = mix(prev, blur, diffuse * t);
+    vec4 diffuseEvaporate = max(vec4(0), diffuseValue - 0.001);
+    value = diffuseEvaporate;
+
+    //value += vec4(prev.x - diffuse, prev.y - diffuse, prev.z - diffuse, prev.w - t);
+    imageStore(imgOutput, texelCoord, value);
+
+    //if(float(texelCoord.x) == 30 && float(texelCoord.y) == 30) {
+    /*
+    if(float(gl_WorkGroupID.x) <= 30 && float(gl_WorkGroupID.y) <= 30) {
+        value = vec4(1, 0, 0, 1);
+    }
+    */
+
+    /*
     value.x = float(texelCoord.x)/(gl_NumWorkGroups.x);
     value.y = float(texelCoord.y)/(gl_NumWorkGroups.y);
 
     value.x = rand(vec2(value.x, t));
     value.y = rand(vec2(t, value.y));
+    */
 
-    imageStore(imgOutput, texelCoord, value);
 }

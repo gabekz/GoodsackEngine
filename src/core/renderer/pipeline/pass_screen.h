@@ -2,13 +2,14 @@
 #define H_PASS_SCREEN
 
 #include <util/sysdefs.h>
+#include <core/renderer/renderer_props.inl>
 
 void
-postbuffer_init(ui32 winWidth, ui32 winHeight);
+postbuffer_init(ui32 width, ui32 height);
 void
 postbuffer_bind(int enableMSAA);
 void
-postbuffer_draw(ui32 winWidth, ui32 winHeight, int enableMSAA, ui32 tonemapper, float exposure, float maxWhite, float gamma, int gammaEnable);
+postbuffer_draw(RendererProps *properties);
 void
 postbuffer_resize(ui32 winWidth, ui32 winHeight);
 void

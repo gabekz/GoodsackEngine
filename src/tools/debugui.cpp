@@ -387,6 +387,7 @@ DebugGui::Render()
         ImGui::EndGroup();
     }
     if (m_showHDR) {
+        RendererProps *props = &m_renderer->properties;
         ImGui::BeginGroup();
         ImGui::Begin("HDR Debug", &m_showHDR);
 
@@ -408,7 +409,7 @@ DebugGui::Render()
                 const bool is_selected = (item_current_idx == n);
                 if (ImGui::Selectable(items[n], is_selected)) {
                     item_current_idx = n;
-                    m_renderer->tonemapper = n;
+                    props->tonemapper = n;
                 }
 
                 // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -418,20 +419,20 @@ DebugGui::Render()
             ImGui::EndCombo();
         }
         if(item_current_idx == 2) { // Reinhard Extended
-            ImGui::SliderFloat("Max White", &m_renderer->maxWhite, 0.0f, 20.0f);
+            ImGui::SliderFloat("Max White", &props->maxWhite, 0.0f, 20.0f);
         }
 
-        ImGui::DragFloat("Exposure", &m_renderer->exposure, 0.1f, 0.0f, 20.0f, "%.1f");
+        ImGui::DragFloat("Exposure", &props->exposure, 0.1f, 0.0f, 20.0f, "%.1f");
 
-        ImGui::Checkbox("Gamma Correction", (bool *)&m_renderer->gammaEnable);
-        if(!m_renderer->gammaEnable)
+        ImGui::Checkbox("Gamma Correction", (bool *)&props->gammaEnable);
+        if(!props->gammaEnable)
             ImGui::BeginDisabled();
-        ImGui::DragFloat("Gamma", &m_renderer->gamma, 0.1f, 0.0f, 20.0f, "%.1f");
-        if(!m_renderer->gammaEnable)
+        ImGui::DragFloat("Gamma", &props->gamma, 0.1f, 0.0f, 20.0f, "%.1f");
+        if(!props->gammaEnable)
             ImGui::EndDisabled();
 
         ImGui::Separator();
-        ImGui::Checkbox("MSAA", (bool *)&m_renderer->msaaEnable);
+        ImGui::Checkbox("MSAA", (bool *)&props->msaaEnable);
         ImGui::SameLine();
         int p = 16;
         ImGui::BeginDisabled();

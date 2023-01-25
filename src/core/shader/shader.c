@@ -11,6 +11,7 @@
 
 #include <core/api/device.h>
 #include <util/logger.h>
+#include <util/maths.h>
 
 /* Compile single shader type (vertex, fragment, etc.) and return
  * the id from OpenGL.
@@ -183,4 +184,25 @@ void
 shader_use(ShaderProgram *shader)
 {
     glUseProgram(shader->id);
+}
+
+void
+shader_uniform(ShaderProgram *shader, const char *uniform, ui32 type, void *data)
+{
+    ui32 location = glGetUniformLocation(shader->id, uniform);
+
+    /*
+    switch(type) {
+        case SI32:
+            glUniform1i(location, *(int *)data);
+            break;
+        case FLOAT:
+            glUniform1f(location, *(float *)data);
+            break;
+        case MAT4:
+            glUniformMatrix4fv(location, 1, GL_FALSE, (float *)data);
+            break;
+    */
+    }
+
 }

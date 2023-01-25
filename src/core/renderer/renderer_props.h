@@ -1,3 +1,0 @@
-typedef struct RendererProps {
-
-} RendererProps;

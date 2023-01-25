@@ -13,6 +13,8 @@
 
 #include <core/api/vulkan/vulkan_device.h>
 
+#include <core/renderer/renderer_props.inl>
+
 #define RENDER_RESOLUTION_OVERRIDE SYS_DISABLED
 #define PSX_WIDTH                  320
 #define PSX_HEIGHT                 240
@@ -24,6 +26,7 @@ typedef struct _renderer Renderer;
 struct _renderer
 {
     GLFWwindow *window;
+    RendererProps properties;      // Frame properties/configuration
     int windowWidth, windowHeight; // window resolution
     int renderWidth, renderHeight; // render resolution
 
@@ -50,14 +53,6 @@ struct _renderer
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
     ui32 hdrTextureId;
-
-    // HDR Settings
-    ui32 tonemapper;
-    float exposure;
-    float maxWhite;
-    float gamma;
-    int gammaEnable;
-    int msaaEnable;
 };
 
 /**
