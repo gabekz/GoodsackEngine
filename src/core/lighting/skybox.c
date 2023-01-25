@@ -54,7 +54,6 @@ skybox_draw(Skybox *self)
 Skybox *
 skybox_hdr_create()
 {
-
     clearGLState();
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -63,7 +62,7 @@ skybox_hdr_create()
     //  Load HDR texture
     Texture *hdrTexture =
       texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr");
-      //texture_create_hdr("../res/textures/hdr/alex_apartment.hdr");
+      //texture_create_hdr("../res/textures/hdr/city_night.hdr");
 
     // Framebuffer setup
     ui32 captureFBO, captureRBO;

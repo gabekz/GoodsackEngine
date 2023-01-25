@@ -51,7 +51,8 @@ device_updateAnalytics(double time)
     if (s_ald.timeDiff >= 1.0 / 30.0) {
         s_ald.analytics =
           (Analytics) {.currentFps = (1.0 / s_ald.timeDiff) * s_ald.counter,
-                       .currentMs  = (s_ald.timeDiff / s_ald.counter) * 1000};
+                       .currentMs  = (s_ald.timeDiff / s_ald.counter) * 1000,
+                       .delta = s_ald.timeDiff};
         s_ald.prevTime = time;
         s_ald.counter  = 0;
     }

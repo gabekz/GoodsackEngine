@@ -10,6 +10,7 @@
 
 #include <util/gfx.h>
 #include <util/sysdefs.h>
+#include <util/logger.h>
 
 static ui32 msFBO, sbFBO;
 static ui32 msRBO, sbRBO;
@@ -88,6 +89,29 @@ CreateScreenBuffer(ui32 width, ui32 height)
     }
 }
 
+void postbuffer_resize(ui32 winWidth, ui32 winHeight)
+{
+    LOG_INFO("Resizing window to %d x %d", winWidth, winHeight);
+
+    glBindTexture(GL_TEXTURE_2D, sbTexture);
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA16F, winWidth, winHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, sbRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, winWidth, winHeight);
+
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msTexture);
+    glTexImage2DMultisample(
+      GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGBA16F, winWidth, winHeight, GL_TRUE);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, msRBO);
+    glRenderbufferStorageMultisample(
+      GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, winWidth, winHeight);
+
+    frameWidth = winWidth;
+    frameHeight = winHeight;
+}
+
 void
 postbuffer_init(ui32 winWidth, ui32 winHeight)
 {
@@ -151,8 +175,9 @@ postbuffer_draw(ui32 winWidth, ui32 winHeight, int enableMSAA, ui32 tonemapper, 
                       GL_NEAREST);
 
     }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, winWidth, winHeight);
+    glViewport(0, 0, frameWidth, frameHeight);
 
     vao_bind(vaoRect);
     shader_use(shader);
@@ -166,6 +191,35 @@ postbuffer_draw(ui32 winWidth, ui32 winHeight, int enableMSAA, ui32 tonemapper, 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+
+#if 0
+    // second post processing effect (Read from MAIN FBO ???)
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sbFBO);
+    glBlitFramebuffer(0,
+                      0,
+                      frameWidth,
+                      frameHeight,
+                      0,
+                      0,
+                      frameWidth,
+                      frameHeight,
+                      GL_COLOR_BUFFER_BIT,
+                      GL_NEAREST);
+
+    vao_bind(vaoRect);
+    shader_use(shader2);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sbTexture);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+#endif
 }
 
 void

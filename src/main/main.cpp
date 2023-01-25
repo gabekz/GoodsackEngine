@@ -91,7 +91,7 @@ main(int argc, char *argv[])
                                         texCerbS,
                                         texPbrAo);
 
-#if 1
+#if 0
     Texture *texEarthDiff =
       texture_create_d("../res/textures/earth/diffuse.png");
     Texture *texEarthNorm =

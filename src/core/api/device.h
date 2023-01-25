@@ -20,6 +20,7 @@ typedef struct Analytics
 {
     double currentFps;
     double currentMs;
+    float delta;
 
     // ui32 currentDrawCalls;
 } Analytics;

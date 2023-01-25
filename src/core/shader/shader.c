@@ -55,8 +55,8 @@ ParseShader(const char *path)
 
     // output stream
     FILE *stream = NULL;
-    char *vertOut, *fragOut;
-    size_t vertLen, fragLen;
+    char *vertOut, *fragOut, *compOut;
+    size_t vertLen = 0, fragLen = 0, compLen = 0;
 
     short mode = -1; /* -1: NONE | 0: Vert | 1: Frag */
 
@@ -88,7 +88,15 @@ ParseShader(const char *path)
                 // fragOut = newOut;
                 mode   = 1;
                 stream = open_memstream(&fragOut, &fragLen);
-            } else {
+            }
+            // Begin Compute 
+            else if (strstr(line, "compute") != NULL) {
+                // char* newOut;
+                // fragOut = newOut;
+                mode   = 2;
+                stream = open_memstream(&compOut, &compLen);
+            }
+            else {
                 mode = -1;
             } // Currently no other modes
         } else {
@@ -105,11 +113,18 @@ ParseShader(const char *path)
     ShaderSource *ss = malloc(sizeof(ShaderSource));
 
     // TODO: Is this malloc'd?
-    ss->shaderVertex   = strdup(vertOut);
-    ss->shaderFragment = strdup(fragOut);
-
-    free(vertOut);
-    free(fragOut);
+    if (vertLen > 0) {
+        ss->shaderVertex   = strdup(vertOut);
+        free(vertOut);
+    }
+    if (fragLen > 0) {
+        ss->shaderFragment = strdup(fragOut);
+        free(fragOut);
+    }
+    if (compLen > 0) {
+         ss->shaderCompute  = strdup(compOut);
+         free(compOut);
+    }
 
     return ss;
 }
@@ -143,6 +158,25 @@ shader_create_program(const char *path)
         return NULL;
     }
     return NULL;
+}
+
+ShaderProgram *
+shader_create_compute_program(const char *path)
+{
+    ShaderSource *ss = ParseShader(path);
+    ui32 program = glCreateProgram();
+    ui32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss->shaderCompute);
+
+    glAttachShader(program, csSingle);
+    glLinkProgram(program);
+    glValidateProgram(program);
+
+    glDeleteShader(csSingle);
+
+    ShaderProgram *ret = malloc(sizeof(ShaderProgram));
+    ret->id            = program;
+    ret->shaderSource  = ss;
+    return ret;
 }
 
 void

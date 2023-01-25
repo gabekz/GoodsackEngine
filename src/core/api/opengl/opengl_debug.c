@@ -81,7 +81,7 @@ glDebugInit()
 }
 // ~~~
 void
-_error_callback(int error, const char *description)
+_error_callback_gl(int error, const char *description)
 {
     LOG_ERROR("%s", description);
 }

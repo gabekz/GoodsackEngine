@@ -19,11 +19,15 @@ struct _shaderProgram
 
 struct _shaderSource
 {
-    char *shaderVertex, *shaderFragment;
+    char *shaderVertex, *shaderFragment, *shaderCompute;
 };
 
 ShaderProgram *
 shader_create_program(const char *path);
+
+ShaderProgram *
+shader_create_compute_program(const char *path);
+
 void
 shader_use(ShaderProgram *shader);
 void

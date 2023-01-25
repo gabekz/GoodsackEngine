@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include <core/renderer/pipeline/pipeline.h>
+#include <core/renderer/pipeline/pass_compute.h>
 
 #include <stdio.h>
 
@@ -26,7 +27,7 @@ renderer_init()
     int winHeight = DEFAULT_WINDOW_HEIGHT;
 
     Renderer *ret      = malloc(sizeof(Renderer));
-    GLFWwindow *window = createWindow(winWidth, winHeight, &ret->vulkanDevice);
+    GLFWwindow *window = /*context*/ createWindow(winWidth, winHeight, &ret->vulkanDevice);
 
     ret->window       = window;
     ret->windowWidth  = winWidth;
@@ -131,6 +132,12 @@ renderer_start(Renderer *renderer)
 
         // glEnable(GL_FRAMEBUFFER_SRGB);
         clearGLState();
+
+        // TESTING Compute Shaders
+        computebuffer_init();
+    
+    // render image to quad
+
     } else if (DEVICE_API_VULKAN) {
         ecs_event(ecs, ECS_INIT);
         // LOG_DEBUG("Renderer Start-Phase is not implemented in Vulkan");
@@ -197,10 +204,11 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     /*-------------------------------------------
         Pass #3 - Final: Backbuffer draw
     */
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
     postbuffer_draw(renderer->windowWidth, renderer->windowHeight,
             renderer->msaaEnable, renderer->tonemapper, renderer->exposure, renderer->maxWhite,
             renderer->gamma, renderer->gammaEnable);
+
+    //computebuffer_draw();
 }
 
 /*
