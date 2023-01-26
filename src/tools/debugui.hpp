@@ -25,6 +25,7 @@ class DebugGui {
     bool m_showEntityViewer;
     bool m_showComponentViewer;
     bool m_showProfiler;
+    bool m_showHDR;
 
     Entity m_selectedEntity;
 

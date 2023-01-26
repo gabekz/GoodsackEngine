@@ -201,6 +201,8 @@ texture_create_cubemap(ui32 faceCount, ...)
 Texture *
 texture_create_hdr(const char *path)
 {
+    LOG_INFO("Loading HDR Image at path: %s", path);
+
     Texture *tex = malloc(sizeof(Texture));
 
     float *data = stbi_loadf(path, &tex->width, &tex->height, &tex->bpp, 0);
@@ -211,18 +213,21 @@ texture_create_hdr(const char *path)
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGB16F,
-                 tex->width,
-                 tex->height,
-                 0,
-                 GL_RGB,
-                 GL_FLOAT,
-                 data);
+    for (int i = 0; i < 1; i++) {
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_RGB16F,
+                     tex->width,
+                     tex->height,
+                     0,
+                     GL_RGB,
+                     GL_FLOAT,
+                     data);
+    }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

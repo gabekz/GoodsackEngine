@@ -69,6 +69,10 @@ layout(binding = 2) uniform sampler2D t_Metallic;
 layout(binding = 3) uniform sampler2D t_Specular;
 layout(binding = 4) uniform sampler2D t_Ao;
 
+layout(binding = 5) uniform samplerCube t_IrradianceMap;
+layout(binding = 6) uniform samplerCube t_PrefilterMap;
+layout(binding = 7) uniform sampler2D   t_brdfLUT;
+
 
 /*
 layout (std140, set = 2, binding = 0) uniform ObjectTextures {
@@ -146,65 +150,92 @@ vec3 fresnelSchlick(float HdotV, vec3 bR) {
     // (more reflective when surface viewed at larger angles)
     return bR + (1.0 - bR) * pow(1.0 - HdotV, 5.0);
 }
+//------------------
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
+}  
 
 void main() {
 
-    //vec3 N = normalize(fs_in.normal);
     vec3 N = calcNormal(1.0);
     vec3 V = normalize(fs_in.camPos - fs_in.position);
+    vec3 R = reflect(-V, N);
+
+    float NdotV = max(dot(N, V), FEATHER);
 
     // calculate reflectance at normal incidence; if dia-electric
     // (like plastic) use baseReflectivity of 0.0f and it's a metal,
     // use the albedo color as baseReflectivity (metallic workflow)
-    vec3 bR = mix(vec3(0.04), albedo, metallic);
+    vec3 bR = vec3(0.04); // F0
+    bR = mix(bR, albedo, metallic);
 
     // reflectance equation
     vec3 Lo = vec3(0.0); 
-
 // start of lighting equation
-    // Calcuate per-light radiance
-    vec3 L = normalize(fs_in.lightPos - fs_in.position);
-    vec3 H = normalize(V + L);
-    float distance = length(fs_in.lightPos - fs_in.position);
-    float attenuation = 1.0 / (distance * distance); // distance^2 for Gamma
-    vec3 radiance = fs_in.lightColor * attenuation;
+    const int N_LIGHTS = 1;
+    for(int i = 0; i < N_LIGHTS; i++) {
 
-    // Cook-Torrance BRDF
-    float NdotV = max(dot(N, V), FEATHER);
-    float NdotL = max(dot(N, L), FEATHER);
-    float HdotV = max(dot(H, V), 0.0);
-    float NdotH = max(dot(N, H), 0.0);
+        // Calcuate per-light radiance
+        vec3 L = normalize(fs_in.lightPos - fs_in.position);
+        vec3 H = normalize(V + L);
+        float distance = length(fs_in.lightPos - fs_in.position);
+        float attenuation = 1.0 / (distance * distance); // distance^2 for Gamma
+        vec3 radiance = fs_in.lightColor * attenuation;
 
-    float D = distributionGGX(NdotH, roughness); // larger the more micro-facets aligned to H
-    float G = geometrySmith(NdotV, NdotL, roughness); // smaller more micro-facets
-    vec3 F = fresnelSchlick(HdotV, bR); // proportion of spec 
-    
-    vec3 specular = D * G * F;
-    specular /= 4.0 * NdotV * NdotL;
+        float NdotL = max(dot(N, L), FEATHER);
+        float HdotV = max(dot(H, V), 0.0);
+        float NdotH = max(dot(N, H), 0.0);
 
-    // For energy conservation, the diffuse and specular light
-    // can't be above 1.0 (unless the surface emits light);
-    // to preserve this relationship, the diffuse component (kD)
-    // should equal 1.0 - ks.
-    vec3 kD = vec3(1.0) - F; // F equals ks
-    
-    // multiply kD by the inverse metalness such that only
-    // non-metals have diffuse lighting, or a linear blend
-    // if partly metal (pure metal have no diffuse light).
-    kD *= 1.0 - metallic;
+        // Cook-Torrance BRDF
+        float D = distributionGGX(NdotH, roughness); // larger the more micro-facets aligned to H
+        float G = geometrySmith(NdotV, NdotL, roughness); // smaller more micro-facets
+        vec3 F = fresnelSchlick(HdotV, bR); // proportion of spec 
+        
+        /*
+        vec3 specular = D * G * F;
+        specular /= 4.0 * NdotV * NdotL;
+        */
+        vec3 nominator = D * G * F;
+        float denominator = 4 * NdotV * NdotL + 0.001;
+        vec3 specular = nominator / denominator;
 
-    // 1) angle of light to surface affect specular, not just diffuse
-    // 2) we mix albedo with diffuse, but not specular
-    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        // For energy conservation, the diffuse and specular light
+        // can't be above 1.0 (unless the surface emits light);
+        // to preserve this relationship, the diffuse component (kD)
+        // should equal 1.0 - ks.
+        vec3 kD = vec3(1.0) - F; // F equals ks
+        
+        // multiply kD by the inverse metalness such that only
+        // non-metals have diffuse lighting, or a linear blend
+        // if partly metal (pure metal have no diffuse light).
+        kD *= 1.0 - metallic;
+
+        // 1) angle of light to surface affect specular, not just diffuse
+        // 2) we mix albedo with diffuse, but not specular
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+    }
 // end of lighting equation
+    // ambient lighting from IBL
+    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), bR, roughness);
+    vec3 kD = (1.0 - F) * (1.0 - metallic);
+    vec3 diffuse = texture(t_IrradianceMap, N).rgb * albedo * kD;
+    //vec3 ambient = vec3(0, 0.0001, 0.0003) * albedo * ao;
 
-    // ambient lighting
-    vec3 ambient = vec3(0, 0.0001, 0.0003) * albedo * ao;
+    // sample pre-filter map
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(t_PrefilterMap, reflect(-V, N),
+            roughness * MAX_REFLECTION_LOD).rgb;
+    vec2 brdf = texture(t_brdfLUT, vec2(NdotV, roughness)).rg;
+    vec3 specular = prefilteredColor * (F * brdf.r + brdf.g);
+
+    vec3 ambient = (diffuse + specular) * ao;
     vec3 color = ambient + Lo;
+
     // HDR
-    color = color / (color + vec3(0.05));
+    //color = color / (color + vec3(1.0));
     // Gamma
-    color = pow(color, vec3(1.0/2.2));
+    //color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(color, 1.0);
 }

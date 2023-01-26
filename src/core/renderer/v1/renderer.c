@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include <core/renderer/pipeline/pass_compute.h>
 #include <core/renderer/pipeline/pipeline.h>
 
 #include <stdio.h>
@@ -8,11 +9,11 @@
 #include <util/sysdefs.h>
 
 #include <core/lighting/lighting.h>
+#include <core/lighting/skybox.h>
 #include <ecs/ecs.h>
 
 #include <core/context/context.h>
 
-// API
 #include <core/api/device.h>
 #include <core/api/vulkan/vulkan_device.h>
 
@@ -25,8 +26,9 @@ renderer_init()
     int winWidth  = DEFAULT_WINDOW_WIDTH;
     int winHeight = DEFAULT_WINDOW_HEIGHT;
 
-    Renderer *ret      = malloc(sizeof(Renderer));
-    GLFWwindow *window = createWindow(winWidth, winHeight, &ret->vulkanDevice);
+    Renderer *ret = malloc(sizeof(Renderer));
+    GLFWwindow *window =
+      /*context*/ createWindow(winWidth, winHeight, &ret->vulkanDevice);
 
     ret->window       = window;
     ret->windowWidth  = winWidth;
@@ -50,6 +52,14 @@ renderer_init()
     ret->sceneL      = sceneList;
     ret->sceneC      = 1;
     ret->activeScene = 0;
+
+    ret->properties = (RendererProps) {.tonemapper  = 0,
+                                       .exposure    = 2.5f,
+                                       .maxWhite    = 1.0f,
+                                       .gamma       = 2.2f,
+                                       .gammaEnable = TRUE,
+                                       .msaaSamples = 16,
+                                       .msaaEnable  = TRUE};
 
     return ret;
 }
@@ -90,16 +100,8 @@ renderer_start(Renderer *renderer)
     Scene *scene = renderer->sceneL[renderer->activeScene];
     ECS *ecs     = scene->ecs;
 
-    // Clear FPS/MS Data
     if (DEVICE_API_OPENGL) {
-        shadowmap_init();
-        // TODO: clean this up. Should be stored in UBO for directional-lights
-        glm_mat4_zero(renderer->lightSpaceMatrix);
-        glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
-
-        postbuffer_init(renderer->renderWidth, renderer->renderHeight);
-
-#if 1
+#if 0
         Texture *skyboxCubemap =
           texture_create_cubemap(6,
                                  "../res/textures/skybox/right.jpg",
@@ -108,18 +110,36 @@ renderer_start(Renderer *renderer)
                                  "../res/textures/skybox/bottom.jpg",
                                  "../res/textures/skybox/front.jpg",
                                  "../res/textures/skybox/back.jpg");
-#else
-        Texture *skyboxCubemap =
-          texture_create_hdr("../res/textures/hdr/ice_lake.hdr");
-#endif
 
         renderer->skybox = skybox_create(skyboxCubemap);
+#else
+        Skybox *skybox = skybox_hdr_create();
+        skybox->shader = shader_create_program("../res/shaders/skybox.shader");
+        renderer->skybox = skybox;
+
+        skybox_hdr_projection(renderer->skybox);
+#endif
+
+        shadowmap_init();
+        // TODO: clean this up. Should be stored in UBO for directional-lights
+        glm_mat4_zero(renderer->lightSpaceMatrix);
+        glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
+
+        postbuffer_init(renderer->renderWidth, renderer->renderHeight);
+
+        // renderer->skybox = skybox_create(skyboxCubemap);
 
         // Send ECS event init
         ecs_event(ecs, ECS_INIT);
 
         // glEnable(GL_FRAMEBUFFER_SRGB);
         clearGLState();
+
+        // TESTING Compute Shaders
+        computebuffer_init();
+
+        // render image to quad
+
     } else if (DEVICE_API_VULKAN) {
         ecs_event(ecs, ECS_INIT);
         // LOG_DEBUG("Renderer Start-Phase is not implemented in Vulkan");
@@ -154,7 +174,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     /*-------------------------------------------
         Pass #2 - Post Processing Pass
     */
-    postbuffer_bind();
+    postbuffer_bind(renderer->properties.msaaEnable);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -164,20 +184,31 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     // binding the shadowmap to texture slot 6 (TODO:) for meshes
     shadowmap_bind_texture();
 
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, renderer->skybox->irradianceMap->id);
+
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, renderer->skybox->prefilterMap->id);
+
+    glActiveTexture(GL_TEXTURE7);
+    glBindTexture(GL_TEXTURE_2D, renderer->skybox->brdfLUTTexture->id);
+
     renderer->currentPass = REGULAR;
     ecs_event(ecs, ECS_RENDER);
 
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
     glDepthFunc(GL_LEQUAL);
+    // skybox_draw(renderer->skybox);
     skybox_draw(renderer->skybox);
     glDepthFunc(GL_LESS);
 
     /*-------------------------------------------
         Pass #3 - Final: Backbuffer draw
     */
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind the backbuffer
-    postbuffer_draw(renderer->windowWidth, renderer->windowHeight);
+    postbuffer_draw(&renderer->properties);
+
+    // computebuffer_draw();
 }
 
 /*

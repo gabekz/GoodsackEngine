@@ -11,6 +11,7 @@
 
 #include <core/api/device.h>
 #include <util/logger.h>
+#include <util/maths.h>
 
 /* Compile single shader type (vertex, fragment, etc.) and return
  * the id from OpenGL.
@@ -32,7 +33,7 @@ CompileSingleShader(unsigned int type, const char *path)
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         char *message = (char *)alloca(length * sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
-        printf("Error at: %s\n", path);
+        // printf("Error at: %s\n", path);
         printf("Failed to compile %s shader.\n Error output: %s\n",
                typeStr,
                message);
@@ -55,8 +56,8 @@ ParseShader(const char *path)
 
     // output stream
     FILE *stream = NULL;
-    char *vertOut, *fragOut;
-    size_t vertLen, fragLen;
+    char *vertOut, *fragOut, *compOut;
+    size_t vertLen = 0, fragLen = 0, compLen = 0;
 
     short mode = -1; /* -1: NONE | 0: Vert | 1: Frag */
 
@@ -88,6 +89,13 @@ ParseShader(const char *path)
                 // fragOut = newOut;
                 mode   = 1;
                 stream = open_memstream(&fragOut, &fragLen);
+            }
+            // Begin Compute
+            else if (strstr(line, "compute") != NULL) {
+                // char* newOut;
+                // fragOut = newOut;
+                mode   = 2;
+                stream = open_memstream(&compOut, &compLen);
             } else {
                 mode = -1;
             } // Currently no other modes
@@ -105,11 +113,18 @@ ParseShader(const char *path)
     ShaderSource *ss = malloc(sizeof(ShaderSource));
 
     // TODO: Is this malloc'd?
-    ss->shaderVertex   = strdup(vertOut);
-    ss->shaderFragment = strdup(fragOut);
-
-    free(vertOut);
-    free(fragOut);
+    if (vertLen > 0) {
+        ss->shaderVertex = strdup(vertOut);
+        free(vertOut);
+    }
+    if (fragLen > 0) {
+        ss->shaderFragment = strdup(fragOut);
+        free(fragOut);
+    }
+    if (compLen > 0) {
+        ss->shaderCompute = strdup(compOut);
+        free(compOut);
+    }
 
     return ss;
 }
@@ -145,8 +160,50 @@ shader_create_program(const char *path)
     return NULL;
 }
 
+ShaderProgram *
+shader_create_compute_program(const char *path)
+{
+    ShaderSource *ss = ParseShader(path);
+    ui32 program     = glCreateProgram();
+    ui32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss->shaderCompute);
+
+    glAttachShader(program, csSingle);
+    glLinkProgram(program);
+    glValidateProgram(program);
+
+    glDeleteShader(csSingle);
+
+    ShaderProgram *ret = malloc(sizeof(ShaderProgram));
+    ret->id            = program;
+    ret->shaderSource  = ss;
+    return ret;
+}
+
 void
 shader_use(ShaderProgram *shader)
 {
     glUseProgram(shader->id);
+}
+
+void
+shader_uniform(ShaderProgram *shader,
+               const char *uniform,
+               ui32 type,
+               void *data)
+{
+    ui32 location = glGetUniformLocation(shader->id, uniform);
+
+    /*
+    switch(type) {
+        case SI32:
+            glUniform1i(location, *(int *)data);
+            break;
+        case FLOAT:
+            glUniform1f(location, *(float *)data);
+            break;
+        case MAT4:
+            glUniformMatrix4fv(location, 1, GL_FALSE, (float *)data);
+            break;
+    }
+    */
 }

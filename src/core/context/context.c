@@ -10,7 +10,10 @@
 #include <util/sysdefs.h>
 
 #include <core/api/device.h>
+#include <core/api/opengl/opengl.h>
 #include <core/api/vulkan/vulkan.h>
+
+#include <core/renderer/pipeline/pass_screen.h>
 
 static void
 _error_callback(int error, const char *description)
@@ -23,6 +26,7 @@ _resize_callback(GLFWwindow *window, int widthRe, int heightRe)
 {
     printf("window resize: %d and %d\n", widthRe, heightRe);
     glViewport(0, 0, widthRe, heightRe);
+    postbuffer_resize((ui32)widthRe, (ui32)heightRe);
 }
 
 static void
