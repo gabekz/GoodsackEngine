@@ -33,7 +33,7 @@ CompileSingleShader(unsigned int type, const char *path)
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         char *message = (char *)alloca(length * sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
-        //printf("Error at: %s\n", path);
+        // printf("Error at: %s\n", path);
         printf("Failed to compile %s shader.\n Error output: %s\n",
                typeStr,
                message);
@@ -90,14 +90,13 @@ ParseShader(const char *path)
                 mode   = 1;
                 stream = open_memstream(&fragOut, &fragLen);
             }
-            // Begin Compute 
+            // Begin Compute
             else if (strstr(line, "compute") != NULL) {
                 // char* newOut;
                 // fragOut = newOut;
                 mode   = 2;
                 stream = open_memstream(&compOut, &compLen);
-            }
-            else {
+            } else {
                 mode = -1;
             } // Currently no other modes
         } else {
@@ -115,7 +114,7 @@ ParseShader(const char *path)
 
     // TODO: Is this malloc'd?
     if (vertLen > 0) {
-        ss->shaderVertex   = strdup(vertOut);
+        ss->shaderVertex = strdup(vertOut);
         free(vertOut);
     }
     if (fragLen > 0) {
@@ -123,8 +122,8 @@ ParseShader(const char *path)
         free(fragOut);
     }
     if (compLen > 0) {
-         ss->shaderCompute  = strdup(compOut);
-         free(compOut);
+        ss->shaderCompute = strdup(compOut);
+        free(compOut);
     }
 
     return ss;
@@ -165,7 +164,7 @@ ShaderProgram *
 shader_create_compute_program(const char *path)
 {
     ShaderSource *ss = ParseShader(path);
-    ui32 program = glCreateProgram();
+    ui32 program     = glCreateProgram();
     ui32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss->shaderCompute);
 
     glAttachShader(program, csSingle);
@@ -187,7 +186,10 @@ shader_use(ShaderProgram *shader)
 }
 
 void
-shader_uniform(ShaderProgram *shader, const char *uniform, ui32 type, void *data)
+shader_uniform(ShaderProgram *shader,
+               const char *uniform,
+               ui32 type,
+               void *data)
 {
     ui32 location = glGetUniformLocation(shader->id, uniform);
 
@@ -203,6 +205,5 @@ shader_uniform(ShaderProgram *shader, const char *uniform, ui32 type, void *data
             glUniformMatrix4fv(location, 1, GL_FALSE, (float *)data);
             break;
     */
-    }
-
+}
 }

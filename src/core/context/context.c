@@ -10,8 +10,8 @@
 #include <util/sysdefs.h>
 
 #include <core/api/device.h>
-#include <core/api/vulkan/vulkan.h>
 #include <core/api/opengl/opengl.h>
+#include <core/api/vulkan/vulkan.h>
 
 #include <core/renderer/pipeline/pass_screen.h>
 

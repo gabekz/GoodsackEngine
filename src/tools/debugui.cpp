@@ -295,7 +295,9 @@ DebugGui::Render()
                 for (int i = 0; i < textureCount; i++) {
                     ImGui::Separator();
                     ImGui::Image((void *)(intptr_t)p.material->textures[i]->id,
-                                 ImVec2(200, 200), ImVec2(0, 1), ImVec2(1, 0));
+                                 ImVec2(200, 200),
+                                 ImVec2(0, 1),
+                                 ImVec2(1, 0));
                     ImGui::SameLine();
                     ImGui::Text("File Path: %s\nDimensions: %dx%d\nType: %s",
                                 p.material->textures[i]->filePath,
@@ -396,40 +398,45 @@ DebugGui::Render()
         ImGui::PopStyleColor();
 
         static ImGuiComboFlags flags = 0;
-        // Using the generic BeginCombo() API, you have full control over how to display the combo contents.
-        // (your selection data could be an index, a pointer to the object, an id for the object, a flag intrusively
+        // Using the generic BeginCombo() API, you have full control over how to
+        // display the combo contents. (your selection data could be an index, a
+        // pointer to the object, an id for the object, a flag intrusively
         // stored in the object itself, etc.)
-        const char* items[] = { "Reinhard", "Reinhard (Jodie)", "Reinhard (Extended)", "ACES (Approximate)", "Uncharted 2 Filmic" };
-        static int item_current_idx = 0; // Here we store our selection data as an index.
-        const char* combo_preview_value = items[item_current_idx];  // Pass in the preview value visible before opening the combo (it could be anything)
-        if (ImGui::BeginCombo("Tonemapping", combo_preview_value, flags))
-        {
-            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-            {
+        const char *items[] = {"Reinhard",
+                               "Reinhard (Jodie)",
+                               "Reinhard (Extended)",
+                               "ACES (Approximate)",
+                               "Uncharted 2 Filmic"};
+        static int item_current_idx =
+          0; // Here we store our selection data as an index.
+        const char *combo_preview_value =
+          items[item_current_idx]; // Pass in the preview value visible before
+                                   // opening the combo (it could be anything)
+        if (ImGui::BeginCombo("Tonemapping", combo_preview_value, flags)) {
+            for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
                 const bool is_selected = (item_current_idx == n);
                 if (ImGui::Selectable(items[n], is_selected)) {
-                    item_current_idx = n;
+                    item_current_idx  = n;
                     props->tonemapper = n;
                 }
 
-                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                if (is_selected)
-                    ImGui::SetItemDefaultFocus();
+                // Set the initial focus when opening the combo (scrolling +
+                // keyboard navigation focus)
+                if (is_selected) ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
         }
-        if(item_current_idx == 2) { // Reinhard Extended
+        if (item_current_idx == 2) { // Reinhard Extended
             ImGui::SliderFloat("Max White", &props->maxWhite, 0.0f, 20.0f);
         }
 
-        ImGui::DragFloat("Exposure", &props->exposure, 0.1f, 0.0f, 20.0f, "%.1f");
+        ImGui::DragFloat(
+          "Exposure", &props->exposure, 0.1f, 0.0f, 20.0f, "%.1f");
 
         ImGui::Checkbox("Gamma Correction", (bool *)&props->gammaEnable);
-        if(!props->gammaEnable)
-            ImGui::BeginDisabled();
+        if (!props->gammaEnable) ImGui::BeginDisabled();
         ImGui::DragFloat("Gamma", &props->gamma, 0.1f, 0.0f, 20.0f, "%.1f");
-        if(!props->gammaEnable)
-            ImGui::EndDisabled();
+        if (!props->gammaEnable) ImGui::EndDisabled();
 
         ImGui::Separator();
         ImGui::Checkbox("MSAA", (bool *)&props->msaaEnable);
@@ -445,10 +452,14 @@ DebugGui::Render()
         ImGui::PopStyleColor();
 
         ImGui::Image((void *)(intptr_t)m_renderer->skybox->hdrTexture->id,
-            ImVec2(200, 100), ImVec2(1, 1), ImVec2(0, 0));
+                     ImVec2(200, 100),
+                     ImVec2(1, 1),
+                     ImVec2(0, 0));
         ImGui::Image((void *)(intptr_t)m_renderer->skybox->brdfLUTTexture->id,
-            ImVec2(200, 200), ImVec2(0, 1), ImVec2(1, 0));
-;
+                     ImVec2(200, 200),
+                     ImVec2(0, 1),
+                     ImVec2(1, 0));
+        ;
         // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
 
         ImGui::EndGroup();

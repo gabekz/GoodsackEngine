@@ -1,6 +1,6 @@
 #include "renderer.h"
-#include <core/renderer/pipeline/pipeline.h>
 #include <core/renderer/pipeline/pass_compute.h>
+#include <core/renderer/pipeline/pipeline.h>
 
 #include <stdio.h>
 
@@ -26,8 +26,9 @@ renderer_init()
     int winWidth  = DEFAULT_WINDOW_WIDTH;
     int winHeight = DEFAULT_WINDOW_HEIGHT;
 
-    Renderer *ret      = malloc(sizeof(Renderer));
-    GLFWwindow *window = /*context*/ createWindow(winWidth, winHeight, &ret->vulkanDevice);
+    Renderer *ret = malloc(sizeof(Renderer));
+    GLFWwindow *window =
+      /*context*/ createWindow(winWidth, winHeight, &ret->vulkanDevice);
 
     ret->window       = window;
     ret->windowWidth  = winWidth;
@@ -52,15 +53,13 @@ renderer_init()
     ret->sceneC      = 1;
     ret->activeScene = 0;
 
-    ret->properties = (RendererProps) {
-        .tonemapper = 0,
-        .exposure = 2.5f,
-        .maxWhite = 1.0f,
-        .gamma = 2.2f,
-        .gammaEnable = TRUE,
-        .msaaSamples = 16,
-        .msaaEnable = TRUE
-    };
+    ret->properties = (RendererProps) {.tonemapper  = 0,
+                                       .exposure    = 2.5f,
+                                       .maxWhite    = 1.0f,
+                                       .gamma       = 2.2f,
+                                       .gammaEnable = TRUE,
+                                       .msaaSamples = 16,
+                                       .msaaEnable  = TRUE};
 
     return ret;
 }
@@ -138,8 +137,8 @@ renderer_start(Renderer *renderer)
 
         // TESTING Compute Shaders
         computebuffer_init();
-    
-    // render image to quad
+
+        // render image to quad
 
     } else if (DEVICE_API_VULKAN) {
         ecs_event(ecs, ECS_INIT);
@@ -209,7 +208,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     */
     postbuffer_draw(&renderer->properties);
 
-    //computebuffer_draw();
+    // computebuffer_draw();
 }
 
 /*

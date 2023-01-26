@@ -1,8 +1,8 @@
 #include "pass_compute.h"
 
 #include <core/api/opengl/opengl.h>
-#include <core/texture/texture.h>
 #include <core/shader/shader.h>
+#include <core/texture/texture.h>
 
 #include <model/primitives.h>
 
@@ -13,16 +13,18 @@ static ShaderProgram *csShader;
 static ShaderProgram *shader2;
 static VAO *vaoRect;
 
-void computebuffer_init() {
+void
+computebuffer_init()
+{
 
     // shader Program
     const char *csPath = "../res/shaders/hello.compute";
-    csShader = shader_create_compute_program(csPath);
+    csShader           = shader_create_compute_program(csPath);
     shader2 = shader_create_program("../res/shaders/framebuffer-simple.shader");
 
-     // texture size
+    // texture size
     const ui32 TEXTURE_WIDTH = 320, TEXTURE_HEIGHT = 180;
-    
+
     glGenTextures(1, &csTexture);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, csTexture);
@@ -30,8 +32,15 @@ void computebuffer_init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGBA, 
-                 GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA32F,
+                 TEXTURE_WIDTH,
+                 TEXTURE_HEIGHT,
+                 0,
+                 GL_RGBA,
+                 GL_FLOAT,
+                 NULL);
 
     // Create Rectangle
     vaoRect = vao_create();
@@ -47,14 +56,15 @@ void computebuffer_init() {
 
 static float totalFrames = 0;
 
-void computebuffer_draw() {
+void
+computebuffer_draw()
+{
 
     totalFrames++;
     glBindImageTexture(0, csTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     shader_use(csShader);
-    glUniform1f(glGetUniformLocation(csShader->id, "t"),
-            totalFrames);
+    glUniform1f(glGetUniformLocation(csShader->id, "t"), totalFrames);
     glDispatchCompute((ui32)320, (ui32)180, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 

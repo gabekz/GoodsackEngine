@@ -62,7 +62,7 @@ skybox_hdr_create()
     //  Load HDR texture
     Texture *hdrTexture =
       texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr");
-      //texture_create_hdr("../res/textures/hdr/city_night.hdr");
+    // texture_create_hdr("../res/textures/hdr/city_night.hdr");
 
     // Framebuffer setup
     ui32 captureFBO, captureRBO;
@@ -138,7 +138,8 @@ skybox_hdr_create()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(
+      GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // generate mimaps for the cubemap
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
@@ -170,15 +171,15 @@ skybox_hdr_create()
       shader_create_program("../res/shaders/hdr-cubemap.shader");
     cubemapProjectionShader = shaderP;
 
-    ShaderProgram *shaderConvolute = 
+    ShaderProgram *shaderConvolute =
       shader_create_program("../res/shaders/hdr-convolute.shader");
     cubemapShaderConvolute = shaderConvolute;
 
-    ShaderProgram *shaderPrefilter= 
+    ShaderProgram *shaderPrefilter =
       shader_create_program("../res/shaders/hdr-prefilter.shader");
     cubemapShaderPrefilter = shaderPrefilter;
 
-    ShaderProgram *brdfShader = 
+    ShaderProgram *brdfShader =
       shader_create_program("../res/shaders/hdr-brdf.shader");
     cubemapBrdfShader = brdfShader;
 
@@ -189,35 +190,35 @@ skybox_hdr_create()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // Return
-    Skybox *ret      = malloc(sizeof(Skybox));
-    ret->cubemap     = malloc(sizeof(Texture));
-    ret->cubemap->id = skyboxCubemap;
-    ret->irradianceMap = malloc(sizeof(Texture));
-    ret->irradianceMap->id = irradianceMap;
-    ret->prefilterMap = malloc(sizeof(Texture));
-    ret->prefilterMap->id = prefilterMap;
-    ret->brdfLUTTexture = malloc(sizeof(Texture));
+    Skybox *ret             = malloc(sizeof(Skybox));
+    ret->cubemap            = malloc(sizeof(Texture));
+    ret->cubemap->id        = skyboxCubemap;
+    ret->irradianceMap      = malloc(sizeof(Texture));
+    ret->irradianceMap->id  = irradianceMap;
+    ret->prefilterMap       = malloc(sizeof(Texture));
+    ret->prefilterMap->id   = prefilterMap;
+    ret->brdfLUTTexture     = malloc(sizeof(Texture));
     ret->brdfLUTTexture->id = brdfLUTTexture;
-    ret->vao         = vao;
-    ret->hdrTexture  = hdrTexture;
+    ret->vao                = vao;
+    ret->hdrTexture         = hdrTexture;
     return ret;
 }
 
 Texture *
 skybox_hdr_projection(Skybox *skybox)
 {
-    ui32 captureFBO         = cubemapProjectionFBO;
-    ui32 captureRBO         = cubemapProjectionRBO;
-    VAO *vao                = cubemapProjectionVAO;
-    ShaderProgram *shaderP  = cubemapProjectionShader;
+    ui32 captureFBO                = cubemapProjectionFBO;
+    ui32 captureRBO                = cubemapProjectionRBO;
+    VAO *vao                       = cubemapProjectionVAO;
+    ShaderProgram *shaderP         = cubemapProjectionShader;
     ShaderProgram *shaderConvolute = cubemapShaderConvolute;
     ShaderProgram *shaderPrefilter = cubemapShaderPrefilter;
-    ShaderProgram *brdfShader = cubemapBrdfShader;
-    Texture *hdrTexture     = skybox->hdrTexture;
-    Texture *cubemapTexture = skybox->cubemap;
-    Texture *irradianceMap  = skybox->irradianceMap;
-    Texture *prefilterMap = skybox->prefilterMap;
-    Texture *brdfLUTTexture = skybox->brdfLUTTexture;
+    ShaderProgram *brdfShader      = cubemapBrdfShader;
+    Texture *hdrTexture            = skybox->hdrTexture;
+    Texture *cubemapTexture        = skybox->cubemap;
+    Texture *irradianceMap         = skybox->irradianceMap;
+    Texture *prefilterMap          = skybox->prefilterMap;
+    Texture *brdfLUTTexture        = skybox->brdfLUTTexture;
 
     mat4 captureProjection = GLM_MAT4_IDENTITY_INIT;
     glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 10.0f, captureProjection);
@@ -318,27 +319,30 @@ skybox_hdr_projection(Skybox *skybox)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture->id);
     ui32 maxMipLevels = 5;
-    for(ui32 mip = 0; mip < maxMipLevels; ++mip) {
+    for (ui32 mip = 0; mip < maxMipLevels; ++mip) {
         // resize Framebuffer according to mip-level size
-        ui32 mipWidth = 128 * pow(0.5, mip);
+        ui32 mipWidth  = 128 * pow(0.5, mip);
         ui32 mipHeight = 128 * pow(0.5, mip);
         glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+        glRenderbufferStorage(
+          GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
         glViewport(0, 0, mipWidth, mipHeight);
 
         float roughness = (float)mip / (float)(maxMipLevels - 1);
         shader_use(shaderPrefilter);
-        glUniform1f(glGetUniformLocation(
-                    shaderPrefilter->id, "u_Roughness"), roughness);
-    glUniformMatrix4fv(glGetUniformLocation(shaderPrefilter->id, "projection"),
-                       1,
-                       GL_FALSE,
-                       (float *)captureProjection);
-        for(int i = 0; i < 6; i++) {
-            glUniformMatrix4fv(glGetUniformLocation(shaderPrefilter->id, "view"),
-                               1,
-                               GL_FALSE,
-                               (float *)captureViews[i]);
+        glUniform1f(glGetUniformLocation(shaderPrefilter->id, "u_Roughness"),
+                    roughness);
+        glUniformMatrix4fv(
+          glGetUniformLocation(shaderPrefilter->id, "projection"),
+          1,
+          GL_FALSE,
+          (float *)captureProjection);
+        for (int i = 0; i < 6; i++) {
+            glUniformMatrix4fv(
+              glGetUniformLocation(shaderPrefilter->id, "view"),
+              1,
+              GL_FALSE,
+              (float *)captureViews[i]);
 
             glFramebufferTexture2D(GL_FRAMEBUFFER,
                                    GL_COLOR_ATTACHMENT0,
@@ -356,14 +360,18 @@ skybox_hdr_projection(Skybox *skybox)
     }
 
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture->id, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+                           GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D,
+                           brdfLUTTexture->id,
+                           0);
 
     glViewport(0, 0, 512, 512);
     shader_use(brdfShader);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Create Rectangle
-   VAO *vaoRect = vao_create();
+    VAO *vaoRect = vao_create();
     vao_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
     VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));

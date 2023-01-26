@@ -52,7 +52,7 @@ device_updateAnalytics(double time)
         s_ald.analytics =
           (Analytics) {.currentFps = (1.0 / s_ald.timeDiff) * s_ald.counter,
                        .currentMs  = (s_ald.timeDiff / s_ald.counter) * 1000,
-                       .delta = s_ald.timeDiff};
+                       .delta      = s_ald.timeDiff};
         s_ald.prevTime = time;
         s_ald.counter  = 0;
     }

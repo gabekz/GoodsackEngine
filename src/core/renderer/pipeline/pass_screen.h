@@ -1,8 +1,8 @@
 #ifndef H_PASS_SCREEN
 #define H_PASS_SCREEN
 
-#include <util/sysdefs.h>
 #include <core/renderer/renderer_props.inl>
+#include <util/sysdefs.h>
 
 void
 postbuffer_init(ui32 width, ui32 height);

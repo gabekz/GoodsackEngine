@@ -60,7 +60,10 @@ void
 shader_use(ShaderProgram *shader);
 
 void
-shader_uniform(ShaderProgram *shader, const char *uniform, ui32 type, void *data);
+shader_uniform(ShaderProgram *shader,
+               const char *uniform,
+               ui32 type,
+               void *data);
 
 #if __cplusplus
 }

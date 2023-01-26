@@ -9,8 +9,8 @@
 #include <model/primitives.h>
 
 #include <util/gfx.h>
-#include <util/sysdefs.h>
 #include <util/logger.h>
+#include <util/sysdefs.h>
 
 static ui32 msFBO, sbFBO;
 static ui32 msRBO, sbRBO;
@@ -89,16 +89,25 @@ CreateScreenBuffer(ui32 width, ui32 height)
     }
 }
 
-void postbuffer_resize(ui32 winWidth, ui32 winHeight)
+void
+postbuffer_resize(ui32 winWidth, ui32 winHeight)
 {
     LOG_INFO("Resizing window to %d x %d", winWidth, winHeight);
 
     glBindTexture(GL_TEXTURE_2D, sbTexture);
-    glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA16F, winWidth, winHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA16F,
+                 winWidth,
+                 winHeight,
+                 0,
+                 GL_RGBA,
+                 GL_FLOAT,
+                 NULL);
 
     glBindRenderbuffer(GL_RENDERBUFFER, sbRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, winWidth, winHeight);
+    glRenderbufferStorage(
+      GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, winWidth, winHeight);
 
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msTexture);
     glTexImage2DMultisample(
@@ -108,7 +117,7 @@ void postbuffer_resize(ui32 winWidth, ui32 winHeight)
     glRenderbufferStorageMultisample(
       GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, winWidth, winHeight);
 
-    frameWidth = winWidth;
+    frameWidth  = winWidth;
     frameHeight = winHeight;
 }
 
@@ -145,11 +154,10 @@ postbuffer_bind(int enableMSAA)
 {
     // glDebugMessageInsert(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_MARKER, 0,
     //     GL_DEBUG_SEVERITY_NOTIFICATION, -1, "Post Processing buffer init");
-    if(enableMSAA) {
+    if (enableMSAA) {
         glEnable(GL_MULTISAMPLE);
         glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
-    }
-    else {
+    } else {
         glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
     }
 
@@ -160,20 +168,19 @@ void
 postbuffer_draw(RendererProps *properties)
 {
 
-    if(properties->msaaEnable) {
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sbFBO);
-    glBlitFramebuffer(0,
-                      0,
-                      frameWidth,
-                      frameHeight,
-                      0,
-                      0,
-                      frameWidth,
-                      frameHeight,
-                      GL_COLOR_BUFFER_BIT,
-                      GL_NEAREST);
-
+    if (properties->msaaEnable) {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sbFBO);
+        glBlitFramebuffer(0,
+                          0,
+                          frameWidth,
+                          frameHeight,
+                          0,
+                          0,
+                          frameWidth,
+                          frameHeight,
+                          GL_COLOR_BUFFER_BIT,
+                          GL_NEAREST);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -181,11 +188,15 @@ postbuffer_draw(RendererProps *properties)
 
     vao_bind(vaoRect);
     shader_use(shader);
-    glUniform1i(glGetUniformLocation(shader->id, "u_Tonemapper"), properties->tonemapper);
-    glUniform1f(glGetUniformLocation(shader->id, "u_Exposure"), properties->exposure);
-    glUniform1f(glGetUniformLocation(shader->id, "u_MaxWhite"), properties->maxWhite);
+    glUniform1i(glGetUniformLocation(shader->id, "u_Tonemapper"),
+                properties->tonemapper);
+    glUniform1f(glGetUniformLocation(shader->id, "u_Exposure"),
+                properties->exposure);
+    glUniform1f(glGetUniformLocation(shader->id, "u_MaxWhite"),
+                properties->maxWhite);
     glUniform1f(glGetUniformLocation(shader->id, "u_Gamma"), properties->gamma);
-    glUniform1i(glGetUniformLocation(shader->id, "u_GammaEnable"), properties->gammaEnable);
+    glUniform1i(glGetUniformLocation(shader->id, "u_GammaEnable"),
+                properties->gammaEnable);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sbTexture);
     glDisable(GL_DEPTH_TEST);
