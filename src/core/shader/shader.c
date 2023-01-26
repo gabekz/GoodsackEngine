@@ -204,6 +204,6 @@ shader_uniform(ShaderProgram *shader,
         case MAT4:
             glUniformMatrix4fv(location, 1, GL_FALSE, (float *)data);
             break;
+    }
     */
-}
 }
