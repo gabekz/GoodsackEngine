@@ -1,7 +1,10 @@
+//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#pragma optimize("", off)
+
 #include <iostream>
 #include <string>
 
-#include <util/logger.h>
+//#include <util/logger.h>
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
@@ -11,6 +14,8 @@
 #include <ecs/ecs.h>
 #include <lua/lua_init.hpp>
 #include <tools/debugui.hpp>
+
+#include "scenes.h"
 
 extern "C" {
 #include <core/renderer/v1/renderer.h>
@@ -44,7 +49,7 @@ main(int argc, char *argv[])
     }
 
     // Main Lua entry
-    LuaInit("../src/lua/demo/main.lua");
+    //LuaInit("../src/lua/demo/main.lua");
 
     switch (device_getGraphics()) {
     case GRAPHICS_API_OPENGL: LOG_INFO("Device API is OpenGL"); break;
@@ -352,41 +357,61 @@ main(int argc, char *argv[])
                                      }}));
 #endif
 
+    build_scene0(ecs, renderer);
+
     /*-------------------------------------------
     |   Scene #4
     */
     ecs = renderer_active_scene(renderer, 3);
 
+    struct ComponentCamera compCamera = {
+      .position = {-1.5f, 0.0f, 0.0f},
+      .axisUp   = {0.0f, 1.0f, 0.0f},
+      .speed    = 0.05f,
+    };
+    /*
+    struct ComponentCamera *compCamera =
+    (&(struct ComponentCamera({
+        .position = {-1.5f, 0.0f, 0.0f},
+        .axisUp   = {0.0f, 1.0f, 0.0f},
+        .speed    = 0.05f,
+    })));
+    */
+
     Entity camera4 = ecs_new(ecs);
-    ecs_add(camera4,
-            C_CAMERA,
-            ((struct ComponentCamera) {
-              .position = {-1.5f, 0.0f, 0.0f},
-              .axisUp   = {0.0f, 1.0f, 0.0f},
-              .speed    = 0.05f,
-            }));
+    _ecs_add_internal(camera4, C_CAMERA, (void *)((struct ComponentCamera *)&compCamera));
     ecs_add(camera4, C_AUDIO_LISTENER);
 
     Entity entCerb = ecs_new(ecs);
-    ecs_add(entCerb,
+
+    struct ComponentTransform compCerbTransform = {
+        .position = {0.0f, 0.0f, 0.0f},
+        .scale    = {4.0f, 4.0f, 4.0f},
+    };
+    struct ComponentMesh compCerbMesh = {
+        .material = matCerb,
+        .modelPath = "../res/models/cerberus-triang.obj",
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }
+    };
+
+    _ecs_add_internal(entCerb,
             C_TRANSFORM,
-            ((struct ComponentTransform) {
-              .position = {0.0f, 0.0f, 0.0f},
-              .scale    = {4.0f, 4.0f, 4.0f},
-            }));
-    ecs_add(
-      entCerb,
-      C_MESH,
-      ((struct ComponentMesh) {.material  = matCerb,
-                               .modelPath = "../res/models/cerberus-triang.obj",
-                               .properties = {
-                                 .drawMode = DRAW_ARRAYS,
-                                 .cullMode = CULL_CW | CULL_FORWARD,
-                               }}));
-    ecs_add(
+            (void *)((struct ComponentTransform *)&compCerbTransform));
+
+    _ecs_add_internal(entCerb,
+            C_MESH,
+            (void *)((struct ComponentMesh *)&compCerbMesh));
+
+    /*
+    _ecs_add_internal(
       entCerb,
       C_AUDIO_SOURCE,
-      ((struct ComponentAudioSource) {.filePath = "../res/audio/opening.wav"}));
+      ((struct ComponentTransform)(
+        struct ComponentTransform({.position = {1.0f, 1.0f, 1.0f},}))));
+    */
 
     DebugGui *debugGui = new DebugGui(renderer);
 

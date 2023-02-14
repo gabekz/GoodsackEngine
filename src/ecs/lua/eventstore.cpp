@@ -144,7 +144,7 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
             // send data to function
             // pushEntity(L);
             pushEntity(L,
-                       (Entity) {.id = 19},
+                       (Entity {.id = 19}),
                        LuaEventStore::getLayout("ComponentCamera"));
             // lua_pushnumber(L, 12);
             //  call event function

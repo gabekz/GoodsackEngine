@@ -31,8 +31,11 @@
 #endif
 #endif // GCC
 
+
 // Windows badly defines a lot of stuff. Undefine it.
 #ifdef SYS_ENV_WIN
+#define WIN32_LEAN_AND_MEAN
+
 #undef min    // override standard definition
 #undef max    // override standard definition
 #undef ERROR  // override (really stupid) wingdi.h standard definition
@@ -79,6 +82,7 @@ typedef signed char sichar;
 typedef unsigned char byte;
 
 typedef unsigned long ulng;
+typedef unsigned long ulong;
 
 typedef short si16;
 typedef unsigned short ui16;

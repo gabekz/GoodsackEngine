@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 
+#include <util/sysdefs.h>
 #include <util/maths.h>
 
 using namespace ecs;

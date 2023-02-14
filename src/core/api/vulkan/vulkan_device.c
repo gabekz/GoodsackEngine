@@ -1,5 +1,8 @@
 #include "vulkan_device.h"
 
+#pragma warning disable C2057
+#pragma warning disable C2133
+
 #define VK_USE_PLATFORM_XCB_KHR
 #define GLFW_EXPOSE_NATIVE_XCB
 
@@ -31,7 +34,7 @@ _checkValidationLayerSupport(const char *validationLayers[], ui32 count)
     ui32 layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, NULL);
 
-    VkLayerProperties availableLayers[layerCount];
+    VkLayerProperties *availableLayers = malloc(sizeof(VkLayerProperties) * layerCount);
 
     if (vkEnumerateInstanceLayerProperties(&layerCount, availableLayers) !=
         VK_SUCCESS) {
@@ -77,7 +80,7 @@ _checkDeviceExtensionSupport(const char *extensions[],
     ui32 extensionsCount;
     vkEnumerateDeviceExtensionProperties(device, NULL, &extensionsCount, NULL);
 
-    VkExtensionProperties availableExtensions[extensionsCount];
+    VkExtensionProperties availableExtensions[1];
     vkEnumerateDeviceExtensionProperties(
       device, NULL, &extensionsCount, availableExtensions);
 
@@ -139,7 +142,7 @@ vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
     vkGetPhysicalDeviceQueueFamilyProperties(
       physicalDevice, &queueFamilyCount, NULL);
 
-    VkQueueFamilyProperties queueFamilies[queueFamilyCount];
+    VkQueueFamilyProperties queueFamilies[1];
     vkGetPhysicalDeviceQueueFamilyProperties(
       physicalDevice, &queueFamilyCount, queueFamilies);
 
@@ -156,18 +159,20 @@ VulkanDeviceContext *
 vulkan_device_create()
 {
     // Vulkan Application Info
-    VkApplicationInfo appInfo  = {};
-    appInfo.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName   = "Application Name";
-    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName        = "Below Engine";
-    appInfo.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion         = VK_API_VERSION_1_0;
+    VkApplicationInfo appInfo = {
+        .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pApplicationName   = "Application Name",
+        .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+        .pEngineName        = "Below Engine",
+        .engineVersion      = VK_MAKE_VERSION(1, 0, 0),
+        .apiVersion         = VK_API_VERSION_1_0,
+    };
 
     // Vulkan Instance Information
-    VkInstanceCreateInfo createInfo = {};
-    createInfo.sType                = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pApplicationInfo     = &appInfo;
+    VkInstanceCreateInfo createInfo = {
+        .sType                = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pApplicationInfo     = &appInfo,
+    };
 
     // Validation Layer + Extension Handling for Instance
     const unsigned char kEnableValidationLayers = 1;
@@ -178,8 +183,7 @@ vulkan_device_create()
     // vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
     // printf("\n%d extensions supported", extensionCount);
 
-    const char *extensionTest[3] = {"VK_KHR_surface",
-                                    "VK_KHR_xcb_surface",
+    const char *extensionTest[2] = {"VK_KHR_surface",
                                     VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
 
     const char *validationLayers[VK_REQ_VALIDATION_SIZE] =
@@ -192,7 +196,7 @@ vulkan_device_create()
         createInfo.ppEnabledLayerNames = validationLayers;
         createInfo.enabledLayerCount   = VK_REQ_VALIDATION_SIZE;
 
-        createInfo.enabledExtensionCount   = 3;
+        createInfo.enabledExtensionCount   = 2;
         createInfo.ppEnabledExtensionNames = extensionTest;
     } else {
         createInfo.enabledLayerCount       = 0;
@@ -252,20 +256,23 @@ vulkan_device_create()
     ui32 graphicsFamily = vulkan_device_find_queue_families(physicalDevice);
     float queuePriority = 1.0f;
 
-    VkDeviceQueueCreateInfo queueCreateInfo = {};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = graphicsFamily;
-    queueCreateInfo.queueCount       = 1;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    VkDeviceQueueCreateInfo queueCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .queueFamilyIndex = graphicsFamily,
+        .queueCount       = 1,
+        .pQueuePriorities = &queuePriority,
+    };
 
-    VkPhysicalDeviceFeatures deviceFeatures = {};
-    deviceFeatures.samplerAnisotropy        = VK_TRUE;
+    VkPhysicalDeviceFeatures deviceFeatures = {
+        .samplerAnisotropy        = VK_TRUE,
+    };
 
-    VkDeviceCreateInfo logicCreateInfo   = {};
-    logicCreateInfo.sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    logicCreateInfo.pQueueCreateInfos    = &queueCreateInfo;
-    logicCreateInfo.queueCreateInfoCount = 1;
-    logicCreateInfo.pEnabledFeatures     = &deviceFeatures;
+    VkDeviceCreateInfo logicCreateInfo   = {
+        .sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pQueueCreateInfos    = &queueCreateInfo,
+        .queueCreateInfoCount = 1,
+        .pEnabledFeatures     = &deviceFeatures,
+    };
 
     // Device Extensions
     const char *extensions[VK_REQ_DEVICE_EXT_SIZE] = VK_REQ_DEVICE_EXT;

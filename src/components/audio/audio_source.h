@@ -5,13 +5,13 @@
 
 #include <core/api/alsoft/alsoft.h>
 
-struct ComponentAudioSource
+typedef struct ComponentAudioSource
 {
     ALuint bufferId;
     const char *filePath;
 
     int looping;
-};
+} ComponentAudioSource;
 
 void
 s_audio_source_init(ECS *ecs);

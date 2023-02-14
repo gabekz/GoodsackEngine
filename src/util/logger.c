@@ -1,7 +1,11 @@
 #include "logger.h"
 
+#define _LARGE_TIME_API
+#define _XOPEN_SOURCE 500
+
 #include <assert.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -63,6 +67,27 @@ static CRITICAL_SECTION s_mutex;
 static pthread_mutex_t s_mutex;
 #endif /* defined(_WIN32) || defined(_WIN64) */
 
+static int gettimeofday(struct timeval * tp, struct timezone * tzp)
+{
+    // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
+    // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
+    // until 00:00:00 January 1, 1970 
+    static const unsigned long long EPOCH = ((unsigned long long) 116444736000000000ULL);
+
+    SYSTEMTIME  system_time;
+    FILETIME    file_time;
+    unsigned long long time;
+
+    GetSystemTime( &system_time );
+    SystemTimeToFileTime( &system_time, &file_time );
+    time =  ((unsigned long long)file_time.dwLowDateTime )      ;
+    time += ((unsigned long long )file_time.dwHighDateTime) << 32;
+
+    tp->tv_sec  = (long) ((time - EPOCH) / 10000000L);
+    tp->tv_usec = (long) (system_time.wMilliseconds * 1000);
+    return 0;
+}
+
 static void
 init(void)
 {
@@ -85,7 +110,8 @@ getTimestamp(const struct timeval *time, char *timestamp, ui64 size)
 
     assert(size >= 25);
 
-    localtime_r(&sec, &calendar);
+    //localtime_s(&sec, &calendar);
+    localtime_s(&calendar, &sec);
     strftime(timestamp, size, "%y-%m-%d %H:%M:%S", &calendar);
     sprintf(&timestamp[17], ".%06ld", (long)time->tv_usec);
 }

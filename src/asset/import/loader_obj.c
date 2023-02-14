@@ -102,7 +102,7 @@ load_obj(const char *path, float scale)
                 char elemDem[] = "/";
                 char *ptr      = collection;
                 char *posn     = NULL;
-                char *element  = strtok_r(ptr, elemDem, &posn);
+                char *element  = strtok_s(ptr, elemDem, &posn);
 
                 // Go through each element in the collection
                 // Get the incremental steps for the components we need
@@ -143,7 +143,7 @@ load_obj(const char *path, float scale)
                         outI += 3;
                     }
 
-                    element = strtok_r(NULL, elemDem, &posn);
+                    element = strtok_s(NULL, elemDem, &posn);
                 }
                 // Next element increment
                 collection = strtok(NULL, " ");

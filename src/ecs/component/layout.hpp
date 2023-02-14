@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <util/sysdefs.h>
 
 namespace ecs {
 

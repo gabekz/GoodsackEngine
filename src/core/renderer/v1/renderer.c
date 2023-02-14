@@ -136,7 +136,7 @@ renderer_start(Renderer *renderer)
         clearGLState();
 
         // TESTING Compute Shaders
-        computebuffer_init();
+        //computebuffer_init();
 
         // render image to quad
 
@@ -208,7 +208,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     */
     postbuffer_draw(&renderer->properties);
 
-    // computebuffer_draw();
+    //computebuffer_draw();
 }
 
 /*

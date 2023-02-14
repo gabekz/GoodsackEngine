@@ -3,6 +3,9 @@
    Shader function' implmenetations.
 
 */
+
+#define _POSIX_C_SOURCE > 200809L
+
 #include "shader.h"
 
 #include <stdio.h>
@@ -13,11 +16,65 @@
 #include <util/logger.h>
 #include <util/maths.h>
 
+#include <windows.h>
+#include <share.h>
+#include <io.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+
+
+static FILE *open_memstream(char **buffer, int bufferLen) {
+
+    FILE *stream;
+
+    /* create tmp file and get file descriptor */
+    int fd;
+    stream = tmpfile();
+    fd = fileno(stream);
+
+#ifdef WIN32
+    HANDLE fm;
+    HANDLE h = (HANDLE) _get_osfhandle (fd);
+
+    fm = CreateFileMapping(
+             h,
+             NULL,
+             PAGE_READWRITE|SEC_RESERVE,
+             0,
+             16384,
+             NULL);
+    if (fm == NULL) { 
+            fprintf (stderr, "%s: Couldn't access memory space!\n", strerror (GetLastError()));
+            exit(GetLastError());
+    }
+    *buffer = (char*)MapViewOfFile(
+              fm,
+              FILE_MAP_ALL_ACCESS,
+              0,
+              0,
+              0);
+    if (*buffer == NULL) { 
+            fprintf (stderr, "%s: Couldn't fill memory space!\n", strerror (GetLastError()));
+            exit(GetLastError());
+    }
+#else
+    bp = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_PRIVATE, fd, 0);
+    if (bp == MAP_FAILED) {
+            fprintf (stderr, "%s: Couldn't access memory space!\n", FileName, strerror (errno));
+            exit(errno);
+    }
+#endif
+
+    /* return stream that is now buffer-mapped */
+    return stream;
+}
+
 /* Compile single shader type (vertex, fragment, etc.) and return
  * the id from OpenGL.
  */
 static unsigned int
-CompileSingleShader(unsigned int type, const char *path)
+CompileSingleShader(unsigned int type, char *path)
 {
     unsigned int id = glCreateShader(type);
     // const char* src = &source[0];
@@ -57,7 +114,7 @@ ParseShader(const char *path)
     // output stream
     FILE *stream = NULL;
     char *vertOut, *fragOut, *compOut;
-    size_t vertLen = 0, fragLen = 0, compLen = 0;
+    size_t vertLen = 8, fragLen = 1, compLen = 0;
 
     short mode = -1; /* -1: NONE | 0: Vert | 1: Frag */
 
@@ -71,42 +128,49 @@ ParseShader(const char *path)
         if (strstr(line, "#shader") != NULL) {
             if (stream != NULL) {
                 // Close stream for restart
+                fflush(stream);
+                rewind(stream);
+                //fclose(stream);
+                /*
                 if (fclose(stream)) {
                     printf("Failed to close stream.");
                     exit(1);
                 }
+                */
             }
 
             // Begin vertex
             if (strstr(line, "vertex") != NULL) {
                 mode   = 0;
-                stream = open_memstream(&vertOut, &vertLen);
-
+                stream = open_memstream(&vertOut, vertLen);
             }
             // Begin fragment
             else if (strstr(line, "fragment") != NULL) {
-                // char* newOut;
-                // fragOut = newOut;
                 mode   = 1;
-                stream = open_memstream(&fragOut, &fragLen);
+                stream = open_memstream(&fragOut, fragLen);
             }
             // Begin Compute
             else if (strstr(line, "compute") != NULL) {
-                // char* newOut;
-                // fragOut = newOut;
                 mode   = 2;
-                stream = open_memstream(&compOut, &compLen);
+                stream = open_memstream(&compOut, compLen);
+                compLen = 1;
             } else {
                 mode = -1;
             } // Currently no other modes
         } else {
-            if (mode > -1) fprintf(stream, line);
+            if (mode > -1) {
+                //fread(vertOut, ftell(fptr), 1, fptr);
+                fprintf(stream, line);
+            }
         }
     }
 
+    //rewind(stream);
     // Note: fclose() also flushes the stream
+    //fclose(stream);
+    fflush(stream);
+    rewind(stream);
     fclose(stream);
-    fclose(fptr);
 
     /* TODO: Report 'NULL' declaration bug */
 
@@ -115,15 +179,15 @@ ParseShader(const char *path)
     // TODO: Is this malloc'd?
     if (vertLen > 0) {
         ss->shaderVertex = strdup(vertOut);
-        free(vertOut);
+        //free(vertOut);
     }
     if (fragLen > 0) {
         ss->shaderFragment = strdup(fragOut);
-        free(fragOut);
+        //free(fragOut);
     }
     if (compLen > 0) {
         ss->shaderCompute = strdup(compOut);
-        free(compOut);
+        //free(compOut);
     }
 
     return ss;

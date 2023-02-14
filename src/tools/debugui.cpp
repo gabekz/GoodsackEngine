@@ -212,7 +212,7 @@ DebugGui::Render()
 
             // Grab entity by ID
             Entity e =
-              (Entity) {.id = (EntityId)i, .index = (ui64)i, .ecs = ecs};
+              (Entity {.id = (EntityId)i, .index = (ui64)i, .ecs = ecs});
 
             std::string str = std::to_string(e.index) + " | ";
             str += "Entity id: " + std::to_string(e.id);

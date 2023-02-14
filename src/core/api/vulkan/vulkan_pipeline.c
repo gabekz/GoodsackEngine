@@ -46,10 +46,11 @@ _createShaderModule(VkDevice device, const char *path)
 
     struct FileDescriptor *file = _parseShader(path);
 
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = file->filelen;
-    createInfo.pCode    = (uint32_t *)file->buffer;
+    VkShaderModuleCreateInfo createInfo = {
+        .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        .codeSize = file->filelen,
+        .pCode    = (uint32_t *)file->buffer,
+    };
 
     VkShaderModule ret;
     if (vkCreateShaderModule(device, &createInfo, NULL, &ret) != VK_SUCCESS) {
@@ -175,6 +176,7 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .alphaToOneEnable      = VK_FALSE};
 
     // Depth Stencil State
+    /*
     VkPipelineDepthStencilStateCreateInfo depthStencil = {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
       .depthTestEnable  = VK_TRUE,
@@ -187,9 +189,10 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .maxDepthBounds        = 1.0f, // Optional
 
       .stencilTestEnable = VK_FALSE,
-      .front             = {}, // Optional
-      .back              = {}, // Optional
+      .front             = NULL, // Optional
+      .back              = NULL, // Optional
     };
+    */
 
     // Color Blending
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {
@@ -319,7 +322,7 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .pViewportState      = &viewportState,
       .pRasterizationState = &rasterizer,
       .pMultisampleState   = &multisampling,
-      .pDepthStencilState  = &depthStencil,
+      //.pDepthStencilState  = &depthStencil,
       .pColorBlendState    = &colorBlending,
       .pDynamicState       = &dynamicState,
 

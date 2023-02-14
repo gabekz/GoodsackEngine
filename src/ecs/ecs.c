@@ -78,7 +78,7 @@ _ecs_add_internal(Entity entity, ui32 component_id, void *value)
                 (list->component_size * (entity.index + 1));
     // printf("index of tag for Entity [%d]: %d", entity.index, size);
 
-    char *tag = (char *)(list->components + size);
+    char *tag = (char *)((ECSComponentList *)list->components + size);
     *tag |= ECS_TAG_USED;
     // printf("old tag: %x", *tag & 0xff);
     // assert(! (*tag & ECS_TAG_USED));
@@ -91,7 +91,7 @@ _ecs_add_internal(Entity entity, ui32 component_id, void *value)
     ui32 index =
       (entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index));
     if (value != NULL) {
-        memcpy(list->components + index, value, list->component_size);
+        memcpy((ECSComponentList *)list->components + index, value, list->component_size);
         // list = realloc(list, list.components_size+1 * sizeof());
     }
 }
@@ -104,7 +104,7 @@ ecs_has(Entity entity, ECSComponent component_id)
     ui32 size = (entity.index * ECS_TAG_SIZE) +
                 (list->component_size * (entity.index + 1));
     // printf("index of tag for Entity [%d]: %d", entity.index, size);
-    char *tag = (char *)(list->components + size);
+    char *tag = (char *)((ECSComponentList *)list->components + size);
     int value = *tag;
     // if(value > 0 && entity.index == 1)
     // printf("\necs_has - component: %d, index %d, entity index: %d\n",
@@ -126,7 +126,7 @@ ecs_get(Entity entity, ECSComponent component_id)
     //(list->component_size * (entity.index));
     // printf("\necs_get - id: %d, index %d, id: %d", component_id, size,
     // entity.id);
-    return (entity.ecs->component_lists[component_id].components + size);
+    return ((ECSComponentList *)entity.ecs->component_lists[component_id].components + size);
     // return ECSCL_GET(&entity.ecs->component_lists[component_id], entity.id);
 }
 

@@ -37,13 +37,13 @@ material_create(ShaderProgram *shader,
 
     va_list ap;
     va_start(ap, textureCount);
-    va_end(ap);
     Texture **textures = malloc(textureCount * sizeof(Texture *));
     for (int i = 0; i < textureCount; i++) {
         *(textures + i) = va_arg(ap, Texture *);
     }
     ret->textures      = textures;
     ret->texturesCount = textureCount;
+    va_end(ap);
     return ret;
 
     // TODO: Create descriptor set

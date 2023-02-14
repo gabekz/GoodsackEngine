@@ -112,7 +112,7 @@ vulkan_descriptor_sets_create(VkDevice device,
           .sampler     = textureSampler};
 
         ui32 descriptorWritesCount = 2;
-        VkWriteDescriptorSet descriptorWrites[descriptorWritesCount];
+        VkWriteDescriptorSet descriptorWrites[2];
 
         descriptorWrites[0] = (VkWriteDescriptorSet) {
           .sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,

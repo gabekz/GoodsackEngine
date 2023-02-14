@@ -4,7 +4,7 @@
 #include <util/gfx.h>
 #include <util/sysdefs.h>
 
-#if __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
@@ -65,7 +65,8 @@ shader_uniform(ShaderProgram *shader,
                ui32 type,
                void *data);
 
-#if __cplusplus
+
+#ifdef __cplusplus
 }
 #endif // __cplusplus
 
