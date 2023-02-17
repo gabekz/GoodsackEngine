@@ -1,6 +1,8 @@
 CMakeFiles/
 build/
+out/
 .cache/
 .vscode/
+.vs/
 cache/
 compile_commands.json

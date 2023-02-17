@@ -8,6 +8,7 @@
 
 #include <core/api/vulkan/vulkan_depth.h>
 #include <core/api/vulkan/vulkan_framebuffer.h>
+#include <core/api/vulkan/vulkan_support.h>
 
 VulkanSwapChainDetails *
 vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface)
@@ -15,12 +16,12 @@ vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface)
 
     VulkanSwapChainDetails *details = malloc(sizeof(VulkanSwapChainDetails));
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-      device, surface, &details->capabilities);
+    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+      device, surface, &details->capabilities));
 
     // Store Formats
-    ui32 formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, NULL);
+    int formatCount = 0;
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, NULL));
 
     if (formatCount != 0) {
         details->formats = malloc(sizeof(VkSurfaceFormatKHR) * formatCount);

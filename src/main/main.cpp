@@ -4,25 +4,21 @@
 #include <iostream>
 #include <string>
 
-//#include <util/logger.h>
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
-#include <components/components.h>
 #include <core/api/device.h>
 #include <core/lighting/lighting.h>
 #include <ecs/ecs.h>
 #include <lua/lua_init.hpp>
 #include <tools/debugui.hpp>
 
-#include "scenes.h"
+// Demo
+#include "demo_scenes.h"
 
 extern "C" {
 #include <core/renderer/v1/renderer.h>
 }
-
-#define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16, NULL)
-#define texture_create_n(x) texture_create(x, GL_RGB, false, 1, NULL)
 
 int
 main(int argc, char *argv[])
@@ -72,346 +68,8 @@ main(int argc, char *argv[])
     // UBO Lighting
     lighting_initialize(lightPos, lightColor);
 
-    Texture *texDefSpec =
-      texture_create_n("../res/textures/defaults/specular.png");
-    Texture *texDefNorm =
-      texture_create_n("../res/textures/defaults/normal.png");
-    Texture *texPbrAo = texture_create_n("../res/textures/defaults/white.png");
-
-    Texture *texCerbA =
-      texture_create_d("../res/textures/pbr/cerberus/Cerberus_A.tga");
-    Texture *texCerbN =
-      texture_create_n("../res/textures/pbr/cerberus/Cerberus_N.tga");
-    Texture *texCerbM =
-      texture_create_n("../res/textures/pbr/cerberus/Cerberus_M.tga");
-    Texture *texCerbS =
-      texture_create_n("../res/textures/pbr/cerberus/Cerberus_R.tga");
-
-    Material *matCerb = material_create(NULL,
-                                        "../res/shaders/pbr.shader",
-                                        5,
-                                        texCerbA,
-                                        texCerbN,
-                                        texCerbM,
-                                        texCerbS,
-                                        texPbrAo);
-
-#if 0
-    Texture *texEarthDiff =
-      texture_create_d("../res/textures/earth/diffuse.png");
-    Texture *texEarthNorm =
-      texture_create_n("../res/textures/earth/normal.png");
-
-    Texture *texContDiff =
-      texture_create_d("../res/textures/container/diffuse.png");
-    Texture *texContSpec =
-      texture_create_n("../res/textures/container/specular.png");
-
-    Texture *texBrickDiff =
-      texture_create_d("../res/textures/brickwall/diffuse.png");
-    Texture *texBrickNorm =
-      texture_create_n("../res/textures/brickwall/normal.png");
-
-    Material *matSuzanne = material_create(NULL,
-                                           "../res/shaders/lit-diffuse.shader",
-                                           3,
-                                           texEarthDiff,
-                                           texEarthNorm,
-                                           texDefSpec);
-
-    // Create the Camera, containing starting-position and up-axis coords.
-    Entity camera = ecs_new(ecs);
-    ecs_add(camera,
-            C_CAMERA,
-            ((struct ComponentCamera) {
-              .position = {0.0f, 0.0f, 2.0f},
-              .axisUp   = {0.0f, 1.0f, 0.0f},
-              .speed    = 0.05f,
-            }));
-
-    Entity suzanneObject = ecs_new(ecs);
-    ecs_add(suzanneObject, C_TRANSFORM);
-    ecs_add(suzanneObject,
-            C_MESH,
-            ((struct ComponentMesh) {.material   = matSuzanne,
-                                     .modelPath  = "../res/models/sphere.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
-
-    /*-------------------------------------------
-    |   Scene #2
-    */
-    ecs = renderer_active_scene(renderer, 1);
-
-    Material *matFloor = material_create(NULL,
-                                         "../res/shaders/lit-diffuse.shader",
-                                         3,
-                                         texBrickDiff,
-                                         texBrickNorm,
-                                         texDefSpec);
-    Material *matBox   = material_create(NULL,
-                                       "../res/shaders/lit-diffuse.shader",
-                                       3,
-                                       texContDiff,
-                                       texDefNorm,
-                                       texContSpec);
-
-    Entity camera2 = ecs_new(ecs);
-    ecs_add(camera2,
-            C_CAMERA,
-            ((struct ComponentCamera) {
-              .position = {0.0f, 0.0f, 2.0f},
-              .axisUp   = {0.0f, 1.0f, 0.0f},
-              .speed    = 0.05f,
-            }));
-
-    Entity floorEntity = ecs_new(ecs);
-    ecs_add(floorEntity,
-            C_TRANSFORM,
-            ((struct ComponentTransform) {
-              .position = {0.0f, -0.3f, 0.0f},
-              .scale    = {10.0f, 10.0f, 10.0f},
-            }));
-    ecs_add(floorEntity,
-            C_MESH,
-            ((struct ComponentMesh) {.material   = matFloor,
-                                     .modelPath  = "../res/models/plane.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
-
-    Entity boxEntity = ecs_new(ecs);
-    ecs_add(boxEntity,
-            C_TRANSFORM,
-            ((struct ComponentTransform) {
-              .position = {0.0f, -0.085f, 0.0f},
-            }));
-    ecs_add(boxEntity,
-            C_MESH,
-            ((struct ComponentMesh) {.material  = matBox,
-                                     .modelPath = "../res/models/cube-test.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
-
-    /*-------------------------------------------
-    |   Scene #3
-    */
-    ecs            = renderer_active_scene(renderer, 2);
-    Entity camera3 = ecs_new(ecs);
-    ecs_add(camera3,
-            C_CAMERA,
-            ((struct ComponentCamera) {
-              .position = {0.0f, 0.0f, 2.0f},
-              .axisUp   = {0.0f, 1.0f, 0.0f},
-              .speed    = 0.05f,
-            }));
-
-    Texture *texGraniteAlbedo =
-      texture_create_d("../res/textures/pbr/granite/albedo.png");
-    Texture *texGraniteNormal =
-      texture_create_n("../res/textures/pbr/granite/normal.png");
-    Texture *texGraniteMetallic =
-      texture_create_n("../res/textures/pbr/granite/metallic.png");
-    Texture *texGraniteSpecular =
-      texture_create_n("../res/textures/pbr/granite/roughness.png");
-    Texture *texGraniteAo =
-      texture_create_n("../res/textures/pbr/granite/ao.png");
-    Material *matGranite = material_create(NULL,
-                                           "../res/shaders/pbr.shader",
-                                           5,
-                                           texGraniteAlbedo,
-                                           texGraniteNormal,
-                                           texGraniteMetallic,
-                                           texGraniteSpecular,
-                                           texGraniteAo);
-
-    Texture *texPbrAlbedo =
-      texture_create_d("../res/textures/pbr/rust/albedo.png");
-    Texture *texPbrNormal =
-      texture_create_n("../res/textures/pbr/rust/normal.png");
-    Texture *texPbrMetallic =
-      texture_create_n("../res/textures/pbr/rust/metallic.png");
-    Texture *texPbrSpecular =
-      texture_create_n("../res/textures/pbr/rust/roughness.png");
-    Material *matRust = material_create(NULL,
-                                        "../res/shaders/pbr.shader",
-                                        5,
-                                        texPbrAlbedo,
-                                        texPbrNormal,
-                                        texPbrMetallic,
-                                        texPbrSpecular,
-                                        texPbrAo);
-
-    Texture *texBrassAlbedo =
-      texture_create_d("../res/textures/pbr/fancybrass/albedo.png");
-    Texture *texBrassNormal =
-      texture_create_n("../res/textures/pbr/fancybrass/normal.png");
-    Texture *texBrassMetallic =
-      texture_create_n("../res/textures/pbr/fancybrass/metallic.png");
-    Texture *texBrassSpecular =
-      texture_create_n("../res/textures/pbr/fancybrass/roughness.png");
-    Texture *texBrassAo =
-      texture_create_n("../res/textures/pbr/fancybrass/ao.png");
-    Material *matBrass = material_create(NULL,
-                                        "../res/shaders/pbr.shader",
-                                        5,
-                                        texBrassAlbedo,
-                                        texBrassNormal,
-                                        texBrassMetallic,
-                                        texBrassSpecular,
-                                        texBrassAo);
-
-    Texture *texGoldAlbedo =
-      texture_create_d("../res/textures/pbr/gold/albedo.png");
-    Texture *texGoldNormal =
-      texture_create_n("../res/textures/pbr/gold/normal.png");
-    Texture *texGoldMetallic =
-      texture_create_n("../res/textures/pbr/gold/metallic.png");
-    Texture *texGoldSpecular =
-      texture_create_n("../res/textures/pbr/gold/roughness.png");
-    Material *matGold = material_create(NULL,
-                                        "../res/shaders/pbr.shader",
-                                        5,
-                                        texGoldAlbedo,
-                                        texGoldNormal,
-                                        texGoldMetallic,
-                                        texGoldSpecular,
-                                        texPbrAo);
-    Entity sphereEntity = ecs_new(ecs);
-    ecs_add(sphereEntity,
-            C_TRANSFORM,
-            ((struct ComponentTransform) {
-              .position = {0.0f, 0.0f, 0.0f},
-            }));
-    ecs_add(sphereEntity,
-            C_MESH,
-            ((struct ComponentMesh) {.material   = matGranite,
-                                     .modelPath  = "../res/models/sphere.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
-    Entity sphereEntity2 = ecs_new(ecs);
-    ecs_add(sphereEntity2,
-            C_TRANSFORM,
-            ((struct ComponentTransform) {
-              .position = {-0.5f, 0.0f, 0.0f},
-            }));
-    ecs_add(sphereEntity2,
-            C_MESH,
-            ((struct ComponentMesh) {.material   = matRust,
-                                     .modelPath  = "../res/models/sphere.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
-
-    Entity sphereEntity3 = ecs_new(ecs);
-    ecs_add(sphereEntity3,
-            C_TRANSFORM,
-            ((struct ComponentTransform) {
-              .position = {0.5f, 0.0f, 0.0f},
-            }));
-    ecs_add(sphereEntity3,
-            C_MESH,
-            ((struct ComponentMesh) {.material   = matBrass,
-                                     .modelPath  = "../res/models/sphere.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
-    Entity sphereEntity4 = ecs_new(ecs);
-    ecs_add(sphereEntity4,
-            C_TRANSFORM,
-            ((struct ComponentTransform) {
-              .position = {1.0f, 0.0f, 0.0f},
-            }));
-    ecs_add(sphereEntity4,
-            C_MESH,
-            ((struct ComponentMesh) {.material   = matGold,
-                                     .modelPath  = "../res/models/sphere.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
-
-    Entity floorEntity2 = ecs_new(ecs);
-    ecs_add(floorEntity2,
-            C_TRANSFORM,
-            ((struct ComponentTransform) {
-              .position = {0.0f, -0.3f, 0.0f},
-              .scale    = {10.0f, 10.0f, 10.0f},
-            }));
-    ecs_add(floorEntity2,
-            C_MESH,
-            ((struct ComponentMesh) {.material   = matFloor,
-                                     .modelPath  = "../res/models/plane.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
-#endif
-
-    build_scene0(ecs, renderer);
-
-    /*-------------------------------------------
-    |   Scene #4
-    */
-    ecs = renderer_active_scene(renderer, 3);
-
-    struct ComponentCamera compCamera = {
-      .position = {-1.5f, 0.0f, 0.0f},
-      .axisUp   = {0.0f, 1.0f, 0.0f},
-      .speed    = 0.05f,
-    };
-    /*
-    struct ComponentCamera *compCamera =
-    (&(struct ComponentCamera({
-        .position = {-1.5f, 0.0f, 0.0f},
-        .axisUp   = {0.0f, 1.0f, 0.0f},
-        .speed    = 0.05f,
-    })));
-    */
-
-    Entity camera4 = ecs_new(ecs);
-    _ecs_add_internal(camera4, C_CAMERA, (void *)((struct ComponentCamera *)&compCamera));
-    ecs_add(camera4, C_AUDIO_LISTENER);
-
-    Entity entCerb = ecs_new(ecs);
-
-    struct ComponentTransform compCerbTransform = {
-        .position = {0.0f, 0.0f, 0.0f},
-        .scale    = {4.0f, 4.0f, 4.0f},
-    };
-    struct ComponentMesh compCerbMesh = {
-        .material = matCerb,
-        .modelPath = "../res/models/cerberus-triang.obj",
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }
-    };
-
-    _ecs_add_internal(entCerb,
-            C_TRANSFORM,
-            (void *)((struct ComponentTransform *)&compCerbTransform));
-
-    _ecs_add_internal(entCerb,
-            C_MESH,
-            (void *)((struct ComponentMesh *)&compCerbMesh));
-
-    /*
-    _ecs_add_internal(
-      entCerb,
-      C_AUDIO_SOURCE,
-      ((struct ComponentTransform)(
-        struct ComponentTransform({.position = {1.0f, 1.0f, 1.0f},}))));
-    */
+    // create scenes
+    demo_scenes_create(ecs, renderer);
 
     DebugGui *debugGui = new DebugGui(renderer);
 
@@ -419,7 +77,7 @@ main(int argc, char *argv[])
     device_resetAnalytics();
 
     /* Render loop */
-    renderer_active_scene(renderer, 3);
+    ecs = renderer_active_scene(renderer, 3);
 
     renderer_start(renderer); // Initialization for the render loop
     while (!glfwWindowShouldClose(renderer->window)) {

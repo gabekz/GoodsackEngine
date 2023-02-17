@@ -235,6 +235,6 @@ renderer_tick(Renderer *renderer)
     if (DEVICE_API_OPENGL) {
         renderer_tick_OPENGL(renderer, scene, ecs);
     } else if (DEVICE_API_VULKAN) {
-        // renderer_tick_VULKAN(renderer, ecs);
+        //renderer_tick_VULKAN(renderer, ecs);
     }
 }

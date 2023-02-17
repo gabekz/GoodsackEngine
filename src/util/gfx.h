@@ -6,7 +6,7 @@
 #define GLFW_INCLUDE_NONE
 #endif
 
-#include <vulkan/vk_sdk_platform.h>
+//#include <vulkan/vk_sdk_platform.h>
 #include <vulkan/vulkan.h>
 #define GLFW_INCLUDE_VULKAN
 

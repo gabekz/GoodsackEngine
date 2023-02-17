@@ -176,7 +176,6 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .alphaToOneEnable      = VK_FALSE};
 
     // Depth Stencil State
-    /*
     VkPipelineDepthStencilStateCreateInfo depthStencil = {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
       .depthTestEnable  = VK_TRUE,
@@ -189,10 +188,9 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .maxDepthBounds        = 1.0f, // Optional
 
       .stencilTestEnable = VK_FALSE,
-      .front             = NULL, // Optional
-      .back              = NULL, // Optional
+      //.front             = NULL, // Optional
+      //.back              = NULL, // Optional
     };
-    */
 
     // Color Blending
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {
@@ -322,7 +320,7 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .pViewportState      = &viewportState,
       .pRasterizationState = &rasterizer,
       .pMultisampleState   = &multisampling,
-      //.pDepthStencilState  = &depthStencil,
+      .pDepthStencilState  = &depthStencil,
       .pColorBlendState    = &colorBlending,
       .pDynamicState       = &dynamicState,
 

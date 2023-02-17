@@ -9,6 +9,15 @@ project(
     DESCRIPTION "Realtime 3D Rendering Engine"
     HOMEPAGE_URL "github.com/gabekz/gl-renderer")
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+include(colors)
+
+set(CMAKE_COLOR_MAKEFILE ON)
+define_colors()
+
+message("This is normal")
+message("${Red}This is Red${ColourReset}")
+
 set(GAME_EXE_NAME "game")
 set(TEST_EXE_NAME "testRunner")
 
@@ -36,9 +45,9 @@ as none was specified.")
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-message(STATUS "Default build Type: ${default_build_type}")
-message(STATUS "CMake Build Type: ${CMAKE_BUILD_TYPE}")
-message(STATUS "Configuration Type: ${CMAKE_BUILD_TYPE}")
+message("Default build Type: ${default_build_type}")
+message("CMake Build Type: ${CMAKE_BUILD_TYPE}")
+message("Configuration Type: ${CMAKE_BUILD_TYPE}")
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
     message("release mode")
@@ -86,6 +95,24 @@ foreach (item ${SOURCES})
     endif ()
 endforeach()
 
+# REMOVE MAIN
+foreach (item ${SOURCES})
+    # Check if our items matches our regular expression
+    if ("${item}" MATCHES ".*main.*")
+        # Remove current item from our list
+        list (REMOVE_ITEM SOURCES "${item}")
+    endif ()
+endforeach()
+
+# QUICK TEST
+foreach (item ${SOURCES})
+    # Check if our items matches our regular expression
+    if ("${item}" MATCHES ".*runtime.*")
+        # Remove current item from our list
+        list (REMOVE_ITEM SOURCES "${item}")
+    endif ()
+endforeach()
+
 ######## EXECUTABLES ############################################
 
 option(GOODSACK_EXAMPLES "Build eaxmple projects" ON)
@@ -101,11 +128,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${SRC_DIR}")
 
 target_compile_options(${PROJECT_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 
+add_subdirectory("${SRC_DIR}/runtime")
+target_link_libraries(${PROJECT_NAME} runtime)
+
 #################################################################
 # Example Projects
 #################################################################
 if(GOODSACK_EXAMPLES)
-    add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main/main.cpp")
+    add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main/main.cpp" "${SRC_DIR}/main/demo_scenes.c")
+    target_include_directories(${GAME_EXE_NAME} PRIVATE "${SRC_DIR}/main")
     target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME})
     target_compile_options(${GAME_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 endif()
@@ -127,8 +158,6 @@ if(GOODSACK_TEST)
 endif()
 
 ######## LIBRARIES ##############################################
-option(AUTO_LOCATE_LUA "AUTO_LOCATE_LUA" OFF)
-option(AUTO_LOCATE_VULKAN "AUTO_LOCATE_VULKAN" ON)
 
 #################################################################
 # Library: STB Image
@@ -141,26 +170,31 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${STB_DIR}")
 #################################################################
 set(CGLM_DIR "${LIB_DIR}/cglm")
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
-target_link_libraries(${PROJECT_NAME} "cglm" cglm_headers) 
+target_link_libraries(${PROJECT_NAME} cglm cglm_headers) 
 target_compile_definitions(${PROJECT_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 #target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 
 #################################################################
 # Library: GLFW
 #################################################################
-find_package(glfw3 CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} glfw)
+set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
+set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
+set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
+set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
 
-#set(GLFW_DIR "${LIB_DIR}/glfw")
-#set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
-#set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
-#set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
-#set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
-#add_subdirectory("${GLFW_DIR}")
-#target_link_libraries(${PROJECT_NAME} "glfw"
-#    "${GLFW_LIBRARIES}" "${CMAKE_DL_LIBS}")
-#target_include_directories(${PROJECT_NAME} PRIVATE "${GLFW_DIR}/include")
-#target_compile_definitions(${PROJECT_NAME} PRIVATE "GLFW_INCLUDE_NONE")
+find_package(glfw3 CONFIG QUIET)
+if(glfw3_FOUND)
+    target_link_libraries(${PROJECT_NAME} glfw)
+else()
+    set(GLFW_DIR "${LIB_DIR}/glfw")
+    add_subdirectory("${GLFW_DIR}")
+    target_link_libraries(${PROJECT_NAME} "glfw"
+        "${GLFW_LIBRARIES}" "${CMAKE_DL_LIBS}")
+    target_include_directories(${PROJECT_NAME} PRIVATE "${GLFW_DIR}/include")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE "GLFW_INCLUDE_NONE")
+    target_link_libraries(${PROJECT_NAME} "glfw")
+endif()
+
 
 #################################################################
 # Library: GLAD
@@ -174,78 +208,75 @@ target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
 #################################################################
 # Library: VulkanSDK
 #################################################################
-if(AUTO_LOCATE_VULKAN)
-    message(STATUS "(Vulkan) Attempting auto locate Vulkan using CMake.....")
+message(STATUS "(Vulkan) Attempting auto locate Vulkan using CMake.....")
 
-    # Find Vulkan Path using CMake's Vulkan Module
-	# This will return Boolean 'Vulkan_FOUND' indicating the status
-    # of find as success(ON) or fail(OFF).
-	# Include directory path - 'Vulkan_INCLUDE_DIRS' and 'Vulkan_LIBRARY'
-    # with required libraries.
-    find_package(Vulkan REQUIRED)
+# Find Vulkan Path using CMake's Vulkan Module
+# This will return Boolean 'Vulkan_FOUND' indicating the status
+# of find as success(ON) or fail(OFF).
+# Include directory path - 'Vulkan_INCLUDE_DIRS' and 'Vulkan_LIBRARY'
+# with required libraries.
+find_package(Vulkan QUIET)
 
-	# Try extracting VulkanSDK path from ${Vulkan_INCLUDE_DIRS}
-	if (NOT ${Vulkan_INCLUDE_DIRS} STREQUAL "")
-		set(VULKAN_PATH ${Vulkan_INCLUDE_DIRS})
-		STRING(REGEX REPLACE "/Include" "" VULKAN_PATH ${VULKAN_PATH})
-	endif()
-	if(NOT Vulkan_FOUND)
-		# CMake may fail to locate the libraries but could be able to 
-		# provide some path in Vulkan SDK include directory variable
-		# 'Vulkan_INCLUDE_DIRS', try to extract path from this.
-		message(STATUS "Failed to locate Vulkan SDK, retrying again...")
-		if(EXISTS "${VULKAN_PATH}")
-			message(STATUS "Successfully located the Vulkan SDK: ${VULKAN_PATH}")
-		else()
-			message("Error: Unable to locate Vulkan SDK. Please turn off auto locate option by specifying 'AUTO_LOCATE_VULKAN' as 'OFF'")
-			message("and specify manually path using 'VULKAN_SDK' and 'VULKAN_VERSION' variables in the CMakeLists.txt.")
-			return()
-		endif()
-	endif()
-    target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/Include")
-    set(VULKAN_VERSION "1.0.33.0")
-    #set(VULKAN_LIB_LIST "vulkan")
-    # Link directory for vulkan-1
-    link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
-    target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
-else()
-    set(VULKAN_DIR "${LIB_DIR}/vulkan")
-    set(VULKAN_PATH "${VULKAN_DIR}")
-    message(STATUS "(Vulkan) Using manual specified path: ${VULKAN_DIR}")
-    add_subdirectory(${VULKAN_DIR})
-    #target_link_libraries(${PROJECT_NAME} "vulkan")
-    target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/include")
+# Try extracting VulkanSDK path from ${Vulkan_INCLUDE_DIRS}
+if (NOT ${Vulkan_INCLUDE_DIRS} STREQUAL "")
+	set(VULKAN_PATH ${Vulkan_INCLUDE_DIRS})
+	STRING(REGEX REPLACE "/Include" "" VULKAN_PATH ${VULKAN_PATH})
 endif()
+if(NOT Vulkan_FOUND)
+	# CMake may fail to locate the libraries but could be able to 
+	# provide some path in Vulkan SDK include directory variable
+	# 'Vulkan_INCLUDE_DIRS', try to extract path from this.
+	message(STATUS "Failed to locate Vulkan SDK, retrying again...")
+	if(EXISTS "${VULKAN_PATH}")
+		message(STATUS "Successfully located the Vulkan SDK: ${VULKAN_PATH}")
+	else()
+		message("Error: Unable to locate Vulkan SDK.")
+		# message("and specify manually path using 'VULKAN_SDK' and 'VULKAN_VERSION' variables in the CMakeLists.txt.")
+		return()
+	endif()
+endif()
+target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/Include")
+#set(VULKAN_VERSION "1.0.33.0")
+#set(VULKAN_LIB_LIST "vulkan")
+# Link directory for vulkan-1
+link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
+target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
 
 #################################################################
 # Library: ImGui
 #################################################################
-set(IMGUI_DIR "${LIB_DIR}/imgui")
-add_library("imgui" "${IMGUI_DIR}/imgui.cpp"
-                  "${IMGUI_DIR}/imgui_demo.cpp"
-                  "${IMGUI_DIR}/imgui_draw.cpp"
-                  "${IMGUI_DIR}/imgui_tables.cpp"
-                  "${IMGUI_DIR}/imgui_widgets.cpp"
-                  
-                  "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
-                  "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
-                  "${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp")
+find_package(imgui QUIET)
+if(imgui_FOUND)
+    target_link_libraries(${PROJECT_NAME} imgui) 
+else()
+    set(IMGUI_DIR "${LIB_DIR}/imgui")
+    message(STATUS "(ImGui) Using manual specified path: ${IMGUI_DIR}")
+    add_library("imgui" "${IMGUI_DIR}/imgui.cpp"
+                      "${IMGUI_DIR}/imgui_demo.cpp"
+                      "${IMGUI_DIR}/imgui_draw.cpp"
+                      "${IMGUI_DIR}/imgui_tables.cpp"
+                      "${IMGUI_DIR}/imgui_widgets.cpp"
 
-target_include_directories("imgui" PRIVATE "${IMGUI_DIR}")
-target_include_directories("imgui" PRIVATE "${IMGUI_DIR}/backends")
-target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}")
-target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/backends")
-target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
-target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
-target_link_libraries("imgui" "vulkan" "${CMAKE_DL_LIBS}")
-target_include_directories("imgui" PRIVATE "${VULKAN_PATH}/include")
+                      "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
+                      "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
+                      "${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp")
+
+    target_include_directories("imgui" PRIVATE "${IMGUI_DIR}")
+    target_include_directories("imgui" PRIVATE "${IMGUI_DIR}/backends")
+    target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}")
+    target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/backends")
+    target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
+    target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
+    target_link_libraries("imgui" Vulkan::Vulkan "${CMAKE_DL_LIBS}")
+    target_include_directories("imgui" PRIVATE "${VULKAN_PATH}/include")
+endif()
 
 #################################################################
 # Library: Lua
 #################################################################
-if(AUTO_LOCATE_LUA AND NOT WIN32)
-    message(STATUS "(Lua) Attempting auto locate Lua using CMake.....")
-    find_package(Lua51 REQUIRED)
+message(STATUS "(Lua) Attempting auto locate Lua using CMake.....")
+find_package(Lua51 QUIET)
+if(Lua51_FOUND)
     include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
     target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
 else()
@@ -259,14 +290,18 @@ endif()
 #################################################################
 # Library: JSON
 #################################################################
-set(JSON_BuildTests OFF CACHE INTERNAL "")
-set(JSON_INSTALL OFF CACHE INTERNAL "")
-add_subdirectory("${LIB_DIR}/json")
+find_package(nlohmann_json QUIET) # NOTE: nlohmann-json in vcpkg
+if(NOT nlohmann-json_FOUND)
+    set(JSON_BuildTests OFF CACHE INTERNAL "")
+    set(JSON_INSTALL OFF CACHE INTERNAL "")
+    add_subdirectory("${LIB_DIR}/json")
+endif()
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
 
 #################################################################
 # Library: Google Test
 #################################################################
+set(INSTALL_GTEST OFF CACHE INTERNAL "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)")
 set(GTEST_DIR "${LIB_DIR}/googletest") 
 add_subdirectory(${GTEST_DIR})
 enable_testing()
@@ -280,5 +315,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 #################################################################
 # Library: OpenAL Soft
 #################################################################
-find_package(OpenAL CONFIG REQUIRED)
+find_package(OpenAL CONFIG QUIET)
+if(OpenAL_FOUND)
 target_link_libraries(${PROJECT_NAME} OpenAL::OpenAL)
+else()
+    return()
+endif()

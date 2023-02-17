@@ -1,10 +1,9 @@
 #include "vulkan_device.h"
 
-#pragma warning disable C2057
-#pragma warning disable C2133
-
-#define VK_USE_PLATFORM_XCB_KHR
-#define GLFW_EXPOSE_NATIVE_XCB
+#ifdef _unix_
+ #define VK_USE_PLATFORM_XCB_KHR
+ #define GLFW_EXPOSE_NATIVE_XCB
+#endif
 
 #include <util/sysdefs.h>
 
@@ -77,12 +76,12 @@ _checkDeviceExtensionSupport(const char *extensions[],
                              ui32 count,
                              VkPhysicalDevice device)
 {
-    ui32 extensionsCount;
-    vkEnumerateDeviceExtensionProperties(device, NULL, &extensionsCount, NULL);
+    ui32 extensionsCount = 0;
+    VK_CHECK(vkEnumerateDeviceExtensionProperties(device, NULL, &extensionsCount, NULL));
 
-    VkExtensionProperties availableExtensions[1];
-    vkEnumerateDeviceExtensionProperties(
-      device, NULL, &extensionsCount, availableExtensions);
+    VkExtensionProperties *availableExtensions = malloc(sizeof(VkExtensionProperties) * extensionsCount);
+    VK_CHECK(vkEnumerateDeviceExtensionProperties(
+      device, NULL, &extensionsCount, availableExtensions));
 
 #if 0 // Print all available device extensions
     LOG_INFO("Available Device Extensions (%d): ", extensionsCount);
@@ -91,9 +90,9 @@ _checkDeviceExtensionSupport(const char *extensions[],
     }
 #endif
 
-    for (int i = 0; i < count; i++) {
+    for (ui32 i = 0; i < count; i++) {
         int extensionFound = 0;
-        for (int j = 0; j < extensionsCount; j++) {
+        for (ui32 j = 0; j < extensionsCount; j++) {
             if (strcmp(extensions[i], availableExtensions[j].extensionName) ==
                 0) {
                 extensionFound = 1;
@@ -116,8 +115,10 @@ _isDeviceSuitable(VkPhysicalDevice physicalDevice)
     // TODO: Device-ranking support
 
     // Swapchain support
-    // const char *validationLayers[VK_REQ_VALIDATION_SIZE] =
-    // VK_REQ_VALIDATION_LIST;
+    const char *validationLayers[VK_REQ_VALIDATION_SIZE] =
+        VK_REQ_VALIDATION_LIST;
+
+    // Device extension support
     const char *deviceExtensions[VK_REQ_DEVICE_EXT_SIZE] = VK_REQ_DEVICE_EXT;
 
     ui32 indices = vulkan_device_find_queue_families(physicalDevice);
@@ -137,16 +138,16 @@ _isDeviceSuitable(VkPhysicalDevice physicalDevice)
 ui32
 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
 {
-    ui32 graphicsFamily;
+    ui32 graphicsFamily = 0;
     ui32 queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(
       physicalDevice, &queueFamilyCount, NULL);
 
-    VkQueueFamilyProperties queueFamilies[1];
+    VkQueueFamilyProperties *queueFamilies = malloc(sizeof(VkQueueFamilyProperties) * queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(
       physicalDevice, &queueFamilyCount, queueFamilies);
 
-    for (int i = 0; i < queueFamilyCount; i++) {
+    for (ui32 i = 0; i < queueFamilyCount; i++) {
         if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             graphicsFamily = i;
         }
@@ -165,7 +166,7 @@ vulkan_device_create()
         .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
         .pEngineName        = "Below Engine",
         .engineVersion      = VK_MAKE_VERSION(1, 0, 0),
-        .apiVersion         = VK_API_VERSION_1_0,
+        .apiVersion         = VK_API_VERSION_1_3,
     };
 
     // Vulkan Instance Information
@@ -180,11 +181,22 @@ vulkan_device_create()
     ui32 glfwExtensionCount = 0;
     const char **glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    LOG_INFO("GLFW Extension count: %d", glfwExtensionCount);
     // vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
     // printf("\n%d extensions supported", extensionCount);
 
+#ifdef _unix_
+    const ui32 extensionTestCount = 2;
     const char *extensionTest[2] = {"VK_KHR_surface",
-                                    VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+                                     VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+#else
+#ifdef _WIN32
+    const ui32 extensionTestCount = 3;
+    const char *extensionTest[3] = {"VK_KHR_surface",
+                                    "VK_KHR_win32_surface",
+                                     VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+#endif
+#endif
 
     const char *validationLayers[VK_REQ_VALIDATION_SIZE] =
       VK_REQ_VALIDATION_LIST;
@@ -196,7 +208,7 @@ vulkan_device_create()
         createInfo.ppEnabledLayerNames = validationLayers;
         createInfo.enabledLayerCount   = VK_REQ_VALIDATION_SIZE;
 
-        createInfo.enabledExtensionCount   = 2;
+        createInfo.enabledExtensionCount   = extensionTestCount;
         createInfo.ppEnabledExtensionNames = extensionTest;
     } else {
         createInfo.enabledLayerCount       = 0;
@@ -209,7 +221,7 @@ vulkan_device_create()
     VkResult result = vkCreateInstance(&createInfo, NULL, &ret->vulkanInstance);
     if (vkCreateInstance(&createInfo, NULL, &ret->vulkanInstance) !=
         VK_SUCCESS) {
-        printf("Failed to initialize Vulkan Instance!");
+        LOG_ERROR("Failed to initialize Vulkan Instance!");
         return NULL;
     } else {
         LOG_INFO("Successfully created Vulkan Instance!");
@@ -223,19 +235,19 @@ vulkan_device_create()
     // Physical Device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     ui32 deviceCount                = 0;
-    vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, NULL);
+    VK_CHECK(vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, NULL));
 
     if (deviceCount == 0) {
-        printf("failed to find GPUs with Vulkan support!");
+        LOG_ERROR("failed to find GPUs with Vulkan support!");
     }
 
-    VkPhysicalDevice devices[15];
-    vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, devices);
+    VkPhysicalDevice *devices = malloc(sizeof(VkPhysicalDevice) * deviceCount);
+    VK_CHECK(vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, devices));
 
     VkPhysicalDeviceProperties deviceProperties;
 
     // TODO: This does not list all devices before picking suitable
-    for (int i = 0; i < deviceCount; i++) {
+    for (ui32 i = 0; i < deviceCount; i++) {
         vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
         LOG_INFO("Device Found: %s", deviceProperties.deviceName);
 
@@ -279,6 +291,7 @@ vulkan_device_create()
     logicCreateInfo.enabledExtensionCount          = VK_REQ_DEVICE_EXT_SIZE;
     logicCreateInfo.ppEnabledExtensionNames        = extensions;
 
+    ret->device = malloc(sizeof(VkDevice));
     VK_CHECK(
       vkCreateDevice(physicalDevice, &logicCreateInfo, NULL, &ret->device));
 

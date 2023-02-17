@@ -72,7 +72,6 @@ DrawMesh(struct ComponentMesh *mesh,
         // Draw command
         vkCmdDraw(commandBuffer, context->vertexBuffer->size, 1, 0, 0);
 #endif
-
         // Bind Vertex/Index buffers
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(
