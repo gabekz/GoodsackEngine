@@ -4,8 +4,6 @@
 
 */
 
-#define _POSIX_C_SOURCE > 200809L
-
 #include "shader.h"
 
 #include <stdio.h>
@@ -15,7 +13,9 @@
 #include <core/api/device.h>
 #include <util/logger.h>
 #include <util/maths.h>
+#include <util/sysdefs.h>
 
+#ifdef SYS_ENV_WIN
 #include <windows.h>
 #include <share.h>
 #include <io.h>
@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-
+// WIN ONLY {TODO}
 static FILE *open_memstream(char **buffer, int bufferLen) {
 
     FILE *stream;
@@ -69,6 +69,8 @@ static FILE *open_memstream(char **buffer, int bufferLen) {
     /* return stream that is now buffer-mapped */
     return stream;
 }
+
+#endif // SYS_ENV_WIN {TODO}
 
 /* Compile single shader type (vertex, fragment, etc.) and return
  * the id from OpenGL.
