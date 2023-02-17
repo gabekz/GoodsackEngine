@@ -1,11 +1,11 @@
 #include "vulkan_device.h"
 
-#ifdef _unix_
+#include <util/sysdefs.h>
+
+#ifdef SYS_ENV_UNIX
  #define VK_USE_PLATFORM_XCB_KHR
  #define GLFW_EXPOSE_NATIVE_XCB
 #endif
-
-#include <util/sysdefs.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -185,12 +185,12 @@ vulkan_device_create()
     // vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
     // printf("\n%d extensions supported", extensionCount);
 
-#ifdef _unix_
+#ifdef SYS_ENV_UNIX
     const ui32 extensionTestCount = 2;
     const char *extensionTest[2] = {"VK_KHR_surface",
                                      VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
 #else
-#ifdef _WIN32
+#ifdef SYS_ENV_WIN
     const ui32 extensionTestCount = 3;
     const char *extensionTest[3] = {"VK_KHR_surface",
                                     "VK_KHR_win32_surface",
