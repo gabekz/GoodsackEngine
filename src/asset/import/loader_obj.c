@@ -7,10 +7,15 @@
 #include <util/gfx.h>
 #include <util/logger.h>
 #include <util/maths.h>
+#include <util/sysdefs.h>
 
 #include <model/model.h>
 
 #define LOGGING_OBJ
+
+#ifdef SYS_ENV_UNIX
+#define strtok_s(x, y, z) strok_r(x, y, z)
+#endif
 
 ModelData *
 load_obj(const char *path, float scale)
