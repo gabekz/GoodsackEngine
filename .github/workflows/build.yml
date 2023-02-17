@@ -26,20 +26,20 @@ jobs:
       with:
         packages: xorg-dev libglu1-mesa-dev libvulkan-dev libopenal1 libopenal-data libopenal-dev libpulse-dev ccache
 
-    - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        shell: cmake -P {0}
-        run: |
-        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-        message("::set-output name=timestamp::${current_date}")
+    #- name: Prepare ccache timestamp
+    #    id: ccache_cache_timestamp
+    #    shell: cmake -P {0}
+    #    run: |
+    #    string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+    #    message("::set-output name=timestamp::${current_date}")
 
-    - name: ccache cache files
-        uses: actions/cache@v1.1.0
-        with:
-        path: .ccache
-        key: ${ { matrix.config.name } }-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp } }
-        restore-keys: |
-          ${ { matrix.config.name } }-ccache-       version: 1.0
+    #- name: ccache cache files
+    #    uses: actions/cache@v1.1.0
+    #    with:
+    #    path: .ccache
+    #    key: ${ { matrix.config.name } }-ccache-${ { steps.ccache_cache_timestamp.outputs.timestamp } }
+    #    restore-keys: |
+    #      ${ { matrix.config.name } }-ccache-       version: 1.0
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
