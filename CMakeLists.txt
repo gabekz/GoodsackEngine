@@ -62,7 +62,9 @@ set(CMAKE_C_STANDARD 17)
 #set(CMAKE_CXX_STANDARD_COMPILE_OPTION "-std:c++latest")
 #set(CMAKE_CXX_EXTENSION_COMPILE_OPTION "-std:c++latest")
 
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(MSVC)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
 
 if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.29.30129 AND CMAKE_VERSION VERSION_GREATER 3.20.3)
     # this change happened in CMake 3.20.4
@@ -70,6 +72,15 @@ if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.29.30129 AND CM
 else ()
     set(CMAKE_CXX_STANDARD 20) # /std:c++latest for msvc and -std=c++20 for everyone else.
 endif ()
+
+if(UNIX)
+    set(CMAKE_C_FLAGS "-g -O0")
+    set(CMAKE_CXX_FLAGS "-g -std=c++14 -O0")
+    set(CMAKE_CXX_STANDARD 14) # /std:c++latest for msvc and -std=c++20 for everyone else.
+
+    set(CMAKE_CXX_FLAGS_RELEASE "-g -std=c++14 -O3 -DNDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++14 -O0")
+endif()
 
 
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
@@ -317,10 +328,19 @@ endif()
 #################################################################
 # Library: OpenAL Soft
 #################################################################
+
+set(ALSOFT_INSTALL OFF CACHE INTERNAL "Install main library")
+set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "Build example programs")
+set(ALSOFT_UTILS OFF CACHE INTERNAL "Build utility programs")
+set(ALSOFT_NO_CONFIG_UTIL ON CACHE INTERNAL "Disable building the alsoft-config utility")
+
+message(STATUS "(OpenAL) Auto-locating")
 find_package(OpenAL CONFIG QUIET)
 if(OpenAL_FOUND)
-target_link_libraries(${PROJECT_NAME} OpenAL::OpenAL)
+    message(STATUS "(OpenAL) successfully auto-located")
+    target_link_libraries(${PROJECT_NAME} OpenAL::OpenAL)
 else()
+    message(STATUS "(OpenAL) failed to auto-locate")
     set(OPENAL_DIR "${LIB_DIR}/openal-soft") 
     set(ALSOFT_INSTALL OFF CACHE INTERNAL "Install main library")
     set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "Build example programs")

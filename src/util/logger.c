@@ -67,6 +67,7 @@ static CRITICAL_SECTION s_mutex;
 static pthread_mutex_t s_mutex;
 #endif /* defined(_WIN32) || defined(_WIN64) */
 
+#ifdef SYS_ENV_WIN
 static int gettimeofday(struct timeval * tp, struct timezone * tzp)
 {
     // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
@@ -87,6 +88,7 @@ static int gettimeofday(struct timeval * tp, struct timezone * tzp)
     tp->tv_usec = (long) (system_time.wMilliseconds * 1000);
     return 0;
 }
+#endif
 
 static void
 init(void)
@@ -111,7 +113,12 @@ getTimestamp(const struct timeval *time, char *timestamp, ui64 size)
     assert(size >= 25);
 
     //localtime_s(&sec, &calendar);
-    localtime_s(&calendar, &sec);
+    #if defined(SYS_ENV_WIN)
+        localtime_s(&calendar, &sec);
+    #elif defined(SYS_ENV_UNIX)
+        localtime_s(&sec, &calendar);
+    #endif
+
     strftime(timestamp, size, "%y-%m-%d %H:%M:%S", &calendar);
     sprintf(&timestamp[17], ".%06ld", (long)time->tv_usec);
 }
