@@ -1,11 +1,7 @@
 #include "logger.h"
 
-#define _LARGE_TIME_API
-#define _XOPEN_SOURCE 500
-
 #include <assert.h>
 #include <stdarg.h>
-#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -13,6 +9,7 @@
 #include <util/sysdefs.h>
 
 #ifdef SYS_ENV_WIN
+#include <stdlib.h>
 #include <winsock2.h>
 #else
 
@@ -116,7 +113,7 @@ getTimestamp(const struct timeval *time, char *timestamp, ui64 size)
     #if defined(SYS_ENV_WIN)
         localtime_s(&calendar, &sec);
     #elif defined(SYS_ENV_UNIX)
-        localtime_s(&sec, &calendar);
+        localtime_r(&sec, &calendar);
     #endif
 
     strftime(timestamp, size, "%y-%m-%d %H:%M:%S", &calendar);

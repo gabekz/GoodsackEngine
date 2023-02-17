@@ -14,7 +14,7 @@
 #define LOGGING_OBJ
 
 #ifdef SYS_ENV_UNIX
-#define strtok_s(x, y, z) strok_r(x, y, z)
+#define strtok_s(x, y, z) strtok_r(x, y, z)
 #endif
 
 ModelData *

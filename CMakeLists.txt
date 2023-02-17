@@ -15,9 +15,6 @@ include(colors)
 set(CMAKE_COLOR_MAKEFILE ON)
 define_colors()
 
-message("This is normal")
-message("${Red}This is Red${ColourReset}")
-
 set(GAME_EXE_NAME "game")
 set(TEST_EXE_NAME "testRunner")
 

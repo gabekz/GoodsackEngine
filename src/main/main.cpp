@@ -1,5 +1,7 @@
-//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
-#pragma optimize("", off)
+#ifdef _WIN32
+ //#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+ #pragma optimize("", off)
+#endif
 
 #include <iostream>
 #include <string>
