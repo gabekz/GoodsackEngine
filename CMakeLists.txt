@@ -266,8 +266,8 @@ endif()
 # Library: Lua
 #################################################################
 message(STATUS "(Lua) Attempting auto locate Lua using CMake.....")
-find_package(Lua REQUIRED)
-if(Lua_FOUND OR LUA_FOUND)
+find_package(Lua Lua51 QUIET)
+if(Lua_FOUND OR LUA_FOUND OR Lua51_FOUND OR LUA51_FOUND)
     message(STATUS "(Lua) Auto located.")
     #include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
     target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
