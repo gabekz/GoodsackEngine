@@ -286,7 +286,7 @@ else()
     file(GLOB LUA_LIBRARIES "${LUA_DIR}/src/*.c" "${LUA_DIR}/src/*.h")
     add_library("lua" ${LUA_LIBRARIES})
     target_link_libraries(${PROJECT_NAME} lua)
-    target_include_directories(${PROJECT_NAME} PRIVATE "${LUA_DIR}/src")
+    target_include_directories(${PROJECT_NAME} PUBLIC "${LUA_DIR}/src")
 endif()
 
 #################################################################
