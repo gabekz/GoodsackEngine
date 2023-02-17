@@ -11,7 +11,7 @@
 namespace ecs {
 
 std::map<std::string, ComponentLayout *>
-ParseComponents(const char *path, ui32 rawData = 0);
+ParseComponents(std::string path, ui32 rawData = 0);
 
 };
 

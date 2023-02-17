@@ -17,9 +17,8 @@ using json = nlohmann::json;
 using namespace ecs;
 
 std::map<std::string, ComponentLayout *>
-ecs::ParseComponents(const char *path, ui32 rawData)
+ecs::ParseComponents(std::string path, ui32 rawData)
 {
-
     json JSON;
 
     if (rawData <= 0) {

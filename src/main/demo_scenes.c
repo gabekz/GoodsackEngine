@@ -6,8 +6,8 @@
 
 #include <components/components.h>
 
-#define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16, renderer->vulkanDevice)
-#define texture_create_n(x) texture_create(x, GL_RGB, false, 1, renderer->vulkanDevice)
+#define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16, NULL)
+#define texture_create_n(x) texture_create(x, GL_RGB, false, 1, NULL)
 
 Texture *texDefSpec, *texDefNorm, *texPbrAo;
 
@@ -365,8 +365,8 @@ void demo_scenes_create(ECS *ecs, Renderer *renderer)
     texPbrAo = texture_create_n("../res/textures/defaults/white.png");
 
 
-   //_scene0(ecs, renderer);
-   //_scene1(ecs, renderer);
-   //_scene2(ecs, renderer);
+   _scene0(ecs, renderer);
+   _scene1(ecs, renderer);
+   _scene2(ecs, renderer);
    _scene3(ecs, renderer);
 }

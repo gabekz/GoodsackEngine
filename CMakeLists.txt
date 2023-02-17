@@ -104,19 +104,10 @@ foreach (item ${SOURCES})
     endif ()
 endforeach()
 
-# QUICK TEST
-foreach (item ${SOURCES})
-    # Check if our items matches our regular expression
-    if ("${item}" MATCHES ".*runtime.*")
-        # Remove current item from our list
-        list (REMOVE_ITEM SOURCES "${item}")
-    endif ()
-endforeach()
-
 ######## EXECUTABLES ############################################
 
 option(GOODSACK_EXAMPLES "Build eaxmple projects" ON)
-option(GOODSACK_TEST "Build the TestRunner executable" OFF)
+option(GOODSACK_TEST "Build the TestRunner executable" ON)
 option(GOODSACK_TEST_COVERAGE "Collect test coverage files" OFF)
 
 # Resources Directory
@@ -127,9 +118,6 @@ add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC "${SRC_DIR}")
 
 target_compile_options(${PROJECT_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
-
-add_subdirectory("${SRC_DIR}/runtime")
-target_link_libraries(${PROJECT_NAME} runtime)
 
 #################################################################
 # Example Projects
@@ -145,12 +133,15 @@ endif()
 # TestRunner Executable
 #################################################################
 if(GOODSACK_TEST)
-
+    enable_testing()
     add_executable(${TEST_EXE_NAME} ${TEST_SOURCES} )
     target_include_directories(${TEST_EXE_NAME} PRIVATE "${SRC_DIR}")
     # Link test executable against gtest & gtest_main
-    target_link_libraries(${TEST_EXE_NAME} gtest gcov gtest_main)
-    target_link_libraries(${TEST_EXE_NAME} ${PROJECT_NAME}) 
+    target_link_libraries(${TEST_EXE_NAME} 
+        GTest::gtest 
+        GTest::gtest_main
+        ${PROJECT_NAME}
+    )
     add_test(${TEST_EXE_NAME} ${TEST_EXE_NAME})
     set_tests_properties(${TEST_EXE_NAME} PROPERTIES
         WORKING_DIRECTORY "${SRC_DIR}")
@@ -245,9 +236,9 @@ target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
 #################################################################
 # Library: ImGui
 #################################################################
-find_package(imgui QUIET)
+find_package(imgui CONFIG QUIET)
 if(imgui_FOUND)
-    target_link_libraries(${PROJECT_NAME} imgui) 
+    target_link_libraries(${PROJECT_NAME} imgui::imgui) 
 else()
     set(IMGUI_DIR "${LIB_DIR}/imgui")
     message(STATUS "(ImGui) Using manual specified path: ${IMGUI_DIR}")
@@ -275,26 +266,32 @@ endif()
 # Library: Lua
 #################################################################
 message(STATUS "(Lua) Attempting auto locate Lua using CMake.....")
-find_package(Lua51 QUIET)
-if(Lua51_FOUND)
-    include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
+find_package(Lua REQUIRED)
+if(Lua_FOUND OR LUA_FOUND)
+    message(STATUS "(Lua) Auto located.")
+    #include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
     target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
+    #target_include_directories(${RPOJECT_NAME} ${LUA_INCLUDE_DIR})
 else()
+    message(STATUS "(Lua) Failed to auto locate")
     set(LUA_DIR "${LIB_DIR}/lua-5.4.4")
     file(GLOB LUA_LIBRARIES "${LUA_DIR}/src/*.c" "${LUA_DIR}/src/*.h")
     add_library("lua" ${LUA_LIBRARIES})
     target_link_libraries(${PROJECT_NAME} lua)
-    target_include_directories(${PROJECT_NAME} PUBLIC "${LUA_DIR}/src")
+    target_include_directories(${PROJECT_NAME} PRIVATE "${LUA_DIR}/src")
 endif()
 
 #################################################################
 # Library: JSON
 #################################################################
 find_package(nlohmann_json QUIET) # NOTE: nlohmann-json in vcpkg
-if(NOT nlohmann-json_FOUND)
+if(NOT nlohmann_json_FOUND)
+    message(STATUS "failed to find JSON")
     set(JSON_BuildTests OFF CACHE INTERNAL "")
     set(JSON_INSTALL OFF CACHE INTERNAL "")
     add_subdirectory("${LIB_DIR}/json")
+else()
+    message(STATUS "Auto-located JSON")
 endif()
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
 
@@ -302,15 +299,20 @@ target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
 # Library: Google Test
 #################################################################
 set(INSTALL_GTEST OFF CACHE INTERNAL "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)")
-set(GTEST_DIR "${LIB_DIR}/googletest") 
-add_subdirectory(${GTEST_DIR})
-enable_testing()
-target_include_directories(${PROJECT_NAME} PRIVATE
-    "${GTEST_DIR}" 
-    "${GTEST_DIR}/googletest"
-    "${GTEST_DIR}/googletest/include"
-    "${GTEST_DIR}/googlemock"
-    "${GTEST_DIR}/googlemock/include")
+find_package(GTest CONFIG QUIET)
+if(GTest_FOUND)
+    message("GTest auto located")
+else()
+    message("Failed to auto locate")
+    set(GTEST_DIR "${LIB_DIR}/googletest") 
+    add_subdirectory(${GTEST_DIR})
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        "${GTEST_DIR}" 
+        "${GTEST_DIR}/googletest"
+        "${GTEST_DIR}/googletest/include"
+        "${GTEST_DIR}/googlemock"
+        "${GTEST_DIR}/googlemock/include")
+endif()
 
 #################################################################
 # Library: OpenAL Soft
@@ -319,5 +321,14 @@ find_package(OpenAL CONFIG QUIET)
 if(OpenAL_FOUND)
 target_link_libraries(${PROJECT_NAME} OpenAL::OpenAL)
 else()
-    return()
+    set(OPENAL_DIR "${LIB_DIR}/openal-soft") 
+    set(ALSOFT_INSTALL OFF CACHE INTERNAL "Install main library")
+    set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "Build example programs")
+    set(ALSOFT_UTILS OFF CACHE INTERNAL "Build utility programs")
+    set(ALSOFT_NO_CONFIG_UTIL ON CACHE INTERNAL "Disable building the alsoft-config utility")
+    add_subdirectory(${OPENAL_DIR})
+    target_link_libraries(${PROJECT_NAME} OpenAL)
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        "${OPENAL_DIR}" 
+        "${OPENAL_DIR}/include")
 endif()

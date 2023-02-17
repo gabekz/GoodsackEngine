@@ -4,12 +4,15 @@
 #include <string.h>
 
 #include <util/lua_deps.h>
+#include <util/logger.h>
 
 #include <ecs/lua/eventstore.hpp>
 #include <ecs/lua/reg_system.hpp>
 
 #include <lua/debug.h>
 #include <lua/reg_print.h>
+
+#undef WIN32_LEAN_AND_MEAN
 
 void
 LuaInit(const char *file)
