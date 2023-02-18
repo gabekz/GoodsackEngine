@@ -1,6 +1,7 @@
 #include "model.h"
 
 #include <asset/import/loader_obj.h>
+#pragma optimize("", off)
 
 Model *
 model_assemble(const char *path, float scale)

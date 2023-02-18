@@ -78,7 +78,7 @@ vbo_create(const void *data, unsigned int size)
     glGenBuffers(1, &vbo->id);
     glBindBuffer(GL_ARRAY_BUFFER, vbo->id);
     // DOCS: glBufferData: GL type of buffer, size, data, GL draw-type
-    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 
     return vbo;
 }
@@ -131,7 +131,7 @@ ibo_create(const unsigned int *data, unsigned int size)
 
     glGenBuffers(1, &ibo->id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 
     return ibo;
 }
