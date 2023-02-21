@@ -3,8 +3,8 @@
 #include <util/sysdefs.h>
 
 #ifdef SYS_ENV_UNIX
- #define VK_USE_PLATFORM_XCB_KHR
- #define GLFW_EXPOSE_NATIVE_XCB
+#define VK_USE_PLATFORM_XCB_KHR
+#define GLFW_EXPOSE_NATIVE_XCB
 #endif
 
 #include <stdlib.h>
@@ -33,7 +33,8 @@ _checkValidationLayerSupport(const char *validationLayers[], ui32 count)
     ui32 layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, NULL);
 
-    VkLayerProperties *availableLayers = malloc(sizeof(VkLayerProperties) * layerCount);
+    VkLayerProperties *availableLayers =
+      malloc(sizeof(VkLayerProperties) * layerCount);
 
     if (vkEnumerateInstanceLayerProperties(&layerCount, availableLayers) !=
         VK_SUCCESS) {
@@ -77,9 +78,11 @@ _checkDeviceExtensionSupport(const char *extensions[],
                              VkPhysicalDevice device)
 {
     ui32 extensionsCount = 0;
-    VK_CHECK(vkEnumerateDeviceExtensionProperties(device, NULL, &extensionsCount, NULL));
+    VK_CHECK(vkEnumerateDeviceExtensionProperties(
+      device, NULL, &extensionsCount, NULL));
 
-    VkExtensionProperties *availableExtensions = malloc(sizeof(VkExtensionProperties) * extensionsCount);
+    VkExtensionProperties *availableExtensions =
+      malloc(sizeof(VkExtensionProperties) * extensionsCount);
     VK_CHECK(vkEnumerateDeviceExtensionProperties(
       device, NULL, &extensionsCount, availableExtensions));
 
@@ -116,7 +119,7 @@ _isDeviceSuitable(VkPhysicalDevice physicalDevice)
 
     // Swapchain support
     const char *validationLayers[VK_REQ_VALIDATION_SIZE] =
-        VK_REQ_VALIDATION_LIST;
+      VK_REQ_VALIDATION_LIST;
 
     // Device extension support
     const char *deviceExtensions[VK_REQ_DEVICE_EXT_SIZE] = VK_REQ_DEVICE_EXT;
@@ -138,12 +141,13 @@ _isDeviceSuitable(VkPhysicalDevice physicalDevice)
 ui32
 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
 {
-    ui32 graphicsFamily = 0;
+    ui32 graphicsFamily   = 0;
     ui32 queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(
       physicalDevice, &queueFamilyCount, NULL);
 
-    VkQueueFamilyProperties *queueFamilies = malloc(sizeof(VkQueueFamilyProperties) * queueFamilyCount);
+    VkQueueFamilyProperties *queueFamilies =
+      malloc(sizeof(VkQueueFamilyProperties) * queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(
       physicalDevice, &queueFamilyCount, queueFamilies);
 
@@ -161,18 +165,18 @@ vulkan_device_create()
 {
     // Vulkan Application Info
     VkApplicationInfo appInfo = {
-        .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pApplicationName   = "Application Name",
-        .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
-        .pEngineName        = "Below Engine",
-        .engineVersion      = VK_MAKE_VERSION(1, 0, 0),
-        .apiVersion         = VK_API_VERSION_1_3,
+      .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+      .pApplicationName   = "Application Name",
+      .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+      .pEngineName        = "Below Engine",
+      .engineVersion      = VK_MAKE_VERSION(1, 0, 0),
+      .apiVersion         = VK_API_VERSION_1_3,
     };
 
     // Vulkan Instance Information
     VkInstanceCreateInfo createInfo = {
-        .sType                = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pApplicationInfo     = &appInfo,
+      .sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+      .pApplicationInfo = &appInfo,
     };
 
     // Validation Layer + Extension Handling for Instance
@@ -187,13 +191,13 @@ vulkan_device_create()
 
 #ifdef SYS_ENV_UNIX
     const ui32 extensionTestCount = 2;
-    const char *extensionTest[2] = {"VK_KHR_surface",
+    const char *extensionTest[2]  = {"VK_KHR_surface",
                                      VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
 #else
 #ifdef SYS_ENV_WIN
     const ui32 extensionTestCount = 3;
-    const char *extensionTest[3] = {"VK_KHR_surface",
-                                    "VK_KHR_win32_surface",
+    const char *extensionTest[3]  = {"VK_KHR_surface",
+                                     "VK_KHR_win32_surface",
                                      VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
 #endif
 #endif
@@ -235,14 +239,16 @@ vulkan_device_create()
     // Physical Device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     ui32 deviceCount                = 0;
-    VK_CHECK(vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, NULL));
+    VK_CHECK(
+      vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, NULL));
 
     if (deviceCount == 0) {
         LOG_ERROR("failed to find GPUs with Vulkan support!");
     }
 
     VkPhysicalDevice *devices = malloc(sizeof(VkPhysicalDevice) * deviceCount);
-    VK_CHECK(vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, devices));
+    VK_CHECK(
+      vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, devices));
 
     VkPhysicalDeviceProperties deviceProperties;
 
@@ -269,21 +275,21 @@ vulkan_device_create()
     float queuePriority = 1.0f;
 
     VkDeviceQueueCreateInfo queueCreateInfo = {
-        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-        .queueFamilyIndex = graphicsFamily,
-        .queueCount       = 1,
-        .pQueuePriorities = &queuePriority,
+      .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+      .queueFamilyIndex = graphicsFamily,
+      .queueCount       = 1,
+      .pQueuePriorities = &queuePriority,
     };
 
     VkPhysicalDeviceFeatures deviceFeatures = {
-        .samplerAnisotropy        = VK_TRUE,
+      .samplerAnisotropy = VK_TRUE,
     };
 
-    VkDeviceCreateInfo logicCreateInfo   = {
-        .sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pQueueCreateInfos    = &queueCreateInfo,
-        .queueCreateInfoCount = 1,
-        .pEnabledFeatures     = &deviceFeatures,
+    VkDeviceCreateInfo logicCreateInfo = {
+      .sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+      .pQueueCreateInfos    = &queueCreateInfo,
+      .queueCreateInfoCount = 1,
+      .pEnabledFeatures     = &deviceFeatures,
     };
 
     // Device Extensions

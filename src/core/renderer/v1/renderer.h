@@ -86,6 +86,6 @@ struct _ecs *
 renderer_active_scene(Renderer *self, ui16 sceneIndex);
 //-------------------------------
 
-//#endif // __cplusplus
+// #endif // __cplusplus
 
 #endif // H_RENDERER

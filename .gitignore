@@ -1,8 +1,12 @@
 CMakeFiles/
 build/
+cache/
 out/
+
 .cache/
+.captures/
+.extras/
 .vscode/
 .vs/
-cache/
+
 compile_commands.json

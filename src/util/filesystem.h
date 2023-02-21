@@ -13,15 +13,15 @@
 #define MAX_PATH 260
 #endif
 
-static inline void _GetDir() {
+static inline void
+_GetDir()
+{
     TCHAR NPath[260];
 
     GetCurrentDirectory(MAX_PATH, NPath);
 }
 
 filesystem_path(FS_DIR_DEBUG, "logs/logs.txt");
-
-
 
 static void filesystem_memstream(BUFFER, LEN);
 static void filesystem_flush(BUFFER);

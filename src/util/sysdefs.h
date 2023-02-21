@@ -31,7 +31,6 @@
 #endif
 #endif // GCC
 
-
 // Windows badly defines a lot of stuff. Undefine it.
 #ifdef SYS_ENV_WIN
 #define WIN32_LEAN_AND_MEAN

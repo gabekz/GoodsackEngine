@@ -21,7 +21,8 @@ vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface)
 
     // Store Formats
     int formatCount = 0;
-    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, NULL));
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(
+      device, surface, &formatCount, NULL));
 
     if (formatCount != 0) {
         details->formats = malloc(sizeof(VkSurfaceFormatKHR) * formatCount);

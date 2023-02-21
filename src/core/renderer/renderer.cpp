@@ -3,7 +3,7 @@
 #include <core/context/context.h>
 #include <core/scene/scene.h>
 
-//#include <ecs/ecs.h>
+// #include <ecs/ecs.h>
 
 Renderer::Renderer(int windowWidth, int windowHeight)
 {

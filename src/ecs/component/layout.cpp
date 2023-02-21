@@ -6,8 +6,8 @@
 #include <map>
 #include <string>
 
-#include <util/sysdefs.h>
 #include <util/maths.h>
+#include <util/sysdefs.h>
 
 using namespace ecs;
 

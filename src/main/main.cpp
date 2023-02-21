@@ -1,6 +1,6 @@
 #ifdef _WIN32
- //#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
- #pragma optimize("", off)
+// #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#pragma optimize("", off)
 #endif
 
 #include <iostream>
@@ -47,7 +47,7 @@ main(int argc, char *argv[])
     }
 
     // Main Lua entry
-    //LuaInit("../src/lua/demo/main.lua");
+    // LuaInit("../src/lua/demo/main.lua");
 
     switch (device_getGraphics()) {
     case GRAPHICS_API_OPENGL: LOG_INFO("Device API is OpenGL"); break;

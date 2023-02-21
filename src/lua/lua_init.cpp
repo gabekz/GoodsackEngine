@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/lua_deps.h>
 #include <util/logger.h>
+#include <util/lua_deps.h>
 
 #include <ecs/lua/eventstore.hpp>
 #include <ecs/lua/reg_system.hpp>

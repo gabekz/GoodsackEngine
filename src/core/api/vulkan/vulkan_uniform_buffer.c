@@ -52,7 +52,7 @@ vulkan_uniform_buffer_update(ui32 currentImage,
                              void **uniformBuffersMapped,
                              VkExtent2D swapchainExtent)
 {
-    mat4 init               = GLM_MAT4_IDENTITY_INIT;
+    mat4 init = GLM_MAT4_IDENTITY_INIT;
     UniformBufferObject ubo;
     glm_mat4_copy(init, ubo.model);
     glm_mat4_copy(init, ubo.proj);

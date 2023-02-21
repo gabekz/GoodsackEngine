@@ -65,7 +65,6 @@ shader_uniform(ShaderProgram *shader,
                ui32 type,
                void *data);
 
-
 #ifdef __cplusplus
 }
 #endif // __cplusplus

@@ -47,9 +47,9 @@ _createShaderModule(VkDevice device, const char *path)
     struct FileDescriptor *file = _parseShader(path);
 
     VkShaderModuleCreateInfo createInfo = {
-        .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .codeSize = file->filelen,
-        .pCode    = (uint32_t *)file->buffer,
+      .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+      .codeSize = file->filelen,
+      .pCode    = (uint32_t *)file->buffer,
     };
 
     VkShaderModule ret;
