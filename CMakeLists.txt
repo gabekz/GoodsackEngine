@@ -135,6 +135,27 @@ if(GOODSACK_EXAMPLES)
     target_include_directories(${GAME_EXE_NAME} PRIVATE "${SRC_DIR}/main")
     target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME})
     target_compile_options(${GAME_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
+
+    if(UNIX)
+        set_target_properties(${GAME_EXE_NAME}
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+        )
+
+        get_target_property(TESTRESPATH ${GAME_EXE_NAME} RESOURCES_OUTPUT_DIRECTORY)
+        message(STATUS "Resources Path specified at: ${TESTRESPATH}")
+
+        # add_custom_command(TARGET ${GAME_EXE_NAME} POST_BUILD
+        #                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        #                    ${CMAKE_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:${GAME_EXE_NAME}>/Resources)
+        add_custom_command(TARGET ${GAME_EXE_NAME} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_directory
+                           ${CMAKE_SOURCE_DIR}/res/ ${TESTRESPATH}/res)
+    endif(UNIX)
+
 endif()
 
 #################################################################
@@ -154,6 +175,15 @@ if(GOODSACK_TEST)
     set_tests_properties(${TEST_EXE_NAME} PROPERTIES
         WORKING_DIRECTORY "${SRC_DIR}")
     target_compile_options(${TEST_EXE_NAME} PUBLIC ${TEST_EXE_OPTIONS})
+
+    if(UNIX)
+        set_target_properties(${TEST_EXE_NAME}
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+    endif(UNIX)
 endif()
 
 ######## LIBRARIES ##############################################
