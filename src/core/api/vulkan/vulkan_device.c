@@ -190,8 +190,9 @@ vulkan_device_create()
     // printf("\n%d extensions supported", extensionCount);
 
 #ifdef SYS_ENV_UNIX
-    const ui32 extensionTestCount = 2;
-    const char *extensionTest[2]  = {"VK_KHR_surface",
+    const ui32 extensionTestCount = 3;
+    const char *extensionTest[3]  = {"VK_KHR_surface",
+                                     "VK_KHR_xcb_surface",
                                      VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
 #else
 #ifdef SYS_ENV_WIN

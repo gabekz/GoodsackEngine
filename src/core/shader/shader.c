@@ -76,7 +76,7 @@ open_memstream(char **buffer, int bufferLen)
  * the id from OpenGL.
  */
 static unsigned int
-CompileSingleShader(unsigned int type, char *path)
+CompileSingleShader(unsigned int type, const char *path)
 {
     unsigned int id = glCreateShader(type);
     // const char* src = &source[0];
@@ -116,7 +116,7 @@ ParseShader(const char *path)
     // output stream
     FILE *stream = NULL;
     char *vertOut, *fragOut, *compOut;
-    size_t vertLen = 8, fragLen = 1, compLen = 0;
+    size_t vertLen = 0, fragLen = 0, compLen = 0;
 
     short mode = -1; /* -1: NONE | 0: Vert | 1: Frag */
 
@@ -130,9 +130,13 @@ ParseShader(const char *path)
         if (strstr(line, "#shader") != NULL) {
             if (stream != NULL) {
                 // Close stream for restart
+                //
+#ifdef WIN32
                 fflush(stream);
                 rewind(stream);
-                // fclose(stream);
+#endif // WIN32
+       //
+                fclose(stream);
                 /*
                 if (fclose(stream)) {
                     printf("Failed to close stream.");
@@ -144,18 +148,18 @@ ParseShader(const char *path)
             // Begin vertex
             if (strstr(line, "vertex") != NULL) {
                 mode   = 0;
-                stream = open_memstream(&vertOut, vertLen);
+                stream = open_memstream(&vertOut, &vertLen);
             }
             // Begin fragment
             else if (strstr(line, "fragment") != NULL) {
                 mode   = 1;
-                stream = open_memstream(&fragOut, fragLen);
+                stream = open_memstream(&fragOut, &fragLen);
             }
             // Begin Compute
             else if (strstr(line, "compute") != NULL) {
-                mode    = 2;
-                stream  = open_memstream(&compOut, compLen);
-                compLen = 1;
+                mode   = 2;
+                stream = open_memstream(&compOut, &compLen);
+                // compLen = 1;
             } else {
                 mode = -1;
             } // Currently no other modes
@@ -170,9 +174,11 @@ ParseShader(const char *path)
     // rewind(stream);
     //  Note: fclose() also flushes the stream
     // fclose(stream);
-    fflush(stream);
-    rewind(stream);
-    fclose(stream);
+    // fflush(stream);
+    // rewind(stream);
+    if (stream != NULL) fclose(stream);
+
+    if (fptr != NULL) fclose(fptr);
 
     /* TODO: Report 'NULL' declaration bug */
 

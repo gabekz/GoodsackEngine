@@ -112,6 +112,7 @@ main(int argc, char *argv[])
 
     delete (debugGui);
 
+    // TODO: Fix order
     glfwDestroyWindow(renderer->window);
     free(renderer);
     free(ecs);
