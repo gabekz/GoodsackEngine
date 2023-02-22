@@ -86,7 +86,7 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 # Source files
 #################################################################
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
 set(TEST_SUBDIR_REGEX ".*__tests__.*")
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
