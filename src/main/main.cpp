@@ -104,6 +104,8 @@ main(int argc, char *argv[])
         }
     }
 
+    LOG_TRACE("Closing Application");
+
     // Cleanup
     if (DEVICE_API_VULKAN) {
         vkDeviceWaitIdle(renderer->vulkanDevice->device);
@@ -111,11 +113,6 @@ main(int argc, char *argv[])
     }
 
     delete (debugGui);
-
-    // TODO: Fix order
-    glfwDestroyWindow(renderer->window);
-    free(renderer);
-    free(ecs);
     glfwTerminate();
 
     return 0;

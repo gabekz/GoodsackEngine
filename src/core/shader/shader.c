@@ -4,6 +4,8 @@
 
 */
 
+// TODO: This needs a full refactor..
+
 #include "shader.h"
 
 #include <stdio.h>
@@ -134,31 +136,43 @@ ParseShader(const char *path)
 #ifdef WIN32
                 fflush(stream);
                 rewind(stream);
-#endif // WIN32
-       //
-                fclose(stream);
-                /*
+ #else
                 if (fclose(stream)) {
-                    printf("Failed to close stream.");
+                    LOG_ERROR("Failed to close stream.");
                     exit(1);
                 }
-                */
+#endif
             }
 
             // Begin vertex
             if (strstr(line, "vertex") != NULL) {
                 mode   = 0;
+ #ifdef WIN32
+                stream = open_memstream(&vertOut, vertLen);
+                vertLen = 1;
+ #else
                 stream = open_memstream(&vertOut, &vertLen);
+ #endif
             }
             // Begin fragment
             else if (strstr(line, "fragment") != NULL) {
                 mode   = 1;
+ #ifdef WIN32
+                stream = open_memstream(&fragOut, fragLen);
+                fragLen = 1;
+ #else
                 stream = open_memstream(&fragOut, &fragLen);
+ #endif
             }
             // Begin Compute
             else if (strstr(line, "compute") != NULL) {
                 mode   = 2;
+ #ifdef WIN32
+                stream = open_memstream(&compOut, compLen);
+                compLen = 1;
+ #else
                 stream = open_memstream(&compOut, &compLen);
+ #endif
                 // compLen = 1;
             } else {
                 mode = -1;
@@ -171,13 +185,7 @@ ParseShader(const char *path)
         }
     }
 
-    // rewind(stream);
-    //  Note: fclose() also flushes the stream
-    // fclose(stream);
-    // fflush(stream);
-    // rewind(stream);
     if (stream != NULL) fclose(stream);
-
     if (fptr != NULL) fclose(fptr);
 
     /* TODO: Report 'NULL' declaration bug */
@@ -187,15 +195,12 @@ ParseShader(const char *path)
     // TODO: Is this malloc'd?
     if (vertLen > 0) {
         ss->shaderVertex = strdup(vertOut);
-        // free(vertOut);
     }
     if (fragLen > 0) {
         ss->shaderFragment = strdup(fragOut);
-        // free(fragOut);
     }
     if (compLen > 0) {
         ss->shaderCompute = strdup(compOut);
-        // free(compOut);
     }
 
     return ss;
