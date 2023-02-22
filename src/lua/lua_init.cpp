@@ -12,8 +12,6 @@
 #include <lua/debug.h>
 #include <lua/reg_print.h>
 
-#undef WIN32_LEAN_AND_MEAN
-
 void
 LuaInit(const char *file)
 {

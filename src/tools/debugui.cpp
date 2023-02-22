@@ -178,6 +178,7 @@ DebugGui::Render()
             renderer_start(m_renderer);
             m_sceneQueued = m_renderer->activeScene;
         }
+        ImGui::End();
         ImGui::EndGroup();
     }
     if (m_showSceneLighting) {
@@ -187,6 +188,7 @@ DebugGui::Render()
         ImGui::Text("Directional Light");
         // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
 
+        ImGui::End();
         ImGui::EndGroup();
     }
     if (m_showEntityViewer) {
@@ -224,8 +226,8 @@ DebugGui::Render()
                 m_showComponentViewer = true;
             }
         }
-        ImGui::EndGroup();
         ImGui::End();
+        ImGui::EndGroup();
     }
 
     if (m_showComponentViewer) {
@@ -323,9 +325,9 @@ DebugGui::Render()
             ImGui::DragFloat("Speed", &p.speed, 0.01, 0, 1.0f);
             ImGui::Text("Clipping");
             ImGui::PushItemWidth(100);
-            ImGui::DragFloat("", &p.clipping.nearZ, 0.01, 0, 10);
+            ImGui::DragFloat("Near", &p.clipping.nearZ, 0.01, 0, 10);
             ImGui::SameLine();
-            ImGui::DragFloat("", &p.clipping.farZ, 1, 0, 1000);
+            ImGui::DragFloat("Far", &p.clipping.farZ, 1, 0, 1000);
             ImGui::EndChild();
         }
 
