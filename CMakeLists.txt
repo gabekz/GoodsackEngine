@@ -4,19 +4,19 @@
 
 cmake_minimum_required(VERSION 3.20)
 project(
-    below-engine 
-    VERSION 0.8.0.0
+    GoodsackEngine
+    VERSION 0.1.0.0
     DESCRIPTION "Realtime 3D Rendering Engine"
-    HOMEPAGE_URL "github.com/gabekz/gl-renderer")
+    HOMEPAGE_URL "github.com/gabekz/GoodsackEngine")
+
+configure_file(GoodsackEngineConfig.h.in GoodsackEngineConfig.h)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-include(colors)
 
 set(CMAKE_COLOR_MAKEFILE ON)
+include(colors)
 define_colors()
 
-set(GAME_EXE_NAME "game")
-set(TEST_EXE_NAME "testRunner")
 
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -103,27 +103,19 @@ foreach (item ${SOURCES})
     endif ()
 endforeach()
 
-# REMOVE MAIN
-foreach (item ${SOURCES})
-    # Check if our items matches our regular expression
-    if ("${item}" MATCHES ".*main.*")
-        # Remove current item from our list
-        list (REMOVE_ITEM SOURCES "${item}")
-    endif ()
-endforeach()
-
 ######## EXECUTABLES ############################################
 
 option(GOODSACK_EXAMPLES "Build eaxmple projects" ON)
 option(GOODSACK_TEST "Build the TestRunner executable" ON)
 option(GOODSACK_TEST_COVERAGE "Collect test coverage files" OFF)
+option(GOODSACK_DEV "Development Mode" OFF)
 
 # Resources Directory
 #################################################################
 # Goodsack Library
 #################################################################
 add_library(${PROJECT_NAME} ${SOURCES})
-target_include_directories(${PROJECT_NAME} PUBLIC "${SRC_DIR}")
+target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
 
 target_compile_options(${PROJECT_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 
@@ -131,13 +123,17 @@ target_compile_options(${PROJECT_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 # Example Projects
 #################################################################
 if(GOODSACK_EXAMPLES)
-    add_executable(${GAME_EXE_NAME} "${SRC_DIR}/main/main.cpp" "${SRC_DIR}/main/demo_scenes.c")
-    target_include_directories(${GAME_EXE_NAME} PRIVATE "${SRC_DIR}/main")
-    target_link_libraries(${GAME_EXE_NAME} ${PROJECT_NAME})
-    target_compile_options(${GAME_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
+    set(DEMO_EXE_NAME "demo")
+    set(DEMO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/demo/demo_hot")
+
+    add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c")
+    target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR})
+
+    target_link_libraries(${DEMO_EXE_NAME} ${PROJECT_NAME})
+    target_compile_options(${DEMO_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 
     if(UNIX)
-        set_target_properties(${GAME_EXE_NAME}
+        set_target_properties(${DEMO_EXE_NAME}
         PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -145,13 +141,13 @@ if(GOODSACK_EXAMPLES)
         RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
         )
 
-        get_target_property(TESTRESPATH ${GAME_EXE_NAME} RESOURCES_OUTPUT_DIRECTORY)
+        get_target_property(TESTRESPATH ${DEMO_EXE_NAME} RESOURCES_OUTPUT_DIRECTORY)
         message(STATUS "Resources Path specified at: ${TESTRESPATH}")
 
-        # add_custom_command(TARGET ${GAME_EXE_NAME} POST_BUILD
+        # add_custom_command(TARGET ${DEMO_EXE_NAME} POST_BUILD
         #                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        #                    ${CMAKE_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:${GAME_EXE_NAME}>/Resources)
-        add_custom_command(TARGET ${GAME_EXE_NAME} POST_BUILD
+        #                    ${CMAKE_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:${DEMO_EXE_NAME}>/Resources)
+        add_custom_command(TARGET ${DEMO_EXE_NAME} POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_directory
                            ${CMAKE_SOURCE_DIR}/res/ ${TESTRESPATH}/res)
     endif(UNIX)
@@ -162,7 +158,9 @@ endif()
 # TestRunner Executable
 #################################################################
 if(GOODSACK_TEST)
+    set(TEST_EXE_NAME "testRunner")
     enable_testing()
+
     add_executable(${TEST_EXE_NAME} ${TEST_SOURCES} )
     target_include_directories(${TEST_EXE_NAME} PRIVATE "${SRC_DIR}")
     # Link test executable against gtest & gtest_main
@@ -192,7 +190,9 @@ endif()
 # Library: STB Image
 #################################################################
 set(STB_DIR "${LIB_DIR}/stb")
-target_include_directories(${PROJECT_NAME} PRIVATE "${STB_DIR}")
+add_library(stb_image INTERFACE)
+target_include_directories(stb_image INTERFACE ${STB_DIR})
+target_link_libraries(${PROJECT_NAME} stb_image)
 
 #################################################################
 # Library: CGLM
@@ -280,6 +280,7 @@ if(imgui_FOUND)
 else()
     set(IMGUI_DIR "${LIB_DIR}/imgui")
     message(STATUS "(ImGui) Using manual specified path: ${IMGUI_DIR}")
+
     add_library("imgui" "${IMGUI_DIR}/imgui.cpp"
                       "${IMGUI_DIR}/imgui_demo.cpp"
                       "${IMGUI_DIR}/imgui_draw.cpp"
@@ -290,14 +291,12 @@ else()
                       "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
                       "${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp")
 
-    target_include_directories("imgui" PRIVATE "${IMGUI_DIR}")
-    target_include_directories("imgui" PRIVATE "${IMGUI_DIR}/backends")
-    target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}")
-    target_include_directories(${PROJECT_NAME} PRIVATE "${IMGUI_DIR}/backends")
-    target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
-    target_link_libraries("imgui" "glfw" "${CMAKE_DL_LIBS}")
-    target_link_libraries("imgui" Vulkan::Vulkan "${CMAKE_DL_LIBS}")
+    target_include_directories("imgui" PRIVATE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
+    target_link_libraries("imgui" "glfw" Vulkan::Vulkan "${CMAKE_DL_LIBS}")
     target_include_directories("imgui" PRIVATE "${VULKAN_PATH}/include")
+
+    target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
+    target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
 endif()
 
 #################################################################
@@ -315,8 +314,9 @@ else()
     set(LUA_DIR "${LIB_DIR}/lua-5.4.4")
     file(GLOB LUA_LIBRARIES "${LUA_DIR}/src/*.c" "${LUA_DIR}/src/*.h")
     add_library("lua" ${LUA_LIBRARIES})
-    target_link_libraries(${PROJECT_NAME} lua)
+
     target_include_directories(${PROJECT_NAME} PUBLIC "${LUA_DIR}/src")
+    target_link_libraries(${PROJECT_NAME} lua)
 endif()
 
 #################################################################
@@ -369,11 +369,8 @@ if(OpenAL_FOUND)
 else()
     message(STATUS "(OpenAL) failed to auto-locate")
     set(OPENAL_DIR "${LIB_DIR}/openal-soft") 
-    set(ALSOFT_INSTALL OFF CACHE INTERNAL "Install main library")
-    set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "Build example programs")
-    set(ALSOFT_UTILS OFF CACHE INTERNAL "Build utility programs")
-    set(ALSOFT_NO_CONFIG_UTIL ON CACHE INTERNAL "Disable building the alsoft-config utility")
     add_subdirectory(${OPENAL_DIR})
+
     target_link_libraries(${PROJECT_NAME} OpenAL)
     target_include_directories(${PROJECT_NAME} PRIVATE
         "${OPENAL_DIR}" 

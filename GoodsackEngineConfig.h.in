@@ -1,0 +1,5 @@
+// version
+#define GOODSACK_VERSION_MAJOR @GoodsackEngine_VERSION_MAJOR@
+#define GOODSACK_VERSION_MINOR @GoodsackEngine_VERSION_MINOR@
+#define GOODSACK_VERSION_PATCH @GoodsackEngine_VERSION_PATCH@
+#define GOODSACK_VERSION_TWEAK @GoodsackEngine_VERSION_TWEAK@

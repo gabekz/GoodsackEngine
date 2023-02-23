@@ -15,6 +15,8 @@
 
 #include <core/renderer/pipeline/pass_screen.h>
 
+#include <GoodsackEngineConfig.h>
+
 static void
 _error_callback(int error, const char *description)
 {
@@ -56,8 +58,16 @@ createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
         // debug ALL OpenGL Errors
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, SYS_DEBUG);
 
+        char title[256];
+        sprintf(title,
+                "Goodsack Engine | %d\.%d\.%d\.%d\n",
+                GOODSACK_VERSION_MAJOR,
+                GOODSACK_VERSION_MINOR,
+                GOODSACK_VERSION_PATCH,
+                GOODSACK_VERSION_TWEAK);
+
         GLFWwindow *window =
-          glfwCreateWindow(winWidth, winHeight, "Title", NULL, NULL);
+          glfwCreateWindow(winWidth, winHeight, title, NULL, NULL);
 
         if (!window) LOG_ERROR("Failed to create window");
 
