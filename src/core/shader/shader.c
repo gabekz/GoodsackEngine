@@ -136,7 +136,7 @@ ParseShader(const char *path)
 #ifdef WIN32
                 fflush(stream);
                 rewind(stream);
- #else
+#else
                 if (fclose(stream)) {
                     LOG_ERROR("Failed to close stream.");
                     exit(1);
@@ -146,33 +146,33 @@ ParseShader(const char *path)
 
             // Begin vertex
             if (strstr(line, "vertex") != NULL) {
-                mode   = 0;
- #ifdef WIN32
-                stream = open_memstream(&vertOut, vertLen);
+                mode = 0;
+#ifdef WIN32
+                stream  = open_memstream(&vertOut, vertLen);
                 vertLen = 1;
- #else
+#else
                 stream = open_memstream(&vertOut, &vertLen);
- #endif
+#endif
             }
             // Begin fragment
             else if (strstr(line, "fragment") != NULL) {
-                mode   = 1;
- #ifdef WIN32
-                stream = open_memstream(&fragOut, fragLen);
+                mode = 1;
+#ifdef WIN32
+                stream  = open_memstream(&fragOut, fragLen);
                 fragLen = 1;
- #else
+#else
                 stream = open_memstream(&fragOut, &fragLen);
- #endif
+#endif
             }
             // Begin Compute
             else if (strstr(line, "compute") != NULL) {
-                mode   = 2;
- #ifdef WIN32
-                stream = open_memstream(&compOut, compLen);
+                mode = 2;
+#ifdef WIN32
+                stream  = open_memstream(&compOut, compLen);
                 compLen = 1;
- #else
+#else
                 stream = open_memstream(&compOut, &compLen);
- #endif
+#endif
                 // compLen = 1;
             } else {
                 mode = -1;
@@ -193,15 +193,9 @@ ParseShader(const char *path)
     ShaderSource *ss = malloc(sizeof(ShaderSource));
 
     // TODO: Is this malloc'd?
-    if (vertLen > 0) {
-        ss->shaderVertex = strdup(vertOut);
-    }
-    if (fragLen > 0) {
-        ss->shaderFragment = strdup(fragOut);
-    }
-    if (compLen > 0) {
-        ss->shaderCompute = strdup(compOut);
-    }
+    if (vertLen > 0) { ss->shaderVertex = strdup(vertOut); }
+    if (fragLen > 0) { ss->shaderFragment = strdup(fragOut); }
+    if (compLen > 0) { ss->shaderCompute = strdup(compOut); }
 
     return ss;
 }
