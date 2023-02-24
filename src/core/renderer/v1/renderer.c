@@ -151,6 +151,9 @@ renderer_start(Renderer *renderer)
 static void
 renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 {
+    // Settings
+    glfwSwapInterval(device_getGraphicsSettings().swapInterval);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 

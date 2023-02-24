@@ -14,13 +14,22 @@ extern "C" {
 
 typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } GraphicsAPI;
 
+// Settings
+
+typedef struct GraphicsSettings
+{
+    int swapInterval; // VSync
+} GraphicsSettings;
+
 // Analytics
 
 typedef struct Analytics
 {
     double currentFps;
     double currentMs;
+
     float delta;
+    float lastFrame;
 
     // ui32 currentDrawCalls;
 } Analytics;
@@ -31,6 +40,11 @@ GraphicsAPI
 device_getGraphics();
 void
 device_setGraphics(GraphicsAPI api);
+
+GraphicsSettings
+device_getGraphicsSettings();
+void
+device_setGraphicsSettings(GraphicsSettings settings);
 
 Analytics
 device_getAnalytics();

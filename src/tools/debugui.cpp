@@ -322,7 +322,7 @@ DebugGui::Render()
             struct ComponentCamera &p =
               *(static_cast<struct ComponentCamera *>(ecs_get(e, C_CAMERA)));
             ImGui::DragFloat("FOV", &p.fov, 0.45f, 0.9f);
-            ImGui::DragFloat("Speed", &p.speed, 0.01, 0, 1.0f);
+            ImGui::DragFloat("Speed", &p.speed, 0.01, 0, 10.0f);
             ImGui::Text("Clipping");
             ImGui::PushItemWidth(100);
             ImGui::DragFloat("Near", &p.clipping.nearZ, 0.01, 0, 10);
@@ -374,6 +374,18 @@ DebugGui::Render()
         ImGui::BeginGroup();
         ImGui::Begin("Analytics", &m_showProfiler);
 
+        ImGui::Text("Settings");
+        ImGui::Separator();
+        int vsync = device_getGraphicsSettings().swapInterval;
+        ImGui::Checkbox("VSync", (bool *)&vsync);
+        device_setGraphicsSettings((GraphicsSettings({.swapInterval = vsync})));
+
+        /*
+        ImGui::Text("Time");
+        ImGui::Separator();
+        ImGui::Text("%f DeltaTime", device_getAnalytics().delta);
+        */
+
         ImGui::Text("Performance");
         ImGui::Separator();
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
@@ -388,6 +400,7 @@ DebugGui::Render()
         ImGui::Text("Total Faces: ");
         // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
 
+        ImGui::End();
         ImGui::EndGroup();
     }
     if (m_showHDR) {
@@ -464,6 +477,7 @@ DebugGui::Render()
         ;
         // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
 
+        ImGui::End();
         ImGui::EndGroup();
     }
 

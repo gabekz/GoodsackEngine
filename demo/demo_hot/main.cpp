@@ -78,6 +78,11 @@ main(int argc, char *argv[])
     // FPS Counter
     device_resetAnalytics();
 
+    device_setGraphicsSettings((GraphicsSettings {
+        .swapInterval = 1
+        }
+    ));
+
     /* Render loop */
     ecs = renderer_active_scene(renderer, 3);
 

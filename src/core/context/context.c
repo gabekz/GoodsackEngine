@@ -60,7 +60,7 @@ createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
 
         char title[256];
         sprintf(title,
-                "Goodsack Engine | %d\.%d\.%d\.%d\n",
+                "Goodsack Engine | %d.%d.%d.%d\n",
                 GOODSACK_VERSION_MAJOR,
                 GOODSACK_VERSION_MINOR,
                 GOODSACK_VERSION_PATCH,
@@ -83,8 +83,6 @@ createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
         glDebugInit();
         // Get current OpenGL version
         LOG_INFO("%s\n", glGetString(GL_VERSION));
-        // Refresh rate
-        glfwSwapInterval(1);
 
         return window;
     }
