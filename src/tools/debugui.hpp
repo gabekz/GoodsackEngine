@@ -2,7 +2,7 @@
 #define HPP_DEBUGUI
 
 extern "C" {
-#include <core/renderer/v1/renderer.h>
+#include <core/graphics/renderer/v1/renderer.h>
 }
 #include <ecs/ecs.h>
 

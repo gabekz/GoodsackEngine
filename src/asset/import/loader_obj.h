@@ -2,8 +2,8 @@
 #define LOADER_OBJ_H
 
 // #include "../glbuffer/glbuffer.h"
-#include <core/api/opengl/opengl.h>
-#include <model/model.h>
+#include <core/drivers/opengl/opengl.h>
+#include <core/graphics/model/model.h>
 #include <util/sysdefs.h>
 
 ModelData *

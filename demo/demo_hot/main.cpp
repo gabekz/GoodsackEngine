@@ -9,17 +9,17 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
-#include <core/api/device.h>
-#include <core/lighting/lighting.h>
+#include <core/device/device.h>
+#include <core/graphics/lighting/lighting.h>
 #include <ecs/ecs.h>
-#include <lua/lua_init.hpp>
 #include <tools/debugui.hpp>
+#include <wrapper/lua/lua_init.hpp>
 
 // Demo
 #include "demo_scenes.h"
 
 extern "C" {
-#include <core/renderer/v1/renderer.h>
+#include <core/graphics/renderer/v1/renderer.h>
 }
 
 int
@@ -47,7 +47,7 @@ main(int argc, char *argv[])
     }
 
     // Main Lua entry
-    LuaInit("../src/lua/demo/main.lua");
+    LuaInit("../src/wrapper/lua/demo/main.lua");
 
     switch (device_getGraphics()) {
     case GRAPHICS_API_OPENGL: LOG_INFO("Device API is OpenGL"); break;
@@ -78,10 +78,7 @@ main(int argc, char *argv[])
     // FPS Counter
     device_resetAnalytics();
 
-    device_setGraphicsSettings((GraphicsSettings {
-        .swapInterval = 1
-        }
-    ));
+    device_setGraphicsSettings((GraphicsSettings {.swapInterval = 1}));
 
     /* Render loop */
     ecs = renderer_active_scene(renderer, 3);

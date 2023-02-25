@@ -8,15 +8,15 @@
 #include <ecs/ecs.h>
 
 extern "C" {
-#include <core/renderer/v1/renderer.h>
+#include <core/graphics/renderer/v1/renderer.h>
 }
 
-#include <core/api/alsoft/alsoft_debug.h>
-#include <core/api/device.h>
+#include <core/device/device.h>
+#include <core/drivers/alsoft/alsoft_debug.h>
 
-#include <components/components.h>
+#include <ecs/builtin/components.h>
 
-#include <core/api/vulkan/vulkan.h>
+#include <core/drivers/vulkan/vulkan.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -174,9 +174,13 @@ DebugGui::Render()
 
         ImGui::SameLine();
         if (ImGui::Button("Load Scene")) {
-            renderer_active_scene(m_renderer, m_sceneQueued);
-            renderer_start(m_renderer);
-            m_sceneQueued = m_renderer->activeScene;
+            if (m_sceneQueued > m_renderer->sceneC || m_sceneQueued < 0) {
+                m_sceneQueued = 0;
+            } else {
+                renderer_active_scene(m_renderer, m_sceneQueued);
+                renderer_start(m_renderer);
+                m_sceneQueued = m_renderer->activeScene;
+            }
         }
         ImGui::End();
         ImGui::EndGroup();
@@ -392,6 +396,7 @@ DebugGui::Render()
         ImGui::Text("%f FPS", device_getAnalytics().currentFps);
         ImGui::Text("%f ms", device_getAnalytics().currentMs);
         ImGui::PopStyleColor();
+        /*
         ImGui::Separator();
         ImGui::Text("Draw Calls: ");
         ImGui::Separator();
@@ -399,6 +404,7 @@ DebugGui::Render()
         ImGui::Text("Total Polygons: ");
         ImGui::Text("Total Faces: ");
         // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
+        */
 
         ImGui::End();
         ImGui::EndGroup();

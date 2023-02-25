@@ -12,6 +12,7 @@ project(
 configure_file(GoodsackEngineConfig.h.in GoodsackEngineConfig.h)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(CMAKE_COLOR_MAKEFILE ON)
 include(colors)
@@ -118,6 +119,7 @@ add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
 
 target_compile_options(${PROJECT_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "GoodsackEngine")
 
 #################################################################
 # Example Projects
@@ -201,6 +203,8 @@ set(CGLM_DIR "${LIB_DIR}/cglm")
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
 target_link_libraries(${PROJECT_NAME} cglm cglm_headers) 
 target_compile_definitions(${PROJECT_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
+
+set_target_properties(cglm PROPERTIES FOLDER "ThirdParty")
 #target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 
 #################################################################
@@ -233,6 +237,7 @@ add_library("glad" "${GLAD_DIR}/src/gl.c")
 target_include_directories("glad" PUBLIC "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PUBLIC "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
+set_target_properties(glad PROPERTIES FOLDER "ThirdParty")
 
 #################################################################
 # Library: VulkanSDK

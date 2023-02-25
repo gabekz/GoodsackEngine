@@ -2,9 +2,9 @@
 
 #include <ecs/ecs.h>
 
-// #include <core/renderer/v1/renderer.h>
+// #include <core/graphics/renderer/v1/renderer.h>
 
-#include <components/components.h>
+#include <ecs/builtin/components.h>
 
 #define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16, NULL)
 #define texture_create_n(x) texture_create(x, GL_RGB, false, 1, NULL)

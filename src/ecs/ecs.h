@@ -31,7 +31,7 @@ typedef struct _ecs ECS;
 extern "C" {
 #endif
 
-#include <core/renderer/v1/renderer.h>
+#include <core/graphics/renderer/v1/renderer.h>
 
 #define ECSCOMPONENT_LAST C_MESH
 enum _ecs_component {

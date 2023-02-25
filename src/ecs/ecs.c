@@ -7,12 +7,12 @@
 
 #include <util/sysdefs.h>
 
-#include <components/camera/camera.h>
-#include <components/mesh/mesh_draw.h>
-#include <components/transform/transform.h>
+#include <ecs/builtin/camera/camera.h>
+#include <ecs/builtin/mesh/mesh_draw.h>
+#include <ecs/builtin/transform/transform.h>
 
-#include <components/audio/audio_listener.h>
-#include <components/audio/audio_source.h>
+#include <ecs/builtin/audio/audio_listener.h>
+#include <ecs/builtin/audio/audio_source.h>
 
 ECS *
 ecs_init(Renderer *renderer)

@@ -1,7 +1,7 @@
 #ifndef H_DEMO_SCENES
 #define H_DEMO_SCENES
 
-#include <core/renderer/v1/renderer.h>
+#include <core/graphics/renderer/v1/renderer.h>
 #include <ecs/ecs.h>
 
 #ifdef __cplusplus

@@ -9,7 +9,7 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
-#include <model/model.h>
+#include <core/graphics/model/model.h>
 
 #define LOGGING_OBJ
 
