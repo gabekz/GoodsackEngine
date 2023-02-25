@@ -47,7 +47,7 @@ main(int argc, char *argv[])
     }
 
     // Main Lua entry
-    LuaInit("../src/wrapper/lua/demo/main.lua");
+    LuaInit("../demo/demo_hot/Resources/scripts/main.lua");
 
     switch (device_getGraphics()) {
     case GRAPHICS_API_OPENGL: LOG_INFO("Device API is OpenGL"); break;

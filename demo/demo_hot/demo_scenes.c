@@ -17,9 +17,9 @@ _scene0(ECS *ecs, Renderer *renderer)
     ecs = renderer_active_scene(renderer, 0);
 
     Texture *texEarthDiff =
-      texture_create_d("../res/textures/earth/diffuse.png");
+      texture_create_d("../demo/demo_hot/Resources/textures/earth/diffuse.png");
     Texture *texEarthNorm =
-      texture_create_n("../res/textures/earth/normal.png");
+      texture_create_n("../demo/demo_hot/Resources/textures/earth/normal.png");
 
     Material *matSuzanne = material_create(NULL,
                                            "../res/shaders/lit-diffuse.shader",
@@ -56,15 +56,15 @@ _scene1(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 1);
 
-    Texture *texContDiff =
-      texture_create_d("../res/textures/container/diffuse.png");
-    Texture *texContSpec =
-      texture_create_n("../res/textures/container/specular.png");
+    Texture *texContDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/container/diffuse.png");
+    Texture *texContSpec = texture_create_n(
+      "../demo/demo_hot/Resources/textures/container/specular.png");
 
-    Texture *texBrickDiff =
-      texture_create_d("../res/textures/brickwall/diffuse.png");
-    Texture *texBrickNorm =
-      texture_create_n("../res/textures/brickwall/normal.png");
+    Texture *texBrickDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
+    Texture *texBrickNorm = texture_create_n(
+      "../demo/demo_hot/Resources/textures/brickwall/normal.png");
 
     Material *matFloor = material_create(NULL,
                                          "../res/shaders/lit-diffuse.shader",
@@ -111,15 +111,15 @@ _scene1(ECS *ecs, Renderer *renderer)
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, -0.085f, 0.0f},
                       }));
-    _ecs_add_internal(boxEntity,
-                      C_MESH,
-                      (void *)(&(struct ComponentMesh) {
-                        .material   = matBox,
-                        .modelPath  = "../res/models/cube-test.obj",
-                        .properties = {
-                          .drawMode = DRAW_ARRAYS,
-                          .cullMode = CULL_CW | CULL_FORWARD,
-                        }}));
+    _ecs_add_internal(
+      boxEntity,
+      C_MESH,
+      (void *)(&(struct ComponentMesh) {.material   = matBox,
+                                        .modelPath  = "../res/models/cube.obj",
+                                        .properties = {
+                                          .drawMode = DRAW_ARRAYS,
+                                          .cullMode = CULL_CW | CULL_FORWARD,
+                                        }}));
 }
 
 static void
@@ -136,16 +136,16 @@ _scene2(ECS *ecs, Renderer *renderer)
                         .speed    = 0.05f,
                       }));
 
-    Texture *texGraniteAlbedo =
-      texture_create_d("../res/textures/pbr/granite/albedo.png");
-    Texture *texGraniteNormal =
-      texture_create_n("../res/textures/pbr/granite/normal.png");
-    Texture *texGraniteMetallic =
-      texture_create_n("../res/textures/pbr/granite/metallic.png");
-    Texture *texGraniteSpecular =
-      texture_create_n("../res/textures/pbr/granite/roughness.png");
-    Texture *texGraniteAo =
-      texture_create_n("../res/textures/pbr/granite/ao.png");
+    Texture *texGraniteAlbedo = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/granite/albedo.png");
+    Texture *texGraniteNormal = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/granite/normal.png");
+    Texture *texGraniteMetallic = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/granite/metallic.png");
+    Texture *texGraniteSpecular = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/granite/roughness.png");
+    Texture *texGraniteAo = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/granite/ao.png");
     Material *matGranite = material_create(NULL,
                                            "../res/shaders/pbr.shader",
                                            5,
@@ -155,14 +155,14 @@ _scene2(ECS *ecs, Renderer *renderer)
                                            texGraniteSpecular,
                                            texGraniteAo);
 
-    Texture *texPbrAlbedo =
-      texture_create_d("../res/textures/pbr/rust/albedo.png");
-    Texture *texPbrNormal =
-      texture_create_n("../res/textures/pbr/rust/normal.png");
-    Texture *texPbrMetallic =
-      texture_create_n("../res/textures/pbr/rust/metallic.png");
-    Texture *texPbrSpecular =
-      texture_create_n("../res/textures/pbr/rust/roughness.png");
+    Texture *texPbrAlbedo = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/rust/albedo.png");
+    Texture *texPbrNormal = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/rust/normal.png");
+    Texture *texPbrMetallic = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/rust/metallic.png");
+    Texture *texPbrSpecular = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/rust/roughness.png");
     Material *matRust = material_create(NULL,
                                         "../res/shaders/pbr.shader",
                                         5,
@@ -172,16 +172,16 @@ _scene2(ECS *ecs, Renderer *renderer)
                                         texPbrSpecular,
                                         texPbrAo);
 
-    Texture *texBrassAlbedo =
-      texture_create_d("../res/textures/pbr/fancybrass/albedo.png");
-    Texture *texBrassNormal =
-      texture_create_n("../res/textures/pbr/fancybrass/normal.png");
-    Texture *texBrassMetallic =
-      texture_create_n("../res/textures/pbr/fancybrass/metallic.png");
-    Texture *texBrassSpecular =
-      texture_create_n("../res/textures/pbr/fancybrass/roughness.png");
-    Texture *texBrassAo =
-      texture_create_n("../res/textures/pbr/fancybrass/ao.png");
+    Texture *texBrassAlbedo = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/fancybrass/albedo.png");
+    Texture *texBrassNormal = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/fancybrass/normal.png");
+    Texture *texBrassMetallic = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/fancybrass/metallic.png");
+    Texture *texBrassSpecular = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/fancybrass/roughness.png");
+    Texture *texBrassAo = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/fancybrass/ao.png");
     Material *matBrass = material_create(NULL,
                                          "../res/shaders/pbr.shader",
                                          5,
@@ -191,14 +191,14 @@ _scene2(ECS *ecs, Renderer *renderer)
                                          texBrassSpecular,
                                          texBrassAo);
 
-    Texture *texGoldAlbedo =
-      texture_create_d("../res/textures/pbr/gold/albedo.png");
-    Texture *texGoldNormal =
-      texture_create_n("../res/textures/pbr/gold/normal.png");
-    Texture *texGoldMetallic =
-      texture_create_n("../res/textures/pbr/gold/metallic.png");
-    Texture *texGoldSpecular =
-      texture_create_n("../res/textures/pbr/gold/roughness.png");
+    Texture *texGoldAlbedo = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/gold/albedo.png");
+    Texture *texGoldNormal = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/gold/normal.png");
+    Texture *texGoldMetallic = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/gold/metallic.png");
+    Texture *texGoldSpecular = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/gold/roughness.png");
     Material *matGold   = material_create(NULL,
                                         "../res/shaders/pbr.shader",
                                         5,
@@ -280,7 +280,7 @@ _scene2(ECS *ecs, Renderer *renderer)
    _ecs_add_internal(floorEntity2,
             C_MESH,
             (void *)(&(struct ComponentMesh) {.material   = matFloor,
-                                     .modelPath  = "../res/models/plane.obj",
+                                     .modelPath  = "../demo/demo_hot/Resources/models/plane.obj",
                                      .properties = {
                                        .drawMode = DRAW_ARRAYS,
                                        .cullMode = CULL_CW | CULL_FORWARD,
@@ -294,14 +294,14 @@ _scene3(ECS *ecs, Renderer *renderer)
 
     ecs = renderer_active_scene(renderer, 3);
 
-    Texture *texCerbA =
-      texture_create_d("../res/textures/pbr/cerberus/Cerberus_A.tga");
-    Texture *texCerbN =
-      texture_create_n("../res/textures/pbr/cerberus/Cerberus_N.tga");
-    Texture *texCerbM =
-      texture_create_n("../res/textures/pbr/cerberus/Cerberus_M.tga");
-    Texture *texCerbS =
-      texture_create_n("../res/textures/pbr/cerberus/Cerberus_R.tga");
+    Texture *texCerbA = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
+    Texture *texCerbN = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
+    Texture *texCerbM = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
+    Texture *texCerbS = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
 
     Material *matCerb = material_create(NULL,
                                         "../res/shaders/pbr.shader",
@@ -337,13 +337,13 @@ _scene3(ECS *ecs, Renderer *renderer)
       .position = {0.0f, 0.0f, 0.0f},
       .scale    = {4.0f, 4.0f, 4.0f},
     };
-    struct ComponentMesh compCerbMesh = {.material = matCerb,
-                                         .modelPath =
-                                           "../res/models/cerberus-triang.obj",
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }};
+    struct ComponentMesh compCerbMesh = {
+      .material   = matCerb,
+      .modelPath  = "../demo/demo_hot/Resources/models/cerberus-triang.obj",
+      .properties = {
+        .drawMode = DRAW_ARRAYS,
+        .cullMode = CULL_CW | CULL_FORWARD,
+      }};
 
     _ecs_add_internal(
       entCerb,
@@ -369,7 +369,7 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     */
 
     // Default textures
-    texDefSpec = texture_create_n("../res/textures/defaults/specular.png");
+    texDefSpec = texture_create_n("../res/textures/defaults/black.png");
     texDefNorm = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo   = texture_create_n("../res/textures/defaults/white.png");
 
