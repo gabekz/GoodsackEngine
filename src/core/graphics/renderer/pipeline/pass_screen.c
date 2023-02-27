@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include <core/drivers/opengl/opengl.h>
-#include <core/graphics/model/primitives.h>
+#include <core/graphics/mesh/primitives.h>
 #include <core/graphics/shader/shader.h>
 
 #include <util/gfx.h>

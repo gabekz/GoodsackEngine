@@ -4,7 +4,7 @@
 #include <core/graphics/shader/shader.h>
 #include <core/graphics/texture/texture.h>
 
-#include <core/graphics/model/primitives.h>
+#include <core/graphics/mesh/primitives.h>
 
 #include <core/device/device.h>
 

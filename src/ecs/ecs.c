@@ -8,7 +8,7 @@
 #include <util/sysdefs.h>
 
 #include <ecs/builtin/camera/camera.h>
-#include <ecs/builtin/mesh/mesh_draw.h>
+#include <ecs/builtin/model/model_draw.h>
 #include <ecs/builtin/transform/transform.h>
 
 #include <ecs/builtin/audio/audio_listener.h>
@@ -34,7 +34,7 @@ ecs_init(Renderer *renderer)
 
     s_transform_init(ecs);
     s_camera_init(ecs);
-    s_mesh_draw_init(ecs);
+    s_model_draw_init(ecs);
     // s_camera_init(ecs);
     // s_mesh_draw_init(ecs);
     s_audio_listener_init(ecs);

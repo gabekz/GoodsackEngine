@@ -1,8 +1,8 @@
-#ifndef H_C_MESH
-#define H_C_MESH
+#ifndef H_C_MODEL
+#define H_C_MODEL
 
 #include <core/graphics/material/material.h>
-#include <core/graphics/model/model.h>
+#include <core/graphics/mesh/mesh.h>
 
 #include <ecs/ecs.h>
 
@@ -15,11 +15,11 @@
 #define CULL_FORWARD  0x00
 #define CULL_BACK     0x02
 
-struct ComponentMesh
+struct ComponentModel
 {
     Material *material;
     const char *modelPath;
-    Model *model;
+    Mesh *mesh;
 
     struct
     {
@@ -31,4 +31,4 @@ struct ComponentMesh
     ui32 vbo;
 };
 
-#endif // H_C_MESH
+#endif // H_C_MODEL

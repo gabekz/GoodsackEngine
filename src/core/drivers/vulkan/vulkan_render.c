@@ -6,7 +6,7 @@
 #include <core/drivers/vulkan/vulkan_device.h>
 #include <core/drivers/vulkan/vulkan_support.h>
 
-#include <core/graphics/model/primitives.h>
+#include <core/graphics/mesh/primitives.h>
 
 #define TEST_RENDER_PRIMITIVE 0 // 0 - Model Loader | 1 - Primitive
 #define TEST_RENDER_MODE      0 // 0 - VkCmdDraw    | 1 - VkCmdDrawIndexed

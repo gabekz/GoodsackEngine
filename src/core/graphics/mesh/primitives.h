@@ -4,7 +4,7 @@
 #define PRIMITIVES_H
 
 #include <util/sysdefs.h>
-#include <core/graphics/model/model.h>
+#include <core/graphics/mesh/mesh.h>
 
 #define PRIMITIVE_PLANE     0xAB00
 #define PRIMITIVE_CUBE      0xAB01
@@ -106,7 +106,7 @@
 	    10, 12, 11, \
 	    13, 15, 14}
 
-Model *primitive_model_create(ui32 shape, float scale);
+Mesh *primitive_mesh_create(ui32 shape, float scale);
 
 void primitive_pyramid(float* out);
 float* prim_vert_rect();

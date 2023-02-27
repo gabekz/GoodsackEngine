@@ -1,20 +1,20 @@
-#include "mesh_draw.h"
-#include "mesh.h"
+#include "model_draw.h"
 
+#include <ecs/builtin/model/model.h>
 #include <ecs/builtin/transform/transform.h>
 
 #include <asset/import/loader_obj.h>
-#include <core/graphics/model/model.h>
+#include <core/graphics/mesh/mesh.h>
 #include <core/graphics/shader/shader.h>
 #include <ecs/ecs.h>
 
 #include <core/device/device.h>
 
 static void
-DrawMesh(struct ComponentMesh *mesh,
-         struct ComponentTransform *transform,
-         Material *material,
-         VkCommandBuffer commandBuffer)
+DrawModel(struct ComponentModel *model,
+          struct ComponentTransform *transform,
+          Material *material,
+          VkCommandBuffer commandBuffer)
 {
     if (DEVICE_API_OPENGL) {
 
@@ -35,13 +35,13 @@ DrawMesh(struct ComponentMesh *mesh,
           GL_FALSE,
           (float *)transform->mvp.model);
 
-        vao_bind(mesh->model->vao);
+        vao_bind(model->mesh->vao);
 
-        ModelData *data = mesh->model->modelData;
-        ui32 vertices   = data->vertexCount;
-        ui32 indices    = data->indicesCount;
+        MeshData *data = model->mesh->meshData;
+        ui32 vertices  = data->vertexCount;
+        ui32 indices   = data->indicesCount;
 
-        ui16 drawMode = mesh->properties.drawMode;
+        ui16 drawMode = model->properties.drawMode;
 
         switch (drawMode) {
         case DRAW_ELEMENTS:
@@ -75,10 +75,10 @@ DrawMesh(struct ComponentMesh *mesh,
         // Bind Vertex/Index buffers
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(
-          commandBuffer, 0, 1, &mesh->model->vkVBO->buffer, offsets);
+          commandBuffer, 0, 1, &model->mesh->vkVBO->buffer, offsets);
 
         // Draw command
-        vkCmdDraw(commandBuffer, mesh->model->vkVBO->size, 1, 0, 0);
+        vkCmdDraw(commandBuffer, model->mesh->vkVBO->size, 1, 0, 0);
     }
 }
 
@@ -86,18 +86,18 @@ static void
 init(Entity e)
 {
     if (!(ecs_has(e, C_TRANSFORM))) return;
-    if (!(ecs_has(e, C_MESH))) return;
+    if (!(ecs_has(e, C_MODEL))) return;
 
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
-    struct ComponentMesh *mesh           = ecs_get(e, C_MESH);
+    struct ComponentModel *model         = ecs_get(e, C_MODEL);
 
     // TODO: stupid hack grabbing only scale.x...
     // mesh->model = load_obj(mesh->modelPath, transform->scale[0]);
 
     if (DEVICE_API_OPENGL) {
-        mesh->model = model_assemble(mesh->modelPath, transform->scale[0]);
+        model->mesh = mesh_assemble(model->modelPath, transform->scale[0]);
         // send lightspace matrix from renderer to entity shader
-        ShaderProgram *shader = mesh->material->shaderProgram;
+        ShaderProgram *shader = model->material->shaderProgram;
         shader_use(shader);
         glUniformMatrix4fv(
           glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
@@ -106,18 +106,18 @@ init(Entity e)
           (float *)e.ecs->renderer->lightSpaceMatrix);
         // TODO: send model matrix to shader
     } else if (DEVICE_API_VULKAN) {
-        mesh->model            = malloc(sizeof(Model));
-        mesh->model->modelData = load_obj(mesh->modelPath, transform->scale[0]);
+        model->mesh           = malloc(sizeof(Mesh));
+        model->mesh->meshData = load_obj(model->modelPath, transform->scale[0]);
 
         VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
 
-        mesh->model->vkVBO = vulkan_vertex_buffer_create(
+        model->mesh->vkVBO = vulkan_vertex_buffer_create(
           context->physicalDevice,
           context->device,
           context->graphicsQueue,
           context->commandPool,
-          mesh->model->modelData->buffers.out,
-          mesh->model->modelData->buffers.outI * sizeof(float));
+          model->mesh->meshData->buffers.out,
+          model->mesh->meshData->buffers.outI * sizeof(float));
     }
 }
 
@@ -125,9 +125,9 @@ static void
 render(Entity e)
 {
     if (!(ecs_has(e, C_TRANSFORM))) return;
-    if (!(ecs_has(e, C_MESH))) return;
+    if (!(ecs_has(e, C_MODEL))) return;
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
-    struct ComponentMesh *mesh           = ecs_get(e, C_MESH);
+    struct ComponentModel *model         = ecs_get(e, C_MODEL);
 
     RenderPass pass = e.ecs->renderer->currentPass;
 
@@ -140,20 +140,20 @@ render(Entity e)
     }
 
     if (pass == REGULAR) {
-        (DEVICE_API_OPENGL) ? DrawMesh(mesh, transform, mesh->material, NULL)
-                            : DrawMesh(mesh, transform, mesh->material, cb);
+        (DEVICE_API_OPENGL) ? DrawModel(model, transform, model->material, NULL)
+                            : DrawModel(model, transform, model->material, cb);
         return;
     }
     Material *override = e.ecs->renderer->explicitMaterial;
 
-    (DEVICE_API_OPENGL) ? DrawMesh(mesh, transform, override, NULL)
-                        : DrawMesh(mesh, transform, override, cb);
+    (DEVICE_API_OPENGL) ? DrawModel(model, transform, override, NULL)
+                        : DrawModel(model, transform, override, cb);
 }
 
 void
-s_mesh_draw_init(ECS *ecs)
+s_model_draw_init(ECS *ecs)
 {
-    ecs_component_register(ecs, C_MESH, sizeof(struct ComponentMesh));
+    ecs_component_register(ecs, C_MODEL, sizeof(struct ComponentModel));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,

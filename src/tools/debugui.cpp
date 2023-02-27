@@ -258,20 +258,20 @@ DebugGui::Render()
             ImGui::EndDisabled();
             ImGui::EndChild();
         }
-        if (ecs_has(e, C_MESH)) {
+        if (ecs_has(e, C_MODEL)) {
             ImGui::BeginChild(
-              "Mesh", ImVec2(0, ImGui::GetFontSize() * 25.0f), true);
+              "Model", ImVec2(0, ImGui::GetFontSize() * 25.0f), true);
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-            ImGui::Text("Mesh Component");
+            ImGui::Text("Model Component");
             ImGui::PopStyleColor();
             ImGui::Separator();
             // wow, this is ridiculous..
-            struct ComponentMesh &p =
-              *(static_cast<struct ComponentMesh *>(ecs_get(e, C_MESH)));
+            struct ComponentModel &p =
+              *(static_cast<struct ComponentModel *>(ecs_get(e, C_MODEL)));
 
-            // Model information
+            // Mesh information
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
-            ImGui::Text("Model");
+            ImGui::Text("Mesh");
             ImGui::PopStyleColor();
             ImGui::Separator();
 

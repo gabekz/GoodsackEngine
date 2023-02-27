@@ -2,7 +2,7 @@
 
 #include <core/drivers/opengl/opengl.h>
 #include <core/graphics/material/material.h>
-#include <core/graphics/model/primitives.h>
+#include <core/graphics/mesh/primitives.h>
 
 #include <util/gfx.h>
 

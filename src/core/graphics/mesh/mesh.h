@@ -1,29 +1,18 @@
-#ifndef H_MODEL
-#define H_MODEL
+#ifndef H_MESH
+#define H_MESH
 
 #include <util/sysdefs.h>
 
-#include <core/drivers/opengl/opengl.h>
+#include <core/drivers/opengl/opengl_buffer.h>
 #include <core/drivers/vulkan/vulkan_vertex_buffer.h>
 
 #include <core/graphics/texture/texture.h>
 
-typedef struct _model Model;
-typedef struct _modelData ModelData;
-
-struct _model
-{
-    VAO *vao;
-    ModelData *modelData;
-
-    VulkanVertexBuffer *vkVBO;
-};
-
-struct _modelData
+typedef struct MeshData
 {
     ui32 vertexCount;
     ui32 indicesCount;
-    const char *modelPath;
+    const char *meshPath;
 
     ui32 totalTriangles;
     struct
@@ -36,17 +25,25 @@ struct _modelData
         float *out;
         int outI;
     } buffers;
-};
+} MeshData;
+
+typedef struct Mesh
+{
+    VAO *vao;
+    MeshData *meshData;
+
+    VulkanVertexBuffer *vkVBO;
+} Mesh;
 
 /**
- * Assemble model per Graphics API spec.
+ * Assemble mesh per Graphics API spec.
  * Currently, this handles loading the model (.obj) as well.
  *
- * @param[in] model path
+ * @param[in] mesh path
  * @param[in] vertex scale
  * @return pointer to allocated Model structure.
  */
-Model *
-model_assemble(const char *path, float scale);
+Mesh *
+mesh_assemble(const char *path, float scale);
 
-#endif // H_MODEL
+#endif // H_MESH

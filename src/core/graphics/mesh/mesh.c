@@ -1,21 +1,20 @@
-#include "model.h"
+#include "mesh.h"
 
 #include <asset/import/loader_obj.h>
 #pragma optimize("", off)
 
-Model *
-model_assemble(const char *path, float scale)
+Mesh *
+mesh_assemble(const char *path, float scale)
 {
-
     // Create the VAO
     VAO *vao = vao_create();
     vao_bind(vao);
 
-    Model *model = malloc(sizeof(Model));
-    model->vao   = vao;
+    Mesh *mesh = malloc(sizeof(Mesh));
+    mesh->vao  = vao;
 
-    ModelData *data  = load_obj(path, scale);
-    model->modelData = data;
+    MeshData *data = load_obj(path, scale);
+    mesh->meshData = data;
 
     VBO *vbo =
       vbo_create(data->buffers.out, data->buffers.outI * sizeof(float));
@@ -36,5 +35,5 @@ model_assemble(const char *path, float scale)
     vao_add_buffer(vao, vboTBN);
     // free(data->buffers.outTBN);
 
-    return model;
+    return mesh;
 }

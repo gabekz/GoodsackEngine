@@ -23,7 +23,7 @@
 #include <core/drivers/vulkan/vulkan_vertex_buffer.h>
 
 #include <asset/import/loader_obj.h>
-#include <core/graphics/model/primitives.h>
+#include <core/graphics/mesh/primitives.h>
 
 /* static */
 

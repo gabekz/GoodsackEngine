@@ -9,7 +9,7 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
-#include <core/graphics/model/model.h>
+#include <core/graphics/mesh/mesh.h>
 
 #define LOGGING_OBJ
 
@@ -17,7 +17,7 @@
 #define strtok_s(x, y, z) strtok_r(x, y, z)
 #endif
 
-ModelData *
+MeshData *
 load_obj(const char *path, float scale)
 {
 
@@ -181,7 +181,7 @@ load_obj(const char *path, float scale)
 #endif
 
     // Output
-    ModelData *ret   = malloc(sizeof(ModelData));
+    MeshData *ret    = malloc(sizeof(MeshData));
     ret->vertexCount = outI;
 
 #if 1 // Calcuate TBN for each triangle/vertex
@@ -271,7 +271,7 @@ load_obj(const char *path, float scale)
     printf("-------------------------------------\n\n");
 #endif
 
-    ret->modelPath      = path;
+    ret->meshPath       = path;
     ret->totalTriangles = totalTriangles;
 
     ret->buffers.v  = v;

@@ -40,15 +40,15 @@ _scene0(ECS *ecs, Renderer *renderer)
 
     Entity suzanneObject = ecs_new(ecs);
     _ecs_add_internal(suzanneObject, C_TRANSFORM, NULL);
-    _ecs_add_internal(
-      suzanneObject,
-      C_MESH,
-      (void *)(&(struct ComponentMesh) {.material  = matSuzanne,
-                                        .modelPath = "../res/models/sphere.obj",
-                                        .properties = {
-                                          .drawMode = DRAW_ARRAYS,
-                                          .cullMode = CULL_CW | CULL_FORWARD,
-                                        }}));
+    _ecs_add_internal(suzanneObject,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matSuzanne,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
 }
 
 static void
@@ -97,13 +97,13 @@ _scene1(ECS *ecs, Renderer *renderer)
                       }));
     _ecs_add_internal(
       floorEntity,
-      C_MESH,
-      (void *)(&(struct ComponentMesh) {.material   = matFloor,
-                                        .modelPath  = "../res/models/plane.obj",
-                                        .properties = {
-                                          .drawMode = DRAW_ARRAYS,
-                                          .cullMode = CULL_CW | CULL_FORWARD,
-                                        }}));
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material  = matFloor,
+                                         .modelPath = "../res/models/plane.obj",
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
 
     Entity boxEntity = ecs_new(ecs);
     _ecs_add_internal(boxEntity,
@@ -113,13 +113,13 @@ _scene1(ECS *ecs, Renderer *renderer)
                       }));
     _ecs_add_internal(
       boxEntity,
-      C_MESH,
-      (void *)(&(struct ComponentMesh) {.material   = matBox,
-                                        .modelPath  = "../res/models/cube.obj",
-                                        .properties = {
-                                          .drawMode = DRAW_ARRAYS,
-                                          .cullMode = CULL_CW | CULL_FORWARD,
-                                        }}));
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material   = matBox,
+                                         .modelPath  = "../res/models/cube.obj",
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
 }
 
 static void
@@ -213,30 +213,30 @@ _scene2(ECS *ecs, Renderer *renderer)
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, 0.0f, 0.0f},
                       }));
-    _ecs_add_internal(
-      sphereEntity,
-      C_MESH,
-      (void *)(&(struct ComponentMesh) {.material  = matGranite,
-                                        .modelPath = "../res/models/sphere.obj",
-                                        .properties = {
-                                          .drawMode = DRAW_ARRAYS,
-                                          .cullMode = CULL_CW | CULL_FORWARD,
-                                        }}));
+    _ecs_add_internal(sphereEntity,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matGranite,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
     Entity sphereEntity2 = ecs_new(ecs);
     _ecs_add_internal(sphereEntity2,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {-0.5f, 0.0f, 0.0f},
                       }));
-    _ecs_add_internal(
-      sphereEntity2,
-      C_MESH,
-      (void *)(&(struct ComponentMesh) {.material  = matRust,
-                                        .modelPath = "../res/models/sphere.obj",
-                                        .properties = {
-                                          .drawMode = DRAW_ARRAYS,
-                                          .cullMode = CULL_CW | CULL_FORWARD,
-                                        }}));
+    _ecs_add_internal(sphereEntity2,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matRust,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
 
     Entity sphereEntity3 = ecs_new(ecs);
     _ecs_add_internal(sphereEntity3,
@@ -244,30 +244,30 @@ _scene2(ECS *ecs, Renderer *renderer)
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.5f, 0.0f, 0.0f},
                       }));
-    _ecs_add_internal(
-      sphereEntity3,
-      C_MESH,
-      (void *)(&(struct ComponentMesh) {.material  = matBrass,
-                                        .modelPath = "../res/models/sphere.obj",
-                                        .properties = {
-                                          .drawMode = DRAW_ARRAYS,
-                                          .cullMode = CULL_CW | CULL_FORWARD,
-                                        }}));
+    _ecs_add_internal(sphereEntity3,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matBrass,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
     Entity sphereEntity4 = ecs_new(ecs);
     _ecs_add_internal(sphereEntity4,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {1.0f, 0.0f, 0.0f},
                       }));
-    _ecs_add_internal(
-      sphereEntity4,
-      C_MESH,
-      (void *)(&(struct ComponentMesh) {.material  = matGold,
-                                        .modelPath = "../res/models/sphere.obj",
-                                        .properties = {
-                                          .drawMode = DRAW_ARRAYS,
-                                          .cullMode = CULL_CW | CULL_FORWARD,
-                                        }}));
+    _ecs_add_internal(sphereEntity4,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matGold,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
 
 #if 0
     Entity floorEntity2 = ecs_new(ecs);
@@ -278,8 +278,8 @@ _scene2(ECS *ecs, Renderer *renderer)
               .scale    = {10.0f, 10.0f, 10.0f},
             }));
    _ecs_add_internal(floorEntity2,
-            C_MESH,
-            (void *)(&(struct ComponentMesh) {.material   = matFloor,
+            C_MODEL,
+            (void *)(&(struct ComponentModel) {.material   = matFloor,
                                      .modelPath  = "../demo/demo_hot/Resources/models/plane.obj",
                                      .properties = {
                                        .drawMode = DRAW_ARRAYS,
@@ -337,7 +337,7 @@ _scene3(ECS *ecs, Renderer *renderer)
       .position = {0.0f, 0.0f, 0.0f},
       .scale    = {4.0f, 4.0f, 4.0f},
     };
-    struct ComponentMesh compCerbMesh = {
+    struct ComponentModel compCerbMesh = {
       .material   = matCerb,
       .modelPath  = "../demo/demo_hot/Resources/models/cerberus-triang.obj",
       .properties = {
@@ -351,7 +351,7 @@ _scene3(ECS *ecs, Renderer *renderer)
       (void *)((struct ComponentTransform *)&compCerbTransform));
 
     _ecs_add_internal(
-      entCerb, C_MESH, (void *)((struct ComponentMesh *)&compCerbMesh));
+      entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
 }
 
 void

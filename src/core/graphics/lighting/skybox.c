@@ -1,8 +1,8 @@
 #include "skybox.h"
 
 #include <core/drivers/opengl/opengl.h>
-#include <core/graphics/model/model.h>
-#include <core/graphics/model/primitives.h>
+#include <core/graphics/mesh/mesh.h>
+#include <core/graphics/mesh/primitives.h>
 #include <core/graphics/shader/shader.h>
 
 static ui32 cubemapProjectionFBO;

@@ -3,16 +3,16 @@
 #include <stdlib.h>
 #include <util/sysdefs.h>
 
-Model *
-primitive_model_create(ui32 shape, float scale)
+Mesh *
+primitive_mesh_create(ui32 shape, float scale)
 {
 
-    Model *ret = malloc(sizeof(Model));
+    Mesh *ret = malloc(sizeof(Mesh));
 
     switch (shape) {
     case PRIMITIVE_CUBE:
-        ret->modelData->vertexCount  = PRIM_SIZ_V_CUBE;
-        ret->modelData->indicesCount = PRIM_SIZ_I_CUBE;
+        ret->meshData->vertexCount  = PRIM_SIZ_V_CUBE;
+        ret->meshData->indicesCount = PRIM_SIZ_I_CUBE;
         break;
     }
 
