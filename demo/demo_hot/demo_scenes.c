@@ -354,27 +354,54 @@ _scene3(ECS *ecs, Renderer *renderer)
       entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
 }
 
+static void
+_scene4(ECS *ecs, Renderer *renderer)
+{
+    ecs = renderer_active_scene(renderer, 4);
+
+    Entity cameraEntity = ecs_new(ecs);
+    _ecs_add_internal(cameraEntity,
+                      C_CAMERA,
+                      (void *)(&(struct ComponentCamera) {
+                        .position = {0.0f, 0.0f, 2.0f},
+                        .axisUp   = {0.0f, 1.0f, 0.0f},
+                        .speed    = 2.5f,
+                      }));
+
+    Material *matCharacter =
+      material_create(NULL, "../res/shaders/white.shader", 0);
+
+    Entity characterEntity = ecs_new(ecs);
+    _ecs_add_internal(characterEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, 0.0f, 0.0f},
+                      }));
+    _ecs_add_internal(
+      characterEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {
+        .material  = matCharacter,
+        .modelPath = "../demo/demo_hot/Resources/models/character-skinned.gltf",
+        .properties = {
+          .drawMode = DRAW_ELEMENTS,
+          .cullMode = CULL_CW | CULL_FORWARD,
+        }}));
+}
+
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
-    /*
-    Entity camera = ecs_new(ecs);
-    _ecs_add_internal(camera,
-            C_CAMERA,
-            (void *)(&(struct ComponentCamera){
-              .position = {0.0f, 0.0f, 2.0f},
-              .axisUp   = {0.0f, 1.0f, 0.0f},
-              .speed    = 0.05f,
-            }));
-    */
-
     // Default textures
     texDefSpec = texture_create_n("../res/textures/defaults/black.png");
     texDefNorm = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo   = texture_create_n("../res/textures/defaults/white.png");
 
+    /*
     _scene0(ecs, renderer);
     _scene1(ecs, renderer);
     _scene2(ecs, renderer);
     _scene3(ecs, renderer);
+    */
+    _scene4(ecs, renderer);
 }

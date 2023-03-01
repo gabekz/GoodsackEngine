@@ -8,7 +8,18 @@
 
 #include <core/graphics/texture/texture.h>
 
-typedef struct MeshData
+typedef struct Mesh Mesh;
+typedef struct MeshData MeshData;
+
+struct Mesh
+{
+    VAO *vao;
+    VulkanVertexBuffer *vkVBO;
+    MeshData *meshData;
+};
+
+// MeshData - API-agonstic buffer information
+struct MeshData
 {
     ui32 vertexCount;
     ui32 indicesCount;
@@ -17,23 +28,19 @@ typedef struct MeshData
     ui32 totalTriangles;
     struct
     {
-        float *v, *vt, *vn;
-        ui32 vL, vtL, vnL;
+        // attribute buffers
+        float *v, *vt, *vn; // position, texCoord, normal
+        ui32 vL, vtL, vnL;  // lengths
+        float *out;
+        int outI;
 
         float *outTBN;
 
-        float *out;
-        int outI;
+        ui32 *bufferIndices;
+        ui32 bufferIndices_size;
+
     } buffers;
-} MeshData;
-
-typedef struct Mesh
-{
-    VAO *vao;
-    MeshData *meshData;
-
-    VulkanVertexBuffer *vkVBO;
-} Mesh;
+};
 
 /**
  * Assemble mesh per Graphics API spec.

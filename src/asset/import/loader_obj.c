@@ -282,8 +282,9 @@ load_obj(const char *path, float scale)
     ret->buffers.vtL = vtL;
     ret->buffers.vnL = vnL;
 
-    ret->buffers.out    = out;
-    ret->buffers.outI   = outI;
+    ret->buffers.out = out;
+    // TODO: fix this crap right here
+    ret->buffers.outI   = outI * sizeof(float);
     ret->buffers.outTBN = outTBN;
 
     // glBindVertexArray(0);

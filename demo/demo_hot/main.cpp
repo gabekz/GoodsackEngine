@@ -18,9 +18,17 @@
 // Demo
 #include "demo_scenes.h"
 
+#include <ecs/lua/eventstore.hpp>
+
+//#define RENDERER_2
+
+#ifdef RENDERER_2
+#include <core/graphics/renderer/renderer.hpp>
+#else
 extern "C" {
 #include <core/graphics/renderer/v1/renderer.h>
 }
+#endif
 
 int
 main(int argc, char *argv[])
@@ -54,7 +62,12 @@ main(int argc, char *argv[])
     case GRAPHICS_API_VULKAN: LOG_INFO("Device API is Vulkan"); break;
     }
 
-    // Initialize Renderer
+// Initialize Renderer
+#ifdef RENDERER_2
+    Renderer renderer = new Renderer();
+    // ECSManager ecs = Renderer.
+    Scene scene0 = renderer->SetActiveScene(0);
+#else
     Renderer *renderer = renderer_init();
     int winWidth       = renderer->windowWidth;
     int winHeight      = renderer->windowHeight;
@@ -62,6 +75,7 @@ main(int argc, char *argv[])
     // Initialize ECS
     ECS *ecs;
     ecs = renderer_active_scene(renderer, 0);
+#endif
 
     // Lighting information
     vec3 lightPos   = {1.0f, 2.8f, -0.2f};
@@ -80,8 +94,12 @@ main(int argc, char *argv[])
 
     device_setGraphicsSettings((GraphicsSettings {.swapInterval = 1}));
 
+#ifdef RENDERER_2
+    renderer.Prime();
+    renderer.Tick();
+#else
     /* Render loop */
-    ecs = renderer_active_scene(renderer, 3);
+    ecs = renderer_active_scene(renderer, 4);
 
     renderer_start(renderer); // Initialization for the render loop
     while (!glfwWindowShouldClose(renderer->window)) {
@@ -116,6 +134,7 @@ main(int argc, char *argv[])
 
     delete (debugGui);
     glfwTerminate();
+#endif
 
     return 0;
 }

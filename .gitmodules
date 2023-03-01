@@ -19,3 +19,6 @@
 [submodule "lib/vulkan"]
 	path = lib/vulkan
 	url = https://github.com/KhronosGroup/Vulkan-Headers
+[submodule "thirdparty/cgltf"]
+	path = thirdparty/cgltf
+	url = https://github.com/jkuhlmann/cgltf

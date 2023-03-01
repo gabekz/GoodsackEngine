@@ -182,7 +182,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    // glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
     // binding the shadowmap to texture slot 6 (TODO:) for meshes
     shadowmap_bind_texture();
@@ -203,7 +203,6 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     // the postprocessing buffer as it is now)
     glDepthFunc(GL_LEQUAL);
     // skybox_draw(renderer->skybox);
-    skybox_draw(renderer->skybox);
     glDepthFunc(GL_LESS);
 
     /*-------------------------------------------
