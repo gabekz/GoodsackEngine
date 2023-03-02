@@ -60,6 +60,28 @@ mesh_assemble(const char *path, float scale)
         vao_add_buffer(vao, vboTBN);
         // free(data->buffers.outTBN);
 #endif
+
+#if 1
+        VBO *vboJoints = vbo_create(data->skeleton->bufferJoints,
+                                    data->skeleton->bufferJointsSize);
+        vbo_push(vboJoints, 4, GL_UNSIGNED_INT, GL_FALSE); // (affected by) joints
+        vao_add_buffer(vao, vboJoints);
+
+        VBO *vboWeights = vbo_create(data->skeleton->bufferWeights,
+                                    data->skeleton->bufferWeightsSize);
+        vbo_push(vboWeights, 4, GL_FLOAT, GL_FALSE); // associated weights
+        vao_add_buffer(vao, vboWeights);
+        /*
+        VBO *vboSkeleton = vbo_create(data->skeleton->skinningBuffer,
+                                      data->skeleton->skinningBufferSize);
+
+        vbo_push(vboSkeleton, 4, GL_UNSIGNED_INT, GL_FALSE); // (affected by) joints
+        vbo_push(vboSkeleton, 4, GL_FLOAT, GL_FALSE); // associated weights
+
+        vao_add_buffer(vao, vboSkeleton);
+        */
+#endif
+
     } else if (DEVICE_API_VULKAN) {
         LOG_WARN("mesh_assemble() not implemented for Vulkan!");
     }

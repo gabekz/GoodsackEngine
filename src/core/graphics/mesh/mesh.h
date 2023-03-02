@@ -8,8 +8,43 @@
 
 #include <core/graphics/texture/texture.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct Mesh Mesh;
 typedef struct MeshData MeshData;
+
+typedef struct Joint Joint;
+typedef struct Skeleton Skeleton;
+
+#define MAX_BONES 256
+
+struct Joint
+{
+    Joint *parent;
+    //Joint **children;
+    ui16 childrenCount;
+
+    char *name;
+    ui16 id;
+    mat4 jointMatrix;
+};
+
+struct Skeleton
+{
+    Joint **joints;
+    ui16 jointsCount;
+
+    // GPU Buffers
+    void *bufferJoints, *bufferWeights;
+    ui32 bufferJointsCount, bufferWeightsCount;
+    ui32 bufferJointsSize, bufferWeightsSize;
+
+    void *skinningBuffer;
+    ui32 skinningBufferSize;
+};
+
 
 struct Mesh
 {
@@ -40,6 +75,9 @@ struct MeshData
         ui32 bufferIndices_size;
 
     } buffers;
+
+    // TODO: Move to model
+    Skeleton *skeleton;
 };
 
 /**
@@ -52,5 +90,9 @@ struct MeshData
  */
 Mesh *
 mesh_assemble(const char *path, float scale);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // H_MESH
