@@ -62,6 +62,8 @@ mesh_assemble(const char *path, float scale)
 #endif
 
 #if 1
+
+        if (data->isSkinnedMesh) {
         VBO *vboJoints = vbo_create(data->skeleton->bufferJoints,
                                     data->skeleton->bufferJointsSize);
         vbo_push(vboJoints, 4, GL_UNSIGNED_INT, GL_FALSE); // (affected by) joints
@@ -80,6 +82,7 @@ mesh_assemble(const char *path, float scale)
 
         vao_add_buffer(vao, vboSkeleton);
         */
+        }
 #endif
 
     } else if (DEVICE_API_VULKAN) {

@@ -1,6 +1,7 @@
 #ifndef H_MESH
 #define H_MESH
 
+#include <util/maths.h>
 #include <util/sysdefs.h>
 
 #include <core/drivers/opengl/opengl_buffer.h>
@@ -22,13 +23,15 @@ typedef struct Skeleton Skeleton;
 
 struct Joint
 {
-    Joint *parent;
-    //Joint **children;
-    ui16 childrenCount;
-
     char *name;
     ui16 id;
-    mat4 jointMatrix;
+
+    Joint *parent;
+    ui16 childrenCount;
+
+    vec3 translation;
+
+    // mat4 jointMatrix;
 };
 
 struct Skeleton
@@ -43,8 +46,9 @@ struct Skeleton
 
     void *skinningBuffer;
     ui32 skinningBufferSize;
-};
 
+    char *name;
+};
 
 struct Mesh
 {
@@ -78,6 +82,7 @@ struct MeshData
 
     // TODO: Move to model
     Skeleton *skeleton;
+    int isSkinnedMesh;
 };
 
 /**

@@ -197,6 +197,14 @@ target_include_directories(stb_image INTERFACE ${STB_DIR})
 target_link_libraries(${PROJECT_NAME} stb_image)
 
 #################################################################
+# Library: cgltf
+#################################################################
+set(CGLTF_DIR "${LIB_DIR}/cgltf")
+add_library(cgltf INTERFACE)
+target_include_directories(cgltf INTERFACE ${CGLTF_DIR})
+target_link_libraries(${PROJECT_NAME} cgltf)
+
+#################################################################
 # Library: CGLM
 #################################################################
 set(CGLM_DIR "${LIB_DIR}/cglm")

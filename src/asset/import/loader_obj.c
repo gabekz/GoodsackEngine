@@ -287,6 +287,8 @@ load_obj(const char *path, float scale)
     ret->buffers.outI   = outI * sizeof(float);
     ret->buffers.outTBN = outTBN;
 
+    ret->isSkinnedMesh = 0;
+
     // glBindVertexArray(0);
     //  Free a lot of memory....
     // free(v);
