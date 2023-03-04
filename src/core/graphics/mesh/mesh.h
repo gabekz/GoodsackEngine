@@ -29,7 +29,10 @@ struct Joint
     Joint *parent;
     ui16 childrenCount;
 
+    vec3 scale;
     vec3 translation;
+    vec4 rotation;
+    mat4 matrix; // relative to hierarchy
 
     // mat4 jointMatrix;
 };

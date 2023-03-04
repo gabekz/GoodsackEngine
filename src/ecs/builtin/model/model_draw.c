@@ -10,6 +10,8 @@
 
 #include <core/device/device.h>
 
+#include <tools/debug/debug_draw_skeleton.h>
+
 static void
 DrawModel(struct ComponentModel *model,
           struct ComponentTransform *transform,
@@ -45,7 +47,7 @@ DrawModel(struct ComponentModel *model,
 
         switch (drawMode) {
         case DRAW_ELEMENTS:
-            glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
+            glDrawElements(GL_LINES, indices, GL_UNSIGNED_INT, NULL);
             break;
         case DRAW_ARRAYS:
         default: glDrawArrays(GL_TRIANGLES, 0, vertices); break;
@@ -139,6 +141,12 @@ render(Entity e)
                ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame];
     }
 
+    // draw skeleton
+    if (model->mesh->meshData->isSkinnedMesh) {
+        debug_draw_skeleton(e.ecs->renderer->debugContext,
+                            model->mesh->meshData->skeleton);
+    }
+
     if (pass == REGULAR) {
         (DEVICE_API_OPENGL) ? DrawModel(model, transform, model->material, NULL)
                             : DrawModel(model, transform, model->material, cb);
@@ -148,6 +156,7 @@ render(Entity e)
 
     (DEVICE_API_OPENGL) ? DrawModel(model, transform, override, NULL)
                         : DrawModel(model, transform, override, cb);
+
 }
 
 void

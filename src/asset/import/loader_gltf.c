@@ -17,8 +17,58 @@ _create_joint_recurse(Skeleton *skeleton, ui32 id, Joint *parent, cgltf_node **j
     joint.id = id;
     joint.name = jointsNode[id]->name;
     joint.parent = parent;
+    joint.childrenCount = jointsNode[id]->children_count;
 
+    glm_vec3_copy(jointsNode[id]->scale, joint.scale);
+    glm_vec4_copy(jointsNode[id]->rotation, joint.rotation);
     glm_vec3_copy(jointsNode[id]->translation, joint.translation);
+
+    mat4 out_matrix = GLM_MAT4_ZERO_INIT;
+    cgltf_node_transform_world(jointsNode[id], (float *)out_matrix);
+
+    mat4 matrixLocal = GLM_MAT4_ZERO_INIT;
+    glm_mat4_copy(out_matrix, matrixLocal);
+
+    /*
+
+    // calculate scale matrix
+    mat4 matrixScale = GLM_MAT4_IDENTITY_INIT;
+    glm_scale(matrixScale, joint.scale);
+
+    // calculate rotation matrix
+    mat4 matrixRotation = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(matrixRotation, (vec3) {0, 0, 0});
+    versor quaternion;
+    glm_quat_init(quaternion, joint.rotation[0], joint.rotation[1], joint.rotation[2], joint.rotation[3]);
+    cgltf_float *test = jointsNode[id]->matrix;
+    LOG_INFO("%f", test[0]);
+    //glm_quat_mat4(matrixRotation, quaternion, matrixRotation);
+    //glm_quat_mat4(quaternion, matrixRotation);
+    glm_quat_mat4t(quaternion, matrixRotation);
+
+    // calculate translation matrix
+    mat4 matrixTranslation = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(matrixTranslation, joint.translation);
+    
+    // calculate combined-matrix 
+    mat4 matrixLocal = GLM_MAT4_IDENTITY_INIT;
+    //glm_mat4_mul(matrixScale, matrixRotation, matrixLocal);
+    //glm_mat4_mul(matrixScale, matrixRotation, matrixRotation);
+    //glm_mat4_mul(matrixTranslation, matrixRotation, matrixLocal);
+    glm_mat4_mul(matrixTranslation, matrixRotation, matrixLocal);
+    glm_mat4_mul(matrixLocal, matrixScale, matrixLocal);
+    //glm_quat_rotate(matrixTranslation, quaternion, matrixTranslation);
+
+    //glm_mat4_copy(matrixTranslation, matrixLocal);
+    */
+
+    // Multiply by hierarchy
+    if (parent == NULL || id == 0) {
+        glm_mat4_copy(matrixLocal, joint.matrix);
+    } else {
+        glm_mat4_copy(matrixLocal, joint.matrix);
+        //glm_mat4_mul(matrixLocal, joint.parent->matrix, joint.matrix);
+    }
 
     // Allocate and assign
     skeleton->joints[id] = malloc(sizeof(Joint));
@@ -28,8 +78,7 @@ _create_joint_recurse(Skeleton *skeleton, ui32 id, Joint *parent, cgltf_node **j
 
 
     // Recursive-descent
-    ui32 children_count = jointsNode[id]->children_count;
-    for (int i = 0; i < children_count; i++)
+    for (int i = 0; i < joint.childrenCount; i++)
     {
         _create_joint_recurse(skeleton, skeleton->jointsCount, skeleton->joints[id], jointsNode);
     }
@@ -160,61 +209,6 @@ load_gltf(const char *path, int scale)
         _create_joint_recurse(skeleton, 0, NULL, data->skins->joints);
         //_create_joint_recurse(skeleton, 0, NULL, &armatureNode->children[1]);
 
-        /*
-        // Go through each child of the gltf armature node
-        for (int i = 0; i < armatureNode->children_count; i++) {
-            if (armatureNode->children[i]->mesh) continue;
-
-            LOG_INFO("Child bone found: %s", armatureNode->children[i]->name);
-        }
-
-        // List of all joints in skeleton
-        skeleton->joints = malloc(sizeof(Joint *) * data->skins->joints_count);
-
-        // Create joints hierarchy
-        ui32 nextJoint = 0, lastParentJoint = 0;
-        for (int i = 0; i < skeleton->jointsCount; i++) {
-
-
-            // Create a joint for THIS joint (lastParent)
-            Joint joint;
-            joint.id            = i;
-            joint.name          = strdup(data->skins->joints[i]->name);
-            joint.childrenCount = data->skins->joints[i]->children_count;
-
-            // Set parent to the last parent-bone we searched
-            if (i != 0) {
-                joint.parent = skeleton->joints[lastParentJoint];
-                lastParentJoint = i;
-            }
-
-            // Allocate and set THIS bone
-            skeleton->joints[i] = malloc(sizeof(Joint));
-            *skeleton->joints[i] = joint;
-
-            // Create a joint for each child
-            for (int j = 1; j <= skeleton->joints[i]->childrenCount; j++) {
-
-                Joint childJoint;
-                childJoint.id            = i+j;
-                childJoint.name          = strdup(data->skins->joints[i+j]->name);
-                childJoint.childrenCount = data->skins->joints[i+j]->children_count;
-
-                childJoint.parent = skeleton->joints[lastParentJoint];
-
-                //if (j == 1) nextJoint = i + j;
-
-                // joint.parent = data->skins->joints[i];
-                skeleton->joints[i+j] = malloc(sizeof(Joint));
-                *skeleton->joints[i+j] = childJoint;
-
-                LOG_INFO("Bone %d: Name - %s", joint.id, joint.name);
-
-            }
-            i += skeleton->joints[i]->childrenCount; // increment
-        }
-        */
-
         // Skinning information //
 
         ui32 jointsBufferSize  = 1794 * 4 * sizeof(ui32);
@@ -247,6 +241,18 @@ load_gltf(const char *path, int scale)
 
         skeleton->bufferWeights = weightsBuffer;
         skeleton->bufferWeightsSize = weightsBufferSize;
+
+        // Animations //
+
+        int animationsCount          = data->animations_count;
+        cgltf_animation *animations = data->animations;
+
+        LOG_INFO("Animations: %d", animationsCount);
+
+        for (int i = 0; i < animationsCount; i++) {
+            cgltf_animation anim = animations[i];
+            LOG_INFO("Animation: \"%s\"\nSamplers count: %d\nChannels count: %d", anim.name, anim.samplers_count, anim.channels_count);
+        }
 
     } // IF skinnedMesh
 

@@ -135,6 +135,8 @@ renderer_start(Renderer *renderer)
         // glEnable(GL_FRAMEBUFFER_SRGB);
         clearGLState();
 
+        renderer->debugContext = debug_context_init();
+
         // TESTING Compute Shaders
         // computebuffer_init();
 

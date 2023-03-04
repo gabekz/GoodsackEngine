@@ -7,13 +7,13 @@
 
 #include <core/graphics/lighting/lighting.h>
 #include <core/graphics/lighting/skybox.h>
-#include <core/graphics/scene/scene.h>
-
 #include <core/graphics/material/material.h>
+#include <core/graphics/renderer/renderer_props.inl>
+#include <core/graphics/scene/scene.h>
 
 #include <core/drivers/vulkan/vulkan_device.h>
 
-#include <core/graphics/renderer/renderer_props.inl>
+#include <tools/debug/debug_context.h>
 
 #define RENDER_RESOLUTION_OVERRIDE SYS_DISABLED
 #define PSX_WIDTH                  320
@@ -53,6 +53,8 @@ struct _renderer
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
     ui32 hdrTextureId;
+
+    DebugContext *debugContext;
 };
 
 /**

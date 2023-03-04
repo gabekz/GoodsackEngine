@@ -359,6 +359,12 @@ _scene4(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 4);
 
+    Material *matCharacter =
+      material_create(NULL, "../res/shaders/skinning-test.shader", 0);
+
+    Material *matWhite =
+      material_create(NULL, "../res/shaders/white.shader", 0);
+
     Entity cameraEntity = ecs_new(ecs);
     _ecs_add_internal(cameraEntity,
                       C_CAMERA,
@@ -367,9 +373,6 @@ _scene4(ECS *ecs, Renderer *renderer)
                         .axisUp   = {0.0f, 1.0f, 0.0f},
                         .speed    = 2.5f,
                       }));
-
-    Material *matCharacter =
-      material_create(NULL, "../res/shaders/white.shader", 0);
 
     Entity characterEntity = ecs_new(ecs);
     _ecs_add_internal(characterEntity,
@@ -382,11 +385,27 @@ _scene4(ECS *ecs, Renderer *renderer)
       C_MODEL,
       (void *)(&(struct ComponentModel) {
         .material  = matCharacter,
-        .modelPath = "../demo/demo_hot/Resources/models/character-skinned.gltf",
+        .modelPath = "../demo/demo_hot/Resources/models/character-anim.gltf",
         .properties = {
           .drawMode = DRAW_ELEMENTS,
           .cullMode = CULL_CW | CULL_FORWARD,
         }}));
+
+    Entity cubeEntity = ecs_new(ecs);
+    _ecs_add_internal(cubeEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, 3.0f, 0.0f},
+                      }));
+    _ecs_add_internal(
+      cubeEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material   = matWhite,
+                                         .modelPath  = "../res/models/cube.obj",
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
 }
 
 void
