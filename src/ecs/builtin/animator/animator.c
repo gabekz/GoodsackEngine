@@ -51,12 +51,16 @@ update(Entity e)
     }
 #else
 
-    animator->timerNow += device_getAnalytics().delta;
+    animator->timerNow += (device_getAnalytics().delta);
 
     if (animator->timerNow >= animator->cntAnimation->duration) {
         animator->timerNow = 0;
 
+#if 1   // for the sake of testing -> going to set keyframe to 1
+        animator->cntKeyframeIndex = 1;
+#else
         animator->cntKeyframeIndex = 0;
+#endif
         return;
     }
 
@@ -75,6 +79,7 @@ update(Entity e)
 
     if (ratio >= nxtKeyframe->frameTime) {
         animation_set_keyframe(animator->cntAnimation, nxtKeyframeIndex);
+        //animation_set_keyframe_lerp(animator->cntAnimation, nxtKeyframeIndex, ratio);
         animator->cntKeyframeIndex = nxtKeyframeIndex;
     }
 

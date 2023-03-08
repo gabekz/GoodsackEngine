@@ -77,7 +77,7 @@ struct Keyframe
 struct Animation
 {
     char *name;    // animation name
-    ui32 duration; // animation time
+    float duration; // animation time
 
     Skeleton *pSkeleton; // reference to associated skeleton
 
