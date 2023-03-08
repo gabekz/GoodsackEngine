@@ -33,6 +33,7 @@ struct Pose
     vec4 rotation;
 
     mat4 mTransform;
+    mat4 mSkinningMatrix;
     int hasMatrix;
 };
 
@@ -45,6 +46,7 @@ struct Joint
     ui16 childrenCount;
 
     Pose pose; // current pose
+    mat4 mInvBindPose;
 };
 
 struct Skeleton
@@ -76,7 +78,7 @@ struct Keyframe
 
 struct Animation
 {
-    char *name;    // animation name
+    char *name;     // animation name
     float duration; // animation time
 
     Skeleton *pSkeleton; // reference to associated skeleton

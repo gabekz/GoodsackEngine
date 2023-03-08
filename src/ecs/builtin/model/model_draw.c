@@ -37,6 +37,35 @@ DrawModel(struct ComponentModel *model,
           GL_FALSE,
           (float *)transform->mvp.model);
 
+        // Skinned Matrix array buffer
+        if (model->mesh->meshData->isSkinnedMesh) {
+
+            //mat4 **skinnedMatrices = malloc(sizeof(mat4 *) * 256); // 256 - MAX_BONES
+            mat4 skinnedMatrices[256];
+            Skeleton *pSkeleton = model->mesh->meshData->skeleton;
+            for (int i = 0; i < pSkeleton->jointsCount; i++) {
+                //skinnedMatrices[i] = &pSkeleton->joints[i]->pose.mSkinningMatrix;
+                //skinnedMatrices[i] = malloc(sizeof(mat4));
+                glm_mat4_copy(pSkeleton->joints[i]->pose.mSkinningMatrix,
+                              skinnedMatrices[i]);
+            }
+
+            //mat4 p = *skinnedMatrices[0];
+
+            glUniformMatrix4fv(
+              glGetUniformLocation(material->shaderProgram->id, "u_SkinnedMatrix"),
+                pSkeleton->jointsCount,
+              GL_FALSE,
+              (float *)*skinnedMatrices);
+
+            /*
+            for (int i = 0; i < pSkeleton->jointsCount; i++) {
+                free(skinnedMatrices[i]);
+            }
+            free(skinnedMatrices);
+            */
+        }
+
         vao_bind(model->mesh->vao);
 
         MeshData *data = model->mesh->meshData;
@@ -47,7 +76,7 @@ DrawModel(struct ComponentModel *model,
 
         switch (drawMode) {
         case DRAW_ELEMENTS:
-            glDrawElements(GL_LINES, indices, GL_UNSIGNED_INT, NULL);
+            glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
             break;
         case DRAW_ARRAYS:
         default: glDrawArrays(GL_TRIANGLES, 0, vertices); break;

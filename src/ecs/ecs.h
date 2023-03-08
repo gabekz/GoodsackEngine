@@ -33,14 +33,14 @@ extern "C" {
 
 #include <core/graphics/renderer/v1/renderer.h>
 
-#define ECSCOMPONENT_LAST C_ANIMATOR
+#define ECSCOMPONENT_LAST C_MODEL
 enum _ecs_component {
     C_TRANSFORM = 0,
     C_CAMERA,
     C_AUDIO_LISTENER,
     C_AUDIO_SOURCE,
-    C_MODEL,
     C_ANIMATOR,
+    C_MODEL,
 };
 typedef enum _ecs_component ECSComponent;
 

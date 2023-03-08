@@ -98,6 +98,15 @@ animation_set_keyframe(Animation *animation, ui32 keyframe)
         // Pose newPose = LERP(currentPose, newPose, t);
         Pose newPose              = nextPose;
         skeleton->joints[i]->pose = nextPose;
+
+        // Local
+        mat4 transformMatrixLocal = GLM_MAT4_ZERO_INIT;
+        _joint_transform_local(skeleton->joints[i], (float *)transformMatrixLocal);
+
+        // calculate skinning matrix
+        glm_mat4_mul(transformMatrixLocal, skeleton->joints[i]->mInvBindPose,
+                     //skeleton->joints[i]->pose.mTransform,
+                     skeleton->joints[i]->pose.mSkinningMatrix);
     }
 }
 
@@ -122,10 +131,23 @@ animation_set_keyframe_lerp(Animation *animation, ui32 keyframe, float ratio)
         newPose.hasMatrix = 0;
         skeleton->joints[i]->pose = newPose; // must be set for parent transform-correction. Maybe slow
 
-        mat4 output = GLM_MAT4_ZERO_INIT;
-        _joint_transform_world(skeleton->joints[i], (float *)output);
-        glm_mat4_copy(output, skeleton->joints[i]->pose.mTransform); // set as current pose
+        mat4 transformMatrix = GLM_MAT4_ZERO_INIT;
+        _joint_transform_world(skeleton->joints[i], (float *)transformMatrix);
+        glm_mat4_copy(transformMatrix, skeleton->joints[i]->pose.mTransform); // set as current pose
         //glm_mat4_copy(output, animation->keyframes[keyframe]->poses[i]->mTransform);
-
     }
+
+    #if 1
+    for (int i = 0; i < skeleton->jointsCount; i++) {
+        mat4 transformMatrixLocal = GLM_MAT4_ZERO_INIT;
+        _joint_transform_local(skeleton->joints[i], (float *)transformMatrixLocal);
+
+        // calculate skinning matrix
+        mat4 init = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_mul(skeleton->joints[i]->pose.mTransform, skeleton->joints[i]->mInvBindPose,
+                     //transformMatrixLocal,
+                    //skeleton->joints[i]->pose.mTransform,
+                     skeleton->joints[i]->pose.mSkinningMatrix);
+    }
+    #endif
 }

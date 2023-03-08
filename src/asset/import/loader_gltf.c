@@ -17,6 +17,7 @@ joint_transform_local(Joint *joint, float *outMatrix)
 
     if (joint->pose.hasMatrix) {
         memcpy(lm, joint->pose.mTransform, sizeof(float) * 16);
+        LOG_ERROR("SHOULD NOT HAVE hasMatrix 1");
     } else {
         Pose *node = &joint->pose;
         float tx   = node->translation[0];
@@ -182,7 +183,13 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
             mat4 output               = GLM_MAT4_ZERO_INIT;
             skeleton->joints[j]->pose = *keyframes[i]->poses[j];
             joint_transform_world(skeleton->joints[j], (float *)output);
-            glm_mat4_copy(output, keyframes[i]->poses[j]->mTransform);
+
+            mat4 init = GLM_MAT4_IDENTITY_INIT;
+            if (i == 0)
+                //glm_mat4_mul(init, output, keyframes[i]->poses[j]->mTransform);
+                glm_mat4_copy(output, keyframes[i]->poses[j]->mTransform);
+            else
+                glm_mat4_copy(output, keyframes[i]->poses[j]->mTransform);
         }
     }
 
@@ -193,11 +200,11 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
 #endif
 
     // Animation data
-    Animation *animation = malloc(sizeof(Animation));
-    animation->duration  = frameTimes[inputsCount - 1];
-    animation->keyframes = keyframes;
+    Animation *animation      = malloc(sizeof(Animation));
+    animation->duration       = frameTimes[inputsCount - 1];
+    animation->keyframes      = keyframes;
     animation->keyframesCount = inputsCount;
-    animation->pSkeleton = skeleton;
+    animation->pSkeleton      = skeleton;
 
 #if 0
 #define TEST_BONE 2
@@ -245,7 +252,8 @@ static Joint
 _create_joint_recurse(Skeleton *skeleton,
                       ui32 id,
                       Joint *parent,
-                      cgltf_node **jointsNode)
+                      cgltf_node **jointsNode,
+                      cgltf_skin *skinNode)
 {
     Joint joint;
     joint.id             = id;
@@ -254,6 +262,15 @@ _create_joint_recurse(Skeleton *skeleton,
     joint.childrenCount  = jointsNode[id]->children_count;
     joint.pose.hasMatrix = 0;
 
+    // inverse bind pose matrix
+    mat4 inverseBindPose = GLM_MAT4_ZERO_INIT;
+    cgltf_accessor_read_float(skinNode->inverse_bind_matrices,
+                              id,
+                              (float *)inverseBindPose,
+                              32 * sizeof(float));
+    glm_mat4_copy(inverseBindPose, joint.mInvBindPose);
+
+    // transformation matrix
     glm_vec3_copy(jointsNode[id]->scale, joint.pose.scale);
     glm_vec4_copy(jointsNode[id]->rotation, joint.pose.rotation);
     glm_vec3_copy(jointsNode[id]->translation, joint.pose.translation);
@@ -264,6 +281,10 @@ _create_joint_recurse(Skeleton *skeleton,
     joint.pose.hasMatrix = 0;
 
     mat4 matrixLocal = GLM_MAT4_ZERO_INIT;
+    mat4 init        = GLM_MAT4_IDENTITY_INIT;
+    //if (id == 0) glm_mat4_mul(init, out_matrix, out_matrix);
+    //if (id == 0) glm_mat4_copy(init, out_matrix);
+
     glm_mat4_copy(out_matrix, matrixLocal);
     glm_mat4_copy(matrixLocal, joint.pose.mTransform);
 
@@ -275,8 +296,11 @@ _create_joint_recurse(Skeleton *skeleton,
 
     // Recursive-descent
     for (int i = 0; i < joint.childrenCount; i++) {
-        _create_joint_recurse(
-          skeleton, skeleton->jointsCount, skeleton->joints[id], jointsNode);
+        _create_joint_recurse(skeleton,
+                              skeleton->jointsCount,
+                              skeleton->joints[id],
+                              jointsNode,
+                              skinNode);
     }
 
     return joint;
@@ -407,7 +431,8 @@ load_gltf(const char *path, int scale)
         skeleton->joints = malloc(sizeof(Joint *) * data->skins->joints_count);
 
         // Create skeleton recursively
-        _create_joint_recurse(skeleton, 0, NULL, data->skins->joints);
+        _create_joint_recurse(
+          skeleton, 0, NULL, data->skins->joints, &data->skins[0]);
         //_create_joint_recurse(skeleton, 0, NULL, &armatureNode->children[1]);
 
         // Skinning information //

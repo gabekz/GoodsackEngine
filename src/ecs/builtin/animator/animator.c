@@ -75,11 +75,11 @@ update(Entity e)
     // evaluate ratio - TODO: this is not used yet
     float ratio = (animator->timerNow - cntKeyframe->frameTime) /
                   (nxtKeyframe->frameTime - cntKeyframe->frameTime);
-    LOG_INFO("Ratio is: %f", ratio);
+    //LOG_INFO("Ratio is: %f", ratio);
 
     if (ratio >= nxtKeyframe->frameTime) {
-        animation_set_keyframe(animator->cntAnimation, nxtKeyframeIndex);
-        //animation_set_keyframe_lerp(animator->cntAnimation, nxtKeyframeIndex, ratio);
+        //animation_set_keyframe(animator->cntAnimation, 0);
+        animation_set_keyframe_lerp(animator->cntAnimation, nxtKeyframeIndex, ratio);
         animator->cntKeyframeIndex = nxtKeyframeIndex;
     }
 
