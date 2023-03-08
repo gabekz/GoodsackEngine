@@ -16,8 +16,9 @@ debug_draw_skeleton(DebugContext *debugContext, Skeleton *skeleton)
                                "u_Model"),
           1,
           GL_FALSE,
-          (float *)skeleton->joints[i]->matrix);
+          (float *)skeleton->joints[i]->pose.mTransform);
 
-        glDrawElements(GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
+        glDrawElements(
+          GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
     }
 }

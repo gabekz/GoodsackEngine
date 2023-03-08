@@ -19,7 +19,22 @@ typedef struct MeshData MeshData;
 typedef struct Joint Joint;
 typedef struct Skeleton Skeleton;
 
-#define MAX_BONES 256
+typedef struct Pose Pose;
+typedef struct Animation Animation;
+typedef struct Keyframe Keyframe;
+
+#define MAX_BONES         256
+#define MAX_BONE_NAME_LEN 256
+
+struct Pose
+{
+    vec3 translation;
+    vec3 scale;
+    vec4 rotation;
+
+    mat4 mTransform;
+    int hasMatrix;
+};
 
 struct Joint
 {
@@ -29,12 +44,7 @@ struct Joint
     Joint *parent;
     ui16 childrenCount;
 
-    vec3 scale;
-    vec3 translation;
-    vec4 rotation;
-    mat4 matrix; // relative to hierarchy
-
-    // mat4 jointMatrix;
+    Pose pose; // current pose
 };
 
 struct Skeleton
@@ -51,6 +61,26 @@ struct Skeleton
     ui32 skinningBufferSize;
 
     char *name;
+};
+
+struct Keyframe
+{
+    ui32 index;
+    float frameTime;
+
+    Pose **poses;
+    ui32 posesCount;
+};
+
+struct Animation
+{
+    char *name;    // animation name
+    ui32 duration; // animation time
+
+    Skeleton *pSkeleton; // reference to associated skeleton
+
+    Keyframe **keyframes;
+    ui32 keyframesCount;
 };
 
 struct Mesh
