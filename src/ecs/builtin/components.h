@@ -12,6 +12,8 @@ extern "C" {
 #include <ecs/builtin/audio/audio_listener.h>
 #include <ecs/builtin/audio/audio_source.h>
 
+#include <ecs/builtin/animator/animator.h>
+
 #ifdef __cplusplus
 }
 #endif

@@ -14,6 +14,8 @@
 #include <ecs/builtin/audio/audio_listener.h>
 #include <ecs/builtin/audio/audio_source.h>
 
+#include <ecs/builtin/animator/animator.h>
+
 ECS *
 ecs_init(Renderer *renderer)
 {
@@ -35,10 +37,9 @@ ecs_init(Renderer *renderer)
     s_transform_init(ecs);
     s_camera_init(ecs);
     s_model_draw_init(ecs);
-    // s_camera_init(ecs);
-    // s_mesh_draw_init(ecs);
     s_audio_listener_init(ecs);
     s_audio_source_init(ecs);
+    s_animator_init(ecs);
 
     //_ecs_init_internal(ecs);
 

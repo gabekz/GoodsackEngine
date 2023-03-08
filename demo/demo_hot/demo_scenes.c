@@ -384,28 +384,13 @@ _scene4(ECS *ecs, Renderer *renderer)
       characterEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {
-        .material  = matCharacter,
-        .modelPath = "../demo/demo_hot/Resources/models/character-anim.gltf",
+        .material   = matCharacter,
+        .modelPath  = "../demo/demo_hot/Resources/models/character-anim.gltf",
         .properties = {
           .drawMode = DRAW_ELEMENTS,
           .cullMode = CULL_CW | CULL_FORWARD,
         }}));
-
-    Entity cubeEntity = ecs_new(ecs);
-    _ecs_add_internal(cubeEntity,
-                      C_TRANSFORM,
-                      (void *)(&(struct ComponentTransform) {
-                        .position = {0.0f, 3.0f, 0.0f},
-                      }));
-    _ecs_add_internal(
-      cubeEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matWhite,
-                                         .modelPath  = "../res/models/cube.obj",
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
 void

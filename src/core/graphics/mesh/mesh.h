@@ -60,6 +60,8 @@ struct Skeleton
     void *skinningBuffer;
     ui32 skinningBufferSize;
 
+    Animation *animation; // change to list
+
     char *name;
 };
 

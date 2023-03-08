@@ -156,7 +156,6 @@ render(Entity e)
 
     (DEVICE_API_OPENGL) ? DrawModel(model, transform, override, NULL)
                         : DrawModel(model, transform, override, cb);
-
 }
 
 void

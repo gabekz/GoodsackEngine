@@ -371,6 +371,16 @@ DebugGui::Render()
             }
             ImGui::EndChild();
         }
+        if (ecs_has(e, C_ANIMATOR)) {
+            ImGui::BeginChild(
+              "Animator", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("Animator Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            ImGui::EndChild();
+        }
 
         ImGui::End();
     }

@@ -10,78 +10,75 @@
 
 //#define LOGGING_GLTF
 
-static void
-_joint_transform_local(Joint *joint, float *outMatrix)
-{
-    float* lm = outMatrix;
-
-	if (joint->pose.hasMatrix)
-	{
-		memcpy(lm, joint->pose.mTransform, sizeof(float) * 16);
-	}
-	else
-	{
-        Pose *node = &joint->pose;
-		float tx = node->translation[0];
-		float ty = node->translation[1];
-		float tz = node->translation[2];
-
-		float qx = node->rotation[0];
-		float qy = node->rotation[1];
-		float qz = node->rotation[2];
-		float qw = node->rotation[3];
-
-		float sx = node->scale[0];
-		float sy = node->scale[1];
-		float sz = node->scale[2];
-
-		lm[0] = (1 - 2 * qy*qy - 2 * qz*qz) * sx;
-		lm[1] = (2 * qx*qy + 2 * qz*qw) * sx;
-		lm[2] = (2 * qx*qz - 2 * qy*qw) * sx;
-		lm[3] = 0.f;
-
-		lm[4] = (2 * qx*qy - 2 * qz*qw) * sy;
-		lm[5] = (1 - 2 * qx*qx - 2 * qz*qz) * sy;
-		lm[6] = (2 * qy*qz + 2 * qx*qw) * sy;
-		lm[7] = 0.f;
-
-		lm[8] = (2 * qx*qz + 2 * qy*qw) * sz;
-		lm[9] = (2 * qy*qz - 2 * qx*qw) * sz;
-		lm[10] = (1 - 2 * qx*qx - 2 * qy*qy) * sz;
-		lm[11] = 0.f;
-
-		lm[12] = tx;
-		lm[13] = ty;
-		lm[14] = tz;
-		lm[15] = 1.f;
-	}
-}
-
-static void
-_joint_transform_world(Joint *joint, float *outMatrix)
+void
+joint_transform_local(Joint *joint, float *outMatrix)
 {
     float *lm = outMatrix;
-    _joint_transform_local(joint, lm);
+
+    if (joint->pose.hasMatrix) {
+        memcpy(lm, joint->pose.mTransform, sizeof(float) * 16);
+    } else {
+        Pose *node = &joint->pose;
+        float tx   = node->translation[0];
+        float ty   = node->translation[1];
+        float tz   = node->translation[2];
+
+        float qx = node->rotation[0];
+        float qy = node->rotation[1];
+        float qz = node->rotation[2];
+        float qw = node->rotation[3];
+
+        float sx = node->scale[0];
+        float sy = node->scale[1];
+        float sz = node->scale[2];
+
+        lm[0] = (1 - 2 * qy * qy - 2 * qz * qz) * sx;
+        lm[1] = (2 * qx * qy + 2 * qz * qw) * sx;
+        lm[2] = (2 * qx * qz - 2 * qy * qw) * sx;
+        lm[3] = 0.f;
+
+        lm[4] = (2 * qx * qy - 2 * qz * qw) * sy;
+        lm[5] = (1 - 2 * qx * qx - 2 * qz * qz) * sy;
+        lm[6] = (2 * qy * qz + 2 * qx * qw) * sy;
+        lm[7] = 0.f;
+
+        lm[8]  = (2 * qx * qz + 2 * qy * qw) * sz;
+        lm[9]  = (2 * qy * qz - 2 * qx * qw) * sz;
+        lm[10] = (1 - 2 * qx * qx - 2 * qy * qy) * sz;
+        lm[11] = 0.f;
+
+        lm[12] = tx;
+        lm[13] = ty;
+        lm[14] = tz;
+        lm[15] = 1.f;
+    }
+}
+
+void
+joint_transform_world(Joint *joint, float *outMatrix)
+{
+    float *lm = outMatrix;
+    joint_transform_local(joint, lm);
 
     const Joint *parent = joint->parent;
 
     while (parent) {
         float pm[16];
-        _joint_transform_local(parent, pm);
+        joint_transform_local(parent, pm);
 
         for (int i = 0; i < 4; ++i) {
 
             float l0 = lm[i * 4 + 0];
-			float l1 = lm[i * 4 + 1];
-			float l2 = lm[i * 4 + 2];
+            float l1 = lm[i * 4 + 1];
+            float l2 = lm[i * 4 + 2];
 
-			float r0 = l0 * pm[0] + l1 * pm[4] + l2 * pm[8];
-			float r1 = l0 * pm[1] + l1 * pm[5] + l2 * pm[9];
-			float r2 = l0 * pm[2] + l1 * pm[6] + l2 * pm[10];
+            float r0 = l0 * pm[0] + l1 * pm[4] + l2 * pm[8];
+            float r1 = l0 * pm[1] + l1 * pm[5] + l2 * pm[9];
+            float r2 = l0 * pm[2] + l1 * pm[6] + l2 * pm[10];
 
-			lm[i * 4 + 0] = r0;
-			lm[i * 4 + 1] = r1;
-			lm[i * 4 + 2] = r2;
+            lm[i * 4 + 0] = r0;
+            lm[i * 4 + 1] = r1;
+            lm[i * 4 + 2] = r2;
         }
 
         lm[12] += pm[12];
@@ -90,44 +87,38 @@ _joint_transform_world(Joint *joint, float *outMatrix)
 
         parent = parent->parent;
     }
-
 }
 
-static Animation * 
+static Animation *
 _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
 {
-
-    // Fill animation Data
-    // 1: Keyframe count
-    // 2: fill Keyframe times
-    // 3: poses count
-    // 4: fill poses data
-
-    ui32 inputsCount = gltfAnimation->samplers[0].input->count;
+    ui32 inputsCount     = gltfAnimation->samplers[0].input->count;
     Keyframe **keyframes = malloc(sizeof(Keyframe *) * inputsCount);
 
     // Get all frame-times
     float *frameTimes = malloc(inputsCount * sizeof(float));
     for (int i = 0; i < inputsCount; i++) {
         cgltf_bool frameTimesSuccess = cgltf_accessor_read_float(
-            gltfAnimation->samplers[0].input, i, frameTimes+i, 8);
+          gltfAnimation->samplers[0].input, i, frameTimes + i, 8);
 
         // set keyframe information
-        keyframes[i]         = malloc(sizeof(Keyframe));
+        keyframes[i]            = malloc(sizeof(Keyframe));
         keyframes[i]->frameTime = frameTimes[i];
         keyframes[i]->index     = i;
 
         keyframes[i]->poses = malloc(skeleton->jointsCount * sizeof(Pose *));
 
         for (int j = 0; j < skeleton->jointsCount; j++) {
-            keyframes[i]->poses[j] = malloc(sizeof(Pose));
+            keyframes[i]->poses[j]            = malloc(sizeof(Pose));
             keyframes[i]->poses[j]->hasMatrix = 0;
         }
     }
 
-    LOG_INFO("Animation duration: %f\nTotal Keyframes:%d", frameTimes[inputsCount-1], inputsCount);
+    LOG_INFO("Animation duration: %f\nTotal Keyframes:%d",
+             frameTimes[inputsCount - 1],
+             inputsCount);
 
-    //for (int i = 0; i < gltfAnimation->channels_count; i++) {
+    // for (int i = 0; i < gltfAnimation->channels_count; i++) {
     for (int i = 0; i < 45; i++) {
         ui32 boneIndex = -1;
         // Go through each bone and find ID by target_node of channel
@@ -148,7 +139,7 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
         case cgltf_animation_path_type_translation:
 
             for (int j = 0; j < inputsCount; j++) {
-                vec3 output = GLM_VEC3_ZERO_INIT;
+                vec3 output            = GLM_VEC3_ZERO_INIT;
                 cgltf_bool testSuccess = cgltf_accessor_read_float(
                   gltfAnimation->channels[i].sampler->output, j, output, 8);
 
@@ -160,38 +151,38 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
 
         case cgltf_animation_path_type_rotation:
             for (int j = 0; j < inputsCount; j++) {
-                float *output = GLM_VEC4_ZERO;
+                float *output          = GLM_VEC4_ZERO;
                 cgltf_bool testSuccess = cgltf_accessor_read_float(
                   gltfAnimation->channels[i].sampler->output, j, output, 8);
 
-                glm_vec4_copy(output,
-                              keyframes[j]->poses[boneIndex]->rotation);
+                glm_vec4_copy(output, keyframes[j]->poses[boneIndex]->rotation);
             }
             break;
         case cgltf_animation_path_type_scale:
             for (int j = 0; j < inputsCount; j++) {
-                float *output = GLM_VEC3_ZERO;
+                float *output          = GLM_VEC3_ZERO;
                 cgltf_bool testSuccess = cgltf_accessor_read_float(
                   gltfAnimation->channels[i].sampler->output, j, output, 8);
 
-                glm_vec3_copy(output,
-                              keyframes[j]->poses[boneIndex]->scale);
+                glm_vec3_copy(output, keyframes[j]->poses[boneIndex]->scale);
             }
             break;
         default: break;
         }
+    }
 
-        // Loop through every bone again per keyframe, and
-        // create a transform matrix for each bone
-        for (int j = 0; j < skeleton->jointsCount; j++) {
+    // Loop through every bone again per keyframe, and
+    // create a transform matrix for each bone
+    for (int i = 0; i < inputsCount; i++) {
+        /* for (int j = 0; j < skeleton->jointsCount; j++) {
             // TODO: Get parent index by boneIndex
             skeleton->joints[j]->pose = *keyframes[i]->poses[j];
-        }
+        }*/
         for (int j = 0; j < skeleton->jointsCount; j++) {
-            mat4 output = GLM_MAT4_ZERO_INIT;
-            _joint_transform_world(skeleton->joints[j], (float *)output);
-            glm_mat4_copy(output, skeleton->joints[j]->pose.mTransform);
-            //glm_mat4_copy(output, keyframes[i]->poses[j]->mTransform);
+            mat4 output               = GLM_MAT4_ZERO_INIT;
+            skeleton->joints[j]->pose = *keyframes[i]->poses[j];
+            joint_transform_world(skeleton->joints[j], (float *)output);
+            glm_mat4_copy(output, keyframes[i]->poses[j]->mTransform);
         }
     }
 
@@ -205,10 +196,11 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
     Animation *animation = malloc(sizeof(Animation));
     animation->duration  = frameTimes[inputsCount - 1];
     animation->keyframes = keyframes;
+    animation->keyframesCount = inputsCount;
     animation->pSkeleton = skeleton;
 
-#if 1
-    #define TEST_BONE 2
+#if 0
+#define TEST_BONE 2
     for (int i = 0; i < inputsCount; i++) {
         LOG_INFO("Bone rotation @ keyframe %d for bone %d: %f\t%f\t%f\t%f", 
                 i,
@@ -223,21 +215,8 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
     return animation;
 }
 
-#if 0
-// Return new pose based on current keyframe of animation
-static Pose
-_update_pose(Pose *pose, Animation *animation, ui32 keyframe)
-{
-    // get keyframe based on: t = delta / prev+next
-
-    Keyframe *keyframe = animation->keyframes[keyframe];
-
-    return keyframe.poses[boneId];
-}
-#endif
-
 static void
-_update_all_poses(Animation *animation, ui32 cntKeyframe)
+_skeleton_set_keyframe(Animation *animation, ui32 cntKeyframe)
 {
     // get keyframe based on: t = delta / prev+next
 
@@ -269,10 +248,10 @@ _create_joint_recurse(Skeleton *skeleton,
                       cgltf_node **jointsNode)
 {
     Joint joint;
-    joint.id            = id;
-    joint.name          = jointsNode[id]->name;
-    joint.parent        = parent;
-    joint.childrenCount = jointsNode[id]->children_count;
+    joint.id             = id;
+    joint.name           = jointsNode[id]->name;
+    joint.parent         = parent;
+    joint.childrenCount  = jointsNode[id]->children_count;
     joint.pose.hasMatrix = 0;
 
     glm_vec3_copy(jointsNode[id]->scale, joint.pose.scale);
@@ -280,46 +259,12 @@ _create_joint_recurse(Skeleton *skeleton,
     glm_vec3_copy(jointsNode[id]->translation, joint.pose.translation);
 
     mat4 out_matrix = GLM_MAT4_ZERO_INIT;
-    //cgltf_node_transform_world(jointsNode[id], (float *)out_matrix);
-    _joint_transform_world(&joint, (float *)out_matrix);
+    // cgltf_node_transform_world(jointsNode[id], (float *)out_matrix);
+    joint_transform_world(&joint, (float *)out_matrix);
     joint.pose.hasMatrix = 0;
 
     mat4 matrixLocal = GLM_MAT4_ZERO_INIT;
     glm_mat4_copy(out_matrix, matrixLocal);
-
-    /*
-
-    // calculate scale matrix
-    mat4 matrixScale = GLM_MAT4_IDENTITY_INIT;
-    glm_scale(matrixScale, joint.scale);
-
-    // calculate rotation matrix
-    mat4 matrixRotation = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(matrixRotation, (vec3) {0, 0, 0});
-    versor quaternion;
-    glm_quat_init(quaternion, joint.rotation[0], joint.rotation[1],
-    joint.rotation[2], joint.rotation[3]); cgltf_float *test =
-    jointsNode[id]->matrix; LOG_INFO("%f", test[0]);
-    //glm_quat_mat4(matrixRotation, quaternion, matrixRotation);
-    //glm_quat_mat4(quaternion, matrixRotation);
-    glm_quat_mat4t(quaternion, matrixRotation);
-
-    // calculate translation matrix
-    mat4 matrixTranslation = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(matrixTranslation, joint.translation);
-
-    // calculate combined-matrix
-    mat4 matrixLocal = GLM_MAT4_IDENTITY_INIT;
-    //glm_mat4_mul(matrixScale, matrixRotation, matrixLocal);
-    //glm_mat4_mul(matrixScale, matrixRotation, matrixRotation);
-    //glm_mat4_mul(matrixTranslation, matrixRotation, matrixLocal);
-    glm_mat4_mul(matrixTranslation, matrixRotation, matrixLocal);
-    glm_mat4_mul(matrixLocal, matrixScale, matrixLocal);
-    //glm_quat_rotate(matrixTranslation, quaternion, matrixTranslation);
-
-    //glm_mat4_copy(matrixTranslation, matrixLocal);
-    */
-
     glm_mat4_copy(matrixLocal, joint.pose.mTransform);
 
     // Allocate and assign
@@ -500,23 +445,25 @@ load_gltf(const char *path, int scale)
 
         // Animations //
 
-        int animationsCount         = data->animations_count;
-        cgltf_animation *animations = data->animations;
+        int animationsCount             = data->animations_count;
+        cgltf_animation *gltfAnimations = data->animations;
 
         LOG_INFO("Animations: %d", animationsCount);
 
         for (int i = 0; i < animationsCount; i++) {
-            cgltf_animation anim = animations[i];
             LOG_INFO(
               "Animation: \"%s\"\nSamplers count: %d\nChannels count: %d",
-              anim.name,
-              anim.samplers_count,
-              anim.channels_count);
+              gltfAnimations[i].name,
+              gltfAnimations[i].samplers_count,
+              gltfAnimations[i].channels_count);
 
-            Animation *output = _fill_animation_data(&anim, skeleton);
-           // _update_all_poses(output, 1);
+            Animation *animation =
+              _fill_animation_data(&gltfAnimations[i], skeleton);
+            _skeleton_set_keyframe(
+              animation, 0); // sets all the skeleton poses to keyframe 20
+
+            skeleton->animation = animation;
         }
-
 
     } // IF skinnedMesh
 
