@@ -42,7 +42,7 @@ mesh_assemble(const char *path, float scale)
         // TODO: Temporarily disabled IBO for .obj extensions
         if (data->buffers.bufferIndices != NULL && strcmp(ext, ".obj")) {
             IBO *ibo = ibo_create(data->buffers.bufferIndices,
-                              data->buffers.bufferIndices_size);
+                                  data->buffers.bufferIndices_size);
         }
 
         // Push our data into our single VBO
@@ -64,24 +64,26 @@ mesh_assemble(const char *path, float scale)
 #if 1
 
         if (data->isSkinnedMesh) {
-        VBO *vboJoints = vbo_create(data->skeleton->bufferJoints,
-                                    data->skeleton->bufferJointsSize);
-        vbo_push(vboJoints, 4, GL_UNSIGNED_INT, GL_FALSE); // (affected by) joints
-        vao_add_buffer(vao, vboJoints);
+            VBO *vboJoints = vbo_create(data->skeleton->bufferJoints,
+                                        data->skeleton->bufferJointsSize);
+            vbo_push(
+              vboJoints, 4, GL_UNSIGNED_INT, GL_FALSE); // (affected by) joints
+            vao_add_buffer(vao, vboJoints);
 
-        VBO *vboWeights = vbo_create(data->skeleton->bufferWeights,
-                                    data->skeleton->bufferWeightsSize);
-        vbo_push(vboWeights, 4, GL_FLOAT, GL_FALSE); // associated weights
-        vao_add_buffer(vao, vboWeights);
-        /*
-        VBO *vboSkeleton = vbo_create(data->skeleton->skinningBuffer,
-                                      data->skeleton->skinningBufferSize);
+            VBO *vboWeights = vbo_create(data->skeleton->bufferWeights,
+                                         data->skeleton->bufferWeightsSize);
+            vbo_push(vboWeights, 4, GL_FLOAT, GL_FALSE); // associated weights
+            vao_add_buffer(vao, vboWeights);
+            /*
+            VBO *vboSkeleton = vbo_create(data->skeleton->skinningBuffer,
+                                          data->skeleton->skinningBufferSize);
 
-        vbo_push(vboSkeleton, 4, GL_UNSIGNED_INT, GL_FALSE); // (affected by) joints
-        vbo_push(vboSkeleton, 4, GL_FLOAT, GL_FALSE); // associated weights
+            vbo_push(vboSkeleton, 4, GL_UNSIGNED_INT, GL_FALSE); // (affected
+            by) joints vbo_push(vboSkeleton, 4, GL_FLOAT, GL_FALSE); //
+            associated weights
 
-        vao_add_buffer(vao, vboSkeleton);
-        */
+            vao_add_buffer(vao, vboSkeleton);
+            */
         }
 #endif
 

@@ -133,21 +133,21 @@ animation_set_keyframe_lerp(Animation *animation, ui32 keyframe, float ratio)
 
         mat4 transformMatrix = GLM_MAT4_ZERO_INIT;
         _joint_transform_world(skeleton->joints[i], (float *)transformMatrix);
+
+#if 0
+        // Set to model matrix
+            mat4 init = GLM_MAT4_IDENTITY_INIT;
+            glm_mat4_mul(skeleton->rootMatrix, transformMatrix, transformMatrix);
+#endif
+
         glm_mat4_copy(transformMatrix, skeleton->joints[i]->pose.mTransform); // set as current pose
-        //glm_mat4_copy(output, animation->keyframes[keyframe]->poses[i]->mTransform);
+
     }
 
-    #if 1
+    // calculate skinning matrix
     for (int i = 0; i < skeleton->jointsCount; i++) {
-        mat4 transformMatrixLocal = GLM_MAT4_ZERO_INIT;
-        _joint_transform_local(skeleton->joints[i], (float *)transformMatrixLocal);
-
-        // calculate skinning matrix
-        mat4 init = GLM_MAT4_IDENTITY_INIT;
-        glm_mat4_mul(skeleton->joints[i]->pose.mTransform, skeleton->joints[i]->mInvBindPose,
-                     //transformMatrixLocal,
-                    //skeleton->joints[i]->pose.mTransform,
+        glm_mat4_mul(skeleton->joints[i]->pose.mTransform,
+                     skeleton->joints[i]->mInvBindPose,
                      skeleton->joints[i]->pose.mSkinningMatrix);
     }
-    #endif
 }

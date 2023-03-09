@@ -12,6 +12,8 @@
 
 #include <tools/debug/debug_draw_skeleton.h>
 
+//#define DEBUG_DRAW_SKELETON
+
 static void
 DrawModel(struct ComponentModel *model,
           struct ComponentTransform *transform,
@@ -30,41 +32,28 @@ DrawModel(struct ComponentModel *model,
         // Enable material + shaders
         material_use(material);
 
-        // Transform Uniform
-        glUniformMatrix4fv(
-          glGetUniformLocation(material->shaderProgram->id, "u_Model"),
-          1,
-          GL_FALSE,
-          (float *)transform->mvp.model);
-
         // Skinned Matrix array buffer
-        if (model->mesh->meshData->isSkinnedMesh) {
-
-            //mat4 **skinnedMatrices = malloc(sizeof(mat4 *) * 256); // 256 - MAX_BONES
-            mat4 skinnedMatrices[256];
+        if (model->mesh->meshData->isSkinnedMesh)
+        {
+            mat4 skinnedMatrices[MAX_BONES];
             Skeleton *pSkeleton = model->mesh->meshData->skeleton;
             for (int i = 0; i < pSkeleton->jointsCount; i++) {
-                //skinnedMatrices[i] = &pSkeleton->joints[i]->pose.mSkinningMatrix;
-                //skinnedMatrices[i] = malloc(sizeof(mat4));
                 glm_mat4_copy(pSkeleton->joints[i]->pose.mSkinningMatrix,
                               skinnedMatrices[i]);
             }
 
-            //mat4 p = *skinnedMatrices[0];
-
             glUniformMatrix4fv(
-              glGetUniformLocation(material->shaderProgram->id, "u_SkinnedMatrix"),
+              glGetUniformLocation(material->shaderProgram->id, "u_SkinnedMatrices"),
                 pSkeleton->jointsCount,
               GL_FALSE,
               (float *)*skinnedMatrices);
-
-            /*
-            for (int i = 0; i < pSkeleton->jointsCount; i++) {
-                free(skinnedMatrices[i]);
-            }
-            free(skinnedMatrices);
-            */
         }
+        // Transform Uniform
+        glUniformMatrix4fv(
+            glGetUniformLocation(material->shaderProgram->id, "u_Model"),
+            1,
+            GL_FALSE,
+            (float *)transform->mvp.model);
 
         vao_bind(model->mesh->vao);
 
@@ -170,11 +159,13 @@ render(Entity e)
                ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame];
     }
 
+#if defined(DEBUG_DRAW_SKELETON)
     // draw skeleton
     if (model->mesh->meshData->isSkinnedMesh) {
         debug_draw_skeleton(e.ecs->renderer->debugContext,
                             model->mesh->meshData->skeleton);
     }
+#endif
 
     if (pass == REGULAR) {
         (DEVICE_API_OPENGL) ? DrawModel(model, transform, model->material, NULL)

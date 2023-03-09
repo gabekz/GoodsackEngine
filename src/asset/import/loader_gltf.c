@@ -186,7 +186,8 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
 
             mat4 init = GLM_MAT4_IDENTITY_INIT;
             if (i == 0)
-                //glm_mat4_mul(init, output, keyframes[i]->poses[j]->mTransform);
+                // glm_mat4_mul(init, output,
+                // keyframes[i]->poses[j]->mTransform);
                 glm_mat4_copy(output, keyframes[i]->poses[j]->mTransform);
             else
                 glm_mat4_copy(output, keyframes[i]->poses[j]->mTransform);
@@ -282,8 +283,8 @@ _create_joint_recurse(Skeleton *skeleton,
 
     mat4 matrixLocal = GLM_MAT4_ZERO_INIT;
     mat4 init        = GLM_MAT4_IDENTITY_INIT;
-    //if (id == 0) glm_mat4_mul(init, out_matrix, out_matrix);
-    //if (id == 0) glm_mat4_copy(init, out_matrix);
+    // if (id == 0) glm_mat4_mul(init, out_matrix, out_matrix);
+    // if (id == 0) glm_mat4_copy(init, out_matrix);
 
     glm_mat4_copy(out_matrix, matrixLocal);
     glm_mat4_copy(matrixLocal, joint.pose.mTransform);
@@ -365,23 +366,46 @@ load_gltf(const char *path, int scale)
 
     MeshData *ret = malloc(sizeof(MeshData));
 
-    // TEMPORARY testing
+    int vertCount      = data->accessors[0].count; // TODO: garbage
+    ret->vertexCount   = vertCount;
+    int vPosBufferSize = vertCount * sizeof(float) * 3;
+    int vTexBufferSize = vertCount * sizeof(float) * 2;
+    int vNrmBufferSize = vertCount * sizeof(float) * 3;
 
-    ret->buffers.out = malloc(1794 * sizeof(float) * sizeof(vec3));
-    cgltf_accessor_unpack_floats(
-      data->accessors,
-      ret->buffers.out,
-      1794 * sizeof(vec3)); // UNPACK for out -> read_float for individual
+    ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
+    ret->buffers.out  = malloc(ret->buffers.outI);
 
-    // total size of output
-    ret->buffers.outI = 1794 * sizeof(float) * sizeof(vec3);
+    // fill vertex data
+    // int offsetPos = 0;
+    // int offsetTex = 0;
+    // int offsetNrm = 0;
+    int offsetA = 0;
+    for (int i = 0; i < vertCount; i++) {
+        // Fill Positions
+        cgltf_accessor_read_float(
+          &data->accessors[0], i, ret->buffers.out + offsetA, 100);
+        offsetA += 3;
+        // Fill TextureCoords
+        cgltf_accessor_read_float(
+          &data->accessors[1], i, ret->buffers.out + offsetA, 100);
+        offsetA += 2;
+        // Fill Normals
+        cgltf_accessor_read_float(
+          &data->accessors[2], i, ret->buffers.out + offsetA, 100);
+        offsetA += 3;
+    }
 
-    ret->vertexCount = 1794;
+    /*
+    // combine vertex position and texture coords buffers
+    memcpy(ret->buffers.out, ret->buffers.v, vPosBufferSize);
+    memcpy(((byte *)ret->buffers.out)+(vPosBufferSize), ret->buffers.vt,
+    vTexBufferSize);
+    */
 
     // set this so we push the position to buffer
-    ret->buffers.vL  = 1794;
-    ret->buffers.vtL = 0;
-    ret->buffers.vnL = 0;
+    ret->buffers.vL  = vertCount;
+    ret->buffers.vtL = vertCount;
+    ret->buffers.vnL = vertCount;
     // ret->buffers.vnL = 0;
 
     // Indices //
@@ -401,16 +425,10 @@ load_gltf(const char *path, int scale)
         }
     }
 
-    // combine joint and weight buffers
-    // void *skinningBuffer = malloc(jointsBufferSize + weightsBufferSize);
-    // memcpy(skinningBuffer, jointsBuffer, jointsBufferSize);
-    // memcpy(((byte *)skinningBuffer)+(jointsBufferSize), weightsBuffer,
-    // weightsBufferSize);
+    ret->isSkinnedMesh = data->skins_count;
 
     // If we have a skinned mesh
-    if (data->skins_count >= 1) {
-
-        ret->isSkinnedMesh = 1;
+    if (ret->isSkinnedMesh >= 1) {
 
         Skeleton *skeleton = malloc(sizeof(Skeleton));
         ret->skeleton      = skeleton;
@@ -437,8 +455,8 @@ load_gltf(const char *path, int scale)
 
         // Skinning information //
 
-        ui32 jointsBufferSize  = 1794 * 4 * sizeof(ui32);
-        ui32 weightsBufferSize = 1794 * 4 * sizeof(float);
+        ui32 jointsBufferSize  = vertCount * 4 * sizeof(ui32);
+        ui32 weightsBufferSize = vertCount * 4 * sizeof(float);
 
         ui32 *jointsBuffer   = malloc(jointsBufferSize);
         float *weightsBuffer = malloc(weightsBufferSize);
@@ -449,7 +467,7 @@ load_gltf(const char *path, int scale)
 
         // fill joint and weight buffers
         int offset = 0;
-        for (int i = 0; i < 1794; i++) {
+        for (int i = 0; i < vertCount; i++) {
             cgltf_bool jointsBufferResult = cgltf_accessor_read_uint(
               &data->accessors[3], i, jointsBuffer + offset, 4);
 

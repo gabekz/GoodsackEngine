@@ -64,6 +64,8 @@ struct Skeleton
 
     Animation *animation; // change to list
 
+    mat4 rootMatrix;
+
     char *name;
 };
 
