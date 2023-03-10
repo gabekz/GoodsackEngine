@@ -41,8 +41,9 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
              frameTimes[inputsCount - 1],
              inputsCount);
 
+    // TODO: set correct iterator
     // for (int i = 0; i < gltfAnimation->channels_count; i++) {
-    for (int i = 0; i < 45; i++) {
+    for (int i = 0; i < (skeleton->jointsCount * 3); i++) {
         ui32 boneIndex = -1;
         // Go through each bone and find ID by target_node of channel
         // TODO: very, very slow. Fix this later.
@@ -93,12 +94,6 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
         default: break;
         }
     }
-
-#if 0
-            Pose newPose             = _keyframePose();
-            newPose.translation = anim.samplers[0].output->buffer_view->data[0];
-            keyframes->poses[boneId] = newPose;
-#endif
 
     // Animation data
     Animation *animation      = malloc(sizeof(Animation));
@@ -275,23 +270,48 @@ load_gltf(const char *path, int scale)
     ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
     ret->buffers.out  = malloc(ret->buffers.outI);
 
-    // fill vertex data
-    // int offsetPos = 0;
-    // int offsetTex = 0;
-    // int offsetNrm = 0;
+    // NOTE: for every single mesh -> go through every pirmitive
+    // - primitive is another mesh, ONLY difference is that
+    // the model matrix parent is the mesh world-space, not model world-space
+
+    ui32 idxPos = -1;
+    ui32 idxTex = -1;
+    ui32 idxNrm = -1;
+
+    ui32 idxJnt = -1;
+    ui32 idxWht = -1;
+
+    ui32 attribCount = data->meshes->primitives->attributes_count;
+    for (int i = 0; i < attribCount; i++) {
+        const cgltf_attribute *attrib =
+          &data->meshes->primitives->attributes[i];
+
+        switch (attrib->type) {
+        case cgltf_attribute_type_position: idxPos = i; break;
+        case cgltf_attribute_type_normal: idxNrm = i; break;
+        case cgltf_attribute_type_tangent: break;
+        case cgltf_attribute_type_texcoord: idxTex = i; break;
+        case cgltf_attribute_type_color: break;
+        case cgltf_attribute_type_joints: idxJnt = i; break;
+        case cgltf_attribute_type_weights: idxWht = i; break;
+        case cgltf_attribute_type_invalid: break;
+        default: break;
+        }
+    }
+
     int offsetA = 0;
     for (int i = 0; i < vertCount; i++) {
         // Fill Positions
         cgltf_accessor_read_float(
-          &data->accessors[0], i, ret->buffers.out + offsetA, 100);
+          &data->accessors[idxPos], i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
         // Fill TextureCoords
         cgltf_accessor_read_float(
-          &data->accessors[1], i, ret->buffers.out + offsetA, 100);
+          &data->accessors[idxTex], i, ret->buffers.out + offsetA, 100);
         offsetA += 2;
         // Fill Normals
         cgltf_accessor_read_float(
-          &data->accessors[2], i, ret->buffers.out + offsetA, 100);
+          &data->accessors[idxNrm], i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
     }
 
@@ -369,10 +389,10 @@ load_gltf(const char *path, int scale)
         int offset = 0;
         for (int i = 0; i < vertCount; i++) {
             cgltf_bool jointsBufferResult = cgltf_accessor_read_uint(
-              &data->accessors[3], i, jointsBuffer + offset, 4);
+              &data->accessors[idxJnt], i, jointsBuffer + offset, 4);
 
             cgltf_bool weightsBufferResult = cgltf_accessor_read_float(
-              &data->accessors[4], i, weightsBuffer + offset, 8);
+              &data->accessors[idxWht], i, weightsBuffer + offset, 8);
 
             if (!jointsBufferResult || !weightsBufferResult) {
                 LOG_ERROR("Failed to read skinning data!");
@@ -408,14 +428,7 @@ load_gltf(const char *path, int scale)
             skeleton->animation = animation;
         }
 
-    } // IF skinnedMesh
-
-    // Testing
-#if 0
-    LOG_INFO("Skeleton ID for bone 0 is %d, name %s, parentId = %d",
-    ret->skeleton->joints[0]->id, ret->skeleton->joints[0]->name,
-    ret->skeleton->joints[1]->parent->id);
-#endif
+    } // skinnedMesh
 
     // Cleanup
     cgltf_free(data);
