@@ -8,7 +8,7 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
-//#define LOGGING_GLTF
+// #define LOGGING_GLTF
 
 void
 joint_transform_local(Joint *joint, float *outMatrix)

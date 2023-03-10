@@ -19,8 +19,7 @@ debug_context_init()
             vertices[i] *= 0.02f;
         }
 
-        VBO *vboCube =
-          vbo_create(vertices, PRIM_SIZ_V_CUBE * sizeof(float));
+        VBO *vboCube = vbo_create(vertices, PRIM_SIZ_V_CUBE * sizeof(float));
         vbo_push(vboCube, 3, GL_FLOAT, GL_FALSE);
         vao_add_buffer(ret->vaoCube, vboCube);
 

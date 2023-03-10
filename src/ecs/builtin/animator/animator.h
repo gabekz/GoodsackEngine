@@ -1,8 +1,8 @@
 #ifndef H_C_ANIMATOR
 #define H_C_ANIMATOR
 
-#include <ecs/ecs.h>
 #include <core/graphics/mesh/animation.h>
+#include <ecs/ecs.h>
 
 struct ComponentAnimator
 {

@@ -53,21 +53,21 @@ device_getAnalytics()
 void
 device_resetAnalytics()
 {
-    s_ald.counter   = 0;
-    s_ald.prevTime  = 0;
-    s_ald.timeDiff  = 0;
+    s_ald.counter  = 0;
+    s_ald.prevTime = 0;
+    s_ald.timeDiff = 0;
 
     s_ald.analytics.currentFps = 0;
-    s_ald.analytics.currentMs = 0;
-    s_ald.analytics.delta = 0;
-    s_ald.analytics.lastFrame = 0;
+    s_ald.analytics.currentMs  = 0;
+    s_ald.analytics.delta      = 0;
+    s_ald.analytics.lastFrame  = 0;
 }
 
 void
 device_updateAnalytics(double time)
 {
     // Delta Time
-    s_ald.analytics.delta = time - s_ald.analytics.lastFrame;
+    s_ald.analytics.delta     = time - s_ald.analytics.lastFrame;
     s_ald.analytics.lastFrame = time;
 
     // Analytical Time

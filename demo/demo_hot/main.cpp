@@ -20,7 +20,7 @@
 
 #include <ecs/lua/eventstore.hpp>
 
-//#define RENDERER_2
+// #define RENDERER_2
 
 #ifdef RENDERER_2
 #include <core/graphics/renderer/renderer.hpp>

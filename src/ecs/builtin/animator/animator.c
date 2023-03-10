@@ -58,7 +58,7 @@ update(Entity e)
     animator->timerNow += (device_getAnalytics().delta) * 1.0;
 
     if (animator->timerNow >= animator->cntAnimation->duration) {
-        animator->timerNow = 0;
+        animator->timerNow         = 0;
 
 #if 1 // for the sake of testing -> going to set keyframe to 1
         animator->cntKeyframeIndex = 1;

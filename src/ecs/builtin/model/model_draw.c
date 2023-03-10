@@ -12,7 +12,7 @@
 
 #include <tools/debug/debug_draw_skeleton.h>
 
-//#define DEBUG_DRAW_SKELETON
+// #define DEBUG_DRAW_SKELETON
 
 static void
 DrawModel(struct ComponentModel *model,
@@ -33,8 +33,7 @@ DrawModel(struct ComponentModel *model,
         material_use(material);
 
         // Skinned Matrix array buffer
-        if (model->mesh->meshData->isSkinnedMesh)
-        {
+        if (model->mesh->meshData->isSkinnedMesh) {
             mat4 skinnedMatrices[MAX_BONES];
             Skeleton *pSkeleton = model->mesh->meshData->skeleton;
             for (int i = 0; i < pSkeleton->jointsCount; i++) {
@@ -42,18 +41,18 @@ DrawModel(struct ComponentModel *model,
                               skinnedMatrices[i]);
             }
 
-            glUniformMatrix4fv(
-              glGetUniformLocation(material->shaderProgram->id, "u_SkinnedMatrices"),
-                pSkeleton->jointsCount,
-              GL_FALSE,
-              (float *)*skinnedMatrices);
+            glUniformMatrix4fv(glGetUniformLocation(material->shaderProgram->id,
+                                                    "u_SkinnedMatrices"),
+                               pSkeleton->jointsCount,
+                               GL_FALSE,
+                               (float *)*skinnedMatrices);
         }
         // Transform Uniform
         glUniformMatrix4fv(
-            glGetUniformLocation(material->shaderProgram->id, "u_Model"),
-            1,
-            GL_FALSE,
-            (float *)transform->mvp.model);
+          glGetUniformLocation(material->shaderProgram->id, "u_Model"),
+          1,
+          GL_FALSE,
+          (float *)transform->mvp.model);
 
         vao_bind(model->mesh->vao);
 
