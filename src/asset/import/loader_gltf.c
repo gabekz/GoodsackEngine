@@ -2,6 +2,8 @@
 #pragma optimize("", off)
 
 #include <core/graphics/mesh/mesh.h>
+#include <core/graphics/mesh/mesh_helpers.inl>
+
 #include <util/logger.h>
 #include <util/maths.h>
 
@@ -9,86 +11,6 @@
 #include <cgltf.h>
 
 // #define LOGGING_GLTF
-
-void
-joint_transform_local(Joint *joint, float *outMatrix)
-{
-    float *lm = outMatrix;
-
-    if (joint->pose.hasMatrix) {
-        memcpy(lm, joint->pose.mTransform, sizeof(float) * 16);
-        LOG_ERROR("SHOULD NOT HAVE hasMatrix 1");
-    } else {
-        Pose *node = &joint->pose;
-        float tx   = node->translation[0];
-        float ty   = node->translation[1];
-        float tz   = node->translation[2];
-
-        float qx = node->rotation[0];
-        float qy = node->rotation[1];
-        float qz = node->rotation[2];
-        float qw = node->rotation[3];
-
-        float sx = node->scale[0];
-        float sy = node->scale[1];
-        float sz = node->scale[2];
-
-        lm[0] = (1 - 2 * qy * qy - 2 * qz * qz) * sx;
-        lm[1] = (2 * qx * qy + 2 * qz * qw) * sx;
-        lm[2] = (2 * qx * qz - 2 * qy * qw) * sx;
-        lm[3] = 0.f;
-
-        lm[4] = (2 * qx * qy - 2 * qz * qw) * sy;
-        lm[5] = (1 - 2 * qx * qx - 2 * qz * qz) * sy;
-        lm[6] = (2 * qy * qz + 2 * qx * qw) * sy;
-        lm[7] = 0.f;
-
-        lm[8]  = (2 * qx * qz + 2 * qy * qw) * sz;
-        lm[9]  = (2 * qy * qz - 2 * qx * qw) * sz;
-        lm[10] = (1 - 2 * qx * qx - 2 * qy * qy) * sz;
-        lm[11] = 0.f;
-
-        lm[12] = tx;
-        lm[13] = ty;
-        lm[14] = tz;
-        lm[15] = 1.f;
-    }
-}
-
-void
-joint_transform_world(Joint *joint, float *outMatrix)
-{
-    float *lm = outMatrix;
-    joint_transform_local(joint, lm);
-
-    const Joint *parent = joint->parent;
-
-    while (parent) {
-        float pm[16];
-        joint_transform_local(parent, pm);
-
-        for (int i = 0; i < 4; ++i) {
-
-            float l0 = lm[i * 4 + 0];
-            float l1 = lm[i * 4 + 1];
-            float l2 = lm[i * 4 + 2];
-
-            float r0 = l0 * pm[0] + l1 * pm[4] + l2 * pm[8];
-            float r1 = l0 * pm[1] + l1 * pm[5] + l2 * pm[9];
-            float r2 = l0 * pm[2] + l1 * pm[6] + l2 * pm[10];
-
-            lm[i * 4 + 0] = r0;
-            lm[i * 4 + 1] = r1;
-            lm[i * 4 + 2] = r2;
-        }
-
-        lm[12] += pm[12];
-        lm[13] += pm[13];
-        lm[14] += pm[14];
-
-        parent = parent->parent;
-    }
-}
 
 static Animation *
 _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
@@ -169,28 +91,6 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
             }
             break;
         default: break;
-        }
-    }
-
-    // Loop through every bone again per keyframe, and
-    // create a transform matrix for each bone
-    for (int i = 0; i < inputsCount; i++) {
-        /* for (int j = 0; j < skeleton->jointsCount; j++) {
-            // TODO: Get parent index by boneIndex
-            skeleton->joints[j]->pose = *keyframes[i]->poses[j];
-        }*/
-        for (int j = 0; j < skeleton->jointsCount; j++) {
-            mat4 output               = GLM_MAT4_ZERO_INIT;
-            skeleton->joints[j]->pose = *keyframes[i]->poses[j];
-            joint_transform_world(skeleton->joints[j], (float *)output);
-
-            mat4 init = GLM_MAT4_IDENTITY_INIT;
-            if (i == 0)
-                // glm_mat4_mul(init, output,
-                // keyframes[i]->poses[j]->mTransform);
-                glm_mat4_copy(output, keyframes[i]->poses[j]->mTransform);
-            else
-                glm_mat4_copy(output, keyframes[i]->poses[j]->mTransform);
         }
     }
 
@@ -278,7 +178,7 @@ _create_joint_recurse(Skeleton *skeleton,
 
     mat4 out_matrix = GLM_MAT4_ZERO_INIT;
     // cgltf_node_transform_world(jointsNode[id], (float *)out_matrix);
-    joint_transform_world(&joint, (float *)out_matrix);
+    _joint_transform_world(&joint, (float *)out_matrix);
     joint.pose.hasMatrix = 0;
 
     mat4 matrixLocal = GLM_MAT4_ZERO_INIT;

@@ -25,10 +25,10 @@
 #endif
 
 #define VK_EXTENSION_TEST_COUNT 3
-#define VK_EXTENSION_TEST                            \
-    {                                                \
-        "VK_KHR_swapchain", VK_PLATFORM_SURFACE_EXT, \
-          VK_EXT_DEBUG_UTILS_EXTENSION_NAME          \
+#define VK_EXTENSION_TEST                          \
+    {                                              \
+        "VK_KHR_surface", VK_PLATFORM_SURFACE_EXT, \
+          VK_EXT_DEBUG_UTILS_EXTENSION_NAME        \
     }
 
 #define VK_CHECK(x)                                       \

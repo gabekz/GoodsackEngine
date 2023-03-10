@@ -7,97 +7,15 @@
 #include <core/drivers/opengl/opengl_buffer.h>
 #include <core/drivers/vulkan/vulkan_vertex_buffer.h>
 
+#include <core/graphics/mesh/animation.h>
 #include <core/graphics/texture/texture.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct Mesh Mesh;
-typedef struct MeshData MeshData;
-
-typedef struct Joint Joint;
-typedef struct Skeleton Skeleton;
-
-typedef struct Pose Pose;
-typedef struct Animation Animation;
-typedef struct Keyframe Keyframe;
-
-#define MAX_BONES         256
-#define MAX_BONE_NAME_LEN 256
-
-struct Pose
-{
-    vec3 translation;
-    vec3 scale;
-    vec4 rotation;
-
-    mat4 mTransform;
-    mat4 mSkinningMatrix;
-    int hasMatrix;
-};
-
-struct Joint
-{
-    char *name;
-    ui16 id;
-
-    Joint *parent;
-    ui16 childrenCount;
-
-    Pose pose; // current pose
-    mat4 mInvBindPose;
-};
-
-struct Skeleton
-{
-    Joint **joints;
-    ui16 jointsCount;
-
-    // GPU Buffers
-    void *bufferJoints, *bufferWeights;
-    ui32 bufferJointsCount, bufferWeightsCount;
-    ui32 bufferJointsSize, bufferWeightsSize;
-
-    void *skinningBuffer;
-    ui32 skinningBufferSize;
-
-    Animation *animation; // change to list
-
-    mat4 rootMatrix;
-
-    char *name;
-};
-
-struct Keyframe
-{
-    ui32 index;
-    float frameTime;
-
-    Pose **poses;
-    ui32 posesCount;
-};
-
-struct Animation
-{
-    char *name;     // animation name
-    float duration; // animation time
-
-    Skeleton *pSkeleton; // reference to associated skeleton
-
-    Keyframe **keyframes;
-    ui32 keyframesCount;
-};
-
-struct Mesh
-{
-    VAO *vao;
-    VulkanVertexBuffer *vkVBO;
-    MeshData *meshData;
-};
-
 // MeshData - API-agonstic buffer information
-struct MeshData
+typedef struct MeshData
 {
     ui32 vertexCount;
     ui32 indicesCount;
@@ -122,11 +40,18 @@ struct MeshData
     // TODO: Move to model
     Skeleton *skeleton;
     int isSkinnedMesh;
-};
+} MeshData;
+
+typedef struct Mesh
+{
+    VAO *vao;
+    VulkanVertexBuffer *vkVBO;
+    MeshData *meshData;
+} Mesh;
 
 /**
  * Assemble mesh per Graphics API spec.
- * Currently, this handles loading the model (.obj) as well.
+ * Currently, this handles loading the model (wavefront & gltf) as well.
  *
  * @param[in] mesh path
  * @param[in] vertex scale

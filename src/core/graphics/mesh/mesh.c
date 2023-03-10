@@ -77,16 +77,6 @@ mesh_assemble(const char *path, float scale)
                                          data->skeleton->bufferWeightsSize);
             vbo_push(vboWeights, 4, GL_FLOAT, GL_FALSE); // associated weights
             vao_add_buffer(vao, vboWeights);
-            /*
-            VBO *vboSkeleton = vbo_create(data->skeleton->skinningBuffer,
-                                          data->skeleton->skinningBufferSize);
-
-            vbo_push(vboSkeleton, 4, GL_UNSIGNED_INT, GL_FALSE); // (affected
-            by) joints vbo_push(vboSkeleton, 4, GL_FLOAT, GL_FALSE); //
-            associated weights
-
-            vao_add_buffer(vao, vboSkeleton);
-            */
         }
 #endif
 
