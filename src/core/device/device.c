@@ -56,14 +56,18 @@ device_resetAnalytics()
     s_ald.counter   = 0;
     s_ald.prevTime  = 0;
     s_ald.timeDiff  = 0;
-    s_ald.analytics = (Analytics) {0, 0, 0, 0};
+
+    s_ald.analytics.currentFps = 0;
+    s_ald.analytics.currentMs = 0;
+    s_ald.analytics.delta = 0;
+    s_ald.analytics.lastFrame = 0;
 }
 
 void
 device_updateAnalytics(double time)
 {
     // Delta Time
-    s_ald.analytics.delta     = time - s_ald.analytics.lastFrame;
+    s_ald.analytics.delta = time - s_ald.analytics.lastFrame;
     s_ald.analytics.lastFrame = time;
 
     // Analytical Time
@@ -72,18 +76,11 @@ device_updateAnalytics(double time)
 
     if (s_ald.timeDiff >= 1.0 / 30.0) {
 
-        // Update static analytics
-        s_ald.analytics = (Analytics) {
-          .currentFps = (1.0 / s_ald.timeDiff) * s_ald.counter,
-          .currentMs  = (s_ald.timeDiff / s_ald.counter) * 1000,
-          //                       .delta      = s_ald.timeDiff / 1000};
-        };
+        s_ald.analytics.currentFps = (1.0 / s_ald.timeDiff) * s_ald.counter;
+        s_ald.analytics.currentMs  = (s_ald.timeDiff / s_ald.counter) * 1000;
 
         // Reset
         s_ald.prevTime = time;
         s_ald.counter  = 0;
     }
-    // Delta Time
-    double currentFrame       = time;
-    s_ald.analytics.lastFrame = currentFrame;
 }

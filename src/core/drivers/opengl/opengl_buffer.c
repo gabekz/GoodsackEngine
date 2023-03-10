@@ -125,7 +125,7 @@ vbo_push(VBO *self, GLuint count, GLuint type, GLuint normalized)
 }
 
 IBO *
-ibo_create(void *data, unsigned int size)
+ibo_create(const void *data, unsigned int size)
 {
     IBO *ibo = malloc(sizeof(IBO));
 

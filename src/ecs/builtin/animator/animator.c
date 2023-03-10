@@ -55,7 +55,7 @@ update(Entity e)
     }
 #else
 
-    animator->timerNow += (device_getAnalytics().delta) * 1.2;
+    animator->timerNow += (device_getAnalytics().delta) * 1.0;
 
     if (animator->timerNow >= animator->cntAnimation->duration) {
         animator->timerNow = 0;
@@ -76,10 +76,8 @@ update(Entity e)
     ui32 nxtKeyframeIndex = cntKeyframeIndex + 1;
     Keyframe *nxtKeyframe = animator->cntAnimation->keyframes[nxtKeyframeIndex];
 
-    // evaluate ratio - TODO: this is not used yet
     float ratio = (animator->timerNow - cntKeyframe->frameTime) /
                   (nxtKeyframe->frameTime - cntKeyframe->frameTime);
-    // LOG_INFO("Ratio is: %f", ratio);
 
     if (ratio >= nxtKeyframe->frameTime) {
         // animation_set_keyframe(animator->cntAnimation, 0);

@@ -67,7 +67,7 @@ getElementTypeSize(GLuint type);
 
 // IBO
 IBO *
-ibo_create(const unsigned int *data, unsigned int count);
+ibo_create(const void *data, unsigned int size);
 void
 ibo_bind(IBO *self);
 void

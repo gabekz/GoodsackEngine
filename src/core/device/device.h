@@ -28,8 +28,8 @@ typedef struct Analytics
     double currentFps;
     double currentMs;
 
-    float delta;
-    float lastFrame;
+    double delta;
+    double lastFrame;
 
     // ui32 currentDrawCalls;
 } Analytics;
