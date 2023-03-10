@@ -118,11 +118,11 @@ _isDeviceSuitable(VkPhysicalDevice physicalDevice)
     // TODO: Device-ranking support
 
     // Swapchain support
-    const char *validationLayers[VK_REQ_VALIDATION_SIZE] =
+    const char *validationLayers[VK_REQ_VALIDATION_COUNT] =
       VK_REQ_VALIDATION_LIST;
 
     // Device extension support
-    const char *deviceExtensions[VK_REQ_DEVICE_EXT_SIZE] = VK_REQ_DEVICE_EXT;
+    const char *deviceExtensions[VK_REQ_DEVICE_EXT_COUNT] = VK_REQ_DEVICE_EXT;
 
     ui32 indices = vulkan_device_find_queue_families(physicalDevice);
     int extensionsSupported =
@@ -189,21 +189,9 @@ vulkan_device_create()
     // vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
     // printf("\n%d extensions supported", extensionCount);
 
-#ifdef SYS_ENV_UNIX
-    const ui32 extensionTestCount = 3;
-    const char *extensionTest[3]  = {"VK_KHR_surface",
-                                     "VK_KHR_xcb_surface",
-                                     VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
-#else
-#ifdef SYS_ENV_WIN
-    const ui32 extensionTestCount = 3;
-    const char *extensionTest[3]  = {"VK_KHR_surface",
-                                     "VK_KHR_win32_surface",
-                                     VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
-#endif
-#endif
+    const char *extensionTest[VK_EXTENSION_TEST_COUNT] = VK_EXTENSION_TEST;
 
-    const char *validationLayers[VK_REQ_VALIDATION_SIZE] =
+    const char *validationLayers[VK_REQ_VALIDATION_COUNT] =
       VK_REQ_VALIDATION_LIST;
 
     if (kEnableValidationLayers) {
@@ -211,9 +199,9 @@ vulkan_device_create()
             LOG_ERROR("Validation layer requested, but not available!");
         }
         createInfo.ppEnabledLayerNames = validationLayers;
-        createInfo.enabledLayerCount   = VK_REQ_VALIDATION_SIZE;
+        createInfo.enabledLayerCount   = VK_REQ_VALIDATION_COUNT;
 
-        createInfo.enabledExtensionCount   = extensionTestCount;
+        createInfo.enabledExtensionCount   = VK_EXTENSION_TEST_COUNT;
         createInfo.ppEnabledExtensionNames = extensionTest;
     } else {
         createInfo.enabledLayerCount       = 0;
@@ -294,9 +282,9 @@ vulkan_device_create()
     };
 
     // Device Extensions
-    const char *extensions[VK_REQ_DEVICE_EXT_SIZE] = VK_REQ_DEVICE_EXT;
-    logicCreateInfo.enabledExtensionCount          = VK_REQ_DEVICE_EXT_SIZE;
-    logicCreateInfo.ppEnabledExtensionNames        = extensions;
+    const char *extensions[VK_REQ_DEVICE_EXT_COUNT] = VK_REQ_DEVICE_EXT;
+    logicCreateInfo.enabledExtensionCount           = VK_REQ_DEVICE_EXT_COUNT;
+    logicCreateInfo.ppEnabledExtensionNames         = extensions;
 
     ret->device = malloc(sizeof(VkDevice));
     VK_CHECK(
