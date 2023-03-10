@@ -1,17 +1,26 @@
 #ifndef H_FILESYSTEM
 #define H_FILESYSTEM
 
-#include <windows.h>
+#include <util/sysdefs.h>
 
-#define FS_EXE_PATH
+#define FILESYSTEM_PATH_EXE
 
-#define FS_DIR_WORKING
-#define FS_DIR_RESOURCES
-#define FS_DIR_DEBUG
+#define FILESYSTEM_WORKING_DIRECTORY
+#define FILESYSTEM_RESOURCES_DIRECTORY
+#define FILESYSTEM_DEBUG_DIRECTORY
 
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
+
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
+typedef struct goodsack_file
+{
+    char *fileExtension;
+} goodsack_file;
 
 static inline void
 _GetDir()
@@ -21,9 +30,19 @@ _GetDir()
     GetCurrentDirectory(MAX_PATH, NPath);
 }
 
-filesystem_path(FS_DIR_DEBUG, "logs/logs.txt");
+// memstream utilities //
 
 static void filesystem_memstream(BUFFER, LEN);
 static void filesystem_flush(BUFFER);
+// filesystem_path(FS_DIR_DEBUG, "logs/logs.txt");
+
+// file properties //
+
+static inline char *
+filesystem_get_extension(const char *path)
+{
+    char *ext = strrchr(path, '.');
+    return ext;
+}
 
 #endif // H_FILESYSTEM

@@ -51,14 +51,17 @@ mesh_assemble(const char *path, float scale)
         if (data->buffers.vnL > 0) vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
         vao_add_buffer(vao, vbo); // VBO push -> VAO
 
-#if 0
-        // TBN vertex buffer
-        VBO *vboTBN = vbo_create(
-          data->buffers.outTBN, data->totalTriangles * 3 * 2 * sizeof(GLfloat));
-        vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); // tangent
-        vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); // bitangent
-        vao_add_buffer(vao, vboTBN);
-        // free(data->buffers.outTBN);
+#if 1
+        if (strcmp(ext, ".gltf")) { // TODO: Does not work with GLTF yet
+            // TBN vertex buffer
+            VBO *vboTBN =
+              vbo_create(data->buffers.outTBN,
+                         data->totalTriangles * 3 * 2 * sizeof(GLfloat));
+            vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); // tangent
+            vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); // bitangent
+            vao_add_buffer(vao, vboTBN);
+            // free(data->buffers.outTBN);
+        }
 #endif
 
 #if 1

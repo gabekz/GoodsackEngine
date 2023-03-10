@@ -35,5 +35,5 @@ LuaInit(const char *file)
         dumpstack(L, "end");
     }
 
-    lua_close(L);
+    //lua_close(L);
 }

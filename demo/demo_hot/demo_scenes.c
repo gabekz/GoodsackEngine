@@ -35,7 +35,7 @@ _scene0(ECS *ecs, Renderer *renderer)
                       (void *)(&(struct ComponentCamera) {
                         .position = {0.0f, 0.0f, 2.0f},
                         .axisUp   = {0.0f, 1.0f, 0.0f},
-                        .speed    = 0.05f,
+                        .speed    = 2.5f,
                       }));
 
     Entity suzanneObject = ecs_new(ecs);
@@ -85,7 +85,7 @@ _scene1(ECS *ecs, Renderer *renderer)
                       (void *)(&(struct ComponentCamera) {
                         .position = {0.0f, 0.0f, 2.0f},
                         .axisUp   = {0.0f, 1.0f, 0.0f},
-                        .speed    = 0.05f,
+                        .speed    = 2.5f,
                       }));
 
     Entity floorEntity = ecs_new(ecs);
@@ -133,7 +133,7 @@ _scene2(ECS *ecs, Renderer *renderer)
                       (void *)(&(struct ComponentCamera) {
                         .position = {0.0f, 0.0f, 2.0f},
                         .axisUp   = {0.0f, 1.0f, 0.0f},
-                        .speed    = 0.05f,
+                        .speed    = 2.5f,
                       }));
 
     Texture *texGraniteAlbedo = texture_create_d(
@@ -315,7 +315,7 @@ _scene3(ECS *ecs, Renderer *renderer)
     struct ComponentCamera compCamera = {
       .position = {-1.5f, 0.0f, 0.0f},
       .axisUp   = {0.0f, 1.0f, 0.0f},
-      .speed    = 0.05f,
+      .speed    = 2.5f,
     };
     /*
     struct ComponentCamera *compCamera =
@@ -401,11 +401,9 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     texDefNorm = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo   = texture_create_n("../res/textures/defaults/white.png");
 
-    /*
     _scene0(ecs, renderer);
     _scene1(ecs, renderer);
     _scene2(ecs, renderer);
     _scene3(ecs, renderer);
-    */
     _scene4(ecs, renderer);
 }

@@ -204,7 +204,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
     glDepthFunc(GL_LEQUAL);
-    // skybox_draw(renderer->skybox);
+    skybox_draw(renderer->skybox);
     glDepthFunc(GL_LESS);
 
     /*-------------------------------------------
