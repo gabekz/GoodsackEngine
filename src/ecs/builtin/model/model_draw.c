@@ -32,42 +32,47 @@ DrawModel(struct ComponentModel *model,
         // Enable material + shaders
         material_use(material);
 
-        // Skinned Matrix array buffer
-        if (model->mesh->meshData->isSkinnedMesh) {
-            mat4 skinnedMatrices[MAX_BONES];
-            Skeleton *pSkeleton = model->mesh->meshData->skeleton;
-            for (int i = 0; i < pSkeleton->jointsCount; i++) {
-                glm_mat4_copy(pSkeleton->joints[i]->pose.mSkinningMatrix,
-                              skinnedMatrices[i]);
+        for (int i = 0; i < model->pModel->meshesCount; i++) {
+            Mesh *mesh = model->pModel->meshes[i];
+
+            // Skinned Matrix array buffer
+            if (mesh->meshData->isSkinnedMesh) {
+                mat4 skinnedMatrices[MAX_BONES];
+                Skeleton *pSkeleton = mesh->meshData->skeleton;
+                for (int i = 0; i < pSkeleton->jointsCount; i++) {
+                    glm_mat4_copy(pSkeleton->joints[i]->pose.mSkinningMatrix,
+                                  skinnedMatrices[i]);
+                }
+
+                glUniformMatrix4fv(
+                  glGetUniformLocation(material->shaderProgram->id,
+                                       "u_SkinnedMatrices"),
+                  pSkeleton->jointsCount,
+                  GL_FALSE,
+                  (float *)*skinnedMatrices);
             }
+            // Transform Uniform
+            glUniformMatrix4fv(
+              glGetUniformLocation(material->shaderProgram->id, "u_Model"),
+              1,
+              GL_FALSE,
+              (float *)transform->mvp.model);
 
-            glUniformMatrix4fv(glGetUniformLocation(material->shaderProgram->id,
-                                                    "u_SkinnedMatrices"),
-                               pSkeleton->jointsCount,
-                               GL_FALSE,
-                               (float *)*skinnedMatrices);
-        }
-        // Transform Uniform
-        glUniformMatrix4fv(
-          glGetUniformLocation(material->shaderProgram->id, "u_Model"),
-          1,
-          GL_FALSE,
-          (float *)transform->mvp.model);
+            vao_bind(mesh->vao);
 
-        vao_bind(model->mesh->vao);
+            MeshData *data = mesh->meshData;
+            ui32 vertices  = data->vertexCount;
+            ui32 indices   = data->indicesCount;
 
-        MeshData *data = model->mesh->meshData;
-        ui32 vertices  = data->vertexCount;
-        ui32 indices   = data->indicesCount;
+            ui16 drawMode = model->properties.drawMode;
 
-        ui16 drawMode = model->properties.drawMode;
-
-        switch (drawMode) {
-        case DRAW_ELEMENTS:
-            glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
-            break;
-        case DRAW_ARRAYS:
-        default: glDrawArrays(GL_TRIANGLES, 0, vertices); break;
+            switch (drawMode) {
+            case DRAW_ELEMENTS:
+                glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
+                break;
+            case DRAW_ARRAYS:
+            default: glDrawArrays(GL_TRIANGLES, 0, vertices); break;
+            }
         }
 
     } else if (DEVICE_API_VULKAN) {

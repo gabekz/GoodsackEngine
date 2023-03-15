@@ -218,13 +218,12 @@ _create_joint_recurse(Skeleton *skeleton,
 // Vertex Data
 
 static MeshData *
-_load_mesh_vertex_data(cgltf_mesh *gltfMesh, cgltf_data *data)
+_load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 {
     MeshData *ret = malloc(sizeof(MeshData));
 
     // TODO: Get more than just the first primitive
-    struct AttributeInfo attribInfo =
-      _get_primitive_attributes(&gltfMesh->primitives[0]);
+    struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
 
     int vertCount      = 1794; // data->accessors[0].count; // TODO: garbage
     ret->vertexCount   = vertCount;
@@ -385,6 +384,7 @@ load_gltf(const char *path, int scale)
     }
 
     int indicesBufferViewIndex = 0;
+    LOG_INFO("Meshes Count: %d", data->meshes_count);
 
     for (int i = 0; i < data->meshes_count; i++) {
         LOG_INFO("Mesh name: %s", data->meshes[i].name);
@@ -437,12 +437,16 @@ load_gltf(const char *path, int scale)
     ret->meshes = malloc(sizeof(Mesh *) * data->meshes_count);
 
     for (int i = 0; i < data->meshes_count; i++) {
-        MeshData *meshData = _load_mesh_vertex_data(&data->meshes[i], data);
-        meshData->hasTBN   = 0;
-        ret->meshes[i]     = mesh_assemble(meshData);
+        for (int j = 0; j < data->meshes[i].primitives_count; j++) {
+            MeshData *meshData =
+              _load_mesh_vertex_data(&data->meshes[i].primitives[j], data);
+            meshData->hasTBN = 0;
+            ret->meshes[i]   = mesh_assemble(meshData);
+        }
     } // skinnedMesh
 
-    ret->modelPath = path;
+    ret->modelPath   = path;
+    ret->meshesCount = data->meshes_count;
 
     // Cleanup
     cgltf_free(data);
