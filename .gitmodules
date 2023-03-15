@@ -1,21 +1,24 @@
 [submodule "lib/glfw"]
-	path = lib/glfw
+	path = thirdparty/glfw
 	url = https://github.com/glfw/glfw
 [submodule "lib/cglm"]
-	path = lib/cglm
+	path = thirdparty/cglm
 	url = https://github.com/recp/cglm
 [submodule "lib/imgui"]
-	path = lib/imgui
+	path = thirdparty/imgui
 	url = https://github.com/ocornut/imgui.git
 [submodule "lib/json"]
-	path = lib/json
+	path = thirdparty/json
 	url = https://www.github.com/nlohmann/json.git
 [submodule "lib/googletest"]
-	path = lib/googletest
+	path = thirdparty/googletest
 	url = https://github.com/google/googletest
 [submodule "lib/openal-soft"]
-	path = lib/openal-soft
+	path = thirdparty/openal-soft
 	url = https://github.com/kcat/openal-soft
 [submodule "lib/vulkan"]
 	path = lib/vulkan
 	url = https://github.com/KhronosGroup/Vulkan-Headers
+[submodule "thirdparty/cgltf"]
+	path = thirdparty/cgltf
+	url = https://github.com/jkuhlmann/cgltf

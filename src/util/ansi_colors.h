@@ -5,14 +5,14 @@
  */
 
 // Regular text
-#define BLK "\e[0;30m"
-#define RED "\e[0;31m"
-#define GRN "\e[0;32m"
-#define YEL "\e[0;33m"
-#define BLU "\e[0;34m"
-#define MAG "\e[0;35m"
-#define CYN "\e[0;36m"
-#define WHT "\e[0;37m"
+#define BLK "\33[30m"
+#define RED "\33[31m"
+#define GRN "\33[32m"
+#define YEL "\33[33m"
+#define BLU "\33[34m"
+#define MAG "\33[35m"
+#define CYN "\33[36m"
+#define WHT "\33[37m"
 
 // Regular bold text
 #define BBLK "\e[1;30m"
@@ -75,6 +75,6 @@
 #define BHWHT "\e[1;97m"
 
 // Reset
-#define reset       "\e[0m"
-#define CRESET      "\e[0m"
-#define COLOR_RESET "\e[0m"
+#define reset       "\33[0m"
+#define CRESET      "\33[0m"
+#define COLOR_RESET "\33[0m"

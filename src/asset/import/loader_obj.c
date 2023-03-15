@@ -7,12 +7,17 @@
 #include <util/gfx.h>
 #include <util/logger.h>
 #include <util/maths.h>
+#include <util/sysdefs.h>
 
-#include <model/model.h>
+#include <core/graphics/mesh/mesh.h>
 
 #define LOGGING_OBJ
 
-ModelData *
+#ifdef SYS_ENV_UNIX
+#define strtok_s(x, y, z) strtok_r(x, y, z)
+#endif
+
+MeshData *
 load_obj(const char *path, float scale)
 {
 
@@ -102,7 +107,7 @@ load_obj(const char *path, float scale)
                 char elemDem[] = "/";
                 char *ptr      = collection;
                 char *posn     = NULL;
-                char *element  = strtok_r(ptr, elemDem, &posn);
+                char *element  = strtok_s(ptr, elemDem, &posn);
 
                 // Go through each element in the collection
                 // Get the incremental steps for the components we need
@@ -143,7 +148,7 @@ load_obj(const char *path, float scale)
                         outI += 3;
                     }
 
-                    element = strtok_r(NULL, elemDem, &posn);
+                    element = strtok_s(NULL, elemDem, &posn);
                 }
                 // Next element increment
                 collection = strtok(NULL, " ");
@@ -176,7 +181,7 @@ load_obj(const char *path, float scale)
 #endif
 
     // Output
-    ModelData *ret   = malloc(sizeof(ModelData));
+    MeshData *ret    = malloc(sizeof(MeshData));
     ret->vertexCount = outI;
 
 #if 1 // Calcuate TBN for each triangle/vertex
@@ -266,8 +271,8 @@ load_obj(const char *path, float scale)
     printf("-------------------------------------\n\n");
 #endif
 
-    ret->modelPath      = path;
-    ret->totalTriangles = totalTriangles;
+    // ret->meshPath       = path;
+    ret->trianglesCount = totalTriangles;
 
     ret->buffers.v  = v;
     ret->buffers.vt = vt;
@@ -277,9 +282,15 @@ load_obj(const char *path, float scale)
     ret->buffers.vtL = vtL;
     ret->buffers.vnL = vnL;
 
-    ret->buffers.out    = out;
-    ret->buffers.outI   = outI;
+    ret->buffers.out = out;
+    // TODO: fix this crap right here
+    ret->buffers.outI   = outI * sizeof(float);
     ret->buffers.outTBN = outTBN;
+
+    ret->buffers.bufferIndices_size = 0;
+
+    ret->isSkinnedMesh = 0;
+    ret->hasTBN        = 1;
 
     // glBindVertexArray(0);
     //  Free a lot of memory....

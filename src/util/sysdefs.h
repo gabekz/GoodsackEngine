@@ -5,9 +5,7 @@
 #ifndef H_SYSDEFS
 #define H_SYSDEFS
 
-/*
- * Platform
- */
+// -- Platform definitions //
 
 // Windows definitions
 #if defined(_WIN32) || defined(_WIN64)
@@ -16,7 +14,7 @@
 #define SYS_ENV_64
 #else
 #define SYS_ENV_32
-#endif
+#endif // _WIN64
 #endif // WIN
 
 // Unix definitions
@@ -32,7 +30,9 @@
 #endif // GCC
 
 // Windows badly defines a lot of stuff. Undefine it.
-#ifdef SYS_ENV_WIN
+#if defined(SYS_ENV_WIN)
+
+#define WIN32_LEAN_AND_MEAN
 #undef min    // override standard definition
 #undef max    // override standard definition
 #undef ERROR  // override (really stupid) wingdi.h standard definition
@@ -41,9 +41,11 @@
 #undef Error
 #undef OK
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
-#endif
 
-#ifndef __cplusplus // C-Specific
+#endif // SYS_ENV_WIN
+
+// -- C Specific boolean definitions //
+#ifndef __cplusplus
 
 #ifdef TRUE
 #undef TRUE
@@ -56,7 +58,9 @@
 #define TRUE  1
 #define FALSE 0
 
-#endif // C-Specific
+#endif // __cplusplus
+
+// -- Result //
 
 #define SYS_SUCCESS 1
 #define SYS_FAILURE 0
@@ -71,14 +75,13 @@
 #define SYS_DEBUG SYS_DISABLED
 #endif
 
-/*
- * Types
- */
+// -- Types //
 
 typedef signed char sichar;
 typedef unsigned char byte;
 
 typedef unsigned long ulng;
+typedef unsigned long ulong;
 
 typedef short si16;
 typedef unsigned short ui16;

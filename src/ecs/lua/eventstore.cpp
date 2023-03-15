@@ -6,14 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <lua/debug.h>
 #include <util/lua_deps.h>
+#include <wrapper/lua/lua_debug.h>
 
 #include <ecs/component/component.hpp>
 #include <ecs/component/layout.hpp>
 #include <ecs/component/loader.hpp>
 
-#include <components/transform/transform.h>
+#include <ecs/builtin/transform/transform.h>
 
 using namespace ecs;
 
@@ -144,7 +144,7 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
             // send data to function
             // pushEntity(L);
             pushEntity(L,
-                       (Entity) {.id = 19},
+                       (Entity {.id = 19}),
                        LuaEventStore::getLayout("ComponentCamera"));
             // lua_pushnumber(L, 12);
             //  call event function

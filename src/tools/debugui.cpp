@@ -8,15 +8,15 @@
 #include <ecs/ecs.h>
 
 extern "C" {
-#include <core/renderer/v1/renderer.h>
+#include <core/graphics/renderer/v1/renderer.h>
 }
 
-#include <core/api/alsoft/alsoft_debug.h>
-#include <core/api/device.h>
+#include <core/device/device.h>
+#include <core/drivers/alsoft/alsoft_debug.h>
 
-#include <components/components.h>
+#include <ecs/builtin/components.h>
 
-#include <core/api/vulkan/vulkan.h>
+#include <core/drivers/vulkan/vulkan.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -174,10 +174,15 @@ DebugGui::Render()
 
         ImGui::SameLine();
         if (ImGui::Button("Load Scene")) {
-            renderer_active_scene(m_renderer, m_sceneQueued);
-            renderer_start(m_renderer);
-            m_sceneQueued = m_renderer->activeScene;
+            if (m_sceneQueued > m_renderer->sceneC || m_sceneQueued < 0) {
+                m_sceneQueued = 0;
+            } else {
+                renderer_active_scene(m_renderer, m_sceneQueued);
+                renderer_start(m_renderer);
+                m_sceneQueued = m_renderer->activeScene;
+            }
         }
+        ImGui::End();
         ImGui::EndGroup();
     }
     if (m_showSceneLighting) {
@@ -187,6 +192,7 @@ DebugGui::Render()
         ImGui::Text("Directional Light");
         // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
 
+        ImGui::End();
         ImGui::EndGroup();
     }
     if (m_showEntityViewer) {
@@ -212,7 +218,7 @@ DebugGui::Render()
 
             // Grab entity by ID
             Entity e =
-              (Entity) {.id = (EntityId)i, .index = (ui64)i, .ecs = ecs};
+              (Entity {.id = (EntityId)i, .index = (ui64)i, .ecs = ecs});
 
             std::string str = std::to_string(e.index) + " | ";
             str += "Entity id: " + std::to_string(e.id);
@@ -224,8 +230,8 @@ DebugGui::Render()
                 m_showComponentViewer = true;
             }
         }
-        ImGui::EndGroup();
         ImGui::End();
+        ImGui::EndGroup();
     }
 
     if (m_showComponentViewer) {
@@ -252,20 +258,20 @@ DebugGui::Render()
             ImGui::EndDisabled();
             ImGui::EndChild();
         }
-        if (ecs_has(e, C_MESH)) {
+        if (ecs_has(e, C_MODEL)) {
             ImGui::BeginChild(
-              "Mesh", ImVec2(0, ImGui::GetFontSize() * 25.0f), true);
+              "Model", ImVec2(0, ImGui::GetFontSize() * 25.0f), true);
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-            ImGui::Text("Mesh Component");
+            ImGui::Text("Model Component");
             ImGui::PopStyleColor();
             ImGui::Separator();
             // wow, this is ridiculous..
-            struct ComponentMesh &p =
-              *(static_cast<struct ComponentMesh *>(ecs_get(e, C_MESH)));
+            struct ComponentModel &p =
+              *(static_cast<struct ComponentModel *>(ecs_get(e, C_MODEL)));
 
-            // Model information
+            // Mesh information
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
-            ImGui::Text("Model");
+            ImGui::Text("Mesh");
             ImGui::PopStyleColor();
             ImGui::Separator();
 
@@ -320,12 +326,12 @@ DebugGui::Render()
             struct ComponentCamera &p =
               *(static_cast<struct ComponentCamera *>(ecs_get(e, C_CAMERA)));
             ImGui::DragFloat("FOV", &p.fov, 0.45f, 0.9f);
-            ImGui::DragFloat("Speed", &p.speed, 0.01, 0, 1.0f);
+            ImGui::DragFloat("Speed", &p.speed, 0.01, 0, 10.0f);
             ImGui::Text("Clipping");
             ImGui::PushItemWidth(100);
-            ImGui::DragFloat("", &p.clipping.nearZ, 0.01, 0, 10);
+            ImGui::DragFloat("Near", &p.clipping.nearZ, 0.01, 0, 10);
             ImGui::SameLine();
-            ImGui::DragFloat("", &p.clipping.farZ, 1, 0, 1000);
+            ImGui::DragFloat("Far", &p.clipping.farZ, 1, 0, 1000);
             ImGui::EndChild();
         }
 
@@ -365,6 +371,16 @@ DebugGui::Render()
             }
             ImGui::EndChild();
         }
+        if (ecs_has(e, C_ANIMATOR)) {
+            ImGui::BeginChild(
+              "Animator", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("Animator Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            ImGui::EndChild();
+        }
 
         ImGui::End();
     }
@@ -372,12 +388,25 @@ DebugGui::Render()
         ImGui::BeginGroup();
         ImGui::Begin("Analytics", &m_showProfiler);
 
+        ImGui::Text("Settings");
+        ImGui::Separator();
+        int vsync = device_getGraphicsSettings().swapInterval;
+        ImGui::Checkbox("VSync", (bool *)&vsync);
+        device_setGraphicsSettings((GraphicsSettings({.swapInterval = vsync})));
+
+        /*
+        ImGui::Text("Time");
+        ImGui::Separator();
+        ImGui::Text("%f DeltaTime", device_getAnalytics().delta);
+        */
+
         ImGui::Text("Performance");
         ImGui::Separator();
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         ImGui::Text("%f FPS", device_getAnalytics().currentFps);
         ImGui::Text("%f ms", device_getAnalytics().currentMs);
         ImGui::PopStyleColor();
+        /*
         ImGui::Separator();
         ImGui::Text("Draw Calls: ");
         ImGui::Separator();
@@ -385,7 +414,9 @@ DebugGui::Render()
         ImGui::Text("Total Polygons: ");
         ImGui::Text("Total Faces: ");
         // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
+        */
 
+        ImGui::End();
         ImGui::EndGroup();
     }
     if (m_showHDR) {
@@ -462,6 +493,7 @@ DebugGui::Render()
         ;
         // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
 
+        ImGui::End();
         ImGui::EndGroup();
     }
 

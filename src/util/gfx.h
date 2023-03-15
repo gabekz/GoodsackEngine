@@ -6,7 +6,7 @@
 #define GLFW_INCLUDE_NONE
 #endif
 
-#include <vulkan/vk_sdk_platform.h>
+// #include <vulkan/vk_sdk_platform.h>
 #include <vulkan/vulkan.h>
 #define GLFW_INCLUDE_VULKAN
 
@@ -16,7 +16,7 @@
 // Default Graphics API
 #if defined(SYS_API_OPENGL) || defined(SYS_API_VULKAN)
 #else
-//#define SYS_API_OPENGL
+// #define SYS_API_OPENGL
 #define SYS_API_VULKAN
 #endif
 
