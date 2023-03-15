@@ -10,7 +10,46 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
-// #define LOGGING_GLTF
+struct AttributeInfo
+{
+    ui32 idxPos;
+    ui32 idxTex;
+    ui32 idxNrm;
+
+    ui32 idxJnt;
+    ui32 idxWht;
+
+    ui32 attribCount;
+};
+
+static struct AttributeInfo
+_get_primitive_attributes(cgltf_primitive *gltfPrimitive)
+{
+
+    int attribCount = gltfPrimitive->attributes_count;
+
+    struct AttributeInfo attribInfo = {-1};
+
+    for (int i = 0; i < attribCount; i++) {
+        const cgltf_attribute *attrib = &gltfPrimitive->attributes[i];
+
+        switch (attrib->type) {
+        case cgltf_attribute_type_position: attribInfo.idxPos = i; break;
+        case cgltf_attribute_type_normal: attribInfo.idxNrm = i; break;
+        case cgltf_attribute_type_tangent: break;
+        case cgltf_attribute_type_texcoord: attribInfo.idxTex = i; break;
+        case cgltf_attribute_type_color: break;
+        case cgltf_attribute_type_joints: attribInfo.idxJnt = i; break;
+        case cgltf_attribute_type_weights: attribInfo.idxWht = i; break;
+        case cgltf_attribute_type_invalid: break;
+        default: break;
+        }
+    }
+    attribInfo.attribCount = attribCount;
+    return attribInfo;
+}
+
+// Animation Data
 
 static Animation *
 _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
@@ -118,32 +157,6 @@ _fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
     return animation;
 }
 
-static void
-_skeleton_set_keyframe(Animation *animation, ui32 cntKeyframe)
-{
-    // get keyframe based on: t = delta / prev+next
-
-    Skeleton *skeleton = animation->pSkeleton;
-    for (int i = 0; i < skeleton->jointsCount; i++) {
-
-        Pose currentPose = skeleton->joints[i]->pose;
-        Pose nextPose    = *animation->keyframes[cntKeyframe]->poses[i];
-
-        // Pose newPose = LERP(currentPose, newPose, t);
-        Pose newPose              = nextPose;
-        skeleton->joints[i]->pose = nextPose;
-    }
-}
-
-#if 0
-static void
-_play_animation(Animation *animation)
-{
-    ui32 keyframe = 0;
-    _update_all_poses(animation, keyframe);
-}
-#endif
-
 static Joint
 _create_joint_recurse(Skeleton *skeleton,
                       ui32 id,
@@ -202,7 +215,164 @@ _create_joint_recurse(Skeleton *skeleton,
     return joint;
 }
 
-MeshData *
+// Vertex Data
+
+static MeshData *
+_load_mesh_vertex_data(cgltf_mesh *gltfMesh, cgltf_data *data)
+{
+    MeshData *ret = malloc(sizeof(MeshData));
+
+    // TODO: Get more than just the first primitive
+    struct AttributeInfo attribInfo =
+      _get_primitive_attributes(&gltfMesh->primitives[0]);
+
+    int vertCount      = 1794; // data->accessors[0].count; // TODO: garbage
+    ret->vertexCount   = vertCount;
+    int vPosBufferSize = vertCount * sizeof(float) * 3;
+    int vTexBufferSize = vertCount * sizeof(float) * 2;
+    int vNrmBufferSize = vertCount * sizeof(float) * 3;
+
+    ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
+    ret->buffers.out  = malloc(ret->buffers.outI);
+
+    int offsetA = 0;
+    for (int i = 0; i < vertCount; i++) {
+        // Fill Positions
+        cgltf_accessor_read_float(&data->accessors[attribInfo.idxPos],
+                                  i,
+                                  ret->buffers.out + offsetA,
+                                  100);
+        offsetA += 3;
+        // Fill TextureCoords
+        cgltf_accessor_read_float(&data->accessors[attribInfo.idxTex],
+                                  i,
+                                  ret->buffers.out + offsetA,
+                                  100);
+        offsetA += 2;
+        // Fill Normals
+        cgltf_accessor_read_float(&data->accessors[attribInfo.idxNrm],
+                                  i,
+                                  ret->buffers.out + offsetA,
+                                  100);
+        offsetA += 3;
+    }
+
+    // set this so we push the position to buffer
+    ret->buffers.vL  = vertCount;
+    ret->buffers.vtL = vertCount;
+    ret->buffers.vnL = vertCount;
+    // ret->buffers.vnL = 0;
+
+    // Indices //
+
+    int indicesBufferViewIndex = attribInfo.attribCount; // TODO: fix
+    ret->indicesCount          = data->accessors[indicesBufferViewIndex].count;
+    ret->buffers.bufferIndices_size = ret->indicesCount * sizeof(ui32);
+
+    ret->buffers.bufferIndices = malloc(ret->buffers.bufferIndices_size);
+
+    // store all indices
+    for (int i = 0; i < ret->indicesCount; i++) {
+        if (!cgltf_accessor_read_uint(&data->accessors[indicesBufferViewIndex],
+                                      i,
+                                      ret->buffers.bufferIndices + i,
+                                      ret->indicesCount)) {
+            LOG_ERROR("Failed to read uint! %d", i);
+        }
+    }
+
+    // Skinned mesh
+
+    ret->isSkinnedMesh = data->skins_count;
+
+    // If we have a skinned mesh
+    if (ret->isSkinnedMesh >= 1) {
+
+        Skeleton *skeleton = malloc(sizeof(Skeleton));
+        ret->skeleton      = skeleton;
+
+        // Skeleton information //
+
+        skeleton->jointsCount = data->skins->joints_count;
+
+        cgltf_node *armatureNode = data->scenes[0].nodes[0];
+
+        // Skeleton name from node
+        skeleton->name = strdup(armatureNode->name);
+        LOG_INFO("Skeleton name: %s\nSkeleton children: %d",
+                 skeleton->name,
+                 armatureNode->children_count);
+
+        // List of all joints in skeleton
+        skeleton->joints = malloc(sizeof(Joint *) * data->skins->joints_count);
+
+        // Create skeleton recursively
+        _create_joint_recurse(
+          skeleton, 0, NULL, data->skins->joints, &data->skins[0]);
+        //_create_joint_recurse(skeleton, 0, NULL, &armatureNode->children[1]);
+
+        // Skinning information //
+
+        ui32 jointsBufferSize  = vertCount * 4 * sizeof(ui32);
+        ui32 weightsBufferSize = vertCount * 4 * sizeof(float);
+
+        ui32 *jointsBuffer   = malloc(jointsBufferSize);
+        float *weightsBuffer = malloc(weightsBufferSize);
+
+        // ret->skeleton->skinningBuffer    = skinningBuffer;
+        // ret->skeleton->skinningBufferSize =
+        //  jointsBufferSize + weightsBufferSize;
+
+        // fill joint and weight buffers
+        int offset = 0;
+        for (int i = 0; i < vertCount; i++) {
+            cgltf_bool jointsBufferResult = cgltf_accessor_read_uint(
+              &data->accessors[attribInfo.idxJnt], i, jointsBuffer + offset, 4);
+
+            cgltf_bool weightsBufferResult =
+              cgltf_accessor_read_float(&data->accessors[attribInfo.idxWht],
+                                        i,
+                                        weightsBuffer + offset,
+                                        8);
+
+            if (!jointsBufferResult || !weightsBufferResult) {
+                LOG_ERROR("Failed to read skinning data!");
+            }
+            // step for the next buffer position
+            offset += 4;
+        }
+        skeleton->bufferJoints     = jointsBuffer;
+        skeleton->bufferJointsSize = jointsBufferSize;
+
+        skeleton->bufferWeights     = weightsBuffer;
+        skeleton->bufferWeightsSize = weightsBufferSize;
+
+        // Animations //
+
+        int animationsCount             = data->animations_count;
+        cgltf_animation *gltfAnimations = data->animations;
+
+        LOG_INFO("Animations: %d", animationsCount);
+
+        for (int i = 0; i < animationsCount; i++) {
+            LOG_INFO(
+              "Animation: \"%s\"\nSamplers count: %d\nChannels count: %d",
+              gltfAnimations[i].name,
+              gltfAnimations[i].samplers_count,
+              gltfAnimations[i].channels_count);
+
+            Animation *animation =
+              _fill_animation_data(&gltfAnimations[i], skeleton);
+            //_skeleton_set_keyframe(
+            //  animation, 0); // sets all the skeleton poses to keyframe 20
+
+            skeleton->animation = animation;
+        }
+    }
+    return ret;
+}
+
+Model *
 load_gltf(const char *path, int scale)
 {
     cgltf_options options = {0};
@@ -259,176 +429,20 @@ load_gltf(const char *path, int scale)
 #endif // LOGGING_GLTF
     }
 
-    MeshData *ret = malloc(sizeof(MeshData));
-
-    int vertCount      = data->accessors[0].count; // TODO: garbage
-    ret->vertexCount   = vertCount;
-    int vPosBufferSize = vertCount * sizeof(float) * 3;
-    int vTexBufferSize = vertCount * sizeof(float) * 2;
-    int vNrmBufferSize = vertCount * sizeof(float) * 3;
-
-    ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
-    ret->buffers.out  = malloc(ret->buffers.outI);
-
     // NOTE: for every single mesh -> go through every pirmitive
     // - primitive is another mesh, ONLY difference is that
     // the model matrix parent is the mesh world-space, not model world-space
 
-    ui32 idxPos = -1;
-    ui32 idxTex = -1;
-    ui32 idxNrm = -1;
+    Model *ret  = malloc(sizeof(Model));
+    ret->meshes = malloc(sizeof(Mesh *) * data->meshes_count);
 
-    ui32 idxJnt = -1;
-    ui32 idxWht = -1;
-
-    ui32 attribCount = data->meshes->primitives->attributes_count;
-    for (int i = 0; i < attribCount; i++) {
-        const cgltf_attribute *attrib =
-          &data->meshes->primitives->attributes[i];
-
-        switch (attrib->type) {
-        case cgltf_attribute_type_position: idxPos = i; break;
-        case cgltf_attribute_type_normal: idxNrm = i; break;
-        case cgltf_attribute_type_tangent: break;
-        case cgltf_attribute_type_texcoord: idxTex = i; break;
-        case cgltf_attribute_type_color: break;
-        case cgltf_attribute_type_joints: idxJnt = i; break;
-        case cgltf_attribute_type_weights: idxWht = i; break;
-        case cgltf_attribute_type_invalid: break;
-        default: break;
-        }
-    }
-
-    int offsetA = 0;
-    for (int i = 0; i < vertCount; i++) {
-        // Fill Positions
-        cgltf_accessor_read_float(
-          &data->accessors[idxPos], i, ret->buffers.out + offsetA, 100);
-        offsetA += 3;
-        // Fill TextureCoords
-        cgltf_accessor_read_float(
-          &data->accessors[idxTex], i, ret->buffers.out + offsetA, 100);
-        offsetA += 2;
-        // Fill Normals
-        cgltf_accessor_read_float(
-          &data->accessors[idxNrm], i, ret->buffers.out + offsetA, 100);
-        offsetA += 3;
-    }
-
-    /*
-    // combine vertex position and texture coords buffers
-    memcpy(ret->buffers.out, ret->buffers.v, vPosBufferSize);
-    memcpy(((byte *)ret->buffers.out)+(vPosBufferSize), ret->buffers.vt,
-    vTexBufferSize);
-    */
-
-    // set this so we push the position to buffer
-    ret->buffers.vL  = vertCount;
-    ret->buffers.vtL = vertCount;
-    ret->buffers.vnL = vertCount;
-    // ret->buffers.vnL = 0;
-
-    // Indices //
-
-    ret->indicesCount = data->accessors[indicesBufferViewIndex].count;
-    ret->buffers.bufferIndices_size = ret->indicesCount * sizeof(ui32);
-
-    ret->buffers.bufferIndices = malloc(ret->buffers.bufferIndices_size);
-
-    // store all indices
-    for (int i = 0; i < ret->indicesCount; i++) {
-        if (!cgltf_accessor_read_uint(&data->accessors[indicesBufferViewIndex],
-                                      i,
-                                      ret->buffers.bufferIndices + i,
-                                      ret->indicesCount)) {
-            LOG_ERROR("Failed to read uint! %d", i);
-        }
-    }
-
-    ret->isSkinnedMesh = data->skins_count;
-
-    // If we have a skinned mesh
-    if (ret->isSkinnedMesh >= 1) {
-
-        Skeleton *skeleton = malloc(sizeof(Skeleton));
-        ret->skeleton      = skeleton;
-
-        // Skeleton information //
-
-        skeleton->jointsCount = data->skins->joints_count;
-
-        cgltf_node *armatureNode = data->scenes[0].nodes[0];
-
-        // Skeleton name from node
-        skeleton->name = strdup(armatureNode->name);
-        LOG_INFO("Skeleton name: %s\nSkeleton children: %d",
-                 skeleton->name,
-                 armatureNode->children_count);
-
-        // List of all joints in skeleton
-        skeleton->joints = malloc(sizeof(Joint *) * data->skins->joints_count);
-
-        // Create skeleton recursively
-        _create_joint_recurse(
-          skeleton, 0, NULL, data->skins->joints, &data->skins[0]);
-        //_create_joint_recurse(skeleton, 0, NULL, &armatureNode->children[1]);
-
-        // Skinning information //
-
-        ui32 jointsBufferSize  = vertCount * 4 * sizeof(ui32);
-        ui32 weightsBufferSize = vertCount * 4 * sizeof(float);
-
-        ui32 *jointsBuffer   = malloc(jointsBufferSize);
-        float *weightsBuffer = malloc(weightsBufferSize);
-
-        // ret->skeleton->skinningBuffer    = skinningBuffer;
-        // ret->skeleton->skinningBufferSize =
-        //  jointsBufferSize + weightsBufferSize;
-
-        // fill joint and weight buffers
-        int offset = 0;
-        for (int i = 0; i < vertCount; i++) {
-            cgltf_bool jointsBufferResult = cgltf_accessor_read_uint(
-              &data->accessors[idxJnt], i, jointsBuffer + offset, 4);
-
-            cgltf_bool weightsBufferResult = cgltf_accessor_read_float(
-              &data->accessors[idxWht], i, weightsBuffer + offset, 8);
-
-            if (!jointsBufferResult || !weightsBufferResult) {
-                LOG_ERROR("Failed to read skinning data!");
-            }
-            // step for the next buffer position
-            offset += 4;
-        }
-        skeleton->bufferJoints     = jointsBuffer;
-        skeleton->bufferJointsSize = jointsBufferSize;
-
-        skeleton->bufferWeights     = weightsBuffer;
-        skeleton->bufferWeightsSize = weightsBufferSize;
-
-        // Animations //
-
-        int animationsCount             = data->animations_count;
-        cgltf_animation *gltfAnimations = data->animations;
-
-        LOG_INFO("Animations: %d", animationsCount);
-
-        for (int i = 0; i < animationsCount; i++) {
-            LOG_INFO(
-              "Animation: \"%s\"\nSamplers count: %d\nChannels count: %d",
-              gltfAnimations[i].name,
-              gltfAnimations[i].samplers_count,
-              gltfAnimations[i].channels_count);
-
-            Animation *animation =
-              _fill_animation_data(&gltfAnimations[i], skeleton);
-            _skeleton_set_keyframe(
-              animation, 0); // sets all the skeleton poses to keyframe 20
-
-            skeleton->animation = animation;
-        }
-
+    for (int i = 0; i < data->meshes_count; i++) {
+        MeshData *meshData = _load_mesh_vertex_data(&data->meshes[i], data);
+        meshData->hasTBN   = 0;
+        ret->meshes[i]     = mesh_assemble(meshData);
     } // skinnedMesh
+
+    ret->modelPath = path;
 
     // Cleanup
     cgltf_free(data);

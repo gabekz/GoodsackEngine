@@ -10,25 +10,36 @@
 #include <core/graphics/mesh/animation.h>
 #include <core/graphics/texture/texture.h>
 
+#define DRAW_ARRAYS   0x00
+#define DRAW_ELEMENTS 0x01
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// type of BUFFER
+// BUFFER_VERT (bitshift means this comes first)
+//
+// type of MESH
+// MESH_SKINNED
 
 // MeshData - API-agonstic buffer information
 typedef struct MeshData
 {
     ui32 vertexCount;
     ui32 indicesCount;
-    const char *meshPath;
+    ui32 trianglesCount;
 
-    ui32 totalTriangles;
+    ui32 drawType;
+
     struct
     {
         // attribute buffers
         float *v, *vt, *vn; // position, texCoord, normal
         ui32 vL, vtL, vnL;  // lengths
+
         float *out;
-        int outI;
+        ui32 outI;
 
         float *outTBN;
 
@@ -40,6 +51,10 @@ typedef struct MeshData
     // TODO: Move to model
     Skeleton *skeleton;
     int isSkinnedMesh;
+
+    // TODO: Move
+    int hasTBN;
+
 } MeshData;
 
 typedef struct Mesh
@@ -53,12 +68,11 @@ typedef struct Mesh
  * Assemble mesh per Graphics API spec.
  * Currently, this handles loading the model (wavefront & gltf) as well.
  *
- * @param[in] mesh path
- * @param[in] vertex scale
+ * @param[in] mesh data
  * @return pointer to allocated Model structure.
  */
 Mesh *
-mesh_assemble(const char *path, float scale);
+mesh_assemble(MeshData *meshData);
 
 #ifdef __cplusplus
 }

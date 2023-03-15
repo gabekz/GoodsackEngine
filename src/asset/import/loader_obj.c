@@ -271,8 +271,8 @@ load_obj(const char *path, float scale)
     printf("-------------------------------------\n\n");
 #endif
 
-    ret->meshPath       = path;
-    ret->totalTriangles = totalTriangles;
+    // ret->meshPath       = path;
+    ret->trianglesCount = totalTriangles;
 
     ret->buffers.v  = v;
     ret->buffers.vt = vt;
@@ -287,7 +287,10 @@ load_obj(const char *path, float scale)
     ret->buffers.outI   = outI * sizeof(float);
     ret->buffers.outTBN = outTBN;
 
+    ret->buffers.bufferIndices_size = 0;
+
     ret->isSkinnedMesh = 0;
+    ret->hasTBN        = 1;
 
     // glBindVertexArray(0);
     //  Free a lot of memory....

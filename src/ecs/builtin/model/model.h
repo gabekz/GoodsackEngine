@@ -3,11 +3,9 @@
 
 #include <core/graphics/material/material.h>
 #include <core/graphics/mesh/mesh.h>
+#include <core/graphics/mesh/model.h>
 
 #include <ecs/ecs.h>
-
-#define DRAW_ARRAYS   0x00
-#define DRAW_ELEMENTS 0x01
 
 #define CULL_DISABLED 0x10
 #define CULL_CW       0x00
@@ -20,6 +18,7 @@ struct ComponentModel
     Material *material;
     const char *modelPath;
     Mesh *mesh;
+    Model *pModel;
 
     struct
     {

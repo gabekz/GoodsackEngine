@@ -5,28 +5,11 @@
 #include <core/device/device.h>
 #include <util/logger.h>
 
-#include <string.h>
-
 Mesh *
-mesh_assemble(const char *path, float scale)
+mesh_assemble(MeshData *meshData)
 {
-    Mesh *mesh = malloc(sizeof(Mesh));
-
-    // TODO: This is temporary. File discovery should not be handled here.
-    char *ext = strrchr(path, '.');
-    if (!ext) {
-        LOG_CRITICAL("Failed to find file extension for %s\n", path);
-    } else {
-        LOG_INFO("extension is %s\n", ext);
-    }
-
-    // Check file extension
-    if (!strcmp(ext, ".obj")) {
-        mesh->meshData = load_obj(path, scale);
-    } else if (!strcmp(ext, ".gltf") || !strcmp(ext, ".glb")) {
-        mesh->meshData = load_gltf(path, scale);
-    }
-
+    Mesh *mesh     = malloc(sizeof(Mesh));
+    mesh->meshData = meshData;
     MeshData *data = mesh->meshData;
 
     if (DEVICE_API_OPENGL) {
@@ -40,7 +23,8 @@ mesh_assemble(const char *path, float scale)
           vbo_create(data->buffers.out, data->buffers.outI);
 
         // TODO: Temporarily disabled IBO for .obj extensions
-        if (data->buffers.bufferIndices != NULL && strcmp(ext, ".obj")) {
+        // if (data->buffers.bufferIndices != NULL && strcmp(ext, ".obj")) {
+        if (data->buffers.bufferIndices_size > 0) {
             IBO *ibo = ibo_create(data->buffers.bufferIndices,
                                   data->buffers.bufferIndices_size);
         }
@@ -51,18 +35,17 @@ mesh_assemble(const char *path, float scale)
         if (data->buffers.vnL > 0) vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
         vao_add_buffer(vao, vbo); // VBO push -> VAO
 
-#if 1
-        if (strcmp(ext, ".gltf")) { // TODO: Does not work with GLTF yet
+        // TBN Buffer
+        if (data->hasTBN) {
             // TBN vertex buffer
             VBO *vboTBN =
               vbo_create(data->buffers.outTBN,
-                         data->totalTriangles * 3 * 2 * sizeof(GLfloat));
+                         data->trianglesCount * 3 * 2 * sizeof(GLfloat));
             vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); // tangent
             vbo_push(vboTBN, 3, GL_FLOAT, GL_FALSE); // bitangent
             vao_add_buffer(vao, vboTBN);
             // free(data->buffers.outTBN);
         }
-#endif
 
 #if 1
 

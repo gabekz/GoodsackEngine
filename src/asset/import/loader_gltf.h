@@ -2,12 +2,13 @@
 #define H_LOADER_GLTF
 
 #include <core/graphics/mesh/mesh.h>
+#include <core/graphics/mesh/model.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-MeshData *
+Model *
 load_gltf(const char *path, int scale);
 
 #ifdef __cplusplus
