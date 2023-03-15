@@ -62,6 +62,7 @@ typedef struct Mesh
     VAO *vao;
     VulkanVertexBuffer *vkVBO;
     MeshData *meshData;
+    mat4 localMatrix;
 } Mesh;
 
 /**

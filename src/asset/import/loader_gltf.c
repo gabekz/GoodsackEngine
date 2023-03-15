@@ -20,6 +20,12 @@ struct AttributeInfo
     ui32 idxWht;
 
     ui32 attribCount;
+
+    cgltf_accessor *posData;
+    cgltf_accessor *texData;
+    cgltf_accessor *nrmData;
+
+    cgltf_accessor *indicesData;
 };
 
 static struct AttributeInfo
@@ -34,10 +40,19 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
         const cgltf_attribute *attrib = &gltfPrimitive->attributes[i];
 
         switch (attrib->type) {
-        case cgltf_attribute_type_position: attribInfo.idxPos = i; break;
-        case cgltf_attribute_type_normal: attribInfo.idxNrm = i; break;
+        case cgltf_attribute_type_position:
+            attribInfo.idxPos  = i;
+            attribInfo.posData = attrib->data;
+            break;
+        case cgltf_attribute_type_normal:
+            attribInfo.idxNrm  = i;
+            attribInfo.nrmData = attrib->data;
+            break;
         case cgltf_attribute_type_tangent: break;
-        case cgltf_attribute_type_texcoord: attribInfo.idxTex = i; break;
+        case cgltf_attribute_type_texcoord:
+            attribInfo.idxTex  = i;
+            attribInfo.texData = attrib->data;
+            break;
         case cgltf_attribute_type_color: break;
         case cgltf_attribute_type_joints: attribInfo.idxJnt = i; break;
         case cgltf_attribute_type_weights: attribInfo.idxWht = i; break;
@@ -46,6 +61,7 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
         }
     }
     attribInfo.attribCount = attribCount;
+    attribInfo.indicesData = gltfPrimitive->indices;
     return attribInfo;
 }
 
@@ -225,7 +241,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // TODO: Get more than just the first primitive
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
 
-    int vertCount      = 1794; // data->accessors[0].count; // TODO: garbage
+    int vertCount      = attribInfo.posData->count;
     ret->vertexCount   = vertCount;
     int vPosBufferSize = vertCount * sizeof(float) * 3;
     int vTexBufferSize = vertCount * sizeof(float) * 2;
@@ -237,22 +253,17 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     int offsetA = 0;
     for (int i = 0; i < vertCount; i++) {
         // Fill Positions
-        cgltf_accessor_read_float(&data->accessors[attribInfo.idxPos],
-                                  i,
-                                  ret->buffers.out + offsetA,
-                                  100);
+        // cgltf_accessor_read_float(&data->accessors[attribInfo.idxPos],
+        cgltf_accessor_read_float(
+          attribInfo.posData, i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
         // Fill TextureCoords
-        cgltf_accessor_read_float(&data->accessors[attribInfo.idxTex],
-                                  i,
-                                  ret->buffers.out + offsetA,
-                                  100);
+        cgltf_accessor_read_float(
+          attribInfo.texData, i, ret->buffers.out + offsetA, 100);
         offsetA += 2;
         // Fill Normals
-        cgltf_accessor_read_float(&data->accessors[attribInfo.idxNrm],
-                                  i,
-                                  ret->buffers.out + offsetA,
-                                  100);
+        cgltf_accessor_read_float(
+          attribInfo.nrmData, i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
     }
 
@@ -264,15 +275,14 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
     // Indices //
 
-    int indicesBufferViewIndex = attribInfo.attribCount; // TODO: fix
-    ret->indicesCount          = data->accessors[indicesBufferViewIndex].count;
+    ret->indicesCount               = attribInfo.indicesData->count;
     ret->buffers.bufferIndices_size = ret->indicesCount * sizeof(ui32);
 
     ret->buffers.bufferIndices = malloc(ret->buffers.bufferIndices_size);
 
     // store all indices
     for (int i = 0; i < ret->indicesCount; i++) {
-        if (!cgltf_accessor_read_uint(&data->accessors[indicesBufferViewIndex],
+        if (!cgltf_accessor_read_uint(attribInfo.indicesData,
                                       i,
                                       ret->buffers.bufferIndices + i,
                                       ret->indicesCount)) {
@@ -433,20 +443,36 @@ load_gltf(const char *path, int scale)
     // - primitive is another mesh, ONLY difference is that
     // the model matrix parent is the mesh world-space, not model world-space
 
-    Model *ret  = malloc(sizeof(Model));
-    ret->meshes = malloc(sizeof(Mesh *) * data->meshes_count);
-
+    // Figure out how many total objects (meshes) we have
+    ui32 totalObjects = 0;
     for (int i = 0; i < data->meshes_count; i++) {
-        for (int j = 0; j < data->meshes[i].primitives_count; j++) {
-            MeshData *meshData =
-              _load_mesh_vertex_data(&data->meshes[i].primitives[j], data);
-            meshData->hasTBN = 0;
-            ret->meshes[i]   = mesh_assemble(meshData);
+        totalObjects += data->meshes[i].primitives_count;
+    }
+
+    Model *ret  = malloc(sizeof(Model));
+    ret->meshes = malloc(sizeof(Mesh *) * totalObjects);
+
+    ui32 lastMesh = 0;
+    for (int i = 0; i < data->nodes_count; i++) {
+        // if this node is a Mesh Node
+        if (data->nodes[i].mesh != 0) {
+            for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++) {
+                MeshData *meshData = _load_mesh_vertex_data(
+                  &data->nodes[i].mesh->primitives[j], data);
+                meshData->hasTBN      = 0;
+                ret->meshes[lastMesh] = mesh_assemble(meshData);
+
+                mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+                glm_translate(localMatrix, data->nodes[i].translation);
+                glm_mat4_copy(localMatrix, ret->meshes[lastMesh]->localMatrix);
+
+                lastMesh++;
+            }
         }
-    } // skinnedMesh
+    }
 
     ret->modelPath   = path;
-    ret->meshesCount = data->meshes_count;
+    ret->meshesCount = totalObjects;
 
     // Cleanup
     cgltf_free(data);

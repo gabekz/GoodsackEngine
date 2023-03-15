@@ -51,12 +51,16 @@ DrawModel(struct ComponentModel *model,
                   GL_FALSE,
                   (float *)*skinnedMatrices);
             }
+            mat4 newTranslation = GLM_MAT4_ZERO_INIT;
+            glm_mat4_mul(
+              mesh->localMatrix, transform->mvp.model, newTranslation);
+            glm_scale(newTranslation, (vec3) {0.001f, 0.001f, 0.001f});
             // Transform Uniform
             glUniformMatrix4fv(
               glGetUniformLocation(material->shaderProgram->id, "u_Model"),
               1,
               GL_FALSE,
-              (float *)transform->mvp.model);
+              (float *)newTranslation);
 
             vao_bind(mesh->vao);
 
@@ -68,7 +72,7 @@ DrawModel(struct ComponentModel *model,
 
             switch (drawMode) {
             case DRAW_ELEMENTS:
-                glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
+                glDrawElements(GL_LINES, indices, GL_UNSIGNED_INT, NULL);
                 break;
             case DRAW_ARRAYS:
             default: glDrawArrays(GL_TRIANGLES, 0, vertices); break;
