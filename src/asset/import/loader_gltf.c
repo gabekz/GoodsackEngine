@@ -4,11 +4,16 @@
 #include <core/graphics/mesh/mesh.h>
 #include <core/graphics/mesh/mesh_helpers.inl>
 
+#include <core/graphics/material/material.h>
+#include <core/graphics/texture/texture.h>
+
 #include <util/logger.h>
 #include <util/maths.h>
 
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
+
+#define IMPORT_MATERIALS 1
 
 struct AttributeInfo
 {
@@ -68,7 +73,7 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
 // Animation Data
 
 static Animation *
-_fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
+__fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
 {
     ui32 inputsCount     = gltfAnimation->samplers[0].input->count;
     Keyframe **keyframes = malloc(sizeof(Keyframe *) * inputsCount);
@@ -371,7 +376,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
               gltfAnimations[i].channels_count);
 
             Animation *animation =
-              _fill_animation_data(&gltfAnimations[i], skeleton);
+              __fill_animation_data(&gltfAnimations[i], skeleton);
             //_skeleton_set_keyframe(
             //  animation, 0); // sets all the skeleton poses to keyframe 20
 
@@ -380,6 +385,68 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     }
     return ret;
 }
+
+// Material Data //
+
+static Material *
+_create_material(cgltf_material *gltfMaterial) {
+    cgltf_options options = {0};
+    cgltf_data *dataMat      = NULL;
+    //dataMat = cgltf_load_buffer_base64(&options, dataMat, gltfMaterial->textures[0].uri);
+
+    // PBR textures
+    if(gltfMaterial->has_pbr_metallic_roughness) {
+        Texture *diffuseTex;
+        Texture *roughnessTex;
+        Texture *nrmTex;
+
+        cgltf_pbr_metallic_roughness *textureContainer = 
+            &gltfMaterial->pbr_metallic_roughness;
+
+#define TEST_PATH "../demo/demo_hot/Resources/textures/sponza/"
+
+        // Base texture
+        if(textureContainer->base_color_texture.texture) {
+            char p[256] = TEST_PATH;
+            const char *diffuseUri = 
+                textureContainer->base_color_texture.texture->image->uri;
+            strcat(p, diffuseUri);
+            diffuseTex = texture_create(p, GL_SRGB_ALPHA, true, 16, NULL );
+        }
+        if(gltfMaterial->normal_texture.texture) {
+
+            // Normal texture
+            char q[256] = TEST_PATH;
+            const char *nrmUri = 
+                gltfMaterial->normal_texture.texture->image->uri;
+            strcat(q, nrmUri);
+            nrmTex = texture_create(q, GL_SRGB_ALPHA, true, 16, NULL );
+        }
+
+        if(textureContainer->metallic_roughness_texture.texture) {
+            // Roughness
+            char r[256] = TEST_PATH;
+            const char *roughnessUri = 
+                textureContainer->metallic_roughness_texture.texture->image->uri;
+            strcat(r, roughnessUri);
+            roughnessTex = texture_create(r, GL_SRGB_ALPHA, true, 16, NULL );
+        }
+
+        /*
+    Material *material = material_create(NULL, "../res/shaders/pbr.shader",
+            3,
+            diffuseTex,
+            nrmTex,
+            roughnessTex
+    );
+    */
+    return NULL;
+
+    }
+    return NULL;
+}
+
+// Loader entry //
 
 Model *
 load_gltf(const char *path, int scale)
@@ -452,10 +519,16 @@ load_gltf(const char *path, int scale)
     Model *ret  = malloc(sizeof(Model));
     ret->meshes = malloc(sizeof(Mesh *) * totalObjects);
 
+#if IMPORT_MATERIALS
+    Material **materialsPool;
+    ui32 materialsCount;
+#endif
+
     ui32 lastMesh = 0;
     for (int i = 0; i < data->nodes_count; i++) {
         // if this node is a Mesh Node
         if (data->nodes[i].mesh != 0) {
+            // Each primitive in the mesh
             for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++) {
                 MeshData *meshData = _load_mesh_vertex_data(
                   &data->nodes[i].mesh->primitives[j], data);
@@ -466,10 +539,21 @@ load_gltf(const char *path, int scale)
                 glm_translate(localMatrix, data->nodes[i].translation);
                 glm_mat4_copy(localMatrix, ret->meshes[lastMesh]->localMatrix);
 
+#if IMPORT_MATERIALS
+                // Check for material
+                cgltf_material *gltfMaterial = 
+                    data->nodes[i].mesh->primitives[j].material;
+                if(gltfMaterial != NULL || gltfMaterial != 0) {
+                    Material * mat = _create_material(gltfMaterial);
+                }
+#endif // IMPORT_MATERIALS
+
                 lastMesh++;
             }
         }
     }
+
+    // TODO: Move check for skins HERE - OUT of _load_mesh_vertex_data
 
     ret->modelPath   = path;
     ret->meshesCount = totalObjects;

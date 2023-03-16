@@ -12,6 +12,7 @@
 
 #define DRAW_ARRAYS   0x00
 #define DRAW_ELEMENTS 0x01
+#define DRAW_ELEMENTS_WIREFRAME 0x02
 
 #ifdef __cplusplus
 extern "C" {

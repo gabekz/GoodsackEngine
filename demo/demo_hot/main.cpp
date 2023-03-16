@@ -99,7 +99,7 @@ main(int argc, char *argv[])
     renderer.Tick();
 #else
     /* Render loop */
-    ecs = renderer_active_scene(renderer, 4);
+    ecs = renderer_active_scene(renderer, 5);
 
     renderer_start(renderer); // Initialization for the render loop
     while (!glfwWindowShouldClose(renderer->window)) {

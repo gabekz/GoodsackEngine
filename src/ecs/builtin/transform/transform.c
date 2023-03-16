@@ -53,6 +53,7 @@ update(Entity e)
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
     mat4 m4i                             = GLM_MAT4_IDENTITY_INIT;
     glm_translate(m4i, transform->position);
+    glm_scale(m4i, transform->scale);
     glm_mat4_copy(m4i, transform->mvp.model);
 }
 

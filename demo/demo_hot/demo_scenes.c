@@ -362,8 +362,47 @@ _scene4(ECS *ecs, Renderer *renderer)
     Material *matCharacter =
       material_create(NULL, "../res/shaders/skinning-test.shader", 0);
 
+    Entity cameraEntity = ecs_new(ecs);
+    _ecs_add_internal(cameraEntity,
+                      C_CAMERA,
+                      (void *)(&(struct ComponentCamera) {
+                        .position = {0.0f, 0.0f, 2.0f},
+                        .axisUp   = {0.0f, 1.0f, 0.0f},
+                        .speed    = 2.5f,
+                      }));
+
+    Entity characterEntity = ecs_new(ecs);
+    _ecs_add_internal(characterEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, 0.0f, 0.0f},
+                        //.scale = {0.001f, 0.001f, 0.001f},
+                      }));
+    _ecs_add_internal(
+      characterEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {
+        .material   = matCharacter,
+        .modelPath  = "../demo/demo_hot/Resources/models/character-anim.gltf",
+        //.modelPath  = "../demo/demo_hot/Resources/models/sponza.glb",
+        //.modelPath  = "../res/models/test3.gltf",
+        .properties = {
+          .drawMode = DRAW_ELEMENTS,
+          .cullMode = CULL_CW | CULL_FORWARD,
+        }}));
+    _ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
+}
+
+static void
+_scene5(ECS *ecs, Renderer *renderer)
+{
+    ecs = renderer_active_scene(renderer, 5);
+
+    Material *matCharacter =
+      material_create(NULL, "../res/shaders/skinning-test.shader", 0);
+
     Material *matWhite =
-      material_create(NULL, "../res/shaders/white.shader", 0);
+      material_create(NULL, "../res/shaders/wireframe.shader", 0);
 
     Entity cameraEntity = ecs_new(ecs);
     _ecs_add_internal(cameraEntity,
@@ -379,18 +418,21 @@ _scene4(ECS *ecs, Renderer *renderer)
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, 0.0f, 0.0f},
+                        .scale = {0.001f, 0.001f, 0.001f},
                       }));
     _ecs_add_internal(
       characterEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {
-        .material   = matCharacter,
-        .modelPath  = "../demo/demo_hot/Resources/models/character-anim.gltf",
+        .material   = matWhite,
+        //.modelPath  = "../demo/demo_hot/Resources/models/character-anim.gltf",
+        .modelPath  = "../demo/demo_hot/Resources/models/sponza.glb",
+        //.modelPath  = "../res/models/test3.gltf",
         .properties = {
-          .drawMode = DRAW_ELEMENTS,
+          .drawMode = DRAW_ELEMENTS_WIREFRAME,
           .cullMode = CULL_CW | CULL_FORWARD,
         }}));
-    _ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
+    //_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
 void
@@ -406,4 +448,5 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     _scene2(ecs, renderer);
     _scene3(ecs, renderer);
     _scene4(ecs, renderer);
+    _scene5(ecs, renderer);
 }

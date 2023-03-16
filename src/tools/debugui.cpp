@@ -254,8 +254,8 @@ DebugGui::Render()
             ImGui::DragFloat3("Position", p.position, 0.1f, -3000, 3000);
             ImGui::BeginDisabled();
             ImGui::DragFloat3("Rotation", t, 0.1f, -3000, 3000);
-            ImGui::DragFloat3("Scale", p.scale, -1, 1);
             ImGui::EndDisabled();
+            ImGui::DragFloat3("Scale", p.scale, -1, 1);
             ImGui::EndChild();
         }
         if (ecs_has(e, C_MODEL)) {
@@ -269,15 +269,26 @@ DebugGui::Render()
             struct ComponentModel &p =
               *(static_cast<struct ComponentModel *>(ecs_get(e, C_MODEL)));
 
+            // Model information
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
+            ImGui::Text("Model information");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            ImGui::BeginDisabled();
+            ImGui::InputText("Model Path", (char *)p.modelPath, 128);
+            ImGui::EndDisabled();
+
             // Mesh information
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
             ImGui::Text("Mesh");
             ImGui::PopStyleColor();
             ImGui::Separator();
 
+            ImGui::Text("Meshes: %u", p.pModel->meshesCount);
+
             bool shadowVal = true;
             ImGui::BeginDisabled();
-            ImGui::InputText("Model Path", (char *)p.modelPath, 128);
             ImGui::Checkbox("Receive Shadows", &shadowVal);
             ImGui::Checkbox("Cast Shadows", &shadowVal);
             ImGui::EndDisabled();
@@ -296,7 +307,7 @@ DebugGui::Render()
 
             if (DEVICE_API_OPENGL) {
                 int textureCount = p.material->texturesCount;
-                ImGui::Text("Textures: %d", textureCount);
+                ImGui::Text("Textures: %u", textureCount);
                 // Display textures
                 for (int i = 0; i < textureCount; i++) {
                     ImGui::Separator();
