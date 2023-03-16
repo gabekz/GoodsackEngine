@@ -429,7 +429,7 @@ _scene5(ECS *ecs, Renderer *renderer)
         .modelPath  = "../demo/demo_hot/Resources/models/sponza.glb",
         //.modelPath  = "../res/models/test3.gltf",
         .properties = {
-          .drawMode = DRAW_ELEMENTS_WIREFRAME,
+          .drawMode = DRAW_ELEMENTS,
           .cullMode = CULL_CW | CULL_FORWARD,
         }}));
     //_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);

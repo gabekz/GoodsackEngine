@@ -8,6 +8,7 @@
 #include <core/drivers/vulkan/vulkan_vertex_buffer.h>
 
 #include <core/graphics/mesh/animation.h>
+#include <core/graphics/material/material.h>
 #include <core/graphics/texture/texture.h>
 
 #define DRAW_ARRAYS   0x00
@@ -60,10 +61,17 @@ typedef struct MeshData
 
 typedef struct Mesh
 {
-    VAO *vao;
-    VulkanVertexBuffer *vkVBO;
+    // Mesh data
     MeshData *meshData;
     mat4 localMatrix;
+
+    // Mesh GPU buffers
+    VAO *vao;
+    VulkanVertexBuffer *vkVBO;
+
+    // Imported material data
+    ui32 usingImportedMaterial;
+    Material *materialImported;
 } Mesh;
 
 /**

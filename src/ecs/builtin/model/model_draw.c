@@ -28,11 +28,14 @@ DrawModel(struct ComponentModel *model,
             printf("Disable culling");
         }
 #endif
-        // Enable material + shaders
-        material_use(material);
-
         for (int i = 0; i < model->pModel->meshesCount; i++) {
             Mesh *mesh = model->pModel->meshes[i];
+
+            // Enable material + shaders
+            material_use(
+                    (mesh->usingImportedMaterial) 
+                    ? material = mesh->materialImported 
+                    : model->material);
 
             // Skinned Matrix array buffer
             if (mesh->meshData->isSkinnedMesh) {

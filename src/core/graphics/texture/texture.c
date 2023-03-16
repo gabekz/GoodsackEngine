@@ -23,20 +23,25 @@ texture_create(const char *path,
     Texture *tex  = malloc(sizeof(Texture));
     tex->filePath = path;
 
-    stbi_set_flip_vertically_on_load(1);
+    // TODO: create parameter
+    stbi_set_flip_vertically_on_load(0);
     unsigned char *localBuffer;
     if (path != NULL) {
         LOG_INFO("Loading Image at path: %s", path);
         // LOG_DEBUG("Format: %d, GenMips: %d, AFRange: %f",
         //         format, genMipMaps, afRange);
 
-        localBuffer = stbi_load(tex->filePath,
+        localBuffer = stbi_load(path,
                                 &tex->width,
                                 &tex->height,
                                 &tex->bpp,
                                 /*Type*/ STBI_rgb_alpha);
     } else {
         localBuffer = NULL;
+    }
+
+    if(localBuffer == NULL || localBuffer == 0x00) {
+        LOG_CRITICAL("Failed to load texture data!");
     }
 
     if (DEVICE_API_OPENGL) {

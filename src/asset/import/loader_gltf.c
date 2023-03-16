@@ -246,11 +246,11 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // TODO: Get more than just the first primitive
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
 
-    int vertCount      = attribInfo.posData->count;
+    ui32 vertCount      = attribInfo.posData->count;
     ret->vertexCount   = vertCount;
-    int vPosBufferSize = vertCount * sizeof(float) * 3;
-    int vTexBufferSize = vertCount * sizeof(float) * 2;
-    int vNrmBufferSize = vertCount * sizeof(float) * 3;
+    ui32 vPosBufferSize = vertCount * sizeof(float) * 3;
+    ui32 vTexBufferSize = vertCount * sizeof(float) * 2;
+    ui32 vNrmBufferSize = vertCount * sizeof(float) * 3;
 
     ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
     ret->buffers.out  = malloc(ret->buffers.outI);
@@ -388,17 +388,20 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
 // Material Data //
 
+static Texture *_test_texture_white;
 static Material *
-_create_material(cgltf_material *gltfMaterial) {
-    cgltf_options options = {0};
-    cgltf_data *dataMat      = NULL;
-    //dataMat = cgltf_load_buffer_base64(&options, dataMat, gltfMaterial->textures[0].uri);
+_create_material(cgltf_material *gltfMaterial,
+                 Material **materials, 
+                 ui32 materialsCount)
+{
+
+    // TODO: check if material already exists
 
     // PBR textures
     if(gltfMaterial->has_pbr_metallic_roughness) {
-        Texture *diffuseTex;
-        Texture *roughnessTex;
-        Texture *nrmTex;
+
+    Material *material = material_create(NULL, "../res/shaders/pbr.shader",
+            0);
 
         cgltf_pbr_metallic_roughness *textureContainer = 
             &gltfMaterial->pbr_metallic_roughness;
@@ -411,8 +414,12 @@ _create_material(cgltf_material *gltfMaterial) {
             const char *diffuseUri = 
                 textureContainer->base_color_texture.texture->image->uri;
             strcat(p, diffuseUri);
-            diffuseTex = texture_create(p, GL_SRGB_ALPHA, true, 16, NULL );
+            material_add_texture(material, texture_create(p, GL_SRGB_ALPHA, false, 0, NULL));
         }
+        else {
+            material_add_texture(material, _test_texture_white);
+        }
+
         if(gltfMaterial->normal_texture.texture) {
 
             // Normal texture
@@ -420,7 +427,10 @@ _create_material(cgltf_material *gltfMaterial) {
             const char *nrmUri = 
                 gltfMaterial->normal_texture.texture->image->uri;
             strcat(q, nrmUri);
-            nrmTex = texture_create(q, GL_SRGB_ALPHA, true, 16, NULL );
+            material_add_texture(material, texture_create(q, GL_RGB, false, 0, NULL));
+        }
+        else {
+            material_add_texture(material, _test_texture_white);
         }
 
         if(textureContainer->metallic_roughness_texture.texture) {
@@ -429,21 +439,20 @@ _create_material(cgltf_material *gltfMaterial) {
             const char *roughnessUri = 
                 textureContainer->metallic_roughness_texture.texture->image->uri;
             strcat(r, roughnessUri);
-            roughnessTex = texture_create(r, GL_SRGB_ALPHA, true, 16, NULL );
+            material_add_texture(material, texture_create(r, GL_SRGB_ALPHA, false, 0, NULL));
+        }
+        else {
+            material_add_texture(material, _test_texture_white);
         }
 
-        /*
-    Material *material = material_create(NULL, "../res/shaders/pbr.shader",
-            3,
-            diffuseTex,
-            nrmTex,
-            roughnessTex
-    );
-    */
-    return NULL;
-
+        // Specular & AO -- TODO
+        material_add_texture(material, _test_texture_white);
+        material_add_texture(material, _test_texture_white);
+        return material;
     }
-    return NULL;
+
+    // Failed
+    return material_create(NULL, "../res/shaders/white.shader", 0);
 }
 
 // Loader entry //
@@ -520,11 +529,13 @@ load_gltf(const char *path, int scale)
     ret->meshes = malloc(sizeof(Mesh *) * totalObjects);
 
 #if IMPORT_MATERIALS
-    Material **materialsPool;
-    ui32 materialsCount;
+    ui32 materialsCount = data->materials_count;
+    Material **materialsPool = malloc(sizeof(Material *) * materialsCount);
+    _test_texture_white =
+        texture_create("../res/textures/defaults/white.png", GL_RGB, FALSE, 1, NULL);
 #endif
 
-    ui32 lastMesh = 0;
+    ui32 cntMesh = 0;
     for (int i = 0; i < data->nodes_count; i++) {
         // if this node is a Mesh Node
         if (data->nodes[i].mesh != 0) {
@@ -533,22 +544,29 @@ load_gltf(const char *path, int scale)
                 MeshData *meshData = _load_mesh_vertex_data(
                   &data->nodes[i].mesh->primitives[j], data);
                 meshData->hasTBN      = 0;
-                ret->meshes[lastMesh] = mesh_assemble(meshData);
+                ret->meshes[cntMesh] = mesh_assemble(meshData);
 
                 mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
                 glm_translate(localMatrix, data->nodes[i].translation);
-                glm_mat4_copy(localMatrix, ret->meshes[lastMesh]->localMatrix);
+                glm_mat4_copy(localMatrix, ret->meshes[cntMesh]->localMatrix);
 
 #if IMPORT_MATERIALS
                 // Check for material
                 cgltf_material *gltfMaterial = 
                     data->nodes[i].mesh->primitives[j].material;
-                if(gltfMaterial != NULL || gltfMaterial != 0) {
-                    Material * mat = _create_material(gltfMaterial);
+                if(gltfMaterial != NULL || gltfMaterial != 0x00)
+                {
+                    Material * mat = 
+                        _create_material(gltfMaterial, 
+                                         materialsPool, 
+                                         materialsCount);
+
+                    ret->meshes[cntMesh]->materialImported = mat;
+                    ret->meshes[cntMesh]->usingImportedMaterial = TRUE;
                 }
 #endif // IMPORT_MATERIALS
 
-                lastMesh++;
+                cntMesh++;
             }
         }
     }

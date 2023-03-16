@@ -2,7 +2,7 @@
 
 #include <util/sysdefs.h>
 
-static volatile GraphicsAPI s_device = GRAPHICS_API_VULKAN;
+static volatile GraphicsAPI s_device = GRAPHICS_API_OPENGL;
 static volatile GraphicsSettings s_deviceSettings;
 ;
 static volatile int s_initialized = 0; // false

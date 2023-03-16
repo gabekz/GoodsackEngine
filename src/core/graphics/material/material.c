@@ -66,3 +66,17 @@ material_use(Material *self)
         // TODO: Bind image descriptor set HERE
     }
 }
+
+void
+material_add_texture(Material *self, Texture *texture)
+{
+    if(self->texturesCount == 0) {
+        self->textures = malloc(sizeof(Texture *));
+        self->textures[0] = texture;
+        self->texturesCount = 1;
+        return;
+    }
+    self->texturesCount = self->texturesCount += 1;
+    self->textures = realloc(self->textures, self->texturesCount * sizeof(Texture *));
+    self->textures[self->texturesCount-1] = texture;
+}

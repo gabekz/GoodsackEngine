@@ -35,6 +35,7 @@ model_load_from_file(const char *path, f32 scale)
 
         mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
         glm_mat4_copy(localMatrix, model->meshes[0]->localMatrix);
+        model->meshes[0]->usingImportedMaterial = FALSE;
 
         // model->fileType = OBJ;
     } else if (!strcmp(ext, ".gltf") || !strcmp(ext, ".glb")) {

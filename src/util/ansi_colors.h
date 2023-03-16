@@ -5,6 +5,7 @@
  */
 
 // Regular text
+#ifdef WIN32
 #define BLK "\33[30m"
 #define RED "\33[31m"
 #define GRN "\33[32m"
@@ -13,6 +14,16 @@
 #define MAG "\33[35m"
 #define CYN "\33[36m"
 #define WHT "\33[37m"
+#else
+#define BLK "\e[1;30m"
+#define RED "\e[1;31m"
+#define GRN "\e[1;32m"
+#define YEL "\e[1;33m"
+#define BLU "\e[1;34m"
+#define MAG "\e[1;35m"
+#define CYN "\e[1;36m"
+#define WHT "\e[1;37m"
+#endif
 
 // Regular bold text
 #define BBLK "\e[1;30m"
@@ -75,6 +86,12 @@
 #define BHWHT "\e[1;97m"
 
 // Reset
+#ifdef WIN32
 #define reset       "\33[0m"
 #define CRESET      "\33[0m"
 #define COLOR_RESET "\33[0m"
+#else
+#define reset       "\e[1;0m"
+#define CRESET      "\e[1;0m"
+#define COLOR_RESET "\e[1;0m"
+#endif
