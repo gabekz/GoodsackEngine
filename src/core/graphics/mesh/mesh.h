@@ -55,7 +55,7 @@ typedef struct MeshData
     int isSkinnedMesh;
 
     // TODO: Move
-    int hasTBN;
+    int hasTBN; // TODO: 2 == ONLY TANGENT
 
 } MeshData;
 

@@ -17,18 +17,20 @@
 
 struct AttributeInfo
 {
-    ui32 idxPos;
-    ui32 idxTex;
-    ui32 idxNrm;
+    si32 idxPos;
+    si32 idxTex;
+    si32 idxNrm;
+    si32 idxTan;
 
-    ui32 idxJnt;
-    ui32 idxWht;
+    si32 idxJnt;
+    si32 idxWht;
 
-    ui32 attribCount;
+    si32 attribCount;
 
     cgltf_accessor *posData;
     cgltf_accessor *texData;
     cgltf_accessor *nrmData;
+    cgltf_accessor *tanData;
 
     cgltf_accessor *indicesData;
 };
@@ -40,6 +42,7 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
     int attribCount = gltfPrimitive->attributes_count;
 
     struct AttributeInfo attribInfo = {-1};
+    attribInfo.idxTan = -1;
 
     for (int i = 0; i < attribCount; i++) {
         const cgltf_attribute *attrib = &gltfPrimitive->attributes[i];
@@ -53,7 +56,10 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
             attribInfo.idxNrm  = i;
             attribInfo.nrmData = attrib->data;
             break;
-        case cgltf_attribute_type_tangent: break;
+        case cgltf_attribute_type_tangent:
+            attribInfo.idxTan  = i;
+            attribInfo.tanData = attrib->data;
+            break;
         case cgltf_attribute_type_texcoord:
             attribInfo.idxTex  = i;
             attribInfo.texData = attrib->data;
@@ -251,14 +257,27 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     ui32 vPosBufferSize = vertCount * sizeof(float) * 3;
     ui32 vTexBufferSize = vertCount * sizeof(float) * 2;
     ui32 vNrmBufferSize = vertCount * sizeof(float) * 3;
+    ui32 vTanBufferSize = vertCount * sizeof(float) * 3 * 2;
 
+    // Required
     ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
+
+    // Add space for tangent data
+    if(attribInfo.idxTan > -1) {
+        ret->buffers.outI += vTanBufferSize;
+        ret->hasTBN = 2; // TODO
+    }
+    else {
+        ret->hasTBN = 0;
+    }
+
     ret->buffers.out  = malloc(ret->buffers.outI);
+
+    // Position, TextureCoord, Normal
 
     int offsetA = 0;
     for (int i = 0; i < vertCount; i++) {
         // Fill Positions
-        // cgltf_accessor_read_float(&data->accessors[attribInfo.idxPos],
         cgltf_accessor_read_float(
           attribInfo.posData, i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
@@ -270,7 +289,15 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         cgltf_accessor_read_float(
           attribInfo.nrmData, i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
+        // Fill Tangent
+        if(attribInfo.idxTan > -1) {
+            cgltf_accessor_read_float(
+                attribInfo.tanData, i, ret->buffers.out + offsetA, 100);
+            offsetA += 3;
+        }
     }
+
+    // Tangent
 
     // set this so we push the position to buffer
     ret->buffers.vL  = vertCount;
@@ -389,6 +416,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 // Material Data //
 
 static Texture *_test_texture_white;
+static Texture *_test_texture_normal;
 static Material *
 _create_material(cgltf_material *gltfMaterial,
                  Material **materials,
@@ -435,7 +463,7 @@ _create_material(cgltf_material *gltfMaterial,
             material_add_texture(material,
                                  texture_create(q, NULL, texNormalMapOptions));
         } else {
-            material_add_texture(material, _test_texture_white);
+            material_add_texture(material, _test_texture_normal);
         }
 
         if (textureContainer->metallic_roughness_texture.texture) {
@@ -540,6 +568,10 @@ load_gltf(const char *path, int scale)
       texture_create("../res/textures/defaults/white.png",
                      NULL,
                      (TextureOptions) {0, GL_RGB, false, false});
+    _test_texture_normal =
+      texture_create("../res/textures/defaults/normal.png",
+                     NULL,
+                     (TextureOptions) {0, GL_RGB, false, false});
 #endif
 
     ui32 cntMesh = 0;
@@ -550,7 +582,6 @@ load_gltf(const char *path, int scale)
             for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++) {
                 MeshData *meshData = _load_mesh_vertex_data(
                   &data->nodes[i].mesh->primitives[j], data);
-                meshData->hasTBN     = 0;
                 ret->meshes[cntMesh] = mesh_assemble(meshData);
 
                 mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;

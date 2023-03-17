@@ -7,7 +7,7 @@ layout(location = 1) in vec2 a_TexCoords;
 layout(location = 2) in vec3 a_Normal;
 
 layout(location = 3) in vec3 a_Tangent;
-layout(location = 4) in vec3 a_Bitangent;
+//layout(location = 4) in vec3 a_Bitangent;
 
 // Set 0
 
@@ -29,6 +29,7 @@ s_Light;
 // Set 1
 
 uniform mat4 u_Model;
+//uniform bool u_tbn_from_shader = false;
 
 out VS_OUT
 {
@@ -51,19 +52,18 @@ main()
 
     // TODO: get true worldPosition
     vs_out.position = vec3(0);
+    vs_out.normal = a_Normal;
 
     vs_out.camPos = s_Camera.position;
 
     vs_out.lightPos   = s_Light.position;
     vs_out.lightColor = s_Light.color.xyz * 4;
 
+    // TBN
     vec3 t = normalize(vec3(u_Model * vec4(a_Tangent, 0.0)));
-    vec3 b = normalize(vec3(u_Model * vec4(a_Bitangent, 0.0)));
+    vec3 b = normalize(vec3(u_Model * vec4(cross(a_Tangent, a_Normal), 0.0)));
     vec3 n = normalize(vec3(u_Model * vec4(a_Normal, 0.0)));
-    // t = normalize(t - dot(t, n) * n);
-    // vec3 b = cross(n, t);
     vs_out.tbn    = mat3(t, b, n);
-    vs_out.normal = a_Normal;
 }
 
 // ---------------------- Fragment -----------------
