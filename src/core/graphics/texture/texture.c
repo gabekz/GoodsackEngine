@@ -173,7 +173,7 @@ texture_create_cubemap(ui32 faceCount, ...)
     va_start(ap, faceCount);
     va_end(ap);
 
-    stbi_set_flip_vertically_on_load(0);
+    stbi_set_flip_vertically_on_load(FALSE);
     for (int i = 0; i < faceCount; i++) {
         unsigned char *data;
         const char *path = va_arg(ap, const char *);
@@ -209,6 +209,7 @@ texture_create_hdr(const char *path)
 
     Texture *tex = malloc(sizeof(Texture));
 
+    stbi_set_flip_vertically_on_load(TRUE);
     float *data = stbi_loadf(path, &tex->width, &tex->height, &tex->bpp, 0);
 
     assert(data != NULL);

@@ -32,9 +32,10 @@ DrawModel(struct ComponentModel *model,
             Mesh *mesh = model->pModel->meshes[i];
 
             // Enable material + shaders
-            material_use((mesh->usingImportedMaterial)
-                           ? material = mesh->materialImported
-                           : model->material);
+            if (mesh->usingImportedMaterial) {
+                material = mesh->materialImported;
+            }
+            material_use(material);
 
             // Skinned Matrix array buffer
             if (mesh->meshData->isSkinnedMesh) {
