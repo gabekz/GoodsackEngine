@@ -12,9 +12,15 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct _texture Texture;
+typedef struct TextureOptions
+{
+    float af_range;
+    ui32 internal_format;
+    ui16 gen_mips, flip_vertically; // bool
+} TextureOptions;
+// TextureOptions_default = {0, GL_RGB, false, 1};
 
-struct _texture
+typedef struct Texture
 {
     const char *filePath;
     si32 bpp;
@@ -30,14 +36,12 @@ struct _texture
         VkImageView textureImageView;
         VkSampler textureSampler;
     } vulkan;
-};
+} Texture;
 
 Texture *
 texture_create(const char *path,
-               ui32 format,
-               ui16 genMipMaps,
-               float afRange,
-               VulkanDeviceContext *vkDevice);
+               VulkanDeviceContext *vkDevice,
+               TextureOptions options);
 
 Texture *
 texture_create_cubemap(ui32 faceCount, ...);

@@ -24,9 +24,9 @@ model_load_from_file(const char *path, f32 scale)
     Model *model;
     // Check file extension
     if (!strcmp(ext, ".obj")) {
-        model              = malloc(sizeof(Model));
-        MeshData *mesh0    = load_obj(path, 1.0f); // always importing with
-                                                   // scale 1.0 here
+        model           = malloc(sizeof(Model));
+        MeshData *mesh0 = load_obj(path, 1.0f); // always importing with
+                                                // scale 1.0 here
 
         model->meshes      = malloc(sizeof(Mesh *) * 1);
         model->meshes[0]   = mesh_assemble(mesh0);

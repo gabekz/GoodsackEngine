@@ -6,10 +6,11 @@
 
 #include <ecs/builtin/components.h>
 
-#define texture_create_d(x) texture_create(x, GL_SRGB_ALPHA, true, 16, NULL)
-#define texture_create_n(x) texture_create(x, GL_RGB, false, 1, NULL)
+#define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
+#define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
 
 Texture *texDefSpec, *texDefNorm, *texPbrAo;
+static TextureOptions s_texOpsPbr, s_texOpsNrm;
 
 static void
 _scene0(ECS *ecs, Renderer *renderer)
@@ -382,8 +383,8 @@ _scene4(ECS *ecs, Renderer *renderer)
       characterEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {
-        .material   = matCharacter,
-        .modelPath  = "../demo/demo_hot/Resources/models/character-anim.gltf",
+        .material  = matCharacter,
+        .modelPath = "../demo/demo_hot/Resources/models/character-anim.gltf",
         //.modelPath  = "../demo/demo_hot/Resources/models/sponza.glb",
         //.modelPath  = "../res/models/test3.gltf",
         .properties = {
@@ -417,16 +418,16 @@ _scene5(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(characterEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = {0.0f, 0.0f, 0.0f},
-                        .scale = {0.001f, 0.001f, 0.001f},
+                        .position = {0.0f, -1.5f, 0.0f},
+                        .scale    = {0.01f, 0.01f, 0.01f},
                       }));
     _ecs_add_internal(
       characterEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {
-        .material   = matWhite,
+        .material = matWhite,
         //.modelPath  = "../demo/demo_hot/Resources/models/character-anim.gltf",
-        .modelPath  = "../demo/demo_hot/Resources/models/sponza.glb",
+        .modelPath = "../demo/demo_hot/Resources/models/sponza.glb",
         //.modelPath  = "../res/models/test3.gltf",
         .properties = {
           .drawMode = DRAW_ELEMENTS,
@@ -438,10 +439,13 @@ _scene5(ECS *ecs, Renderer *renderer)
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
-    // Default textures
-    texDefSpec = texture_create_n("../res/textures/defaults/black.png");
-    texDefNorm = texture_create_n("../res/textures/defaults/normal.png");
-    texPbrAo   = texture_create_n("../res/textures/defaults/white.png");
+
+    // Default textures with options
+    s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};
+    s_texOpsPbr = (TextureOptions) {16, GL_SRGB_ALPHA, true, true};
+    texDefSpec  = texture_create_n("../res/textures/defaults/black.png");
+    texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
+    texPbrAo    = texture_create_n("../res/textures/defaults/white.png");
 
     _scene0(ecs, renderer);
     _scene1(ecs, renderer);

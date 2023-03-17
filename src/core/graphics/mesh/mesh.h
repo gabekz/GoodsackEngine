@@ -7,12 +7,12 @@
 #include <core/drivers/opengl/opengl_buffer.h>
 #include <core/drivers/vulkan/vulkan_vertex_buffer.h>
 
-#include <core/graphics/mesh/animation.h>
 #include <core/graphics/material/material.h>
+#include <core/graphics/mesh/animation.h>
 #include <core/graphics/texture/texture.h>
 
-#define DRAW_ARRAYS   0x00
-#define DRAW_ELEMENTS 0x01
+#define DRAW_ARRAYS             0x00
+#define DRAW_ELEMENTS           0x01
 #define DRAW_ELEMENTS_WIREFRAME 0x02
 
 #ifdef __cplusplus

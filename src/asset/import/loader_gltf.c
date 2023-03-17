@@ -247,7 +247,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
 
     ui32 vertCount      = attribInfo.posData->count;
-    ret->vertexCount   = vertCount;
+    ret->vertexCount    = vertCount;
     ui32 vPosBufferSize = vertCount * sizeof(float) * 3;
     ui32 vTexBufferSize = vertCount * sizeof(float) * 2;
     ui32 vNrmBufferSize = vertCount * sizeof(float) * 3;
@@ -391,57 +391,62 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 static Texture *_test_texture_white;
 static Material *
 _create_material(cgltf_material *gltfMaterial,
-                 Material **materials, 
+                 Material **materials,
                  ui32 materialsCount)
 {
+
+    TextureOptions texNormalMapOptions =
+      (TextureOptions) {1, GL_RGB, false, false};
+    TextureOptions texPbrOptions =
+      (TextureOptions) {16, GL_SRGB_ALPHA, true, false};
 
     // TODO: check if material already exists
 
     // PBR textures
-    if(gltfMaterial->has_pbr_metallic_roughness) {
+    if (gltfMaterial->has_pbr_metallic_roughness) {
 
-    Material *material = material_create(NULL, "../res/shaders/pbr.shader",
-            0);
+        Material *material =
+          material_create(NULL, "../res/shaders/pbr.shader", 0);
 
-        cgltf_pbr_metallic_roughness *textureContainer = 
-            &gltfMaterial->pbr_metallic_roughness;
+        cgltf_pbr_metallic_roughness *textureContainer =
+          &gltfMaterial->pbr_metallic_roughness;
 
 #define TEST_PATH "../demo/demo_hot/Resources/textures/sponza/"
 
         // Base texture
-        if(textureContainer->base_color_texture.texture) {
+        if (textureContainer->base_color_texture.texture) {
             char p[256] = TEST_PATH;
-            const char *diffuseUri = 
-                textureContainer->base_color_texture.texture->image->uri;
+            const char *diffuseUri =
+              textureContainer->base_color_texture.texture->image->uri;
             strcat(p, diffuseUri);
-            material_add_texture(material, texture_create(p, GL_SRGB_ALPHA, false, 0, NULL));
-        }
-        else {
+            material_add_texture(material,
+                                 texture_create(p, NULL, texPbrOptions));
+        } else {
             material_add_texture(material, _test_texture_white);
         }
 
-        if(gltfMaterial->normal_texture.texture) {
+        if (gltfMaterial->normal_texture.texture) {
 
             // Normal texture
             char q[256] = TEST_PATH;
-            const char *nrmUri = 
-                gltfMaterial->normal_texture.texture->image->uri;
+            const char *nrmUri =
+              gltfMaterial->normal_texture.texture->image->uri;
             strcat(q, nrmUri);
-            material_add_texture(material, texture_create(q, GL_RGB, false, 0, NULL));
-        }
-        else {
+            material_add_texture(material,
+                                 texture_create(q, NULL, texNormalMapOptions));
+        } else {
             material_add_texture(material, _test_texture_white);
         }
 
-        if(textureContainer->metallic_roughness_texture.texture) {
+        if (textureContainer->metallic_roughness_texture.texture) {
             // Roughness
             char r[256] = TEST_PATH;
-            const char *roughnessUri = 
-                textureContainer->metallic_roughness_texture.texture->image->uri;
+            const char *roughnessUri =
+              textureContainer->metallic_roughness_texture.texture->image->uri;
             strcat(r, roughnessUri);
-            material_add_texture(material, texture_create(r, GL_SRGB_ALPHA, false, 0, NULL));
-        }
-        else {
+            material_add_texture(material,
+                                 texture_create(r, NULL, texPbrOptions));
+        } else {
             material_add_texture(material, _test_texture_white);
         }
 
@@ -529,10 +534,12 @@ load_gltf(const char *path, int scale)
     ret->meshes = malloc(sizeof(Mesh *) * totalObjects);
 
 #if IMPORT_MATERIALS
-    ui32 materialsCount = data->materials_count;
+    ui32 materialsCount      = data->materials_count;
     Material **materialsPool = malloc(sizeof(Material *) * materialsCount);
     _test_texture_white =
-        texture_create("../res/textures/defaults/white.png", GL_RGB, FALSE, 1, NULL);
+      texture_create("../res/textures/defaults/white.png",
+                     NULL,
+                     (TextureOptions) {0, GL_RGB, false, false});
 #endif
 
     ui32 cntMesh = 0;
@@ -543,7 +550,7 @@ load_gltf(const char *path, int scale)
             for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++) {
                 MeshData *meshData = _load_mesh_vertex_data(
                   &data->nodes[i].mesh->primitives[j], data);
-                meshData->hasTBN      = 0;
+                meshData->hasTBN     = 0;
                 ret->meshes[cntMesh] = mesh_assemble(meshData);
 
                 mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
@@ -552,16 +559,13 @@ load_gltf(const char *path, int scale)
 
 #if IMPORT_MATERIALS
                 // Check for material
-                cgltf_material *gltfMaterial = 
-                    data->nodes[i].mesh->primitives[j].material;
-                if(gltfMaterial != NULL || gltfMaterial != 0x00)
-                {
-                    Material * mat = 
-                        _create_material(gltfMaterial, 
-                                         materialsPool, 
-                                         materialsCount);
+                cgltf_material *gltfMaterial =
+                  data->nodes[i].mesh->primitives[j].material;
+                if (gltfMaterial != NULL || gltfMaterial != 0x00) {
+                    Material *mat = _create_material(
+                      gltfMaterial, materialsPool, materialsCount);
 
-                    ret->meshes[cntMesh]->materialImported = mat;
+                    ret->meshes[cntMesh]->materialImported      = mat;
                     ret->meshes[cntMesh]->usingImportedMaterial = TRUE;
                 }
 #endif // IMPORT_MATERIALS

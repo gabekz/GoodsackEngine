@@ -19,8 +19,9 @@ billboard_create(const char *texturePath, vec2 size)
     vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
     vao_add_buffer(ret->vao, vbo);
 
-    ret->texture = texture_create(
-      "../res/textures/gizmo/light.png", GL_RGBA, false, 1, NULL);
+    ret->texture = texture_create("../res/textures/gizmo/light.png",
+                                  NULL,
+                                  (TextureOptions) {1, GL_RGBA, true, true});
 
     ret->material =
       material_create(NULL, "../res/shaders/billboard.shader", 1, ret->texture);

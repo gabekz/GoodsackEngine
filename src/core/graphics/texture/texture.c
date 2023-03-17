@@ -15,16 +15,14 @@
 
 Texture *
 texture_create(const char *path,
-               ui32 format,
-               ui16 genMipMaps,
-               float afRange,
-               VulkanDeviceContext *vkDevice)
+               VulkanDeviceContext *vkDevice,
+               TextureOptions options)
 {
     Texture *tex  = malloc(sizeof(Texture));
     tex->filePath = path;
 
     // TODO: create parameter
-    stbi_set_flip_vertically_on_load(0);
+    stbi_set_flip_vertically_on_load(options.flip_vertically);
     unsigned char *localBuffer;
     if (path != NULL) {
         LOG_INFO("Loading Image at path: %s", path);
@@ -40,7 +38,7 @@ texture_create(const char *path,
         localBuffer = NULL;
     }
 
-    if(localBuffer == NULL || localBuffer == 0x00) {
+    if (localBuffer == NULL || localBuffer == 0x00) {
         LOG_CRITICAL("Failed to load texture data!");
     }
 
@@ -50,7 +48,7 @@ texture_create(const char *path,
 
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     format,
+                     options.internal_format,
                      tex->width,
                      tex->height,
                      0,
@@ -63,7 +61,7 @@ texture_create(const char *path,
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_WRAPPING);
 
         // Mipmaps
-        if (genMipMaps >= 0) {
+        if (options.gen_mips >= 0) {
             glGenerateTextureMipmap(tex->id);
             glTexParameteri(
               GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -74,8 +72,9 @@ texture_create(const char *path,
         }
 
         // Anistropic Filtering
-        if (afRange > 0) {
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, afRange);
+        if (options.af_range > 0) {
+            glTexParameterf(
+              GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, options.af_range);
         }
     } // DEVICE_API_OPENGL
 

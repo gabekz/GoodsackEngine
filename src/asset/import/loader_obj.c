@@ -292,8 +292,8 @@ load_obj(const char *path, float scale)
     ret->isSkinnedMesh = 0;
     ret->hasTBN        = 1;
 
-    //mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
-    //glm_mat4_copy(localMatrix, ret->localMatrix);
+    // mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+    // glm_mat4_copy(localMatrix, ret->localMatrix);
 
     // glBindVertexArray(0);
     //  Free a lot of memory....

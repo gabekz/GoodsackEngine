@@ -24,7 +24,9 @@ glDebugOutput(GLenum source,
 
     switch (source) {
     case GL_DEBUG_SOURCE_API: LOG_PRINT("Source: API"); break;
-    case GL_DEBUG_SOURCE_WINDOW_SYSTEM: LOG_PRINT("Source: Window System"); break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        LOG_PRINT("Source: Window System");
+        break;
     case GL_DEBUG_SOURCE_SHADER_COMPILER:
         LOG_PRINT("Source: Shader Compiler");
         break;

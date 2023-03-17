@@ -32,10 +32,9 @@ DrawModel(struct ComponentModel *model,
             Mesh *mesh = model->pModel->meshes[i];
 
             // Enable material + shaders
-            material_use(
-                    (mesh->usingImportedMaterial) 
-                    ? material = mesh->materialImported 
-                    : model->material);
+            material_use((mesh->usingImportedMaterial)
+                           ? material = mesh->materialImported
+                           : model->material);
 
             // Skinned Matrix array buffer
             if (mesh->meshData->isSkinnedMesh) {
@@ -71,13 +70,12 @@ DrawModel(struct ComponentModel *model,
 
             ui16 drawMode = model->properties.drawMode;
 
-            //glEnable(GL_CULL_FACE);
-            //glCullFace(GL_BACK);
-            //glFrontFace(GL_CW);  
+            // glEnable(GL_CULL_FACE);
+            // glCullFace(GL_BACK);
+            // glFrontFace(GL_CW);
 
             switch (drawMode) {
-            case DRAW_ARRAYS:
-                glDrawArrays(GL_TRIANGLES, 0, vertices); break;
+            case DRAW_ARRAYS: glDrawArrays(GL_TRIANGLES, 0, vertices); break;
             case DRAW_ELEMENTS:
                 glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
                 break;
