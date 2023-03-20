@@ -419,7 +419,7 @@ _scene5(ECS *ecs, Renderer *renderer)
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, -1.5f, 0.0f},
-                        .scale    = {0.01f, 0.01f, 0.01f},
+                        .scale    = {0.001f, 0.001f, 0.001f},
                       }));
     _ecs_add_internal(
       characterEntity,

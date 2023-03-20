@@ -17,8 +17,9 @@
 static void
 DrawModel(struct ComponentModel *model,
           struct ComponentTransform *transform,
-          Material *material,
-          VkCommandBuffer commandBuffer)
+          ui16 useOverrideMaterial, // Material from renderer
+          VkCommandBuffer commandBuffer,
+          Renderer *renderer)
 {
     if (DEVICE_API_OPENGL) {
 
@@ -30,11 +31,19 @@ DrawModel(struct ComponentModel *model,
 #endif
         for (int i = 0; i < model->pModel->meshesCount; i++) {
             Mesh *mesh = model->pModel->meshes[i];
+            Material *material;
 
-            // Enable material + shaders
-            if (mesh->usingImportedMaterial) {
+            // Select Material
+            if (mesh->usingImportedMaterial && !useOverrideMaterial) {
                 material = mesh->materialImported;
             }
+            else if(useOverrideMaterial) {
+                material = renderer->explicitMaterial;
+            }
+            else {
+                material = model->material;
+            }
+
             material_use(material);
 
             // Skinned Matrix array buffer
@@ -62,6 +71,13 @@ DrawModel(struct ComponentModel *model,
               1,
               GL_FALSE,
               (float *)newTranslation);
+
+            // Light Space Matrix
+        glUniformMatrix4fv(
+          glGetUniformLocation(material->shaderProgram->id, "u_LightSpaceMatrix"),
+          1,
+          GL_FALSE,
+          (float *)renderer->lightSpaceMatrix);
 
             vao_bind(mesh->vao);
 
@@ -184,14 +200,13 @@ render(Entity e)
 #endif
 
     if (pass == REGULAR) {
-        (DEVICE_API_OPENGL) ? DrawModel(model, transform, model->material, NULL)
-                            : DrawModel(model, transform, model->material, cb);
+        (DEVICE_API_OPENGL) ? DrawModel(model, transform, FALSE, NULL, e.ecs->renderer)
+                            : DrawModel(model, transform, FALSE, cb, e.ecs->renderer);
         return;
     }
-    Material *override = e.ecs->renderer->explicitMaterial;
 
-    (DEVICE_API_OPENGL) ? DrawModel(model, transform, override, NULL)
-                        : DrawModel(model, transform, override, cb);
+    (DEVICE_API_OPENGL) ? DrawModel(model, transform, TRUE, NULL, e.ecs->renderer)
+                        : DrawModel(model, transform, TRUE, cb, e.ecs->renderer);
 }
 
 void

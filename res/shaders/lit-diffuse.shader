@@ -82,7 +82,7 @@ in VS_OUT
 }
 fs_in;
 
-layout(binding = 6) uniform sampler2D shadowMap;
+layout(binding = 8) uniform sampler2D shadowMap;
 
 // default bindings (requires 4.2+)
 layout(binding = 0) uniform sampler2D t_Diffuse;

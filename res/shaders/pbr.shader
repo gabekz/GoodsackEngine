@@ -29,6 +29,7 @@ s_Light;
 // Set 1
 
 uniform mat4 u_Model;
+uniform mat4 u_LightSpaceMatrix;
 //uniform bool u_tbn_from_shader = false;
 
 out VS_OUT
@@ -40,6 +41,7 @@ out VS_OUT
     vec3 camPos;
     vec3 lightPos;
     vec3 lightColor;
+    vec4 lightWorldSpace;
 }
 vs_out;
 
@@ -50,8 +52,7 @@ main()
       s_Camera.projection * s_Camera.view * u_Model * vec4(a_Position, 1.0);
     vs_out.texCoords = a_TexCoords;
 
-    // TODO: get true worldPosition
-    vs_out.position = vec3(0);
+    vs_out.position = vec3(u_Model * vec4(a_Position, 1.0));
     vs_out.normal = a_Normal;
 
     vs_out.camPos = s_Camera.position;
@@ -64,13 +65,14 @@ main()
     vec3 b = normalize(vec3(u_Model * vec4(cross(a_Tangent, a_Normal), 0.0)));
     vec3 n = normalize(vec3(u_Model * vec4(a_Normal, 0.0)));
     vs_out.tbn    = mat3(t, b, n);
+
+    // Shadowmap
+    vs_out.lightWorldSpace = u_LightSpaceMatrix * vec4(vs_out.position, 1.0f);
 }
 
 // ---------------------- Fragment -----------------
 #shader fragment
 #version 420 core
-
-// Set 2
 
 layout(binding = 0) uniform sampler2D t_Albedo;
 layout(binding = 1) uniform sampler2D t_Normal;
@@ -81,6 +83,8 @@ layout(binding = 4) uniform sampler2D t_Ao;
 layout(binding = 5) uniform samplerCube t_IrradianceMap;
 layout(binding = 6) uniform samplerCube t_PrefilterMap;
 layout(binding = 7) uniform sampler2D t_brdfLUT;
+
+layout(binding = 8) uniform sampler2D t_shadowMap;
 
 /*
 layout (std140, set = 2, binding = 0) uniform ObjectTextures {
@@ -105,11 +109,14 @@ in VS_OUT
     vec3 camPos;
     vec3 lightPos;
     vec3 lightColor;
+    vec4 lightWorldSpace;
 }
 fs_in;
 
 const float PI      = 3.14159265359;
 const float FEATHER = 0.0000001;
+
+const float ALPHA_CUTOFF = 0.5;
 
 // material properties
 /*
@@ -136,6 +143,45 @@ calcNormal(float strength)
     n.xy *= strength;
     n = normalize(fs_in.tbn * n);
     return n;
+}
+
+// TODO: Move to separate file to avoid redundance
+float
+calcShadow(vec4 lightWorldSpace, vec3 lightDir, bool pcf)
+{
+
+    vec3 projCoords = lightWorldSpace.xyz / lightWorldSpace.w;
+    projCoords      = projCoords * 0.5 + 0.5;
+
+    float biasMin = 0.025;
+    float biasMax = 0.0005;
+
+    // oversampling correction
+    if (projCoords.z > 1.0) { return 0.0; }
+
+    float closestDepth = texture(t_shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+
+    float bias   = max(biasMin * (1.0 - dot(fs_in.normal, lightDir)), biasMax);
+    float shadow = 0;
+
+    if (pcf) {
+        vec2 texelSize = 1.0 / textureSize(t_shadowMap, 0);
+        for (int x = -1; x <= 1; ++x) {
+            for (int y = -1; y <= 1; ++y) {
+                float pcfDepth =
+                  texture(t_shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+                shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+            }
+        }
+        shadow /= 9.0;
+        return shadow;
+
+    } else {
+        shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
+    }
+
+    return shadow;
 }
 
 //------------------
@@ -179,6 +225,9 @@ fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 void
 main()
 {
+    // alpha-cutoff
+    if(texture(t_Albedo, fs_in.texCoords).a <= ALPHA_CUTOFF)
+        discard;
 
     vec3 N = calcNormal(1.0);
     vec3 V = normalize(fs_in.camPos - fs_in.position);
@@ -192,12 +241,12 @@ main()
     vec3 bR = vec3(0.04); // F0
     bR      = mix(bR, albedo, metallic);
 
-    // reflectance equation
-    vec3 Lo = vec3(0.0);
+    vec3 Lo = vec3(0.0); // reflectance equation
+    float sV = 0; // shadow-coverage value
     // start of lighting equation
     const int N_LIGHTS = 1;
-    for (int i = 0; i < N_LIGHTS; i++) {
-
+    for (int i = 0; i < N_LIGHTS; i++)
+    {
         // Calcuate per-light radiance
         vec3 L            = normalize(fs_in.lightPos - fs_in.position);
         vec3 H            = normalize(V + L);
@@ -235,11 +284,17 @@ main()
         // if partly metal (pure metal have no diffuse light).
         kD *= 1.0 - metallic;
 
+        // shadow-coverage factor
+        sV = calcShadow(fs_in.lightWorldSpace, L, true);
+        //sV = calcShadow(fs_in.lightWorldSpace, normalized(fs_in.lightPos), true);
+
         // 1) angle of light to surface affect specular, not just diffuse
         // 2) we mix albedo with diffuse, but not specular
+        // 3) combine visibility (shadow) factor
         Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }
     // end of lighting equation
+
     // ambient lighting from IBL
     vec3 F       = fresnelSchlickRoughness(max(dot(N, V), 0.0), bR, roughness);
     vec3 kD      = (1.0 - F) * (1.0 - metallic);
@@ -255,7 +310,12 @@ main()
     vec3 specular = prefilteredColor * (F * brdf.r + brdf.g);
 
     vec3 ambient = (diffuse + specular) * ao;
-    vec3 color   = ambient + Lo;
+
+    vec3 shadowColor = vec3(0.0);
+    float shadowIntensity = 0.95;
+    shadowColor = (1 - (sV * (vec3(shadowIntensity) - shadowColor)));
+
+    vec3 color   = (ambient + Lo) * shadowColor;
 
     // HDR
     // color = color / (color + vec3(1.0));

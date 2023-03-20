@@ -5,6 +5,7 @@
 #include <core/graphics/mesh/mesh_helpers.inl>
 
 #include <core/graphics/material/material.h>
+#include <core/graphics/shader/shader.h>
 #include <core/graphics/texture/texture.h>
 
 #include <util/logger.h>
@@ -417,6 +418,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
 static Texture *_test_texture_white;
 static Texture *_test_texture_normal;
+static ShaderProgram *s_pbrShader;
+
 static Material *
 _create_material(cgltf_material *gltfMaterial,
                  Material **materials,
@@ -434,7 +437,7 @@ _create_material(cgltf_material *gltfMaterial,
     if (gltfMaterial->has_pbr_metallic_roughness) {
 
         Material *material =
-          material_create(NULL, "../res/shaders/pbr.shader", 0);
+          material_create(s_pbrShader, NULL, 0);
 
         cgltf_pbr_metallic_roughness *textureContainer =
           &gltfMaterial->pbr_metallic_roughness;
@@ -572,6 +575,8 @@ load_gltf(const char *path, int scale)
       texture_create("../res/textures/defaults/normal.png",
                      NULL,
                      (TextureOptions) {0, GL_RGB, false, false});
+    s_pbrShader =
+        shader_create_program("../res/shaders/pbr.shader");
 #endif
 
     ui32 cntMesh = 0;

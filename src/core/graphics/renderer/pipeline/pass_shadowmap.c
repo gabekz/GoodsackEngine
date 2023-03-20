@@ -89,7 +89,7 @@ shadowmap_bind()
     glClear(GL_DEPTH_BUFFER_BIT);
 
     // Bind the shadowmap to texture slot 6
-    glActiveTexture(GL_TEXTURE6);
+    glActiveTexture(GL_TEXTURE8);
     glBindTexture(GL_TEXTURE_2D, depthMapTexture);
 }
 
@@ -97,7 +97,7 @@ void
 shadowmap_bind_texture()
 {
     // Bind the shadowmap to texture slot 6
-    glActiveTexture(GL_TEXTURE6);
+    glActiveTexture(GL_TEXTURE8);
     glBindTexture(GL_TEXTURE_2D, depthMapTexture);
 }
 
