@@ -43,7 +43,7 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
     int attribCount = gltfPrimitive->attributes_count;
 
     struct AttributeInfo attribInfo = {-1};
-    attribInfo.idxTan = -1;
+    attribInfo.idxTan               = -1;
 
     for (int i = 0; i < attribCount; i++) {
         const cgltf_attribute *attrib = &gltfPrimitive->attributes[i];
@@ -264,15 +264,14 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
 
     // Add space for tangent data
-    if(attribInfo.idxTan > -1) {
+    if (attribInfo.idxTan > -1) {
         ret->buffers.outI += vTanBufferSize;
         ret->hasTBN = 2; // TODO
-    }
-    else {
+    } else {
         ret->hasTBN = 0;
     }
 
-    ret->buffers.out  = malloc(ret->buffers.outI);
+    ret->buffers.out = malloc(ret->buffers.outI);
 
     // Position, TextureCoord, Normal
 
@@ -291,9 +290,9 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
           attribInfo.nrmData, i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
         // Fill Tangent
-        if(attribInfo.idxTan > -1) {
+        if (attribInfo.idxTan > -1) {
             cgltf_accessor_read_float(
-                attribInfo.tanData, i, ret->buffers.out + offsetA, 100);
+              attribInfo.tanData, i, ret->buffers.out + offsetA, 100);
             offsetA += 3;
         }
     }
@@ -420,6 +419,43 @@ static Texture *_test_texture_white;
 static Texture *_test_texture_normal;
 static ShaderProgram *s_pbrShader;
 
+static Texture **s_loaded_textures;
+static int s_loaded_textures_count;
+
+#define TEXTURE_POOL_COUNT 70
+#define TEST_PATH          "../demo/demo_hot/Resources/textures/sponza/"
+
+Texture *
+__texture_lookup(const char *path, TextureOptions options)
+{
+
+    if (s_loaded_textures_count == 0) {
+        s_loaded_textures = malloc(sizeof(Texture *) * TEXTURE_POOL_COUNT);
+        s_loaded_textures_count = 1;
+
+        s_loaded_textures[0] = texture_create(strdup(path), NULL, options);
+        return s_loaded_textures[0];
+    }
+
+    for (int i = 0; i < s_loaded_textures_count; i++) {
+        if (!strcmp(s_loaded_textures[i]->filePath, path)) {
+            return s_loaded_textures[i];
+        }
+    }
+
+    // Resize pool if needed
+    if (s_loaded_textures_count >= TEXTURE_POOL_COUNT) {
+        s_loaded_textures = realloc(
+          s_loaded_textures,
+          sizeof(Texture *) * (s_loaded_textures_count + TEXTURE_POOL_COUNT));
+    }
+
+    s_loaded_textures[s_loaded_textures_count] =
+      texture_create(strdup(path), NULL, options);
+    s_loaded_textures_count += 1;
+    return s_loaded_textures[s_loaded_textures_count - 1];
+}
+
 static Material *
 _create_material(cgltf_material *gltfMaterial,
                  Material **materials,
@@ -436,13 +472,10 @@ _create_material(cgltf_material *gltfMaterial,
     // PBR textures
     if (gltfMaterial->has_pbr_metallic_roughness) {
 
-        Material *material =
-          material_create(s_pbrShader, NULL, 0);
+        Material *material = material_create(s_pbrShader, NULL, 0);
 
         cgltf_pbr_metallic_roughness *textureContainer =
           &gltfMaterial->pbr_metallic_roughness;
-
-#define TEST_PATH "../demo/demo_hot/Resources/textures/sponza/"
 
         // Base texture
         if (textureContainer->base_color_texture.texture) {
@@ -450,8 +483,7 @@ _create_material(cgltf_material *gltfMaterial,
             const char *diffuseUri =
               textureContainer->base_color_texture.texture->image->uri;
             strcat(p, diffuseUri);
-            material_add_texture(material,
-                                 texture_create(p, NULL, texPbrOptions));
+            material_add_texture(material, __texture_lookup(p, texPbrOptions));
         } else {
             material_add_texture(material, _test_texture_white);
         }
@@ -464,7 +496,7 @@ _create_material(cgltf_material *gltfMaterial,
               gltfMaterial->normal_texture.texture->image->uri;
             strcat(q, nrmUri);
             material_add_texture(material,
-                                 texture_create(q, NULL, texNormalMapOptions));
+                                 __texture_lookup(q, texNormalMapOptions));
         } else {
             material_add_texture(material, _test_texture_normal);
         }
@@ -475,8 +507,7 @@ _create_material(cgltf_material *gltfMaterial,
             const char *roughnessUri =
               textureContainer->metallic_roughness_texture.texture->image->uri;
             strcat(r, roughnessUri);
-            material_add_texture(material,
-                                 texture_create(r, NULL, texPbrOptions));
+            material_add_texture(material, __texture_lookup(r, texPbrOptions));
         } else {
             material_add_texture(material, _test_texture_white);
         }
@@ -531,24 +562,7 @@ load_gltf(const char *path, int scale)
           sizeof(
             unsigned short); // cgltf_accessor_read_index(data->accessors, 3);
 
-        // LOG_INFO("\nIndices count: %d\tbuffer size: %d", indices->count,
-        // data->accessors[indicesBufferViewIndex].count * sizeof(unsigned
-        // short));
-
         int accessorsCount = data->accessors_count;
-#ifdef LOGGING_GLTF
-
-        LOG_INFO(
-          "\nIndices count: %d\tbuffer size: %d", indices->count, indicesSize);
-
-        LOG_INFO("\nAccessors count: %d", accessorsCount);
-        for (int i = 0; i < accessorsCount; i++) {
-            cgltf_accessor accessor = data->accessors[i];
-            LOG_INFO("Accessor: %d\tBufferView size: %d",
-                     i,
-                     accessor.buffer_view->size);
-        }
-#endif // LOGGING_GLTF
     }
 
     // NOTE: for every single mesh -> go through every pirmitive
@@ -575,8 +589,8 @@ load_gltf(const char *path, int scale)
       texture_create("../res/textures/defaults/normal.png",
                      NULL,
                      (TextureOptions) {0, GL_RGB, false, false});
-    s_pbrShader =
-        shader_create_program("../res/shaders/pbr.shader");
+    s_pbrShader = shader_create_program("../res/shaders/pbr.shader");
+    s_loaded_textures_count = 0;
 #endif
 
     ui32 cntMesh = 0;
@@ -615,6 +629,8 @@ load_gltf(const char *path, int scale)
 
     ret->modelPath   = path;
     ret->meshesCount = totalObjects;
+
+    LOG_INFO("Loaded textures: %d", s_loaded_textures_count);
 
     // Cleanup
     cgltf_free(data);
