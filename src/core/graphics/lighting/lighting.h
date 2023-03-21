@@ -25,8 +25,10 @@ extern "C" {
 
 Light *
 light_create(float *position, float *color, LightType type);
-void
+ui32
 lighting_initialize(float *lightPos, float *lightColor);
+void 
+lighting_update(ui32 uboLight, float *lightPos, float *lightColor);
 
 #ifdef __cplusplus
 }

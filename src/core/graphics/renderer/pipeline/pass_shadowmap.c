@@ -62,7 +62,7 @@ shadowmap_init()
               nearPlane,
               farPlane,
               lightProjection);
-    glm_lookat((vec3) {1.0f, 1.0f, 1.0f},
+    glm_lookat((vec3) {0.1f, 1.0f, 0.1f},
                (vec3) {0.0f, 0.0f, 0.0f},
                (vec3) {0.0f, 1.0f, 0.0f},
                lightView);

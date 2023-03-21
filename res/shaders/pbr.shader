@@ -153,8 +153,9 @@ calcShadow(vec4 lightWorldSpace, vec3 lightDir, bool pcf)
     vec3 projCoords = lightWorldSpace.xyz / lightWorldSpace.w;
     projCoords      = projCoords * 0.5 + 0.5;
 
-    float biasMin = 0.025;
+    float biasMin = 0.0025;
     float biasMax = 0.0005;
+    int pcfSamples = 6;
 
     // oversampling correction
     if (projCoords.z > 1.0) { return 0.0; }
@@ -162,19 +163,19 @@ calcShadow(vec4 lightWorldSpace, vec3 lightDir, bool pcf)
     float closestDepth = texture(t_shadowMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
 
-    float bias   = max(biasMin * (1.0 - dot(fs_in.normal, lightDir)), biasMax);
+    float bias   = max(biasMin * (1.0 - dot(normalize(fs_in.normal), lightDir)), biasMax);
     float shadow = 0;
 
     if (pcf) {
         vec2 texelSize = 1.0 / textureSize(t_shadowMap, 0);
-        for (int x = -1; x <= 1; ++x) {
-            for (int y = -1; y <= 1; ++y) {
+        for (int x = -pcfSamples; x <= pcfSamples; ++x) {
+            for (int y = -pcfSamples; y <= pcfSamples; ++y) {
                 float pcfDepth =
                   texture(t_shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
                 shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
             }
         }
-        shadow /= 9.0;
+        shadow /= pow((pcfSamples * 2 + 1), 2);
         return shadow;
 
     } else {
@@ -311,8 +312,9 @@ main()
 
     vec3 ambient = (diffuse + specular) * ao;
 
-    vec3 shadowColor = vec3(0.0);
-    float shadowIntensity = 0.95;
+    //vec3 shadowColor = vec3(0.0);
+    vec3 shadowColor = fs_in.lightColor * 0.002;
+    float shadowIntensity = 1.0;
     shadowColor = (1 - (sV * (vec3(shadowIntensity) - shadowColor)));
 
     vec3 color   = (ambient + Lo) * shadowColor;
