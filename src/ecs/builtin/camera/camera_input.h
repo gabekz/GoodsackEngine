@@ -5,6 +5,6 @@
 #include <util/gfx.h>
 
 void
-camera_input(struct ComponentCamera *, GLFWwindow *);
+camera_input(Entity cameraEnttiy, GLFWwindow *);
 
 #endif

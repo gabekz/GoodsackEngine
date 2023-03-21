@@ -12,6 +12,24 @@
 Texture *texDefSpec, *texDefNorm, *texPbrAo;
 static TextureOptions s_texOpsPbr, s_texOpsNrm;
 
+static Entity
+__create_camera_entity(ECS *ecs, vec3 position)
+{
+    Entity camera = ecs_new(ecs);
+    _ecs_add_internal(camera,
+                      C_CAMERA,
+                      (void *)(&(struct ComponentCamera) {
+                        .axisUp = {0.0f, 1.0f, 0.0f},
+                        .speed  = 2.5f,
+                      }));
+    _ecs_add_internal(camera,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = *(float *)position,
+                      }));
+    return camera;
+}
+
 static void
 _scene0(ECS *ecs, Renderer *renderer)
 {
@@ -29,15 +47,7 @@ _scene0(ECS *ecs, Renderer *renderer)
                                            texEarthNorm,
                                            texDefSpec);
 
-    // Create the Camera, containing starting-position and up-axis coords.
-    Entity camera = ecs_new(ecs);
-    _ecs_add_internal(camera,
-                      C_CAMERA,
-                      (void *)(&(struct ComponentCamera) {
-                        .position = {0.0f, 0.0f, 2.0f},
-                        .axisUp   = {0.0f, 1.0f, 0.0f},
-                        .speed    = 2.5f,
-                      }));
+    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
     Entity suzanneObject = ecs_new(ecs);
     _ecs_add_internal(suzanneObject, C_TRANSFORM, NULL);
@@ -80,14 +90,7 @@ _scene1(ECS *ecs, Renderer *renderer)
                                        texDefNorm,
                                        texContSpec);
 
-    Entity camera2 = ecs_new(ecs);
-    _ecs_add_internal(camera2,
-                      C_CAMERA,
-                      (void *)(&(struct ComponentCamera) {
-                        .position = {0.0f, 0.0f, 2.0f},
-                        .axisUp   = {0.0f, 1.0f, 0.0f},
-                        .speed    = 2.5f,
-                      }));
+    Entity camera = __create_camera_entity(ecs, (vec3){0.0f, 0.0f, 2.0f});
 
     Entity floorEntity = ecs_new(ecs);
     _ecs_add_internal(floorEntity,
@@ -127,15 +130,6 @@ static void
 _scene2(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 2);
-
-    Entity camera3 = ecs_new(ecs);
-    _ecs_add_internal(camera3,
-                      C_CAMERA,
-                      (void *)(&(struct ComponentCamera) {
-                        .position = {0.0f, 0.0f, 2.0f},
-                        .axisUp   = {0.0f, 1.0f, 0.0f},
-                        .speed    = 2.5f,
-                      }));
 
     Texture *texGraniteAlbedo = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/granite/albedo.png");
@@ -208,6 +202,9 @@ _scene2(ECS *ecs, Renderer *renderer)
                                         texGoldMetallic,
                                         texGoldSpecular,
                                         texPbrAo);
+
+    Entity camera = __create_camera_entity(ecs, (vec3){0.0f, 0.0f, 2.0f});
+
     Entity sphereEntity = ecs_new(ecs);
     _ecs_add_internal(sphereEntity,
                       C_TRANSFORM,
@@ -313,27 +310,9 @@ _scene3(ECS *ecs, Renderer *renderer)
                                         texCerbS,
                                         texPbrAo);
 
-    struct ComponentCamera compCamera = {
-      .position = {-1.5f, 0.0f, 0.0f},
-      .axisUp   = {0.0f, 1.0f, 0.0f},
-      .speed    = 2.5f,
-    };
-    /*
-    struct ComponentCamera *compCamera =
-    (&(struct ComponentCamera({
-        .position = {-1.5f, 0.0f, 0.0f},
-        .axisUp   = {0.0f, 1.0f, 0.0f},
-        .speed    = 0.05f,
-    })));
-    */
-
-    Entity camera4 = ecs_new(ecs);
-    _ecs_add_internal(
-      camera4, C_CAMERA, (void *)((struct ComponentCamera *)&compCamera));
-    //_ecs_add_internal(camera4, C_AUDIO_LISTENER, NULL);
+    Entity camera = __create_camera_entity(ecs, (vec3){0.0f, 1.0f, 0.0f});
 
     Entity entCerb = ecs_new(ecs);
-
     struct ComponentTransform compCerbTransform = {
       .position = {0.0f, 0.0f, 0.0f},
       .scale    = {4.0f, 4.0f, 4.0f},
@@ -345,7 +324,6 @@ _scene3(ECS *ecs, Renderer *renderer)
         .drawMode = DRAW_ARRAYS,
         .cullMode = CULL_CW | CULL_FORWARD,
       }};
-
     _ecs_add_internal(
       entCerb,
       C_TRANSFORM,
@@ -363,14 +341,7 @@ _scene4(ECS *ecs, Renderer *renderer)
     Material *matCharacter =
       material_create(NULL, "../res/shaders/skinning-test.shader", 0);
 
-    Entity cameraEntity = ecs_new(ecs);
-    _ecs_add_internal(cameraEntity,
-                      C_CAMERA,
-                      (void *)(&(struct ComponentCamera) {
-                        .position = {0.0f, 0.0f, 2.0f},
-                        .axisUp   = {0.0f, 1.0f, 0.0f},
-                        .speed    = 2.5f,
-                      }));
+    Entity camera = __create_camera_entity(ecs, (vec3){0.0f, 1.0f, 0.0f});
 
     Entity characterEntity = ecs_new(ecs);
     _ecs_add_internal(characterEntity,
@@ -405,24 +376,17 @@ _scene5(ECS *ecs, Renderer *renderer)
     Material *matWhite =
       material_create(NULL, "../res/shaders/wireframe.shader", 0);
 
-    Entity cameraEntity = ecs_new(ecs);
-    _ecs_add_internal(cameraEntity,
-                      C_CAMERA,
-                      (void *)(&(struct ComponentCamera) {
-                        .position = {0.0f, 0.0f, 2.0f},
-                        .axisUp   = {0.0f, 1.0f, 0.0f},
-                        .speed    = 2.5f,
-                      }));
+    Entity e_camera = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
 
-    Entity characterEntity = ecs_new(ecs);
-    _ecs_add_internal(characterEntity,
+    Entity e_sponza = ecs_new(ecs);
+    _ecs_add_internal(e_sponza,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, -1.5f, 0.0f},
                         .scale    = {0.001f, 0.001f, 0.001f},
                       }));
     _ecs_add_internal(
-      characterEntity,
+      e_sponza,
       C_MODEL,
       (void *)(&(struct ComponentModel) {
         .material = matWhite,

@@ -13,6 +13,14 @@
 #include <tools/debug/debug_draw_skeleton.h>
 
 // #define DEBUG_DRAW_SKELETON
+#define CULLING_FOR_IMPORTED 1
+
+static void
+SetCulling(int bitfield)
+{
+    LOG_INFO("%d", bitfield << 2);
+    LOG_INFO("%d", bitfield << 3);
+}
 
 static void
 DrawModel(struct ComponentModel *model,
@@ -25,7 +33,7 @@ DrawModel(struct ComponentModel *model,
 
 // Handle culling
 #if 0
-        if((mesh->properties.cullMode | CULL_DISABLED)) {
+         if((mesh->properties.cullMode | CULL_DISABLED)) {
             printf("Disable culling");
         }
 #endif
@@ -36,11 +44,18 @@ DrawModel(struct ComponentModel *model,
             // Select Material
             if (mesh->usingImportedMaterial && !useOverrideMaterial) {
                 material = mesh->materialImported;
-            }
-            else if(useOverrideMaterial) {
+
+#if CULLING_FOR_IMPORTED
+                // TODO: temporary solution for face culling.
+                // This should be handled by a material property.
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_FRONT);
+                glFrontFace(GL_CW);
+#endif
+
+            } else if (useOverrideMaterial) {
                 material = renderer->explicitMaterial;
-            }
-            else {
+            } else {
                 material = model->material;
             }
 
@@ -73,11 +88,11 @@ DrawModel(struct ComponentModel *model,
               (float *)newTranslation);
 
             // Light Space Matrix
-        glUniformMatrix4fv(
-          glGetUniformLocation(material->shaderProgram->id, "u_LightSpaceMatrix"),
-          1,
-          GL_FALSE,
-          (float *)renderer->lightSpaceMatrix);
+            glUniformMatrix4fv(glGetUniformLocation(material->shaderProgram->id,
+                                                    "u_LightSpaceMatrix"),
+                               1,
+                               GL_FALSE,
+                               (float *)renderer->lightSpaceMatrix);
 
             vao_bind(mesh->vao);
 
@@ -100,6 +115,7 @@ DrawModel(struct ComponentModel *model,
                 glDrawElements(GL_LINES, indices, GL_UNSIGNED_INT, NULL);
             }
         }
+        glDisable(GL_CULL_FACE);
 
     } else if (DEVICE_API_VULKAN) {
 
@@ -200,13 +216,15 @@ render(Entity e)
 #endif
 
     if (pass == REGULAR) {
-        (DEVICE_API_OPENGL) ? DrawModel(model, transform, FALSE, NULL, e.ecs->renderer)
-                            : DrawModel(model, transform, FALSE, cb, e.ecs->renderer);
+        (DEVICE_API_OPENGL)
+          ? DrawModel(model, transform, FALSE, NULL, e.ecs->renderer)
+          : DrawModel(model, transform, FALSE, cb, e.ecs->renderer);
         return;
     }
 
-    (DEVICE_API_OPENGL) ? DrawModel(model, transform, TRUE, NULL, e.ecs->renderer)
-                        : DrawModel(model, transform, TRUE, cb, e.ecs->renderer);
+    (DEVICE_API_OPENGL)
+      ? DrawModel(model, transform, TRUE, NULL, e.ecs->renderer)
+      : DrawModel(model, transform, TRUE, cb, e.ecs->renderer);
 }
 
 void

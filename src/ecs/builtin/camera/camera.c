@@ -1,5 +1,6 @@
 #include "camera.h"
 #include <ecs/builtin/camera/camera_input.h>
+#include <ecs/builtin/transform/transform.h>
 
 #include <string.h>
 
@@ -11,7 +12,10 @@ static void
 init(Entity e)
 {
     if (!(ecs_has(e, C_CAMERA))) return;
-    struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
+    if (!(ecs_has(e, C_TRANSFORM))) return;
+
+    struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
+    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
     camera->screen.width  = e.ecs->renderer->windowWidth;
     camera->screen.height = e.ecs->renderer->windowHeight;
@@ -52,19 +56,24 @@ init(Entity e)
 
     float *axisUp = camera->axisUp;
     float *center = GLM_VEC3_ZERO; // position + orientation _v
-    glm_vec3_mul(camera->position, (vec3) {0.0f, 0.0f, -1.0f}, center);
+    glm_vec3_mul(transform->position, (vec3) {0.0f, 0.0f, -1.0f}, center);
 }
 
 static void
 update(Entity e)
 {
     if (!(ecs_has(e, C_CAMERA))) return;
-    struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
+    if (!(ecs_has(e, C_TRANSFORM))) return;
+
+    struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
+    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
     float *axisUp = camera->axisUp;
     glm_vec3_zero(camera->center);
-    glm_vec3_mul(camera->position, (vec3) {0.0f, 0.0f, -1.0f}, camera->center);
-    glm_lookat(camera->position, camera->center, axisUp, camera->uniform.view);
+    glm_vec3_mul(
+      transform->position, (vec3) {0.0f, 0.0f, -1.0f}, camera->center);
+    glm_lookat(
+      transform->position, camera->center, axisUp, camera->uniform.view);
 
     float aspectRatio =
       (float)camera->screen.width / (float)camera->screen.height;
@@ -79,7 +88,7 @@ update(Entity e)
     if (DEVICE_API_OPENGL) {
         glBindBuffer(GL_UNIFORM_BUFFER, camera->uboId);
         glBufferSubData(
-          GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, camera->position);
+          GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, transform->position);
         glBufferSubData(GL_UNIFORM_BUFFER,
                         sizeof(vec3) + 4,
                         sizeof(mat4),
@@ -106,7 +115,7 @@ update(Entity e)
     }
 
     // Process Camera Input
-    camera_input(camera, e.ecs->renderer->window);
+    camera_input(e, e.ecs->renderer->window);
 }
 
 void
