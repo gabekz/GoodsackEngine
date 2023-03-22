@@ -11,6 +11,8 @@
 #include <core/graphics/renderer/renderer_props.inl>
 #include <core/graphics/scene/scene.h>
 
+#include <core/graphics/renderer/pipeline/pass_shadowmap.h>
+
 #include <core/drivers/vulkan/vulkan_device.h>
 
 #include <tools/debug/debug_context.h>
@@ -49,6 +51,10 @@ struct _renderer
     ui32 drawCalls;
     ui32 faces;
     ui32 totalVertices;
+
+    // TODO: Fix this shit as well.
+    Light *light;
+    ShadowmapOptions shadowmapOptions; 
 
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;

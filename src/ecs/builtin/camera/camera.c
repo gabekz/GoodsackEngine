@@ -174,7 +174,7 @@ update(Entity e)
     // MVP: view
     glm_lookat(transform->position, p, camera->axisUp, camera->uniform.view);
 
-    LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);
+    //LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);
 
     float aspectRatio =
       (float)camera->screen.width / (float)camera->screen.height;

@@ -94,6 +94,17 @@ DrawModel(struct ComponentModel *model,
                                GL_FALSE,
                                (float *)renderer->lightSpaceMatrix);
 
+            // Shadow options
+            glUniform1i(glGetUniformLocation(
+                        material->shaderProgram->id, "u_pcfSamples"),
+                        renderer->shadowmapOptions.pcfSamples);
+            glUniform1f(glGetUniformLocation(
+                        material->shaderProgram->id, "u_normalBiasMin"),
+                        renderer->shadowmapOptions.normalBiasMin);
+            glUniform1f(glGetUniformLocation(
+                        material->shaderProgram->id, "u_normalBiasMax"),
+                        renderer->shadowmapOptions.normalBiasMax);
+
             vao_bind(mesh->vao);
 
             MeshData *data = mesh->meshData;

@@ -82,7 +82,7 @@ main(int argc, char *argv[])
     vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
     // UBO Lighting
-    lighting_initialize(lightPos, lightColor);
+    renderer->light = lighting_initialize(lightPos, lightColor);
 
     // create scenes
     demo_scenes_create(ecs, renderer);

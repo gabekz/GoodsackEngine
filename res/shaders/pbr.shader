@@ -86,6 +86,10 @@ layout(binding = 7) uniform sampler2D t_brdfLUT;
 
 layout(binding = 8) uniform sampler2D t_shadowMap;
 
+uniform int u_pcfSamples = 6;
+uniform float u_normalBiasMin = 0.0025f;
+uniform float u_normalBiasMax = 0.0005f;
+
 /*
 layout (std140, set = 2, binding = 0) uniform ObjectTextures {
     sampler2D t_Albedo;
@@ -153,9 +157,14 @@ calcShadow(vec4 lightWorldSpace, vec3 lightDir, bool pcf)
     vec3 projCoords = lightWorldSpace.xyz / lightWorldSpace.w;
     projCoords      = projCoords * 0.5 + 0.5;
 
-    float biasMin = 0.0025;
-    float biasMax = 0.0005;
-    int pcfSamples = 6;
+    float biasMin = u_normalBiasMin;
+    float biasMax = u_normalBiasMax;
+    int pcfSamples = u_pcfSamples;
+
+    // PCF disable
+    if(pcfSamples <= 0) {
+        pcf = false;
+    }
 
     // oversampling correction
     if (projCoords.z > 1.0) { return 0.0; }

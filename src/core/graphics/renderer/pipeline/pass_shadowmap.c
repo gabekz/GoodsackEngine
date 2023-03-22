@@ -50,6 +50,7 @@ shadowmap_init()
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    /*
     glm_mat4_zero(lightSpaceMatrix);
     mat4 lightProjection = GLM_MAT4_ZERO_INIT;
     mat4 lightView       = GLM_MAT4_ZERO_INIT;
@@ -62,14 +63,14 @@ shadowmap_init()
               nearPlane,
               farPlane,
               lightProjection);
-    glm_lookat((vec3) {0.1f, 1.0f, 0.1f},
+    glm_lookat((vec3) {1.0f, 2.8f, -0.2f},
                (vec3) {0.0f, 0.0f, 0.0f},
                (vec3) {0.0f, 1.0f, 0.0f},
                lightView);
     glm_mat4_mul(lightProjection, lightView, lightSpaceMatrix);
+    */
 
     shaderDepthMap = shader_create_program("../res/shaders/depth-map.shader");
-
     materialDepthMap = material_create(shaderDepthMap, NULL, 0);
 }
 
@@ -94,6 +95,28 @@ shadowmap_bind()
 }
 
 void
+shadowmap_update(vec3 lightPosition, ShadowmapOptions options)
+{
+    glm_mat4_zero(lightSpaceMatrix);
+    mat4 lightProjection = GLM_MAT4_ZERO_INIT;
+    mat4 lightView       = GLM_MAT4_ZERO_INIT;
+    float nearPlane = options.nearPlane, farPlane = options.farPlane;
+    float camSize = options.camSize;
+    glm_ortho(-camSize,
+              camSize,
+              -camSize,
+              camSize,
+              nearPlane,
+              farPlane,
+              lightProjection);
+    glm_lookat(lightPosition,
+               (vec3) {0.0f, 0.0f, 0.0f}, // center
+               (vec3) {0.0f, 1.0f, 0.0f}, // up-axis
+               lightView);
+    glm_mat4_mul(lightProjection, lightView, lightSpaceMatrix);
+}
+
+void
 shadowmap_bind_texture()
 {
     // Bind the shadowmap to texture slot 6
@@ -105,6 +128,12 @@ Material *
 shadowmap_getMaterial()
 {
     return materialDepthMap;
+}
+
+ui32
+shadowmap_getTexture()
+{
+    return depthMapTexture;
 }
 
 vec4 *

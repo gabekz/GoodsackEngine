@@ -61,6 +61,16 @@ renderer_init()
                                        .msaaSamples = 16,
                                        .msaaEnable  = TRUE};
 
+    ret->shadowmapOptions = (ShadowmapOptions){
+        .nearPlane = 0.5f,
+        .farPlane = 7.5f,
+        .camSize = 10.0f,
+
+        .normalBiasMin = 0.0025f,
+        .normalBiasMax = 0.0005f,
+        .pcfSamples = 8,
+    };
+
     return ret;
 }
 
@@ -168,7 +178,16 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     /*-------------------------------------------
         Pass #1 - Directional Shadowmap
     */
+
+    // update shadowmap position
+    shadowmap_update(renderer->light->position, renderer->shadowmapOptions);
+    // TODO: Move matrix storage out of renderer
+    glm_mat4_zero(renderer->lightSpaceMatrix);
+    glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
+
+    // bind the shadowmap textures & framebuffers
     shadowmap_bind();
+
     renderer->currentPass      = SHADOW;
     renderer->explicitMaterial = shadowmap_getMaterial();
     // TODO: Clean this up...

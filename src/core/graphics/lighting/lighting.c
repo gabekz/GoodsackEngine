@@ -4,20 +4,13 @@
 #include <util/sysdefs.h>
 
 Light *
-light_create(float *position, float *color, LightType type)
-{
-
-    Light *ret    = malloc(sizeof(Light));
-    ret->position = position;
-    ret->color    = color;
-    ret->type     = type;
-
-    return ret;
-}
-
-ui32
 lighting_initialize(float *lightPos, float *lightColor)
 {
+    Light *ret    = malloc(sizeof(Light));
+    ret->position = lightPos;
+    ret->color    = lightColor;
+    ret->type     = Directional;
+
     ui32 uboLight;
     if (DEVICE_API_OPENGL) {
         ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
@@ -33,15 +26,16 @@ lighting_initialize(float *lightPos, float *lightColor)
           GL_UNIFORM_BUFFER, sizeof(vec3) + 4, sizeof(vec4), lightColor);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
-    return uboLight;
+    ret->ubo = uboLight;
+    return ret;
 }
 
 void 
-lighting_update(ui32 uboLight, float *lightPos, float *lightColor)
+lighting_update(Light *light, float *lightPos, float *lightColor)
 {
     ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
     if (DEVICE_API_OPENGL) {
-        glBindBuffer(GL_UNIFORM_BUFFER, uboLight);
+        glBindBuffer(GL_UNIFORM_BUFFER, light->ubo);
         glBufferSubData(
           GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, lightPos);
         glBufferSubData(
