@@ -93,6 +93,8 @@ main(int argc, char *argv[])
     device_resetAnalytics();
 
     device_setGraphicsSettings((GraphicsSettings {.swapInterval = 1}));
+    device_setInput(
+      (Input {.cursor_position = {0, 0}, .holding_right_button = 0}));
 
 #ifdef RENDERER_2
     renderer.Prime();

@@ -34,6 +34,13 @@ typedef struct Analytics
     // ui32 currentDrawCalls;
 } Analytics;
 
+typedef struct Input
+{
+    double cursor_position[2];
+    int holding_right_button;
+
+} Input;
+
 // Functions
 
 GraphicsAPI
@@ -52,6 +59,11 @@ void
 device_resetAnalytics();
 void
 device_updateAnalytics(double time);
+
+Input
+device_getInput();
+void
+device_setInput(Input input);
 
 #ifdef __cplusplus
 }
