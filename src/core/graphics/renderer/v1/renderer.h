@@ -21,7 +21,7 @@
 #define PSX_WIDTH                  320
 #define PSX_HEIGHT                 240
 
-typedef enum renderPass { REGULAR = 0, SHADOW } RenderPass;
+typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
 
 typedef struct _renderer Renderer;
 

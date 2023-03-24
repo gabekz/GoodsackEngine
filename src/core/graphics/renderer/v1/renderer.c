@@ -61,14 +61,14 @@ renderer_init()
                                        .msaaSamples = 16,
                                        .msaaEnable  = TRUE};
 
-    ret->shadowmapOptions = (ShadowmapOptions){
-        .nearPlane = 0.5f,
-        .farPlane = 7.5f,
-        .camSize = 10.0f,
+    ret->shadowmapOptions = (ShadowmapOptions) {
+      .nearPlane = 0.5f,
+      .farPlane  = 7.5f,
+      .camSize   = 10.0f,
 
-        .normalBiasMin = 0.0025f,
-        .normalBiasMax = 0.0005f,
-        .pcfSamples = 8,
+      .normalBiasMin = 0.0025f,
+      .normalBiasMax = 0.0005f,
+      .pcfSamples    = 8,
     };
 
     return ret;
@@ -130,12 +130,17 @@ renderer_start(Renderer *renderer)
         skybox_hdr_projection(renderer->skybox);
 #endif
 
+        prepass_init();
+
         shadowmap_init();
         // TODO: clean this up. Should be stored in UBO for directional-lights
         glm_mat4_zero(renderer->lightSpaceMatrix);
         glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
 
         postbuffer_init(renderer->renderWidth, renderer->renderHeight);
+
+        // generate SSAO textures
+        pass_ssao_init();
 
         // renderer->skybox = skybox_create(skyboxCubemap);
 
@@ -176,8 +181,22 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     ecs_event(ecs, ECS_UPDATE);
 
     /*-------------------------------------------
+        Pass #0 - Depth Prepass
+    */
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Pass: Depth Prepass");
+
+    prepass_bind();
+    renderer->currentPass      = DEPTH_PREPASS;
+    renderer->explicitMaterial = prepass_getMaterial();
+    ecs_event(ecs, ECS_RENDER);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glPopDebugGroup();
+    /*-------------------------------------------
         Pass #1 - Directional Shadowmap
     */
+    glPushDebugGroup(
+      GL_DEBUG_SOURCE_APPLICATION, 1, -1, "Pass: Shadowmap Depth");
 
     // update shadowmap position
     shadowmap_update(renderer->light->position, renderer->shadowmapOptions);
@@ -195,9 +214,20 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    glPopDebugGroup();
     /*-------------------------------------------
-        Pass #2 - Post Processing Pass
+        Pass #2 - SSAO Pass
     */
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1, "Pass: SSAO");
+    // bind the shadowmap textures & framebuffers
+    pass_ssao_bind();
+
+    glPopDebugGroup();
+    /*-------------------------------------------
+        Pass #3 - Post Processing / Lighting Pass
+    */
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 3, -1, "Pass: Lighting");
+
     postbuffer_bind(renderer->properties.msaaEnable);
 
     glEnable(GL_DEPTH_TEST);
@@ -226,10 +256,16 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     skybox_draw(renderer->skybox);
     glDepthFunc(GL_LESS);
 
+    glPopDebugGroup();
     /*-------------------------------------------
-        Pass #3 - Final: Backbuffer draw
+        Pass #4 - Final: Backbuffer draw
     */
+    glPushDebugGroup(
+      GL_DEBUG_SOURCE_APPLICATION, 4, -1, "Pass: Backbuffer Draw (Final)");
+
     postbuffer_draw(&renderer->properties);
+
+    glPopDebugGroup();
 
     // computebuffer_draw();
 }

@@ -20,6 +20,10 @@ glDebugOutput(GLenum source,
     // ignore non-significant error/warning codes
     if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
 
+    // ignore debug markers
+    if (type == GL_DEBUG_TYPE_PUSH_GROUP || type == GL_DEBUG_TYPE_POP_GROUP)
+        return;
+
     LOG_DEBUG("------------\nOpenGL message: %s", message);
 
     switch (source) {
