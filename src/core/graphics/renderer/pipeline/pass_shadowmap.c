@@ -70,7 +70,7 @@ shadowmap_init()
     glm_mat4_mul(lightProjection, lightView, lightSpaceMatrix);
     */
 
-    shaderDepthMap = shader_create_program("../res/shaders/depth-map.shader");
+    shaderDepthMap   = shader_create_program("../res/shaders/depth-map.shader");
     materialDepthMap = material_create(shaderDepthMap, NULL, 0);
 }
 
@@ -89,7 +89,7 @@ shadowmap_bind()
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    // Bind the shadowmap to texture slot 6
+    // Bind the shadowmap to texture slot 8
     glActiveTexture(GL_TEXTURE8);
     glBindTexture(GL_TEXTURE_2D, depthMapTexture);
 }

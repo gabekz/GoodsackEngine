@@ -90,7 +90,7 @@ _scene1(ECS *ecs, Renderer *renderer)
                                        texDefNorm,
                                        texContSpec);
 
-    Entity camera = __create_camera_entity(ecs, (vec3){0.0f, 0.0f, 2.0f});
+    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
     Entity floorEntity = ecs_new(ecs);
     _ecs_add_internal(floorEntity,
@@ -194,7 +194,7 @@ _scene2(ECS *ecs, Renderer *renderer)
       "../demo/demo_hot/Resources/textures/pbr/gold/metallic.png");
     Texture *texGoldSpecular = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/gold/roughness.png");
-    Material *matGold   = material_create(NULL,
+    Material *matGold = material_create(NULL,
                                         "../res/shaders/pbr.shader",
                                         5,
                                         texGoldAlbedo,
@@ -203,7 +203,7 @@ _scene2(ECS *ecs, Renderer *renderer)
                                         texGoldSpecular,
                                         texPbrAo);
 
-    Entity camera = __create_camera_entity(ecs, (vec3){0.0f, 0.0f, 2.0f});
+    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
     Entity sphereEntity = ecs_new(ecs);
     _ecs_add_internal(sphereEntity,
@@ -310,9 +310,9 @@ _scene3(ECS *ecs, Renderer *renderer)
                                         texCerbS,
                                         texPbrAo);
 
-    Entity camera = __create_camera_entity(ecs, (vec3){0.0f, 1.0f, 0.0f});
+    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
 
-    Entity entCerb = ecs_new(ecs);
+    Entity entCerb                              = ecs_new(ecs);
     struct ComponentTransform compCerbTransform = {
       .position = {0.0f, 0.0f, 0.0f},
       .scale    = {4.0f, 4.0f, 4.0f},
@@ -341,7 +341,7 @@ _scene4(ECS *ecs, Renderer *renderer)
     Material *matCharacter =
       material_create(NULL, "../res/shaders/skinning-test.shader", 0);
 
-    Entity camera = __create_camera_entity(ecs, (vec3){0.0f, 1.0f, 0.0f});
+    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
 
     Entity characterEntity = ecs_new(ecs);
     _ecs_add_internal(characterEntity,
