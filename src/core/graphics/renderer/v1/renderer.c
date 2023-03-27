@@ -226,7 +226,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     /*-------------------------------------------
         Pass #3 - Post Processing / Lighting Pass
     */
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 3, -1, "Pass: Lighting");
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 3, -1, "Pass: Lighting (Forward)");
 
     postbuffer_bind(renderer->properties.msaaEnable);
 
@@ -235,7 +235,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-    // binding the shadowmap to texture slot 6 (TODO:) for meshes
+    // binding the shadowmap to texture slot 8 (TODO:) for meshes
     shadowmap_bind_texture();
 
     glActiveTexture(GL_TEXTURE5);
@@ -246,6 +246,9 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 
     glActiveTexture(GL_TEXTURE7);
     glBindTexture(GL_TEXTURE_2D, renderer->skybox->brdfLUTTexture->id);
+
+    glActiveTexture(GL_TEXTURE9);
+    glBindTexture(GL_TEXTURE_2D, pass_ssao_getOutputTextureId());
 
     renderer->currentPass = REGULAR;
     ecs_event(ecs, ECS_RENDER);

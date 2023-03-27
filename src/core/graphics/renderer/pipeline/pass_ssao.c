@@ -13,16 +13,17 @@
 #include <stdlib.h>
 #include <time.h>
 
+static vec3 s_ssaoSamples[64];
 static ui32 s_ssaoFBO;
 static ui32 s_ssaoNoiseTextureId;
 static ui32 s_ssaoOutTextureId;
-
 static ShaderProgram *s_ssaoOutShader;
+
+static ui32 s_ssaoBlurFBO;
+static ui32 s_ssaoBlurOutTextureId;
 static ShaderProgram *s_ssaoBlurShader;
 
 static VAO *vaoRect;
-
-static float s_ssaoSamples[64];
 
 static float
 _noise(int x, int y)
@@ -46,9 +47,11 @@ pass_ssao_init()
     glGenTextures(1, &s_ssaoOutTextureId);
     glBindTexture(GL_TEXTURE_2D, s_ssaoOutTextureId);
     glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RED, 1280, 720, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      GL_TEXTURE_2D, 0, GL_RED, 1280, 720, 0, GL_RED, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER,
                            GL_COLOR_ATTACHMENT0,
@@ -56,20 +59,50 @@ pass_ssao_init()
                            s_ssaoOutTextureId,
                            0);
 
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
     // glBindFramebuffer(GL_FRAMEBUFFER, s_ssaoFBO);
     // glDrawBuffer(GL_NONE);
     // glReadBuffer(GL_NONE);
 
-    // create shader
-    s_ssaoOutShader = shader_create_program("../res/shaders/ssao-color.shader");
-
+    // Check FBO status
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         LOG_ERROR("Framebuffer Error %u", status);
     }
+    // reset FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // SSAO Blur
+    // ---------------
+    glGenFramebuffers(1, &s_ssaoBlurFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, s_ssaoBlurFBO);
+    // Texture
+    glGenTextures(1, &s_ssaoBlurOutTextureId);
+    glBindTexture(GL_TEXTURE_2D, s_ssaoBlurOutTextureId);
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RED, 1280, 720, 0, GL_RED, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+                           GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D,
+                           s_ssaoBlurOutTextureId,
+                           0);
+
+    // Check FBO status
+    status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        LOG_ERROR("Framebuffer Error %u", status);
+    }
+    // reset FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Create Shaders
+    //---------------
+    s_ssaoOutShader = shader_create_program("../res/shaders/ssao-color.shader");
+    s_ssaoBlurShader = shader_create_program("../res/shaders/ssao-blur.shader");
 
     // Sample Kernel
     //--------------
@@ -85,33 +118,46 @@ pass_ssao_init()
         // scale samples so that they cluster near origin
         float scale = (float)i / 64.0f;
         glm_vec3_scale(sample, glm_lerp(0.1f, 1.0f, scale * scale), sample);
-        glm_vec3_copy(sample, (vec3 *)s_ssaoSamples + i);
+        glm_vec3_copy(sample, s_ssaoSamples[i]);
     }
+    /*
     shader_use(s_ssaoOutShader);
     glUniform3fv(glGetUniformLocation(s_ssaoOutShader->id, "u_samples"),
                  64,
                  s_ssaoSamples);
+                 */
 
     // Noise Texture
     //--------------
 
-    float ssaoNoise[16];
+    vec3 ssaoNoise[16];
     for (int i = 0; i < 16; i++) {
-        float x      = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
-        float y      = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
-        ssaoNoise[i] = _noise(x, y);
+        float x = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
+        float y = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
+
+        vec3 noisePixel = GLM_VEC3_ZERO_INIT;
+        noisePixel[0]   = _noise(x, y + i);
+        noisePixel[1]   = _noise(x + i, y + i);
+        noisePixel[2]   = 0.0f;
+
+        glm_vec3_copy(noisePixel, ssaoNoise[i]);
     }
 
     glGenTextures(1, &s_ssaoNoiseTextureId);
     glBindTexture(GL_TEXTURE_2D, s_ssaoNoiseTextureId);
-    glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA16F,
+                 4,
+                 4,
+                 0,
+                 GL_RGB,
+                 GL_FLOAT,
+                 (float *)ssaoNoise);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // Create Rectangle
     vaoRect = vao_create();
@@ -131,10 +177,18 @@ pass_ssao_bind()
     // Generate SSAO colored output texture from FBO
     //----------------------------------------------
 
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_MULTISAMPLE);
+    glDisable(GL_BLEND);
+
     glBindFramebuffer(GL_FRAMEBUFFER, s_ssaoFBO);
+
+    glViewport(0, 0, 1280, 720);
+
     // Texture inputs
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader_use(s_ssaoOutShader);
 
@@ -151,22 +205,38 @@ pass_ssao_bind()
                            s_ssaoOutTextureId,
                            0);
 
-    // glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    // glDisable(GL_MULTISAMPLE);
-
     // send samples
     glUniform3fv(glGetUniformLocation(s_ssaoOutShader->id, "u_samples"),
                  64,
-                 s_ssaoSamples);
+                 (float *)s_ssaoSamples);
 
     // draw quad
     vao_bind(vaoRect);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 
-    // glEnable(GL_DEPTH_TEST);
+    // blur SSAO
+    glBindFramebuffer(GL_FRAMEBUFFER, s_ssaoBlurFBO);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    shader_use(s_ssaoBlurShader);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, s_ssaoBlurOutTextureId);
+
+    // Attach SSAO output
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, s_ssaoOutTextureId);
+
+    // draw quad
+    vao_bind(vaoRect);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_MULTISAMPLE);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // reset
 
     /*
@@ -180,4 +250,10 @@ pass_ssao_bind()
     // render quad
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // reset
     */
+}
+
+ui32
+pass_ssao_getOutputTextureId()
+{
+    return s_ssaoBlurOutTextureId;
 }
