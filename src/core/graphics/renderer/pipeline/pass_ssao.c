@@ -251,3 +251,9 @@ pass_ssao_bind()
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // reset
     */
 }
+
+ui32
+pass_ssao_getOutputTextureId()
+{
+    return s_ssaoBlurOutTextureId;
+}
