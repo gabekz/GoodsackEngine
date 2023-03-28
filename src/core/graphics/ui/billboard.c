@@ -5,6 +5,7 @@
 #include <core/graphics/mesh/primitives.h>
 
 #include <util/gfx.h>
+#include <util/maths.h>
 
 Billboard2D *
 billboard_create(const char *texturePath, vec2 size)
@@ -30,12 +31,18 @@ billboard_create(const char *texturePath, vec2 size)
 }
 
 void
-billboard_draw(Billboard2D *self)
+billboard_draw(Billboard2D *self, vec3 position)
 {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     material_use(self->material);
+
+    // send world-translation to shader
+    glUniform3fv(
+      glGetUniformLocation(self->material->shaderProgram->id, "u_Position"),
+      1, (float *)position);
+
     vao_bind(self->vao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 }
