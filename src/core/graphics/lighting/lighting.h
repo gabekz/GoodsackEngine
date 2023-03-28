@@ -17,6 +17,9 @@ struct _light
     float *position;
     float *color;
     LightType type;
+    float strength;
+
+    ui32 ubo;
 };
 
 #ifdef __cplusplus
@@ -24,9 +27,9 @@ extern "C" {
 #endif
 
 Light *
-light_create(float *position, float *color, LightType type);
-void
 lighting_initialize(float *lightPos, float *lightColor);
+void
+lighting_update(Light *light, float *lightPos, float *lightColor);
 
 #ifdef __cplusplus
 }

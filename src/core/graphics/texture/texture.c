@@ -15,22 +15,21 @@
 
 Texture *
 texture_create(const char *path,
-               ui32 format,
-               ui16 genMipMaps,
-               float afRange,
-               VulkanDeviceContext *vkDevice)
+               VulkanDeviceContext *vkDevice,
+               TextureOptions options)
 {
     Texture *tex  = malloc(sizeof(Texture));
     tex->filePath = path;
 
-    stbi_set_flip_vertically_on_load(1);
+    // TODO: create parameter
+    stbi_set_flip_vertically_on_load(options.flip_vertically);
     unsigned char *localBuffer;
     if (path != NULL) {
         LOG_INFO("Loading Image at path: %s", path);
         // LOG_DEBUG("Format: %d, GenMips: %d, AFRange: %f",
         //         format, genMipMaps, afRange);
 
-        localBuffer = stbi_load(tex->filePath,
+        localBuffer = stbi_load(path,
                                 &tex->width,
                                 &tex->height,
                                 &tex->bpp,
@@ -39,13 +38,17 @@ texture_create(const char *path,
         localBuffer = NULL;
     }
 
+    if (localBuffer == NULL || localBuffer == 0x00) {
+        LOG_CRITICAL("Failed to load texture data!");
+    }
+
     if (DEVICE_API_OPENGL) {
         glGenTextures(1, &tex->id);
         glBindTexture(GL_TEXTURE_2D, tex->id);
 
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     format,
+                     options.internal_format,
                      tex->width,
                      tex->height,
                      0,
@@ -58,7 +61,7 @@ texture_create(const char *path,
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_WRAPPING);
 
         // Mipmaps
-        if (genMipMaps >= 0) {
+        if (options.gen_mips >= 0) {
             glGenerateTextureMipmap(tex->id);
             glTexParameteri(
               GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -69,8 +72,9 @@ texture_create(const char *path,
         }
 
         // Anistropic Filtering
-        if (afRange > 0) {
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, afRange);
+        if (options.af_range > 0) {
+            glTexParameterf(
+              GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, options.af_range);
         }
     } // DEVICE_API_OPENGL
 
@@ -169,7 +173,7 @@ texture_create_cubemap(ui32 faceCount, ...)
     va_start(ap, faceCount);
     va_end(ap);
 
-    stbi_set_flip_vertically_on_load(0);
+    stbi_set_flip_vertically_on_load(FALSE);
     for (int i = 0; i < faceCount; i++) {
         unsigned char *data;
         const char *path = va_arg(ap, const char *);
@@ -205,6 +209,7 @@ texture_create_hdr(const char *path)
 
     Texture *tex = malloc(sizeof(Texture));
 
+    stbi_set_flip_vertically_on_load(TRUE);
     float *data = stbi_loadf(path, &tex->width, &tex->height, &tex->bpp, 0);
 
     assert(data != NULL);

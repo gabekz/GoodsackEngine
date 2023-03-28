@@ -18,6 +18,6 @@ typedef struct Billboard2D
 Billboard2D *
 billboard_create(const char *texturePath, vec2 size);
 void
-billboard_draw(Billboard2D *billboard);
+billboard_draw(Billboard2D *billboard, vec3 position);
 
 #endif // H_BILLBOARD

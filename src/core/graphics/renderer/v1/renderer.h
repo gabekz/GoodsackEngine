@@ -11,6 +11,9 @@
 #include <core/graphics/renderer/renderer_props.inl>
 #include <core/graphics/scene/scene.h>
 
+#include <core/graphics/renderer/pipeline/pass_shadowmap.h>
+#include <core/graphics/renderer/pipeline/pass_ssao.h>
+
 #include <core/drivers/vulkan/vulkan_device.h>
 
 #include <tools/debug/debug_context.h>
@@ -19,7 +22,7 @@
 #define PSX_WIDTH                  320
 #define PSX_HEIGHT                 240
 
-typedef enum renderPass { REGULAR = 0, SHADOW } RenderPass;
+typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
 
 typedef struct _renderer Renderer;
 
@@ -50,6 +53,11 @@ struct _renderer
     ui32 faces;
     ui32 totalVertices;
 
+    // TODO: Fix this shit as well.
+    Light *light;
+    ShadowmapOptions shadowmapOptions;
+    SsaoOptions ssaoOptions;
+
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
     ui32 hdrTextureId;
@@ -64,24 +72,11 @@ struct _renderer
 Renderer *
 renderer_init();
 
-void
-renderer_add_light();
-
-// Logical
-void
-renderer_fixedupdate();
-void
-renderer_update();
-
 // Rendering Loop
 void
 renderer_start(Renderer *renderer);
 void
 renderer_tick(Renderer *renderer);
-
-// Analytics
-void
-renderer_add_draw_data(ui32 drawCalls, ui32 vertices);
 
 /* scene management */
 struct _ecs *

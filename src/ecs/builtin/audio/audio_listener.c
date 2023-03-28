@@ -4,7 +4,7 @@
 #include <core/drivers/alsoft/alsoft.h>
 #include <core/drivers/alsoft/alsoft_debug.h>
 
-#include <ecs/builtin/camera/camera.h>
+#include <ecs/builtin/transform/transform.h>
 
 static void
 init(Entity e)
@@ -24,14 +24,15 @@ update(Entity e)
     // AL_CHECK(alListener3f(AL_POSITION, 0, 0, 1.0f));
     // AL_CHECK(alListener3f(AL_VELOCITY, 0, 0, 0));
 
-    if ((ecs_has(e, C_CAMERA))) { // TODO: Move Camera pos to transform
-        struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
+    if ((ecs_has(e, C_TRANSFORM))) {
+        struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
         AL_CHECK(alListener3f(AL_POSITION,
-                              camera->position[0],
-                              camera->position[1],
-                              camera->position[2]));
+                              transform->position[0],
+                              transform->position[1],
+                              transform->position[2]));
         AL_CHECK(alListener3f(AL_VELOCITY, 0, 0, 0));
 
+        /* TODO: Listener orientation
         ALfloat listenerOrientation[] = {
           // View
           camera->center[0],
@@ -42,6 +43,7 @@ update(Entity e)
           camera->axisUp[1],
           camera->axisUp[2],
         };
+        */
     }
 }
 

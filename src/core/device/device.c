@@ -2,8 +2,9 @@
 
 #include <util/sysdefs.h>
 
-static volatile GraphicsAPI s_device = GRAPHICS_API_VULKAN;
+static volatile GraphicsAPI s_device = GRAPHICS_API_OPENGL;
 static volatile GraphicsSettings s_deviceSettings;
+static volatile Input s_input;
 ;
 static volatile int s_initialized = 0; // false
 
@@ -83,4 +84,16 @@ device_updateAnalytics(double time)
         s_ald.prevTime = time;
         s_ald.counter  = 0;
     }
+}
+
+Input
+device_getInput()
+{
+    return s_input;
+}
+
+void
+device_setInput(Input input)
+{
+    s_input = input;
 }

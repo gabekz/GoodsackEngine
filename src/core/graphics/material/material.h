@@ -28,4 +28,7 @@ material_create(ShaderProgram *shader,
 void
 material_use(Material *self);
 
+void
+material_add_texture(Material *self, Texture *texture);
+
 #endif // H_MATERIAL

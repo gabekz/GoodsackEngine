@@ -10,6 +10,7 @@
 extern "C" {
 #include <core/graphics/renderer/v1/renderer.h>
 }
+#include <core/graphics/renderer/pipeline/pass_shadowmap.h>
 
 #include <core/device/device.h>
 #include <core/drivers/alsoft/alsoft_debug.h>
@@ -189,8 +190,56 @@ DebugGui::Render()
         ImGui::BeginGroup();
         ImGui::Begin("Lighting", &m_showSceneLighting);
 
+        ImGui::Separator();
         ImGui::Text("Directional Light");
-        // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
+        ImGui::DragFloat3(
+          "Position", m_renderer->light->position, 0.1f, -3000, 3000);
+        ImGui::ColorEdit3("Color", m_renderer->light->color);
+        ImGui::DragFloat(
+          "Light Strength", &m_renderer->light->strength, 1, 0, 100);
+
+        ImGui::Separator();
+        ImGui::Text("Shadowmap");
+        ImGui::DragFloat(
+          "Near Plane", &m_renderer->shadowmapOptions.nearPlane, 0.1f, 0, 20);
+        ImGui::DragFloat(
+          "Far Plane", &m_renderer->shadowmapOptions.farPlane, 0.1f, 0, 20);
+        ImGui::DragFloat("Projection Size",
+                         &m_renderer->shadowmapOptions.camSize,
+                         0.1f,
+                         0,
+                         20);
+        ImGui::DragInt(
+          "PCF Samples", &m_renderer->shadowmapOptions.pcfSamples, 1, 0, 20);
+
+        ImGui::DragFloat("Normal Bias min",
+                         &m_renderer->shadowmapOptions.normalBiasMin,
+                         0.0001f,
+                         0,
+                         2,
+                         "%.5f");
+        ImGui::DragFloat("Normal Bias max",
+                         &m_renderer->shadowmapOptions.normalBiasMax,
+                         0.0001f,
+                         0,
+                         2,
+                         "%.5f");
+
+        ImGui::Image((void *)(intptr_t)shadowmap_getTexture(),
+                     ImVec2(200, 200),
+                     ImVec2(0, 1),
+                     ImVec2(1, 0));
+
+        ImGui::Separator();
+        ImGui::Text("Ambient Occlusion");
+        ImGui::DragFloat(
+          "SSAO Strength", &m_renderer->ssaoOptions.strength, 0.1f, 0, 20);
+        ImGui::DragFloat(
+          "Bias", &m_renderer->ssaoOptions.bias, 0.0001f, 0, 2, "%.5f");
+        ImGui::DragFloat(
+          "Radius", &m_renderer->ssaoOptions.radius, 0.05f, 0, 2, "%.5f");
+        ImGui::DragInt(
+          "Kernel Size", &m_renderer->ssaoOptions.kernelSize, 1, 1, 64);
 
         ImGui::End();
         ImGui::EndGroup();
@@ -254,8 +303,8 @@ DebugGui::Render()
             ImGui::DragFloat3("Position", p.position, 0.1f, -3000, 3000);
             ImGui::BeginDisabled();
             ImGui::DragFloat3("Rotation", t, 0.1f, -3000, 3000);
-            ImGui::DragFloat3("Scale", p.scale, -1, 1);
             ImGui::EndDisabled();
+            ImGui::DragFloat3("Scale", p.scale, -1, 1);
             ImGui::EndChild();
         }
         if (ecs_has(e, C_MODEL)) {
@@ -269,15 +318,26 @@ DebugGui::Render()
             struct ComponentModel &p =
               *(static_cast<struct ComponentModel *>(ecs_get(e, C_MODEL)));
 
+            // Model information
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
+            ImGui::Text("Model information");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            ImGui::BeginDisabled();
+            ImGui::InputText("Model Path", (char *)p.modelPath, 128);
+            ImGui::EndDisabled();
+
             // Mesh information
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
             ImGui::Text("Mesh");
             ImGui::PopStyleColor();
             ImGui::Separator();
 
+            ImGui::Text("Meshes: %u", p.pModel->meshesCount);
+
             bool shadowVal = true;
             ImGui::BeginDisabled();
-            ImGui::InputText("Model Path", (char *)p.modelPath, 128);
             ImGui::Checkbox("Receive Shadows", &shadowVal);
             ImGui::Checkbox("Cast Shadows", &shadowVal);
             ImGui::EndDisabled();
@@ -296,7 +356,7 @@ DebugGui::Render()
 
             if (DEVICE_API_OPENGL) {
                 int textureCount = p.material->texturesCount;
-                ImGui::Text("Textures: %d", textureCount);
+                ImGui::Text("Textures: %u", textureCount);
                 // Display textures
                 for (int i = 0; i < textureCount; i++) {
                     ImGui::Separator();

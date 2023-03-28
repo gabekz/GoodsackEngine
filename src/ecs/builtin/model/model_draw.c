@@ -13,27 +13,53 @@
 #include <tools/debug/debug_draw_skeleton.h>
 
 // #define DEBUG_DRAW_SKELETON
+#define CULLING_FOR_IMPORTED 1
+
+static void
+SetCulling(int bitfield)
+{
+    LOG_INFO("%d", bitfield << 2);
+    LOG_INFO("%d", bitfield << 3);
+}
 
 static void
 DrawModel(struct ComponentModel *model,
           struct ComponentTransform *transform,
-          Material *material,
-          VkCommandBuffer commandBuffer)
+          ui16 useOverrideMaterial, // Material from renderer
+          VkCommandBuffer commandBuffer,
+          Renderer *renderer)
 {
     if (DEVICE_API_OPENGL) {
 
 // Handle culling
 #if 0
-        if((mesh->properties.cullMode | CULL_DISABLED)) {
+         if((mesh->properties.cullMode | CULL_DISABLED)) {
             printf("Disable culling");
         }
 #endif
-
-        // Enable material + shaders
-        material_use(material);
-
         for (int i = 0; i < model->pModel->meshesCount; i++) {
             Mesh *mesh = model->pModel->meshes[i];
+            Material *material;
+
+            // Select Material
+            if (mesh->usingImportedMaterial && !useOverrideMaterial) {
+                material = mesh->materialImported;
+
+#if CULLING_FOR_IMPORTED
+                // TODO: temporary solution for face culling.
+                // This should be handled by a material property.
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_FRONT);
+                glFrontFace(GL_CW);
+#endif
+
+            } else if (useOverrideMaterial) {
+                material = renderer->explicitMaterial;
+            } else {
+                material = model->material;
+            }
+
+            material_use(material);
 
             // Skinned Matrix array buffer
             if (mesh->meshData->isSkinnedMesh) {
@@ -51,12 +77,43 @@ DrawModel(struct ComponentModel *model,
                   GL_FALSE,
                   (float *)*skinnedMatrices);
             }
+            mat4 newTranslation = GLM_MAT4_ZERO_INIT;
+            glm_mat4_mul(
+              mesh->localMatrix, transform->mvp.model, newTranslation);
             // Transform Uniform
             glUniformMatrix4fv(
               glGetUniformLocation(material->shaderProgram->id, "u_Model"),
               1,
               GL_FALSE,
-              (float *)transform->mvp.model);
+              (float *)newTranslation);
+
+            // Light Space Matrix
+            glUniformMatrix4fv(glGetUniformLocation(material->shaderProgram->id,
+                                                    "u_LightSpaceMatrix"),
+                               1,
+                               GL_FALSE,
+                               (float *)renderer->lightSpaceMatrix);
+
+            // Shadow options
+            glUniform1i(
+              glGetUniformLocation(material->shaderProgram->id, "u_pcfSamples"),
+              renderer->shadowmapOptions.pcfSamples);
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_normalBiasMin"),
+                        renderer->shadowmapOptions.normalBiasMin);
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_normalBiasMax"),
+                        renderer->shadowmapOptions.normalBiasMax);
+
+            // SSAO Options
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_ssao_strength"),
+                        renderer->ssaoOptions.strength);
+
+            // Light strength
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_light_strength"),
+                        renderer->light->strength);
 
             vao_bind(mesh->vao);
 
@@ -66,14 +123,20 @@ DrawModel(struct ComponentModel *model,
 
             ui16 drawMode = model->properties.drawMode;
 
+            // glEnable(GL_CULL_FACE);
+            // glCullFace(GL_BACK);
+            // glFrontFace(GL_CW);
+
             switch (drawMode) {
+            case DRAW_ARRAYS: glDrawArrays(GL_TRIANGLES, 0, vertices); break;
             case DRAW_ELEMENTS:
                 glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
                 break;
-            case DRAW_ARRAYS:
-            default: glDrawArrays(GL_TRIANGLES, 0, vertices); break;
+            case DRAW_ELEMENTS_WIREFRAME:
+                glDrawElements(GL_LINES, indices, GL_UNSIGNED_INT, NULL);
             }
         }
+        glDisable(GL_CULL_FACE);
 
     } else if (DEVICE_API_VULKAN) {
 
@@ -174,14 +237,15 @@ render(Entity e)
 #endif
 
     if (pass == REGULAR) {
-        (DEVICE_API_OPENGL) ? DrawModel(model, transform, model->material, NULL)
-                            : DrawModel(model, transform, model->material, cb);
+        (DEVICE_API_OPENGL)
+          ? DrawModel(model, transform, FALSE, NULL, e.ecs->renderer)
+          : DrawModel(model, transform, FALSE, cb, e.ecs->renderer);
         return;
     }
-    Material *override = e.ecs->renderer->explicitMaterial;
 
-    (DEVICE_API_OPENGL) ? DrawModel(model, transform, override, NULL)
-                        : DrawModel(model, transform, override, cb);
+    (DEVICE_API_OPENGL)
+      ? DrawModel(model, transform, TRUE, NULL, e.ecs->renderer)
+      : DrawModel(model, transform, TRUE, cb, e.ecs->renderer);
 }
 
 void

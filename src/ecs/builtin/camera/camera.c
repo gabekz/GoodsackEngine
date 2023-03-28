@@ -1,5 +1,6 @@
 #include "camera.h"
 #include <ecs/builtin/camera/camera_input.h>
+#include <ecs/builtin/transform/transform.h>
 
 #include <string.h>
 
@@ -8,21 +9,8 @@
 #include <util/gfx.h>
 
 static void
-init(Entity e)
+_initialize_shader_data(struct ComponentCamera *camera)
 {
-    if (!(ecs_has(e, C_CAMERA))) return;
-    struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
-
-    camera->screen.width  = e.ecs->renderer->windowWidth;
-    camera->screen.height = e.ecs->renderer->windowHeight;
-    // camera->screen.width = 640;
-    // camera->screen.height = 480;
-
-    // Defaults
-    if (camera->fov <= 0) { camera->fov = 45.0f; }
-    if (camera->clipping.nearZ <= 0) { camera->clipping.nearZ = 0.1f; }
-    if (camera->clipping.farZ <= 0) { camera->clipping.farZ = 100.0f; }
-
     // initialize default view and projection matrices
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_copy(m4i, camera->uniform.view);
@@ -49,37 +37,17 @@ init(Entity e)
         );
         */
     }
-
-    float *axisUp = camera->axisUp;
-    float *center = GLM_VEC3_ZERO; // position + orientation _v
-    glm_vec3_mul(camera->position, (vec3) {0.0f, 0.0f, -1.0f}, center);
 }
 
 static void
-update(Entity e)
+_upload_shader_data(Entity e,
+                    struct ComponentCamera *camera,
+                    struct ComponentTransform *transform)
 {
-    if (!(ecs_has(e, C_CAMERA))) return;
-    struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
-
-    float *axisUp = camera->axisUp;
-    glm_vec3_zero(camera->center);
-    glm_vec3_mul(camera->position, (vec3) {0.0f, 0.0f, -1.0f}, camera->center);
-    glm_lookat(camera->position, camera->center, axisUp, camera->uniform.view);
-
-    float aspectRatio =
-      (float)camera->screen.width / (float)camera->screen.height;
-    glm_perspective(glm_rad(camera->fov),
-                    aspectRatio,
-                    camera->clipping.nearZ,
-                    camera->clipping.farZ,
-                    camera->uniform.proj);
-    // camera->uniform.proj[1][1] *= -1;
-
-    // Update camera UBO
     if (DEVICE_API_OPENGL) {
         glBindBuffer(GL_UNIFORM_BUFFER, camera->uboId);
         glBufferSubData(
-          GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, camera->position);
+          GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, transform->position);
         glBufferSubData(GL_UNIFORM_BUFFER,
                         sizeof(vec3) + 4,
                         sizeof(mat4),
@@ -104,9 +72,122 @@ update(Entity e)
           &camera->uniform,
           sizeof(camera->uniform));
     }
+}
+
+static void
+init(Entity e)
+{
+    if (!(ecs_has(e, C_CAMERA))) return;
+    if (!(ecs_has(e, C_TRANSFORM))) return;
+
+    struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
+    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+
+    camera->screen.width  = e.ecs->renderer->windowWidth;
+    camera->screen.height = e.ecs->renderer->windowHeight;
+
+    // Defaults
+    if (camera->fov <= 0) { camera->fov = 45.0f; }
+    if (camera->clipping.nearZ <= 0) { camera->clipping.nearZ = 0.1f; }
+    if (camera->clipping.farZ <= 0) { camera->clipping.farZ = 100.0f; }
+
+    // Create camera UBO
+    _initialize_shader_data(camera);
+
+    float *center = GLM_VEC3_ZERO; // position + orientation _v
+    glm_vec3_mul(transform->position, (vec3) {0.0f, 0.0f, -1.0f}, center);
+
+    camera->lastX = e.ecs->renderer->windowWidth / 2;
+    camera->lastY = e.ecs->renderer->windowHeight / 2;
+    camera->yaw   = -90.0f;
+    camera->pitch = 0;
+
+    camera->firstMouse = TRUE;
+}
+
+static void
+update(Entity e)
+{
+    if (!(ecs_has(e, C_CAMERA))) return;
+    if (!(ecs_has(e, C_TRANSFORM))) return;
+
+    struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
+    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+
+    Input input = device_getInput();
+    double cntX, cntY;
+    if (input.holding_right_button == TRUE) {
+
+        cntX = input.cursor_position[0];
+        cntY = input.cursor_position[1];
+
+        if (camera->firstMouse) {
+            camera->lastX = cntX;
+            camera->lastY = cntY;
+
+            camera->firstMouse = FALSE;
+        }
+
+    } else {
+        cntX               = camera->lastX;
+        cntY               = camera->lastY;
+        camera->firstMouse = TRUE;
+    }
+
+    float xOffset = cntX - camera->lastX;
+    float yOffset = camera->lastY - cntY;
+
+    camera->lastX = cntX;
+    camera->lastY = cntY;
+
+    const float sensitivity = 0.1f;
+
+    xOffset *= sensitivity;
+    yOffset *= sensitivity;
+
+    camera->yaw += xOffset;
+    camera->pitch += yOffset;
+
+    // Clamp pitch
+    if (camera->pitch > 89.0f) camera->pitch = 89.0f;
+    if (camera->pitch < -89.0f) camera->pitch = -89.0f;
+
+    // Calculate camera direction
+    vec3 camDirection = GLM_VEC3_ZERO_INIT;
+    camDirection[0]   = cos(glm_rad(camera->yaw) * cos(glm_rad(camera->pitch)));
+    camDirection[1]   = sin(glm_rad(camera->pitch));
+    camDirection[2]   = sin(glm_rad(camera->yaw) * cos(glm_rad(camera->pitch)));
+    glm_vec3_normalize_to(camDirection, camera->front);
 
     // Process Camera Input
-    camera_input(camera, e.ecs->renderer->window);
+    camera_input(e, e.ecs->renderer->window);
+
+    // glm_vec3_add(transform->position, camDirection, camera->front);
+
+    vec3 cameraUp = GLM_VEC3_ZERO_INIT;
+    glm_cross(camera->axisUp, camera->front, cameraUp);
+    glm_vec3_normalize(cameraUp);
+
+    vec3 p = GLM_VEC3_ZERO_INIT;
+    glm_vec3_add(transform->position, camera->front, p);
+
+    // MVP: view
+    glm_lookat(transform->position, p, camera->axisUp, camera->uniform.view);
+
+    // LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);
+
+    float aspectRatio =
+      (float)camera->screen.width / (float)camera->screen.height;
+    // MVP: projection
+    glm_perspective(glm_rad(camera->fov),
+                    aspectRatio,
+                    camera->clipping.nearZ,
+                    camera->clipping.farZ,
+                    camera->uniform.proj);
+    // camera->uniform.proj[1][1] *= -1;
+
+    // Update camera UBO
+    _upload_shader_data(e, camera, transform);
 }
 
 void

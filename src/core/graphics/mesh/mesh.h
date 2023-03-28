@@ -7,11 +7,13 @@
 #include <core/drivers/opengl/opengl_buffer.h>
 #include <core/drivers/vulkan/vulkan_vertex_buffer.h>
 
+#include <core/graphics/material/material.h>
 #include <core/graphics/mesh/animation.h>
 #include <core/graphics/texture/texture.h>
 
-#define DRAW_ARRAYS   0x00
-#define DRAW_ELEMENTS 0x01
+#define DRAW_ARRAYS             0x00
+#define DRAW_ELEMENTS           0x01
+#define DRAW_ELEMENTS_WIREFRAME 0x02
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,15 +55,23 @@ typedef struct MeshData
     int isSkinnedMesh;
 
     // TODO: Move
-    int hasTBN;
+    int hasTBN; // TODO: 2 == ONLY TANGENT
 
 } MeshData;
 
 typedef struct Mesh
 {
+    // Mesh data
+    MeshData *meshData;
+    mat4 localMatrix;
+
+    // Mesh GPU buffers
     VAO *vao;
     VulkanVertexBuffer *vkVBO;
-    MeshData *meshData;
+
+    // Imported material data
+    ui32 usingImportedMaterial;
+    Material *materialImported;
 } Mesh;
 
 /**

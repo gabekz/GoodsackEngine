@@ -39,6 +39,36 @@ _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
     }
 }
 
+static void
+_mouse_callback(GLFWwindow *window, int button, int action, int mods)
+{
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        // send input coords to device container
+        Input input = device_getInput();
+        if (action == GLFW_PRESS) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            input.holding_right_button = true;
+            device_setInput(input);
+        } else if (action == GLFW_RELEASE) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            input.holding_right_button = false;
+            device_setInput(input);
+        }
+    }
+}
+
+static void
+_cursor_callback(GLFWwindow *window, double xpos, double ypos)
+{
+    // send input coords to device container
+    Input input              = device_getInput();
+    input.cursor_position[0] = xpos;
+    input.cursor_position[1] = ypos;
+
+    device_setInput(input);
+}
+
 GLFWwindow *
 createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
 {
@@ -78,6 +108,8 @@ createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
         glfwGetFramebufferSize(window, &winWidth, &winHeight);
         glfwSetFramebufferSizeCallback(window, _resize_callback);
         glfwSetKeyCallback(window, _key_callback);
+        glfwSetCursorPosCallback(window, _cursor_callback);
+        glfwSetMouseButtonCallback(window, _mouse_callback);
 
         // Initialize GL debug callback
         glDebugInit();

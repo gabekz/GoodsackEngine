@@ -82,7 +82,7 @@ main(int argc, char *argv[])
     vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
     // UBO Lighting
-    lighting_initialize(lightPos, lightColor);
+    renderer->light = lighting_initialize(lightPos, lightColor);
 
     // create scenes
     demo_scenes_create(ecs, renderer);
@@ -93,13 +93,15 @@ main(int argc, char *argv[])
     device_resetAnalytics();
 
     device_setGraphicsSettings((GraphicsSettings {.swapInterval = 1}));
+    device_setInput(
+      (Input {.cursor_position = {0, 0}, .holding_right_button = 0}));
 
 #ifdef RENDERER_2
     renderer.Prime();
     renderer.Tick();
 #else
     /* Render loop */
-    ecs = renderer_active_scene(renderer, 4);
+    ecs = renderer_active_scene(renderer, 5);
 
     renderer_start(renderer); // Initialization for the render loop
     while (!glfwWindowShouldClose(renderer->window)) {

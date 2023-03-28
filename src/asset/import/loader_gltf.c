@@ -4,22 +4,36 @@
 #include <core/graphics/mesh/mesh.h>
 #include <core/graphics/mesh/mesh_helpers.inl>
 
+#include <core/graphics/material/material.h>
+#include <core/graphics/shader/shader.h>
+#include <core/graphics/texture/texture.h>
+
 #include <util/logger.h>
 #include <util/maths.h>
 
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
+#define IMPORT_MATERIALS 1
+
 struct AttributeInfo
 {
-    ui32 idxPos;
-    ui32 idxTex;
-    ui32 idxNrm;
+    si32 idxPos;
+    si32 idxTex;
+    si32 idxNrm;
+    si32 idxTan;
 
-    ui32 idxJnt;
-    ui32 idxWht;
+    si32 idxJnt;
+    si32 idxWht;
 
-    ui32 attribCount;
+    si32 attribCount;
+
+    cgltf_accessor *posData;
+    cgltf_accessor *texData;
+    cgltf_accessor *nrmData;
+    cgltf_accessor *tanData;
+
+    cgltf_accessor *indicesData;
 };
 
 static struct AttributeInfo
@@ -29,15 +43,28 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
     int attribCount = gltfPrimitive->attributes_count;
 
     struct AttributeInfo attribInfo = {-1};
+    attribInfo.idxTan               = -1;
 
     for (int i = 0; i < attribCount; i++) {
         const cgltf_attribute *attrib = &gltfPrimitive->attributes[i];
 
         switch (attrib->type) {
-        case cgltf_attribute_type_position: attribInfo.idxPos = i; break;
-        case cgltf_attribute_type_normal: attribInfo.idxNrm = i; break;
-        case cgltf_attribute_type_tangent: break;
-        case cgltf_attribute_type_texcoord: attribInfo.idxTex = i; break;
+        case cgltf_attribute_type_position:
+            attribInfo.idxPos  = i;
+            attribInfo.posData = attrib->data;
+            break;
+        case cgltf_attribute_type_normal:
+            attribInfo.idxNrm  = i;
+            attribInfo.nrmData = attrib->data;
+            break;
+        case cgltf_attribute_type_tangent:
+            attribInfo.idxTan  = i;
+            attribInfo.tanData = attrib->data;
+            break;
+        case cgltf_attribute_type_texcoord:
+            attribInfo.idxTex  = i;
+            attribInfo.texData = attrib->data;
+            break;
         case cgltf_attribute_type_color: break;
         case cgltf_attribute_type_joints: attribInfo.idxJnt = i; break;
         case cgltf_attribute_type_weights: attribInfo.idxWht = i; break;
@@ -46,13 +73,14 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
         }
     }
     attribInfo.attribCount = attribCount;
+    attribInfo.indicesData = gltfPrimitive->indices;
     return attribInfo;
 }
 
 // Animation Data
 
 static Animation *
-_fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
+__fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
 {
     ui32 inputsCount     = gltfAnimation->samplers[0].input->count;
     Keyframe **keyframes = malloc(sizeof(Keyframe *) * inputsCount);
@@ -225,36 +253,51 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // TODO: Get more than just the first primitive
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
 
-    int vertCount      = 1794; // data->accessors[0].count; // TODO: garbage
-    ret->vertexCount   = vertCount;
-    int vPosBufferSize = vertCount * sizeof(float) * 3;
-    int vTexBufferSize = vertCount * sizeof(float) * 2;
-    int vNrmBufferSize = vertCount * sizeof(float) * 3;
+    ui32 vertCount      = attribInfo.posData->count;
+    ret->vertexCount    = vertCount;
+    ui32 vPosBufferSize = vertCount * sizeof(float) * 3;
+    ui32 vTexBufferSize = vertCount * sizeof(float) * 2;
+    ui32 vNrmBufferSize = vertCount * sizeof(float) * 3;
+    ui32 vTanBufferSize = vertCount * sizeof(float) * 3 * 2;
 
+    // Required
     ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
-    ret->buffers.out  = malloc(ret->buffers.outI);
+
+    // Add space for tangent data
+    if (attribInfo.idxTan > -1) {
+        ret->buffers.outI += vTanBufferSize;
+        ret->hasTBN = 2; // TODO
+    } else {
+        ret->hasTBN = 0;
+    }
+
+    ret->buffers.out = malloc(ret->buffers.outI);
+
+    // Position, TextureCoord, Normal
 
     int offsetA = 0;
     for (int i = 0; i < vertCount; i++) {
         // Fill Positions
-        cgltf_accessor_read_float(&data->accessors[attribInfo.idxPos],
-                                  i,
-                                  ret->buffers.out + offsetA,
-                                  100);
+        cgltf_accessor_read_float(
+          attribInfo.posData, i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
         // Fill TextureCoords
-        cgltf_accessor_read_float(&data->accessors[attribInfo.idxTex],
-                                  i,
-                                  ret->buffers.out + offsetA,
-                                  100);
+        cgltf_accessor_read_float(
+          attribInfo.texData, i, ret->buffers.out + offsetA, 100);
         offsetA += 2;
         // Fill Normals
-        cgltf_accessor_read_float(&data->accessors[attribInfo.idxNrm],
-                                  i,
-                                  ret->buffers.out + offsetA,
-                                  100);
+        cgltf_accessor_read_float(
+          attribInfo.nrmData, i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
+        // Fill Tangent
+        if (attribInfo.idxTan > -1) {
+            cgltf_accessor_read_float(
+              attribInfo.tanData, i, ret->buffers.out + offsetA, 100);
+            offsetA += 3;
+        }
     }
+
+    // Tangent
 
     // set this so we push the position to buffer
     ret->buffers.vL  = vertCount;
@@ -264,15 +307,14 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
     // Indices //
 
-    int indicesBufferViewIndex = attribInfo.attribCount; // TODO: fix
-    ret->indicesCount          = data->accessors[indicesBufferViewIndex].count;
+    ret->indicesCount               = attribInfo.indicesData->count;
     ret->buffers.bufferIndices_size = ret->indicesCount * sizeof(ui32);
 
     ret->buffers.bufferIndices = malloc(ret->buffers.bufferIndices_size);
 
     // store all indices
     for (int i = 0; i < ret->indicesCount; i++) {
-        if (!cgltf_accessor_read_uint(&data->accessors[indicesBufferViewIndex],
+        if (!cgltf_accessor_read_uint(attribInfo.indicesData,
                                       i,
                                       ret->buffers.bufferIndices + i,
                                       ret->indicesCount)) {
@@ -361,7 +403,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
               gltfAnimations[i].channels_count);
 
             Animation *animation =
-              _fill_animation_data(&gltfAnimations[i], skeleton);
+              __fill_animation_data(&gltfAnimations[i], skeleton);
             //_skeleton_set_keyframe(
             //  animation, 0); // sets all the skeleton poses to keyframe 20
 
@@ -370,6 +412,117 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     }
     return ret;
 }
+
+// Material Data //
+
+static Texture *_test_texture_white;
+static Texture *_test_texture_normal;
+static ShaderProgram *s_pbrShader;
+
+static Texture **s_loaded_textures;
+static int s_loaded_textures_count;
+
+#define TEXTURE_POOL_COUNT 70
+#define TEST_PATH          "../demo/demo_hot/Resources/textures/sponza/"
+
+Texture *
+__texture_lookup(const char *path, TextureOptions options)
+{
+
+    if (s_loaded_textures_count == 0) {
+        s_loaded_textures = malloc(sizeof(Texture *) * TEXTURE_POOL_COUNT);
+        s_loaded_textures_count = 1;
+
+        s_loaded_textures[0] = texture_create(strdup(path), NULL, options);
+        return s_loaded_textures[0];
+    }
+
+    for (int i = 0; i < s_loaded_textures_count; i++) {
+        if (!strcmp(s_loaded_textures[i]->filePath, path)) {
+            return s_loaded_textures[i];
+        }
+    }
+
+    // Resize pool if needed
+    if (s_loaded_textures_count >= TEXTURE_POOL_COUNT) {
+        s_loaded_textures = realloc(
+          s_loaded_textures,
+          sizeof(Texture *) * (s_loaded_textures_count + TEXTURE_POOL_COUNT));
+    }
+
+    s_loaded_textures[s_loaded_textures_count] =
+      texture_create(strdup(path), NULL, options);
+    s_loaded_textures_count += 1;
+    return s_loaded_textures[s_loaded_textures_count - 1];
+}
+
+static Material *
+_create_material(cgltf_material *gltfMaterial,
+                 Material **materials,
+                 ui32 materialsCount)
+{
+
+    TextureOptions texNormalMapOptions =
+      (TextureOptions) {1, GL_RGB, false, false};
+    TextureOptions texPbrOptions =
+      (TextureOptions) {16, GL_SRGB_ALPHA, true, false};
+
+    // TODO: check if material already exists
+
+    // PBR textures
+    if (gltfMaterial->has_pbr_metallic_roughness) {
+
+        Material *material = material_create(s_pbrShader, NULL, 0);
+
+        cgltf_pbr_metallic_roughness *textureContainer =
+          &gltfMaterial->pbr_metallic_roughness;
+
+        // Base texture
+        if (textureContainer->base_color_texture.texture) {
+            char p[256] = TEST_PATH;
+            const char *diffuseUri =
+              textureContainer->base_color_texture.texture->image->uri;
+            strcat(p, diffuseUri);
+            material_add_texture(material, __texture_lookup(p, texPbrOptions));
+        } else {
+            material_add_texture(material, _test_texture_white);
+        }
+
+        if (gltfMaterial->normal_texture.texture) {
+
+            // Normal texture
+            char q[256] = TEST_PATH;
+            const char *nrmUri =
+              gltfMaterial->normal_texture.texture->image->uri;
+            strcat(q, nrmUri);
+            material_add_texture(material,
+                                 __texture_lookup(q, texNormalMapOptions));
+        } else {
+            material_add_texture(material, _test_texture_normal);
+        }
+
+        if (textureContainer->metallic_roughness_texture.texture) {
+            // Roughness
+            char r[256] = TEST_PATH;
+            const char *roughnessUri =
+              textureContainer->metallic_roughness_texture.texture->image->uri;
+            strcat(r, roughnessUri);
+            material_add_texture(material, __texture_lookup(r, texPbrOptions));
+        } else {
+            material_add_texture(material, _test_texture_white);
+        }
+
+        // Specular & AO -- TODO
+        material_add_texture(material, _test_texture_white);
+        material_add_texture(material, _test_texture_white);
+        return material;
+    }
+
+    // Failed
+    return material_create(NULL, "../res/shaders/white.shader", 0);
+}
+
+// Loader entry //
 
 Model *
 load_gltf(const char *path, int scale)
@@ -409,44 +562,75 @@ load_gltf(const char *path, int scale)
           sizeof(
             unsigned short); // cgltf_accessor_read_index(data->accessors, 3);
 
-        // LOG_INFO("\nIndices count: %d\tbuffer size: %d", indices->count,
-        // data->accessors[indicesBufferViewIndex].count * sizeof(unsigned
-        // short));
-
         int accessorsCount = data->accessors_count;
-#ifdef LOGGING_GLTF
-
-        LOG_INFO(
-          "\nIndices count: %d\tbuffer size: %d", indices->count, indicesSize);
-
-        LOG_INFO("\nAccessors count: %d", accessorsCount);
-        for (int i = 0; i < accessorsCount; i++) {
-            cgltf_accessor accessor = data->accessors[i];
-            LOG_INFO("Accessor: %d\tBufferView size: %d",
-                     i,
-                     accessor.buffer_view->size);
-        }
-#endif // LOGGING_GLTF
     }
 
     // NOTE: for every single mesh -> go through every pirmitive
     // - primitive is another mesh, ONLY difference is that
     // the model matrix parent is the mesh world-space, not model world-space
 
-    Model *ret  = malloc(sizeof(Model));
-    ret->meshes = malloc(sizeof(Mesh *) * data->meshes_count);
-
+    // Figure out how many total objects (meshes) we have
+    ui32 totalObjects = 0;
     for (int i = 0; i < data->meshes_count; i++) {
-        for (int j = 0; j < data->meshes[i].primitives_count; j++) {
-            MeshData *meshData =
-              _load_mesh_vertex_data(&data->meshes[i].primitives[j], data);
-            meshData->hasTBN = 0;
-            ret->meshes[i]   = mesh_assemble(meshData);
+        totalObjects += data->meshes[i].primitives_count;
+    }
+
+    Model *ret  = malloc(sizeof(Model));
+    ret->meshes = malloc(sizeof(Mesh *) * totalObjects);
+
+#if IMPORT_MATERIALS
+    ui32 materialsCount      = data->materials_count;
+    Material **materialsPool = malloc(sizeof(Material *) * materialsCount);
+    _test_texture_white =
+      texture_create("../res/textures/defaults/white.png",
+                     NULL,
+                     (TextureOptions) {0, GL_RGB, false, false});
+    _test_texture_normal =
+      texture_create("../res/textures/defaults/normal.png",
+                     NULL,
+                     (TextureOptions) {0, GL_RGB, false, false});
+    s_pbrShader = shader_create_program("../res/shaders/pbr.shader");
+    s_loaded_textures_count = 0;
+#endif
+
+    ui32 cntMesh = 0;
+    for (int i = 0; i < data->nodes_count; i++) {
+        // if this node is a Mesh Node
+        if (data->nodes[i].mesh != 0) {
+            // Each primitive in the mesh
+            for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++) {
+                MeshData *meshData = _load_mesh_vertex_data(
+                  &data->nodes[i].mesh->primitives[j], data);
+                ret->meshes[cntMesh] = mesh_assemble(meshData);
+
+                mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+                glm_translate(localMatrix, data->nodes[i].translation);
+                glm_mat4_copy(localMatrix, ret->meshes[cntMesh]->localMatrix);
+
+#if IMPORT_MATERIALS
+                // Check for material
+                cgltf_material *gltfMaterial =
+                  data->nodes[i].mesh->primitives[j].material;
+                if (gltfMaterial != NULL || gltfMaterial != 0x00) {
+                    Material *mat = _create_material(
+                      gltfMaterial, materialsPool, materialsCount);
+
+                    ret->meshes[cntMesh]->materialImported      = mat;
+                    ret->meshes[cntMesh]->usingImportedMaterial = TRUE;
+                }
+#endif // IMPORT_MATERIALS
+
+                cntMesh++;
+            }
         }
-    } // skinnedMesh
+    }
+
+    // TODO: Move check for skins HERE - OUT of _load_mesh_vertex_data
 
     ret->modelPath   = path;
-    ret->meshesCount = data->meshes_count;
+    ret->meshesCount = totalObjects;
+
+    LOG_INFO("Loaded textures: %d", s_loaded_textures_count);
 
     // Cleanup
     cgltf_free(data);
