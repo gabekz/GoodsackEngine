@@ -41,7 +41,8 @@ billboard_draw(Billboard2D *self, vec3 position)
     // send world-translation to shader
     glUniform3fv(
       glGetUniformLocation(self->material->shaderProgram->id, "u_Position"),
-      1, (float *)position);
+      1,
+      (float *)position);
 
     vao_bind(self->vao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);

@@ -9,7 +9,8 @@
 
 struct ComponentCamera
 {
-    vec3 axisUp, center, front; // TODO: Currently used for Audio Listener orientation.
+    vec3 axisUp, center,
+      front; // TODO: Currently used for Audio Listener orientation.
     float fov;
     float speed, sensitivity;
 

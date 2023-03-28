@@ -34,7 +34,7 @@ mesh_assemble(MeshData *meshData)
         if (data->buffers.vtL > 0) vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
         if (data->buffers.vnL > 0) vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
 
-        if(data->hasTBN == 2) { // TODO: REWORK PLEASE
+        if (data->hasTBN == 2) { // TODO: REWORK PLEASE
             vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
         }
 

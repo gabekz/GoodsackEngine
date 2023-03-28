@@ -8,10 +8,11 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct ShadowmapOptions {
+typedef struct ShadowmapOptions
+{
     float nearPlane, farPlane;
     float camSize;
-    
+
     float normalBiasMin, normalBiasMax;
     si32 pcfSamples;
 } ShadowmapOptions;

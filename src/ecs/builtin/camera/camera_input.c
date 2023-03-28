@@ -28,30 +28,30 @@ camera_input(Entity cameraEntity, GLFWwindow *window)
         // LOG_INFO("PRESS %f%f%f", self->position[0], self->position[1],
         // self->position[2]);
 
-        //glm_vec3_scale((vec3) {0.0f, 0.0f, -1.0f}, speed, p);
-        //glm_vec3_add(transform->position, p, transform->position);
+        // glm_vec3_scale((vec3) {0.0f, 0.0f, -1.0f}, speed, p);
+        // glm_vec3_add(transform->position, p, transform->position);
 
         vec3 p = GLM_VEC3_ZERO_INIT;
         glm_vec3_scale(camera->front, speed, p);
         glm_vec3_add(transform->position, p, transform->position);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        //glm_vec3_scale((vec3) {0.0f, 0.0f, 1.0f}, speed, p);
-        //glm_vec3_add(transform->position, p, transform->position);
+        // glm_vec3_scale((vec3) {0.0f, 0.0f, 1.0f}, speed, p);
+        // glm_vec3_add(transform->position, p, transform->position);
         vec3 p = GLM_VEC3_ZERO_INIT;
         glm_vec3_scale(camera->front, speed, p);
         glm_vec3_sub(transform->position, p, transform->position);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         glm_vec3_crossn(camera->front, camera->axisUp, cross);
-        //glm_vec3_negate(cross);
+        // glm_vec3_negate(cross);
 
         glm_vec3_scale(cross, speed, p);
         glm_vec3_sub(transform->position, p, transform->position);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         glm_vec3_crossn(camera->front, camera->axisUp, cross);
-        //glm_vec3_negate(cross);
+        // glm_vec3_negate(cross);
 
         glm_vec3_scale(cross, speed, p);
         glm_vec3_add(transform->position, p, transform->position);
