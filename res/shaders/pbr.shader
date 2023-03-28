@@ -32,6 +32,8 @@ uniform mat4 u_Model;
 uniform mat4 u_LightSpaceMatrix;
 // uniform bool u_tbn_from_shader = false;
 
+uniform float u_light_strength = 4;
+
 out VS_OUT
 {
     vec3 position;
@@ -66,7 +68,7 @@ main()
     vs_out.camPos = s_Camera.position;
 
     vs_out.lightPos   = s_Light.position;
-    vs_out.lightColor = s_Light.color.xyz * 4;
+    vs_out.lightColor = s_Light.color.xyz;
 
     // TBN
     vec3 t = normalize(vec3(u_Model * vec4(a_Tangent, 0.0)));
@@ -97,9 +99,16 @@ layout(binding = 7) uniform sampler2D t_brdfLUT;
 layout(binding = 8) uniform sampler2D t_shadowMap;
 layout(binding = 9) uniform sampler2D t_ssao;
 
+// Shadow options
 uniform int u_pcfSamples      = 6;
-uniform float u_normalBiasMin = 0.0025f;
-uniform float u_normalBiasMax = 0.0005f;
+uniform float u_normalBiasMin = 0.0025;
+uniform float u_normalBiasMax = 0.0005;
+
+// SSAO options
+uniform float u_ssao_strength = 2.5;
+
+// TODO: temp light strength
+uniform float u_light_strength = 4;
 
 /*
 layout (std140, set = 2, binding = 0) uniform ObjectTextures {
@@ -288,12 +297,12 @@ main()
         vec3 H            = normalize(V + L);
         float distance    = length(fs_in.lightPos - fs_in.position);
         float attenuation = 1.0 / (distance * distance); // distance^2 for Gamma
-        vec3 radiance     = fs_in.lightColor * attenuation;
+        vec3 radiance     = (fs_in.lightColor * u_light_strength) * attenuation;
 
         // TODO: Quick hack for directional lighting
         if (LIGHT_TYPE == 0) {
             L        = normalize(fs_in.lightPos);
-            radiance = fs_in.lightColor;
+            radiance = fs_in.lightColor * u_light_strength;
         }
 
         float NdotL = max(dot(N, L), FEATHER);
@@ -352,7 +361,7 @@ main()
     vec2 brdf     = texture(t_brdfLUT, vec2(NdotV, roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.r + brdf.g);
 
-    float aoStrength = 2.5;
+    float aoStrength = u_ssao_strength;
     vec3 ambient     = (diffuse + specular) * calcAo(aoStrength);
 
     // vec3 shadowColor = vec3(0.0);

@@ -10,6 +10,7 @@ lighting_initialize(float *lightPos, float *lightColor)
     ret->position = lightPos;
     ret->color    = lightColor;
     ret->type     = Directional;
+    ret->strength = 4; // TODO: GNK
 
     ui32 uboLight;
     if (DEVICE_API_OPENGL) {
@@ -30,14 +31,13 @@ lighting_initialize(float *lightPos, float *lightColor)
     return ret;
 }
 
-void 
+void
 lighting_update(Light *light, float *lightPos, float *lightColor)
 {
     ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
     if (DEVICE_API_OPENGL) {
         glBindBuffer(GL_UNIFORM_BUFFER, light->ubo);
-        glBufferSubData(
-          GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, lightPos);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, lightPos);
         glBufferSubData(
           GL_UNIFORM_BUFFER, sizeof(vec3) + 4, sizeof(vec4), lightColor);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);

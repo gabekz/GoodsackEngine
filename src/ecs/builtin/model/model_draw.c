@@ -95,15 +95,25 @@ DrawModel(struct ComponentModel *model,
                                (float *)renderer->lightSpaceMatrix);
 
             // Shadow options
-            glUniform1i(glGetUniformLocation(
-                        material->shaderProgram->id, "u_pcfSamples"),
-                        renderer->shadowmapOptions.pcfSamples);
-            glUniform1f(glGetUniformLocation(
-                        material->shaderProgram->id, "u_normalBiasMin"),
+            glUniform1i(
+              glGetUniformLocation(material->shaderProgram->id, "u_pcfSamples"),
+              renderer->shadowmapOptions.pcfSamples);
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_normalBiasMin"),
                         renderer->shadowmapOptions.normalBiasMin);
-            glUniform1f(glGetUniformLocation(
-                        material->shaderProgram->id, "u_normalBiasMax"),
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_normalBiasMax"),
                         renderer->shadowmapOptions.normalBiasMax);
+
+            // SSAO Options
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_ssao_strength"),
+                        renderer->ssaoOptions.strength);
+
+            // Light strength
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_light_strength"),
+                        renderer->light->strength);
 
             vao_bind(mesh->vao);
 

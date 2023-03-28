@@ -12,6 +12,7 @@
 #include <core/graphics/scene/scene.h>
 
 #include <core/graphics/renderer/pipeline/pass_shadowmap.h>
+#include <core/graphics/renderer/pipeline/pass_ssao.h>
 
 #include <core/drivers/vulkan/vulkan_device.h>
 
@@ -54,7 +55,8 @@ struct _renderer
 
     // TODO: Fix this shit as well.
     Light *light;
-    ShadowmapOptions shadowmapOptions; 
+    ShadowmapOptions shadowmapOptions;
+    SsaoOptions ssaoOptions;
 
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
@@ -70,24 +72,11 @@ struct _renderer
 Renderer *
 renderer_init();
 
-void
-renderer_add_light();
-
-// Logical
-void
-renderer_fixedupdate();
-void
-renderer_update();
-
 // Rendering Loop
 void
 renderer_start(Renderer *renderer);
 void
 renderer_tick(Renderer *renderer);
-
-// Analytics
-void
-renderer_add_draw_data(ui32 drawCalls, ui32 vertices);
 
 /* scene management */
 struct _ecs *

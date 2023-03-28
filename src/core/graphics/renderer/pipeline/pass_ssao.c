@@ -172,7 +172,7 @@ pass_ssao_init()
 }
 
 void
-pass_ssao_bind()
+pass_ssao_bind(SsaoOptions options)
 {
     // Generate SSAO colored output texture from FBO
     //----------------------------------------------
@@ -204,11 +204,20 @@ pass_ssao_bind()
                            GL_TEXTURE_2D,
                            s_ssaoOutTextureId,
                            0);
-
     // send samples
     glUniform3fv(glGetUniformLocation(s_ssaoOutShader->id, "u_samples"),
                  64,
                  (float *)s_ssaoSamples);
+
+    // radius
+    glUniform1f(glGetUniformLocation(s_ssaoOutShader->id, "u_radius"),
+                options.radius);
+    // bias
+    glUniform1f(glGetUniformLocation(s_ssaoOutShader->id, "u_bias"),
+                options.bias);
+    // kernel size
+    glUniform1i(glGetUniformLocation(s_ssaoOutShader->id, "u_kernelSize"),
+                options.kernelSize);
 
     // draw quad
     vao_bind(vaoRect);

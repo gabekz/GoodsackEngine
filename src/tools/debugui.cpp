@@ -190,22 +190,56 @@ DebugGui::Render()
         ImGui::BeginGroup();
         ImGui::Begin("Lighting", &m_showSceneLighting);
 
+        ImGui::Separator();
         ImGui::Text("Directional Light");
-        ImGui::DragFloat3("Position", m_renderer->light->position, 0.1f, -3000, 3000);
+        ImGui::DragFloat3(
+          "Position", m_renderer->light->position, 0.1f, -3000, 3000);
         ImGui::ColorEdit3("Color", m_renderer->light->color);
+        ImGui::DragFloat(
+          "Light Strength", &m_renderer->light->strength, 1, 0, 100);
 
-        ImGui::DragFloat("Near Plane", &m_renderer->shadowmapOptions.nearPlane, 0.1f, 0, 20);
-        ImGui::DragFloat("Far Plane", &m_renderer->shadowmapOptions.farPlane, 0.1f, 0, 20);
-        ImGui::DragFloat("Projection Size", &m_renderer->shadowmapOptions.camSize, 0.1f, 0, 20);
-        ImGui::DragInt("PCF Samples", &m_renderer->shadowmapOptions.pcfSamples, 1, 0, 20);
+        ImGui::Separator();
+        ImGui::Text("Shadowmap");
+        ImGui::DragFloat(
+          "Near Plane", &m_renderer->shadowmapOptions.nearPlane, 0.1f, 0, 20);
+        ImGui::DragFloat(
+          "Far Plane", &m_renderer->shadowmapOptions.farPlane, 0.1f, 0, 20);
+        ImGui::DragFloat("Projection Size",
+                         &m_renderer->shadowmapOptions.camSize,
+                         0.1f,
+                         0,
+                         20);
+        ImGui::DragInt(
+          "PCF Samples", &m_renderer->shadowmapOptions.pcfSamples, 1, 0, 20);
 
-        ImGui::DragFloat("Normal Bias min", &m_renderer->shadowmapOptions.normalBiasMin, 0.0001f, 0, 2, "%.5f");
-        ImGui::DragFloat("Normal Bias max", &m_renderer->shadowmapOptions.normalBiasMax, 0.0001f, 0, 2, "%.5f");
+        ImGui::DragFloat("Normal Bias min",
+                         &m_renderer->shadowmapOptions.normalBiasMin,
+                         0.0001f,
+                         0,
+                         2,
+                         "%.5f");
+        ImGui::DragFloat("Normal Bias max",
+                         &m_renderer->shadowmapOptions.normalBiasMax,
+                         0.0001f,
+                         0,
+                         2,
+                         "%.5f");
 
         ImGui::Image((void *)(intptr_t)shadowmap_getTexture(),
-                ImVec2(200, 200),
-                ImVec2(0, 1),
-                ImVec2(1, 0));
+                     ImVec2(200, 200),
+                     ImVec2(0, 1),
+                     ImVec2(1, 0));
+
+        ImGui::Separator();
+        ImGui::Text("Ambient Occlusion");
+        ImGui::DragFloat(
+          "SSAO Strength", &m_renderer->ssaoOptions.strength, 0.1f, 0, 20);
+        ImGui::DragFloat(
+          "Bias", &m_renderer->ssaoOptions.bias, 0.0001f, 0, 2, "%.5f");
+        ImGui::DragFloat(
+          "Radius", &m_renderer->ssaoOptions.radius, 0.05f, 0, 2, "%.5f");
+        ImGui::DragInt(
+          "Kernel Size", &m_renderer->ssaoOptions.kernelSize, 1, 1, 64);
 
         ImGui::End();
         ImGui::EndGroup();

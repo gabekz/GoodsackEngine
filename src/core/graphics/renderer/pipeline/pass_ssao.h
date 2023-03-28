@@ -3,6 +3,13 @@
 
 #include <util/sysdefs.h>
 
+typedef struct SsaoOptions
+{
+    float strength, bias, radius;
+    int kernelSize;
+
+} SsaoOptions;
+
 void
 pass_ssao_init();
 

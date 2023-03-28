@@ -10,6 +10,7 @@
 
 #include <core/graphics/lighting/lighting.h>
 #include <core/graphics/lighting/skybox.h>
+#include <core/graphics/ui/billboard.h>
 #include <ecs/ecs.h>
 
 #include <core/device/device_context.h>
@@ -69,6 +70,13 @@ renderer_init()
       .normalBiasMin = 0.0025f,
       .normalBiasMax = 0.0005f,
       .pcfSamples    = 8,
+    };
+
+    ret->ssaoOptions = (SsaoOptions) {
+      .strength   = 2.5f,
+      .bias       = 0.025f,
+      .radius     = 0.5f,
+      .kernelSize = 64,
     };
 
     return ret;
@@ -198,6 +206,9 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     glPushDebugGroup(
       GL_DEBUG_SOURCE_APPLICATION, 1, -1, "Pass: Shadowmap Depth");
 
+    // update lighting information
+    lighting_update(
+      renderer->light, renderer->light->position, renderer->light->color);
     // update shadowmap position
     shadowmap_update(renderer->light->position, renderer->shadowmapOptions);
     // TODO: Move matrix storage out of renderer
@@ -220,13 +231,14 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     */
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1, "Pass: SSAO");
     // bind the shadowmap textures & framebuffers
-    pass_ssao_bind();
+    pass_ssao_bind(renderer->ssaoOptions);
 
     glPopDebugGroup();
     /*-------------------------------------------
         Pass #3 - Post Processing / Lighting Pass
     */
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 3, -1, "Pass: Lighting (Forward)");
+    glPushDebugGroup(
+      GL_DEBUG_SOURCE_APPLICATION, 3, -1, "Pass: Lighting (Forward)");
 
     postbuffer_bind(renderer->properties.msaaEnable);
 
