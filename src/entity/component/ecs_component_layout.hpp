@@ -1,5 +1,5 @@
-#ifndef HPP_COMPONENT_LAYOUT
-#define HPP_COMPONENT_LAYOUT
+#ifndef HPP_ECS_COMPONENT_LAYOUT
+#define HPP_ECS_COMPONENT_LAYOUT
 
 #include <map>
 #include <string>
@@ -16,10 +16,10 @@ typedef struct _accessor
     int position, size, stride;
 } Accessor;
 
-class ComponentLayout {
+class ECSComponentLayout {
    public:
-    ComponentLayout(const char *name);
-    ~ComponentLayout();
+    ECSComponentLayout(const char *name);
+    ~ECSComponentLayout();
 
     void SetData(std::map<std::string, Accessor> data);
 
@@ -36,4 +36,4 @@ class ComponentLayout {
 
 } // namespace entity
 
-#endif // H
+#endif // HPP_ECS_COMPONENT_LAYOUT

@@ -1,8 +1,8 @@
 #ifndef HPP_EVENTSTORE
 #define HPP_EVENTSTORE
 
-#include <entity/component/component.hpp>
-#include <entity/component/loader.hpp>
+#include <entity/component/ecs_component.hpp>
+#include <entity/component/ecs_component_layout_loader.hpp>
 #include <entity/v1/ecs.h>
 #include <util/lua_deps.h>
 
@@ -19,9 +19,7 @@ class LuaEventStore {
     static void Initialize(lua_State *L);
     static void ECSEvent(enum ECSEvent event);
 
-    static const char *EventToString(int event);
-
-    static ComponentLayout &getLayout(const char *layout)
+    static ECSComponentLayout &getLayout(const char *layout)
     {
         return *LuaEventStore::GetInstance().m_Layouts[layout];
     };
@@ -44,7 +42,7 @@ class LuaEventStore {
    private:
     LuaEventStore();
     static LuaEventStore s_Instance;
-    std::map<std::string, ComponentLayout *> m_Layouts;
+    std::map<std::string, ECSComponentLayout *> m_Layouts;
 
     int m_tableId;
     lua_State *m_Lua;

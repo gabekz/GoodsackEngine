@@ -5,7 +5,7 @@
 entity::ECSHandle::ECSHandle()
 {
 
-    ComponentLayout *t;
+    ECSComponentLayout *t;
     // Component c;
 
     // m_ComponentList =

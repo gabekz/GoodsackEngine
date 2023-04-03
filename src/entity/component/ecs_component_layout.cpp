@@ -1,4 +1,4 @@
-#include "layout.hpp"
+#include "ecs_component_layout.hpp"
 
 #include <stdlib.h>
 
@@ -11,10 +11,10 @@
 
 using namespace entity;
 
-ComponentLayout::ComponentLayout(const char *name) { m_Name = name; }
+ECSComponentLayout::ECSComponentLayout(const char *name) { m_Name = name; }
 
 void
-ComponentLayout::SetData(std::map<std::string, Accessor> data)
+ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
 {
     ulong sizeReq = 1; // TODO: Look into this, just to double check.
     for (auto &var : data) {

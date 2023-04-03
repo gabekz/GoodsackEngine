@@ -3,8 +3,8 @@
 
 #include <vector>
 
-#include <entity/component/component.hpp>
-#include <entity/component/layout.hpp>
+#include <entity/component/ecs_component.hpp>
+#include <entity/component/ecs_component_layout.hpp>
 #include <entity/v1/ecs.h>
 
 namespace entity {
@@ -18,7 +18,7 @@ class ECSHandle {
     void ECSEvent(enum ECSEvent event);
 
    private:
-    std::vector<Component *> m_ComponentList;
+    std::vector<ECSComponent *> m_ComponentList;
 };
 
 } // namespace entity

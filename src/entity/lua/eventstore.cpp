@@ -9,13 +9,14 @@
 #include <util/lua_deps.h>
 #include <wrapper/lua/lua_debug.h>
 
-#include <entity/component/component.hpp>
-#include <entity/component/layout.hpp>
-#include <entity/component/loader.hpp>
+#include <entity/component/ecs_component.hpp>
+#include <entity/component/ecs_component_layout.hpp>
+#include <entity/component/ecs_component_layout_loader.hpp>
 
 #include <entity/v1/builtin/transform/transform.h>
 
 using namespace entity;
+using entity::ECSComponent;
 
 // Forward declaration
 LuaEventStore::LuaEventStore() {};
@@ -58,8 +59,8 @@ LuaEventStore::Initialize(lua_State *L)
 int
 _meta_Component_newindex(lua_State *L)
 {
-    Component *c;
-    if (lua_isuserdata(L, 1)) { c = (Component *)lua_topointer(L, 1); }
+    ECSComponent *c;
+    if (lua_isuserdata(L, 1)) { c = (ECSComponent *)lua_topointer(L, 1); }
 
     const char *k = luaL_checkstring(L, -2);
     int var;
@@ -77,8 +78,8 @@ _meta_Component_newindex(lua_State *L)
 int
 _meta_Component_index(lua_State *L)
 {
-    Component *c;
-    if (lua_isuserdata(L, 1)) { c = (Component *)lua_topointer(L, 1); }
+    ECSComponent *c;
+    if (lua_isuserdata(L, 1)) { c = (ECSComponent *)lua_topointer(L, 1); }
 
     const char *k = luaL_checkstring(L, -1);
     int var;
@@ -91,10 +92,10 @@ _meta_Component_index(lua_State *L)
 }
 
 void
-pushEntity(lua_State *L, Entity entity, ComponentLayout &layout)
+pushEntity(lua_State *L, Entity entity, ECSComponentLayout &layout)
 {
 
-    Component *t = new Component(layout);
+    ECSComponent *t = new ECSComponent(layout);
 
     std::string a         = std::to_string(entity.id);
     const char *tableName = a.append(layout.getName()).c_str();

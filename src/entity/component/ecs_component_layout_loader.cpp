@@ -1,4 +1,4 @@
-#include "loader.hpp"
+#include "ecs_component_layout_loader.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -10,13 +10,13 @@
 #include <nlohmann/json.hpp>
 #include <stdlib.h>
 
-#include <entity/component/component.hpp>
-#include <entity/component/layout.hpp>
+#include <entity/component/ecs_component.hpp>
+#include <entity/component/ecs_component_layout.hpp>
 
 using json = nlohmann::json;
 using namespace entity;
 
-std::map<std::string, ComponentLayout *>
+std::map<std::string, ECSComponentLayout *>
 entity::ParseComponents(std::string path, ui32 rawData)
 {
     json JSON;
@@ -44,7 +44,7 @@ entity::ParseComponents(std::string path, ui32 rawData)
     // strings are handled differently
 
     // std::vector<ComponentLayout*> layouts;
-    std::map<std::string, ComponentLayout *> layouts;
+    std::map<std::string, ECSComponentLayout *> layouts;
 
     // Loop through every component
     for (auto &cmp : JSON.items()) {
@@ -52,7 +52,8 @@ entity::ParseComponents(std::string path, ui32 rawData)
 
         // std::cout << cmp.key() << std::endl;
 
-        ComponentLayout *component = new ComponentLayout(cmp.key().c_str());
+        ECSComponentLayout *component =
+          new ECSComponentLayout(cmp.key().c_str());
 
         // Every type of available data
         for (auto type : dataTypes) {

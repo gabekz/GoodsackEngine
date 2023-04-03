@@ -1,20 +1,21 @@
-#ifndef HPP_COMPONENT
-#define HPP_COMPONENT
+#ifndef HPP_ECS_COMPONENT
+#define HPP_ECS_COMPONENT
 
 #include <map>
 #include <string>
 #include <type_traits>
 
-#include <entity/component/layout.hpp>
+#include <entity/component/ecs_component_layout.hpp>
 #include <util/maths.h>
 
 namespace entity {
 
-class Component {
+class ECSComponent {
    public:
-    Component(ComponentLayout &layout);
+    ECSComponent(ECSComponentLayout &layout);
 
-    const char *getName() { return m_ComponentLayout.getName(); };
+    const char *getName() { return m_componentLayout.getName(); };
+
     int SetVariable(std::string var, void *value);
 
     template <typename T>
@@ -26,16 +27,16 @@ class Component {
         void *mem;
         int size, index;
     } m_Data;
-    ComponentLayout &m_ComponentLayout;
+    ECSComponentLayout &m_componentLayout;
 };
 
 } // namespace entity
 
 template <typename T>
 int
-entity::Component::GetVariable(std::string var, T *destination)
+entity::ECSComponent::GetVariable(std::string var, T *destination)
 {
-    Accessor acr = m_ComponentLayout.getAccessor(var);
+    Accessor acr = m_componentLayout.getAccessor(var);
     if (acr.size) {
         // printf("TEST T: %f", *(T *)((char *)m_Data.mem+acr.position));
         *destination = *(T *)((char *)m_Data.mem + acr.position);
@@ -47,10 +48,10 @@ entity::Component::GetVariable(std::string var, T *destination)
 template <>
 inline // vec3 specialization
   int
-  entity::Component::GetVariable<float[3]>(std::string var,
-                                           float (*destination)[3])
+  entity::ECSComponent::GetVariable<float[3]>(std::string var,
+                                              float (*destination)[3])
 {
-    Accessor acr = m_ComponentLayout.getAccessor(var);
+    Accessor acr = m_componentLayout.getAccessor(var);
     if (acr.size) {
         glm_vec3_copy((float *)((char *)m_Data.mem + acr.position),
                       *destination);
@@ -62,10 +63,10 @@ inline // vec3 specialization
 template <>
 inline // mat4 specialization
   int
-  entity::Component::GetVariable<float[4][4]>(std::string var,
-                                              float (*destination)[4][4])
+  entity::ECSComponent::GetVariable<float[4][4]>(std::string var,
+                                                 float (*destination)[4][4])
 {
-    Accessor acr = m_ComponentLayout.getAccessor(var);
+    Accessor acr = m_componentLayout.getAccessor(var);
     if (acr.size) {
         glm_mat4_copy((vec4 *)((char *)m_Data.mem + acr.position),
                       *destination);
@@ -74,4 +75,4 @@ inline // mat4 specialization
     return 0;
 }
 
-#endif // HPP_COMPONENT
+#endif // HPP_ECS_COMPONENT

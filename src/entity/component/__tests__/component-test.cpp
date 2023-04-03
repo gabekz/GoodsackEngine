@@ -13,10 +13,10 @@
 #include <gtest/gtest.h>
 #include <stdlib.h>
 
-#include <entity/component/component.hpp>
+#include <entity/component/ecs_component.hpp>
 #include <util/lua_deps.h>
 
-#include <entity/component/loader.hpp>
+#include <entity/component/ecs_component_layout_loader.hpp>
 
 #include <util/maths.h>
 
@@ -39,15 +39,15 @@ struct ComponentLoaderTest : testing::Test
 }
 )";
 
-    std::map<std::string, ComponentLayout *> m_Layouts;
+    std::map<std::string, ECSComponentLayout *> m_Layouts;
 
     ComponentLoaderTest() { m_Layouts = ParseComponents(rawComponentData, 1); }
 };
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Numeric)
 {
-    Component *p  = new Component(*m_Layouts["ComponentTransform"]);
-    Component *p2 = new Component(*m_Layouts["ComponentCamera"]);
+    ECSComponent *p  = new ECSComponent(*m_Layouts["ComponentTransform"]);
+    ECSComponent *p2 = new ECSComponent(*m_Layouts["ComponentCamera"]);
 
     int value, newValue = 70;
     ASSERT_TRUE(p->SetVariable("uboId", &newValue));
@@ -65,7 +65,7 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Numeric)
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Vec3)
 {
-    Component *p = new Component(*m_Layouts["ComponentCamera"]);
+    ECSComponent *p = new ECSComponent(*m_Layouts["ComponentCamera"]);
 
     vec3 vectorA = {0.25f, 5.8f, 1.0f};
     vec3 vectorB = GLM_VEC3_ZERO_INIT;
@@ -81,7 +81,7 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Vec3)
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_Data)
 {
-    Component *p = new Component(*m_Layouts["ComponentCamera"]);
+    ECSComponent *p = new ECSComponent(*m_Layouts["ComponentCamera"]);
 
     mat4 matrixA = GLM_MAT4_IDENTITY_INIT;
     mat4 matrixB = GLM_MAT4_ZERO_INIT;
