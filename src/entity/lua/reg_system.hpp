@@ -5,10 +5,10 @@
 
 namespace entity {
 
-int __cdecl
+extern "C" {
+int
 Lua_ECSRegisterSystem(lua_State *L);
-
+}
 } // namespace entity
-
 
 #endif // HPP_REG_SYSTEM

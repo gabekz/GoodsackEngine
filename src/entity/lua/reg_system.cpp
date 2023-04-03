@@ -5,7 +5,7 @@
 
 using namespace entity;
 
-int __cdecl
+int
 entity::Lua_ECSRegisterSystem(lua_State *L)
 {
     LuaEventStore &store = LuaEventStore::GetInstance();

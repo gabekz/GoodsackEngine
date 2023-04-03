@@ -5,7 +5,7 @@
 
 #include <entity/component/ecs_component.hpp>
 #include <entity/component/ecs_component_layout.hpp>
-#include <entity/v1/ecs.h>
+#include <entity/ecsdefs.h>
 
 namespace entity {
 
@@ -14,7 +14,7 @@ class ECSHandle {
 
    public:
     void Initialize();
-    void AddEntity(Entity e);
+    // void AddEntity(Entity e);
     void ECSEvent(enum ECSEvent event);
 
    private:

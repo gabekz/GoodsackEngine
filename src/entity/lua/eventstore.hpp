@@ -3,8 +3,9 @@
 
 #include <entity/component/ecs_component.hpp>
 #include <entity/component/ecs_component_layout_loader.hpp>
-#include <entity/v1/ecs.h>
 #include <util/lua_deps.h>
+
+#include <entity/ecsdefs.h>
 
 #include <map>
 #include <string>
@@ -17,7 +18,7 @@ class LuaEventStore {
 
     static LuaEventStore &GetInstance();
     static void Initialize(lua_State *L);
-    static void ECSEvent(enum ECSEvent event);
+    static void ECSEvent(ECSEvent event);
 
     static ECSComponentLayout &getLayout(const char *layout)
     {
@@ -25,7 +26,7 @@ class LuaEventStore {
     };
 
     // TEST
-    static Entity entity;
+    // static Entity entity;
 
     struct Lua_Functions
     {

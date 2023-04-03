@@ -12,11 +12,11 @@
 #include <entity/component/ecs_component.hpp>
 #include <entity/component/ecs_component_layout.hpp>
 #include <entity/component/ecs_component_layout_loader.hpp>
+#include <entity/ecs_entity.hpp>
 
-#include <entity/v1/builtin/transform/transform.h>
+// #include <entity/v1/builtin/transform/transform.h>
 
 using namespace entity;
-using entity::ECSComponent;
 
 // Forward declaration
 LuaEventStore::LuaEventStore() {};
@@ -92,12 +92,12 @@ _meta_Component_index(lua_State *L)
 }
 
 void
-pushEntity(lua_State *L, Entity entity, ECSComponentLayout &layout)
+pushEntity(lua_State *L, ECSEntity entity, ECSComponentLayout &layout)
 {
 
     ECSComponent *t = new ECSComponent(layout);
 
-    std::string a         = std::to_string(entity.id);
+    std::string a         = std::to_string(entity.getId());
     const char *tableName = a.append(layout.getName()).c_str();
 
     // Create "entity" as container-table
@@ -144,9 +144,9 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
         if (lua_isfunction(L, -1)) {
             // send data to function
             // pushEntity(L);
-            pushEntity(L,
-                       (Entity {.id = 19}),
-                       LuaEventStore::getLayout("ComponentCamera"));
+            ECSEntity newEntity = ECSEntity(1);
+            pushEntity(
+              L, newEntity, LuaEventStore::getLayout("ComponentCamera"));
             // lua_pushnumber(L, 12);
             //  call event function
             (CheckLua(L, lua_pcall(L, 1, 0, 0)));

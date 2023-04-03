@@ -1,7 +1,12 @@
 #ifndef H_ECSDEFS
 #define H_ECSDEFS
 
+// #ifdef __cplusplus
+// enum ECSEvent { ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE };
+// #else
 enum ECSEvent { ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE };
+// #endif // __cplusplus
+
 #define ECSEVENT_FIRST ECS_INIT
 #define ECSEVENT_LAST  ECS_UPDATE
 

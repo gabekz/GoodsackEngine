@@ -15,10 +15,12 @@ entity::ECSHandle::Initialize()
 {
 }
 
+/*
 void
 entity::ECSHandle::AddEntity(Entity e)
 {
 }
+*/
 
 void
 entity::ECSHandle::ECSEvent(enum ECSEvent event)
