@@ -11,7 +11,7 @@
 #include <core/graphics/lighting/lighting.h>
 #include <core/graphics/lighting/skybox.h>
 #include <core/graphics/ui/billboard.h>
-#include <ecs/ecs.h>
+#include <entity/v1/ecs.h>
 
 #include <core/device/device_context.h>
 

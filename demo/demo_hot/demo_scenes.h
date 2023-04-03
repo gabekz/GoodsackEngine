@@ -2,7 +2,7 @@
 #define H_DEMO_SCENES
 
 #include <core/graphics/renderer/v1/renderer.h>
-#include <ecs/ecs.h>
+#include <entity/v1/ecs.h>
 
 #ifdef __cplusplus
 extern "C" {

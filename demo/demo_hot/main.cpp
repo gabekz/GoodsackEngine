@@ -11,14 +11,14 @@
 
 #include <core/device/device.h>
 #include <core/graphics/lighting/lighting.h>
-#include <ecs/ecs.h>
+#include <entity/v1/ecs.h>
 #include <tools/debugui.hpp>
 #include <wrapper/lua/lua_init.hpp>
 
 // Demo
 #include "demo_scenes.h"
 
-#include <ecs/lua/eventstore.hpp>
+#include <entity/lua/eventstore.hpp>
 
 // #define RENDERER_2
 

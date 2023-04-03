@@ -1,10 +1,10 @@
 #include "demo_scenes.h"
 
-#include <ecs/ecs.h>
+#include <entity/v1/ecs.h>
 
 // #include <core/graphics/renderer/v1/renderer.h>
 
-#include <ecs/builtin/components.h>
+#include <entity/v1/builtin/components.h>
 
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include <ecs/ecs.h>
+#include <entity/v1/ecs.h>
 
 extern "C" {
 #include <core/graphics/renderer/v1/renderer.h>
@@ -15,7 +15,7 @@ extern "C" {
 #include <core/device/device.h>
 #include <core/drivers/alsoft/alsoft_debug.h>
 
-#include <ecs/builtin/components.h>
+#include <entity/v1/builtin/components.h>
 
 #include <core/drivers/vulkan/vulkan.h>
 

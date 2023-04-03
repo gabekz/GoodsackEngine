@@ -6,8 +6,8 @@
 #include <util/logger.h>
 #include <util/lua_deps.h>
 
-#include <ecs/lua/eventstore.hpp>
-#include <ecs/lua/reg_system.hpp>
+#include <entity/lua/eventstore.hpp>
+#include <entity/lua/reg_system.hpp>
 
 #include <wrapper/lua/lua_debug.h>
 #include <wrapper/lua/lua_reg_print.h>
