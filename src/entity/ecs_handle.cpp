@@ -1,10 +1,8 @@
-#include "manager.hpp"
+#include "ecs_handle.hpp"
 
 #include <entity/lua/eventstore.hpp>
 
-using namespace ecs;
-
-Manager::Manager()
+entity::ECSHandle::ECSHandle()
 {
 
     ComponentLayout *t;
@@ -12,14 +10,18 @@ Manager::Manager()
 
     // m_ComponentList =
 }
-
 void
-Manager::AddEntity(Entity e)
+entity::ECSHandle::Initialize()
 {
 }
 
 void
-Manager::ECSEvent(enum ECSEvent event)
+entity::ECSHandle::AddEntity(Entity e)
+{
+}
+
+void
+entity::ECSHandle::ECSEvent(enum ECSEvent event)
 {
 
     // Call the Lua functions as well

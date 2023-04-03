@@ -15,7 +15,7 @@
 
 #include <entity/v1/builtin/transform/transform.h>
 
-using namespace ecs;
+using namespace entity;
 
 // Forward declaration
 LuaEventStore::LuaEventStore() {};
@@ -38,7 +38,7 @@ LuaEventStore::Initialize(lua_State *L)
 
     for (int i = 0; i < ECSEVENT_LAST + 1; i++) {
         // create a table for each event
-        lua_pushstring(L, ecs::EventToString(ECSEVENT_FIRST + i));
+        lua_pushstring(L, ECSEVENT_STRING(ECSEVENT_FIRST + i));
         lua_newtable(L);
         lua_settable(L, -3);
 
@@ -52,7 +52,7 @@ LuaEventStore::Initialize(lua_State *L)
     s_Instance.m_tableId = luaL_ref(L, LUA_REGISTRYINDEX);
     s_Instance.m_Lua     = L;
 
-    s_Instance.m_Layouts = ecs::ParseComponents("../res/components.json");
+    s_Instance.m_Layouts = entity::ParseComponents("../res/components.json");
 }
 
 int
@@ -132,7 +132,7 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
     LuaEventStore &store = LuaEventStore::GetInstance();
     lua_State *L         = store.m_Lua;
 
-    const char *fName = ecs::EventToString(event);
+    const char *fName = ECSEVENT_STRING(event);
     lua_rawgeti(
       L, LUA_REGISTRYINDEX, store.m_tableId); // retrieve function table
 

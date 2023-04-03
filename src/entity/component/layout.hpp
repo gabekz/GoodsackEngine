@@ -5,7 +5,7 @@
 #include <string>
 #include <util/sysdefs.h>
 
-namespace ecs {
+namespace entity {
 
 typedef struct _datatype
 {
@@ -34,6 +34,6 @@ class ComponentLayout {
     const char *m_Name;
 };
 
-} // namespace ecs
+} // namespace entity
 
 #endif // H

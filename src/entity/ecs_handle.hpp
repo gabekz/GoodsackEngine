@@ -1,5 +1,5 @@
-#ifndef HPP_MANAGER
-#define HPP_MANAGER
+#ifndef HPP_ECS_HANDLE
+#define HPP_ECS_HANDLE
 
 #include <vector>
 
@@ -7,12 +7,13 @@
 #include <entity/component/layout.hpp>
 #include <entity/v1/ecs.h>
 
-namespace ecs {
+namespace entity {
 
-class Manager {
-    Manager();
+class ECSHandle {
+    ECSHandle();
 
    public:
+    void Initialize();
     void AddEntity(Entity e);
     void ECSEvent(enum ECSEvent event);
 
@@ -20,6 +21,6 @@ class Manager {
     std::vector<Component *> m_ComponentList;
 };
 
-} // namespace ecs
+} // namespace entity
 
-#endif // HPP_MANAGER
+#endif // HPP_ECS_HANDLE

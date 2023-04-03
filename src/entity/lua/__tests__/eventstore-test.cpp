@@ -21,5 +21,5 @@ struct TestEventStore : testing::Test
 TEST_F(TestEventStore, DISABLED_Initialization_And_Event)
 {
     lua_State *L = luaL_newstate();
-    ecs::LuaEventStore::Initialize(L);
+    entity::LuaEventStore::Initialize(L);
 }

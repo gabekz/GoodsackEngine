@@ -8,11 +8,11 @@
 
 #include <util/sysdefs.h>
 
-namespace ecs {
+namespace entity {
 
 std::map<std::string, ComponentLayout *>
 ParseComponents(std::string path, ui32 rawData = 0);
 
-};
+}; // namespace entity
 
 #endif // HPP_ECS_LOADER

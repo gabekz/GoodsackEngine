@@ -9,7 +9,7 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
-using namespace ecs;
+using namespace entity;
 
 ComponentLayout::ComponentLayout(const char *name) { m_Name = name; }
 

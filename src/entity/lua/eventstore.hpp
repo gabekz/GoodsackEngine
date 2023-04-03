@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-namespace ecs {
+namespace entity {
 
 class LuaEventStore {
    public:
@@ -50,6 +50,6 @@ class LuaEventStore {
     lua_State *m_Lua;
 };
 
-} // namespace ecs
+} // namespace entity
 
 #endif // HPP_EVENTSTORE

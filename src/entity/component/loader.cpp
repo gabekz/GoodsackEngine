@@ -14,10 +14,10 @@
 #include <entity/component/layout.hpp>
 
 using json = nlohmann::json;
-using namespace ecs;
+using namespace entity;
 
 std::map<std::string, ComponentLayout *>
-ecs::ParseComponents(std::string path, ui32 rawData)
+entity::ParseComponents(std::string path, ui32 rawData)
 {
     json JSON;
 

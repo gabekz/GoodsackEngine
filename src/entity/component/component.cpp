@@ -8,14 +8,15 @@
 
 #include <stdlib.h>
 
-ecs::Component::Component(ComponentLayout &layout) : m_ComponentLayout(layout)
+entity::Component::Component(ComponentLayout &layout)
+    : m_ComponentLayout(layout)
 {
     m_Data.mem  = malloc((char)layout.getSizeReq());
     m_Data.size = layout.getSizeReq();
 }
 
 int
-ecs::Component::SetVariable(std::string var, void *value)
+entity::Component::SetVariable(std::string var, void *value)
 {
     Accessor acr = m_ComponentLayout.getAccessor(var);
     if (acr.size) {

@@ -8,7 +8,7 @@
 #include <entity/component/layout.hpp>
 #include <util/maths.h>
 
-namespace ecs {
+namespace entity {
 
 class Component {
    public:
@@ -29,11 +29,11 @@ class Component {
     ComponentLayout &m_ComponentLayout;
 };
 
-} // namespace ecs
+} // namespace entity
 
 template <typename T>
 int
-ecs::Component::GetVariable(std::string var, T *destination)
+entity::Component::GetVariable(std::string var, T *destination)
 {
     Accessor acr = m_ComponentLayout.getAccessor(var);
     if (acr.size) {
@@ -47,8 +47,8 @@ ecs::Component::GetVariable(std::string var, T *destination)
 template <>
 inline // vec3 specialization
   int
-  ecs::Component::GetVariable<float[3]>(std::string var,
-                                        float (*destination)[3])
+  entity::Component::GetVariable<float[3]>(std::string var,
+                                           float (*destination)[3])
 {
     Accessor acr = m_ComponentLayout.getAccessor(var);
     if (acr.size) {
@@ -62,8 +62,8 @@ inline // vec3 specialization
 template <>
 inline // mat4 specialization
   int
-  ecs::Component::GetVariable<float[4][4]>(std::string var,
-                                           float (*destination)[4][4])
+  entity::Component::GetVariable<float[4][4]>(std::string var,
+                                              float (*destination)[4][4])
 {
     Accessor acr = m_ComponentLayout.getAccessor(var);
     if (acr.size) {
