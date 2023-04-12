@@ -7,14 +7,14 @@ local system = {}
 function system.start(e)
     print("From start()")
 
-    e.ComponentCamera.speed = 200
+    e.ComponentCamera.speed = 200 + e.id
     print("received "..e.ComponentCamera.speed.."")
 
 end
 
 function system.update(e)
     print("From update()")
-    --print("received "..e.."")
+    print("received id: "..e.id.."")
 end
 
 system.run = function() _ECS_RegisterSystem(system) end

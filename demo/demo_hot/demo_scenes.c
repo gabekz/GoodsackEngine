@@ -406,15 +406,15 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
 
     // Default textures with options
     s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};
-    s_texOpsPbr = (TextureOptions) {16, GL_SRGB_ALPHA, true, true};
+    s_texOpsPbr = (TextureOptions) {0, GL_SRGB_ALPHA, false, true};
     texDefSpec  = texture_create_n("../res/textures/defaults/black.png");
     texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo    = texture_create_n("../res/textures/defaults/white.png");
 
     _scene0(ecs, renderer);
     _scene1(ecs, renderer);
-    _scene2(ecs, renderer);
-    _scene3(ecs, renderer);
-    _scene4(ecs, renderer);
-    _scene5(ecs, renderer);
+    //_scene2(ecs, renderer);
+    //_scene3(ecs, renderer);
+    //_scene4(ecs, renderer);
+    //_scene5(ecs, renderer);
 }

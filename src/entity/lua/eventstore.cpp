@@ -54,6 +54,14 @@ LuaEventStore::Initialize(lua_State *L)
     s_Instance.m_Lua     = L;
 
     s_Instance.m_Layouts = entity::ParseComponents("../res/components.json");
+
+    // TODO: Remove after testing
+    int testEntitiesCount   = 10;
+    s_Instance.m_entityList      = (ECSEntity **)malloc(sizeof(ECSEntity **) * testEntitiesCount);
+    for (int i = 0; i < testEntitiesCount; i++) {
+        s_Instance.m_entityList[i]   = new ECSEntity(i);
+    }
+    s_Instance.m_entityListCount = testEntitiesCount;
 }
 
 int
@@ -97,13 +105,14 @@ pushEntity(lua_State *L, ECSEntity entity, ECSComponentLayout &layout)
 
     ECSComponent *t = new ECSComponent(layout);
 
-    std::string a         = std::to_string(entity.getId());
-    const char *tableName = a.append(layout.getName()).c_str();
+    std::string a = std::to_string(entity.getId());
+    const char *tableName =
+      a.append(layout.getName()).c_str(); // ? Must be unique
 
     // Create "entity" as container-table
     lua_newtable(L);
     lua_pushstring(L, "id");
-    lua_pushnumber(L, 19);
+    lua_pushnumber(L, entity.getId());
     lua_settable(L, -3);
 
     lua_pushstring(L, "ComponentCamera"); // temp
@@ -142,14 +151,20 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
         // retreive function
         lua_rawgeti(L, -1, store.m_functionList[event]->functions[i]);
         if (lua_isfunction(L, -1)) {
-            // send data to function
+            // send data to function (TODO: loop through each entity)
             // pushEntity(L);
-            ECSEntity newEntity = ECSEntity(1);
-            pushEntity(
-              L, newEntity, LuaEventStore::getLayout("ComponentCamera"));
+            // ECSEntity newEntity = ECSEntity(1);
+            for (int j = 0; j < store.m_entityListCount; j++) {
+                dumpstack(L, "dump");
+                pushEntity(L,
+                           *store.m_entityList[j],
+                           LuaEventStore::getLayout("ComponentCamera"));
             // lua_pushnumber(L, 12);
             //  call event function
             (CheckLua(L, lua_pcall(L, 1, 0, 0)));
+                if (j < store.m_entityListCount)
+            lua_rawgeti(L, -1, store.m_functionList[event]->functions[i]);
+            }
         }
     }
     lua_pop(L, 2);
