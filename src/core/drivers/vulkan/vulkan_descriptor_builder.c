@@ -8,6 +8,7 @@ vulkan_descriptor_builder_begin(VulkanDescriptorLayoutCache *layoutCache)
 VkDescriptorSet
 vulkan_descriptor_builder_end()
 {
+    return NULL;
 }
 
 void

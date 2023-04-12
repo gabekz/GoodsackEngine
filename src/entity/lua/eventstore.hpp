@@ -5,6 +5,7 @@
 #include <entity/component/ecs_component_layout_loader.hpp>
 #include <util/lua_deps.h>
 
+#include <entity/ecs_entity.hpp>
 #include <entity/ecsdefs.h>
 
 #include <map>
@@ -47,6 +48,10 @@ class LuaEventStore {
 
     int m_tableId;
     lua_State *m_Lua;
+
+    // TODO: remove after testing
+    ECSEntity **m_entityList;
+    size_t m_entityListCount;
 };
 
 } // namespace entity
