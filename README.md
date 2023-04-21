@@ -1,10 +1,8 @@
-# Below Game Engine
+# Goodsack Game Engine
 [![Build](https://github.com/gabekz/gl-renderer/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/gabekz/gl-renderer/actions/workflows/build.yml)
 [![Lint](https://github.com/gabekz/gl-renderer/actions/workflows/lint.yml/badge.svg)](https://github.com/gabekz/gl-renderer/actions/workflows/lint.yml)
 
-Real-time render engine, built with C/C++. Feature complete with ECS, Lua scripting and custom physics! 
-
-![Alt text](docs/public/engine.png?raw=true "Title")
+![Alt text](docs/public/sponza.png?raw=true "Hero")
 
 # Features
 - Physically-Based Rendering Pipeline
@@ -18,7 +16,7 @@ Real-time render engine, built with C/C++. Feature complete with ECS, Lua script
 - Scene Manager
 
 # Supported Platforms
-![Alt text](docs/public/win-mac-lux.png?raw=true "Supported Platformsz")
+![Alt text](docs/public/win-mac-lux.png?raw=true "Supported Platforms")
 
 ---
 
