@@ -15,9 +15,6 @@
 - Point-light Shadows
 - Scene Manager
 
-# Supported Platforms
-![Alt text](docs/public/win-mac-lux.png?raw=true "Supported Platforms")
-
 ---
 
 # Installation
