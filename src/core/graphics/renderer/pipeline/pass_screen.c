@@ -12,6 +12,8 @@
 #include <util/logger.h>
 #include <util/sysdefs.h>
 
+#define MSAA_SAMPLES 4
+
 static ui32 msFBO, sbFBO;
 static ui32 msRBO, sbRBO;
 static ui32 msTexture, sbTexture;
@@ -110,12 +112,16 @@ postbuffer_resize(ui32 winWidth, ui32 winHeight)
       GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, winWidth, winHeight);
 
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msTexture);
-    glTexImage2DMultisample(
-      GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGBA16F, winWidth, winHeight, GL_TRUE);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
+                            MSAA_SAMPLES,
+                            GL_RGBA16F,
+                            winWidth,
+                            winHeight,
+                            GL_TRUE);
 
     glBindRenderbuffer(GL_RENDERBUFFER, msRBO);
     glRenderbufferStorageMultisample(
-      GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, winWidth, winHeight);
+      GL_RENDERBUFFER, MSAA_SAMPLES, GL_DEPTH24_STENCIL8, winWidth, winHeight);
 
     frameWidth  = winWidth;
     frameHeight = winHeight;
@@ -146,7 +152,7 @@ postbuffer_init(ui32 width, ui32 height)
     // Create Framebuffer
     CreateScreenBuffer(width, height);
     // Create MSAA buffer
-    CreateMultisampleBuffer(16, width, height);
+    CreateMultisampleBuffer(MSAA_SAMPLES, width, height);
 }
 
 void
@@ -162,6 +168,12 @@ postbuffer_bind(int enableMSAA)
     }
 
     glViewport(0, 0, frameWidth, frameHeight);
+}
+
+ui32
+postbuffer_getScreenTexture()
+{
+    return sbTexture;
 }
 
 void

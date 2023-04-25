@@ -39,11 +39,15 @@ skybox_create(Texture *cubemap)
 void
 skybox_draw(Skybox *self)
 {
-    // glDepthMask(GL_FALSE);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, self->prefilterMap->id);
-
     shader_use(self->shader);
+
+    glActiveTexture(GL_TEXTURE0);
+#if HDR_DRAW_IRRADIANCE
+    glBindTexture(GL_TEXTURE_CUBE_MAP, self->prefilterMap->id);
+#else
+    glBindTexture(GL_TEXTURE_CUBE_MAP, self->cubemap->id);
+#endif
+
     vao_bind(self->vao);
     // glDrawArrays(GL_TRIANGLES, 0, 24);
     glDrawElements(GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
@@ -52,7 +56,7 @@ skybox_draw(Skybox *self)
 // HDR
 
 Skybox *
-skybox_hdr_create()
+skybox_hdr_create(const char *hdrPath)
 {
     clearGLState();
     glEnable(GL_DEPTH_TEST);
@@ -60,9 +64,7 @@ skybox_hdr_create()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
     //  Load HDR texture
-    Texture *hdrTexture =
-      texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr");
-    // texture_create_hdr("../res/textures/hdr/city_night.hdr");
+    Texture *hdrTexture = texture_create_hdr(hdrPath);
 
     // Framebuffer setup
     ui32 captureFBO, captureRBO;

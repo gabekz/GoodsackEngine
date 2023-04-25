@@ -43,10 +43,13 @@ in vec3 TexCoords;
 
 layout(binding = 0) uniform samplerCube skybox;
 
+uniform bool u_drawIrradiance = false;
+
 void
 main()
 {
-    vec3 envColor = textureLod(skybox, TexCoords, 1).rgb;
+    vec3 envColor = (u_drawIrradiance) ? textureLod(skybox, TexCoords, 1).rgb
+                                       : textureLod(skybox, TexCoords, 0).rgb;
     // envColor = envColor / (envColor + vec3(1.0));
     // envColor = pow(envColor, vec3(1.0/2.2));
 

@@ -15,4 +15,8 @@ postbuffer_resize(ui32 winWidth, ui32 winHeight);
 void
 postbuffer_cleanup();
 
+// TODO: Testing
+ui32
+postbuffer_getScreenTexture();
+
 #endif

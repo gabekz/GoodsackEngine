@@ -8,7 +8,9 @@
 extern "C" {
 #endif
 
-// void demo_scenes_create(int scene, ECS *ecs, Renderer *renderer);
+#define LOAD_ALL_SCENES 0
+#define INITIAL_SCENE  5 
+
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer);
 

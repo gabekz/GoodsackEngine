@@ -1,10 +1,7 @@
 #include "demo_scenes.h"
 
-#include <ecs/ecs.h>
-
-// #include <core/graphics/renderer/v1/renderer.h>
-
 #include <ecs/builtin/components.h>
+#include <ecs/ecs.h>
 
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
@@ -400,6 +397,10 @@ _scene5(ECS *ecs, Renderer *renderer)
     //_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
+#define GLUE_HELPER(x, y)   x##y
+#define GLUE(x, y)          GLUE_HELPER(x, y)
+#define LOAD_SCENE(__index) GLUE(_scene, __index)(ecs, renderer)
+
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
@@ -411,10 +412,14 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo    = texture_create_n("../res/textures/defaults/white.png");
 
-    _scene0(ecs, renderer);
-    _scene1(ecs, renderer);
-    _scene2(ecs, renderer);
-    _scene3(ecs, renderer);
-    _scene4(ecs, renderer);
-    _scene5(ecs, renderer);
+#if LOAD_ALL_SCENES
+    LOAD_SCENE(0);
+    LOAD_SCENE(1);
+    LOAD_SCENE(2);
+    LOAD_SCENE(3);
+    LOAD_SCENE(4);
+    LOAD_SCENE(5);
+#else
+    LOAD_SCENE(INITIAL_SCENE);
+#endif
 }

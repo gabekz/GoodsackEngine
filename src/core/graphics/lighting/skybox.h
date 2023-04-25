@@ -6,6 +6,8 @@
 
 #include <core/graphics/shader/shader.h>
 
+#define HDR_DRAW_IRRADIANCE 0
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,7 +32,7 @@ skybox_draw(Skybox *self);
 // HDR
 
 Skybox *
-skybox_hdr_create();
+skybox_hdr_create(const char *hdrPath);
 Texture *
 skybox_hdr_projection(Skybox *skybox);
 

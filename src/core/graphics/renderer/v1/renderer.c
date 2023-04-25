@@ -131,7 +131,8 @@ renderer_start(Renderer *renderer)
 
         renderer->skybox = skybox_create(skyboxCubemap);
 #else
-        Skybox *skybox = skybox_hdr_create();
+        Skybox *skybox = skybox_hdr_create(
+          "../res/textures/hdr/belfast_sunset_puresky_4k.hdr");
         skybox->shader = shader_create_program("../res/shaders/skybox.shader");
         renderer->skybox = skybox;
 
@@ -149,6 +150,8 @@ renderer_start(Renderer *renderer)
 
         // generate SSAO textures
         pass_ssao_init();
+
+        pass_confusion_init();
 
         // renderer->skybox = skybox_create(skyboxCubemap);
 
@@ -279,6 +282,15 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
       GL_DEBUG_SOURCE_APPLICATION, 4, -1, "Pass: Backbuffer Draw (Final)");
 
     postbuffer_draw(&renderer->properties);
+
+    glPopDebugGroup();
+
+    /*-------------------------------------------
+        Pass #5 - CoC
+    */
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 5, -1, "Pass: CoC");
+
+    pass_confusion_draw();
 
     glPopDebugGroup();
 

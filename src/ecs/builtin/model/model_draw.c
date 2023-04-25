@@ -61,6 +61,18 @@ DrawModel(struct ComponentModel *model,
 
             material_use(material);
 
+            // TESTING for normal map
+            if (renderer->currentPass == DEPTH_PREPASS) {
+                if (mesh->usingImportedMaterial &&
+                    mesh->materialImported->texturesCount > 1) {
+                    glActiveTexture(GL_TEXTURE10);
+                    texture_bind(mesh->materialImported->textures[1], 10);
+                } else if (!mesh->usingImportedMaterial) {
+                    glActiveTexture(GL_TEXTURE10);
+                    texture_bind(model->material->textures[1], 10);
+                }
+            }
+
             // Skinned Matrix array buffer
             if (mesh->meshData->isSkinnedMesh) {
                 mat4 skinnedMatrices[MAX_BONES];
