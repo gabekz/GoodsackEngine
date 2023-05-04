@@ -14,6 +14,8 @@
 #include <entity/component/ecs_component_layout_loader.hpp>
 #include <entity/ecs_entity.hpp>
 
+#include <entity/v1/ecs.h>
+
 // #include <entity/v1/builtin/transform/transform.h>
 
 using namespace entity;
@@ -29,7 +31,7 @@ LuaEventStore::GetInstance()
 }
 
 void
-LuaEventStore::Initialize(lua_State *L)
+LuaEventStore::Initialize(lua_State *L, ECS *ecs)
 {
     // create function store
     lua_newtable(L);
@@ -64,22 +66,27 @@ LuaEventStore::Initialize(lua_State *L)
     }
     s_Instance.m_entityListCount = testEntitiesCount;
 
-    s_Instance.m_componentsList =
-      (ECSComponent **)malloc(sizeof(ECSComponent *) * testEntitiesCount);
+    s_Instance.m_componentsList = (entity::ECSComponent **)malloc(
+      sizeof(entity::ECSComponent *) * testEntitiesCount);
     for (int i = 0; i < testEntitiesCount; i++) {
         s_Instance.m_componentsList[i] =
-          new ECSComponent(LuaEventStore::getLayout("ComponentCamera"));
+          new entity::ECSComponent(LuaEventStore::getLayout("ComponentTest"));
     }
+
+    // TODO: More testing
+    s_Instance.m_ecs = ecs;
 }
 
 int
 _meta_Component_newindex(lua_State *L)
 {
-    ECSComponent *c;
-    if (lua_isuserdata(L, 1)) { c = (ECSComponent *)lua_topointer(L, 1); }
+    entity::ECSComponent *c;
+    if (lua_isuserdata(L, 1)) {
+        c = (entity::ECSComponent *)lua_topointer(L, 1);
+    }
 
     const char *k = luaL_checkstring(L, -2);
-    int var;
+    float var;
 
     if (c->GetVariable(k, &var)) {
         var = luaL_checknumber(L, -1);
@@ -91,27 +98,31 @@ _meta_Component_newindex(lua_State *L)
     }
 }
 
+// NOTE: Return value is number of args pushed to stack
 int
 _meta_Component_index(lua_State *L)
 {
-    ECSComponent *c;
-    if (lua_isuserdata(L, 1)) { c = (ECSComponent *)lua_topointer(L, 1); }
+    entity::ECSComponent *c;
+    if (lua_isuserdata(L, 1)) {
+        c = (entity::ECSComponent *)lua_topointer(L, 1);
+    }
 
     const char *k = luaL_checkstring(L, -1);
-    int var;
+    float var;
     if (c->GetVariable(k, &var)) {
         lua_pushnumber(L, var);
+        return 1;
     } else {
         lua_pushnil(L);
+        return 0;
     }
-    return 1;
 }
 
 void
-pushEntity(lua_State *L, ECSEntity entity, ECSComponentLayout &layout)
+pushEntity(lua_State *L, int entityId, ECSComponentLayout &layout)
 {
 
-    std::string a = std::to_string(entity.getId());
+    std::string a = std::to_string(entityId);
     const char *tableName =
       a.append(layout.getName()).c_str(); // ? Must be unique
 
@@ -119,7 +130,7 @@ pushEntity(lua_State *L, ECSEntity entity, ECSComponentLayout &layout)
     lua_newtable(L);
     LUA_DUMP("newtable");
     lua_pushstring(L, "id");
-    lua_pushnumber(L, entity.getId());
+    lua_pushnumber(L, entityId);
     LUA_DUMP("pushstring and pushnumber");
     lua_settable(L, -3);
     LUA_DUMP("settable -3");
@@ -128,7 +139,7 @@ pushEntity(lua_State *L, ECSEntity entity, ECSComponentLayout &layout)
     // use luaL_getmetatable(L, const char *tname)
 
     // Create new metatable
-    lua_pushstring(L, "ComponentCamera"); // temp
+    lua_pushstring(L, "ComponentTest"); // temp
     LUA_DUMP("pushstring");
     luaL_newmetatable(L, tableName);
     lua_pushcfunction(L, _meta_Component_index);
@@ -140,7 +151,7 @@ pushEntity(lua_State *L, ECSEntity entity, ECSComponentLayout &layout)
     LUA_DUMP("After new metatable POP");
 
     lua_pushlightuserdata(
-      L, LuaEventStore::GetInstance().m_componentsList[entity.getId()]);
+      L, LuaEventStore::GetInstance().m_componentsList[entityId]);
     LUA_DUMP("After pushlightuserdata");
     luaL_setmetatable(L, tableName);
     LUA_DUMP("After setmetatable");
@@ -164,13 +175,10 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
         lua_rawgeti(L, -1, store.m_functionList[event]->functions[i]);
         if (lua_isfunction(L, -1)) {
             // send data to function
-            for (int j = 0; j < store.m_entityListCount; j++) {
+            for (ui32 j = 0; j < store.m_ecs->nextIndex; j++) {
                 // Push entity onto stack
                 LUA_DUMP("dump");
-                pushEntity(L,
-                           *store.m_entityList[j],
-                           LuaEventStore::getLayout("ComponentCamera"));
-
+                pushEntity(L, j, LuaEventStore::getLayout("ComponentTest"));
                 //  call event function
                 (CheckLua(L, lua_pcall(L, 1, 0, 0)));
                 if (j < store.m_entityListCount) {
@@ -180,7 +188,7 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
             }
         }
     }
-    lua_pop(L, 2);
+    lua_pop(L, 3);
     // <empty>
 }
 

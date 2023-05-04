@@ -8,17 +8,17 @@
 #include <entity/ecsdefs.h>
 
 // typedef void (*ECSSubscriber)(Entity);
-typedef void (*ECSSubscriber)();
+typedef void (*ECSSubscriber2)();
 
 namespace entity {
 
 union ECSSystem {
     struct
     {
-        ECSSubscriber init, destroy, render, update;
+        ECSSubscriber2 init, destroy, render, update;
     };
 
-    ECSSubscriber subscribers[ECSEVENT_LAST + 1];
+    ECSSubscriber2 subscribers[ECSEVENT_LAST + 1];
 };
 
 struct ECSSystemFunction

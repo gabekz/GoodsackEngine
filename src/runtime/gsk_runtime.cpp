@@ -69,9 +69,6 @@ gsk_runtime_setup(int argc, char *argv[])
     default: LOG_ERROR("Device API Failed to retreive Graphics Backend"); break;
     }
 
-    // Main Lua entry
-    LuaInit("../demo/demo_hot/Resources/scripts/main.lua");
-
     // Initialize Renderer
 #ifdef RENDERER_2
     Renderer renderer = new Renderer();
@@ -104,6 +101,9 @@ gsk_runtime_setup(int argc, char *argv[])
     device_setInput(
       (Input {.cursor_position = {0, 0}, .holding_right_button = 0}));
 
+    // Main Lua entry
+    LuaInit("../demo/demo_hot/Resources/scripts/main.lua", s_runtime.ecs);
+
 #endif
     return 0;
 }
@@ -112,20 +112,22 @@ void
 gsk_runtime_loop()
 {
     renderer_start(s_runtime.renderer); // Initialization for the render loop
+    entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
+    entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
     while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
 
         device_updateAnalytics(glfwGetTime());
         // LOG_INFO("FPS: %f", device_getAnalytics().currentFps);
 
         if (DEVICE_API_OPENGL) {
+            entity::LuaEventStore::ECSEvent(ECS_UPDATE);
             renderer_tick(s_runtime.renderer);
             s_runtime.debugGui->Render();
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
         } else if (DEVICE_API_VULKAN) {
             glfwPollEvents();
             // debugGui->Update();
-            ecs_event(s_runtime.ecs, ECS_UPDATE);
-
+            ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
             vulkan_render_draw_begin(s_runtime.renderer->vulkanDevice,
                                      s_runtime.renderer->window);
             s_runtime.renderer->currentPass = REGULAR;

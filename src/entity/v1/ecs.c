@@ -100,7 +100,7 @@ _ecs_add_internal(Entity entity, ui32 component_id, void *value)
 }
 
 int
-ecs_has(Entity entity, ECSComponent component_id)
+ecs_has(Entity entity, ECSComponentType component_id)
 {
     ECSComponentList *list = &entity.ecs->component_lists[component_id];
 
@@ -118,7 +118,7 @@ ecs_has(Entity entity, ECSComponent component_id)
 }
 
 void *
-ecs_get(Entity entity, ECSComponent component_id)
+ecs_get(Entity entity, ECSComponentType component_id)
 {
     assert(ecs_has(entity, component_id));
     ECSComponentList *list = &entity.ecs->component_lists[component_id];

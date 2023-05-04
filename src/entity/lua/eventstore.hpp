@@ -11,6 +11,8 @@
 #include <map>
 #include <string>
 
+#include <entity/v1/ecs.h>
+
 namespace entity {
 
 class LuaEventStore {
@@ -18,8 +20,8 @@ class LuaEventStore {
     LuaEventStore(const LuaEventStore &) = delete;
 
     static LuaEventStore &GetInstance();
-    static void Initialize(lua_State *L);
-    static void ECSEvent(ECSEvent event);
+    static void Initialize(lua_State *L, ECS *ecs);
+    static void ECSEvent(enum ECSEvent event);
 
     static ECSComponentLayout &getLayout(const char *layout)
     {
@@ -42,6 +44,8 @@ class LuaEventStore {
     ECSComponent **m_componentsList;
     size_t m_componentsListCount;
 
+    // TESTING 2
+    ECS *m_ecs;
 
    protected:
     struct Lua_Functions **m_functionList;

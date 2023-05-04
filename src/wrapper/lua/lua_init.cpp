@@ -12,14 +12,16 @@
 #include <wrapper/lua/lua_debug.h>
 #include <wrapper/lua/lua_reg_print.h>
 
+#include <entity/v1/ecs.h>
+
 void
-LuaInit(const char *file)
+LuaInit(const char *file, ECS *ecs)
 {
     lua_State *L = luaL_newstate();
     luaL_openlibs(L);
     luaopen_luaprintlib(L);
 
-    entity::LuaEventStore::Initialize(L);
+    entity::LuaEventStore::Initialize(L, ecs);
 
     // add the global C function (register system) to lua
     lua_register(L, "_ECS_RegisterSystem", entity::Lua_ECSRegisterSystem);

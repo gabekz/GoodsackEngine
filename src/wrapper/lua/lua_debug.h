@@ -7,12 +7,12 @@
 extern "C" {
 #endif
 
-#define LUA_DEBUG_ENABLE 1
+#define LUA_DEBUG_ENABLE 0
 
 #if LUA_DEBUG_ENABLE == 1
 #define LUA_DUMP(message) dumpstack(L, message)
 #else
-#define LUA_DUMP(message)
+#define LUA_DUMP(message) void()
 #endif
 
 int

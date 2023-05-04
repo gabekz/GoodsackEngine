@@ -17,6 +17,10 @@
 #define ecs_add(...) \
     _ecs_add_overload(__VA_ARGS__, _ecs_add3, _ecs_add2)(__VA_ARGS__)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct _ecs_entity Entity;
 typedef union _ecs_system ECSSystem;
 typedef struct _ecs_component_list ECSComponentList;
@@ -25,11 +29,6 @@ typedef void (*ECSSubscriber)(Entity);
 typedef ui64 EntityId;
 
 typedef struct _ecs ECS;
-
-#ifdef __cplusplus
-
-extern "C" {
-#endif
 
 #include <core/graphics/renderer/v1/renderer.h>
 
@@ -42,7 +41,7 @@ enum _ecs_component {
     C_ANIMATOR,
     C_MODEL,
 };
-typedef enum _ecs_component ECSComponent;
+typedef enum _ecs_component ECSComponentType;
 
 /*-------------------------------------------*/
 
@@ -109,9 +108,9 @@ Entity
 ecs_new(ECS *self);
 
 int
-ecs_has(Entity entity, ECSComponent component_id);
+ecs_has(Entity entity, ECSComponentType component_id);
 void *
-ecs_get(Entity entity, ECSComponent component_id);
+ecs_get(Entity entity, ECSComponentType component_id);
 
 void
 ecs_system_register(ECS *self, ECSSystem system);
@@ -120,8 +119,6 @@ ecs_component_register(ECS *self, ui32 component_id, ui64 size);
 
 void
 ecs_event(ECS *self, enum ECSEvent event);
-void
-lua_ecs_event(enum ECSEvent event, Entity e);
 
 #ifdef __cplusplus
 }
