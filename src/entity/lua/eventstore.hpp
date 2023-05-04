@@ -38,6 +38,11 @@ class LuaEventStore {
     int RetrieveLuaTable();
     struct Lua_Functions **getFunctionList() { return m_functionList; };
 
+    // TESTING
+    ECSComponent **m_componentsList;
+    size_t m_componentsListCount;
+
+
    protected:
     struct Lua_Functions **m_functionList;
 

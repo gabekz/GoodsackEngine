@@ -32,7 +32,7 @@ LuaInit(const char *file)
 
         entity::LuaEventStore::ECSEvent(ECS_INIT);
         entity::LuaEventStore::ECSEvent(ECS_UPDATE);
-        dumpstack(L, "end");
+        LUA_DUMP("end");
     }
 
     // lua_close(L);

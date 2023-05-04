@@ -15,6 +15,7 @@ end
 function system.update(e)
     print("From update()")
     print("received id: "..e.id.."")
+    print("speed is "..e.ComponentCamera.speed.."")
 end
 
 system.run = function() _ECS_RegisterSystem(system) end

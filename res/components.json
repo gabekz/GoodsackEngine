@@ -14,5 +14,10 @@
             "Material": ["material"],
             "Model": ["model"]
         }
+    },
+
+    "ComponentTest": {
+        "float": ["rotation_speed"],
+        "int": ["movement_increment"]
     }
 }

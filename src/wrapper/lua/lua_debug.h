@@ -7,6 +7,14 @@
 extern "C" {
 #endif
 
+#define LUA_DEBUG_ENABLE 1
+
+#if LUA_DEBUG_ENABLE == 1
+#define LUA_DUMP(message) dumpstack(L, message)
+#else
+#define LUA_DUMP(message)
+#endif
+
 int
 CheckLua(lua_State *L, int r);
 void
