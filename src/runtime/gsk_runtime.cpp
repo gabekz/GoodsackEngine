@@ -13,6 +13,8 @@
 
 #include <entity/lua/eventstore.hpp>
 
+#include <entity/v1/builtin/component_test.h>
+
 // #define RENDERER_2
 
 #ifdef RENDERER_2
@@ -112,10 +114,23 @@ void
 gsk_runtime_loop()
 {
     renderer_start(s_runtime.renderer); // Initialization for the render loop
-    entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
-    entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
-    while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
 
+    entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
+
+    // TODO: Testing -> Mapping from existing data
+    entity::LuaEventStore::GetInstance().m_componentsList[0]->MapFromExisting(
+      (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
+                      C_TEST),
+      entity::LuaEventStore::getLayout("ComponentTest"));
+
+    entity::LuaEventStore::GetInstance().m_componentsList[1]->MapFromExisting(
+      (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
+                      C_TEST),
+      entity::LuaEventStore::getLayout("ComponentTest"));
+
+    entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
+
+    while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
         device_updateAnalytics(glfwGetTime());
         // LOG_INFO("FPS: %f", device_getAnalytics().currentFps);
 

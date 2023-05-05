@@ -25,3 +25,12 @@ entity::ECSComponent::SetVariable(std::string var, void *value)
     }
     return 0;
 }
+
+void
+entity::ECSComponent::MapFromExisting(void *value, ECSComponentLayout &layout)
+{
+    m_Data.mem = value;
+    m_Data.size = layout.getSizeReq();
+
+    m_componentLayout = layout;
+}

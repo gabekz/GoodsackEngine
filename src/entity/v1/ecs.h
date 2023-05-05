@@ -39,6 +39,7 @@ enum _ecs_component {
     C_AUDIO_LISTENER,
     C_AUDIO_SOURCE,
     C_ANIMATOR,
+    C_TEST,
     C_MODEL,
 };
 typedef enum _ecs_component ECSComponentType;

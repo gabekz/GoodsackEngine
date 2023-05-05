@@ -16,7 +16,7 @@ ECSComponentLayout::ECSComponentLayout(const char *name) { m_Name = name; }
 void
 ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
 {
-    ulong sizeReq = 1; // TODO: Look into this, just to double check.
+    ulong sizeReq = 0;
     for (auto &var : data) {
         var.second.position = sizeReq;
         sizeReq += var.second.size;

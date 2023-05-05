@@ -12,7 +12,6 @@
 #include <entity/component/ecs_component.hpp>
 #include <entity/component/ecs_component_layout.hpp>
 #include <entity/component/ecs_component_layout_loader.hpp>
-#include <entity/ecs_entity.hpp>
 
 #include <entity/v1/ecs.h>
 
@@ -58,14 +57,7 @@ LuaEventStore::Initialize(lua_State *L, ECS *ecs)
     s_Instance.m_Layouts = entity::ParseComponents("../res/components.json");
 
     // TODO: Remove after testing
-    int testEntitiesCount = 10;
-    s_Instance.m_entityList =
-      (ECSEntity **)malloc(sizeof(ECSEntity **) * testEntitiesCount);
-    for (int i = 0; i < testEntitiesCount; i++) {
-        s_Instance.m_entityList[i] = new ECSEntity(i);
-    }
-    s_Instance.m_entityListCount = testEntitiesCount;
-
+    int testEntitiesCount       = 10;
     s_Instance.m_componentsList = (entity::ECSComponent **)malloc(
       sizeof(entity::ECSComponent *) * testEntitiesCount);
     for (int i = 0; i < testEntitiesCount; i++) {
@@ -86,7 +78,7 @@ _meta_Component_newindex(lua_State *L)
     }
 
     const char *k = luaL_checkstring(L, -2);
-    float var;
+    int var;
 
     if (c->GetVariable(k, &var)) {
         var = luaL_checknumber(L, -1);
@@ -108,7 +100,7 @@ _meta_Component_index(lua_State *L)
     }
 
     const char *k = luaL_checkstring(L, -1);
-    float var;
+    int var;
     if (c->GetVariable(k, &var)) {
         lua_pushnumber(L, var);
         return 1;
@@ -181,7 +173,7 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
                 pushEntity(L, j, LuaEventStore::getLayout("ComponentTest"));
                 //  call event function
                 (CheckLua(L, lua_pcall(L, 1, 0, 0)));
-                if (j < store.m_entityListCount) {
+                if (j < store.m_ecs->nextId) {
                     lua_rawgeti(
                       L, -1, store.m_functionList[event]->functions[i]);
                 }

@@ -35,6 +35,10 @@ struct ComponentLoaderTest : testing::Test
     "vec3": [ "position", "rotation", "scale" ],
     "float": [ "fov", "speed", "sensitivity" ],
     "mat4": [ "view", "projection" ]
+  },
+
+  "ComponentSingle": {
+    "int": [ "view"]
   }
 }
 )";
@@ -112,6 +116,37 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_Data)
     EXPECT_EQ(matrixA[3][3], matrixB[3][3]);
 
     delete (p);
+}
+
+struct C_ComponentSingle
+{
+    int view;
+};
+
+TEST_F(ComponentLoaderTest, Maps_To_C_Struct)
+{
+    C_ComponentSingle *cStruct =
+      (C_ComponentSingle *)malloc(sizeof(C_ComponentSingle));
+    cStruct->view= 32;
+
+    ECSComponent *p = new ECSComponent(*m_Layouts["ComponentSingle"]);
+    p->MapFromExisting(cStruct, *m_Layouts["ComponentSingle"]);
+
+    // Check size of C Struct against generated component
+    #if 0
+    ASSERT_EQ((ulong)sizeof(struct C_ComponentTransform), m_Layouts["ComponentSingle"]->getSizeReq());
+    #endif
+
+    // Check initial Get
+    int fetched_view = 0;
+    ASSERT_TRUE(p->GetVariable("view", &fetched_view));
+    ASSERT_EQ(fetched_view, 32);
+
+    // Check Set
+    int new_view = 64;
+    p->SetVariable("view", &new_view);
+    ASSERT_TRUE(p->GetVariable("view", &fetched_view));
+    ASSERT_EQ(fetched_view, 64);
 }
 
 /*

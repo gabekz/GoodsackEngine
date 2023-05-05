@@ -16,6 +16,8 @@
 
 #include <entity/v1/builtin/animator/animator.h>
 
+#include <entity/v1/builtin/component_test.h>
+
 ECS *
 ecs_init(Renderer *renderer)
 {
@@ -40,6 +42,9 @@ ecs_init(Renderer *renderer)
     s_audio_listener_init(ecs);
     s_audio_source_init(ecs);
     s_animator_init(ecs);
+
+    // TODO: REMOVE - FOR TESTING
+    ecs_component_register(ecs, C_TEST, sizeof(struct ComponentTest));
 
     //_ecs_init_internal(ecs);
 

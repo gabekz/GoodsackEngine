@@ -50,13 +50,12 @@
 #ifdef TRUE
 #undef TRUE
 #endif
-#define TRUE  1
+#define TRUE 1
 
 #ifdef FALSE
 #undef FALSE
 #endif
 #define FALSE 0
-
 
 #endif // __cplusplus
 

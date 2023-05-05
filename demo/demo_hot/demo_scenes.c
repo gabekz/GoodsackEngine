@@ -4,6 +4,7 @@
 
 // #include <core/graphics/renderer/v1/renderer.h>
 
+#include <entity/v1/builtin/component_test.h>
 #include <entity/v1/builtin/components.h>
 
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
@@ -311,6 +312,12 @@ _scene3(ECS *ecs, Renderer *renderer)
                                         texPbrAo);
 
     Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
+    _ecs_add_internal(camera,
+                      C_TEST,
+                      (void *)(&(struct ComponentTest) {
+                        .rotation_speed = 11, .movement_increment = 5,
+                        //.scale = {0.001f, 0.001f, 0.001f},
+                      }));
 
     Entity entCerb                              = ecs_new(ecs);
     struct ComponentTransform compCerbTransform = {
@@ -331,6 +338,12 @@ _scene3(ECS *ecs, Renderer *renderer)
 
     _ecs_add_internal(
       entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
+    _ecs_add_internal(entCerb,
+                      C_TEST,
+                      (void *)(&(struct ComponentTest) {
+                        .rotation_speed     = 50.0f,
+                        .movement_increment = 10,
+                      }));
 }
 
 static void

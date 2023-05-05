@@ -13,6 +13,7 @@ namespace entity {
 class ECSComponent {
    public:
     ECSComponent(ECSComponentLayout &layout);
+    void MapFromExisting(void *value, ECSComponentLayout &layout);
 
     const char *getName() { return m_componentLayout.getName(); };
 
@@ -39,7 +40,7 @@ entity::ECSComponent::GetVariable(std::string var, T *destination)
     Accessor acr = m_componentLayout.getAccessor(var);
     if (acr.size) {
         // printf("TEST T: %f", *(T *)((char *)m_Data.mem+acr.position));
-        *destination = *(T *)((char *)m_Data.mem + acr.position);
+        *destination = *(T *)((char *)m_Data.mem + (acr.position));
         return 1;
     }
     return 0;
