@@ -15,6 +15,7 @@ extern "C" {
 #include <core/device/device.h>
 #include <core/drivers/alsoft/alsoft_debug.h>
 
+#include <entity/v1/builtin/component_test.h>
 #include <entity/v1/builtin/components.h>
 
 #include <core/drivers/vulkan/vulkan.h>
@@ -441,6 +442,24 @@ DebugGui::Render()
 
             ImGui::EndChild();
         }
+        if (ecs_has(e, C_TEST)) {
+            ImGui::BeginChild("Lua Test Component",
+                              ImVec2(0, ImGui::GetFontSize() * 8.0f),
+                              true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("Lua Test Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            // wow, this is ridiculous..
+            struct ComponentTest &p =
+              *(static_cast<struct ComponentTest *>(ecs_get(e, C_TEST)));
+            int movement_increment = p.movement_increment;
+            float rotation_speed   = p.rotation_speed;
+            ImGui::Text("movement_increment: %d", movement_increment);
+            ImGui::Text("rotation_speed: %f", rotation_speed);
+
+            ImGui::EndChild();
+        }
 
         ImGui::End();
     }
@@ -489,10 +508,10 @@ DebugGui::Render()
         ImGui::PopStyleColor();
 
         static ImGuiComboFlags flags = 0;
-        // Using the generic BeginCombo() API, you have full control over how to
-        // display the combo contents. (your selection data could be an index, a
-        // pointer to the object, an id for the object, a flag intrusively
-        // stored in the object itself, etc.)
+        // Using the generic BeginCombo() API, you have full control over
+        // how to display the combo contents. (your selection data could be
+        // an index, a pointer to the object, an id for the object, a flag
+        // intrusively stored in the object itself, etc.)
         const char *items[] = {"Reinhard",
                                "Reinhard (Jodie)",
                                "Reinhard (Extended)",
@@ -501,8 +520,9 @@ DebugGui::Render()
         static int item_current_idx =
           0; // Here we store our selection data as an index.
         const char *combo_preview_value =
-          items[item_current_idx]; // Pass in the preview value visible before
-                                   // opening the combo (it could be anything)
+          items[item_current_idx]; // Pass in the preview value visible
+                                   // before opening the combo (it could be
+                                   // anything)
         if (ImGui::BeginCombo("Tonemapping", combo_preview_value, flags)) {
             for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
                 const bool is_selected = (item_current_idx == n);

@@ -338,12 +338,14 @@ _scene3(ECS *ecs, Renderer *renderer)
 
     _ecs_add_internal(
       entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
+#if 0
     _ecs_add_internal(entCerb,
                       C_TEST,
                       (void *)(&(struct ComponentTest) {
                         .rotation_speed     = 50.0f,
                         .movement_increment = 10,
                       }));
+#endif
 }
 
 static void

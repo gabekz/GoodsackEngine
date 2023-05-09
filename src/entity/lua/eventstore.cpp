@@ -10,7 +10,6 @@
 #include <wrapper/lua/lua_debug.h>
 
 #include <entity/component/ecs_component.hpp>
-#include <entity/component/ecs_component_layout.hpp>
 #include <entity/component/ecs_component_layout_loader.hpp>
 
 #include <entity/v1/ecs.h>
@@ -54,17 +53,13 @@ LuaEventStore::Initialize(lua_State *L, ECS *ecs)
     s_Instance.m_tableId = luaL_ref(L, LUA_REGISTRYINDEX);
     s_Instance.m_Lua     = L;
 
-    s_Instance.m_Layouts = entity::ParseComponents("../res/components.json");
+    s_Instance.m_Layouts =
+      entity::component::parse_components_from_json("../res/components.json");
 
     // TODO: Remove after testing
     int testEntitiesCount       = 10;
     s_Instance.m_componentsList = (entity::ECSComponent **)malloc(
       sizeof(entity::ECSComponent *) * testEntitiesCount);
-    for (int i = 0; i < testEntitiesCount; i++) {
-        s_Instance.m_componentsList[i] =
-          new entity::ECSComponent(LuaEventStore::getLayout("ComponentTest"));
-    }
-
     // TODO: More testing
     s_Instance.m_ecs = ecs;
 }
@@ -78,7 +73,7 @@ _meta_Component_newindex(lua_State *L)
     }
 
     const char *k = luaL_checkstring(L, -2);
-    int var;
+    float var;
 
     if (c->GetVariable(k, &var)) {
         var = luaL_checknumber(L, -1);
@@ -100,7 +95,7 @@ _meta_Component_index(lua_State *L)
     }
 
     const char *k = luaL_checkstring(L, -1);
-    int var;
+    float var;
     if (c->GetVariable(k, &var)) {
         lua_pushnumber(L, var);
         return 1;

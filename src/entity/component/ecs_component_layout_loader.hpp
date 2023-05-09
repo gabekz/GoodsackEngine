@@ -4,14 +4,22 @@
 #include <map>
 #include <string>
 
-#include <entity/component/ecs_component_layout.hpp>
+#include <entity/component/ecs_component.hpp>
 
 #include <util/sysdefs.h>
 
 namespace entity {
+namespace component {
 
-std::map<std::string, ECSComponentLayout *>
-ParseComponents(std::string path, ui32 rawData = 0);
+typedef std::map<std::string, ECSComponentLayout *> ComponentLayoutMap;
+
+ComponentLayoutMap
+parse_components_from_json(std::string path, ui32 rawData = 0);
+
+int
+generate_cpp_types(std::string path, ComponentLayoutMap);
+
+}; // namespace component
 
 }; // namespace entity
 

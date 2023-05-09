@@ -118,15 +118,17 @@ gsk_runtime_loop()
     entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
 
     // TODO: Testing -> Mapping from existing data
-    entity::LuaEventStore::GetInstance().m_componentsList[0]->MapFromExisting(
-      (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
-                      C_TEST),
-      entity::LuaEventStore::getLayout("ComponentTest"));
-
-    entity::LuaEventStore::GetInstance().m_componentsList[1]->MapFromExisting(
-      (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
-                      C_TEST),
-      entity::LuaEventStore::getLayout("ComponentTest"));
+    entity::LuaEventStore::GetInstance().m_componentsList[0] =
+      new entity::ECSComponent(
+        (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
+                        C_TEST),
+        entity::LuaEventStore::getLayout("ComponentTest"));
+    // TODO: Testing -> Mapping from existing data
+    entity::LuaEventStore::GetInstance().m_componentsList[1] =
+      new entity::ECSComponent(
+        (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
+                        C_TEST),
+        entity::LuaEventStore::getLayout("ComponentTest"));
 
     entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
 

@@ -4,7 +4,6 @@
 #include <vector>
 
 #include <entity/component/ecs_component.hpp>
-#include <entity/component/ecs_component_layout.hpp>
 #include <entity/ecsdefs.h>
 
 // typedef void (*ECSSubscriber)(Entity);

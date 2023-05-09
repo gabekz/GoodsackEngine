@@ -11,13 +11,12 @@
 #include <stdlib.h>
 
 #include <entity/component/ecs_component.hpp>
-#include <entity/component/ecs_component_layout.hpp>
 
 using json = nlohmann::json;
 using namespace entity;
 
-std::map<std::string, ECSComponentLayout *>
-entity::ParseComponents(std::string path, ui32 rawData)
+entity::component::ComponentLayoutMap
+entity::component::parse_components_from_json(std::string path, ui32 rawData)
 {
     json JSON;
 
@@ -79,7 +78,7 @@ entity::ParseComponents(std::string path, ui32 rawData)
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
 
-    /*
+#if 0
     Component *p = new Component(*layouts["ComponentCamera"]);
 
     vec3 vectorA = {0.25f, 5.8f, 1.0f};
@@ -91,7 +90,14 @@ entity::ParseComponents(std::string path, ui32 rawData)
     //glm_vec3_copy((float *)((char *)p->m_Data.mem+acr.position), asgn);
 
     printf("\n%f, %f, %f",asgn[0], asgn[1], asgn[2]);
-    */
+#endif
 
     return layouts;
+}
+
+int
+entity::component::generate_cpp_types(std::string path,
+                                      entity::component::ComponentLayoutMap)
+{
+    return 1;
 }

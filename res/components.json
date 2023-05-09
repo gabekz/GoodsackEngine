@@ -17,7 +17,7 @@
     },
 
     "ComponentTest": {
-        "float": ["rotation_speed"],
-        "int": ["movement_increment"]
+        "int": ["movement_increment"],
+        "float": ["rotation_speed"]
     }
 }

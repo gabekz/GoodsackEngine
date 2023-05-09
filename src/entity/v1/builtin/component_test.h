@@ -7,8 +7,8 @@ extern "C" {
 
 typedef struct ComponentTest
 {
-    float rotation_speed;
     int movement_increment;
+    float rotation_speed;
 } ComponentTest;
 
 #ifdef __cplusplus

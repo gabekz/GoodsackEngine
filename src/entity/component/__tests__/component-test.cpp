@@ -45,7 +45,11 @@ struct ComponentLoaderTest : testing::Test
 
     std::map<std::string, ECSComponentLayout *> m_Layouts;
 
-    ComponentLoaderTest() { m_Layouts = ParseComponents(rawComponentData, 1); }
+    ComponentLoaderTest()
+    {
+        m_Layouts =
+          entity::component::parse_components_from_json(rawComponentData, 1);
+    }
 };
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Numeric)
@@ -127,15 +131,15 @@ TEST_F(ComponentLoaderTest, Maps_To_C_Struct)
 {
     C_ComponentSingle *cStruct =
       (C_ComponentSingle *)malloc(sizeof(C_ComponentSingle));
-    cStruct->view= 32;
+    cStruct->view = 32;
 
-    ECSComponent *p = new ECSComponent(*m_Layouts["ComponentSingle"]);
-    p->MapFromExisting(cStruct, *m_Layouts["ComponentSingle"]);
+    ECSComponent *p = new ECSComponent(cStruct, *m_Layouts["ComponentSingle"]);
+// p->MapFromExisting(cStruct, *m_Layouts["ComponentSingle"]);
 
-    // Check size of C Struct against generated component
-    #if 0
+// Check size of C Struct against generated component
+#if 0
     ASSERT_EQ((ulong)sizeof(struct C_ComponentTransform), m_Layouts["ComponentSingle"]->getSizeReq());
-    #endif
+#endif
 
     // Check initial Get
     int fetched_view = 0;

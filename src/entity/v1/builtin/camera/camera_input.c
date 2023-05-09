@@ -4,7 +4,6 @@
 
 #include <core/device/device.h>
 
-#include <entity/v1/builtin/component_test.h>
 #include <entity/v1/builtin/transform/transform.h>
 
 void
@@ -24,15 +23,6 @@ camera_input(Entity cameraEntity, GLFWwindow *window)
     float *cross = GLM_VEC3_ZERO;
 
     float speed = camera->speed * device_getAnalytics().delta;
-
-    if (ecs_has(cameraEntity, C_TEST)) {
-        struct ComponentTest *test = ecs_get(cameraEntity, C_TEST);
-        test->rotation_speed       = 85.5f;
-        test->movement_increment   = 32;
-        LOG_DEBUG("Speed is %f\tMovement is %d",
-                  test->rotation_speed,
-                  test->movement_increment);
-    }
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         // LOG_INFO("PRESS %f%f%f", self->position[0], self->position[1],

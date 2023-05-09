@@ -5,15 +5,44 @@
 #include <string>
 #include <type_traits>
 
-#include <entity/component/ecs_component_layout.hpp>
 #include <util/maths.h>
+#include <util/sysdefs.h>
 
 namespace entity {
+
+typedef struct _datatype
+{
+    int size, stride;
+} DataType;
+
+typedef struct _accessor
+{
+    int position, size, stride;
+} Accessor;
+
+class ECSComponentLayout {
+   public:
+    ECSComponentLayout(const char *name);
+    ~ECSComponentLayout();
+
+    void SetData(std::map<std::string, Accessor> data);
+
+    std::map<std::string, Accessor> getData() { return m_Variables; };
+    Accessor getAccessor(std::string var) { return m_Variables[var]; };
+    ulong getSizeReq() { return m_SizeReq; };
+    const char *getName() { return m_Name; };
+
+   private:
+    std::map<std::string, Accessor> m_Variables;
+    ulong m_SizeReq;
+    char m_Name[256];
+    char m_NameType[256];
+};
 
 class ECSComponent {
    public:
     ECSComponent(ECSComponentLayout &layout);
-    void MapFromExisting(void *value, ECSComponentLayout &layout);
+    ECSComponent(void *pData, ECSComponentLayout &layout);
 
     const char *getName() { return m_componentLayout.getName(); };
 
@@ -27,6 +56,7 @@ class ECSComponent {
     {
         void *mem;
         int size, index;
+        char tag; // TODO: -testing
     } m_Data;
     ECSComponentLayout &m_componentLayout;
 };
