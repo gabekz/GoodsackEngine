@@ -127,8 +127,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "GoodsackEngine")
 if(GOODSACK_EXAMPLES)
     set(DEMO_EXE_NAME "demo")
     set(DEMO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/demo/demo_hot")
+    set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/demo/demo_hot/appicon.rc")
 
-    add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c")
+    add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c" ${APP_ICON_RESOURCE_WINDOWS})
     target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR})
 
     target_link_libraries(${DEMO_EXE_NAME} ${PROJECT_NAME})
@@ -211,6 +212,7 @@ set(CGLM_DIR "${LIB_DIR}/cglm")
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
 target_link_libraries(${PROJECT_NAME} cglm cglm_headers) 
 target_compile_definitions(${PROJECT_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
+target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 
 set_target_properties(cglm PROPERTIES FOLDER "ThirdParty")
 #target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")

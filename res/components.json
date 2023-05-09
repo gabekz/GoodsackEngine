@@ -7,13 +7,9 @@
     "ComponentCamera": {
         "vec3": [ "position", "rotation", "scale" ],
         "float": [ "fov", "speed", "sensitivity" ],
+        "mat4": ["view, projection"],
+        "Resource": ["material, model"]
 
-        "mvp": {
-            "mat4": [ "view", "projection" ],
-
-            "Material": ["material"],
-            "Model": ["model"]
-        }
     },
 
     "ComponentTest": {

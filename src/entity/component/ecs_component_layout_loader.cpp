@@ -13,7 +13,6 @@
 #include <entity/component/ecs_component.hpp>
 
 using json = nlohmann::json;
-using namespace entity;
 
 entity::component::ComponentLayoutMap
 entity::component::parse_components_from_json(std::string path, ui32 rawData)
@@ -26,36 +25,45 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
     } else {
         JSON = json::parse(path);
     }
-    // std::cout << JSON.items() << std::endl;
 
-    // std::vector<std::string> types = {"vec3", "float", "int"};
+    /* ----------------------------------------------------------
+        Data Types table                                       */
 
-    std::map<std::string, DataType> dataTypes;
-    dataTypes["int"]   = (DataType {sizeof(int), 1});
-    dataTypes["float"] = (DataType {sizeof(float), 1});
+    std::map<std::string, DataType> dataTypes = {
+      // Numeric
+      {"int", (DataType {sizeof(int), 1, DataType_E::TYPE_INT})},
+      {"float", (DataType {sizeof(float), 1, DataType_E::TYPE_FLOAT})},
+      {"bool", (DataType {sizeof(char), 1})},
+      // Vector
+      {"vec2", (DataType {sizeof(float), 2})},
+      {"vec3", (DataType {sizeof(float), 3})},
+      {"vec4", (DataType {sizeof(float), 4})},
+      // Matrix
+      {"mat2", (DataType {sizeof(float[2]), 2})},
+      {"mat3", (DataType {sizeof(float[3]), 3})},
+      {"mat4", (DataType {sizeof(float[4]), 4})},
+      // Resource reference (void ptr)
+      {"Resource", (DataType {sizeof(void *), 1})},
+    };
 
-    // dataTypes["vec2"]   = (DataType){sizeof(float), 2};
-    dataTypes["vec3"] = (DataType {sizeof(float), 3});
-    dataTypes["vec4"] = (DataType {sizeof(float), 4});
+    // ----------------------------------------------------------
 
-    // dataTypes["mat3"]   = (DataType){sizeof(vec3) * 4,  3};
-    dataTypes["mat4"] = (DataType {sizeof(vec4), 4});
-    // strings are handled differently
-
-    // std::vector<ComponentLayout*> layouts;
     std::map<std::string, ECSComponentLayout *> layouts;
 
     // Loop through every component
     for (auto &cmp : JSON.items()) {
-        std::map<std::string, Accessor> data;
 
-        // std::cout << cmp.key() << std::endl;
-
+        // Component Layout
         ECSComponentLayout *component =
           new ECSComponentLayout(cmp.key().c_str());
 
+        // Component Layout Data
+        std::map<std::string, Accessor> data;
+
         // Every type of available data
         for (auto type : dataTypes) {
+            // TODO: Switch loop to first check all data in the ComponentLayout
+            // rather than all dataTypes.
 
             json JData = JSON[cmp.key()][type.first];
             // Every variable of 'type' in the component
@@ -78,26 +86,34 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
 
-#if 0
-    Component *p = new Component(*layouts["ComponentCamera"]);
-
-    vec3 vectorA = {0.25f, 5.8f, 1.0f};
-    vec3 asgn = GLM_VEC3_ZERO_INIT;
-
-    p->SetVariable("position", vectorA);
-    p->GetVariable("position", &asgn);
-    //Accessor acr = layouts["ComponentCamera"]->getAccessor("position");
-    //glm_vec3_copy((float *)((char *)p->m_Data.mem+acr.position), asgn);
-
-    printf("\n%f, %f, %f",asgn[0], asgn[1], asgn[2]);
-#endif
-
     return layouts;
 }
 
 int
 entity::component::generate_cpp_types(std::string path,
-                                      entity::component::ComponentLayoutMap)
+                                      entity::component::ComponentLayoutMap map)
 {
+    std::cout << "// @generated" << std::endl;
+    std::cout << "#include <test.h>\n" << std::endl;
+    for (const auto &p : map) {
+        // std::cout << p.first << '\t' << p.second << std::endl;
+
+        std::string componentName = p.first;
+        // std::cout << "struct " << componentName << " {\n};" << std::endl;
+        std::cout << "struct " << componentName << " { " << std::endl;
+
+        ECSComponentLayout *layout = map[componentName];
+        for (const auto &q : layout->getData()) {
+            Accessor accessor = layout->getData()[q.first];
+
+            // TODO: Get data type
+            switch (accessor.position /* accessor.type */) {
+            default: break;
+            }
+            std::cout << "\t float " << q.first << ";" << std::endl;
+        }
+
+        std::cout << "};\n" << std::endl;
+    }
     return 1;
 }

@@ -10,14 +10,22 @@
 
 namespace entity {
 
+    enum class DataType_E {
+        TYPE_INT = 0,
+        TYPE_FLOAT,
+        TYPE_VEC3,
+    };
+
 typedef struct _datatype
 {
     int size, stride;
-} DataType;
+    DataType_E type;
+} DataType; // TODO: DataTypeContainer
 
 typedef struct _accessor
 {
     int position, size, stride;
+    DataType_E type;
 } Accessor;
 
 class ECSComponentLayout {
@@ -85,6 +93,21 @@ inline // vec3 specialization
     Accessor acr = m_componentLayout.getAccessor(var);
     if (acr.size) {
         glm_vec3_copy((float *)((char *)m_Data.mem + acr.position),
+                      *destination);
+        return 1;
+    }
+    return 0;
+}
+
+template <>
+inline // mat3 specialization
+  int
+  entity::ECSComponent::GetVariable<float[3][3]>(std::string var,
+                                                 float (*destination)[3][3])
+{
+    Accessor acr = m_componentLayout.getAccessor(var);
+    if (acr.size) {
+        glm_mat3_copy((vec3 *)((char *)m_Data.mem + acr.position),
                       *destination);
         return 1;
     }

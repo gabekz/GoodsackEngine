@@ -17,7 +17,7 @@ ComponentLayoutMap
 parse_components_from_json(std::string path, ui32 rawData = 0);
 
 int
-generate_cpp_types(std::string path, ComponentLayoutMap);
+generate_cpp_types(std::string path, ComponentLayoutMap map);
 
 }; // namespace component
 

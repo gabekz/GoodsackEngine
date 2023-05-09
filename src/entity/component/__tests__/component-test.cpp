@@ -37,8 +37,17 @@ struct ComponentLoaderTest : testing::Test
     "mat4": [ "view", "projection" ]
   },
 
+  "ComponentMat3Test": {
+    "mat3": ["val"]
+  },
+
   "ComponentSingle": {
     "int": [ "view"]
+  },
+
+  "ComponentWithResource": {
+    "int": [ "myInt1"],
+    "Resource": ["myResource"]
   }
 }
 )";
@@ -50,6 +59,7 @@ struct ComponentLoaderTest : testing::Test
         m_Layouts =
           entity::component::parse_components_from_json(rawComponentData, 1);
     }
+    virtual ~ComponentLoaderTest() { m_Layouts.clear(); }
 };
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Numeric)
@@ -67,8 +77,8 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Numeric)
     ASSERT_TRUE(p2->GetVariable("speed", &fvalue));
     EXPECT_EQ(fvalue, fnewValue);
 
-    delete (p);
-    delete (p2);
+    // delete (p);
+    // delete (p2);
 }
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Vec3)
@@ -84,17 +94,39 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Vec3)
     EXPECT_EQ(vectorA[0], vectorB[0]);
     EXPECT_EQ(vectorA[1], vectorB[1]);
     EXPECT_EQ(vectorA[2], vectorB[2]);
-    delete (p);
+    // delete (p);
 }
 
-TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_Data)
+TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_3x3_Data)
 {
-    ECSComponent *p = new ECSComponent(*m_Layouts["ComponentCamera"]);
+    ECSComponent *p = new ECSComponent(*m_Layouts["ComponentMat3Test"]);
+
+    mat3 matrixA = GLM_MAT3_IDENTITY_INIT;
+    mat3 matrixB = GLM_MAT3_ZERO_INIT;
+    p->SetVariable("val", &matrixA);
+    ASSERT_TRUE(p->GetVariable("val", &matrixB));
+
+    EXPECT_EQ(matrixA[0][0], matrixB[0][0]);
+    EXPECT_EQ(matrixA[0][1], matrixB[0][1]);
+    EXPECT_EQ(matrixA[0][2], matrixB[0][2]);
+
+    EXPECT_EQ(matrixA[1][0], matrixB[1][0]);
+    EXPECT_EQ(matrixA[1][1], matrixB[1][1]);
+    EXPECT_EQ(matrixA[1][2], matrixB[1][2]);
+
+    EXPECT_EQ(matrixA[2][0], matrixB[2][0]);
+    EXPECT_EQ(matrixA[2][1], matrixB[2][1]);
+    EXPECT_EQ(matrixA[2][2], matrixB[2][2]);
+}
+
+TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_4x4_Data)
+{
+    ECSComponent *q = new ECSComponent(*m_Layouts["ComponentCamera"]);
 
     mat4 matrixA = GLM_MAT4_IDENTITY_INIT;
     mat4 matrixB = GLM_MAT4_ZERO_INIT;
-    p->SetVariable("view", &matrixA);
-    ASSERT_TRUE(p->GetVariable("view", &matrixB));
+    q->SetVariable("view", &matrixA);
+    ASSERT_TRUE(q->GetVariable("view", &matrixB));
 
     // ASSERT_THAT(*matrixB, testing::Each(testing::AllOf(testing::Gt(-1),
     // testing::Lt(20))));
@@ -119,16 +151,16 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_Data)
     EXPECT_EQ(matrixA[3][2], matrixB[3][2]);
     EXPECT_EQ(matrixA[3][3], matrixB[3][3]);
 
-    delete (p);
+    // delete (p);
 }
-
-struct C_ComponentSingle
-{
-    int view;
-};
 
 TEST_F(ComponentLoaderTest, Maps_To_C_Struct)
 {
+    struct C_ComponentSingle
+    {
+        int view;
+    };
+
     C_ComponentSingle *cStruct =
       (C_ComponentSingle *)malloc(sizeof(C_ComponentSingle));
     cStruct->view = 32;
@@ -137,8 +169,8 @@ TEST_F(ComponentLoaderTest, Maps_To_C_Struct)
 // p->MapFromExisting(cStruct, *m_Layouts["ComponentSingle"]);
 
 // Check size of C Struct against generated component
-#if 0
-    ASSERT_EQ((ulong)sizeof(struct C_ComponentTransform), m_Layouts["ComponentSingle"]->getSizeReq());
+#if 1
+    ASSERT_EQ((size_t)sizeof(C_ComponentSingle), m_Layouts["ComponentSingle"]->getSizeReq());
 #endif
 
     // Check initial Get
@@ -153,14 +185,26 @@ TEST_F(ComponentLoaderTest, Maps_To_C_Struct)
     ASSERT_EQ(fetched_view, 64);
 }
 
-/*
-TEST_F(ComponentLoaderTest, Reads_Writes_Structs) {
-    EXPECT_EQ(1, 2);
-}
-*/
+TEST_F(ComponentLoaderTest, Reads_Writes_voidResource)
+{
+    struct FooResource
+    {
+        int value;
+        float value2;
+    };
 
-/*
-TEST_F(ComponentLoaderTest, Create_Undefined_Component) {
-    ecs::Component *p = new ecs::Component(*m_Layouts["ComponentUndefined"]);
+    ECSComponent *q = new ECSComponent(*m_Layouts["ComponentWithResource"]);
+
+    FooResource *foo = (FooResource *)malloc(sizeof(FooResource));
+    foo->value       = 100;
+    foo->value2      = 5.15f;
+
+    ASSERT_TRUE(q->SetVariable("myResource", &foo));
+
+    FooResource *fetched_foo = nullptr;
+
+    ASSERT_TRUE(q->GetVariable("myResource", &fetched_foo));
+    ASSERT_EQ(fetched_foo, foo);
+    ASSERT_EQ(fetched_foo->value, 100);
+    ASSERT_EQ(fetched_foo->value2, 5.15f);
 }
-*/

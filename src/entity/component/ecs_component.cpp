@@ -31,7 +31,7 @@ entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
     ulong sizeReq = 0;
     for (auto &var : data) {
         var.second.position = sizeReq;
-        sizeReq += var.second.size;
+        sizeReq += var.second.size * var.second.stride;
     }
 
     m_Variables = data;
@@ -41,7 +41,7 @@ entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
 entity::ECSComponent::ECSComponent(ECSComponentLayout &layout)
     : m_componentLayout(layout)
 {
-    m_Data.mem  = malloc((char)layout.getSizeReq());
+    m_Data.mem  = malloc(layout.getSizeReq());
     m_Data.size = layout.getSizeReq();
 }
 entity::ECSComponent::ECSComponent(void *pData, ECSComponentLayout &layout)
