@@ -14,7 +14,7 @@ transform_position(struct ComponentTransform *transform, vec3 position)
     mat4 matrix = GLM_MAT4_IDENTITY_INIT;
     glm_translate(matrix, position);
     glm_vec3_copy(position, transform->position);
-    glm_mat4_copy(matrix, transform->mvp.model);
+    glm_mat4_copy(matrix, transform->model);
 }
 
 /*
@@ -31,7 +31,7 @@ init(Entity e)
 
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
     glm_translate(m4i, transform->position);
-    glm_mat4_copy(m4i, transform->mvp.model);
+    glm_mat4_copy(m4i, transform->model);
 
     // TODO: stupid hack.
     float scaleCheck =
@@ -54,13 +54,13 @@ update(Entity e)
     mat4 m4i                             = GLM_MAT4_IDENTITY_INIT;
     glm_translate(m4i, transform->position);
     glm_scale(m4i, transform->scale);
-    glm_mat4_copy(m4i, transform->mvp.model);
+    glm_mat4_copy(m4i, transform->model);
 }
 
 void
 s_transform_init(ECS *ecs)
 {
-    _ECS_DECL_COMPONENT(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
+    //_ECS_DECL_COMPONENT(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,

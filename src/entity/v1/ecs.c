@@ -41,7 +41,7 @@ ecs_init(Renderer *renderer)
     s_animator_init(ecs);
 
     // TODO: REMOVE - FOR TESTING
-    _ECS_DECL_COMPONENT(ecs, C_TEST, sizeof(struct ComponentTest));
+    //_ECS_DECL_COMPONENT(ecs, C_TEST, sizeof(struct ComponentTest));
 
     //_ecs_init_internal(ecs);
 

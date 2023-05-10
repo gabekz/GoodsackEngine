@@ -13,8 +13,10 @@ _initialize_shader_data(struct ComponentCamera *camera)
 {
     // initialize default view and projection matrices
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
-    glm_mat4_copy(m4i, camera->uniform.view);
-    glm_mat4_copy(m4i, camera->uniform.proj);
+    //glm_mat4_copy(m4i, camera->uniform.view);
+    //glm_mat4_copy(m4i, camera->uniform.proj);
+    glm_mat4_copy(m4i, camera->view);
+    glm_mat4_copy(m4i, camera->proj);
 
     // Create UBO for camera data
     ui32 uboSize = 4 + sizeof(vec3) + (2 * sizeof(mat4));
@@ -51,26 +53,32 @@ _upload_shader_data(Entity e,
         glBufferSubData(GL_UNIFORM_BUFFER,
                         sizeof(vec3) + 4,
                         sizeof(mat4),
-                        camera->uniform.proj);
+                        //camera->uniform.proj);
+                        camera->proj);
         glBufferSubData(GL_UNIFORM_BUFFER,
                         sizeof(mat4) + sizeof(vec3) + 4,
                         sizeof(mat4),
-                        camera->uniform.view);
+                        //camera->uniform.view);
+                        camera->view);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     } else if (DEVICE_API_VULKAN) {
 
         // TEST (while we don't have direct descriptor sets for objects)
         mat4 p = GLM_MAT4_IDENTITY_INIT;
-        glm_mat4_copy(p, camera->uniform.model);
+        //glm_mat4_copy(p, camera->uniform.model);
+        glm_mat4_copy(p, camera->model);
         // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1, 0});
         // glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1, 0, 1});
-        camera->uniform.proj[1][1] *= -1;
+        camera->proj[1][1] *= -1;
+        //camera->uniform.proj[1][1] *= -1;
 
+        #if !(USING_GENERATED_COMPONENTS)
         memcpy(
           e.ecs->renderer->vulkanDevice
             ->uniformBuffersMapped[e.ecs->renderer->vulkanDevice->currentFrame],
           &camera->uniform,
           sizeof(camera->uniform));
+        #endif
     }
 }
 
@@ -83,13 +91,13 @@ init(Entity e)
     struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
-    camera->screen.width  = e.ecs->renderer->windowWidth;
-    camera->screen.height = e.ecs->renderer->windowHeight;
+    camera->screenWidth  = e.ecs->renderer->windowWidth;
+    camera->screenHeight = e.ecs->renderer->windowHeight;
 
     // Defaults
     if (camera->fov <= 0) { camera->fov = 45.0f; }
-    if (camera->clipping.nearZ <= 0) { camera->clipping.nearZ = 0.1f; }
-    if (camera->clipping.farZ <= 0) { camera->clipping.farZ = 100.0f; }
+    if (camera->nearZ <= 0) { camera->nearZ = 0.1f; }
+    if (camera->farZ <= 0) { camera->farZ = 100.0f; }
 
     // Create camera UBO
     _initialize_shader_data(camera);
@@ -172,18 +180,18 @@ update(Entity e)
     glm_vec3_add(transform->position, camera->front, p);
 
     // MVP: view
-    glm_lookat(transform->position, p, camera->axisUp, camera->uniform.view);
+    glm_lookat(transform->position, p, camera->axisUp, camera->view);
 
     // LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);
 
     float aspectRatio =
-      (float)camera->screen.width / (float)camera->screen.height;
+      (float)camera->screenWidth / (float)camera->screenHeight;
     // MVP: projection
     glm_perspective(glm_rad(camera->fov),
                     aspectRatio,
-                    camera->clipping.nearZ,
-                    camera->clipping.farZ,
-                    camera->uniform.proj);
+                    camera->nearZ,
+                    camera->farZ,
+                    camera->proj);
     // camera->uniform.proj[1][1] *= -1;
 
     // Update camera UBO
@@ -193,7 +201,7 @@ update(Entity e)
 void
 s_camera_init(ECS *ecs)
 {
-    _ECS_DECL_COMPONENT(ecs, C_CAMERA, sizeof(struct ComponentCamera));
+    //_ECS_DECL_COMPONENT(ecs, C_CAMERA, sizeof(struct ComponentCamera));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,

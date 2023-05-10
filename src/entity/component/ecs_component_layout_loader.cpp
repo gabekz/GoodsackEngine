@@ -89,6 +89,7 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
 
+    generate_cpp_types("test.h", layouts);
     return layouts;
 }
 
@@ -128,12 +129,14 @@ typedef (void *)(ResRef)
     }
     std::cout << "} ECSComponentTypes;\n" << std::endl;
 
+    // Create struct for each ECS Component Type
     for (const auto &p : map) {
         // std::cout << p.first << '\t' << p.second << std::endl;
 
         std::string componentName = p.first;
         // std::cout << "struct " << componentName << " {\n};" << std::endl;
-        std::cout << "typedef struct " << componentName << "_t { " << std::endl;
+        std::cout << "typedef struct "
+                  << "Component" << componentName << "_t { " << std::endl;
 
         ECSComponentLayout *layout = map[componentName];
         int lastPosition           = 0;
@@ -156,14 +159,27 @@ typedef (void *)(ResRef)
             case EcsDataType::VEC3: std::cout << "vec3 "; break;
             case EcsDataType::MAT3: std::cout << "mat3 "; break;
             case EcsDataType::MAT4: std::cout << "mat4 "; break;
-            case EcsDataType::RESOURCE: std::cout << "ResRef"; break;
+            case EcsDataType::RESOURCE: std::cout << "ResRef "; break;
             default: break;
             }
             std::cout << q.first << ";" << std::endl;
         }
 
         // Close struct
-        std::cout << "} " << componentName << ";\n" << std::endl;
+        std::cout << "} " << "Component" << componentName << ";\n" << std::endl;
     }
+
+    // Create initializer Component Register
+    std::cout << "static inline void\n_ecs_init_internal(ECS *ecs) {" << std::endl;
+    for (const auto &p : map) {
+        std::string nameUpper = p.first;
+        std::for_each(nameUpper.begin(), nameUpper.end(), [](char &c) {
+            c = ::toupper(c);
+        });
+        std::cout << "\tecs_component_register(ecs, C_" << nameUpper
+                  << ", sizeof(Component" << p.first << "));" << std::endl;
+    }
+    std::cout << "}" << std::endl;
+
     return 1;
 }

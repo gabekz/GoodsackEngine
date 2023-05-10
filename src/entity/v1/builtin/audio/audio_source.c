@@ -9,9 +9,9 @@
 static void
 init(Entity e)
 {
-    if (!(ecs_has(e, C_AUDIO_SOURCE))) return;
+    if (!(ecs_has(e, C_AUDIOSOURCE))) return;
 
-    struct ComponentAudioSource *audioSource = ecs_get(e, C_AUDIO_SOURCE);
+    struct ComponentAudioSource *audioSource = ecs_get(e, C_AUDIOSOURCE);
 
     audioSource->bufferId = openal_generate_source(audioSource->filePath);
 
@@ -24,8 +24,8 @@ init(Entity e)
 static void
 update(Entity e)
 {
-    if (!(ecs_has(e, C_AUDIO_SOURCE))) return;
-    struct ComponentAudioSource *audioSource = ecs_get(e, C_AUDIO_SOURCE);
+    if (!(ecs_has(e, C_AUDIOSOURCE))) return;
+    struct ComponentAudioSource *audioSource = ecs_get(e, C_AUDIOSOURCE);
 
     // Update position relative to transform
     if ((ecs_has(e, C_TRANSFORM))) {
@@ -46,8 +46,8 @@ update(Entity e)
 void
 s_audio_source_init(ECS *ecs)
 {
-    _ECS_DECL_COMPONENT(
-      ecs, C_AUDIO_SOURCE, sizeof(struct ComponentAudioSource));
+    //_ECS_DECL_COMPONENT(
+    //  ecs, C_AUDIO_SOURCE, sizeof(struct ComponentAudioSource));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,

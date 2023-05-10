@@ -5,6 +5,8 @@
 
 #include <core/device/device.h>
 
+#include <entity/__generated__/components_gen.h>
+
 static void
 init(Entity e)
 {
@@ -14,9 +16,11 @@ init(Entity e)
     struct ComponentAnimator *animator = ecs_get(e, C_ANIMATOR);
     struct ComponentModel *model       = ecs_get(e, C_MODEL);
 
-    if (!model->mesh->meshData->isSkinnedMesh) return;
+    Mesh *mesh = model->mesh;
 
-    Skeleton *skeleton   = model->mesh->meshData->skeleton;
+    if (!mesh->meshData->isSkinnedMesh) return;
+
+    Skeleton *skeleton   = mesh->meshData->skeleton;
     Animation *animation = skeleton->animation;
 
     animation_set_keyframe(animation, 0);
@@ -38,8 +42,9 @@ update(Entity e)
 
     struct ComponentAnimator *animator = ecs_get(e, C_ANIMATOR);
     struct ComponentModel *model       = ecs_get(e, C_MODEL);
+    Mesh *mesh                  = model->mesh;
 
-    if (!model->mesh->meshData->isSkinnedMesh) return;
+    if (!mesh->meshData->isSkinnedMesh) return;
 
 #if 0
     GLFWwindow *window = e.ecs->renderer->window;
@@ -57,7 +62,8 @@ update(Entity e)
 
     animator->timerNow += (device_getAnalytics().delta) * 1.0;
 
-    if (animator->timerNow >= animator->cntAnimation->duration) {
+    Animation *cntAnimation = animator->cntAnimation;
+    if (animator->timerNow >= cntAnimation->duration) {
         animator->timerNow = 0;
 
 #if 1 // for the sake of testing -> going to set keyframe to 1
@@ -71,10 +77,10 @@ update(Entity e)
     // LOG_INFO("Timer: %.2f", animator->timerNow);
 
     ui32 cntKeyframeIndex = animator->cntKeyframeIndex;
-    Keyframe *cntKeyframe = animator->cntAnimation->keyframes[cntKeyframeIndex];
+    Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
 
     ui32 nxtKeyframeIndex = cntKeyframeIndex + 1;
-    Keyframe *nxtKeyframe = animator->cntAnimation->keyframes[nxtKeyframeIndex];
+    Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];
 
     float ratio = (animator->timerNow - cntKeyframe->frameTime) /
                   (nxtKeyframe->frameTime - cntKeyframe->frameTime);
@@ -94,7 +100,7 @@ update(Entity e)
 void
 s_animator_init(ECS *ecs)
 {
-    _ECS_DECL_COMPONENT(ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
+    //_ECS_DECL_COMPONENT(ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,

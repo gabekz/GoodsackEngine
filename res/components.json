@@ -1,10 +1,45 @@
 {
+    "Animator": {
+        "int": [ "cntTime", "cntKeyframeIndex", "nxtKeyframeIndex" ],
+        "Resource": [ "cntAnimation"],
+        "float": [ "timerStart", "timerNow" ]
+    },
+
+    "AudioListener": {
+        "int": ["a"]
+    },
+
+    "AudioSource": {
+        "uint": ["bufferId"],
+        "string": ["filePath"],
+        "bool": ["looping"]
+    },
+
+    "Camera": {
+        "int": ["firstMouse", "screenWidth", "screenHeight"],
+        "uint": ["uboId"],
+        "float": ["fov", "speed", "sensitivity", "lastX", "lastY", "yaw", "pitch", "nearZ", "farZ"],
+        "vec3": ["axisUp", "center", "front"],
+        "mat4": ["model", "view", "proj"],
+        "Resource": ["uniformBuffer", "uniformBufferMemory", "uniformBufferMapped"]
+    },
+
+    "Light": {
+        "vec4": ["color"],
+        "uint": ["type"]
+    },
+
+    "Model": {
+        "Resource": [ "material", "mesh", "pModel"],
+        "uint": ["vbo"]
+    },
+
     "Transform": {
         "vec3": [ "position", "orientation", "scale" ],
         "mat4": [ "model" ]
     },
 
-    "ComponentTest": {
+    "Test": {
         "int": [ "movement_increment" ],
         "float": [ "rotation_speed" ]
     }

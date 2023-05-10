@@ -251,7 +251,7 @@ render(Entity e)
 void
 s_model_draw_init(ECS *ecs)
 {
-    _ECS_DECL_COMPONENT(ecs, C_MODEL, sizeof(struct ComponentModel));
+    //_ECS_DECL_COMPONENT(ecs, C_MODEL, sizeof(struct ComponentModel));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,

@@ -9,7 +9,7 @@
 static void
 init(Entity e)
 {
-    if (!(ecs_has(e, C_AUDIO_LISTENER))) return;
+    if (!(ecs_has(e, C_AUDIOLISTENER))) return;
 
     // TODO: Move initialization out of here. Should be initializing
     // Audio device in main program.
@@ -19,7 +19,7 @@ init(Entity e)
 static void
 update(Entity e)
 {
-    if (!(ecs_has(e, C_AUDIO_LISTENER))) return;
+    if (!(ecs_has(e, C_AUDIOLISTENER))) return;
 
     // AL_CHECK(alListener3f(AL_POSITION, 0, 0, 1.0f));
     // AL_CHECK(alListener3f(AL_VELOCITY, 0, 0, 0));
@@ -50,8 +50,8 @@ update(Entity e)
 void
 s_audio_listener_init(ECS *ecs)
 {
-    _ECS_DECL_COMPONENT(
-      ecs, C_AUDIO_LISTENER, sizeof(struct ComponentAudioListener));
+    //_ECS_DECL_COMPONENT(
+      //ecs, C_AUDIO_LISTENER, sizeof(struct ComponentAudioListener));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,
