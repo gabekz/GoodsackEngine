@@ -7,7 +7,7 @@
 #define _ECS_DECL_SYSTEM(_name) extern void _name##_init();
 
 #if USING_GENERATED_COMPONENTS
-#define _ECS_DECL_COMPONENT void()
+#define _ECS_DECL_COMPONENT(_self, _id, _size) void()
 #else
 #define _ECS_DECL_COMPONENT(_self, _id, _size) \
     ecs_component_register(_self, _id, _size)
