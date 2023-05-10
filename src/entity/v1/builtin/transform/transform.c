@@ -60,7 +60,7 @@ update(Entity e)
 void
 s_transform_init(ECS *ecs)
 {
-    ecs_component_register(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
+    _ECS_DECL_COMPONENT(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,

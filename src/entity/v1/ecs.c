@@ -7,16 +7,13 @@
 
 #include <util/sysdefs.h>
 
-#include <entity/v1/builtin/camera/camera.h>
-#include <entity/v1/builtin/model/model_draw.h>
-#include <entity/v1/builtin/transform/transform.h>
-
+#include <entity/v1/builtin/animator/animator.h>
 #include <entity/v1/builtin/audio/audio_listener.h>
 #include <entity/v1/builtin/audio/audio_source.h>
-
-#include <entity/v1/builtin/animator/animator.h>
-
+#include <entity/v1/builtin/camera/camera.h>
 #include <entity/v1/builtin/component_test.h>
+#include <entity/v1/builtin/model/model_draw.h>
+#include <entity/v1/builtin/transform/transform.h>
 
 ECS *
 ecs_init(Renderer *renderer)
@@ -44,7 +41,7 @@ ecs_init(Renderer *renderer)
     s_animator_init(ecs);
 
     // TODO: REMOVE - FOR TESTING
-    ecs_component_register(ecs, C_TEST, sizeof(struct ComponentTest));
+    _ECS_DECL_COMPONENT(ecs, C_TEST, sizeof(struct ComponentTest));
 
     //_ecs_init_internal(ecs);
 

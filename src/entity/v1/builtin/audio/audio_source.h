@@ -5,6 +5,7 @@
 
 #include <core/drivers/alsoft/alsoft.h>
 
+#if !(USING_GENERATED_COMPONENTS)
 typedef struct ComponentAudioSource
 {
     ALuint bufferId;
@@ -12,6 +13,7 @@ typedef struct ComponentAudioSource
 
     int looping;
 } ComponentAudioSource;
+#endif
 
 void
 s_audio_source_init(ECS *ecs);

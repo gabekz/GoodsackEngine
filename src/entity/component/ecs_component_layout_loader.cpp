@@ -29,21 +29,23 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
     /* ----------------------------------------------------------
         Data Types table                                       */
 
-    std::map<std::string, DataType> dataTypes = {
+    std::map<std::string, DataTypeContainer> dataTypes = {
       // Numeric
-      {"int", (DataType {sizeof(int), 1, DataType_E::TYPE_INT})},
-      {"float", (DataType {sizeof(float), 1, DataType_E::TYPE_FLOAT})},
-      {"bool", (DataType {sizeof(char), 1})},
+      {"int", (DataTypeContainer {sizeof(int), 1, EcsDataType::INT})},
+      {"uint", (DataTypeContainer {sizeof(ui32), 1, EcsDataType::UINT})},
+      {"float", (DataTypeContainer {sizeof(float), 1, EcsDataType::FLOAT})},
+      {"bool", (DataTypeContainer {sizeof(char), 1, EcsDataType::BOOL})},
       // Vector
-      {"vec2", (DataType {sizeof(float), 2})},
-      {"vec3", (DataType {sizeof(float), 3})},
-      {"vec4", (DataType {sizeof(float), 4})},
+      {"vec2", (DataTypeContainer {sizeof(float), 2, EcsDataType::VEC2})},
+      {"vec3", (DataTypeContainer {sizeof(float), 3, EcsDataType::VEC3})},
+      {"vec4", (DataTypeContainer {sizeof(float), 4, EcsDataType::VEC4})},
       // Matrix
-      {"mat2", (DataType {sizeof(float[2]), 2})},
-      {"mat3", (DataType {sizeof(float[3]), 3})},
-      {"mat4", (DataType {sizeof(float[4]), 4})},
+      {"mat2", (DataTypeContainer {sizeof(float[2]), 2, EcsDataType::MAT2})},
+      {"mat3", (DataTypeContainer {sizeof(float[3]), 3, EcsDataType::MAT3})},
+      {"mat4", (DataTypeContainer {sizeof(float[4]), 4, EcsDataType::MAT4})},
       // Resource reference (void ptr)
-      {"Resource", (DataType {sizeof(void *), 1})},
+      {"Resource",
+       (DataTypeContainer {sizeof(void *), 1, EcsDataType::RESOURCE})},
     };
 
     // ----------------------------------------------------------
@@ -76,8 +78,9 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
                     continue;
                 }
 
-                data[JData[i]] =
-                  (Accessor {0, type.second.size, type.second.stride});
+                // TODO: just use DataType inside of accessor...
+                data[JData[i]] = (Accessor {
+                  0, type.second.size, type.second.stride, type.second.type});
                 // std::cout << type.first << ": " << JData[i] << std::endl;
             }
         }
@@ -93,27 +96,74 @@ int
 entity::component::generate_cpp_types(std::string path,
                                       entity::component::ComponentLayoutMap map)
 {
-    std::cout << "// @generated" << std::endl;
-    std::cout << "#include <test.h>\n" << std::endl;
+    // Setup file for writing
+    // freopen(path.c_str(), "w", stdout);
+
+    // Header
+    std::string header = R"(
+// @generated file
+
+#include <util/maths.h>
+#include <util/sysdefs.h>
+
+//#ifdef __cplusplus
+//extern "C" {
+//#endif // __cplusplus
+
+typedef (void *)(ResRef)
+
+        )";
+
+    // Write header
+    std::cout << header << std::endl;
+
+    // Create ECS Component ENUM
+    std::cout << "typedef enum _ecs_component_types {" << std::endl;
+    for (const auto &p : map) {
+        std::string componentName = p.first;
+        std::for_each(componentName.begin(), componentName.end(), [](char &c) {
+            c = ::toupper(c);
+        });
+        std::cout << "C_" << componentName << "," << std::endl;
+    }
+    std::cout << "} ECSComponentTypes;\n" << std::endl;
+
     for (const auto &p : map) {
         // std::cout << p.first << '\t' << p.second << std::endl;
 
         std::string componentName = p.first;
         // std::cout << "struct " << componentName << " {\n};" << std::endl;
-        std::cout << "struct " << componentName << " { " << std::endl;
+        std::cout << "typedef struct " << componentName << "_t { " << std::endl;
 
         ECSComponentLayout *layout = map[componentName];
+        int lastPosition           = 0;
+
+        // Create struct data
         for (const auto &q : layout->getData()) {
             Accessor accessor = layout->getData()[q.first];
 
-            // TODO: Get data type
-            switch (accessor.position /* accessor.type */) {
+            // Check to make sure the order is correct
+            assert((accessor.position != 0) ? accessor.position > lastPosition
+                                            : lastPosition == 0);
+            lastPosition = accessor.position;
+
+            std::cout << "\t";
+            // TODO: change to inline converter
+            switch (accessor.type /* accessor.type */) {
+            case EcsDataType::INT: std::cout << "si32 "; break;
+            case EcsDataType::UINT: std::cout << "ui32 "; break;
+            case EcsDataType::FLOAT: std::cout << "f32 "; break;
+            case EcsDataType::VEC3: std::cout << "vec3 "; break;
+            case EcsDataType::MAT3: std::cout << "mat3 "; break;
+            case EcsDataType::MAT4: std::cout << "mat4 "; break;
+            case EcsDataType::RESOURCE: std::cout << "ResRef"; break;
             default: break;
             }
-            std::cout << "\t float " << q.first << ";" << std::endl;
+            std::cout << q.first << ";" << std::endl;
         }
 
-        std::cout << "};\n" << std::endl;
+        // Close struct
+        std::cout << "} " << componentName << ";\n" << std::endl;
     }
     return 1;
 }

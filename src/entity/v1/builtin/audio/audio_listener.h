@@ -3,10 +3,12 @@
 
 #include <entity/v1/ecs.h>
 
+#if !(USING_GENERATED_COMPONENTS)
 struct ComponentAudioListener
 {
     int a;
 };
+#endif
 
 void
 s_audio_listener_init(ECS *ecs);

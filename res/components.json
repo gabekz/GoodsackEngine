@@ -1,19 +1,11 @@
 {
-    "ComponentTransform": {
-        "vec3": [ "position", "axisUp" ],
-        "int": [ "uboId" ]
-    },
-
-    "ComponentCamera": {
-        "vec3": [ "position", "rotation", "scale" ],
-        "float": [ "fov", "speed", "sensitivity" ],
-        "mat4": ["view, projection"],
-        "Resource": ["material, model"]
-
+    "Transform": {
+        "vec3": [ "position", "orientation", "scale" ],
+        "mat4": [ "model" ]
     },
 
     "ComponentTest": {
-        "int": ["movement_increment"],
-        "float": ["rotation_speed"]
+        "int": [ "movement_increment" ],
+        "float": [ "rotation_speed" ]
     }
 }

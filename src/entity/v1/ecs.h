@@ -6,6 +6,13 @@
 
 #define _ECS_DECL_SYSTEM(_name) extern void _name##_init();
 
+#if USING_GENERATED_COMPONENTS
+#define _ECS_DECL_COMPONENT void()
+#else
+#define _ECS_DECL_COMPONENT(_self, _id, _size) \
+    ecs_component_register(_self, _id, _size)
+#endif
+
 #define _ecs_add3(e, c, v)                \
     ({                                    \
         __typeof__(v) _v = (v);           \
@@ -32,6 +39,12 @@ typedef struct _ecs ECS;
 
 #include <core/graphics/renderer/v1/renderer.h>
 
+#if USING_GENERATED_COMPONENTS
+
+#include <entity/__generated__/components_gen.h>
+
+#else
+
 #define ECSCOMPONENT_LAST C_MODEL
 enum _ecs_component {
     C_TRANSFORM = 0,
@@ -43,6 +56,8 @@ enum _ecs_component {
     C_MODEL,
 };
 typedef enum _ecs_component ECSComponentType;
+
+#endif
 
 /*-------------------------------------------*/
 

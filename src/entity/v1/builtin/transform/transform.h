@@ -4,6 +4,7 @@
 #include <entity/v1/ecs.h>
 #include <util/maths.h>
 
+#if !(USING_GENERATED_COMPONENTS)
 struct ComponentTransform
 {
     vec3 position, orientation, scale;
@@ -13,6 +14,7 @@ struct ComponentTransform
     } mvp;
     float test;
 };
+#endif
 
 void
 transform_position(struct ComponentTransform *transform, vec3 position);

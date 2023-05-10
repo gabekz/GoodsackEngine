@@ -1,0 +1,77 @@
+/* GSK Template
+
+All objects are stored in pools. i.e,
+
+Create a new Component in the @Component Pool by specifying:
+    @Component(ACCESSOR)
+
+    The ACCESSOR is self-explanatory - can be a string, uuid, etc.
+
+    ---------------------------------------------------
+    // Example  component creation:
+
+    // Creation
+    @Component("MyComponent") data [ int[ myInt ] ]
+
+    // Reference
+    $Component<"MyComponent">
+    ---------------------------------------------------
+
+
+
+*/
+
+
+---
+
+@Component("Transform") {
+    data
+    [
+        vec3[ position, orientation, scale ]
+        mat4[ model ]
+    ]
+}
+
+@Component("Test") data: []
+
+
+---
+
+Scene("Sponza")
+    @Entity("Camera")
+    [
+        $Component<"Transform"> [.scale={1, 1, 1}]
+        $Component<"MeshRenderer">
+    ]
+
+---
+
+@Resource("myAsset") : $MODEL {
+    $MODEL<data>: {
+        file_path: "../res/test/model.glb"
+    }
+
+    $MODEL<properties>: {
+        material_import:    false
+        animation_import:   false
+    }
+}
+
+@Resource("myTexture") : $TEXTURE {
+    $TEXTURE<data>: {
+        file_path: "../res/textures/texture.png"
+    }
+    $TEXTURE<properties>: {
+        wrapping: LINEAR
+    }
+}
+
+@Resource("myMaterial") : $MATERIAL {
+    $MATERIAL<shader>: {
+        shader_path:        "../res/shaders/test.shader"
+    }
+    $MATERIAL<textures>[HDR]: {
+        DIFFUSE: $Resource<"myTexture">
+        NORMAL:  $Resource<"myTexture">
+    }
+}

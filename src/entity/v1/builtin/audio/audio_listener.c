@@ -50,7 +50,7 @@ update(Entity e)
 void
 s_audio_listener_init(ECS *ecs)
 {
-    ecs_component_register(
+    _ECS_DECL_COMPONENT(
       ecs, C_AUDIO_LISTENER, sizeof(struct ComponentAudioListener));
     ecs_system_register(ecs,
                         ((ECSSystem) {

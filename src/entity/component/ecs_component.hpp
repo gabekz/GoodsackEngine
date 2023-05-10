@@ -10,23 +10,33 @@
 
 namespace entity {
 
-    enum class DataType_E {
-        TYPE_INT = 0,
-        TYPE_FLOAT,
-        TYPE_VEC3,
-    };
+enum class EcsDataType {
+    INT = 0,
+    UINT,
+    FLOAT,
+    BOOL,
+    VEC2,
+    VEC3,
+    VEC4,
+    MAT2,
+    MAT3,
+    MAT4,
+    RESOURCE,
+};
 
-typedef struct _datatype
+typedef struct DataTypeContainer_t
 {
     int size, stride;
-    DataType_E type;
-} DataType; // TODO: DataTypeContainer
+    EcsDataType type;
+} DataTypeContainer;
 
-typedef struct _accessor
+typedef struct Accessor_t
 {
     int position, size, stride;
-    DataType_E type;
+    EcsDataType type;
 } Accessor;
+
+//#define DATA_TYPE_TABLE
 
 class ECSComponentLayout {
    public:

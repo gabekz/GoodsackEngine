@@ -16,6 +16,8 @@ enum ECSEvent { ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE };
 #define ECS_TAG_UNUSED 0b00000000
 #define ECS_TAG_USED   0b00110000
 
+#define USING_GENERATED_COMPONENTS 0
+
 #ifdef __cplusplus
 extern "C" {
 #endif // extern "C"

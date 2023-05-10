@@ -7,6 +7,7 @@
 
 #include <entity/v1/ecs.h>
 
+#if !(USING_GENERATED_COMPONENTS)
 struct ComponentCamera
 {
     vec3 axisUp, center,
@@ -44,6 +45,7 @@ struct ComponentCamera
         mat4 model, view, proj;
     } uniform;
 };
+#endif
 
 void
 s_camera_init(ECS *ecs);

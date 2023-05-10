@@ -13,6 +13,7 @@
 #define CULL_FORWARD  0x00
 #define CULL_BACK     0x02
 
+#if !(USING_GENERATED_COMPONENTS)
 struct ComponentModel
 {
     Material *material;
@@ -29,5 +30,6 @@ struct ComponentModel
 
     ui32 vbo;
 };
+#endif
 
 #endif // H_C_MODEL

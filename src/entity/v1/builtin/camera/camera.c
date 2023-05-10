@@ -193,7 +193,7 @@ update(Entity e)
 void
 s_camera_init(ECS *ecs)
 {
-    ecs_component_register(ecs, C_CAMERA, sizeof(struct ComponentCamera));
+    _ECS_DECL_COMPONENT(ecs, C_CAMERA, sizeof(struct ComponentCamera));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,

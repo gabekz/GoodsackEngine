@@ -4,6 +4,7 @@
 #include <core/graphics/mesh/animation.h>
 #include <entity/v1/ecs.h>
 
+#if !(USING_GENERATED_COMPONENTS)
 struct ComponentAnimator
 {
     int cntTime;
@@ -13,6 +14,7 @@ struct ComponentAnimator
 
     int cntKeyframeIndex, nxtKeyframeIndex;
 };
+#endif
 
 void
 s_animator_init(ECS *ecs);

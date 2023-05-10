@@ -58,7 +58,7 @@ update(Entity e)
     animator->timerNow += (device_getAnalytics().delta) * 1.0;
 
     if (animator->timerNow >= animator->cntAnimation->duration) {
-        animator->timerNow         = 0;
+        animator->timerNow = 0;
 
 #if 1 // for the sake of testing -> going to set keyframe to 1
         animator->cntKeyframeIndex = 1;
@@ -94,7 +94,7 @@ update(Entity e)
 void
 s_animator_init(ECS *ecs)
 {
-    ecs_component_register(ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
+    _ECS_DECL_COMPONENT(ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,
