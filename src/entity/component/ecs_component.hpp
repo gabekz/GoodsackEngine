@@ -21,6 +21,7 @@ enum class EcsDataType {
     MAT2,
     MAT3,
     MAT4,
+    STRING,
     RESOURCE,
 };
 

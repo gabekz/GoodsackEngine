@@ -15,6 +15,11 @@
 #include <entity/v1/builtin/model/model_draw.h>
 #include <entity/v1/builtin/transform/transform.h>
 
+#if USING_GENERATED_COMPONENTS
+#define COMPONENTS_GEN_IMPLEMENTATION
+#include <entity/__generated__/components_gen.h>
+#endif
+
 ECS *
 ecs_init(Renderer *renderer)
 {
@@ -40,21 +45,11 @@ ecs_init(Renderer *renderer)
     s_audio_source_init(ecs);
     s_animator_init(ecs);
 
-    // TODO: REMOVE - FOR TESTING
-    //_ECS_DECL_COMPONENT(ecs, C_TEST, sizeof(struct ComponentTest));
-
-    //_ecs_init_internal(ecs);
-
-    ecs_component_register(ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
-    ecs_component_register(
-      ecs, C_AUDIOLISTENER, sizeof(struct ComponentAudioListener));
-    ecs_component_register(
-      ecs, C_AUDIOSOURCE, sizeof(struct ComponentAudioSource));
-    ecs_component_register(ecs, C_CAMERA, sizeof(struct ComponentCamera));
-    ecs_component_register(ecs, C_LIGHT, sizeof(struct ComponentLight));
-    ecs_component_register(ecs, C_MODEL, sizeof(struct ComponentModel));
-    ecs_component_register(ecs, C_TEST, sizeof(struct ComponentTest));
-    ecs_component_register(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
+#if USING_GENERATED_COMPONENTS
+    _ecs_init_internal_gen(ecs);
+#else
+    _ECS_DECL_COMPONENT(ecs, C_TEST, sizeof(struct ComponentTest));
+#endif
 
     return ecs;
 }

@@ -8,6 +8,8 @@
 
 #if USING_GENERATED_COMPONENTS
 #define _ECS_DECL_COMPONENT(_self, _id, _size) void()
+#define _ECS_DECL_COMPONENT_INTERN(_self, _id, _size) \
+    ecs_component_register(_self, _id, _size)
 #else
 #define _ECS_DECL_COMPONENT(_self, _id, _size) \
     ecs_component_register(_self, _id, _size)
