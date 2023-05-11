@@ -45,6 +45,17 @@ ecs_init(Renderer *renderer)
 
     //_ecs_init_internal(ecs);
 
+    ecs_component_register(ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
+    ecs_component_register(
+      ecs, C_AUDIOLISTENER, sizeof(struct ComponentAudioListener));
+    ecs_component_register(
+      ecs, C_AUDIOSOURCE, sizeof(struct ComponentAudioSource));
+    ecs_component_register(ecs, C_CAMERA, sizeof(struct ComponentCamera));
+    ecs_component_register(ecs, C_LIGHT, sizeof(struct ComponentLight));
+    ecs_component_register(ecs, C_MODEL, sizeof(struct ComponentModel));
+    ecs_component_register(ecs, C_TEST, sizeof(struct ComponentTest));
+    ecs_component_register(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
+
     return ecs;
 }
 

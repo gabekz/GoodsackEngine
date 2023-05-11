@@ -37,8 +37,9 @@ DrawModel(struct ComponentModel *model,
             printf("Disable culling");
         }
 #endif
-        for (int i = 0; i < model->pModel->meshesCount; i++) {
-            Mesh *mesh = model->pModel->meshes[i];
+        Model *pModel = model->pModel;
+        for (int i = 0; i < pModel->meshesCount; i++) {
+            Mesh *mesh = pModel->meshes[i];
             Material *material;
 
             // Select Material
@@ -79,7 +80,7 @@ DrawModel(struct ComponentModel *model,
             }
             mat4 newTranslation = GLM_MAT4_ZERO_INIT;
             glm_mat4_mul(
-              mesh->localMatrix, transform->mvp.model, newTranslation);
+              mesh->localMatrix, transform->model, newTranslation);
             // Transform Uniform
             glUniformMatrix4fv(
               glGetUniformLocation(material->shaderProgram->id, "u_Model"),
@@ -121,7 +122,8 @@ DrawModel(struct ComponentModel *model,
             ui32 vertices  = data->vertexCount;
             ui32 indices   = data->indicesCount;
 
-            ui16 drawMode = model->properties.drawMode;
+            //ui16 drawMode = model->drawMode;
+            ui16 drawMode = DRAW_ARRAYS;
 
             // glEnable(GL_CULL_FACE);
             // glCullFace(GL_BACK);
@@ -162,10 +164,10 @@ DrawModel(struct ComponentModel *model,
         // Bind Vertex/Index buffers
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(
-          commandBuffer, 0, 1, &model->mesh->vkVBO->buffer, offsets);
+          commandBuffer, 0, 1, &((Mesh *)model->mesh)->vkVBO->buffer, offsets);
 
         // Draw command
-        vkCmdDraw(commandBuffer, model->mesh->vkVBO->size, 1, 0, 0);
+        vkCmdDraw(commandBuffer, ((Mesh *)model->mesh)->vkVBO->size, 1, 0, 0);
     }
 }
 
@@ -184,9 +186,9 @@ init(Entity e)
     if (DEVICE_API_OPENGL) {
         model->pModel =
           model_load_from_file(model->modelPath, transform->scale[0]);
-        model->mesh = model->pModel->meshes[0];
+        model->mesh = ((Model *)model->pModel)->meshes[0];
         // send lightspace matrix from renderer to entity shader
-        ShaderProgram *shader = model->material->shaderProgram;
+        ShaderProgram *shader = ((Material *)model->material)->shaderProgram;
         shader_use(shader);
         glUniformMatrix4fv(
           glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
@@ -196,17 +198,17 @@ init(Entity e)
         // TODO: send model matrix to shader
     } else if (DEVICE_API_VULKAN) {
         model->mesh           = malloc(sizeof(Mesh));
-        model->mesh->meshData = load_obj(model->modelPath, transform->scale[0]);
+        ((Mesh *)(model->mesh))->meshData = load_obj(model->modelPath, transform->scale[0]);
 
         VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
 
-        model->mesh->vkVBO = vulkan_vertex_buffer_create(
+        (VulkanVertexBuffer *)model->vkVBO = vulkan_vertex_buffer_create(
           context->physicalDevice,
           context->device,
           context->graphicsQueue,
           context->commandPool,
-          model->mesh->meshData->buffers.out,
-          model->mesh->meshData->buffers.outI * sizeof(float));
+          ((Mesh *)model->mesh)->meshData->buffers.out,
+          ((Mesh *)model->mesh)->meshData->buffers.outI * sizeof(float));
     }
 }
 

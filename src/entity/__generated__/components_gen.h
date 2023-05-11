@@ -1,4 +1,6 @@
 // @generated file
+#ifndef H_COMPONENTS_GEN
+#define H_COMPONENTS_GEN
 
 #include <util/maths.h>
 #include <util/sysdefs.h>
@@ -10,7 +12,8 @@ extern "C" {
 #define ResRef void *
 
 #define ECSCOMPONENT_LAST C_TRANSFORM
-typedef enum _ecs_component_types {
+typedef enum _ecs_component_types ECSComponentType;
+enum _ecs_component_types {
     C_ANIMATOR = 0,
     C_AUDIOLISTENER,
     C_AUDIOSOURCE,
@@ -19,7 +22,7 @@ typedef enum _ecs_component_types {
     C_MODEL,
     C_TEST,
     C_TRANSFORM,
-} ECSComponentType;
+};
 
 struct ComponentAnimator
 {
@@ -80,6 +83,14 @@ struct ComponentModel
     ResRef mesh;
     ResRef pModel;
     ui32 vbo;
+    const char *modelPath;
+    void *vkVBO;
+    struct
+    {
+        ui16 renderMode : 1;
+        ui16 drawMode : 2;
+        ui16 cullMode : 3;
+    } properties;
 };
 
 struct ComponentTest
@@ -116,3 +127,5 @@ _ecs_init_internal(ECS *ecs)
 #ifdef __cplusplus
 }
 #endif // __cplusplus
+
+#endif // H_COMPONENTS_GEN
