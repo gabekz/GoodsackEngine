@@ -16,7 +16,7 @@
 #include <entity/v1/builtin/component_test.h>
 
 // #define RENDERER_2
-#define USING_LUA 0
+#define USING_LUA 1
 
 #ifdef RENDERER_2
 #include <core/graphics/renderer/renderer.hpp>
@@ -120,33 +120,32 @@ gsk_runtime_loop()
 
     entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
 
-    #if USING_LUA 
+#if USING_LUA
     // TODO: Testing -> Mapping from existing data
     entity::LuaEventStore::GetInstance().m_componentsList[0] =
       new entity::ECSComponent(
         (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
-                        C_TEST),
-        entity::LuaEventStore::getLayout("ComponentTest"));
+                        C_CAMERA),
+        entity::LuaEventStore::getLayout("Camera"));
     // TODO: Testing -> Mapping from existing data
     entity::LuaEventStore::GetInstance().m_componentsList[1] =
       new entity::ECSComponent(
         (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
-                        C_TEST),
-        entity::LuaEventStore::getLayout("ComponentTest"));
+                        C_CAMERA),
+        entity::LuaEventStore::getLayout("Camera"));
 
     // ECS Lua Init
     entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
-    #endif
-
+#endif
 
     while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
         device_updateAnalytics(glfwGetTime());
         // LOG_INFO("FPS: %f", device_getAnalytics().currentFps);
 
         if (DEVICE_API_OPENGL) {
-            #if USING_LUA
+#if USING_LUA
             entity::LuaEventStore::ECSEvent(ECS_UPDATE);
-            #endif
+#endif
             renderer_tick(s_runtime.renderer);
             s_runtime.debugGui->Render();
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.

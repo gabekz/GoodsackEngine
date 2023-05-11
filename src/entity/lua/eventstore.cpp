@@ -126,7 +126,7 @@ pushEntity(lua_State *L, int entityId, ECSComponentLayout &layout)
     // use luaL_getmetatable(L, const char *tname)
 
     // Create new metatable
-    lua_pushstring(L, "ComponentTest"); // temp
+    lua_pushstring(L, "Camera"); // temp
     LUA_DUMP("pushstring");
     luaL_newmetatable(L, tableName);
     lua_pushcfunction(L, _meta_Component_index);
@@ -165,7 +165,7 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
             for (ui32 j = 0; j < store.m_ecs->nextIndex; j++) {
                 // Push entity onto stack
                 LUA_DUMP("dump");
-                pushEntity(L, j, LuaEventStore::getLayout("ComponentTest"));
+                pushEntity(L, j, LuaEventStore::getLayout("Camera"));
                 //  call event function
                 (CheckLua(L, lua_pcall(L, 1, 0, 0)));
                 if (j < store.m_ecs->nextId) {

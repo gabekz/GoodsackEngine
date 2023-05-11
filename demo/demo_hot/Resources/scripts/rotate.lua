@@ -16,7 +16,7 @@ function system.update(entity)
     --Transform:RotateAxis(e.ComponentTransform, 0, 90, 0);
     --print("From rotate! id is: "..entity.id.."")
 
-    cmp = entity.ComponentTest
+    cmp = entity.Test
 
     if Input:GetKeyDown(Keycode.C) == true then
         newMove = cmp.movement_increment + (1 * delta_time());

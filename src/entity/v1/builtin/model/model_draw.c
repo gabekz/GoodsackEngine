@@ -79,8 +79,7 @@ DrawModel(struct ComponentModel *model,
                   (float *)*skinnedMatrices);
             }
             mat4 newTranslation = GLM_MAT4_ZERO_INIT;
-            glm_mat4_mul(
-              mesh->localMatrix, transform->model, newTranslation);
+            glm_mat4_mul(mesh->localMatrix, transform->model, newTranslation);
             // Transform Uniform
             glUniformMatrix4fv(
               glGetUniformLocation(material->shaderProgram->id, "u_Model"),
@@ -122,8 +121,7 @@ DrawModel(struct ComponentModel *model,
             ui32 vertices  = data->vertexCount;
             ui32 indices   = data->indicesCount;
 
-            //ui16 drawMode = model->drawMode;
-            ui16 drawMode = DRAW_ARRAYS;
+            ui16 drawMode = model->properties.drawMode;
 
             // glEnable(GL_CULL_FACE);
             // glCullFace(GL_BACK);
@@ -197,8 +195,9 @@ init(Entity e)
           (float *)e.ecs->renderer->lightSpaceMatrix);
         // TODO: send model matrix to shader
     } else if (DEVICE_API_VULKAN) {
-        model->mesh           = malloc(sizeof(Mesh));
-        ((Mesh *)(model->mesh))->meshData = load_obj(model->modelPath, transform->scale[0]);
+        model->mesh = malloc(sizeof(Mesh));
+        ((Mesh *)(model->mesh))->meshData =
+          load_obj(model->modelPath, transform->scale[0]);
 
         VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
 

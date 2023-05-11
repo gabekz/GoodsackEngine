@@ -37,8 +37,8 @@ LuaInit(const char *file, ECS *ecs)
         lua_getglobal(L, "main");
         if (lua_isfunction(L, -1)) { CheckLua(L, lua_pcall(L, 0, 0, 0)); }
 
-        entity::LuaEventStore::ECSEvent(ECS_INIT);
-        entity::LuaEventStore::ECSEvent(ECS_UPDATE);
+        // entity::LuaEventStore::ECSEvent(ECS_INIT);
+        // entity::LuaEventStore::ECSEvent(ECS_UPDATE);
         LUA_DUMP("end");
     }
 
