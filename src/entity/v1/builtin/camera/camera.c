@@ -13,8 +13,8 @@ _initialize_shader_data(struct ComponentCamera *camera)
 {
     // initialize default view and projection matrices
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
-    //glm_mat4_copy(m4i, camera->uniform.view);
-    //glm_mat4_copy(m4i, camera->uniform.proj);
+    // glm_mat4_copy(m4i, camera->uniform.view);
+    // glm_mat4_copy(m4i, camera->uniform.proj);
     glm_mat4_copy(m4i, camera->view);
     glm_mat4_copy(m4i, camera->proj);
 
@@ -53,32 +53,32 @@ _upload_shader_data(Entity e,
         glBufferSubData(GL_UNIFORM_BUFFER,
                         sizeof(vec3) + 4,
                         sizeof(mat4),
-                        //camera->uniform.proj);
+                        // camera->uniform.proj);
                         camera->proj);
         glBufferSubData(GL_UNIFORM_BUFFER,
                         sizeof(mat4) + sizeof(vec3) + 4,
                         sizeof(mat4),
-                        //camera->uniform.view);
+                        // camera->uniform.view);
                         camera->view);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     } else if (DEVICE_API_VULKAN) {
 
         // TEST (while we don't have direct descriptor sets for objects)
         mat4 p = GLM_MAT4_IDENTITY_INIT;
-        //glm_mat4_copy(p, camera->uniform.model);
+        // glm_mat4_copy(p, camera->uniform.model);
         glm_mat4_copy(p, camera->model);
         // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1, 0});
         // glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1, 0, 1});
         camera->proj[1][1] *= -1;
-        //camera->uniform.proj[1][1] *= -1;
+        // camera->uniform.proj[1][1] *= -1;
 
-        #if !(USING_GENERATED_COMPONENTS)
+#if !(USING_GENERATED_COMPONENTS)
         memcpy(
           e.ecs->renderer->vulkanDevice
             ->uniformBuffersMapped[e.ecs->renderer->vulkanDevice->currentFrame],
           &camera->uniform,
           sizeof(camera->uniform));
-        #endif
+#endif
     }
 }
 

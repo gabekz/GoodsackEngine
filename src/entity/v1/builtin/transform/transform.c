@@ -3,6 +3,9 @@
 #include <core/graphics/shader/shader.h>
 #include <entity/v1/ecs.h>
 
+//#define ECS_SYSTEM
+// ECS_SYSTEM_DECLARE()
+
 void
 transform_translate(struct ComponentTransform *transform, vec3 position)
 {
@@ -28,8 +31,18 @@ init(Entity e)
 {
     if (!(ecs_has(e, C_TRANSFORM))) return;
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    transform->hasParent                 = false; // if not already set..
 
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
+
+    // Get parent transform (if exists)
+    if (transform->parent) {
+        transform->hasParent = true;
+        struct ComponentTransform *parentTransform =
+          ecs_get(*(Entity *)transform->parent, C_TRANSFORM);
+        glm_mat4_copy(transform->parent, m4i);
+    }
+
     glm_translate(m4i, transform->position);
     glm_mat4_copy(m4i, transform->model);
 
@@ -47,11 +60,18 @@ init(Entity e)
 }
 
 static void
-update(Entity e)
+late_update(Entity e)
 {
     if (!(ecs_has(e, C_TRANSFORM))) return;
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
-    mat4 m4i                             = GLM_MAT4_IDENTITY_INIT;
+
+    mat4 m4i = GLM_MAT4_IDENTITY_INIT;
+    if (transform->hasParent) {
+        struct ComponentTransform *parent =
+          ecs_get(*(Entity *)transform->parent, C_TRANSFORM);
+        glm_mat4_copy(parent->model, m4i);
+    }
+
     glm_translate(m4i, transform->position);
     glm_scale(m4i, transform->scale);
     glm_mat4_copy(m4i, transform->model);
@@ -63,9 +83,10 @@ s_transform_init(ECS *ecs)
     //_ECS_DECL_COMPONENT(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
     ecs_system_register(ecs,
                         ((ECSSystem) {
-                          .init    = (ECSSubscriber)init,
-                          .destroy = NULL,
-                          .render  = NULL,
-                          .update  = (ECSSubscriber)update,
+                          .init        = (ECSSubscriber)init,
+                          .destroy     = NULL,
+                          .render      = NULL,
+                          .update      = NULL,
+                          .late_update = (ECSSubscriber)late_update,
                         }));
 }

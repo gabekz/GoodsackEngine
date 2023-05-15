@@ -51,10 +51,10 @@ main()
     normalMatrix      = transpose(normalMatrix);
     vs_out.normal     = normalize(normalMatrix * a_Normal);
 
-    vs_out.crntPos = vec3(u_Model * vec4(a_Position, 1.0));
-    // vs_out.texCoords = a_TexCoords;
+    vs_out.crntPos   = vec3(u_Model * vec4(a_Position, 1.0));
+    vs_out.texCoords = a_TexCoords;
     vs_out.aPosZ     = (u_Model * s_Camera.view * vec4(a_Position, 1)).z;
-    vs_out.texCoords = a_TexCoords * vs_out.aPosZ;
+    // vs_out.texCoords = a_TexCoords * vs_out.aPosZ;
     // vs_out.texCoords.xy /= normalize(vec2(1280, 720));
     vs_out.camPos = s_Camera.position;
 
@@ -100,7 +100,7 @@ out vec4 FragColor;
 vec3
 calcNormal(float strength)
 {
-    vec3 n = texture(t_Normal, fs_in.texCoords / fs_in.aPosZ).rgb;
+    vec3 n = texture(t_Normal, fs_in.texCoords).rgb;
     n      = n * 2.0 - 1.0;
     n.xy *= strength;
     n = normalize(fs_in.tbn * n);
@@ -171,7 +171,7 @@ light(int type)
     float specular = 0.0f;
     if (diffuse != 0.0f) {
         float specularLight =
-          1.00f * texture(t_Specular, fs_in.texCoords / fs_in.aPosZ).r;
+          1.00f * texture(t_Specular, fs_in.texCoords).r;
         vec3 viewDirection       = normalize(fs_in.camPos - fs_in.crntPos);
         vec3 reflectionDirection = reflect(-lightDirection, fs_in.normal);
 
@@ -195,7 +195,8 @@ main()
 {
     vec2 texCoords = fs_in.texCoords;
     // texCoords      = texCoords / normalize(vec2(1280, 720));
-    vec4 texColor = texture(t_Diffuse, texCoords / fs_in.aPosZ) * light(0);
+    // vec4 texColor = texture(t_Diffuse, texCoords / fs_in.aPosZ) * light(0);
+    vec4 texColor = texture(t_Diffuse, texCoords) * light(0);
 
     // float gamma = 2.2;
     // FragColor.rgb = pow(texColor.rgb, vec3(1.0/gamma));

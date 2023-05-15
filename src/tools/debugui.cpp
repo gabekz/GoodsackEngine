@@ -292,6 +292,7 @@ DebugGui::Render()
         if (ecs_has(e, C_TRANSFORM)) {
             ImGui::BeginChild(
               "Transform", ImVec2(0, ImGui::GetFontSize() * 8.0f), true);
+
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
             ImGui::Text("Transform Component");
             ImGui::PopStyleColor();
@@ -306,6 +307,15 @@ DebugGui::Render()
             ImGui::DragFloat3("Rotation", t, 0.1f, -3000, 3000);
             ImGui::EndDisabled();
             ImGui::DragFloat3("Scale", p.scale, -1, 1);
+            ImGui::Separator();
+            ImGui::Text("Parent Entity");
+            if (p.hasParent) {
+                ImGui::Text("index: %i", ((Entity *)p.parent)->index);
+                ImGui::Text("id: %i", ((Entity *)p.parent)->id);
+            } else {
+                ImGui::Text("None");
+            }
+
             ImGui::EndChild();
         }
         if (ecs_has(e, C_MODEL)) {
@@ -361,7 +371,9 @@ DebugGui::Render()
                 // Display textures
                 for (int i = 0; i < textureCount; i++) {
                     ImGui::Separator();
-                    ImGui::Image((void *)(intptr_t)((Material *)p.material)->textures[i]->id,
+                    ImGui::Image((void *)(intptr_t)((Material *)p.material)
+                                   ->textures[i]
+                                   ->id,
                                  ImVec2(200, 200),
                                  ImVec2(0, 1),
                                  ImVec2(1, 0));
@@ -420,7 +432,7 @@ DebugGui::Render()
             // ImGui::DragFloat("Gain", a.gain, 0.1f, -3000, 3000);
             // ImGui::DragFloat("Pitch", a.pitch, 0.1f, -3000, 3000);
             ImGui::BeginDisabled();
-            //ImGui::InputText("Audio File Path", (char *)a.filePath, 128);
+            // ImGui::InputText("Audio File Path", (char *)a.filePath, 128);
             ImGui::EndDisabled();
 
             if (ImGui::Button("Play")) { AL_CHECK(alSourcePlay(a.bufferId)); }

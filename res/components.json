@@ -37,7 +37,9 @@
 
     "Transform": {
         "vec3": [ "position", "orientation", "scale" ],
-        "mat4": [ "model" ]
+        "mat4": [ "model" ],
+        "bool": [ "hasParent" ],
+        "Resource": [ "parent" ]
     },
 
     "Test": {

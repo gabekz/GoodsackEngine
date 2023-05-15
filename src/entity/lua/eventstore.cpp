@@ -69,7 +69,8 @@ LuaEventStore::RegisterComponentList(ECSComponentType componentIndex,
 }
 
 void
-LuaEventStore::RegisterComponentList(ECSComponentType componentIndex, const char *layoutKey)
+LuaEventStore::RegisterComponentList(ECSComponentType componentIndex,
+                                     const char *layoutKey)
 {
     entity::LuaEventStore::GetInstance().m_componentsList[componentIndex] =
       new entity::ECSComponentList(componentIndex,
@@ -203,33 +204,33 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
     lua_getfield(L, -1, fName); // retrieve all functions of 'fName'
     for (int i = 0; i < store.m_functionList[event]->size; i++) {
         // retreive function
-        LUA_DUMP(L, "Before rawgeti"); /* stack: <[-1] Table> <[-2] Table> */
+        LUA_DUMP("Before rawgeti"); /* stack: <[-1] Table> <[-2] Table> */
         // lua_pop(L, 1);
         lua_rawgeti(L, -1, store.m_functionList[event]->functions[i]);
         if (lua_isfunction(L, -1)) {
             // send data to function
             for (ui32 j = 0; j < store.m_ecs->nextIndex; j++) {
                 // Push entity onto stack
-                LUA_DUMP(L, "dump");
+                LUA_DUMP("dump");
                 // lua_pop(L, 1);
                 // lua_rawgeti(L, (int)j - 1,
                 // store.m_functionList[event]->functions[i]);
                 pushEntity(L, (int)j, LuaEventStore::getLayout("Camera"));
-                LUA_DUMP(L, "Pushed Entity (Table)");
+                LUA_DUMP("Pushed Entity (Table)");
                 //  call event function
                 (CheckLua(L, lua_pcall(L, 1, 0, 0)));
-                LUA_DUMP(L, "lua_pcall");
+                LUA_DUMP("lua_pcall");
                 // push same function for next entity
                 if (j + 1 < store.m_ecs->nextIndex) {
                     lua_rawgeti(
                       L, -1, store.m_functionList[event]->functions[i]);
-                    LUA_DUMP(L, "j+1 <= nextIndex -> rawgeti -1");
+                    LUA_DUMP("j+1 <= nextIndex -> rawgeti -1");
                 }
             }
         }
     }
     lua_pop(L, 2);
-    LUA_DUMP(L, "Should be empty...");
+    LUA_DUMP("Should be empty...");
     // <empty>
 }
 

@@ -417,6 +417,81 @@ _scene5(ECS *ecs, Renderer *renderer)
     //_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
+// Transform-Parent test
+static void
+_scene6(ECS *ecs, Renderer *renderer)
+{
+    ecs = renderer_active_scene(renderer, 6);
+
+    Texture *texContDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/container/diffuse.png");
+    Texture *texContSpec = texture_create_n(
+      "../demo/demo_hot/Resources/textures/container/specular.png");
+
+    Texture *texBrickDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
+    Texture *texBrickNorm = texture_create_n(
+      "../demo/demo_hot/Resources/textures/brickwall/normal.png");
+
+    Material *matFloor = material_create(NULL,
+                                         "../res/shaders/lit-diffuse.shader",
+                                         3,
+                                         texBrickDiff,
+                                         texBrickNorm,
+                                         texDefSpec);
+    Material *matBox   = material_create(NULL,
+                                       "../res/shaders/lit-diffuse.shader",
+                                       3,
+                                       texContDiff,
+                                       texDefNorm,
+                                       texContSpec);
+
+    Entity *pCamera = malloc(sizeof(Entity));
+
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    Entity camera = *pCamera;
+
+    // Testing entity on heap memory
+    Entity *pFloorEntity = malloc(sizeof(Entity));
+    *pFloorEntity        = ecs_new(ecs);
+    Entity floorEntity   = *pFloorEntity;
+
+    _ecs_add_internal(floorEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, -0.3f, 0.0f},
+                        .scale    = {10.0f, 10.0f, 10.0f},
+                      }));
+    _ecs_add_internal(
+      floorEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material  = matFloor,
+                                         .modelPath = "../res/models/plane.obj",
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
+
+    Entity *pBoxEntity = malloc(sizeof(Entity));
+    *pBoxEntity        = ecs_new(ecs);
+    Entity boxEntity   = *pBoxEntity;
+    _ecs_add_internal(boxEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, -0.085f, -1.0f},
+                        .parent   = pCamera,
+                      }));
+    _ecs_add_internal(
+      boxEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material   = matBox,
+                                         .modelPath  = "../res/models/cube.obj",
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
+}
+
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
@@ -433,5 +508,6 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     //_scene2(ecs, renderer);
     //_scene3(ecs, renderer);
     //_scene4(ecs, renderer);
-    _scene5(ecs, renderer);
+    //_scene5(ecs, renderer);
+    _scene6(ecs, renderer);
 }

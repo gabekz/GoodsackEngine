@@ -6,6 +6,8 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
+#include <entity/ecsdefs.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif //__cplusplus
@@ -108,6 +110,8 @@ struct ComponentTransform
     vec3 orientation;
     vec3 position;
     vec3 scale;
+    ui32 hasParent;
+    void *parent;
 };
 
 #ifdef __cplusplus

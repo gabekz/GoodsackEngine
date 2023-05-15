@@ -109,7 +109,7 @@ struct _ecs
 union _ecs_system {
     struct
     {
-        ECSSubscriber init, destroy, render, update;
+        ECSSubscriber init, destroy, render, update, late_update;
     };
 
     ECSSubscriber subscribers[ECSEVENT_LAST + 1];

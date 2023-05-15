@@ -187,6 +187,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     */
     glfwPollEvents();
     ecs_event(ecs, ECS_UPDATE);
+    ecs_event(ecs, ECS_LATE_UPDATE);
 
     /*-------------------------------------------
         Pass #0 - Depth Prepass

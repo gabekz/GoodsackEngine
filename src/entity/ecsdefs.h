@@ -4,11 +4,17 @@
 // #ifdef __cplusplus
 // enum ECSEvent { ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE };
 // #else
-enum ECSEvent { ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE };
+enum ECSEvent {
+    ECS_INIT = 0,
+    ECS_DESTROY,
+    ECS_RENDER,
+    ECS_UPDATE,
+    ECS_LATE_UPDATE
+};
 // #endif // __cplusplus
 
 #define ECSEVENT_FIRST ECS_INIT
-#define ECSEVENT_LAST  ECS_UPDATE
+#define ECSEVENT_LAST  ECS_LATE_UPDATE
 
 #define ECSEVENT_STRING(x) (_ecs_EventToString(x))
 
@@ -31,12 +37,17 @@ _ecs_EventToString(int event)
     case ECS_DESTROY: return "destroy";
     case ECS_RENDER: return "render";
     case ECS_UPDATE: return "update";
+    case ECS_LATE_UPDATE: return "late_update";
     default: return "";
     }
 }
 
 #ifdef __cplusplus
 } // extern "C"
+#endif
+
+#ifdef ECS_SYSTEM
+//#define ECS_SYSTEM_DECLARE(_name) static
 #endif
 
 #endif // H_ECSDEFS
