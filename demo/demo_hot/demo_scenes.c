@@ -319,6 +319,7 @@ _scene3(ECS *ecs, Renderer *renderer)
                         //.scale = {0.001f, 0.001f, 0.001f},
                       }));
 
+#if 1
     Entity entCerb                              = ecs_new(ecs);
     struct ComponentTransform compCerbTransform = {
       .position = {0.0f, 0.0f, 0.0f},
@@ -338,6 +339,7 @@ _scene3(ECS *ecs, Renderer *renderer)
 
     _ecs_add_internal(
       entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
+#endif
 #if 0
     _ecs_add_internal(entCerb,
                       C_TEST,

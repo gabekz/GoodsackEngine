@@ -99,7 +99,7 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
 
-    generate_cpp_types("test.h", layouts);
+    // generate_cpp_types("test.h", layouts);
     return layouts;
 }
 

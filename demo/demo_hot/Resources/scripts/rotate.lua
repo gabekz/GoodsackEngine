@@ -15,17 +15,8 @@ end
 function system.update(entity)
     --Transform:RotateAxis(e.ComponentTransform, 0, 90, 0);
     --print("From rotate! id is: "..entity.id.."")
+    print("from update in rotate")
 
-    cmp = entity.Test
-
-    if Input:GetKeyDown(Keycode.C) == true then
-        newMove = cmp.movement_increment + (1 * delta_time());
-        cmp.movement_increment = newMove
-    end
-    if Input:GetKeyDown(Keycode.X) == true then
-        newRot = cmp.rotation_speed + (1 * delta_time());
-        cmp.rotation_speed = newRot
-    end
 
     --Transform.translate(entity.ComponentTransform, vec3:new(0, 0, 0));
 

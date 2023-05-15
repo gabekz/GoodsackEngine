@@ -37,6 +37,11 @@ static struct
 }
 
 static void
+_lua_test_create_componentlist()
+{
+}
+
+static void
 _gsk_check_args(int argc, char *argv[])
 {
     if (argc > 1) {
@@ -57,7 +62,7 @@ gsk_runtime_setup(int argc, char *argv[])
 {
     // Setup logger
     int logStat = logger_initConsoleLogger(NULL);
-    logger_initFileLogger("logs/logs.txt", 0, 0);
+    // logger_initFileLogger("logs/logs.txt", 0, 0);
 
     logger_setLevel(LogLevel_TRACE);
     logger_setDetail(LogDetail_SIMPLE);
@@ -118,21 +123,17 @@ gsk_runtime_loop()
 {
     renderer_start(s_runtime.renderer); // Initialization for the render loop
 
+#if USING_LUA
+
+    // Register components in Lua ECS
+
     entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
 
-#if USING_LUA
-    // TODO: Testing -> Mapping from existing data
-    entity::LuaEventStore::GetInstance().m_componentsList[0] =
-      new entity::ECSComponent(
-        (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
-                        C_CAMERA),
-        entity::LuaEventStore::getLayout("Camera"));
-    // TODO: Testing -> Mapping from existing data
-    entity::LuaEventStore::GetInstance().m_componentsList[1] =
-      new entity::ECSComponent(
-        (void *)ecs_get(Entity {.id = 1, .index = 0, .ecs = s_runtime.ecs},
-                        C_CAMERA),
-        entity::LuaEventStore::getLayout("Camera"));
+    entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERA,
+                                                               "Camera");
+    entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
+                                                               "Transform");
+    entity::LuaEventStore::GetInstance().RegisterComponentList(C_TEST, "Test");
 
     // ECS Lua Init
     entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE

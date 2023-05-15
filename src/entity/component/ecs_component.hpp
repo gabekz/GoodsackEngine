@@ -8,6 +8,8 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
+#include <entity/v1/ecs.h>
+
 namespace entity {
 
 enum class EcsDataType {
@@ -79,6 +81,18 @@ class ECSComponent {
     } m_Data;
     ECSComponentLayout &m_componentLayout;
 };
+
+// TODO: This is a really fucking stupid class. Should not
+// exist (at least not in this way). Slow as fuck, and eats a lot
+// of memory
+class ECSComponentList {
+   public:
+    ECSComponentList(ECSComponentType componentTypeIndex, ECSComponentLayout &layout);
+
+    ECSComponentLayout &m_componentLayout;
+    ECSComponent **m_components; // TODO: This is what I am talking about.
+};
+
 
 } // namespace entity
 

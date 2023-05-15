@@ -40,8 +40,12 @@ class LuaEventStore {
     struct Lua_Functions **getFunctionList() { return m_functionList; };
 
     // TESTING
-    ECSComponent **m_componentsList;
-    size_t m_componentsListCount;
+    // ECSComponent **m_componentsList;
+    // size_t m_componentsListCount;
+    ECSComponentList *m_componentsList[ECSCOMPONENT_LAST + 1];
+
+    void RegisterComponentList(ECSComponentType componentIndex, ECSComponentLayout &layout);
+    void RegisterComponentList(ECSComponentType componentIndex, const char *layoutKey);
 
     // TESTING 2
     ECS *m_ecs;
