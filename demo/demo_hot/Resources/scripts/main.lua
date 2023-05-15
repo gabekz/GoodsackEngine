@@ -2,11 +2,13 @@
 package.path = '../demo/demo_hot/Resources/scripts/?.lua;' .. package.path
 
 -- setup systems to run
--- require("ecs-system").run()
---require("ecs-system2").run()
-require("rotate").run()
+--require("ecs-system").run()
+
+require("ecs-system2").run()
+require("camera-input").run()
+--require("rotate").run()
 
 function main()
     print("Hello world")
-    -- so far, nothing special in here...
+    -- so far, nothing speci)al in here...
 end

@@ -30,7 +30,8 @@
     },
 
     "Model": {
-        "Resource": [ "material", "mesh", "pModel"],
+        "Resource": [ "material", "mesh", "pModel", "vkVBO"],
+        "string": ["modelPath"],
         "uint": ["vbo"]
     },
 

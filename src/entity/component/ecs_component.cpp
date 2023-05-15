@@ -8,6 +8,9 @@
 
 #include <stdlib.h>
 
+#include <assert.h>
+#include <entity/lua/eventstore.hpp>
+
 #if GET_TAG
 //#include <entity/ecsdefs.h>
 #endif
@@ -36,6 +39,33 @@ entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
 
     m_Variables = data;
     m_SizeReq   = sizeReq;
+}
+
+#include <entity/v1/ecs.h>
+entity::ECSComponentList::ECSComponentList(ECSComponentType componentTypeIndex,
+                                           ECSComponentLayout &layout)
+    : m_componentLayout(layout)
+{
+    ECS *ecs      = entity::LuaEventStore::GetInstance().m_ecs;
+    ui32 capacity = ecs->capacity;
+
+    // m_componentsList = malloc(sizeof(ECSComponent **) * ECSCom)
+
+    m_components = (ECSComponent **)malloc(sizeof(ECSComponent *) * capacity);
+    for (int i = 0; i < capacity; i++) {
+        //
+        if (ecs_has(
+              Entity {.id = (EntityId)i, .index = (EntityId)i, .ecs = ecs},
+              componentTypeIndex)) {
+            m_components[i] = new ECSComponent(
+              (void *)ecs_get(
+                Entity {.id = (EntityId)i, .index = (EntityId)i, .ecs = ecs},
+                componentTypeIndex),
+              layout);
+        } else {
+            m_components[i] = new ECSComponent(layout);
+        }
+    }
 }
 
 entity::ECSComponent::ECSComponent(ECSComponentLayout &layout)

@@ -13,7 +13,7 @@ init(Entity e)
 
     struct ComponentAudioSource *audioSource = ecs_get(e, C_AUDIOSOURCE);
 
-    audioSource->bufferId = openal_generate_source(audioSource->filePath);
+    //audioSource->bufferId = openal_generate_source(audioSource->filePath);
 
     alSourcef(audioSource->bufferId, AL_REFERENCE_DISTANCE, 10.0f);
     alSourcef(audioSource->bufferId, AL_MAX_DISTANCE, 100.0f);

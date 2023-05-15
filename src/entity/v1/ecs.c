@@ -15,6 +15,11 @@
 #include <entity/v1/builtin/model/model_draw.h>
 #include <entity/v1/builtin/transform/transform.h>
 
+#if USING_GENERATED_COMPONENTS
+#define COMPONENTS_GEN_IMPLEMENTATION
+#include <entity/__generated__/components_gen.h>
+#endif
+
 ECS *
 ecs_init(Renderer *renderer)
 {
@@ -40,10 +45,11 @@ ecs_init(Renderer *renderer)
     s_audio_source_init(ecs);
     s_animator_init(ecs);
 
-    // TODO: REMOVE - FOR TESTING
-    //_ECS_DECL_COMPONENT(ecs, C_TEST, sizeof(struct ComponentTest));
-
-    //_ecs_init_internal(ecs);
+#if USING_GENERATED_COMPONENTS
+    _ecs_init_internal_gen(ecs);
+#else
+    _ECS_DECL_COMPONENT(ecs, C_TEST, sizeof(struct ComponentTest));
+#endif
 
     return ecs;
 }

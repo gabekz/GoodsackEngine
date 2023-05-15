@@ -2,12 +2,14 @@
 
 #include <entity/ecsdefs.h>
 #include <entity/lua/eventstore.hpp>
+#include <util/logger.h>
 
 using namespace entity;
 
 int
 entity::Lua_ECSRegisterSystem(lua_State *L)
 {
+    LOG_DEBUG("Fired Register System");
     LuaEventStore &store = LuaEventStore::GetInstance();
 
     // retrieve table for functions
@@ -29,6 +31,9 @@ entity::Lua_ECSRegisterSystem(lua_State *L)
             fList[i]->functions                  = (int *)realloc(
               fList[i]->functions, ++fList[i]->size * sizeof(int));
             fList[i]->functions[(fList[i]->size) - 1] = f;
+            LOG_INFO("function list: %s\tnewSize %i",
+                     _ecs_EventToString(i),
+                     fList[i]->size);
         } else {
             // we want to pop this if not a function. Registering as
             // reference will pop this already.

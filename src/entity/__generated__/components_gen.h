@@ -1,17 +1,20 @@
 // @generated file
 
+#ifndef H_COMPONENTS_GEN
+#define H_COMPONENTS_GEN
+
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
 #ifdef __cplusplus
 extern "C" {
-#endif // __cplusplus
+#endif //__cplusplus
 
+// typedef (void *)(ResRef)
 #define ResRef void *
 
-#define ECSCOMPONENT_LAST C_TRANSFORM
-typedef enum _ecs_component_types {
-    C_ANIMATOR = 0,
+typedef enum ECSComponentType_t {
+    C_ANIMATOR,
     C_AUDIOLISTENER,
     C_AUDIOSOURCE,
     C_CAMERA,
@@ -20,6 +23,8 @@ typedef enum _ecs_component_types {
     C_TEST,
     C_TRANSFORM,
 } ECSComponentType;
+
+#define ECSCOMPONENT_LAST 7
 
 struct ComponentAnimator
 {
@@ -39,7 +44,8 @@ struct ComponentAudioListener
 struct ComponentAudioSource
 {
     ui32 bufferId;
-    int looping;
+    const char *filePath;
+    ui32 looping;
 };
 
 struct ComponentCamera
@@ -70,7 +76,7 @@ struct ComponentCamera
 
 struct ComponentLight
 {
-    int color;
+    vec4 color;
     ui32 type;
 };
 
@@ -78,8 +84,16 @@ struct ComponentModel
 {
     ResRef material;
     ResRef mesh;
+    const char *modelPath;
     ResRef pModel;
     ui32 vbo;
+    ResRef vkVBO;
+    struct
+    {
+        ui16 renderMode : 1;
+        ui16 drawMode : 2;
+        ui16 cullMode : 3;
+    } properties;
 };
 
 struct ComponentTest
@@ -96,23 +110,37 @@ struct ComponentTransform
     vec3 scale;
 };
 
-/*
-static inline void
-_ecs_init_internal(ECS *ecs)
-{
-    ecs_component_register(ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
-    ecs_component_register(
-      ecs, C_AUDIOLISTENER, sizeof(struct ComponentAudioListener));
-    ecs_component_register(
-      ecs, C_AUDIOSOURCE, sizeof(struct ComponentAudioSource));
-    ecs_component_register(ecs, C_CAMERA, sizeof(struct ComponentCamera));
-    ecs_component_register(ecs, C_LIGHT, sizeof(struct ComponentLight));
-    ecs_component_register(ecs, C_MODEL, sizeof(struct ComponentModel));
-    ecs_component_register(ecs, C_TEST, sizeof(struct ComponentTest));
-    ecs_component_register(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
+#ifdef __cplusplus
 }
-*/
+#endif //__cplusplus
+
+#endif // H_COMPONENTS_GEN
+
+#ifdef COMPONENTS_GEN_IMPLEMENTATION
+
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
+
+static inline void
+_ecs_init_internal_gen(ECS *ecs)
+{
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_AUDIOLISTENER, sizeof(struct ComponentAudioListener));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_AUDIOSOURCE, sizeof(struct ComponentAudioSource));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_CAMERA, sizeof(struct ComponentCamera));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_LIGHT, sizeof(struct ComponentLight));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_MODEL, sizeof(struct ComponentModel));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_TEST, sizeof(struct ComponentTest));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
+}
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif //__cplusplus
+
+#endif // COMPONENTS_GEN_IMPLEMENTATION
