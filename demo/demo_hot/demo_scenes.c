@@ -431,7 +431,7 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     //_scene0(ecs, renderer);
     //_scene1(ecs, renderer);
     //_scene2(ecs, renderer);
-    _scene3(ecs, renderer);
+    //_scene3(ecs, renderer);
     //_scene4(ecs, renderer);
-    //_scene5(ecs, renderer);
+    _scene5(ecs, renderer);
 }

@@ -250,6 +250,16 @@ extern "C" {
     }
     std::cout << "}" << std::endl;
 
+#if 0
+    // Lua Component Register - TODO: Rework
+    std::cout << "// Lua Component Register" << std::endl;
+    std::cout << "ifdef __cplusplus\n" << std::endl;
+    std::cout << "static inline void _ecs_lua_internal_cmp_register() {"
+              << std::endl;
+    std::cout << "}\n" << std::endl;
+    std::cout << "#endif //__cplusplus" << std::endl;
+#endif
+
     // Footer2
     std::string footer2 = R"(
 

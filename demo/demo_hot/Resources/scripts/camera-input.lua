@@ -1,24 +1,23 @@
-local system4 = {}
+local system = {}
 
 local Keycode = require("keycodes")
 
-function system4.start(e)
-    print("START FRO CAMERA")
+function system.start(e)
+    print("Start - From Camera")
 end
 
-function system4.update(entity) 
+function system.update(entity) 
 
     --camera = entity.Camera;
     --transform = entity.Transform;
 
-    if Input:GetKeyDown(Keycode.Q) == true then
+    if (Input:GetKeyDown(Keycode.Q)) then
         entity.Camera.fov = entity.Camera.fov - 10 * delta_time();
     end
-    if Input:GetKeyDown(Keycode.E) == true then
+    if (Input:GetKeyDown(Keycode.E)) then
         entity.Camera.fov = entity.Camera.fov + 10 * delta_time();
-        print(entity.Test.rotation_speed)
     end
 end
 
-system4.run = function() _ECS_RegisterSystem(system4) end
-return system4
+system.run = function() _ECS_RegisterSystem(system) end
+return system
