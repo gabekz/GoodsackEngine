@@ -43,6 +43,23 @@
 #define PRIM_ARR_I_CUBE (ui32[]){ \
     0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1}
 
+#define PRIM_SIZ_V_CUBE2 32
+#define PRIM_ARR_V_CUBE2 (float[]) { \
+    -0.5, -0.5, -0.5, 1.0, \
+     0.5, -0.5, -0.5, 1.0, \
+     0.5,  0.5, -0.5, 1.0, \
+    -0.5,  0.5, -0.5, 1.0, \
+    -0.5, -0.5,  0.5, 1.0, \
+     0.5, -0.5,  0.5, 1.0, \
+     0.5,  0.5,  0.5, 1.0, \
+    -0.5,  0.5,  0.5, 1.0}
+
+#define PRIM_SIZ_I_CUBE2 16
+#define PRIM_ARR_I_CUBE2 (ui32[]){ \
+    0, 1, 2, 3, \
+    4, 5, 6, 7, \
+    0, 4, 1, 5, 2, 6, 3, 7 }
+
 #define PRIM_SIZ_TEST 15
 #define PRIM_ARR_TEST (float[]){           \
 	 0.0f, -0.5f,    1.0f, 0.0f,  0.0f,    \

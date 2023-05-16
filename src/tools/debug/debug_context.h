@@ -7,6 +7,7 @@
 typedef struct DebugContext
 {
     VAO *vaoCube;
+    VAO *vaoBoundingBox;
     Material *material;
 
 } DebugContext;

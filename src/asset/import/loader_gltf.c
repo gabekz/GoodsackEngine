@@ -271,6 +271,10 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         ret->hasTBN = 0;
     }
 
+    // Set min-max bounds
+        glm_vec3_copy(attribInfo.posData->min, ret->boundingBox[0]);
+        glm_vec3_copy(attribInfo.posData->max, ret->boundingBox[1]);
+
     ret->buffers.out = malloc(ret->buffers.outI);
 
     // Position, TextureCoord, Normal

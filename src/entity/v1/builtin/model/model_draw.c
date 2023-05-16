@@ -10,9 +10,12 @@
 
 #include <core/device/device.h>
 
+#include <tools/debug/debug_draw_bounds.h>
 #include <tools/debug/debug_draw_skeleton.h>
 
 // #define DEBUG_DRAW_SKELETON
+#define DEBUG_DRAW_COLLIDER
+
 #define CULLING_FOR_IMPORTED 1
 
 static void
@@ -236,17 +239,29 @@ render(Entity e)
                             model->mesh->meshData->skeleton);
     }
 #endif
-
     if (pass == REGULAR) {
         (DEVICE_API_OPENGL)
           ? DrawModel(model, transform, FALSE, NULL, e.ecs->renderer)
           : DrawModel(model, transform, FALSE, cb, e.ecs->renderer);
-        return;
+    } else {
+        (DEVICE_API_OPENGL)
+          ? DrawModel(model, transform, TRUE, NULL, e.ecs->renderer)
+          : DrawModel(model, transform, TRUE, cb, e.ecs->renderer);
     }
 
-    (DEVICE_API_OPENGL)
-      ? DrawModel(model, transform, TRUE, NULL, e.ecs->renderer)
-      : DrawModel(model, transform, TRUE, cb, e.ecs->renderer);
+#if defined(DEBUG_DRAW_COLLIDER)
+
+    Model *pModel = model->pModel;
+    for (int i = 0; i < pModel->meshesCount; i++) {
+        Mesh *mesh = pModel->meshes[i];
+        debug_draw_bounds(e.ecs->renderer->debugContext,
+                          mesh->meshData->boundingBox,
+                          transform->model);
+    }
+
+    // draw bounding box
+    // Mesh *pMesh = (Mesh *)model->mesh;
+#endif
 }
 
 void
