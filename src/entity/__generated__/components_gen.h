@@ -22,11 +22,13 @@ typedef enum ECSComponentType_t {
     C_CAMERA,
     C_LIGHT,
     C_MODEL,
+    C_RIGIDBODY,
+    C_COLLIDER,
     C_TEST,
     C_TRANSFORM,
 } ECSComponentType;
 
-#define ECSCOMPONENT_LAST 7
+#define ECSCOMPONENT_LAST 9
 
 struct ComponentAnimator
 {
@@ -98,6 +100,19 @@ struct ComponentModel
     } properties;
 };
 
+struct ComponentRigidbody
+{
+    vec3 gravity, velocity, force;
+    float mass;
+};
+
+struct ComponentCollider
+{
+    int type;
+    void *pCollider;
+    ui32 isColliding;
+};
+
 struct ComponentTest
 {
     si32 movement_increment;
@@ -138,6 +153,10 @@ _ecs_init_internal_gen(ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(ecs, C_CAMERA, sizeof(struct ComponentCamera));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_LIGHT, sizeof(struct ComponentLight));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_MODEL, sizeof(struct ComponentModel));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_RIGIDBODY, sizeof(struct ComponentRigidbody));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_COLLIDER, sizeof(struct ComponentCollider));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_TEST, sizeof(struct ComponentTest));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_TRANSFORM, sizeof(struct ComponentTransform));

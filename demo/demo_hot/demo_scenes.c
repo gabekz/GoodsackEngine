@@ -462,6 +462,11 @@ _scene6(ECS *ecs, Renderer *renderer)
                         .position = {0.0f, -0.3f, 0.0f},
                         .scale    = {10.0f, 10.0f, 10.0f},
                       }));
+    _ecs_add_internal(floorEntity,
+                      C_COLLIDER,
+                      (void *)(&(struct ComponentCollider) {
+                        .type = 2,
+                      }));
     _ecs_add_internal(
       floorEntity,
       C_MODEL,
@@ -472,24 +477,39 @@ _scene6(ECS *ecs, Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
-    Entity *pBoxEntity = malloc(sizeof(Entity));
-    *pBoxEntity        = ecs_new(ecs);
-    Entity boxEntity   = *pBoxEntity;
-    _ecs_add_internal(boxEntity,
+    Entity *pSphereEntity = malloc(sizeof(Entity));
+    *pSphereEntity        = ecs_new(ecs);
+    Entity sphereEntity   = *pSphereEntity;
+    _ecs_add_internal(sphereEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = {0.0f, -0.085f, -1.0f},
-                        .parent   = pCamera,
+                        //.position = {0.0f, -0.085f, -1.0f},
+                        .position = {0.0f, 50.0f, -1.0f},
                       }));
-    _ecs_add_internal(
-      boxEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .modelPath  = "../res/models/cube.obj",
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+
+    _ecs_add_internal(sphereEntity,
+                      C_RIGIDBODY,
+                      (void *)(&(struct ComponentRigidbody) {
+                        //.gravity = {0.0f, -0.981f, 0.0f},
+                        .gravity = {0.0f, -0.181f, 0.0f},
+                        .mass    = 1.0f,
+                      }));
+
+    _ecs_add_internal(sphereEntity,
+                      C_COLLIDER,
+                      (void *)(&(struct ComponentCollider) {
+                        .type = 1,
+                      }));
+
+    _ecs_add_internal(sphereEntity,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matBox,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
 }
 
 void

@@ -35,6 +35,11 @@
         "uint": ["vbo"]
     },
 
+    "Rigidbody": {
+        "vec3": [ "gravity", "velocity", "force" ],
+        "float": [ "mass" ]
+    },
+
     "Transform": {
         "vec3": [ "position", "orientation", "scale" ],
         "mat4": [ "model" ],

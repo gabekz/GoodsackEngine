@@ -15,6 +15,10 @@
 #include <entity/v1/builtin/model/model_draw.h>
 #include <entity/v1/builtin/transform/transform.h>
 
+// Physics
+#include <entity/v1/builtin/physics/collider_setup-system.h>
+#include <entity/v1/builtin/physics/rigidbody-system.h>
+
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION
 #include <entity/__generated__/components_gen.h>
@@ -39,11 +43,16 @@ ecs_init(Renderer *renderer)
     ecs->systems      = malloc(1 * sizeof(ECSSystem));
 
     s_transform_init(ecs);
+
     s_camera_init(ecs);
     s_model_draw_init(ecs);
     s_audio_listener_init(ecs);
     s_audio_source_init(ecs);
     s_animator_init(ecs);
+
+    // Physics Systems
+    s_rigidbody_system_init(ecs);
+    s_collider_setup_system_init(ecs);
 
 #if USING_GENERATED_COMPONENTS
     _ecs_init_internal_gen(ecs);
