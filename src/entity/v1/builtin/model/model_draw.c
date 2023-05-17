@@ -185,8 +185,10 @@ init(Entity e)
     // mesh->model = load_obj(mesh->modelPath, transform->scale[0]);
 
     if (DEVICE_API_OPENGL) {
-        model->pModel =
-          model_load_from_file(model->modelPath, transform->scale[0]);
+        if (!(Model *)model->pModel) {
+            model->pModel =
+              model_load_from_file(model->modelPath, transform->scale[0]);
+        }
         model->mesh = ((Model *)model->pModel)->meshes[0];
         // send lightspace matrix from renderer to entity shader
         ShaderProgram *shader = ((Material *)model->material)->shaderProgram;

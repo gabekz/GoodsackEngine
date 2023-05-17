@@ -51,8 +51,8 @@ ecs_init(Renderer *renderer)
     s_animator_init(ecs);
 
     // Physics Systems
-    s_rigidbody_system_init(ecs);
     s_collider_setup_system_init(ecs);
+    s_rigidbody_system_init(ecs);
 
 #if USING_GENERATED_COMPONENTS
     _ecs_init_internal_gen(ecs);
@@ -109,7 +109,7 @@ _ecs_add_internal(Entity entity, ui32 component_id, void *value)
     ui32 index =
       (entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index));
     if (value != NULL) {
-        memcpy((char *)(((ECSComponentList *)list->components) + index),
+        memcpy((char *)((char *)((ECSComponentList *)list->components) + index),
                value,
                list->component_size);
         // list = realloc(list, list.components_size+1 * sizeof());
@@ -147,8 +147,9 @@ ecs_get(Entity entity, ECSComponentType component_id)
     // printf("\necs_get - id: %d, index %d, id: %d", component_id, size,
     // entity.id);
     return (
-      char *)((ECSComponentList *)(entity.ecs->component_lists[component_id]
-                                     .components) +
+      char *)((char *)(ECSComponentList *)(entity.ecs
+                                             ->component_lists[component_id]
+                                             .components) +
               size);
     // return ECSCL_GET(&entity.ecs->component_lists[component_id], entity.id);
 }

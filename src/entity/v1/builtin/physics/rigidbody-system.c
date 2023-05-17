@@ -1,5 +1,6 @@
 #include "rigidbody-system.h"
 
+#include <util/logger.h>
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
@@ -29,14 +30,29 @@ update(Entity e)
     struct ComponentCollider *collider   = ecs_get(e, C_COLLIDER);
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
-    if (collider->isColliding) return;
-
     // mass * gravity
     vec3 mG = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(rigidbody->gravity, rigidbody->mass, mG);
     glm_vec3_add(rigidbody->force, mG, rigidbody->force);
 
     // TODO: check intersection here after gravity check
+
+    if (collider->isColliding) {
+        // Horrendous negative-impulse force
+        LOG_INFO("Horrendous?");
+
+        vec3 p = {0, 80, 0};
+
+        vec3 negVelocity = GLM_VEC3_ZERO_INIT;
+        glm_vec3_negate_to(rigidbody->velocity, negVelocity);
+        glm_vec3_abs(negVelocity, negVelocity);
+        glm_vec3_mul(p, negVelocity, p);
+
+        glm_vec3_zero(rigidbody->velocity);
+        glm_vec3_zero(rigidbody->force);
+
+        glm_vec3_add(rigidbody->force, p, rigidbody->force);
+    };
 
     // velocity += force / mass * delta;
     vec3 fDm = GLM_VEC3_ZERO_INIT;

@@ -51,8 +51,10 @@ update(Entity e)
     struct ComponentCollider *collider   = ecs_get(e, C_COLLIDER);
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
-    for (int i = 0; i < e.ecs->nextId; i++) {
-        if (e.index == i) continue; // do not check self
+    collider->isColliding = 0;
+
+    for (int i = 0; i < e.ecs->nextIndex; i++) {
+        if (e.index == (EntityId)i) continue; // do not check self
 
         // TODO: fix look-up
         Entity e_compare = {
@@ -70,7 +72,7 @@ update(Entity e)
         struct ComponentTransform *compareTransform =
           ecs_get(e_compare, C_TRANSFORM);
 
-        CollisionPoints points;
+        CollisionPoints points = {.has_collision = 0};
         // determine which collision-test function to use
         if (collider->type == 1 && compareCollider->type == 2) {
             // sphere v. plane
@@ -79,8 +81,23 @@ update(Entity e)
               ((Collider *)compareCollider->pCollider)->collider_data,
               transform->position,
               compareTransform->position);
+        }
 
-        } else if (collider->type == 2 && compareCollider->type == 1) {
+#if 0
+            // TESTING RAY INTERSECT
+            Raycast ray = {
+              .origin    = {0.0f, 0.0f, 0.0f},
+              .direction = {0.0f, -1.0f, 0.0f},
+            };
+            CollisionPoints rayTest = physics_collision_find_ray_sphere(
+              &ray,
+              ((Collider *)collider->pCollider)->collider_data,
+              transform->position);
+
+            if (rayTest.has_collision) LOG_INFO("RAY SUCCESS");
+#endif
+
+        else if (collider->type == 2 && compareCollider->type == 1) {
             // plane v. sphere
             points =
               physics_collision_find_plane_sphere(collider->pCollider,
@@ -90,8 +107,12 @@ update(Entity e)
         }
 
         // Collision points
-        if (points.has_collision) { LOG_INFO("Collision!"); }
-        collider->isColliding = points.has_collision;
+        if (points.has_collision) {
+            LOG_INFO("Collision!");
+            collider->isColliding = points.has_collision;
+            break; // TODO: should not break.
+                   //- instead, get a collection of points
+        }
     }
 }
 

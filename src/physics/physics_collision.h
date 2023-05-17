@@ -41,6 +41,11 @@ typedef struct BoxCollider_t
     vec3 bounds[2];
 } BoxCollider;
 
+typedef struct Raycast_t
+{
+    vec3 origin, direction;
+} Raycast;
+
 typedef struct Collider_t
 {
     void *collider_data;
@@ -60,15 +65,30 @@ physics_test_collision(Collider *a, Collider *b, vec3 pos_a, vec3 pos_b);
 
 // Sphere v. Sphere
 CollisionPoints
-physics_collision_find_sphere_sphere(SphereCollider *a, SphereCollider *b, vec3 pos_a, vec3 pos_b);
+physics_collision_find_sphere_sphere(SphereCollider *a,
+                                     SphereCollider *b,
+                                     vec3 pos_a,
+                                     vec3 pos_b);
 
 // Sphere v. Plane
 CollisionPoints
-physics_collision_find_sphere_plane(SphereCollider *a, PlaneCollider *b, vec3 pos_a, vec3 pos_b);
+physics_collision_find_sphere_plane(SphereCollider *a,
+                                    PlaneCollider *b,
+                                    vec3 pos_a,
+                                    vec3 pos_b);
 
 // Plane v. Sphere
 CollisionPoints
-physics_collision_find_plane_sphere(PlaneCollider *a, SphereCollider *b, vec3 pos_a, vec3 pos_b);
+physics_collision_find_plane_sphere(PlaneCollider *a,
+                                    SphereCollider *b,
+                                    vec3 pos_a,
+                                    vec3 pos_b);
+
+// Raycast v. Sphere
+CollisionPoints
+physics_collision_find_ray_sphere(Raycast *ray,
+                                  SphereCollider *sphere,
+                                  vec3 pos_sphere);
 
 #ifdef __cplusplus
 }

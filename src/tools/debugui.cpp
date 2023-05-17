@@ -318,6 +318,27 @@ DebugGui::Render()
 
             ImGui::EndChild();
         }
+        if (ecs_has(e, C_RIGIDBODY)) {
+            ImGui::BeginChild(
+              "Rigidbody", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("Rigidbody Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            struct ComponentRigidbody &p =
+              *(static_cast<struct ComponentRigidbody*>(ecs_get(e, C_RIGIDBODY)));
+
+        ImGui::DragFloat3(
+          "Gravity", p.gravity, 0.1f, -3000, 3000);
+        ImGui::DragFloat3(
+          "Velocity", p.velocity, 0.1f, -3000, 3000);
+        ImGui::DragFloat3(
+          "Force", p.force, 0.1f, -3000, 3000);
+        ImGui::DragFloat("Mass", &p.mass, 0.45f, 0.9f);
+
+            ImGui::EndChild();
+        }
         if (ecs_has(e, C_MODEL)) {
             ImGui::BeginChild(
               "Model", ImVec2(0, ImGui::GetFontSize() * 25.0f), true);

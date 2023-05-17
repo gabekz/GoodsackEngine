@@ -88,7 +88,7 @@ struct ComponentModel
 {
     ResRef material;
     ResRef mesh;
-    const char *modelPath;
+    char modelPath[256];
     ResRef pModel;
     ui32 vbo;
     ResRef vkVBO;

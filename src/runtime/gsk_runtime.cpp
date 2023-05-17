@@ -16,7 +16,7 @@
 #include <entity/v1/builtin/component_test.h>
 
 // #define RENDERER_2
-#define USING_LUA 1
+#define USING_LUA 0
 
 #ifdef RENDERER_2
 #include <core/graphics/renderer/renderer.hpp>

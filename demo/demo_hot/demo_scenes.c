@@ -417,7 +417,7 @@ _scene5(ECS *ecs, Renderer *renderer)
     //_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
-// Transform-Parent test
+// Transform-Parent and physics test
 static void
 _scene6(ECS *ecs, Renderer *renderer)
 {
@@ -484,14 +484,13 @@ _scene6(ECS *ecs, Renderer *renderer)
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         //.position = {0.0f, -0.085f, -1.0f},
-                        .position = {0.0f, 50.0f, -1.0f},
+                        .position = {0.0f, 5.0f, -1.0f},
                       }));
 
     _ecs_add_internal(sphereEntity,
                       C_RIGIDBODY,
                       (void *)(&(struct ComponentRigidbody) {
-                        //.gravity = {0.0f, -0.981f, 0.0f},
-                        .gravity = {0.0f, -0.181f, 0.0f},
+                        .gravity = {0.0f, -0.981f, 0.0f},
                         .mass    = 1.0f,
                       }));
 
@@ -512,6 +511,103 @@ _scene6(ECS *ecs, Renderer *renderer)
                         }}));
 }
 
+// Physics explosion test
+static void
+_scene7(ECS *ecs, Renderer *renderer)
+{
+    ecs = renderer_active_scene(renderer, 7);
+
+    Texture *texContDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/container/diffuse.png");
+    Texture *texContSpec = texture_create_n(
+      "../demo/demo_hot/Resources/textures/container/specular.png");
+
+    Texture *texBrickDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
+    Texture *texBrickNorm = texture_create_n(
+      "../demo/demo_hot/Resources/textures/brickwall/normal.png");
+
+    Material *matFloor = material_create(NULL,
+                                         "../res/shaders/lit-diffuse.shader",
+                                         3,
+                                         texBrickDiff,
+                                         texBrickNorm,
+                                         texDefSpec);
+    Material *matBox   = material_create(NULL,
+                                       "../res/shaders/lit-diffuse.shader",
+                                       3,
+                                       texContDiff,
+                                       texDefNorm,
+                                       texContSpec);
+
+    Entity *pCamera = malloc(sizeof(Entity));
+
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    Entity camera = *pCamera;
+
+    // Testing entity on heap memory
+    Entity *pFloorEntity = malloc(sizeof(Entity));
+    *pFloorEntity        = ecs_new(ecs);
+    Entity floorEntity   = *pFloorEntity;
+
+    _ecs_add_internal(floorEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, -0.3f, 0.0f},
+                        .scale    = {10.0f, 10.0f, 10.0f},
+                      }));
+    _ecs_add_internal(floorEntity,
+                      C_COLLIDER,
+                      (void *)(&(struct ComponentCollider) {
+                        .type = 2,
+                      }));
+    _ecs_add_internal(
+      floorEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material  = matFloor,
+                                         .modelPath = "../res/models/plane.obj",
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
+
+    Model *modelSphere = model_load_from_file("../res/models/sphere.obj", 1);
+
+    for (int i = 0; i < 2; i++) {
+        Entity sphereEntity = ecs_new(ecs);
+        _ecs_add_internal(sphereEntity,
+                          C_TRANSFORM,
+                          (void *)(&(struct ComponentTransform) {
+                            //.position = {0.0f, -0.085f, -1.0f},
+                            .position = {0.5f * i, 5.0f, -1.0f},
+                          }));
+
+        _ecs_add_internal(sphereEntity,
+                          C_RIGIDBODY,
+                          (void *)(&(struct ComponentRigidbody) {
+                            .gravity = {0.0f, -0.981f, 0.0f},
+                            .mass    = 1.0f,
+                          }));
+
+        _ecs_add_internal(sphereEntity,
+                          C_COLLIDER,
+                          (void *)(&(struct ComponentCollider) {
+                            .type = 1,
+                          }));
+
+        _ecs_add_internal(sphereEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material   = matBox,
+                            .pModel     = modelSphere,
+                            .modelPath  = NULL,
+                            .properties = {
+                              .drawMode = DRAW_ARRAYS,
+                              .cullMode = CULL_CW | CULL_FORWARD,
+                            }}));
+    }
+}
+
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
@@ -529,5 +625,6 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     //_scene3(ecs, renderer);
     //_scene4(ecs, renderer);
     //_scene5(ecs, renderer);
-    _scene6(ecs, renderer);
+    //_scene6(ecs, renderer);
+    _scene7(ecs, renderer);
 }
