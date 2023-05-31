@@ -573,13 +573,13 @@ _scene7(ECS *ecs, Renderer *renderer)
 
     Model *modelSphere = model_load_from_file("../res/models/sphere.obj", 1);
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 1; i++) {
         Entity sphereEntity = ecs_new(ecs);
         _ecs_add_internal(sphereEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
                             //.position = {0.0f, -0.085f, -1.0f},
-                            .position = {0.5f * i, 5.0f, -1.0f},
+                            .position = {0.5f * i, 5.0f, 0.0f},
                           }));
 
         _ecs_add_internal(sphereEntity,

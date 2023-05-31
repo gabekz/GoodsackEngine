@@ -27,14 +27,32 @@ init(Entity e)
     // TODO: collider types
     if (collider->type == 1) {
         SphereCollider *sphereCollider = malloc(sizeof(SphereCollider));
-        sphereCollider->radius         = 1;
+        sphereCollider->radius         = 0.5f;
+        // glm_vec3_copy(transform->position, sphereCollider->center);
+        // sphereCollider.center = transform.position;
 
         ((Collider *)collider->pCollider)->collider_data =
           (SphereCollider *)sphereCollider;
 
     } else if (collider->type == 2) {
         PlaneCollider *planeCollider = malloc(sizeof(PlaneCollider));
-        planeCollider->distance      = 0.0175f;
+        // planeCollider->distance      = 0.0175f;
+        planeCollider->distance = 10;
+        glm_vec3_zero(planeCollider->plane);
+        glm_vec3_zero(planeCollider->normal);
+        glm_vec3_copy(transform->position, planeCollider->plane);
+        LOG_INFO("%f\t%f\t%f",
+                 planeCollider->plane[0],
+                 planeCollider->plane[1],
+                 planeCollider->plane[2]);
+        // planeCollider->plane         = transform->position;
+
+        glm_vec3_normalize_to(planeCollider->plane, planeCollider->normal);
+
+        LOG_INFO("%f\t%f\t%f",
+                 planeCollider->normal[0],
+                 planeCollider->normal[1],
+                 planeCollider->normal[2]);
 
         ((Collider *)collider->pCollider)->collider_data =
           (PlaneCollider *)planeCollider;
