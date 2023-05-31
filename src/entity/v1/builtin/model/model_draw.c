@@ -206,7 +206,8 @@ init(Entity e)
 
         VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
 
-        (VulkanVertexBuffer *)model->vkVBO = vulkan_vertex_buffer_create(
+        model->vkVBO =
+            vulkan_vertex_buffer_create(
           context->physicalDevice,
           context->device,
           context->graphicsQueue,

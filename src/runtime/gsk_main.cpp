@@ -2,8 +2,17 @@
 
 #include <filesystem>
 #include <iostream>
+#include <util/sysdefs.h>
 
-namespace fs = std::filesystem;
+static void
+_gsk_getFilepathInfo()
+{
+#if defined(SYS_ENV_WIN32)
+    std::cout << "Current path is " << std::filesystem::current_path() << '\n';
+    std::filesystem::current_path(fs::temp_directory_path());
+    std::cout << "Current path is " << std::filesystem::current_path() << '\n';
+#endif
+}
 
 int
 main(int argc, char *argv[])
@@ -11,7 +20,5 @@ main(int argc, char *argv[])
     gsk_runtime_setup(argc, argv);
     gsk_runtime_loop();
 
-    std::cout << "Current path is " << fs::current_path() << '\n'; // (1)
-    fs::current_path(fs::temp_directory_path());                   // (3)
-    std::cout << "Current path is " << fs::current_path() << '\n';
+    _gsk_getFilepathInfo();
 }

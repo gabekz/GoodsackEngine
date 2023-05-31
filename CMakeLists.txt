@@ -127,9 +127,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "GoodsackEngine")
 if(GOODSACK_EXAMPLES)
     set(DEMO_EXE_NAME "demo")
     set(DEMO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/demo/demo_hot")
-    set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/demo/demo_hot/appicon.rc")
 
-    add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c" ${APP_ICON_RESOURCE_WINDOWS})
+    # Application icon (Windows only)
+    if(MSVC)
+        set(APP_ICON_RESOURCE "${DEMO_DIR}/appicon.rc")
+    endif(MSVC)
+
+    add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c" ${APP_ICON_RESOURCE})
     target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR})
 
     target_link_libraries(${DEMO_EXE_NAME} ${PROJECT_NAME})
