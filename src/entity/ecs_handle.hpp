@@ -43,11 +43,9 @@ class ECSHandle {
     std::vector<ECSComponent *> m_ComponentList;
 };
 
-class ECSSystemStoreBase {
-};
+class ECSSystemStoreBase {};
 
-class ECSSystemStoreLua : public ECSSystemStoreBase {
-};
+class ECSSystemStoreLua : public ECSSystemStoreBase {};
 
 } // namespace entity
 

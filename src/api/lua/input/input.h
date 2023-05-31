@@ -4,7 +4,6 @@
 #include <util/gfx.h>
 #include <util/lua_deps.h>
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus

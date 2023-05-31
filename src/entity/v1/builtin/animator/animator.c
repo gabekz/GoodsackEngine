@@ -42,7 +42,7 @@ update(Entity e)
 
     struct ComponentAnimator *animator = ecs_get(e, C_ANIMATOR);
     struct ComponentModel *model       = ecs_get(e, C_MODEL);
-    Mesh *mesh                  = model->mesh;
+    Mesh *mesh                         = model->mesh;
 
     if (!mesh->meshData->isSkinnedMesh) return;
 
@@ -64,7 +64,7 @@ update(Entity e)
 
     Animation *cntAnimation = animator->cntAnimation;
     if (animator->timerNow >= cntAnimation->duration) {
-        animator->timerNow = 0;
+        animator->timerNow         = 0;
 
 #if 1 // for the sake of testing -> going to set keyframe to 1
         animator->cntKeyframeIndex = 1;

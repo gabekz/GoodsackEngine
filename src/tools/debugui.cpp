@@ -327,15 +327,13 @@ DebugGui::Render()
             ImGui::Separator();
 
             struct ComponentRigidbody &p =
-              *(static_cast<struct ComponentRigidbody*>(ecs_get(e, C_RIGIDBODY)));
+              *(static_cast<struct ComponentRigidbody *>(
+                ecs_get(e, C_RIGIDBODY)));
 
-        ImGui::DragFloat3(
-          "Gravity", p.gravity, 0.1f, -3000, 3000);
-        ImGui::DragFloat3(
-          "Velocity", p.velocity, 0.1f, -3000, 3000);
-        ImGui::DragFloat3(
-          "Force", p.force, 0.1f, -3000, 3000);
-        ImGui::DragFloat("Mass", &p.mass, 0.45f, 0.9f);
+            ImGui::DragFloat3("Gravity", p.gravity, 0.1f, -3000, 3000);
+            ImGui::DragFloat3("Velocity", p.velocity, 0.1f, -3000, 3000);
+            ImGui::DragFloat3("Force", p.force, 0.1f, -3000, 3000);
+            ImGui::DragFloat("Mass", &p.mass, 0.45f, 0.9f);
 
             ImGui::EndChild();
         }

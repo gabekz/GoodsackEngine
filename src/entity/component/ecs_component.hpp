@@ -39,7 +39,7 @@ typedef struct Accessor_t
     EcsDataType type;
 } Accessor;
 
-//#define DATA_TYPE_TABLE
+// #define DATA_TYPE_TABLE
 
 class ECSComponentLayout {
    public:
@@ -87,12 +87,12 @@ class ECSComponent {
 // of memory
 class ECSComponentList {
    public:
-    ECSComponentList(ECSComponentType componentTypeIndex, ECSComponentLayout &layout);
+    ECSComponentList(ECSComponentType componentTypeIndex,
+                     ECSComponentLayout &layout);
 
     ECSComponentLayout &m_componentLayout;
     ECSComponent **m_components; // TODO: This is what I am talking about.
 };
-
 
 } // namespace entity
 

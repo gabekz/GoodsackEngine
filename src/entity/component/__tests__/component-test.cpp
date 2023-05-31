@@ -170,7 +170,8 @@ TEST_F(ComponentLoaderTest, Maps_To_C_Struct)
 
 // Check size of C Struct against generated component
 #if 1
-    ASSERT_EQ((size_t)sizeof(C_ComponentSingle), m_Layouts["ComponentSingle"]->getSizeReq());
+    ASSERT_EQ((size_t)sizeof(C_ComponentSingle),
+              m_Layouts["ComponentSingle"]->getSizeReq());
 #endif
 
     // Check initial Get

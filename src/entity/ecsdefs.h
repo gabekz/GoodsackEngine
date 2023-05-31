@@ -47,7 +47,7 @@ _ecs_EventToString(int event)
 #endif
 
 #ifdef ECS_SYSTEM
-//#define ECS_SYSTEM_DECLARE(_name) static
+// #define ECS_SYSTEM_DECLARE(_name) static
 #endif
 
 #endif // H_ECSDEFS

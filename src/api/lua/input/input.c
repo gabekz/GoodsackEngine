@@ -35,7 +35,7 @@ static const struct luaL_Reg functions[] = {{"say_hello", say_hello},
                                             {NULL, NULL}};
 
 static const struct luaL_Reg inputFuncs[] = {{"GetKeyDown", get_key_down},
-                                            {NULL, NULL}};
+                                             {NULL, NULL}};
 
 int
 luaopen_hello(lua_State *L, GLFWwindow *window)
@@ -44,7 +44,7 @@ luaopen_hello(lua_State *L, GLFWwindow *window)
     // luaL_newlib(L, functions);
     lua_register(L, "hello", say_hello);
     lua_register(L, "delta_time", get_time);
-    //lua_register(L, "get_key_down", get_key_down);
+    // lua_register(L, "get_key_down", get_key_down);
 
     lua_newtable(L);
     lua_setglobal(L, "Input");

@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-#include <entity/v1/ecs.h>
 #include <core/graphics/renderer/v1/renderer.h>
+#include <entity/v1/ecs.h>
 
 #ifdef __cplusplus
 }

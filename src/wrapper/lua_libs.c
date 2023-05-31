@@ -1,9 +1,9 @@
 
 #define LUA_LIB
-#include <wrapper/lua/lua_libs.h>
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
+#include <wrapper/lua/lua_libs.h>
 
 static const luaL_Reg lualibs[] = {{"", luaopen_base},
                                    {LUA_LOADLIBNAME, luaopen_package},

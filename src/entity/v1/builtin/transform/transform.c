@@ -3,8 +3,8 @@
 #include <core/graphics/shader/shader.h>
 #include <entity/v1/ecs.h>
 
-//#define ECS_SYSTEM
-// ECS_SYSTEM_DECLARE()
+// #define ECS_SYSTEM
+//  ECS_SYSTEM_DECLARE()
 
 void
 transform_translate(struct ComponentTransform *transform, vec3 position)

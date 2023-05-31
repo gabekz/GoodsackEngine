@@ -44,8 +44,10 @@ class LuaEventStore {
     // size_t m_componentsListCount;
     ECSComponentList *m_componentsList[ECSCOMPONENT_LAST + 1];
 
-    void RegisterComponentList(ECSComponentType componentIndex, ECSComponentLayout &layout);
-    void RegisterComponentList(ECSComponentType componentIndex, const char *layoutKey);
+    void RegisterComponentList(ECSComponentType componentIndex,
+                               ECSComponentLayout &layout);
+    void RegisterComponentList(ECSComponentType componentIndex,
+                               const char *layoutKey);
 
     // TESTING 2
     ECS *m_ecs;

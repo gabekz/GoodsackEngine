@@ -48,7 +48,7 @@ physics_collision_find_sphere_plane(SphereCollider *a,
     vec3 nscaledDist  = GLM_VEC3_ZERO_INIT;
     vec3 nearestPoint = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(planeNormalized, ndist, nscaledDist);
-    //glm_vec3_normalize_to(nscaledDist, nscaledDist);
+    // glm_vec3_normalize_to(nscaledDist, nscaledDist);
     glm_vec3_sub(pos_a, nscaledDist, nearestPoint);
     // glm_vec3_normalize_to(nearestPoint, nearestPoint);
 
@@ -67,7 +67,7 @@ physics_collision_find_sphere_plane(SphereCollider *a,
     */
 
     float nearestDistance = glm_vec3_distance(pos_a, nearestPoint);
-    //LOG_INFO("Nearest: %f", nearestDistance);
+    // LOG_INFO("Nearest: %f", nearestDistance);
     if (nearestDistance <= a->radius) { ret.has_collision = TRUE; }
 
     return ret;

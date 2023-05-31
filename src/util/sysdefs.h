@@ -100,14 +100,14 @@ typedef unsigned short ui16;
 typedef signed char si8;
 typedef unsigned char ui8;
 
-//#ifdef byte_t
-//#undef byte_t
-//#endif
+// #ifdef byte_t
+// #undef byte_t
+// #endif
 typedef ui8 byte_t;
 
-//#ifdef size_t
-//#undef size_t
-//#endif
+// #ifdef size_t
+// #undef size_t
+// #endif
 
 #if 0
 #ifndef __cplusplus 

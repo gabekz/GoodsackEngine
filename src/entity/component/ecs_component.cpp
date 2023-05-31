@@ -12,7 +12,7 @@
 #include <entity/lua/eventstore.hpp>
 
 #if GET_TAG
-//#include <entity/ecsdefs.h>
+// #include <entity/ecsdefs.h>
 #endif
 
 entity::ECSComponentLayout::ECSComponentLayout(const char *name)

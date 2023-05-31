@@ -51,7 +51,7 @@ void
 s_audio_listener_init(ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(
-      //ecs, C_AUDIO_LISTENER, sizeof(struct ComponentAudioListener));
+    // ecs, C_AUDIO_LISTENER, sizeof(struct ComponentAudioListener));
     ecs_system_register(ecs,
                         ((ECSSystem) {
                           .init    = (ECSSubscriber)init,
