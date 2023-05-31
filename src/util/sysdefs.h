@@ -79,9 +79,9 @@
 #if defined(SYS_ENV_64)
 typedef signed long long si64;
 typedef unsigned long long ui64;
-#if defined(SYS_ENV_WIN32)
+#if defined(SYS_ENV_WIN)
 typedef unsigned long long ulong;
-#endif // defined(SYS_ENV_WIN32)
+#endif // defined(SYS_ENV_WIN)
 #else
 typedef signed long si64;
 typedef unsigned long ui64;
