@@ -1,18 +1,54 @@
 {
-    "ComponentTransform": {
-        "vec3": [ "position", "axisUp" ],
-        "int": [ "uboId" ]
+    "Animator": {
+        "int": [ "cntTime", "cntKeyframeIndex", "nxtKeyframeIndex" ],
+        "Resource": [ "cntAnimation"],
+        "float": [ "timerStart", "timerNow" ]
     },
 
-    "ComponentCamera": {
-        "vec3": [ "position", "rotation", "scale" ],
-        "float": [ "fov", "speed", "sensitivity" ],
+    "AudioListener": {
+        "int": ["a"]
+    },
 
-        "mvp": {
-            "mat4": [ "view", "projection" ],
+    "AudioSource": {
+        "uint": ["bufferId"],
+        "string": ["filePath"],
+        "bool": ["looping"]
+    },
 
-            "Material": ["material"],
-            "Model": ["model"]
-        }
+    "Camera": {
+        "int": ["firstMouse", "screenWidth", "screenHeight"],
+        "uint": ["uboId"],
+        "float": ["fov", "speed", "sensitivity", "lastX", "lastY", "yaw", "pitch", "nearZ", "farZ"],
+        "vec3": ["axisUp", "center", "front"],
+        "mat4": ["model", "view", "proj"],
+        "Resource": ["uniformBuffer", "uniformBufferMemory", "uniformBufferMapped"]
+    },
+
+    "Light": {
+        "vec4": ["color"],
+        "uint": ["type"]
+    },
+
+    "Model": {
+        "Resource": [ "material", "mesh", "pModel", "vkVBO"],
+        "string": ["modelPath"],
+        "uint": ["vbo"]
+    },
+
+    "Rigidbody": {
+        "vec3": [ "gravity", "velocity", "force" ],
+        "float": [ "mass" ]
+    },
+
+    "Transform": {
+        "vec3": [ "position", "orientation", "scale" ],
+        "mat4": [ "model" ],
+        "bool": [ "hasParent" ],
+        "Resource": [ "parent" ]
+    },
+
+    "Test": {
+        "int": [ "movement_increment" ],
+        "float": [ "rotation_speed" ]
     }
 }

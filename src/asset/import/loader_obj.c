@@ -58,6 +58,10 @@ load_obj(const char *path, float scale)
     int outI        = 0;
     int outIndicesI = 0;
 
+    // Mesh bounds
+    vec3 minBounds = GLM_VEC3_ZERO_INIT;
+    vec3 maxBounds = GLM_VEC3_ZERO_INIT;
+
     // Looping through the file
     while (fgets(line, sizeof(line), stream)) {
         // Get the first two characters
@@ -128,6 +132,19 @@ load_obj(const char *path, float scale)
                         unsigned int ind        = saved; // FIX INDICES TO MATCH
                         outIndices[outIndicesI] = ind;
                         outIndicesI++;
+
+                        // Calculate Mesh Bounds
+                        if (v[loc] < minBounds[0]) minBounds[0] = v[loc];
+                        if (v[loc + 1] < minBounds[1])
+                            minBounds[1] = v[loc + 1];
+                        if (v[loc + 2] < minBounds[2])
+                            minBounds[2] = v[loc + 2];
+
+                        if (v[loc] > maxBounds[0]) maxBounds[0] = v[loc];
+                        if (v[loc + 1] > maxBounds[1])
+                            maxBounds[1] = v[loc + 1];
+                        if (v[loc + 2] > maxBounds[2])
+                            maxBounds[2] = v[loc + 2];
                     }
                     // Texture
                     else if (j == 1 && vtL > 0) {
@@ -291,6 +308,9 @@ load_obj(const char *path, float scale)
 
     ret->isSkinnedMesh = 0;
     ret->hasTBN        = 1;
+
+    glm_vec3_copy(minBounds, ret->boundingBox[0]);
+    glm_vec3_copy(maxBounds, ret->boundingBox[1]);
 
     // mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
     // glm_mat4_copy(localMatrix, ret->localMatrix);

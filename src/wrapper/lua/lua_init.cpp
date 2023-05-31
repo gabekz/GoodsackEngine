@@ -6,23 +6,30 @@
 #include <util/logger.h>
 #include <util/lua_deps.h>
 
-#include <ecs/lua/eventstore.hpp>
-#include <ecs/lua/reg_system.hpp>
+#include <entity/lua/eventstore.hpp>
+#include <entity/lua/reg_system.hpp>
 
 #include <wrapper/lua/lua_debug.h>
 #include <wrapper/lua/lua_reg_print.h>
 
+#include <entity/v1/ecs.h>
+
+#include <api/lua/input/input.h>
+
 void
-LuaInit(const char *file)
+LuaInit(const char *file, ECS *ecs)
 {
     lua_State *L = luaL_newstate();
     luaL_openlibs(L);
     luaopen_luaprintlib(L);
 
-    ecs::LuaEventStore::Initialize(L);
+    entity::LuaEventStore::Initialize(L, ecs);
 
     // add the global C function (register system) to lua
-    lua_register(L, "_ECS_RegisterSystem", Lua_ECSRegisterSystem);
+    lua_register(L, "_ECS_RegisterSystem", entity::Lua_ECSRegisterSystem);
+
+    // Open other libs -- TODO: TESTING
+    luaopen_hello(L, ecs->renderer->window);
 
     if (CheckLua(L, luaL_dofile(L, file))) {
 
@@ -30,9 +37,9 @@ LuaInit(const char *file)
         lua_getglobal(L, "main");
         if (lua_isfunction(L, -1)) { CheckLua(L, lua_pcall(L, 0, 0, 0)); }
 
-        ecs::LuaEventStore::ECSEvent(ECS_INIT);
-        ecs::LuaEventStore::ECSEvent(ECS_UPDATE);
-        dumpstack(L, "end");
+        // entity::LuaEventStore::ECSEvent(ECS_INIT);
+        // entity::LuaEventStore::ECSEvent(ECS_UPDATE);
+        LUA_DUMP("end");
     }
 
     // lua_close(L);

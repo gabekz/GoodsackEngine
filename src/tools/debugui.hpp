@@ -4,7 +4,7 @@
 extern "C" {
 #include <core/graphics/renderer/v1/renderer.h>
 }
-#include <ecs/ecs.h>
+#include <entity/v1/ecs.h>
 
 class DebugGui {
    public:

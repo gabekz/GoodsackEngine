@@ -57,6 +57,8 @@ typedef struct MeshData
     // TODO: Move
     int hasTBN; // TODO: 2 == ONLY TANGENT
 
+    vec3 boundingBox[2];
+
 } MeshData;
 
 typedef struct Mesh

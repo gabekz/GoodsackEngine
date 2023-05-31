@@ -27,6 +27,24 @@ debug_context_init()
         ibo_bind(ibo);
 
         ret->material = material_create(NULL, "../res/shaders/white.shader", 0);
+
+        // Bounding box
+        ret->vaoBoundingBox = vao_create();
+        vao_bind(ret->vaoBoundingBox);
+        VBO *vboBoundingBox =
+          vbo_create(PRIM_ARR_V_CUBE2, PRIM_SIZ_V_CUBE2 * sizeof(float));
+        vbo_bind(vboBoundingBox);
+        vbo_push(vboBoundingBox, 4, GL_FLOAT, GL_FALSE);
+        vao_add_buffer(ret->vaoBoundingBox, vboBoundingBox);
+
+        IBO *iboBoundingBox =
+          ibo_create(PRIM_ARR_I_CUBE2, PRIM_SIZ_I_CUBE2 * sizeof(unsigned int));
+        ibo_bind(iboBoundingBox);
+
+        // OpenGL Line smoothing
+        glLineWidth(1.0f);
+        glEnable(GL_LINE_SMOOTH);
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     }
 
     return ret;

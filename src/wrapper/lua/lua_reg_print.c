@@ -1,5 +1,7 @@
 #include "lua_reg_print.h"
 
+#include <util/logger.h>
+
 static int
 lua_print(lua_State *L)
 {
@@ -8,9 +10,9 @@ lua_print(lua_State *L)
     for (int i = 1; i <= nargs; i++) {
         if (lua_isstring(L, i)) {
             /* Pop the next arg using lua_tostring(L, i) and do your print */
-            printf("\033[1;33m");
-            printf("[Lua] (print): %s\n", lua_tostring(L, -1));
-            printf("\033[0m");
+            LOG_PRINT("\033[1;33m");
+            LOG_PRINT("[Lua] (print): %s\n", lua_tostring(L, -1));
+            LOG_PRINT("\033[0m");
         } else {
             /* Do something with non-strings if you like */
         }

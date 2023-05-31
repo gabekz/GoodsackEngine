@@ -28,6 +28,7 @@ out VS_OUT
     vec3 camPos;
     mat3 tbn;
     vec4 fragLightSpace;
+    float aPosZ;
 }
 vs_out;
 
@@ -52,7 +53,10 @@ main()
 
     vs_out.crntPos   = vec3(u_Model * vec4(a_Position, 1.0));
     vs_out.texCoords = a_TexCoords;
-    vs_out.camPos    = s_Camera.position;
+    vs_out.aPosZ     = (u_Model * s_Camera.view * vec4(a_Position, 1)).z;
+    // vs_out.texCoords = a_TexCoords * vs_out.aPosZ;
+    // vs_out.texCoords.xy /= normalize(vec2(1280, 720));
+    vs_out.camPos = s_Camera.position;
 
     vs_out.fragLightSpace = u_LightSpaceMatrix * vec4(vs_out.crntPos, 1.0f);
 }
@@ -79,6 +83,7 @@ in VS_OUT
     vec3 camPos;
     mat3 tbn;
     vec4 fragLightSpace;
+    float aPosZ;
 }
 fs_in;
 
@@ -165,8 +170,9 @@ light(int type)
     // Specular Light
     float specular = 0.0f;
     if (diffuse != 0.0f) {
-        float specularLight = 1.00f * texture(t_Specular, fs_in.texCoords).r;
-        vec3 viewDirection  = normalize(fs_in.camPos - fs_in.crntPos);
+        float specularLight =
+          1.00f * texture(t_Specular, fs_in.texCoords).r;
+        vec3 viewDirection       = normalize(fs_in.camPos - fs_in.crntPos);
         vec3 reflectionDirection = reflect(-lightDirection, fs_in.normal);
 
         vec3 halfway = normalize(viewDirection + lightDirection);
@@ -187,7 +193,10 @@ light(int type)
 void
 main()
 {
-    vec4 texColor = texture(t_Diffuse, fs_in.texCoords) * light(0);
+    vec2 texCoords = fs_in.texCoords;
+    // texCoords      = texCoords / normalize(vec2(1280, 720));
+    // vec4 texColor = texture(t_Diffuse, texCoords / fs_in.aPosZ) * light(0);
+    vec4 texColor = texture(t_Diffuse, texCoords) * light(0);
 
     // float gamma = 2.2;
     // FragColor.rgb = pow(texColor.rgb, vec3(1.0/gamma));

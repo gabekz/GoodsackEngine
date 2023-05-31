@@ -58,7 +58,7 @@ _joint_transform_world(Joint *joint, float *outMatrix)
     float *lm = outMatrix;
     _joint_transform_local(joint, lm);
 
-    const Joint *parent = joint->parent;
+    Joint *parent = joint->parent;
 
     while (parent) {
         float pm[16];

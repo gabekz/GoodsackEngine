@@ -77,10 +77,10 @@ vulkan_render_setup(VulkanDeviceContext *context)
 
     // Create a texture
     LOG_DEBUG("Create a test texture");
-    Texture *texture =
-      texture_create("../res/textures/pbr/cerberus/Cerberus_A.tga",
-                     context,
-                     (TextureOptions) {16, GL_SRGB_ALPHA, true, true});
+    Texture *texture = texture_create(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga",
+      context,
+      (TextureOptions) {16, GL_SRGB_ALPHA, true, true});
 
     // Create Descriptor Sets
     LOG_DEBUG("Create descriptor sets");

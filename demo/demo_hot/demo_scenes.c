@@ -1,10 +1,11 @@
 #include "demo_scenes.h"
 
-#include <ecs/ecs.h>
+#include <entity/v1/ecs.h>
 
 // #include <core/graphics/renderer/v1/renderer.h>
 
-#include <ecs/builtin/components.h>
+#include <entity/v1/builtin/component_test.h>
+#include <entity/v1/builtin/components.h>
 
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
@@ -311,7 +312,14 @@ _scene3(ECS *ecs, Renderer *renderer)
                                         texPbrAo);
 
     Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
+    _ecs_add_internal(camera,
+                      C_TEST,
+                      (void *)(&(struct ComponentTest) {
+                        .rotation_speed = 11, .movement_increment = 5,
+                        //.scale = {0.001f, 0.001f, 0.001f},
+                      }));
 
+#if 1
     Entity entCerb                              = ecs_new(ecs);
     struct ComponentTransform compCerbTransform = {
       .position = {0.0f, 0.0f, 0.0f},
@@ -331,6 +339,15 @@ _scene3(ECS *ecs, Renderer *renderer)
 
     _ecs_add_internal(
       entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
+#endif
+#if 0
+    _ecs_add_internal(entCerb,
+                      C_TEST,
+                      (void *)(&(struct ComponentTest) {
+                        .rotation_speed     = 50.0f,
+                        .movement_increment = 10,
+                      }));
+#endif
 }
 
 static void
@@ -400,21 +417,214 @@ _scene5(ECS *ecs, Renderer *renderer)
     //_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
+// Transform-Parent and physics test
+static void
+_scene6(ECS *ecs, Renderer *renderer)
+{
+    ecs = renderer_active_scene(renderer, 6);
+
+    Texture *texContDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/container/diffuse.png");
+    Texture *texContSpec = texture_create_n(
+      "../demo/demo_hot/Resources/textures/container/specular.png");
+
+    Texture *texBrickDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
+    Texture *texBrickNorm = texture_create_n(
+      "../demo/demo_hot/Resources/textures/brickwall/normal.png");
+
+    Material *matFloor = material_create(NULL,
+                                         "../res/shaders/lit-diffuse.shader",
+                                         3,
+                                         texBrickDiff,
+                                         texBrickNorm,
+                                         texDefSpec);
+    Material *matBox   = material_create(NULL,
+                                       "../res/shaders/lit-diffuse.shader",
+                                       3,
+                                       texContDiff,
+                                       texDefNorm,
+                                       texContSpec);
+
+    Entity *pCamera = malloc(sizeof(Entity));
+
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    Entity camera = *pCamera;
+
+    // Testing entity on heap memory
+    Entity *pFloorEntity = malloc(sizeof(Entity));
+    *pFloorEntity        = ecs_new(ecs);
+    Entity floorEntity   = *pFloorEntity;
+
+    _ecs_add_internal(floorEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, -0.3f, 0.0f},
+                        .scale    = {10.0f, 10.0f, 10.0f},
+                      }));
+    _ecs_add_internal(floorEntity,
+                      C_COLLIDER,
+                      (void *)(&(struct ComponentCollider) {
+                        .type = 2,
+                      }));
+    _ecs_add_internal(
+      floorEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material  = matFloor,
+                                         .modelPath = "../res/models/plane.obj",
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
+
+    Entity *pSphereEntity = malloc(sizeof(Entity));
+    *pSphereEntity        = ecs_new(ecs);
+    Entity sphereEntity   = *pSphereEntity;
+    _ecs_add_internal(sphereEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        //.position = {0.0f, -0.085f, -1.0f},
+                        .position = {0.0f, 5.0f, -1.0f},
+                      }));
+
+    _ecs_add_internal(sphereEntity,
+                      C_RIGIDBODY,
+                      (void *)(&(struct ComponentRigidbody) {
+                        .gravity = {0.0f, -0.981f, 0.0f},
+                        .mass    = 1.0f,
+                      }));
+
+    _ecs_add_internal(sphereEntity,
+                      C_COLLIDER,
+                      (void *)(&(struct ComponentCollider) {
+                        .type = 1,
+                      }));
+
+    _ecs_add_internal(sphereEntity,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matBox,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
+}
+
+// Physics explosion test
+static void
+_scene7(ECS *ecs, Renderer *renderer)
+{
+    ecs = renderer_active_scene(renderer, 7);
+
+    Texture *texContDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/container/diffuse.png");
+    Texture *texContSpec = texture_create_n(
+      "../demo/demo_hot/Resources/textures/container/specular.png");
+
+    Texture *texBrickDiff = texture_create_d(
+      "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
+    Texture *texBrickNorm = texture_create_n(
+      "../demo/demo_hot/Resources/textures/brickwall/normal.png");
+
+    Material *matFloor = material_create(NULL,
+                                         "../res/shaders/lit-diffuse.shader",
+                                         3,
+                                         texBrickDiff,
+                                         texBrickNorm,
+                                         texDefSpec);
+    Material *matBox   = material_create(NULL,
+                                       "../res/shaders/lit-diffuse.shader",
+                                       3,
+                                       texContDiff,
+                                       texDefNorm,
+                                       texContSpec);
+
+    Entity *pCamera = malloc(sizeof(Entity));
+
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    Entity camera = *pCamera;
+
+    // Testing entity on heap memory
+    Entity *pFloorEntity = malloc(sizeof(Entity));
+    *pFloorEntity        = ecs_new(ecs);
+    Entity floorEntity   = *pFloorEntity;
+
+    _ecs_add_internal(floorEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, -0.3f, 0.0f},
+                        .scale    = {10.0f, 10.0f, 10.0f},
+                      }));
+    _ecs_add_internal(floorEntity,
+                      C_COLLIDER,
+                      (void *)(&(struct ComponentCollider) {
+                        .type = 2,
+                      }));
+    _ecs_add_internal(
+      floorEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material  = matFloor,
+                                         .modelPath = "../res/models/plane.obj",
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
+
+    Model *modelSphere = model_load_from_file("../res/models/sphere.obj", 1);
+
+    for (int i = 0; i < 1; i++) {
+        Entity sphereEntity = ecs_new(ecs);
+        _ecs_add_internal(sphereEntity,
+                          C_TRANSFORM,
+                          (void *)(&(struct ComponentTransform) {
+                            //.position = {0.0f, -0.085f, -1.0f},
+                            .position = {0.5f * i, 5.0f, 0.0f},
+                          }));
+
+        _ecs_add_internal(sphereEntity,
+                          C_RIGIDBODY,
+                          (void *)(&(struct ComponentRigidbody) {
+                            .gravity = {0.0f, -0.981f, 0.0f},
+                            .mass    = 1.0f,
+                          }));
+
+        _ecs_add_internal(sphereEntity,
+                          C_COLLIDER,
+                          (void *)(&(struct ComponentCollider) {
+                            .type = 1,
+                          }));
+
+        _ecs_add_internal(sphereEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material   = matBox,
+                            .pModel     = modelSphere,
+                            .modelPath  = NULL,
+                            .properties = {
+                              .drawMode = DRAW_ARRAYS,
+                              .cullMode = CULL_CW | CULL_FORWARD,
+                            }}));
+    }
+}
+
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
 
     // Default textures with options
     s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};
-    s_texOpsPbr = (TextureOptions) {16, GL_SRGB_ALPHA, true, true};
+    s_texOpsPbr = (TextureOptions) {0, GL_SRGB_ALPHA, false, true};
     texDefSpec  = texture_create_n("../res/textures/defaults/black.png");
     texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo    = texture_create_n("../res/textures/defaults/white.png");
 
-    _scene0(ecs, renderer);
-    _scene1(ecs, renderer);
-    _scene2(ecs, renderer);
-    _scene3(ecs, renderer);
-    _scene4(ecs, renderer);
-    _scene5(ecs, renderer);
+    //_scene0(ecs, renderer);
+    //_scene1(ecs, renderer);
+    //_scene2(ecs, renderer);
+    //_scene3(ecs, renderer);
+    //_scene4(ecs, renderer);
+    //_scene5(ecs, renderer);
+    //_scene6(ecs, renderer);
+    _scene7(ecs, renderer);
 }

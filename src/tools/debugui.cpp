@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include <ecs/ecs.h>
+#include <entity/v1/ecs.h>
 
 extern "C" {
 #include <core/graphics/renderer/v1/renderer.h>
@@ -15,7 +15,8 @@ extern "C" {
 #include <core/device/device.h>
 #include <core/drivers/alsoft/alsoft_debug.h>
 
-#include <ecs/builtin/components.h>
+#include <entity/v1/builtin/component_test.h>
+#include <entity/v1/builtin/components.h>
 
 #include <core/drivers/vulkan/vulkan.h>
 
@@ -291,6 +292,7 @@ DebugGui::Render()
         if (ecs_has(e, C_TRANSFORM)) {
             ImGui::BeginChild(
               "Transform", ImVec2(0, ImGui::GetFontSize() * 8.0f), true);
+
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
             ImGui::Text("Transform Component");
             ImGui::PopStyleColor();
@@ -305,6 +307,34 @@ DebugGui::Render()
             ImGui::DragFloat3("Rotation", t, 0.1f, -3000, 3000);
             ImGui::EndDisabled();
             ImGui::DragFloat3("Scale", p.scale, -1, 1);
+            ImGui::Separator();
+            ImGui::Text("Parent Entity");
+            if (p.hasParent) {
+                ImGui::Text("index: %i", ((Entity *)p.parent)->index);
+                ImGui::Text("id: %i", ((Entity *)p.parent)->id);
+            } else {
+                ImGui::Text("None");
+            }
+
+            ImGui::EndChild();
+        }
+        if (ecs_has(e, C_RIGIDBODY)) {
+            ImGui::BeginChild(
+              "Rigidbody", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("Rigidbody Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            struct ComponentRigidbody &p =
+              *(static_cast<struct ComponentRigidbody *>(
+                ecs_get(e, C_RIGIDBODY)));
+
+            ImGui::DragFloat3("Gravity", p.gravity, 0.1f, -3000, 3000);
+            ImGui::DragFloat3("Velocity", p.velocity, 0.1f, -3000, 3000);
+            ImGui::DragFloat3("Force", p.force, 0.1f, -3000, 3000);
+            ImGui::DragFloat("Mass", &p.mass, 0.45f, 0.9f);
+
             ImGui::EndChild();
         }
         if (ecs_has(e, C_MODEL)) {
@@ -334,7 +364,7 @@ DebugGui::Render()
             ImGui::PopStyleColor();
             ImGui::Separator();
 
-            ImGui::Text("Meshes: %u", p.pModel->meshesCount);
+            ImGui::Text("Meshes: %u", ((Model *)p.pModel)->meshesCount);
 
             bool shadowVal = true;
             ImGui::BeginDisabled();
@@ -355,20 +385,22 @@ DebugGui::Render()
             // *)p.material->shaderProgram->shaderSource->shaderFragment, 128);
 
             if (DEVICE_API_OPENGL) {
-                int textureCount = p.material->texturesCount;
+                int textureCount = ((Material *)p.material)->texturesCount;
                 ImGui::Text("Textures: %u", textureCount);
                 // Display textures
                 for (int i = 0; i < textureCount; i++) {
                     ImGui::Separator();
-                    ImGui::Image((void *)(intptr_t)p.material->textures[i]->id,
+                    ImGui::Image((void *)(intptr_t)((Material *)p.material)
+                                   ->textures[i]
+                                   ->id,
                                  ImVec2(200, 200),
                                  ImVec2(0, 1),
                                  ImVec2(1, 0));
                     ImGui::SameLine();
                     ImGui::Text("File Path: %s\nDimensions: %dx%d\nType: %s",
-                                p.material->textures[i]->filePath,
-                                p.material->textures[i]->width,
-                                p.material->textures[i]->height,
+                                ((Material *)p.material)->textures[i]->filePath,
+                                ((Material *)p.material)->textures[i]->width,
+                                ((Material *)p.material)->textures[i]->height,
                                 "");
                 }
             } // DEVICE_API_OPENGL
@@ -389,13 +421,13 @@ DebugGui::Render()
             ImGui::DragFloat("Speed", &p.speed, 0.01, 0, 10.0f);
             ImGui::Text("Clipping");
             ImGui::PushItemWidth(100);
-            ImGui::DragFloat("Near", &p.clipping.nearZ, 0.01, 0, 10);
+            ImGui::DragFloat("Near", &p.nearZ, 0.01, 0, 10);
             ImGui::SameLine();
-            ImGui::DragFloat("Far", &p.clipping.farZ, 1, 0, 1000);
+            ImGui::DragFloat("Far", &p.farZ, 1, 0, 1000);
             ImGui::EndChild();
         }
 
-        if (ecs_has(e, C_AUDIO_LISTENER)) {
+        if (ecs_has(e, C_AUDIOLISTENER)) {
             ImGui::BeginChild("Audio Listener");
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
             ImGui::Text("Audio Listener Component");
@@ -404,7 +436,7 @@ DebugGui::Render()
 
             ImGui::EndChild();
         }
-        if (ecs_has(e, C_AUDIO_SOURCE)) {
+        if (ecs_has(e, C_AUDIOSOURCE)) {
             ImGui::BeginChild(
               "Audio Source", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
@@ -414,12 +446,12 @@ DebugGui::Render()
             // wow, this is ridiculous..
             struct ComponentAudioSource &a =
               *(static_cast<struct ComponentAudioSource *>(
-                ecs_get(e, C_AUDIO_SOURCE)));
+                ecs_get(e, C_AUDIOSOURCE)));
             // ImGui::DragFloat("FOV", &a.volume, 0.45f, 0.9f);
             // ImGui::DragFloat("Gain", a.gain, 0.1f, -3000, 3000);
             // ImGui::DragFloat("Pitch", a.pitch, 0.1f, -3000, 3000);
             ImGui::BeginDisabled();
-            ImGui::InputText("Audio File Path", (char *)a.filePath, 128);
+            // ImGui::InputText("Audio File Path", (char *)a.filePath, 128);
             ImGui::EndDisabled();
 
             if (ImGui::Button("Play")) { AL_CHECK(alSourcePlay(a.bufferId)); }
@@ -438,6 +470,24 @@ DebugGui::Render()
             ImGui::Text("Animator Component");
             ImGui::PopStyleColor();
             ImGui::Separator();
+
+            ImGui::EndChild();
+        }
+        if (ecs_has(e, C_TEST)) {
+            ImGui::BeginChild("Lua Test Component",
+                              ImVec2(0, ImGui::GetFontSize() * 8.0f),
+                              true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("Lua Test Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            // wow, this is ridiculous..
+            struct ComponentTest &p =
+              *(static_cast<struct ComponentTest *>(ecs_get(e, C_TEST)));
+            int movement_increment = p.movement_increment;
+            float rotation_speed   = p.rotation_speed;
+            ImGui::Text("movement_increment: %d", movement_increment);
+            ImGui::Text("rotation_speed: %f", rotation_speed);
 
             ImGui::EndChild();
         }
@@ -489,10 +539,10 @@ DebugGui::Render()
         ImGui::PopStyleColor();
 
         static ImGuiComboFlags flags = 0;
-        // Using the generic BeginCombo() API, you have full control over how to
-        // display the combo contents. (your selection data could be an index, a
-        // pointer to the object, an id for the object, a flag intrusively
-        // stored in the object itself, etc.)
+        // Using the generic BeginCombo() API, you have full control over
+        // how to display the combo contents. (your selection data could be
+        // an index, a pointer to the object, an id for the object, a flag
+        // intrusively stored in the object itself, etc.)
         const char *items[] = {"Reinhard",
                                "Reinhard (Jodie)",
                                "Reinhard (Extended)",
@@ -501,8 +551,9 @@ DebugGui::Render()
         static int item_current_idx =
           0; // Here we store our selection data as an index.
         const char *combo_preview_value =
-          items[item_current_idx]; // Pass in the preview value visible before
-                                   // opening the combo (it could be anything)
+          items[item_current_idx]; // Pass in the preview value visible
+                                   // before opening the combo (it could be
+                                   // anything)
         if (ImGui::BeginCombo("Tonemapping", combo_preview_value, flags)) {
             for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
                 const bool is_selected = (item_current_idx == n);

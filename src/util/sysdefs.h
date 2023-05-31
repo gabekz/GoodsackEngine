@@ -50,12 +50,11 @@
 #ifdef TRUE
 #undef TRUE
 #endif
+#define TRUE 1
 
 #ifdef FALSE
 #undef FALSE
 #endif
-
-#define TRUE  1
 #define FALSE 0
 
 #endif // __cplusplus
@@ -77,26 +76,38 @@
 
 // -- Types //
 
-typedef signed char sichar;
-typedef unsigned char byte;
+#if defined(SYS_ENV_64)
+typedef signed long long si64;
+typedef unsigned long long ui64;
+#if defined(SYS_ENV_WIN32)
+typedef unsigned long long ulong;
+#endif // defined(SYS_ENV_WIN32)
+#else
+typedef signed long si64;
+typedef unsigned long ui64;
+#endif // defined(SYS_ENV_64)
 
-typedef unsigned long ulng;
-typedef unsigned long ulong;
+typedef double f64;
 
-typedef short si16;
-typedef unsigned short ui16;
-
-typedef int si32;
+typedef signed int si32;
 typedef unsigned int ui32;
 
 typedef float f32;
-typedef double f64;
 
-#if defined(SYS_ENV_64)
-typedef unsigned long ulng;
-typedef long int si64;
-typedef unsigned long int ui64;
-#endif
+typedef signed short si16;
+typedef unsigned short ui16;
+
+typedef signed char si8;
+typedef unsigned char ui8;
+
+// #ifdef byte_t
+// #undef byte_t
+// #endif
+typedef ui8 byte_t;
+
+// #ifdef size_t
+// #undef size_t
+// #endif
 
 #if 0
 #ifndef __cplusplus 

@@ -8,28 +8,26 @@
 #include <core/graphics/shader/shader.h>
 #include <core/graphics/texture/texture.h>
 
-typedef struct _light Light;
-
-typedef enum e_lightType { Directional = 0, Point = 1, Spot = 2 } LightType;
-
-struct _light
-{
-    float *position;
-    float *color;
-    LightType type;
-    float strength;
-
-    ui32 ubo;
-};
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef enum lightType_t { Directional = 0, Point = 1, Spot = 2 } LightType;
+
+typedef struct light_t
+{
+    vec3 position;
+    vec4 color;
+    LightType type;
+    float strength;
+
+    ui32 ubo;
+} Light;
+
 Light *
-lighting_initialize(float *lightPos, float *lightColor);
+lighting_initialize(vec3 lightPos, vec4 lightColor);
 void
-lighting_update(Light *light, float *lightPos, float *lightColor);
+lighting_update(Light *light, vec3 lightPos, vec4 lightColor);
 
 #ifdef __cplusplus
 }
