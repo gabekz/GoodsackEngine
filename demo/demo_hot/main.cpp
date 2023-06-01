@@ -19,7 +19,7 @@ main(int argc, char *argv[])
     gsk_runtime_setup(argc, argv);
 
     demo_scenes_create(gsk_runtime_get_ecs(), gsk_runtime_get_renderer());
-    gsk_runtime_set_scene(7);
+    gsk_runtime_set_scene(INITIAL_SCENE);
 
     gsk_runtime_loop();
 

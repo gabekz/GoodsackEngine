@@ -66,6 +66,13 @@ late_update(Entity e)
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
+
+    if (ecs_has(e, C_CAMERA)) {
+        struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
+        glm_mat4_inv(camera->view, transform->model);
+        return;
+    }
+
     if (transform->hasParent) {
         struct ComponentTransform *parent =
           ecs_get(*(Entity *)transform->parent, C_TRANSFORM);

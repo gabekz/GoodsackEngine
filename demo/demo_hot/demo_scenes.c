@@ -13,6 +13,8 @@
 Texture *texDefSpec, *texDefNorm, *texPbrAo;
 static TextureOptions s_texOpsPbr, s_texOpsNrm;
 
+#define MY_THINGY(x) (void *)(&(__typeof(x)))
+
 static Entity
 __create_camera_entity(ECS *ecs, vec3 position)
 {
@@ -417,7 +419,7 @@ _scene5(ECS *ecs, Renderer *renderer)
     //_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
-// Transform-Parent and physics test
+// physics test
 static void
 _scene6(ECS *ecs, Renderer *renderer)
 {
@@ -511,7 +513,7 @@ _scene6(ECS *ecs, Renderer *renderer)
                         }}));
 }
 
-// Physics explosion test
+// Transform parenting test
 static void
 _scene7(ECS *ecs, Renderer *renderer)
 {
@@ -542,7 +544,7 @@ _scene7(ECS *ecs, Renderer *renderer)
 
     Entity *pCamera = malloc(sizeof(Entity));
 
-    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 0.0f});
     Entity camera = *pCamera;
 
     // Testing entity on heap memory
@@ -571,47 +573,36 @@ _scene7(ECS *ecs, Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
-    Model *modelSphere = model_load_from_file("../res/models/sphere.obj", 1);
+    Model *modelWeapon =
+      model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
 
-    for (int i = 0; i < 1; i++) {
-        Entity sphereEntity = ecs_new(ecs);
-        _ecs_add_internal(sphereEntity,
-                          C_TRANSFORM,
-                          (void *)(&(struct ComponentTransform) {
-                            //.position = {0.0f, -0.085f, -1.0f},
-                            .position = {0.5f * i, 5.0f, 0.0f},
-                          }));
+    Entity attachedEntity = ecs_new(ecs);
+    _ecs_add_internal(attachedEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, 0.0f, 2.0f},
+                        .parent   = pCamera,
+                      }));
 
-        _ecs_add_internal(sphereEntity,
-                          C_RIGIDBODY,
-                          (void *)(&(struct ComponentRigidbody) {
-                            .gravity = {0.0f, -0.981f, 0.0f},
-                            .mass    = 1.0f,
-                          }));
+    _ecs_add_internal(
+      attachedEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material   = matBox,
+                                         .pModel     = modelWeapon,
+                                         .modelPath  = NULL,
+                                         .properties = {
+                                           .drawMode = DRAW_ELEMENTS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
+};
 
-        _ecs_add_internal(sphereEntity,
-                          C_COLLIDER,
-                          (void *)(&(struct ComponentCollider) {
-                            .type = 1,
-                          }));
-
-        _ecs_add_internal(sphereEntity,
-                          C_MODEL,
-                          (void *)(&(struct ComponentModel) {
-                            .material   = matBox,
-                            .pModel     = modelSphere,
-                            .modelPath  = NULL,
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
-    }
-}
+#define GLUE_HELPER(x, y)   x##y
+#define GLUE(x, y)          GLUE_HELPER(x, y)
+#define LOAD_SCENE(__index) GLUE(_scene, __index)(ecs, renderer)
 
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
-
     // Default textures with options
     s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};
     s_texOpsPbr = (TextureOptions) {0, GL_SRGB_ALPHA, false, true};
@@ -619,12 +610,16 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo    = texture_create_n("../res/textures/defaults/white.png");
 
-    //_scene0(ecs, renderer);
-    //_scene1(ecs, renderer);
-    //_scene2(ecs, renderer);
-    //_scene3(ecs, renderer);
-    //_scene4(ecs, renderer);
-    //_scene5(ecs, renderer);
-    //_scene6(ecs, renderer);
-    _scene7(ecs, renderer);
+#if LOAD_ALL_SCENES
+    LOAD_SCENE(0);
+    LOAD_SCENE(1);
+    LOAD_SCENE(2);
+    LOAD_SCENE(3);
+    LOAD_SCENE(4);
+    LOAD_SCENE(5);
+    LOAD_SCENE(6);
+    LOAD_SCENE(7);
+#else
+    LOAD_SCENE(INITIAL_SCENE);
+#endif // LOAD_ALL_SCENES
 }

@@ -168,11 +168,10 @@ update(Entity e)
     glm_vec3_normalize_to(camDirection, camera->front);
 
     // copy front to orientation
-    float camDirectionDeg[3] = {glm_deg(camDirection[1]),
-                                glm_deg(-camDirection[0]),
-                                glm_deg(camDirection[2])};
-    glm_vec3_copy(camDirectionDeg, transform->orientation);
-    // glm_mat4_inv(camera->view, transform->model);
+    float camDirectionDeg[3] = {glm_deg(camera->front[1]),
+                                glm_deg(-camera->front[0]),
+                                glm_deg(-camera->front[2])};
+    // glm_vec3_copy(camDirectionDeg, transform->orientation);
     // glm_mat4_inv(camera->model, transform->model);
 
     // Process Camera Input
@@ -189,6 +188,7 @@ update(Entity e)
 
     // MVP: view
     glm_lookat(transform->position, p, camera->axisUp, camera->view);
+    glm_mat4_inv(camera->view, transform->model);
     // glm_mat4_copy(camera->view, transform->model);
 
     // LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);

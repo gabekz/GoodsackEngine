@@ -8,7 +8,22 @@
 extern "C" {
 #endif
 
-// void demo_scenes_create(int scene, ECS *ecs, Renderer *renderer);
+enum DEMO_SCENE_NAMES {
+    kSceneEarth = 0,
+    kSceneBox,
+    kScenePbrSpheres,
+    kSceneCerberus,
+    kSceneAnimator,
+    kSceneSponza,
+    kScenePhysics,
+    kSceneTransformTest,
+};
+#define DEMO_SCENES_TOTAL 7
+
+#define LOAD_ALL_SCENES 0
+#define INITIAL_SCENE   7
+
+// Creates and loads every demo scene in this project.
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer);
 
