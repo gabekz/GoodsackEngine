@@ -303,9 +303,9 @@ DebugGui::Render()
                 ecs_get(e, C_TRANSFORM)));
             vec3 t = GLM_VEC3_ZERO_INIT;
             ImGui::DragFloat3("Position", p.position, 0.1f, -3000, 3000);
-            ImGui::BeginDisabled();
-            ImGui::DragFloat3("Rotation", t, 0.1f, -3000, 3000);
-            ImGui::EndDisabled();
+            // ImGui::BeginDisabled();
+            ImGui::DragFloat3("Rotation", p.orientation, 0.1f, -3000, 3000);
+            // ImGui::EndDisabled();
             ImGui::DragFloat3("Scale", p.scale, -1, 1);
             ImGui::Separator();
             ImGui::Text("Parent Entity");

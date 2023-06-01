@@ -162,10 +162,18 @@ update(Entity e)
 
     // Calculate camera direction
     vec3 camDirection = GLM_VEC3_ZERO_INIT;
-    camDirection[0]   = cos(glm_rad(camera->yaw) * cos(glm_rad(camera->pitch)));
+    camDirection[0]   = cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
     camDirection[1]   = sin(glm_rad(camera->pitch));
-    camDirection[2]   = sin(glm_rad(camera->yaw) * cos(glm_rad(camera->pitch)));
+    camDirection[2]   = sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
     glm_vec3_normalize_to(camDirection, camera->front);
+
+    // copy front to orientation
+    float camDirectionDeg[3] = {glm_deg(camDirection[1]),
+                                glm_deg(-camDirection[0]),
+                                glm_deg(camDirection[2])};
+    glm_vec3_copy(camDirectionDeg, transform->orientation);
+    // glm_mat4_inv(camera->view, transform->model);
+    // glm_mat4_inv(camera->model, transform->model);
 
     // Process Camera Input
     camera_input(e, e.ecs->renderer->window);
@@ -181,6 +189,7 @@ update(Entity e)
 
     // MVP: view
     glm_lookat(transform->position, p, camera->axisUp, camera->view);
+    // glm_mat4_copy(camera->view, transform->model);
 
     // LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);
 

@@ -73,7 +73,13 @@ late_update(Entity e)
     }
 
     glm_translate(m4i, transform->position);
+
+    glm_rotate_x(m4i, glm_rad(transform->orientation[0]), m4i);
+    glm_rotate_y(m4i, glm_rad(transform->orientation[1]), m4i);
+    glm_rotate_z(m4i, glm_rad(transform->orientation[2]), m4i);
+
     glm_scale(m4i, transform->scale);
+
     glm_mat4_copy(m4i, transform->model);
 }
 
