@@ -6,6 +6,7 @@ package.path = '../demo/demo_hot/Resources/scripts/?.lua;' .. package.path
 
 require("ecs-system2").run()
 require("camera-input").run()
+require("weapon-system").run()
 --require("rotate").run()
 
 function main()

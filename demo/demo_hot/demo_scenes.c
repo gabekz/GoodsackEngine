@@ -580,7 +580,9 @@ _scene7(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(attachedEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = {0.0f, 0.0f, 2.0f},
+                        .position = {0.1f, -0.22f, -0.4340f},
+                        .orientation = {0.0f, 0.0f, -180.0f},
+                        .scale = {0.02f, 0.02f, 0.02f},
                         .parent   = pCamera,
                       }));
 

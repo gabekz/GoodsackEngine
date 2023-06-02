@@ -14,7 +14,7 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
-#define IMPORT_MATERIALS 1
+#define IMPORT_MATERIALS 0
 
 struct AttributeInfo
 {
@@ -622,6 +622,8 @@ load_gltf(const char *path, int scale)
                     ret->meshes[cntMesh]->materialImported      = mat;
                     ret->meshes[cntMesh]->usingImportedMaterial = TRUE;
                 }
+#else
+                ret->meshes[cntMesh]->usingImportedMaterial = FALSE;
 #endif // IMPORT_MATERIALS
 
                 cntMesh++;

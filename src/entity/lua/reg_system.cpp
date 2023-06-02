@@ -3,13 +3,46 @@
 #include <entity/ecsdefs.h>
 #include <entity/lua/eventstore.hpp>
 #include <util/logger.h>
+#include <wrapper/lua/lua_debug.h>
 
 using namespace entity;
+
+#define CHECK_REQUIRED_COMPONENTS 0
 
 int
 entity::Lua_ECSRegisterSystem(lua_State *L)
 {
+#if CHECK_REQUIRED_COMPONENTS
     LOG_DEBUG("Fired Register System");
+
+    dumpstack(L, "dump from register");
+    lua_getfield(L, -1, "required_components"); // get requiredComponents
+    dumpstack(L, "dump from register2");
+
+    int requiredCount = 0;
+    if (!lua_isnil(L, -1)) {
+        requiredCount = lua_rawlen(L, -1);
+        LOG_INFO("Required components! Obj len: %d", requiredCount); 
+    }
+
+    for (int i = 0; i < requiredCount; i++) {
+        lua_getfield(L, -1, "Camera");
+        LOG_INFO("%s", lua_tostring(L, -1));
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+    dumpstack(L, "dump from register3");
+
+    /*
+    if (lua_istable(L, -1)) {
+        LOG_DEBUG("It's a table!");
+        dumpstack(L, "dump from register3");
+        lua_pop(L, 1);
+    }
+    */
+#endif
+
     LuaEventStore &store = LuaEventStore::GetInstance();
 
     // retrieve table for functions
@@ -25,12 +58,13 @@ entity::Lua_ECSRegisterSystem(lua_State *L)
         // TODO: check args from lua
         if (lua_isfunction(L, -1)) {
             int f = luaL_ref(L, -2); // register to table "start"
-            // TODO: Add ECS Event Store (add_ecs_eventstore)
-            // int s = ++store.m_functionList[i]->size;
             LuaEventStore::Lua_Functions **fList = store.getFunctionList();
-            fList[i]->functions                  = (int *)realloc(
+
+            // Resize the function list
+            fList[i]->functions = (int *)realloc(
               fList[i]->functions, ++fList[i]->size * sizeof(int));
             fList[i]->functions[(fList[i]->size) - 1] = f;
+
             LOG_INFO("function list: %s\tnewSize %i",
                      _ecs_EventToString(i),
                      fList[i]->size);

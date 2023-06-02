@@ -13,9 +13,8 @@
 #include <tools/debug/debug_draw_bounds.h>
 #include <tools/debug/debug_draw_skeleton.h>
 
-// #define DEBUG_DRAW_SKELETON
-#define DEBUG_DRAW_COLLIDER
-
+#define DEBUG_DRAW_SKELETON  0
+#define DEBUG_DRAW_COLLIDER  0
 #define CULLING_FOR_IMPORTED 1
 
 static void
@@ -234,7 +233,7 @@ render(Entity e)
                ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame];
     }
 
-#if defined(DEBUG_DRAW_SKELETON)
+#if DEBUG_DRAW_SKELETON
     // draw skeleton
     if (model->mesh->meshData->isSkinnedMesh) {
         debug_draw_skeleton(e.ecs->renderer->debugContext,
@@ -251,7 +250,7 @@ render(Entity e)
           : DrawModel(model, transform, TRUE, cb, e.ecs->renderer);
     }
 
-#if defined(DEBUG_DRAW_COLLIDER)
+#if DEBUG_DRAW_COLLIDER
 
     Model *pModel = model->pModel;
     for (int i = 0; i < pModel->meshesCount; i++) {

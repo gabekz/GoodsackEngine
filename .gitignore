@@ -3,6 +3,7 @@ build/
 out/
 
 .cache/
+.cap/
 .captures/
 .extras/
 .vscode/
@@ -10,3 +11,5 @@ out/
 
 CMakeSettings.json
 compile_commands.json
+
+res/textures/hdr

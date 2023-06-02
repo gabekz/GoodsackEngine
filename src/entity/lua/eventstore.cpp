@@ -118,9 +118,46 @@ _meta_Component_index(lua_State *L)
     }
 }
 
+static void
+__create_table_for_entity_component(lua_State *L,
+                                    const char *componentName,
+                                    ECSComponentType componentType,
+                                    Entity entity)
+{
+
+    std::string a         = std::to_string(entity.id);
+    const char *tableName = a.append(componentName).c_str();
+
+    // Create new metatable
+    lua_pushstring(L, componentName); // temp
+    LUA_DUMP("pushstring");
+    luaL_newmetatable(L, tableName);
+    lua_pushcfunction(L, _meta_Component_index);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, _meta_Component_newindex);
+    lua_setfield(L, -2, "__newindex");
+    LUA_DUMP("After new metatable");
+    lua_pop(L, 1);
+    LUA_DUMP("After new metatable POP");
+
+    lua_pushlightuserdata(L,
+                          LuaEventStore::GetInstance()
+                            .m_componentsList[componentType]
+                            ->m_components[entity.id]);
+    LUA_DUMP("After pushlightuserdata");
+    luaL_setmetatable(L, tableName);
+    LUA_DUMP("After setmetatable");
+    lua_settable(L, -3);
+    LUA_DUMP("After settable -3");
+}
+
 void
 pushEntity(lua_State *L, int entityId, ECSComponentLayout &layout)
 {
+
+    Entity entityCompare = {.id    = (EntityId)entityId,
+                            .index = (ui64)entityId,
+                            .ecs   = LuaEventStore::GetInstance().m_ecs};
 
     std::string a = std::to_string(entityId);
 
@@ -136,31 +173,15 @@ pushEntity(lua_State *L, int entityId, ECSComponentLayout &layout)
     // TODO: Move create to separate function (per Component?)
     // use luaL_getmetatable(L, const char *tname)
 
-    const char *tableName = a.append("Camera").c_str();
+    if (ecs_has(entityCompare, C_CAMERA)) {
+        __create_table_for_entity_component(
+          L, "Camera", C_CAMERA, entityCompare);
+    }
+    if (ecs_has(entityCompare, C_TEST)) {
+        __create_table_for_entity_component(L, "Test", C_TEST, entityCompare);
+    }
 
-    // Create new metatable
-    lua_pushstring(L, "Camera"); // temp
-    LUA_DUMP("pushstring");
-    luaL_newmetatable(L, tableName);
-    lua_pushcfunction(L, _meta_Component_index);
-    lua_setfield(L, -2, "__index");
-    lua_pushcfunction(L, _meta_Component_newindex);
-    lua_setfield(L, -2, "__newindex");
-    LUA_DUMP("After new metatable");
-    lua_pop(L, 1);
-    LUA_DUMP("After new metatable POP");
-
-    lua_pushlightuserdata(L,
-                          LuaEventStore::GetInstance()
-                            .m_componentsList[C_CAMERA]
-                            ->m_components[entityId]);
-    LUA_DUMP("After pushlightuserdata");
-    luaL_setmetatable(L, tableName);
-    LUA_DUMP("After setmetatable");
-    lua_settable(L, -3);
-    LUA_DUMP("After settable -3");
-
-#if 1
+#if 0
     // Second metatable? //TODO: Testing
 
     const char *tableName2 = a.append("Test").c_str();
