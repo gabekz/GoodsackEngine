@@ -31,6 +31,8 @@ typedef enum ECSComponentType_t {
 
 #define ECSCOMPONENT_LAST 10
 
+#pragma pack(push, 1)
+
 struct ComponentAnimator
 {
     ResRef cntAnimation;
@@ -122,7 +124,7 @@ struct ComponentTest
 
 struct ComponentTransform
 {
-    ui32 hasParent;
+    ui16 hasParent;
     mat4 model;
     vec3 orientation;
     void *parent;
@@ -136,6 +138,8 @@ struct ComponentWeapon
     vec3 pos_starting;
     vec3 rot_starting;
 };
+
+#pragma pack(pop)
 
 #ifdef __cplusplus
 }

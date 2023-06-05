@@ -17,15 +17,18 @@ function system.update(entity)
     if not (entity.Weapon) then
         return nil
     end
+    if not (entity.Transform) then
+        return nil
+    end
 
-    -- last_position = entity.Transform.position
-    last_position = entity.Weapon.pos_starting
+    last_position = entity.Transform.position
+    -- last_position = entity.Weapon.pos_starting
 
     if(Input:GetKeyDown(KeyCode.W)) then
         print("id: "..entity.id.."")
-        print("x: "..last_position.x.."")
+        print("x: "..entity.Transform.position.x.."")
         print("y: "..last_position.y.."")
-        print("z: "..last_position.z.."")
+        print("z: "..entity.Transform.position.z.."")
     end
 end
 

@@ -115,7 +115,7 @@ _meta_Component_index(lua_State *L)
     if (c->GetVariableType(k) == EcsDataType::VEC3) {
         // LOG_DEBUG("We have a vec3");
 
-        assert(c->GetVariable(k, &vec));
+        c->GetVariable(k, &vec);
 
         // open table
         lua_newtable(L);

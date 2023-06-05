@@ -40,7 +40,7 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
       {"int", (DataTypeContainer {sizeof(int), 1, EcsDataType::INT})},
       {"uint", (DataTypeContainer {sizeof(ui32), 1, EcsDataType::UINT})},
       {"float", (DataTypeContainer {sizeof(float), 1, EcsDataType::FLOAT})},
-      {"bool", (DataTypeContainer {sizeof(char), 1, EcsDataType::BOOL})},
+      {"bool", (DataTypeContainer {sizeof(ui16), 1, EcsDataType::BOOL})},
       // Vector
       {"vec2", (DataTypeContainer {sizeof(float), 2, EcsDataType::VEC2})},
       {"vec3", (DataTypeContainer {sizeof(float), 3, EcsDataType::VEC3})},
@@ -99,7 +99,7 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
 
-    // generate_cpp_types("test.h", layouts);
+    //generate_cpp_types("test.h", layouts);
     return layouts;
 }
 
@@ -183,7 +183,7 @@ extern "C" {
             case EcsDataType::INT: std::cout << "si32 "; break;
             case EcsDataType::UINT: std::cout << "ui32 "; break;
             case EcsDataType::FLOAT: std::cout << "f32 "; break;
-            case EcsDataType::BOOL: std::cout << "ui32 "; break;
+            case EcsDataType::BOOL: std::cout << "ui16 "; break;
             case EcsDataType::VEC2: std::cout << "vec2 "; break;
             case EcsDataType::VEC3: std::cout << "vec3 "; break;
             case EcsDataType::VEC4: std::cout << "vec4 "; break;

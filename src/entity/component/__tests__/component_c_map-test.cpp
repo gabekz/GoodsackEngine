@@ -38,16 +38,18 @@ struct ComponentCMapTest : testing::Test
 
     std::map<std::string, ECSComponentLayout *> m_Layouts;
 
+#pragma pack(push, 1)
 typedef struct CmpTransform
 {
-    ui32 hasParent;
+    ui16 hasParent;
     mat4 model;
     vec3 orientation;
     void *parent;
     vec3 position;
     vec3 scale;
 } CmpTransform;
-
+#pragma pack(pop)
+//} __attribute((packed)) CmpTransform;
 
     ComponentCMapTest()
     {
