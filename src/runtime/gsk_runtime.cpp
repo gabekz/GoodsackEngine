@@ -134,6 +134,8 @@ gsk_runtime_loop()
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
                                                                "Transform");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TEST, "Test");
+    entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
+                                                               "Weapon");
 
     // ECS Lua Init
     entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE

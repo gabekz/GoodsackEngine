@@ -535,12 +535,6 @@ _scene7(ECS *ecs, Renderer *renderer)
                                          texBrickDiff,
                                          texBrickNorm,
                                          texDefSpec);
-    Material *matBox   = material_create(NULL,
-                                       "../res/shaders/lit-diffuse.shader",
-                                       3,
-                                       texContDiff,
-                                       texDefNorm,
-                                       texContSpec);
 
     Entity *pCamera = malloc(sizeof(Entity));
 
@@ -573,29 +567,59 @@ _scene7(ECS *ecs, Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
+    Texture *texCerbA = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
+    Texture *texCerbN = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
+    Texture *texCerbM = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
+    Texture *texCerbS = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
+
+    /*
+    Material *matWeapon =
+      material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
+      */
+    Material *matWeapon = material_create(NULL,
+                                          "../res/shaders/pbr.shader",
+                                          5,
+                                          texCerbA,
+                                          texCerbN,
+                                          texCerbM,
+                                          texCerbS,
+                                          texPbrAo);
+
     Model *modelWeapon =
+      //model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
       model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
 
     Entity attachedEntity = ecs_new(ecs);
     _ecs_add_internal(attachedEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = {0.1f, -0.22f, -0.4340f},
+                        .position    = {0.1f, -0.22f, -0.4340f},
                         .orientation = {0.0f, 0.0f, -180.0f},
-                        .scale = {0.02f, 0.02f, 0.02f},
-                        .parent   = pCamera,
+                        .scale       = {0.02f, 0.02f, 0.02f},
+                        .parent      = pCamera,
                       }));
 
     _ecs_add_internal(
       attachedEntity,
       C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
+      (void *)(&(struct ComponentModel) {.material   = matWeapon,
                                          .pModel     = modelWeapon,
                                          .modelPath  = NULL,
                                          .properties = {
                                            .drawMode = DRAW_ELEMENTS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
+    _ecs_add_internal(attachedEntity,
+                      C_WEAPON,
+                      (void *)(&(struct ComponentWeapon) {
+                        .damage       = 25,
+                        .pos_starting = {0, 0, 0},
+                        .rot_starting = {0, 0, 0},
+                      }));
 };
 
 #define GLUE_HELPER(x, y)   x##y

@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -108,7 +109,41 @@ _meta_Component_index(lua_State *L)
     }
 
     const char *k = luaL_checkstring(L, -1);
-    float var;
+
+    // get variable type
+    vec3 vec = GLM_VEC3_ONE_INIT;
+    if (c->GetVariableType(k) == EcsDataType::VEC3) {
+        // LOG_DEBUG("We have a vec3");
+
+        assert(c->GetVariable(k, &vec));
+
+        // open table
+        lua_newtable(L);
+
+        // create cell
+        lua_pushstring(L, "x");
+        lua_pushnumber(L, (float)vec[0]);
+        //lua_pushnumber(L, 3);
+        lua_rawset(L, -3); // insert cell and pop
+
+        lua_pushstring(L, "y");
+        lua_pushnumber(L, (float)vec[1]);
+        //lua_pushnumber(L, 2);
+        lua_rawset(L, -3);
+
+        lua_pushstring(L, "z");
+        lua_pushnumber(L, (float)vec[2]);
+        //lua_pushnumber(L, 1);
+        lua_rawset(L, -3);
+
+        // close table
+        lua_pushliteral(L, "n");
+        lua_pushnumber(L, 3); // number of cells
+        lua_rawset(L, -3);
+        return 1; // return table
+    };
+
+    float var = 0;
     if (c->GetVariable(k, &var)) {
         lua_pushnumber(L, var);
         return 1;
@@ -177,8 +212,16 @@ pushEntity(lua_State *L, int entityId, ECSComponentLayout &layout)
         __create_table_for_entity_component(
           L, "Camera", C_CAMERA, entityCompare);
     }
+    if (ecs_has(entityCompare, C_TRANSFORM)) {
+        __create_table_for_entity_component(
+          L, "Transform", C_TRANSFORM, entityCompare);
+    }
     if (ecs_has(entityCompare, C_TEST)) {
         __create_table_for_entity_component(L, "Test", C_TEST, entityCompare);
+    }
+    if (ecs_has(entityCompare, C_WEAPON)) {
+        __create_table_for_entity_component(
+          L, "Weapon", C_WEAPON, entityCompare);
     }
 
 #if 0

@@ -17,11 +17,18 @@ function system.update(entity)
         return nil
     end
 
+    if(entity.Transform == nil) then 
+        return nil
+    end
+
     if (Input:GetKeyDown(Keycode.Q)) then
         entity.Camera.fov = entity.Camera.fov - 10 * delta_time();
     end
     if (Input:GetKeyDown(Keycode.E)) then
         entity.Camera.fov = entity.Camera.fov + 10 * delta_time();
+    end
+    if (Input:GetKeyDown(Keycode.Z)) then
+        print(entity.Camera.speed)
     end
 end
 

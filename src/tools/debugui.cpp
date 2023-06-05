@@ -492,6 +492,25 @@ DebugGui::Render()
             ImGui::EndChild();
         }
 
+        if (ecs_has(e, C_WEAPON)) {
+            ImGui::BeginChild(
+              "Weapon Component", ImVec2(0, ImGui::GetFontSize() * 8.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("Weapon Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+
+            struct ComponentWeapon &p =
+              *(static_cast<struct ComponentWeapon *>(ecs_get(e, C_WEAPON)));
+
+            ImGui::DragFloat3(
+              "pos_starting", p.pos_starting, 0.1f, -3000, 3000);
+            ImGui::DragFloat3(
+              "rot_starting", p.rot_starting, 0.1f, -3000, 3000);
+
+            ImGui::EndChild();
+        }
+
         ImGui::End();
     }
     if (m_showProfiler) {

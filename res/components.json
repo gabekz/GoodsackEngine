@@ -50,5 +50,9 @@
     "Test": {
         "int": [ "movement_increment" ],
         "float": [ "rotation_speed" ]
+    },
+    "Weapon": {
+        "float": ["damage"],
+        "vec3": ["pos_starting", "rot_starting"]
     }
 }

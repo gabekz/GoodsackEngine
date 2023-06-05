@@ -216,6 +216,7 @@ set(CGLM_DIR "${LIB_DIR}/cglm")
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
 target_link_libraries(${PROJECT_NAME} cglm cglm_headers) 
 target_compile_definitions(${PROJECT_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
+target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 
 set_target_properties(cglm PROPERTIES FOLDER "ThirdParty")

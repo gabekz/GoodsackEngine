@@ -26,9 +26,10 @@ typedef enum ECSComponentType_t {
     C_COLLIDER,
     C_TEST,
     C_TRANSFORM,
+    C_WEAPON,
 } ECSComponentType;
 
-#define ECSCOMPONENT_LAST 9
+#define ECSCOMPONENT_LAST 10
 
 struct ComponentAnimator
 {
@@ -121,12 +122,19 @@ struct ComponentTest
 
 struct ComponentTransform
 {
+    ui32 hasParent;
     mat4 model;
     vec3 orientation;
+    void *parent;
     vec3 position;
     vec3 scale;
-    ui32 hasParent;
-    void *parent;
+};
+
+struct ComponentWeapon
+{
+    float damage;
+    vec3 pos_starting;
+    vec3 rot_starting;
 };
 
 #ifdef __cplusplus
@@ -160,6 +168,7 @@ _ecs_init_internal_gen(ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(ecs, C_TEST, sizeof(struct ComponentTest));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPON, sizeof(struct ComponentWeapon));
 }
 
 #ifdef __cplusplus
