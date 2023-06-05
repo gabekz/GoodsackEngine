@@ -27,7 +27,7 @@ struct ComponentCMapTest : testing::Test
 
     const char *rawComponentData = R"(
 {
-  "Transform": {
+  "ComponentTransform": {
     "vec3": [ "position", "orientation", "scale" ],
     "mat4": [ "model" ],
     "bool": [ "hasParent" ],
@@ -38,7 +38,7 @@ struct ComponentCMapTest : testing::Test
 
     std::map<std::string, ECSComponentLayout *> m_Layouts;
 
-struct CmpTransform
+typedef struct CmpTransform
 {
     ui32 hasParent;
     mat4 model;
@@ -46,7 +46,7 @@ struct CmpTransform
     void *parent;
     vec3 position;
     vec3 scale;
-};
+} CmpTransform;
 
 
     ComponentCMapTest()
@@ -59,20 +59,19 @@ struct CmpTransform
 
 TEST_F(ComponentCMapTest, Reads_Writes_Stuff)
 {
-    /*
-    CmpTransform *transform =
-      (CmpTransform *)malloc(sizeof(CmpTransform));
-      */
-    CmpTransform transform = (CmpTransform{.position = {32, 32, 32}});
+    CmpTransform *transform = (CmpTransform *)malloc(sizeof(CmpTransform));
+
+    vec3 newPosition = {12, 12, 12};
+    glm_vec3_copy(newPosition, transform->position);
 
     ECSComponent *cmp =
-      new ECSComponent(&transform, *m_Layouts["ComponentTransform"]);
+      new ECSComponent(transform, *m_Layouts["ComponentTransform"]);
 
     vec3 vectorB = GLM_VEC3_ZERO_INIT;
     ASSERT_TRUE(cmp->GetVariable("position", &vectorB));
-    EXPECT_EQ(transform.position[0], vectorB[0]);
-    EXPECT_EQ(transform.position[1], vectorB[1]);
-    EXPECT_EQ(transform.position[2], vectorB[2]);
+    EXPECT_EQ(transform->position[0], vectorB[0]);
+    EXPECT_EQ(transform->position[1], vectorB[1]);
+    EXPECT_EQ(transform->position[2], vectorB[2]);
 
     // delete (p);
     // delete (p2);
