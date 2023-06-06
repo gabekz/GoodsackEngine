@@ -31,8 +31,8 @@ entity::ECSComponentLayout::ECSComponentLayout(const char *name)
 void
 entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
 {
-    si32 sizeReq = 0;
-    si32 lastPadding = 0; // Going to assume padding is 8
+    si32 sizeReq      = 0;
+    si32 lastPadding  = 0; // Going to assume padding is 8
     si32 totalPadding = 0;
 
     for (auto &var : data) {
@@ -42,18 +42,24 @@ entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
         // last padding is stored, i.e,
         // should be 6 for ui16.
         totalPadding += lastPadding;
-        lastPadding = ECS_COMPONENTS_ALIGN_BYTES - (var.second.size * var.second.stride);
+        lastPadding =
+          ECS_COMPONENTS_ALIGN_BYTES - (var.second.size * var.second.stride);
 
         // correction for over-done
-        if(lastPadding <= 0)
-            lastPadding = 0;
+        if (lastPadding <= 0) lastPadding = 0;
 
-        // add it all together
-        (ECS_COMPONENTS_PACKED) 
-            ? lastPadding = 0 
-            : lastPadding = (lastPadding + 1);
-
+            // add it all together
+// TODO: FIX THE ALIGNMENT ISSUE (may only be persistent to
+// over-correction)
+#if defined(SYS_ENV_WIN)
+        (ECS_COMPONENTS_PACKED) ? lastPadding = 0
+                                : lastPadding = (lastPadding - 1);
+        sizeReq += (var.second.size * var.second.stride) + (lastPadding - 1);
+#elif defined(SYS_ENV_UNIX)
+        (ECS_COMPONENTS_PACKED) ? lastPadding = 0
+                                : lastPadding = (lastPadding + 1);
         sizeReq += (var.second.size * var.second.stride) + (lastPadding);
+#endif // SYS_ENV
     }
 
     m_Variables = data;

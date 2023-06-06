@@ -1,6 +1,8 @@
 #ifndef H_ECSDEFS
 #define H_ECSDEFS
 
+#include <util/sysdefs.h>
+
 // #ifdef __cplusplus
 // enum ECSEvent { ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE };
 // #else
@@ -23,14 +25,14 @@ enum ECSEvent {
 #define ECS_TAG_USED   0b00110000
 
 // Should always be True
-#define USING_GENERATED_COMPONENTS    1
+#define USING_GENERATED_COMPONENTS 1
 
 // Component struct Packing/Padding
-#define ECS_COMPONENTS_PACKED         0
+#define ECS_COMPONENTS_PACKED 0
 #if defined(SYS_ENV_WIN)
-#define ECS_COMPONENTS_ALIGN_BYTES    16
+#define ECS_COMPONENTS_ALIGN_BYTES 16
 #else
-#define ECS_COMPONENTS_ALIGN_BYTES    12 
+#define ECS_COMPONENTS_ALIGN_BYTES 12
 #endif // defined(SYS_ENV_WIN)
 
 #ifdef __cplusplus
