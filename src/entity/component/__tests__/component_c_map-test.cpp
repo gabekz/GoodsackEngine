@@ -60,17 +60,45 @@ TEST_F(ComponentCMapTest, Reads_Writes_Stuff)
 {
     CmpTransform *transform = (CmpTransform *)malloc(sizeof(CmpTransform));
 
-    vec3 newPosition = {12, 12, 12};
-    glm_vec3_copy(newPosition, transform->position);
-
     ECSComponent *cmp =
       new ECSComponent(transform, *m_Layouts["ComponentTransform"]);
 
-    vec3 vectorB = GLM_VEC3_ZERO_INIT;
-    ASSERT_TRUE(cmp->GetVariable("position", &vectorB));
-    EXPECT_EQ(transform->position[0], vectorB[0]);
-    EXPECT_EQ(transform->position[1], vectorB[1]);
-    EXPECT_EQ(transform->position[2], vectorB[2]);
+    // Check hasParent
+    transform->hasParent = 0;
+    ui16 recHasParent    = -1;
+    cmp->GetVariable("hasParent", &recHasParent);
+    EXPECT_EQ(transform->hasParent, recHasParent);
+    transform->hasParent = 1;
+    cmp->GetVariable("hasParent", &recHasParent);
+    EXPECT_EQ(transform->hasParent, recHasParent);
+
+
+    // Check orientation
+    vec3 newRot = {9, 30, -15};
+    glm_vec3_copy(newRot, transform->orientation);
+    vec3 vecRot = GLM_VEC3_ZERO_INIT;
+    ASSERT_TRUE(cmp->GetVariable("orientation", &vecRot));
+    EXPECT_EQ(transform->orientation[0], vecRot[0]);
+    EXPECT_EQ(transform->orientation[1], vecRot[1]);
+    EXPECT_EQ(transform->orientation[2], vecRot[2]);
+
+    // Check position
+    vec3 newPos = {12, 12, 12};
+    glm_vec3_copy(newPos, transform->position);
+    vec3 vecPos = GLM_VEC3_ZERO_INIT;
+    ASSERT_TRUE(cmp->GetVariable("position", &vecPos));
+    EXPECT_EQ(transform->position[0], vecPos[0]);
+    EXPECT_EQ(transform->position[1], vecPos[1]);
+    EXPECT_EQ(transform->position[2], vecPos[2]);
+
+    // Check scale
+    vec3 newScl = {-2, 2, 54.2f};
+    glm_vec3_copy(newScl, transform->scale);
+    vec3 vecScl = GLM_VEC3_ZERO_INIT;
+    ASSERT_TRUE(cmp->GetVariable("scale", &vecScl));
+    EXPECT_EQ(transform->scale[0], vecScl[0]);
+    EXPECT_EQ(transform->scale[1], vecScl[1]);
+    EXPECT_EQ(transform->scale[2], vecScl[2]);
 
     // delete (p);
     // delete (p2);
