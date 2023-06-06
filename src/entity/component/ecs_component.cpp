@@ -31,10 +31,29 @@ entity::ECSComponentLayout::ECSComponentLayout(const char *name)
 void
 entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
 {
-    ulong sizeReq = 0;
+    si32 sizeReq = 0;
+    si32 lastPadding = 0; // Going to assume padding is 8
+    si32 totalPadding = 0;
+
     for (auto &var : data) {
+
         var.second.position = sizeReq;
-        sizeReq += var.second.size * var.second.stride;
+
+        // last padding is stored, i.e,
+        // should be 6 for ui16.
+        totalPadding += lastPadding;
+        lastPadding = ECS_COMPONENTS_ALIGN_BYTES - (var.second.size * var.second.stride);
+
+        // correction for over-done
+        if(lastPadding <= 0)
+            lastPadding = 0;
+
+        // add it all together
+        (ECS_COMPONENTS_PACKED) 
+            ? lastPadding = 0 
+            : lastPadding = (lastPadding + 1);
+
+        sizeReq += (var.second.size * var.second.stride) + (lastPadding);
     }
 
     m_Variables = data;

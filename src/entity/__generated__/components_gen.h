@@ -31,7 +31,11 @@ typedef enum ECSComponentType_t {
 
 #define ECSCOMPONENT_LAST 10
 
+#if ECS_COMPONENTS_PACKED
 #pragma pack(push, 1)
+//#else
+//pragma pack(push, ECS_COMPONENTS_ALIGN_BYTES)
+#endif // ECS_COMPONENTS_PACKED
 
 struct ComponentAnimator
 {
@@ -139,7 +143,9 @@ struct ComponentWeapon
     vec3 rot_starting;
 };
 
+#if ECS_COMPONENTS_PACKED
 #pragma pack(pop)
+#endif // ECS_COMPONENTS_PACKED
 
 #ifdef __cplusplus
 }

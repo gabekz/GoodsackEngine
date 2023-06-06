@@ -22,7 +22,16 @@ enum ECSEvent {
 #define ECS_TAG_UNUSED 0b00000000
 #define ECS_TAG_USED   0b00110000
 
-#define USING_GENERATED_COMPONENTS 1
+// Should always be True
+#define USING_GENERATED_COMPONENTS    1
+
+// Component struct Packing/Padding
+#define ECS_COMPONENTS_PACKED         0
+#if defined(SYS_ENV_WIN)
+#define ECS_COMPONENTS_ALIGN_BYTES    16
+#else
+#define ECS_COMPONENTS_ALIGN_BYTES    12 
+#endif // defined(SYS_ENV_WIN)
 
 #ifdef __cplusplus
 extern "C" {
