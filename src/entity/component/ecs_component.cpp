@@ -42,24 +42,15 @@ entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
         // last padding is stored, i.e,
         // should be 6 for ui16.
         totalPadding += lastPadding;
-        lastPadding =
-          ECS_COMPONENTS_ALIGN_BYTES - (var.second.size * var.second.stride);
 
-        // correction for over-done
-        if (lastPadding <= 0) lastPadding = 0;
+        si32 varMemSize = var.second.size * var.second.stride;
 
-            // add it all together
-// TODO: FIX THE ALIGNMENT ISSUE (may only be persistent to
-// over-correction)
-#if defined(SYS_ENV_WIN)
-        (ECS_COMPONENTS_PACKED) ? lastPadding = 0
-                                : lastPadding = (lastPadding - 1);
-        sizeReq += (var.second.size * var.second.stride) + (lastPadding - 1);
-#elif defined(SYS_ENV_UNIX)
-        (ECS_COMPONENTS_PACKED) ? lastPadding = 0
-                                : lastPadding = (lastPadding + 1);
-        sizeReq += (var.second.size * var.second.stride) + (lastPadding);
-#endif // SYS_ENV
+        lastPadding = (varMemSize < ECS_COMPONENTS_ALIGN_BYTES)
+            ? ECS_COMPONENTS_ALIGN_BYTES
+            : varMemSize;
+
+        // Add by padding
+        sizeReq += lastPadding;
     }
 
     m_Variables = data;
