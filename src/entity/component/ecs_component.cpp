@@ -46,8 +46,8 @@ entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
         si32 varMemSize = var.second.size * var.second.stride;
 
         lastPadding = (varMemSize < ECS_COMPONENTS_ALIGN_BYTES)
-            ? ECS_COMPONENTS_ALIGN_BYTES
-            : varMemSize;
+                        ? ECS_COMPONENTS_ALIGN_BYTES
+                        : varMemSize;
 
         // Add by padding
         sizeReq += lastPadding;

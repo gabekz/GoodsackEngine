@@ -38,17 +38,17 @@ struct ComponentCMapTest : testing::Test
 
     std::map<std::string, ECSComponentLayout *> m_Layouts;
 
-#pragma pack(push, ECS_COMPONENTS_ALIGN_BYTES)
+#define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
+#define CACHE_ALIGN __declspec(align(CACHE_LINE))
 typedef struct CmpTransform
 {
     ui16 hasParent;
     mat4 model;
-    vec3 orientation;
+    CACHE_ALIGN vec3 orientation;
     void *parent;
-    vec3 position;
-    vec3 scale;
+    CACHE_ALIGN vec3 position;
+    CACHE_ALIGN vec3 scale;
 } CmpTransform;
-#pragma pack(pop)
 
     ComponentCMapTest()
     {
@@ -85,7 +85,7 @@ TEST_F(ComponentCMapTest, Reads_Writes_Stuff)
     EXPECT_EQ(transform->orientation[2], vecRot[2]);
 
     // Check position
-    vec3 newPos = {12, 12, 12};
+    vec3 newPos = {12, 11, 10};
     glm_vec3_copy(newPos, transform->position);
     vec3 vecPos = GLM_VEC3_ZERO_INIT;
     ASSERT_TRUE(cmp->GetVariable("position", &vecPos));
