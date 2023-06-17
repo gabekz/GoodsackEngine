@@ -37,11 +37,6 @@ static struct
 }
 
 static void
-_lua_test_create_componentlist()
-{
-}
-
-static void
 _gsk_check_args(int argc, char *argv[])
 {
     if (argc > 1) {

@@ -89,6 +89,23 @@ _meta_Component_newindex(lua_State *L)
     const char *k = luaL_checkstring(L, -2);
     float var;
 
+    // get variable type
+    if (c->GetVariableType(k) == EcsDataType::VEC3) {
+        vec3 vec = GLM_VEC3_ONE_INIT;
+
+        lua_pushnil(L); // first key
+        int stackIndex = -2, iter = 0;
+        while (lua_next(L, stackIndex)) { // traverse keys
+            vec[iter] = lua_tonumber(L, -1);
+            lua_pop(L, 1); // stack restore
+            iter++;
+        }
+
+        c->SetVariable(k, &vec);
+
+        return 0;
+    }
+
     if (c->GetVariable(k, &var)) {
         var = luaL_checknumber(L, -1);
         c->SetVariable(k, &var);
@@ -111,9 +128,9 @@ _meta_Component_index(lua_State *L)
     const char *k = luaL_checkstring(L, -1);
 
     // get variable type
-    vec3 vec = GLM_VEC3_ONE_INIT;
     if (c->GetVariableType(k) == EcsDataType::VEC3) {
         // LOG_DEBUG("We have a vec3");
+        vec3 vec = GLM_VEC3_ONE_INIT;
 
         c->GetVariable(k, &vec);
 
@@ -123,17 +140,17 @@ _meta_Component_index(lua_State *L)
         // create cell
         lua_pushstring(L, "x");
         lua_pushnumber(L, (float)vec[0]);
-        //lua_pushnumber(L, 3);
+        // lua_pushnumber(L, 3);
         lua_rawset(L, -3); // insert cell and pop
 
         lua_pushstring(L, "y");
         lua_pushnumber(L, (float)vec[1]);
-        //lua_pushnumber(L, 2);
+        // lua_pushnumber(L, 2);
         lua_rawset(L, -3);
 
         lua_pushstring(L, "z");
         lua_pushnumber(L, (float)vec[2]);
-        //lua_pushnumber(L, 1);
+        // lua_pushnumber(L, 1);
         lua_rawset(L, -3);
 
         // close table

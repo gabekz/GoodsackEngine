@@ -41,7 +41,7 @@ skybox_draw(Skybox *self)
 {
     // glDepthMask(GL_FALSE);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, self->prefilterMap->id);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, self->cubemap->id);
 
     shader_use(self->shader);
     vao_bind(self->vao);
@@ -61,7 +61,7 @@ skybox_hdr_create()
     // glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
     //  Load HDR texture
     Texture *hdrTexture =
-      texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr");
+      texture_create_hdr("../res/textures/hdr/belfast_sunset_puresky_4k.hdr");
     // texture_create_hdr("../res/textures/hdr/city_night.hdr");
 
     // Framebuffer setup

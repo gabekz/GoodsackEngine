@@ -10,6 +10,7 @@
 #include <core/graphics/material/material.h>
 #include <core/graphics/renderer/renderer_props.inl>
 #include <core/graphics/scene/scene.h>
+#include <core/graphics/ui/billboard.h>
 
 #include <core/graphics/renderer/pipeline/pass_shadowmap.h>
 #include <core/graphics/renderer/pipeline/pass_ssao.h>
@@ -38,6 +39,8 @@ struct _renderer
 
     RenderPass currentPass; // TODO: rename -> RenderStage
     Material *explicitMaterial;
+
+    Billboard2D *billboard; // Billboard testing
 
     // Skybox test
     Skybox *skybox;

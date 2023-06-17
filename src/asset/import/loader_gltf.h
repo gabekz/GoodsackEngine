@@ -9,7 +9,7 @@ extern "C" {
 #endif // __cplusplus
 
 Model *
-load_gltf(const char *path, int scale);
+load_gltf(const char *path, int scale, int importMaterials);
 
 #ifdef __cplusplus
 }

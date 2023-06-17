@@ -24,8 +24,8 @@ class DebugGui {
     bool m_showSceneLighting;
     bool m_showEntityViewer;
     bool m_showComponentViewer;
+    bool m_showAssets;
     bool m_showProfiler;
-    bool m_showHDR;
 
     Entity m_selectedEntity;
 

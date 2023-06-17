@@ -34,7 +34,7 @@ typedef enum ECSComponentType_t {
 #if ECS_COMPONENTS_PACKED
 #pragma pack(push, 1)
 //#else
-//pragma pack(push, ECS_COMPONENTS_ALIGN_BYTES)
+// pragma pack(push, ECS_COMPONENTS_ALIGN_BYTES)
 #endif // ECS_COMPONENTS_PACKED
 
 struct ComponentAnimator
@@ -126,21 +126,24 @@ struct ComponentTest
     f32 rotation_speed;
 };
 
+#define CACHE_LINE  ECS_COMPONENTS_ALIGN_BYTES
+#define CACHE_ALIGN __declspec(align(CACHE_LINE))
+
 struct ComponentTransform
 {
     ui16 hasParent;
     mat4 model;
-    vec3 orientation;
+    CACHE_ALIGN vec3 orientation;
     void *parent;
-    vec3 position;
-    vec3 scale;
+    CACHE_ALIGN vec3 position;
+    CACHE_ALIGN vec3 scale;
 };
 
 struct ComponentWeapon
 {
     float damage;
-    vec3 pos_starting;
-    vec3 rot_starting;
+    CACHE_ALIGN vec3 pos_starting;
+    CACHE_ALIGN vec3 rot_starting;
 };
 
 #if ECS_COMPONENTS_PACKED

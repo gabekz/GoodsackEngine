@@ -76,8 +76,8 @@ DebugGui::DebugGui(Renderer *renderer)
     m_showSceneViewer     = false;
     m_showSceneLighting   = false;
     m_showExample         = false;
+    m_showAssets          = false;
     m_showProfiler        = false;
-    m_showHDR             = false;
 
     SetVisibility(true);
 }
@@ -144,12 +144,14 @@ DebugGui::Render()
                 m_sceneQueued     = 0;
             }
             if (ImGui::MenuItem("Lighting")) { m_showSceneLighting = true; }
+            ImGui::Separator();
             if (ImGui::MenuItem("Entities")) { m_showEntityViewer = true; }
+            if (ImGui::MenuItem("Systems")) { m_showEntityViewer = true; }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Debug")) {
-            if (ImGui::MenuItem("Profiler")) { m_showProfiler = true; }
-            if (ImGui::MenuItem("HDR")) { m_showHDR = true; }
+        if (ImGui::BeginMenu("Pipeline")) {
+            if (ImGui::MenuItem("Assets")) { m_showAssets = true; }
+            if (ImGui::MenuItem("Graphics")) { m_showProfiler = true; }
             ImGui::EndMenu();
         }
 
@@ -226,21 +228,12 @@ DebugGui::Render()
                          2,
                          "%.5f");
 
-        ImGui::Image((void *)(intptr_t)shadowmap_getTexture(),
-                     ImVec2(200, 200),
-                     ImVec2(0, 1),
-                     ImVec2(1, 0));
-
-        ImGui::Separator();
-        ImGui::Text("Ambient Occlusion");
-        ImGui::DragFloat(
-          "SSAO Strength", &m_renderer->ssaoOptions.strength, 0.1f, 0, 20);
-        ImGui::DragFloat(
-          "Bias", &m_renderer->ssaoOptions.bias, 0.0001f, 0, 2, "%.5f");
-        ImGui::DragFloat(
-          "Radius", &m_renderer->ssaoOptions.radius, 0.05f, 0, 2, "%.5f");
-        ImGui::DragInt(
-          "Kernel Size", &m_renderer->ssaoOptions.kernelSize, 1, 1, 64);
+        if (ImGui::CollapsingHeader("[Texture] Shadowmap")) {
+            ImGui::Image((void *)(intptr_t)shadowmap_getTexture(),
+                         ImVec2(200, 200),
+                         ImVec2(0, 1),
+                         ImVec2(1, 0));
+        }
 
         ImGui::End();
         ImGui::EndGroup();
@@ -252,6 +245,7 @@ DebugGui::Render()
         ImGui::BeginGroup();
         ImGui::Begin("Entity Viewer", &m_showEntityViewer);
 
+#if 0
         ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow |
                                         ImGuiTreeNodeFlags_OpenOnDoubleClick |
                                         ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -280,6 +274,89 @@ DebugGui::Render()
                 m_showComponentViewer = true;
             }
         }
+#else
+
+        // Options
+        static ImGuiTableFlags flags =
+          ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable |
+          ImGuiTableFlags_Hideable | ImGuiTableFlags_Sortable |
+          ImGuiTableFlags_SortMulti | ImGuiTableFlags_RowBg |
+          ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
+          ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_ScrollY;
+
+        int TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+
+        enum MyItemColumnID { MyItemColumnID_ID, MyItemColumnID_Name };
+
+        if (ImGui::BeginTable("table_sorting",
+                              4,
+                              flags,
+                              ImVec2(0.0f, TEXT_BASE_HEIGHT * 15),
+                              0.0f)) {
+
+            ImGui::TableSetupColumn("ID",
+                                    ImGuiTableColumnFlags_DefaultSort |
+                                      ImGuiTableColumnFlags_WidthFixed,
+                                    0.0f,
+                                    MyItemColumnID_ID);
+            ImGui::TableSetupColumn("Name",
+                                    ImGuiTableColumnFlags_WidthFixed,
+                                    0.0f,
+                                    MyItemColumnID_Name);
+            // ImGui::TableSetupColumn("Action",   ImGuiTableColumnFlags_NoSort
+            // | ImGuiTableColumnFlags_WidthFixed,   0.0f,
+            // MyItemColumnID_Action); ImGui::TableSetupColumn("Quantity",
+            // ImGuiTableColumnFlags_PreferSortDescending |
+            // ImGuiTableColumnFlags_WidthStretch, 0.0f,
+            // MyItemColumnID_Quantity);
+            ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
+            ImGui::TableHeadersRow();
+
+// Sort our data if sort specs have been changed!
+#if DEBUG_UI_USING_SORTING
+            if (ImGuiTableSortSpecs *sorts_specs = ImGui::TableGetSortSpecs())
+                if (sorts_specs->SpecsDirty) {
+                    MyItem::s_current_sort_specs =
+                      sorts_specs; // Store in variable accessible by the sort
+                                   // function.
+                    if (items.Size > 1)
+                        qsort(&items[0],
+                              (size_t)items.Size,
+                              sizeof(items[0]),
+                              MyItem::CompareWithSortSpecs);
+                    MyItem::s_current_sort_specs = NULL;
+                    sorts_specs->SpecsDirty      = false;
+                }
+#endif // DEBUG_UI_USING_SORTING
+
+            ImGuiListClipper clipper;
+            clipper.Begin(ecs->nextId - 1);
+            while (clipper.Step())
+                for (int row_n = clipper.DisplayStart;
+                     row_n < clipper.DisplayEnd;
+                     row_n++) {
+                    // Display a data item
+                    // MyItem* item = &items[row_n];
+                    ImGui::PushID(row_n);
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%04d", row_n);
+                    ImGui::TableNextColumn();
+                    ImGui::TextUnformatted("Entity");
+                    ImGui::TableNextColumn();
+                    if (ImGui::SmallButton("Inspect")) {
+                        Entity entity         = (Entity {.id    = (EntityId)row_n,
+                                                 .index = (ui64)row_n,
+                                                 .ecs   = ecs});
+                        m_selectedEntity      = entity;
+                        m_showComponentViewer = true;
+                    }
+                    ImGui::PopID();
+                }
+
+            ImGui::EndTable();
+        }
+#endif
         ImGui::End();
         ImGui::EndGroup();
     }
@@ -288,6 +365,10 @@ DebugGui::Render()
         ImGui::Begin("Component Viewer", &m_showComponentViewer);
 
         Entity e = m_selectedEntity;
+
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
+        ImGui::Text("entity %d", e.id);
+        ImGui::PopStyleColor();
 
         if (ecs_has(e, C_TRANSFORM)) {
             ImGui::BeginChild(
@@ -382,29 +463,31 @@ DebugGui::Render()
             // ImGui::InputText("Vertex Shader", (char
             // *)p.material->shaderProgram->shaderSource->shaderPath, 128);
             // ImGui::InputText("Fragment Shader", (char
-            // *)p.material->shaderProgram->shaderSource->shaderFragment, 128);
+            // *)p.material->shaderProgram->shaderSource->shaderFragment,
+            // 128);
 
-            if (DEVICE_API_OPENGL) {
-                int textureCount = ((Material *)p.material)->texturesCount;
-                ImGui::Text("Textures: %u", textureCount);
-                // Display textures
-                for (int i = 0; i < textureCount; i++) {
-                    ImGui::Separator();
-                    ImGui::Image((void *)(intptr_t)((Material *)p.material)
-                                   ->textures[i]
-                                   ->id,
-                                 ImVec2(200, 200),
-                                 ImVec2(0, 1),
-                                 ImVec2(1, 0));
-                    ImGui::SameLine();
-                    ImGui::Text("File Path: %s\nDimensions: %dx%d\nType: %s",
-                                ((Material *)p.material)->textures[i]->filePath,
-                                ((Material *)p.material)->textures[i]->width,
-                                ((Material *)p.material)->textures[i]->height,
-                                "");
-                }
-            } // DEVICE_API_OPENGL
-
+            if (ImGui::CollapsingHeader("Textures")) {
+                if (DEVICE_API_OPENGL) {
+                    int textureCount = ((Material *)p.material)->texturesCount;
+                    // Display textures
+                    for (int i = 0; i < textureCount; i++) {
+                        ImGui::Separator();
+                        ImGui::Image((void *)(intptr_t)((Material *)p.material)
+                                       ->textures[i]
+                                       ->id,
+                                     ImVec2(200, 200),
+                                     ImVec2(0, 1),
+                                     ImVec2(1, 0));
+                        ImGui::SameLine();
+                        ImGui::Text(
+                          "File Path: %s\nDimensions: %dx%d\nType: %s",
+                          ((Material *)p.material)->textures[i]->filePath,
+                          ((Material *)p.material)->textures[i]->width,
+                          ((Material *)p.material)->textures[i]->height,
+                          "");
+                    }
+                } // DEVICE_API_OPENGL
+            }     // Textures collapsing header
             ImGui::EndChild();
         }
         if (ecs_has(e, C_CAMERA)) {
@@ -513,118 +596,138 @@ DebugGui::Render()
 
         ImGui::End();
     }
-    if (m_showProfiler) {
+    if (m_showAssets) {
+        ImGui::Begin("Assets Pipeline", &m_showAssets);
         ImGui::BeginGroup();
-        ImGui::Begin("Analytics", &m_showProfiler);
 
-        ImGui::Text("Settings");
-        ImGui::Separator();
-        int vsync = device_getGraphicsSettings().swapInterval;
-        ImGui::Checkbox("VSync", (bool *)&vsync);
-        device_setGraphicsSettings((GraphicsSettings({.swapInterval = vsync})));
+        if (ImGui::CollapsingHeader("Scripts")) {
 
-        /*
-        ImGui::Text("Time");
-        ImGui::Separator();
-        ImGui::Text("%f DeltaTime", device_getAnalytics().delta);
-        */
+            ImGui::Text("Lua status: ");
+            ImGui::BeginDisabled();
+            bool luaStateEnable = true;
+            bool luaStateReload = false;
+            ImGui::Checkbox("Running", &luaStateEnable);
+            ImGui::Checkbox("Auto Reload", &luaStateEnable);
+            ImGui::EndDisabled();
+            ImGui::SameLine();
+            if (ImGui::Button("Force Reload")) { LOG_DEBUG("Force Reload"); }
+        }
 
-        ImGui::Text("Performance");
-        ImGui::Separator();
-        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        ImGui::Text("%f FPS", device_getAnalytics().currentFps);
-        ImGui::Text("%f ms", device_getAnalytics().currentMs);
-        ImGui::PopStyleColor();
-        /*
-        ImGui::Separator();
-        ImGui::Text("Draw Calls: ");
-        ImGui::Separator();
-        ImGui::Text("Total Vertices: ");
-        ImGui::Text("Total Polygons: ");
-        ImGui::Text("Total Faces: ");
-        // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
-        */
+        if (ImGui::CollapsingHeader("Shaders")) {
 
-        ImGui::End();
+            bool shaderReload = false;
+            ImGui::BeginDisabled();
+            ImGui::Checkbox("Auto Reload", &shaderReload);
+            ImGui::EndDisabled();
+            ImGui::SameLine();
+            if (ImGui::Button("Force Reload")) { LOG_DEBUG("Force Reload"); }
+        }
+
         ImGui::EndGroup();
+        ImGui::End();
     }
-    if (m_showHDR) {
+    if (m_showProfiler) {
+
         RendererProps *props = &m_renderer->properties;
+
+        ImGui::Begin("Graphics Pipeline", &m_showProfiler);
         ImGui::BeginGroup();
-        ImGui::Begin("HDR Debug", &m_showHDR);
 
-        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        ImGui::Text("Frame");
-        ImGui::PopStyleColor();
+        if (ImGui::CollapsingHeader("Performace")) {
+            ImGui::Separator();
+            ImGui::Text("Analytics");
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("%f FPS", device_getAnalytics().currentFps);
+            ImGui::Text("%f ms", device_getAnalytics().currentMs);
+            ImGui::PopStyleColor();
+        }
 
-        static ImGuiComboFlags flags = 0;
-        // Using the generic BeginCombo() API, you have full control over
-        // how to display the combo contents. (your selection data could be
-        // an index, a pointer to the object, an id for the object, a flag
-        // intrusively stored in the object itself, etc.)
-        const char *items[] = {"Reinhard",
-                               "Reinhard (Jodie)",
-                               "Reinhard (Extended)",
-                               "ACES (Approximate)",
-                               "Uncharted 2 Filmic"};
-        static int item_current_idx =
-          0; // Here we store our selection data as an index.
-        const char *combo_preview_value =
-          items[item_current_idx]; // Pass in the preview value visible
-                                   // before opening the combo (it could be
-                                   // anything)
-        if (ImGui::BeginCombo("Tonemapping", combo_preview_value, flags)) {
-            for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
-                const bool is_selected = (item_current_idx == n);
-                if (ImGui::Selectable(items[n], is_selected)) {
-                    item_current_idx  = n;
-                    props->tonemapper = n;
+        if (ImGui::CollapsingHeader("Settings")) {
+            ImGui::Separator();
+            ImGui::Text("Window");
+            int vsync = device_getGraphicsSettings().swapInterval;
+            ImGui::Checkbox("VSync", (bool *)&vsync);
+            device_setGraphicsSettings(
+              (GraphicsSettings({.swapInterval = vsync})));
+
+            ImGui::Separator();
+            ImGui::Text("Frame");
+
+            static ImGuiComboFlags flags = 0;
+            // Using the generic BeginCombo() API, you have full control over
+            // how to display the combo contents. (your selection data could be
+            // an index, a pointer to the object, an id for the object, a flag
+            // intrusively stored in the object itself, etc.)
+            const char *items[] = {"Reinhard",
+                                   "Reinhard (Jodie)",
+                                   "Reinhard (Extended)",
+                                   "ACES (Approximate)",
+                                   "Uncharted 2 Filmic"};
+            static int item_current_idx =
+              0; // Here we store our selection data as an index.
+            const char *combo_preview_value =
+              items[item_current_idx]; // Pass in the preview value visible
+                                       // before opening the combo (it could be
+                                       // anything)
+            if (ImGui::BeginCombo("Tonemapping", combo_preview_value, flags)) {
+                for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
+                    const bool is_selected = (item_current_idx == n);
+                    if (ImGui::Selectable(items[n], is_selected)) {
+                        item_current_idx  = n;
+                        props->tonemapper = n;
+                    }
+
+                    // Set the initial focus when opening the combo (scrolling +
+                    // keyboard navigation focus)
+                    if (is_selected) ImGui::SetItemDefaultFocus();
                 }
-
-                // Set the initial focus when opening the combo (scrolling +
-                // keyboard navigation focus)
-                if (is_selected) ImGui::SetItemDefaultFocus();
+                ImGui::EndCombo();
             }
-            ImGui::EndCombo();
+            if (item_current_idx == 2) { // Reinhard Extended
+                ImGui::SliderFloat("Max White", &props->maxWhite, 0.0f, 20.0f);
+            }
+
+            ImGui::DragFloat(
+              "Exposure", &props->exposure, 0.1f, 0.0f, 20.0f, "%.1f");
+
+            ImGui::Checkbox("Gamma Correction", (bool *)&props->gammaEnable);
+            if (!props->gammaEnable) ImGui::BeginDisabled();
+            ImGui::DragFloat("Gamma", &props->gamma, 0.1f, 0.0f, 20.0f, "%.1f");
+            if (!props->gammaEnable) ImGui::EndDisabled();
+
+            ImGui::Separator();
+            ImGui::Text("Anti Aliasing");
+            ImGui::Checkbox("MSAA", (bool *)&props->msaaEnable);
+            ImGui::SameLine();
+            int p = 4;
+            ImGui::BeginDisabled();
+            ImGui::DragInt("Samples", &p, 2, 0, 4);
+            ImGui::EndDisabled();
+
+            ImGui::Separator();
+            ImGui::Text("Ambient Occlusion");
+            ImGui::DragFloat(
+              "SSAO Strength", &m_renderer->ssaoOptions.strength, 0.1f, 0, 20);
+            ImGui::DragFloat(
+              "Bias", &m_renderer->ssaoOptions.bias, 0.0001f, 0, 2, "%.5f");
+            ImGui::DragFloat(
+              "Radius", &m_renderer->ssaoOptions.radius, 0.05f, 0, 2, "%.5f");
+            ImGui::DragInt(
+              "Kernel Size", &m_renderer->ssaoOptions.kernelSize, 1, 1, 64);
+
+            /*
+            ImGui::Separator();
+            ImGui::Text("Draw Calls: ");
+            ImGui::Separator();
+            ImGui::Text("Total Vertices: ");
+            ImGui::Text("Total Polygons: ");
+            ImGui::Text("Total Faces: ");
+            // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
+            */
         }
-        if (item_current_idx == 2) { // Reinhard Extended
-            ImGui::SliderFloat("Max White", &props->maxWhite, 0.0f, 20.0f);
-        }
 
-        ImGui::DragFloat(
-          "Exposure", &props->exposure, 0.1f, 0.0f, 20.0f, "%.1f");
-
-        ImGui::Checkbox("Gamma Correction", (bool *)&props->gammaEnable);
-        if (!props->gammaEnable) ImGui::BeginDisabled();
-        ImGui::DragFloat("Gamma", &props->gamma, 0.1f, 0.0f, 20.0f, "%.1f");
-        if (!props->gammaEnable) ImGui::EndDisabled();
-
-        ImGui::Separator();
-        ImGui::Checkbox("MSAA", (bool *)&props->msaaEnable);
-        ImGui::SameLine();
-        int p = 16;
-        ImGui::BeginDisabled();
-        ImGui::DragInt("Samples", &p, 2, 0, 16);
-        ImGui::EndDisabled();
-        ImGui::Separator();
-
-        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        ImGui::Text("IBL");
-        ImGui::PopStyleColor();
-
-        ImGui::Image((void *)(intptr_t)m_renderer->skybox->hdrTexture->id,
-                     ImVec2(200, 100),
-                     ImVec2(1, 1),
-                     ImVec2(0, 0));
-        ImGui::Image((void *)(intptr_t)m_renderer->skybox->brdfLUTTexture->id,
-                     ImVec2(200, 200),
-                     ImVec2(0, 1),
-                     ImVec2(1, 0));
-        ;
-        // ImGui::ColorEdit3("Color", vec3{0.0, 0.0, 0.0});
-
-        ImGui::End();
         ImGui::EndGroup();
+        ImGui::End();
     }
 
     // Render

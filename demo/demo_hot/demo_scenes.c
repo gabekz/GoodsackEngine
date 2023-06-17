@@ -10,7 +10,7 @@
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
 
-Texture *texDefSpec, *texDefNorm, *texPbrAo;
+Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
 static TextureOptions s_texOpsPbr, s_texOpsNrm;
 
 #define MY_THINGY(x) (void *)(&(__typeof(x)))
@@ -395,7 +395,14 @@ _scene5(ECS *ecs, Renderer *renderer)
     Material *matWhite =
       material_create(NULL, "../res/shaders/wireframe.shader", 0);
 
-    Entity e_camera = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
+    Entity *pCamera = malloc(sizeof(Entity));
+    *pCamera        = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
+    Entity e_camera = *pCamera;
+
+    Model *modelSponza =
+      // model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
+      model_load_from_file(
+        "../demo/demo_hot/Resources/models/sponza.glb", 1, TRUE);
 
     Entity e_sponza = ecs_new(ecs);
     _ecs_add_internal(e_sponza,
@@ -409,14 +416,69 @@ _scene5(ECS *ecs, Renderer *renderer)
       C_MODEL,
       (void *)(&(struct ComponentModel) {
         .material = matWhite,
-        //.modelPath  = "../demo/demo_hot/Resources/models/character-anim.gltf",
-        .modelPath = "../demo/demo_hot/Resources/models/sponza.glb",
+        .pModel   = modelSponza,
+        //.modelPath = "../demo/demo_hot/Resources/models/sponza.glb",
         //.modelPath  = "../res/models/test3.gltf",
         .properties = {
           .drawMode = DRAW_ELEMENTS,
           .cullMode = CULL_CW | CULL_FORWARD,
         }}));
     //_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
+
+    Texture *texCerbA = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
+    Texture *texCerbN = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
+    Texture *texCerbM = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
+    Texture *texCerbS = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
+
+    /*
+    Material *matWeapon =
+      material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
+      */
+    Material *matWeapon = material_create(NULL,
+                                          "../res/shaders/pbr.shader",
+                                          5,
+                                          texCerbA,
+                                          texCerbN,
+                                          texCerbM,
+                                          texCerbS,
+                                          texPbrAo);
+
+    Model *modelWeapon =
+      // model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
+      model_load_from_file(
+        "../demo/demo_hot/Resources/models/AK2.glb", 1, TRUE);
+
+    Entity attachedEntity = ecs_new(ecs);
+    _ecs_add_internal(attachedEntity,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position    = {-0.1f, -0.22f, -0.4340f},
+                        .orientation = {0.0f, 0.0f, -180.0f},
+                        .scale       = {-0.02f, 0.02f, 0.02f},
+                        .parent      = pCamera,
+                      }));
+
+    _ecs_add_internal(
+      attachedEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material   = matWeapon,
+                                         .pModel     = modelWeapon,
+                                         .modelPath  = NULL,
+                                         .properties = {
+                                           .drawMode = DRAW_ELEMENTS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
+    _ecs_add_internal(attachedEntity,
+                      C_WEAPON,
+                      (void *)(&(struct ComponentWeapon) {
+                        .damage       = 25,
+                        .pos_starting = {0, 0, 0},
+                        .rot_starting = {0, 0, 0},
+                      }));
 }
 
 // physics test
@@ -526,14 +588,14 @@ _scene7(ECS *ecs, Renderer *renderer)
 
     Texture *texBrickDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
-    Texture *texBrickNorm = texture_create_n(
-      "../demo/demo_hot/Resources/textures/brickwall/normal.png");
+    Texture *texBrickNorm = 
+      texture_create_n("../demo/demo_hot/Resources/textures/brickwall/normal.png");
 
     Material *matFloor = material_create(NULL,
                                          "../res/shaders/lit-diffuse.shader",
                                          3,
-                                         texBrickDiff,
-                                         texBrickNorm,
+                                         texMissing,
+                                         texDefSpec,
                                          texDefSpec);
 
     Entity *pCamera = malloc(sizeof(Entity));
@@ -589,17 +651,16 @@ _scene7(ECS *ecs, Renderer *renderer)
                                           texCerbS,
                                           texPbrAo);
 
-    Model *modelWeapon =
-      //model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
-      model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
+    Model *modelWeapon = model_load_from_file(
+      "../demo/demo_hot/Resources/models/AK2.glb", 1, FALSE);
 
     Entity attachedEntity = ecs_new(ecs);
     _ecs_add_internal(attachedEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position    = {0.1f, -0.22f, -0.4340f},
+                        .position    = {-0.1f, -0.22f, -0.4340f},
                         .orientation = {0.0f, 0.0f, -180.0f},
-                        .scale       = {0.02f, 0.02f, 0.02f},
+                        .scale       = {-0.02f, 0.02f, 0.02f},
                         .parent      = pCamera,
                       }));
 
@@ -635,6 +696,7 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     texDefSpec  = texture_create_n("../res/textures/defaults/black.png");
     texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo    = texture_create_n("../res/textures/defaults/white.png");
+    texMissing  = texture_create_n("../res/textures/defaults/missing.jpg");
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);

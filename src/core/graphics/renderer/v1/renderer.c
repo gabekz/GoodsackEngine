@@ -79,6 +79,11 @@ renderer_init()
       .kernelSize = 64,
     };
 
+    // Billboard test
+    vec2 bbsize = {0.01f, 0.01f};
+    ret->billboard =
+      billboard_create("../res/textures/gizmo/light.png", bbsize);
+
     return ret;
 }
 
@@ -280,6 +285,10 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
       GL_DEBUG_SOURCE_APPLICATION, 4, -1, "Pass: Backbuffer Draw (Final)");
 
     postbuffer_draw(&renderer->properties);
+
+    //vec3 pos = GLM_VEC3_ZERO_INIT;
+    //billboard_draw(renderer->billboard, pos);
+
 
     glPopDebugGroup();
 

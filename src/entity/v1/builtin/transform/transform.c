@@ -46,10 +46,14 @@ init(Entity e)
     glm_translate(m4i, transform->position);
     glm_mat4_copy(m4i, transform->model);
 
+#if 0
     // TODO: stupid hack.
     float scaleCheck =
       (transform->scale[0] * transform->scale[1] * transform->scale[2]);
     if (scaleCheck <= 0) { glm_vec3_one(transform->scale); }
+#else
+    if (!transform->scale) glm_vec3_one(transform->scale);
+#endif
 
     // glm_mat4_copy(matrix, transform->mvp.matrix);
     // printf("position %f, %f, %f", transform->position[0],
