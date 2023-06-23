@@ -39,16 +39,16 @@ struct ComponentCMapTest : testing::Test
     std::map<std::string, ECSComponentLayout *> m_Layouts;
 
 #define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
-//#define CACHE_ALIGN __declspec(align(CACHE_LINE))
-typedef struct CmpTransform
-{
-    ui16 hasParent;
-    mat4 model;
-    vec3 orientation;
-    void *parent;
-    vec3 position;
-    vec3 scale;
-} CmpTransform;
+    // #define CACHE_ALIGN __declspec(align(CACHE_LINE))
+    typedef struct CmpTransform
+    {
+        ui16 hasParent;
+        mat4 model;
+        vec3 orientation;
+        void *parent;
+        vec3 position;
+        vec3 scale;
+    } CmpTransform;
 
     ComponentCMapTest()
     {
@@ -73,7 +73,6 @@ TEST_F(ComponentCMapTest, Reads_Writes_Stuff)
     transform->hasParent = 1;
     cmp->GetVariable("hasParent", &recHasParent);
     EXPECT_EQ(transform->hasParent, recHasParent);
-
 
     // Check orientation
     vec3 newRot = {9, 30, -15};

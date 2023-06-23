@@ -39,7 +39,7 @@ update(Entity e)
 
     if (collider->isColliding) {
         // Horrendous negative-impulse force
-        //LOG_INFO("Horrendous?");
+        // LOG_INFO("Horrendous?");
 
         vec3 p = {0, 80, 0};
 

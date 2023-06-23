@@ -286,9 +286,8 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 
     postbuffer_draw(&renderer->properties);
 
-    //vec3 pos = GLM_VEC3_ZERO_INIT;
-    //billboard_draw(renderer->billboard, pos);
-
+    // vec3 pos = GLM_VEC3_ZERO_INIT;
+    // billboard_draw(renderer->billboard, pos);
 
     glPopDebugGroup();
 

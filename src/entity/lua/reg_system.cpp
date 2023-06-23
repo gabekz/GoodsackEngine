@@ -22,7 +22,7 @@ entity::Lua_ECSRegisterSystem(lua_State *L)
     int requiredCount = 0;
     if (!lua_isnil(L, -1)) {
         requiredCount = lua_rawlen(L, -1);
-        LOG_INFO("Required components! Obj len: %d", requiredCount); 
+        LOG_INFO("Required components! Obj len: %d", requiredCount);
     }
 
     for (int i = 0; i < requiredCount; i++) {

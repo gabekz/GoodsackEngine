@@ -33,8 +33,8 @@ typedef enum ECSComponentType_t {
 
 #if ECS_COMPONENTS_PACKED
 #pragma pack(push, 1)
-//#else
-// pragma pack(push, ECS_COMPONENTS_ALIGN_BYTES)
+// #else
+//  pragma pack(push, ECS_COMPONENTS_ALIGN_BYTES)
 #endif // ECS_COMPONENTS_PACKED
 
 struct ComponentAnimator
@@ -126,14 +126,14 @@ struct ComponentTest
     f32 rotation_speed;
 };
 
-#define CACHE_LINE  ECS_COMPONENTS_ALIGN_BYTES
+#define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
 #if defined(SYS_ENV_WIN)
 #define CACHE_ALIGN(args...) __declspec(align(CACHE_LINE)) args
 #elif defined(SYS_ENV_UNIX)
 #define CACHE_ALIGN(...) __VA_ARGS__ __attribute__((aligned(CACHE_LINE)))
 #else
 #define CACHE_ALIGN void
-#pragma warning Unknown dynamic link import/export semantics.
+#pragma warning Unknown dynamic link import / export semantics.
 #endif
 
 struct ComponentTransform
