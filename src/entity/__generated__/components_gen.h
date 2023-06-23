@@ -127,23 +127,30 @@ struct ComponentTest
 };
 
 #define CACHE_LINE  ECS_COMPONENTS_ALIGN_BYTES
-#define CACHE_ALIGN __declspec(align(CACHE_LINE))
+#if defined(SYS_ENV_WIN)
+#define CACHE_ALIGN(args...) __declspec(align(CACHE_LINE)) args
+#elif defined(SYS_ENV_UNIX)
+#define CACHE_ALIGN(...) __VA_ARGS__ __attribute__((aligned(CACHE_LINE)))
+#else
+#define CACHE_ALIGN void
+#pragma warning Unknown dynamic link import/export semantics.
+#endif
 
 struct ComponentTransform
 {
     ui16 hasParent;
     mat4 model;
-    CACHE_ALIGN vec3 orientation;
+    CACHE_ALIGN(vec3 orientation);
     void *parent;
-    CACHE_ALIGN vec3 position;
-    CACHE_ALIGN vec3 scale;
+    CACHE_ALIGN(vec3 position);
+    CACHE_ALIGN(vec3 scale);
 };
 
 struct ComponentWeapon
 {
     float damage;
-    CACHE_ALIGN vec3 pos_starting;
-    CACHE_ALIGN vec3 rot_starting;
+    CACHE_ALIGN(vec3 pos_starting);
+    CACHE_ALIGN(vec3 rot_starting);
 };
 
 #if ECS_COMPONENTS_PACKED

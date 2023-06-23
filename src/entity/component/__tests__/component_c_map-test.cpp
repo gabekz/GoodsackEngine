@@ -39,15 +39,15 @@ struct ComponentCMapTest : testing::Test
     std::map<std::string, ECSComponentLayout *> m_Layouts;
 
 #define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
-#define CACHE_ALIGN __declspec(align(CACHE_LINE))
+//#define CACHE_ALIGN __declspec(align(CACHE_LINE))
 typedef struct CmpTransform
 {
     ui16 hasParent;
     mat4 model;
-    CACHE_ALIGN vec3 orientation;
+    vec3 orientation;
     void *parent;
-    CACHE_ALIGN vec3 position;
-    CACHE_ALIGN vec3 scale;
+    vec3 position;
+    vec3 scale;
 } CmpTransform;
 
     ComponentCMapTest()
