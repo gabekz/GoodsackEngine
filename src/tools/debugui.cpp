@@ -71,7 +71,7 @@ DebugGui::DebugGui(Renderer *renderer)
     // SetStyle();
 
     m_renderer            = renderer;
-    m_showEntityViewer    = true;
+    m_showEntityViewer    = false;
     m_showComponentViewer = false;
     m_showSceneViewer     = false;
     m_showSceneLighting   = false;

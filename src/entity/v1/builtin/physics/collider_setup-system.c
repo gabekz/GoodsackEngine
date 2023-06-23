@@ -27,7 +27,7 @@ init(Entity e)
     // TODO: collider types
     if (collider->type == 1) {
         SphereCollider *sphereCollider = malloc(sizeof(SphereCollider));
-        sphereCollider->radius         = 0.5f;
+        sphereCollider->radius         = 1.00f;
         // glm_vec3_copy(transform->position, sphereCollider->center);
         // sphereCollider.center = transform.position;
 
@@ -126,7 +126,9 @@ update(Entity e)
 
         // Collision points
         if (points.has_collision) {
+#if 0
             LOG_INFO("Collision!");
+#endif
             collider->isColliding = points.has_collision;
             break; // TODO: should not break.
                    //- instead, get a collection of points

@@ -21,53 +21,25 @@ physics_collision_find_sphere_plane(SphereCollider *a,
 {
     CollisionPoints ret = {.has_collision = 0};
 
-    // LOG_INFO("Checking sphere v plane");
+    // A = q - plane.p[0]
+    vec3 A = GLM_VEC3_ZERO_INIT;
+    glm_vec3_sub(pos_a, pos_b, A);
 
-    // LOG_INFO("%f\t%f\t%f", pos_a[0], pos_a[1], pos_a[2]);
+    glm_vec3_normalize_to(A, A); // A is now normalized
 
-    // Get distance of sphere->center to plane
-    // if distance is less than sphere->distance, we have collision
+    float angle = glm_vec3_dot(pos_a, pos_b);
 
-    // distance of positions
-    ret.depth = glm_vec3_distance(pos_a, pos_b);
-    // LOG_INFO("Distance: %f\tRadius: %f", ret.depth, a->radius);
-
-    // if (ret.depth <= (a->radius + b->distance)) { ret.has_collision = 1; }
-
-    // Nearest point (Plane)
-    vec3 planeNormalized = GLM_VEC3_ZERO_INIT;
-    glm_vec3_normalize_to(pos_b, planeNormalized);
-
-    vec3 normalizedPosA = GLM_VEC3_ZERO_INIT;
-    glm_vec3_normalize_to(pos_a, normalizedPosA);
-
-    float ndot  = glm_vec3_dot(pos_b, pos_a);
-    float ndist = ndot - b->distance;
-    // LOG_INFO("ndot: %f\tndist: %f", ndot, ndist);
-    // LOG_INFO("%f\t%f\t%f", b->normal[0], b->normal[1], b->normal[2]);
-    vec3 nscaledDist  = GLM_VEC3_ZERO_INIT;
     vec3 nearestPoint = GLM_VEC3_ZERO_INIT;
-    glm_vec3_scale(planeNormalized, ndist, nscaledDist);
-    // glm_vec3_normalize_to(nscaledDist, nscaledDist);
-    glm_vec3_sub(pos_a, nscaledDist, nearestPoint);
-    // glm_vec3_normalize_to(nearestPoint, nearestPoint);
+    glm_vec3_scale(A, angle, nearestPoint);
+
+    float nearestDistance = glm_vec3_distance(A, nearestPoint);
 
 #if 0
-    LOG_INFO("NEAREST POINT: %f\t%f\t%f",
-             nearestPoint[0],
-             nearestPoint[1],
-             nearestPoint[2]);
+    if(nearestDistance <= 1.2f)
+        LOG_INFO("Nearest: %f", nearestDistance);
 #endif
 
-    /*
-    if (nscaledDist <= a->radius) {
-        // LOG_INFO("We have a collision!");
-        ret.has_collision = TRUE;
-    }
-    */
-
-    float nearestDistance = glm_vec3_distance(pos_a, nearestPoint);
-    // LOG_INFO("Nearest: %f", nearestDistance);
+    // NOTE: may need to use an offset for the radius (i.e, 0.02f)
     if (nearestDistance <= a->radius) { ret.has_collision = TRUE; }
 
     return ret;
@@ -89,15 +61,6 @@ physics_collision_find_ray_sphere(Raycast *ray,
                                   SphereCollider *sphere,
                                   vec3 pos_sphere)
 {
-    /*
-    vec3 oc = r.origin() - center;
-    float a = dot(r.direction(), r.direction());
-    float b = 2.0 * dot(oc, r.direction());
-    float c = dot(oc,oc) - radius*radius;
-    float discriminant = b*b - 4*a*c;
-    return (discriminant>0);
-    */
-
     CollisionPoints ret = {.has_collision = 0};
 
     vec3 oc = GLM_VEC3_ZERO_INIT;
@@ -111,6 +74,7 @@ physics_collision_find_ray_sphere(Raycast *ray,
     vec3 hitPosition = GLM_VEC3_ZERO_INIT;
     glm_vec3_adds(ray->origin, discriminant, hitPosition);
     glm_vec3_mul(hitPosition, ray->direction, hitPosition);
+
 #if 0
     LOG_INFO("Hit Position:\t%lf\t%lf\t%lf",
              hitPosition[0],
