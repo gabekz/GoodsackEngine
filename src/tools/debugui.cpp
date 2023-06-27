@@ -651,6 +651,17 @@ DebugGui::Render()
               (GraphicsSettings({.swapInterval = vsync})));
 
             ImGui::Separator();
+            ImGui::Text("Ambient Occlusion");
+            ImGui::DragFloat(
+              "SSAO Strength", &m_renderer->ssaoOptions.strength, 0.1f, 0, 20);
+            ImGui::DragFloat(
+              "Bias", &m_renderer->ssaoOptions.bias, 0.0001f, 0, 2, "%.5f");
+            ImGui::DragFloat(
+              "Radius", &m_renderer->ssaoOptions.radius, 0.05f, 0, 2, "%.5f");
+            ImGui::DragInt(
+              "Kernel Size", &m_renderer->ssaoOptions.kernelSize, 1, 1, 64);
+
+            ImGui::Separator();
             ImGui::Text("Frame");
 
             static ImGuiComboFlags flags = 0;
@@ -696,24 +707,20 @@ DebugGui::Render()
             if (!props->gammaEnable) ImGui::EndDisabled();
 
             ImGui::Separator();
+            ImGui::Text("Vignette");
+            ImGui::DragFloat(
+              "Amount", &props->vignetteAmount, 0.1f, 0.0f, 2.0f, "%.01f");
+            ImGui::DragFloat(
+              "Falloff", &props->vignetteFalloff, 0.1f, 0.0f, 1.0f, "%.01f");
+
+            ImGui::Separator();
             ImGui::Text("Anti Aliasing");
             ImGui::Checkbox("MSAA", (bool *)&props->msaaEnable);
             ImGui::SameLine();
-            int p = 4;
+            int samples = (int)props->msaaSamples;
             ImGui::BeginDisabled();
-            ImGui::DragInt("Samples", &p, 2, 0, 4);
+            ImGui::DragInt("Samples", &samples, 2, 0, 4);
             ImGui::EndDisabled();
-
-            ImGui::Separator();
-            ImGui::Text("Ambient Occlusion");
-            ImGui::DragFloat(
-              "SSAO Strength", &m_renderer->ssaoOptions.strength, 0.1f, 0, 20);
-            ImGui::DragFloat(
-              "Bias", &m_renderer->ssaoOptions.bias, 0.0001f, 0, 2, "%.5f");
-            ImGui::DragFloat(
-              "Radius", &m_renderer->ssaoOptions.radius, 0.05f, 0, 2, "%.5f");
-            ImGui::DragInt(
-              "Kernel Size", &m_renderer->ssaoOptions.kernelSize, 1, 1, 64);
 
             /*
             ImGui::Separator();

@@ -54,13 +54,15 @@ renderer_init()
     ret->sceneC      = 1;
     ret->activeScene = 0;
 
-    ret->properties = (RendererProps) {.tonemapper  = 0,
-                                       .exposure    = 2.5f,
-                                       .maxWhite    = 1.0f,
-                                       .gamma       = 2.2f,
-                                       .gammaEnable = TRUE,
-                                       .msaaSamples = 16,
-                                       .msaaEnable  = TRUE};
+    ret->properties = (RendererProps) {.tonemapper      = 0,
+                                       .exposure        = 2.5f,
+                                       .maxWhite        = 1.0f,
+                                       .gamma           = 2.2f,
+                                       .gammaEnable     = TRUE,
+                                       .msaaEnable      = TRUE,
+                                       .msaaSamples     = 4,
+                                       .vignetteAmount  = 0.5f,
+                                       .vignetteFalloff = 0.5f};
 
     ret->shadowmapOptions = (ShadowmapOptions) {
       .nearPlane = 0.5f,
@@ -73,10 +75,10 @@ renderer_init()
     };
 
     ret->ssaoOptions = (SsaoOptions) {
-      .strength   = 2.5f,
-      .bias       = 0.025f,
-      .radius     = 0.5f,
-      .kernelSize = 64,
+      .strength   = 2.1f,
+      .bias       = 0.0003f,
+      .radius     = 0.15f,
+      .kernelSize = 16,
     };
 
     // Billboard test
@@ -150,7 +152,8 @@ renderer_start(Renderer *renderer)
         glm_mat4_zero(renderer->lightSpaceMatrix);
         glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
 
-        postbuffer_init(renderer->renderWidth, renderer->renderHeight);
+        postbuffer_init(
+          renderer->renderWidth, renderer->renderHeight, &renderer->properties);
 
         // generate SSAO textures
         pass_ssao_init();

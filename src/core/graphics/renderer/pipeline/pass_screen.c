@@ -122,7 +122,7 @@ postbuffer_resize(ui32 winWidth, ui32 winHeight)
 }
 
 void
-postbuffer_init(ui32 width, ui32 height)
+postbuffer_init(ui32 width, ui32 height, RendererProps *properties)
 {
     frameWidth  = width;
     frameHeight = height;
@@ -146,7 +146,7 @@ postbuffer_init(ui32 width, ui32 height)
     // Create Framebuffer
     CreateScreenBuffer(width, height);
     // Create MSAA buffer
-    CreateMultisampleBuffer(16, width, height);
+    CreateMultisampleBuffer(properties->msaaSamples, width, height);
 }
 
 void
@@ -197,6 +197,12 @@ postbuffer_draw(RendererProps *properties)
     glUniform1f(glGetUniformLocation(shader->id, "u_Gamma"), properties->gamma);
     glUniform1i(glGetUniformLocation(shader->id, "u_GammaEnable"),
                 properties->gammaEnable);
+
+    glUniform1f(glGetUniformLocation(shader->id, "u_VignetteAmount"),
+                properties->vignetteAmount);
+    glUniform1f(glGetUniformLocation(shader->id, "u_VignetteFalloff"),
+                properties->vignetteFalloff);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sbTexture);
     glDisable(GL_DEPTH_TEST);

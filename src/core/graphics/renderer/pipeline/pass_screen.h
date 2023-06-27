@@ -5,7 +5,7 @@
 #include <util/sysdefs.h>
 
 void
-postbuffer_init(ui32 width, ui32 height);
+postbuffer_init(ui32 width, ui32 height, RendererProps *properties);
 void
 postbuffer_bind(int enableMSAA);
 void

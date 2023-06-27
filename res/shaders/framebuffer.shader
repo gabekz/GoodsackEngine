@@ -25,6 +25,10 @@ uniform float u_Gamma = 2.2;
 uniform bool u_GammaEnable = true;
 uniform float u_MaxWhite = 1.0;
 
+uniform float u_VignetteAmount = 0.5;
+uniform float u_VignetteFalloff = 0.5;
+
+
 // -- Tonemappers
 
 float luminance(vec3 v) { return dot(v, vec3(0.2126f, 0.7152f, 0.0722f)); }
@@ -104,6 +108,11 @@ void main()
 
     if(u_GammaEnable)
         result = pow(result, vec3(1.0 / u_Gamma));
+
+    // Vignette
+    float dist = distance(texCoords, vec2(0.5, 0.5));
+    result.rgb *= smoothstep(0.8, u_VignetteFalloff * 0.799,
+        dist * (u_VignetteAmount + u_VignetteFalloff));
 
     FragColor.rgb = result;
 
