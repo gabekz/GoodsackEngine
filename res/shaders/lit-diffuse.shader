@@ -94,6 +94,11 @@ layout(binding = 0) uniform sampler2D t_Diffuse;
 layout(binding = 1) uniform sampler2D t_Normal;
 layout(binding = 2) uniform sampler2D t_Specular;
 
+// Shadow options
+uniform int u_pcfSamples      = 6;
+uniform float u_normalBiasMin = 0.0025;
+uniform float u_normalBiasMax = 0.0005;
+
 out vec4 FragColor;
 
 // TODO: Move this to a separate fg shader
@@ -114,25 +119,32 @@ calcShadow(vec4 fragLightSpace, vec3 lightDir, bool pcf)
     vec3 projCoords = fragLightSpace.xyz / fragLightSpace.w;
     projCoords      = projCoords * 0.5 + 0.5;
 
+    float biasMin  = u_normalBiasMin;
+    float biasMax  = u_normalBiasMax;
+    int pcfSamples = u_pcfSamples;
+
+    // PCF disable
+    if (pcfSamples <= 0) { pcf = false; }
+
     // oversampling correction
     if (projCoords.z > 1.0) { return 0.0; }
 
     float closestDepth = texture(shadowMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
 
-    float bias   = max(0.05 * (1.0 - dot(fs_in.normal, lightDir)), 0.005);
+    float bias   = max(biasMin * (1.0 - dot(fs_in.normal, lightDir)), biasMax);
     float shadow = 0;
 
     if (pcf) {
         vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-        for (int x = -1; x <= 1; ++x) {
-            for (int y = -1; y <= 1; ++y) {
+        for (int x = -pcfSamples; x <= pcfSamples; ++x) {
+            for (int y = -pcfSamples; y <= pcfSamples; ++y) {
                 float pcfDepth =
                   texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
                 shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
             }
         }
-        shadow /= 9.0;
+        shadow /= pow((pcfSamples * 2 + 1), 2);
         return shadow;
 
     } else {

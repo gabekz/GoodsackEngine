@@ -65,13 +65,13 @@ renderer_init()
                                        .vignetteFalloff = 0.5f};
 
     ret->shadowmapOptions = (ShadowmapOptions) {
-      .nearPlane = 0.5f,
-      .farPlane  = 7.5f,
-      .camSize   = 10.0f,
+      .nearPlane = 0.02f,
+      .farPlane  = 20.0f,
+      .camSize   = 2.0f,
 
       .normalBiasMin = 0.0025f,
       .normalBiasMax = 0.0005f,
-      .pcfSamples    = 8,
+      .pcfSamples    = 6,
     };
 
     ret->ssaoOptions = (SsaoOptions) {
@@ -289,8 +289,8 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 
     postbuffer_draw(&renderer->properties);
 
-    // vec3 pos = GLM_VEC3_ZERO_INIT;
-    // billboard_draw(renderer->billboard, pos);
+    //vec3 pos = GLM_VEC3_ZERO_INIT;
+    //billboard_draw(renderer->billboard, pos);
 
     glPopDebugGroup();
 

@@ -24,6 +24,26 @@
     -1.0f,  1.0f,   0.0f, 1.0f}
 #define PRIM_SIZ_V_PLANE    24
 
+#define PRIM_ARR_V_PLANE2 (float[]){ \
+     0.1f, 0.005f,   1.0f, 0.0f,     \
+    0.005f, 0.005f,   0.0f, 0.0f,     \
+    0.005f,  0.1f,   0.0f, 1.0f,     \
+                                    \
+     0.1f,  0.1f,   1.0f, 1.0f,     \
+     0.1f, 0.005f,   1.0f, 0.0f,     \
+    0.005f,  0.1f,   0.0f, 1.0f}
+#define PRIM_SIZ_V_PLANE2    24
+
+#define PRIM_ARR_V_PLANE3 (float[]){ \
+     0.55f, 0.45f,   1.0f, 0.0f,     \
+    0.45f, 0.45f,   0.0f, 0.0f,     \
+    0.45f,  0.55f,   0.0f, 1.0f,     \
+                                    \
+     0.55f,  0.55f,   1.0f, 1.0f,     \
+     0.55f, 0.45f,   1.0f, 0.0f,     \
+    0.45f,  0.55f,   0.0f, 1.0f}
+#define PRIM_SIZ_V_PLANE3    24
+
 /*
          ------- Cube
 
@@ -127,5 +147,6 @@ Mesh *primitive_mesh_create(ui32 shape, float scale);
 
 void primitive_pyramid(float* out);
 float* prim_vert_rect();
+float* prim_vert_rect2();
 
 #endif // PRIMITIVES_H
