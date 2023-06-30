@@ -102,8 +102,6 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 file(GLOB_RECURSE API_SOURCES CONFIGURE_DEPENDS
     "${API_DIR}/goodsack_engine.c"
     "${API_DIR}/time.c"
-    "${API_DIR}/actor.c"
-    "${API_DIR}/script.c"
     "${API_DIR}/common.h")
 
 # For each item in our list

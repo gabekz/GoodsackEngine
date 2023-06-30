@@ -611,6 +611,11 @@ _scene7(ECS *ecs, Renderer *renderer)
                         .scale    = {1.0f, 1.0f, 1.0f},
                         .parent = pCamera,
                       }));
+    _ecs_add_internal(weaponParent,
+                      C_WEAPONSWAY,
+                      (void *)(&(struct ComponentWeaponSway) {
+                          .sway_amount = 5,
+                      }));
 
     Entity attachedEntity = ecs_new(ecs);
     _ecs_add_internal(attachedEntity,

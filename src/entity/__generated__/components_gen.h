@@ -12,6 +12,17 @@
 extern "C" {
 #endif //__cplusplus
 
+#define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
+#if defined(SYS_ENV_WIN)
+#define CACHE_ALIGN(args...) __declspec(align(CACHE_LINE)) args
+#elif defined(SYS_ENV_UNIX)
+#define CACHE_ALIGN(...) __VA_ARGS__ __attribute__((aligned(CACHE_LINE)))
+#else
+#define CACHE_ALIGN void
+#pragma warning Unknown dynamic link import / export semantics.
+#endif
+
+
 // typedef (void *)(ResRef)
 #define ResRef void *
 
@@ -27,9 +38,10 @@ typedef enum ECSComponentType_t {
     C_TEST,
     C_TRANSFORM,
     C_WEAPON,
+    C_WEAPONSWAY,
 } ECSComponentType;
 
-#define ECSCOMPONENT_LAST 10
+#define ECSCOMPONENT_LAST 11
 
 #if ECS_COMPONENTS_PACKED
 #pragma pack(push, 1)
@@ -61,12 +73,12 @@ struct ComponentAudioSource
 
 struct ComponentCamera
 {
-    vec3 axisUp;
-    vec3 center;
-    f32 farZ;
-    si32 firstMouse;
-    f32 fov;
-    vec3 front;
+    CACHE_ALIGN(vec3 axisUp);
+    CACHE_ALIGN(vec3 center);
+    CACHE_ALIGN(f32 farZ);
+    CACHE_ALIGN(si32 firstMouse);
+    CACHE_ALIGN(f32 fov);
+    CACHE_ALIGN(vec3 front);
     f32 lastX;
     f32 lastY;
     mat4 model;
@@ -126,16 +138,6 @@ struct ComponentTest
     f32 rotation_speed;
 };
 
-#define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
-#if defined(SYS_ENV_WIN)
-#define CACHE_ALIGN(args...) __declspec(align(CACHE_LINE)) args
-#elif defined(SYS_ENV_UNIX)
-#define CACHE_ALIGN(...) __VA_ARGS__ __attribute__((aligned(CACHE_LINE)))
-#else
-#define CACHE_ALIGN void
-#pragma warning Unknown dynamic link import / export semantics.
-#endif
-
 struct ComponentTransform
 {
     ui16 hasParent;
@@ -151,6 +153,11 @@ struct ComponentWeapon
     float damage;
     CACHE_ALIGN(vec3 pos_starting);
     CACHE_ALIGN(vec3 rot_starting);
+};
+
+struct ComponentWeaponSway
+{
+    float sway_amount;
 };
 
 #if ECS_COMPONENTS_PACKED
@@ -189,6 +196,7 @@ _ecs_init_internal_gen(ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPON, sizeof(struct ComponentWeapon));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPONSWAY, sizeof(struct ComponentWeaponSway));
 }
 
 #ifdef __cplusplus

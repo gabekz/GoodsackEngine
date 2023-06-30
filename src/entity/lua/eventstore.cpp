@@ -240,6 +240,10 @@ pushEntity(lua_State *L, int entityId, ECSComponentLayout &layout)
         __create_table_for_entity_component(
           L, "Weapon", C_WEAPON, entityCompare);
     }
+    if (ecs_has(entityCompare, C_WEAPONSWAY)) {
+        __create_table_for_entity_component(
+          L, "WeaponSway", C_WEAPONSWAY, entityCompare);
+    }
 
 #if 0
     // Second metatable? //TODO: Testing

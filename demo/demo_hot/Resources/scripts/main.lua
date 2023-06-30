@@ -4,6 +4,7 @@ package.path = '../demo/demo_hot/Resources/scripts/?.lua;' .. package.path
 
 -- Running Systems
 require("weapon-system").run()
+require("wepsway-system").run()
 require("camera-input").run()
 
 Goodsack = require('GoodsackAPI')

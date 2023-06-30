@@ -54,5 +54,9 @@
     "Weapon": {
         "float": ["damage"],
         "vec3": ["pos_starting", "rot_starting"]
+    },
+
+    "WeaponSway": {
+        "float": ["sway_amount"]
     }
 }

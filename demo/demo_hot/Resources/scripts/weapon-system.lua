@@ -1,30 +1,22 @@
 local system = {}
-local KeyCode = require("keycodes")
 
-Time = require('GoodsackAPI.Time')
+local maths = require("maths")
+local keycodes = require("keycodes")
+local Time = require('GoodsackAPI.Time')
 
-pos_aiming = {
+local pos_aiming = {
     -0.318,
     -0.187,
     -0.2
 }
 
-pos_standby = {
+local pos_standby = {
     -0.1,
     -0.22,
     -0.4340
 }
 
-testValue = 0
-
-function lerp(start, goal, alpha)
-	return start + (goal - start) * alpha
-end
-
-function clamp(value, min, max)
-    if value < min then value = min end
-    if value > max then value = max end
-end
+local testValue = 0
 
 function system.start(entity)
 
@@ -46,13 +38,13 @@ function system.update(entity)
     newRot = {0, 0, -180}
 
     -- Aiming
-    if(Input:GetKeyDown(KeyCode.R)) then
+    if(Input.GetKeyDown(keycodes.R)) then
         entity.Transform.position = pos_aiming
     else
         entity.Transform.position = pos_standby
     end
 
-    if(Input:GetKeyDown(KeyCode.W)) then
+    if(Input.GetKeyDown(keycodes.W)) then
         --entity.Transform.orientation = entity.Weapon.rot_starting
         cntRot = entity.Transform.orientation
 
@@ -60,22 +52,22 @@ function system.update(entity)
             testValue = testValue + 1 * 10 * Time.get_delta_time()
         end
 
-        newRot[1] = lerp(0, -10, testValue)
+        newRot[1] = maths.lerp(0, -10, testValue)
     end
 
-    if(Input:GetKeyDown(KeyCode.S)) then
+    if(Input.GetKeyDown(keycodes.S)) then
         --entity.Transform.orientation = entity.Weapon.rot_starting
         cntRot = entity.Transform.orientation
         newRot[1] = 10
         testValue = 0
     end
 
-    if(Input:GetKeyDown(KeyCode.A)) then
+    if(Input.GetKeyDown(keycodes.A)) then
         --entity.Transform.orientation = entity.Weapon.rot_starting
         cntRot = entity.Transform.orientation
         newRot[3] = -175
     end
-    if(Input:GetKeyDown(KeyCode.D)) then
+    if(Input.GetKeyDown(keycodes.D)) then
         --entity.Transform.orientation = entity.Weapon.rot_starting
         cntRot = entity.Transform.orientation
         newRot[3] = -190

@@ -36,9 +36,11 @@ typedef struct Analytics
 
 typedef struct Input
 {
+    // Mouse Cursor
     double cursor_position[2];
+    double cursor_axis_raw[2];
+    // Misc
     int holding_right_button;
-
 } Input;
 
 // Functions

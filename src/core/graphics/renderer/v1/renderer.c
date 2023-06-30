@@ -193,7 +193,10 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     /*-------------------------------------------
         Scene Logic/Data update
     */
+    
+    device_setInput(device_getInput()); // TODO: Weird hack to reset for axis
     glfwPollEvents();
+
     ecs_event(ecs, ECS_UPDATE);
     ecs_event(ecs, ECS_LATE_UPDATE);
 
