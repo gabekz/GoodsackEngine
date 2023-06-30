@@ -88,11 +88,23 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 #################################################################
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
-set(TEST_SUBDIR_REGEX ".*__tests__.*")
+set(API_DIR "${SRC_DIR}/api")
 
+set(TEST_SUBDIR_REGEX ".*__tests__.*")
+# set(API_SUBDIR_REGEX ".*__api__.*")
+
+# All Sources
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${SRC_DIR}/*.c"
     "${SRC_DIR}/*.cpp")
+
+# Lua API-only sources
+file(GLOB_RECURSE API_SOURCES CONFIGURE_DEPENDS
+    "${API_DIR}/goodsack_engine.c"
+    "${API_DIR}/time.c"
+    "${API_DIR}/actor.c"
+    "${API_DIR}/script.c"
+    "${API_DIR}/common.h")
 
 # For each item in our list
 foreach (item ${SOURCES})
@@ -160,6 +172,18 @@ if(GOODSACK_EXAMPLES)
     endif(UNIX)
 
 endif()
+
+#################################################################
+# GoodsackEngine Lua Shared Library (.so, .dll)
+#################################################################
+set(API_NAME "GoodsackAPI")
+add_library(${API_NAME} SHARED ${API_SOURCES})
+SET_TARGET_PROPERTIES(${API_NAME} PROPERTIES PREFIX "")
+
+# Link the include directory to the main project
+target_include_directories(${API_NAME} PRIVATE "${SRC_DIR}")
+# Link the shared library to the main project library
+target_link_libraries(${PROJECT_NAME} ${API_NAME})
 
 #################################################################
 # TestRunner Executable
@@ -333,7 +357,7 @@ else()
     message(STATUS "(Lua) Failed to auto locate")
     set(LUA_DIR "${LIB_DIR}/lua-5.4.4")
     file(GLOB LUA_LIBRARIES "${LUA_DIR}/src/*.c" "${LUA_DIR}/src/*.h")
-    add_library("lua" ${LUA_LIBRARIES})
+    #add_library("lua" ${LUA_LIBRARIES} "Actor")
 
     target_include_directories(${PROJECT_NAME} PUBLIC "${LUA_DIR}/src")
     target_link_libraries(${PROJECT_NAME} lua)

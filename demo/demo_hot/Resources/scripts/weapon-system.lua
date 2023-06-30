@@ -1,6 +1,8 @@
 local system = {}
 local KeyCode = require("keycodes")
 
+Time = require('GoodsackAPI.Time')
+
 pos_aiming = {
     -0.318,
     -0.187,
@@ -55,12 +57,12 @@ function system.update(entity)
         cntRot = entity.Transform.orientation
 
         if testValue >= 0 and testValue < 1 then
-            testValue = testValue + 1 * 10 * delta_time()
+            testValue = testValue + 1 * 10 * Time.get_delta_time()
         end
 
-        --clamp(tesValue, 0, 1)
         newRot[1] = lerp(0, -10, testValue)
     end
+
     if(Input:GetKeyDown(KeyCode.S)) then
         --entity.Transform.orientation = entity.Weapon.rot_starting
         cntRot = entity.Transform.orientation

@@ -1,6 +1,7 @@
 #include "lua_reg_print.h"
 
 #include <util/logger.h>
+#include <wrapper/lua/lua_debug.h>
 
 static int
 lua_print(lua_State *L)
@@ -11,10 +12,12 @@ lua_print(lua_State *L)
         if (lua_isstring(L, i)) {
             /* Pop the next arg using lua_tostring(L, i) and do your print */
             LOG_PRINT("\033[1;33m");
-            LOG_PRINT("[Lua] (print): %s\n", lua_tostring(L, -1));
+            LOG_PRINT("[Lua] (print): %s", lua_tostring(L, -1));
             LOG_PRINT("\033[0m");
         } else {
-            /* Do something with non-strings if you like */
+            LOG_PRINT("\033[1;33m");
+            LOG_PRINT("[Lua] (print): %s", luaL_tolstring(L, -1, NULL));
+            LOG_PRINT("\033[0m");
         }
     }
 

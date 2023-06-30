@@ -1,15 +1,14 @@
 -- creating an eventlist for future reference
 package.path = '../demo/demo_hot/Resources/scripts/?.lua;' .. package.path
+--package.path = '../build/bin/?;' .. package.path
 
--- setup systems to run
---require("ecs-system").run()
-
---require("ecs-system2").run()
---require("camera-input").run()
+-- Running Systems
 require("weapon-system").run()
---require("rotate").run()
+require("camera-input").run()
+
+Goodsack = require('GoodsackAPI')
 
 function main()
-    print("Hello world")
-    -- so far, nothing speci)al in here...
+    print("Lua entry")
+    print("package.path: "..package.path.."")
 end

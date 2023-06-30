@@ -599,6 +599,19 @@ _scene7(ECS *ecs, Renderer *renderer)
     Model *modelWeapon = model_load_from_file(
       "../demo/demo_hot/Resources/models/AK2.glb", 1, FALSE);
 
+    Entity *pWeaponParent = malloc(sizeof(Entity));
+    *pWeaponParent = ecs_new(ecs);
+    Entity weaponParent = *pWeaponParent;
+
+    _ecs_add_internal(weaponParent,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position = {0.0f, 0.0f, 0.0f},
+                        .orientation = {0.0f, 0.0f, 0.0f},
+                        .scale    = {1.0f, 1.0f, 1.0f},
+                        .parent = pCamera,
+                      }));
+
     Entity attachedEntity = ecs_new(ecs);
     _ecs_add_internal(attachedEntity,
                       C_TRANSFORM,
@@ -606,7 +619,7 @@ _scene7(ECS *ecs, Renderer *renderer)
                         .position    = {-0.1f, -0.22f, -0.4340f},
                         .orientation = {0.0f, 0.0f, -180.0f},
                         .scale       = {-0.02f, 0.02f, 0.02f},
-                        .parent      = pCamera,
+                        .parent      = pWeaponParent,
                       }));
 
     _ecs_add_internal(
