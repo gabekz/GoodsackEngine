@@ -14,7 +14,7 @@ extern "C" {
 
 #define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
 #if defined(SYS_ENV_WIN)
-#define CACHE_ALIGN(args...) __declspec(align(CACHE_LINE)) args
+#define CACHE_ALIGN(...) __declspec(align(CACHE_LINE)) __VA_ARGS__
 #elif defined(SYS_ENV_UNIX)
 #define CACHE_ALIGN(...) __VA_ARGS__ __attribute__((aligned(CACHE_LINE)))
 #else

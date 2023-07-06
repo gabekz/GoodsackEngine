@@ -19,6 +19,10 @@
 
 #include <tools/debug/debug_context.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define RENDER_RESOLUTION_OVERRIDE SYS_DISABLED
 #define PSX_WIDTH                  320
 #define PSX_HEIGHT                 240
@@ -87,5 +91,9 @@ renderer_active_scene(Renderer *self, ui16 sceneIndex);
 //-------------------------------
 
 // #endif // __cplusplus
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // H_RENDERER

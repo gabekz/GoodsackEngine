@@ -7,9 +7,10 @@ require("weapon-system").run()
 require("wepsway-system").run()
 require("camera-input").run()
 
-Goodsack = require('GoodsackAPI')
+local GoodsackAPI = require('GoodsackAPI')
 
 function main()
     print("Lua entry")
     print("package.path: "..package.path.."")
+    print(GoodsackAPI.version_info())
 end

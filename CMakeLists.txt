@@ -18,6 +18,7 @@ set(CMAKE_COLOR_MAKEFILE ON)
 include(colors)
 define_colors()
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -102,6 +103,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 file(GLOB_RECURSE API_SOURCES CONFIGURE_DEPENDS
     "${API_DIR}/goodsack_engine.c"
     "${API_DIR}/time.c"
+    #"${SRC_DIR}/core/device/device.c"
     "${API_DIR}/common.h")
 
 # For each item in our list
@@ -121,15 +123,31 @@ option(GOODSACK_TEST "Build the TestRunner executable" ON)
 option(GOODSACK_TEST_COVERAGE "Collect test coverage files" OFF)
 option(GOODSACK_DEV "Development Mode" OFF)
 
-# Resources Directory
 #################################################################
-# Goodsack Library
+# GoodsackEngine Runtime Library
 #################################################################
-add_library(${PROJECT_NAME} ${SOURCES})
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
 
 target_compile_options(${PROJECT_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "GoodsackEngine")
+set_target_properties(${PROJECT_NAME} PROPERTIES 
+    FOLDER "GoodsackEngine"
+    VERSION 18.0
+    DESCRIPTION "Description"
+)
+
+#################################################################
+# GoodsackEngine Lua-API Library
+#################################################################
+set(API_NAME "GoodsackAPI")
+add_library(${API_NAME} SHARED ${API_SOURCES})
+SET_TARGET_PROPERTIES(${API_NAME} PROPERTIES PREFIX "")
+set_target_properties(${API_NAME} PROPERTIES FOLDER "GoodsackEngine")
+set_target_properties(${API_NAME} PROPERTIES DESCRIPTION "GoodsackEngine")
+
+# Link the include directory to the main project
+target_include_directories(${API_NAME} PUBLIC "${SRC_DIR}")
+target_link_libraries(${API_NAME} ${PROJECT_NAME})
 
 #################################################################
 # Example Projects
@@ -146,7 +164,7 @@ if(GOODSACK_EXAMPLES)
     add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c" ${APP_ICON_RESOURCE})
     target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR})
 
-    target_link_libraries(${DEMO_EXE_NAME} ${PROJECT_NAME})
+    target_link_libraries(${DEMO_EXE_NAME} ${PROJECT_NAME} ${API_NAME})
     target_compile_options(${DEMO_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 
     if(UNIX)
@@ -170,18 +188,6 @@ if(GOODSACK_EXAMPLES)
     endif(UNIX)
 
 endif()
-
-#################################################################
-# GoodsackEngine Lua Shared Library (.so, .dll)
-#################################################################
-set(API_NAME "GoodsackAPI")
-add_library(${API_NAME} SHARED ${API_SOURCES})
-SET_TARGET_PROPERTIES(${API_NAME} PROPERTIES PREFIX "")
-
-# Link the include directory to the main project
-target_include_directories(${API_NAME} PRIVATE "${SRC_DIR}")
-# Link the shared library to the main project library
-target_link_libraries(${PROJECT_NAME} ${API_NAME})
 
 #################################################################
 # TestRunner Executable
@@ -213,7 +219,7 @@ if(GOODSACK_TEST)
     endif(UNIX)
 endif()
 
-######## LIBRARIES ##############################################
+######## 3rd-PARTY LIBRARIES ####################################
 
 #################################################################
 # Library: STB Image
@@ -350,6 +356,7 @@ if(Lua_FOUND OR LUA_FOUND OR Lua51_FOUND OR LUA51_FOUND)
     message(STATUS "(Lua) Auto located.")
     #include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
     target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
+    target_link_libraries(${API_NAME} ${LUA_LIBRARIES})
     #target_include_directories(${RPOJECT_NAME} ${LUA_INCLUDE_DIR})
 else()
     message(STATUS "(Lua) Failed to auto locate")
@@ -359,6 +366,9 @@ else()
 
     target_include_directories(${PROJECT_NAME} PUBLIC "${LUA_DIR}/src")
     target_link_libraries(${PROJECT_NAME} lua)
+
+    target_include_directories(${API_NAME} PUBLIC "${LUA_DIR}/src")
+    target_link_libraries(${API_NAME} lua)
 endif()
 
 #################################################################
