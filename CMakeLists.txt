@@ -127,23 +127,26 @@ option(GOODSACK_DEV "Development Mode" OFF)
 # GoodsackEngine Runtime Library
 #################################################################
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    PREFIX ""
+    FOLDER "GoodsackEngine"
+    DESCRIPTION "GoodsackEngine Runtime"
+)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
 
 target_compile_options(${PROJECT_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
-set_target_properties(${PROJECT_NAME} PROPERTIES 
-    FOLDER "GoodsackEngine"
-    VERSION 18.0
-    DESCRIPTION "Description"
-)
 
 #################################################################
 # GoodsackEngine Lua-API Library
 #################################################################
 set(API_NAME "GoodsackAPI")
 add_library(${API_NAME} SHARED ${API_SOURCES})
-SET_TARGET_PROPERTIES(${API_NAME} PROPERTIES PREFIX "")
-set_target_properties(${API_NAME} PROPERTIES FOLDER "GoodsackEngine")
-set_target_properties(${API_NAME} PROPERTIES DESCRIPTION "GoodsackEngine")
+set_target_properties(${API_NAME} PROPERTIES
+    PREFIX ""
+    FOLDER "GoodsackEngine"
+    DESCRIPTION "GoodsackEngine API"
+)
 
 # Link the include directory to the main project
 target_include_directories(${API_NAME} PUBLIC "${SRC_DIR}")
@@ -276,11 +279,15 @@ endif()
 # Library: GLAD
 #################################################################
 set(GLAD_DIR "${LIB_DIR}/glad")
-add_library("glad" "${GLAD_DIR}/src/gl.c")
+add_library("glad" STATIC "${GLAD_DIR}/src/gl.c")
+set_target_properties(glad PROPERTIES FOLDER "ThirdParty")
+if(UNIX)
+    target_compile_options("glad" PRIVATE "-fPIC")
+endif(UNIX)
 target_include_directories("glad" PUBLIC "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PUBLIC "${GLAD_DIR}/include")
+
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
-set_target_properties(glad PROPERTIES FOLDER "ThirdParty")
 
 #################################################################
 # Library: VulkanSDK
@@ -329,7 +336,8 @@ else()
     set(IMGUI_DIR "${LIB_DIR}/imgui")
     message(STATUS "(ImGui) Using manual specified path: ${IMGUI_DIR}")
 
-    add_library("imgui" "${IMGUI_DIR}/imgui.cpp"
+    add_library("imgui" STATIC
+                      "${IMGUI_DIR}/imgui.cpp"
                       "${IMGUI_DIR}/imgui_demo.cpp"
                       "${IMGUI_DIR}/imgui_draw.cpp"
                       "${IMGUI_DIR}/imgui_tables.cpp"
@@ -338,6 +346,9 @@ else()
                       "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
                       "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
                       "${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp")
+    if(UNIX)
+        target_compile_options("imgui" PRIVATE "-fPIC")
+    endif(UNIX)
 
     target_include_directories("imgui" PRIVATE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
     target_link_libraries("imgui" "glfw" Vulkan::Vulkan "${CMAKE_DL_LIBS}")
