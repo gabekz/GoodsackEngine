@@ -46,8 +46,8 @@ struct _renderer
 
     Billboard2D *billboard; // Billboard testing
 
-    // Skybox test
-    Skybox *skybox;
+    Skybox *activeSkybox;  // Active skybox that is being rendered
+    Skybox *defaultSkybox; // Default skybox set for each scene on creation
 
     // Hacky shit for temporary shadowmap values
     ShaderProgram *shaderDepthMap;
@@ -86,6 +86,15 @@ void
 renderer_tick(Renderer *renderer);
 
 /* scene management */
+
+/**
+ * Sets the active scene for the renderer. Will create a new scene
+ * if the specified index does not yet exist.
+ *
+ * @param[in] self Pointer to the renderer
+ * @param[in] sceneIndex Index of the scene to load/create
+ * @return Pointer to the ECS struct owned by the scene
+ */
 struct _ecs *
 renderer_active_scene(Renderer *self, ui16 sceneIndex);
 //-------------------------------

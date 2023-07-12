@@ -11,17 +11,17 @@
  * 3) Process Systems
  */
 
+#include <core/graphics/lighting/skybox.h>
 #include <util/sysdefs.h>
 
-typedef struct _scene Scene;
-
-struct _scene
+typedef struct Scene_t
 {
-    ui32 id;
-
-    ui32 meshC, lightC;
+    ui32 id, meshC, lightC;
 
     struct _ecs *ecs;
-};
+
+    Skybox *skybox;
+    ui16 has_skybox;
+} Scene;
 
 #endif // H_SCENE

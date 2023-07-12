@@ -52,7 +52,7 @@ skybox_draw(Skybox *self)
 // HDR
 
 Skybox *
-skybox_hdr_create()
+skybox_hdr_create(Texture *hdrTexture)
 {
     clearGLState();
     glEnable(GL_DEPTH_TEST);
@@ -60,8 +60,6 @@ skybox_hdr_create()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
     //  Load HDR texture
-    Texture *hdrTexture =
-      texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr");
     // texture_create_hdr("../res/textures/hdr/city_night.hdr");
 
     // Framebuffer setup
@@ -183,13 +181,16 @@ skybox_hdr_create()
       shader_create_program("../res/shaders/hdr-brdf.shader");
     cubemapBrdfShader = brdfShader;
 
+    // Base skybox-render shader
+    ShaderProgram *baseShader =
+      shader_create_program("../res/shaders/skybox.shader");
+
     cubemapProjectionFBO = captureFBO;
     cubemapProjectionRBO = captureRBO;
 
     // Reset
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // Return
     Skybox *ret             = malloc(sizeof(Skybox));
     ret->cubemap            = malloc(sizeof(Texture));
     ret->cubemap->id        = skyboxCubemap;
@@ -201,6 +202,12 @@ skybox_hdr_create()
     ret->brdfLUTTexture->id = brdfLUTTexture;
     ret->vao                = vao;
     ret->hdrTexture         = hdrTexture;
+    ret->shader             = baseShader;
+
+    // Skybox Projection
+    skybox_hdr_projection(ret);
+
+    // Return
     return ret;
 }
 

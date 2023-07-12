@@ -42,10 +42,10 @@ renderer_init()
       (RENDER_RESOLUTION_OVERRIDE) ? PSX_HEIGHT : DEFAULT_WINDOW_HEIGHT;
 
     // Create the initial scene
-    Scene *scene = malloc(sizeof(Scene));
-
-    scene->id  = 0;
-    scene->ecs = ecs_init(ret);
+    Scene *scene      = malloc(sizeof(Scene));
+    scene->id         = 0;
+    scene->ecs        = ecs_init(ret);
+    scene->has_skybox = FALSE;
 
     Scene **sceneList = malloc(sizeof(Scene *));
     *(sceneList)      = scene;
@@ -100,9 +100,10 @@ renderer_active_scene(Renderer *self, ui16 sceneIndex)
         ui32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
 
         // Create a new, empty scene
-        Scene *newScene = malloc(sizeof(Scene));
-        newScene->id    = newCount;
-        newScene->ecs   = ecs_init(self);
+        Scene *newScene      = malloc(sizeof(Scene));
+        newScene->id         = newCount;
+        newScene->ecs        = ecs_init(self);
+        newScene->has_skybox = FALSE;
 
         // Update the scene list
         Scene **p                  = self->sceneL;
@@ -126,6 +127,8 @@ renderer_start(Renderer *renderer)
     ECS *ecs     = scene->ecs;
 
     if (DEVICE_API_OPENGL) {
+
+// Create the default skybox
 #if 0
         Texture *skyboxCubemap =
           texture_create_cubemap(6,
@@ -136,14 +139,15 @@ renderer_start(Renderer *renderer)
                                  "../res/textures/skybox/front.jpg",
                                  "../res/textures/skybox/back.jpg");
 
-        renderer->skybox = skybox_create(skyboxCubemap);
+        renderer->defaultSkybox = skybox_create(skyboxCubemap);
 #else
-        Skybox *skybox = skybox_hdr_create();
-        skybox->shader = shader_create_program("../res/shaders/skybox.shader");
-        renderer->skybox = skybox;
-
-        skybox_hdr_projection(renderer->skybox);
+        renderer->defaultSkybox = skybox_hdr_create(
+          texture_create_hdr("../res/textures/hdr/thatch_chapel_4k.hdr"));
 #endif
+
+        // Set the current renderer skybox to that of the active scene
+        renderer->activeSkybox =
+          (scene->has_skybox) ? scene->skybox : renderer->defaultSkybox;
 
         prepass_init();
 
@@ -193,7 +197,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     /*-------------------------------------------
         Scene Logic/Data update
     */
-    
+
     device_setInput(device_getInput()); // TODO: Weird hack to reset for axis
     glfwPollEvents();
 
@@ -257,31 +261,39 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
     // binding the shadowmap to texture slot 8 (TODO:) for meshes
     shadowmap_bind_texture();
 
-    glActiveTexture(GL_TEXTURE5);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, renderer->skybox->irradianceMap->id);
+    // Bind skybox textures
+    if (scene->has_skybox) {
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_CUBE_MAP,
+                      renderer->activeSkybox->irradianceMap->id);
 
-    glActiveTexture(GL_TEXTURE6);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, renderer->skybox->prefilterMap->id);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_CUBE_MAP,
+                      renderer->activeSkybox->prefilterMap->id);
 
-    glActiveTexture(GL_TEXTURE7);
-    glBindTexture(GL_TEXTURE_2D, renderer->skybox->brdfLUTTexture->id);
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_2D,
+                      renderer->activeSkybox->brdfLUTTexture->id);
+    }
 
     glActiveTexture(GL_TEXTURE9);
     glBindTexture(GL_TEXTURE_2D, pass_ssao_getOutputTextureId());
 
+    // Forward-draw Event
     renderer->currentPass = REGULAR;
     ecs_event(ecs, ECS_RENDER);
 
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
-    glDepthFunc(GL_LEQUAL);
-    skybox_draw(renderer->skybox);
-    glDepthFunc(GL_LESS);
+    if (scene->has_skybox) {
+        glDepthFunc(GL_LEQUAL);
+        skybox_draw(renderer->activeSkybox);
+        glDepthFunc(GL_LESS);
+    }
 
     glPopDebugGroup();
     /*-------------------------------------------
@@ -292,8 +304,8 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 
     postbuffer_draw(&renderer->properties);
 
-    //vec3 pos = GLM_VEC3_ZERO_INIT;
-    //billboard_draw(renderer->billboard, pos);
+    // vec3 pos = GLM_VEC3_ZERO_INIT;
+    // billboard_draw(renderer->billboard, pos);
 
     glPopDebugGroup();
 

@@ -11,6 +11,8 @@
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
 
 Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
+Skybox *skyboxMain;
+
 static TextureOptions s_texOpsPbr, s_texOpsNrm;
 
 #define MY_THINGY(x) (void *)(&(__typeof(x)))
@@ -31,6 +33,15 @@ __create_camera_entity(ECS *ecs, vec3 position)
                         .position = *(float *)position,
                       }));
     return camera;
+}
+
+static void
+__set_active_scene_skybox(Renderer *renderer, Skybox *skybox)
+{
+    Scene *scene = renderer->sceneL[renderer->activeScene];
+
+    scene->skybox     = skybox;
+    scene->has_skybox = TRUE;
 }
 
 static void
@@ -388,6 +399,7 @@ static void
 _scene5(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 5);
+    __set_active_scene_skybox(renderer, skyboxMain);
 
     Material *matCharacter =
       material_create(NULL, "../res/shaders/skinning-test.shader", 0);
@@ -525,23 +537,21 @@ static void
 _scene7(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 7);
-
-    Texture *texContDiff = texture_create_d(
-      "../demo/demo_hot/Resources/textures/container/diffuse.png");
-    Texture *texContSpec = texture_create_n(
-      "../demo/demo_hot/Resources/textures/container/specular.png");
+    __set_active_scene_skybox(renderer, skyboxMain);
 
     Texture *texBrickDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
-    Texture *texBrickNorm = 
-      texture_create_n("../demo/demo_hot/Resources/textures/brickwall/normal.png");
+    Texture *texBrickNorm = texture_create_n(
+      "../demo/demo_hot/Resources/textures/brickwall/normal.png");
 
     Material *matFloor = material_create(NULL,
-                                         "../res/shaders/lit-diffuse.shader",
-                                         3,
+                                         "../res/shaders/pbr.shader",
+                                         5,
                                          texBrickDiff,
                                          texBrickNorm,
-                                         texDefSpec);
+                                         texDefSpec,
+                                         texPbrAo,
+                                         texPbrAo);
 
     Entity *pCamera = malloc(sizeof(Entity));
 
@@ -600,21 +610,21 @@ _scene7(ECS *ecs, Renderer *renderer)
       "../demo/demo_hot/Resources/models/AK2.glb", 1, FALSE);
 
     Entity *pWeaponParent = malloc(sizeof(Entity));
-    *pWeaponParent = ecs_new(ecs);
-    Entity weaponParent = *pWeaponParent;
+    *pWeaponParent        = ecs_new(ecs);
+    Entity weaponParent   = *pWeaponParent;
 
     _ecs_add_internal(weaponParent,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = {0.0f, 0.0f, 0.0f},
+                        .position    = {0.0f, 0.0f, 0.0f},
                         .orientation = {0.0f, 0.0f, 0.0f},
-                        .scale    = {1.0f, 1.0f, 1.0f},
-                        .parent = pCamera,
+                        .scale       = {1.0f, 1.0f, 1.0f},
+                        .parent      = pCamera,
                       }));
     _ecs_add_internal(weaponParent,
                       C_WEAPONSWAY,
                       (void *)(&(struct ComponentWeaponSway) {
-                          .sway_amount = 5,
+                        .sway_amount = 5,
                       }));
 
     Entity attachedEntity = ecs_new(ecs);
@@ -660,6 +670,9 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo    = texture_create_n("../res/textures/defaults/white.png");
     texMissing  = texture_create_n("../res/textures/defaults/missing.jpg");
+
+    skyboxMain = skybox_hdr_create(
+      texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr"));
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);
