@@ -30,13 +30,3 @@ prim_vert_rect()
     }
     return ret;
 }
-float *
-prim_vert_rect2()
-{
-    unsigned int size = PRIM_SIZ_V_PLANE3;
-    float *ret        = malloc(size * sizeof(float));
-    for (int i = 0; i < size; i++) {
-        ret[i] = PRIM_ARR_V_PLANE3[i];
-    }
-    return ret;
-}

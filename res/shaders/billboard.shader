@@ -52,5 +52,5 @@ main()
     // if(pixel.a < 0.1)
     //  discard;
 
-    FragColor = pixel * vec4(1, 1, 0, 1);
+    FragColor = pixel * vec4(1, 1, 1, 1);
 }

@@ -11,6 +11,7 @@
 #include <core/graphics/lighting/lighting.h>
 #include <core/graphics/lighting/skybox.h>
 #include <core/graphics/ui/billboard.h>
+#include <core/graphics/ui/ui_image.h>
 #include <entity/v1/ecs.h>
 
 #include <core/device/device_context.h>
@@ -20,6 +21,8 @@
 
 // Skybox test
 #include <core/graphics/texture/texture.h>
+
+#define TESTING_DRAW_UI 0
 
 Renderer *
 renderer_init()
@@ -85,6 +88,9 @@ renderer_init()
     vec2 bbsize = {0.01f, 0.01f};
     ret->billboard =
       billboard_create("../res/textures/gizmo/light.png", bbsize);
+
+    // Billboard test
+    ret->uiImage = ui_image_create("../res/textures/gizmo/light.png", NULL);
 
     return ret;
 }
@@ -304,10 +310,16 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 
     postbuffer_draw(&renderer->properties);
 
-    // vec3 pos = GLM_VEC3_ZERO_INIT;
-    // billboard_draw(renderer->billboard, pos);
-
     glPopDebugGroup();
+
+    // Testing stuff
+
+#if TESTING_DRAW_UI
+    vec3 pos = GLM_VEC3_ZERO_INIT;
+    billboard_draw(renderer->billboard, pos);
+
+    ui_image_draw(renderer->uiImage);
+#endif
 
     // computebuffer_draw();
 }

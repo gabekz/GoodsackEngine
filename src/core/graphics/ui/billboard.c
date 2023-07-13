@@ -13,22 +13,20 @@ billboard_create(const char *texturePath, vec2 size)
     Billboard2D *ret = malloc(sizeof(Billboard2D));
 
     ret->vao       = vao_create();
-    //float *rectPos = prim_vert_rect();
+    float *rectPos = prim_vert_rect();
 
-    float *rectPos = prim_vert_rect2();
-
-    VBO *vbo       = vbo_create(rectPos, (2 * 3 * 4) * sizeof(float));
+    VBO *vbo = vbo_create(rectPos, (2 * 3 * 4) * sizeof(float));
     vbo_bind(vbo);
     vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
     vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
     vao_add_buffer(ret->vao, vbo);
 
-    ret->texture = texture_create("../res/textures/gizmo/heart.png",
+    ret->texture = texture_create("../res/textures/gizmo/light.png",
                                   NULL,
                                   (TextureOptions) {1, GL_RGBA, true, true});
 
     ret->material =
-      material_create(NULL, "../res/shaders/canvas2d.shader", 1, ret->texture);
+      material_create(NULL, "../res/shaders/billboard.shader", 1, ret->texture);
 
     return ret;
 }
