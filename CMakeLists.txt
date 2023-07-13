@@ -225,12 +225,12 @@ endif()
 ######## 3rd-PARTY LIBRARIES ####################################
 
 #################################################################
-# Library: STB Image
+# Library: STB
 #################################################################
 set(STB_DIR "${LIB_DIR}/stb")
-add_library(stb_image INTERFACE)
-target_include_directories(stb_image INTERFACE ${STB_DIR})
-target_link_libraries(${PROJECT_NAME} stb_image)
+add_library(stb INTERFACE)
+target_include_directories(stb INTERFACE ${STB_DIR})
+target_link_libraries(${PROJECT_NAME} stb)
 
 #################################################################
 # Library: cgltf
