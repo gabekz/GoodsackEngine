@@ -11,7 +11,7 @@
 #include <core/graphics/lighting/lighting.h>
 #include <core/graphics/lighting/skybox.h>
 #include <core/graphics/ui/billboard.h>
-#include <core/graphics/ui/ui_image.h>
+#include <core/graphics/ui/gui_element.h>
 #include <entity/v1/ecs.h>
 
 #include <core/device/device_context.h>
@@ -22,7 +22,7 @@
 // Skybox test
 #include <core/graphics/texture/texture.h>
 
-#define TESTING_DRAW_UI 0
+#define TESTING_DRAW_UI 1
 
 Renderer *
 renderer_init()
@@ -89,8 +89,13 @@ renderer_init()
     ret->billboard =
       billboard_create("../res/textures/gizmo/light.png", bbsize);
 
-    // Billboard test
-    ret->uiImage = ui_image_create("../res/textures/gizmo/light.png", NULL);
+    // GUI test
+    Texture *guiTexture =
+      texture_create("../res/fonts/font.bmp",
+                     NULL,
+                     (TextureOptions) {1, GL_RGBA, false, true});
+    ret->uiImage =
+      gui_element_create((vec2) {25, 25}, (vec2) {50, 50}, guiTexture);
 
     return ret;
 }
@@ -318,7 +323,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     vec3 pos = GLM_VEC3_ZERO_INIT;
     billboard_draw(renderer->billboard, pos);
 
-    ui_image_draw(renderer->uiImage);
+    gui_element_draw(renderer->uiImage);
 #endif
 
     // computebuffer_draw();

@@ -138,9 +138,30 @@ gsk_runtime_loop()
     entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
 #endif
 
+    // Main Engine Loop
     while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
         device_updateAnalytics(glfwGetTime());
-        // LOG_INFO("FPS: %f", device_getAnalytics().currentFps);
+
+#if 0
+        int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+        if (present) {
+            {
+                int count;
+                const float *axes =
+                  glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
+
+                LOG_INFO("Axes0 %d: %f", 0, axes[0]);
+                LOG_INFO("Axes1 %d: %f", 1, axes[1]);
+            }
+            {
+                int count;
+                const unsigned char *buttons =
+                  glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
+
+                if (buttons[1] == GLFW_PRESS) { LOG_INFO("Press"); }
+            }
+        }
+#endif
 
         if (DEVICE_API_OPENGL) {
 #if USING_LUA

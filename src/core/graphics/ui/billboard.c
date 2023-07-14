@@ -36,7 +36,6 @@ billboard_draw(Billboard2D *self, vec3 position)
 {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_DEPTH_TEST);
 
     material_use(self->material);
 
@@ -48,4 +47,6 @@ billboard_draw(Billboard2D *self, vec3 position)
 
     vao_bind(self->vao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+
+    glDisable(GL_BLEND);
 }

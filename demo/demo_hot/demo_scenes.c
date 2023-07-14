@@ -144,6 +144,7 @@ static void
 _scene2(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 2);
+    __set_active_scene_skybox(renderer, skyboxMain);
 
     Texture *texGraniteAlbedo = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/granite/albedo.png");

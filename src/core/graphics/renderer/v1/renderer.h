@@ -11,7 +11,7 @@
 #include <core/graphics/renderer/renderer_props.inl>
 #include <core/graphics/scene/scene.h>
 #include <core/graphics/ui/billboard.h>
-#include <core/graphics/ui/ui_image.h>
+#include <core/graphics/ui/gui_element.h>
 
 #include <core/graphics/renderer/pipeline/pass_shadowmap.h>
 #include <core/graphics/renderer/pipeline/pass_ssao.h>
@@ -46,7 +46,7 @@ struct _renderer
     Material *explicitMaterial;
 
     Billboard2D *billboard; // Billboard testing
-    Image2D *uiImage;       // Image2D test
+    GuiElement *uiImage;    // GuiElement test
 
     Skybox *activeSkybox;  // Active skybox that is being rendered
     Skybox *defaultSkybox; // Default skybox set for each scene on creation
