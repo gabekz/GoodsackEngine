@@ -512,7 +512,7 @@ _scene6(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(sphereEntity,
                       C_RIGIDBODY,
                       (void *)(&(struct ComponentRigidbody) {
-                        .gravity = {0.0f, -0.981f, 0.0f},
+                        .gravity = {0.0f, -9.81f, 0.0f},
                         //.gravity = {0.0f, 0.0f, 0.0f},
                         .mass    = 10.0f,
                       }));
