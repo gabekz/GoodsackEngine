@@ -104,8 +104,19 @@ update(Entity e)
               compareTransform->position);
         }
 
+        // sphere v. sphere
+#if 0
+        else if (collider->type == 1 && compareCollider->type == 1) {
+            points = physics_collision_find_sphere_sphere(
+              ((Collider *)collider->pCollider)->collider_data,
+              ((Collider *)compareCollider->pCollider)->collider_data,
+              transform->position,
+              compareTransform->position);
+        }
+#endif
+
+        // plane v. sphere
         else if (collider->type == 2 && compareCollider->type == 1) {
-            // plane v. sphere
             points =
               physics_collision_find_plane_sphere(collider->pCollider,
                                                   compareCollider->pCollider,
@@ -113,7 +124,7 @@ update(Entity e)
                                                   compareTransform->position);
         }
 
-#if 1
+#if 0
             // TESTING RAY INTERSECT
             Raycast ray = {
               .origin    = {0.0f, 0.0f, 0.0f},

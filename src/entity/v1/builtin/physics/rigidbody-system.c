@@ -50,21 +50,59 @@ update(Entity e)
         // --
         // Velocity/Impulse Solver
 
-        vec3 plane_normal = {0, 1, 0};
+        vec3 collision_normal = {0, 1, 0};
         float restitution = 0.5f; // Bounce factor
 
-        float vDotN = glm_vec3_dot(rigidbody->velocity, plane_normal);
+        float vDotN = glm_vec3_dot(rigidbody->velocity, collision_normal);
         float F = -(1.0f + restitution) * vDotN;
         F *= rigidbody->mass;
         vec3 reflect = {0, F / rigidbody->mass, 0};
         glm_vec3_add(rigidbody->velocity, reflect, rigidbody->velocity);
 
-#if 0
+        // cutoff for impulse solver. Can potentially fix issues with
+        // double-precision.
+#if 1
         float cutoff = 2; // stop velocity and force when F < this
         if(F < cutoff) {
             glm_vec3_zero(rigidbody->velocity);
             glm_vec3_zero(rigidbody->force);
         }
+#endif
+
+        // Angular Velocity / Friction
+#if 0
+
+        //) Ft = -(velocity + (vDotN*collision_normal));
+        vec3 Ft = GLM_VEC3_ZERO_INIT;
+        glm_vec3_scale(collision_normal, vDotN, Ft);
+        glm_vec3_add(Ft, rigidbody->velocity, Ft);
+        glm_vec3_negate(Ft);
+        
+        //) Ft *= A.kineticFriction + B.kineticFriction
+        // TODO: for now, kinectic friction is coefficient magic
+        glm_vec3_scale(Ft, 0.57f, Ft); // Steel on Steel?
+        //) Ft *= mass
+        glm_vec3_scale(Ft, rigidbody->mass, Ft);
+
+        //) vec2Centre = pos_a - contactPoint
+        vec3 friction_contact = GLM_VEC3_ZERO_INIT;
+        glm_vec3_sub(transform->position, (vec3){0, -0.3f, 0}, friction_contact);
+
+        //) Torque = cross(vec2Centre, Ft)
+        vec3 torque = GLM_VEC3_ZERO_INIT;
+        glm_vec3_cross(friction_contact, Ft, torque);
+
+        //) Ball.AngularAccelerate(Torque/Ball.getMomentofIntertia(normalize(torque)))
+        // inertia is I = 2/5mr^2 for solid sphere
+
+        float I = 0.4f * rigidbody->mass * 0.2f * 0.2f;
+        glm_vec3_divs(torque, I, torque);
+        //glm_vec3_normalize(torque);
+
+        glm_vec3_copy(torque, transform->orientation);
+
+        LOG_INFO("%f\t%f\t%f", torque[0], torque[1], torque[2]);
+
 #endif
     }
 

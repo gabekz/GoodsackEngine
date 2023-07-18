@@ -9,7 +9,19 @@ physics_collision_find_sphere_sphere(SphereCollider *a,
                                      vec3 pos_a,
                                      vec3 pos_b)
 {
-    return (CollisionPoints) {.has_collision = 0};
+    CollisionPoints ret = {.has_collision = 0};
+
+    float distance = sqrt(
+            (pos_a[0] - pos_b[0]) * (pos_a[0] - pos_b[0]) +
+            (pos_a[1] - pos_b[1]) * (pos_a[1] - pos_b[1]) +
+            (pos_a[2] - pos_b[2]) * (pos_a[2] - pos_b[2]));
+
+    ret.has_collision = (distance < a->radius + b->radius);
+
+    //glm_vec3_distance(pos_a, pos_b);
+    //ret.point_a = 
+
+    return ret;
 }
 
 // Sphere v. Plane

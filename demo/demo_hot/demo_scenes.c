@@ -532,6 +532,43 @@ _scene6(ECS *ecs, Renderer *renderer)
                           .drawMode = DRAW_ARRAYS,
                           .cullMode = CULL_CW | CULL_FORWARD,
                         }}));
+    // Second sphere
+#if 0
+
+    Entity *pSphereEntity2 = malloc(sizeof(Entity));
+    *pSphereEntity2        = ecs_new(ecs);
+    Entity sphereEntity2   = *pSphereEntity2;
+    _ecs_add_internal(sphereEntity2,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        //.position = {0.0f, -0.085f, -1.0f},
+                        .position = {0.0f, 15.0f, -1.0f},
+                      }));
+
+    _ecs_add_internal(sphereEntity2,
+                      C_RIGIDBODY,
+                      (void *)(&(struct ComponentRigidbody) {
+                        .gravity = {0.0f, -9.81f, 0.0f},
+                        //.gravity = {0.0f, 0.0f, 0.0f},
+                        .mass    = 10.0f,
+                      }));
+
+    _ecs_add_internal(sphereEntity2,
+                      C_COLLIDER,
+                      (void *)(&(struct ComponentCollider) {
+                        .type = 1,
+                      }));
+
+    _ecs_add_internal(sphereEntity2,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matBox,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
+#endif
 }
 
 // Transform parenting test
