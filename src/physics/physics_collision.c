@@ -25,22 +25,17 @@ physics_collision_find_sphere_plane(SphereCollider *a,
     vec3 A = GLM_VEC3_ZERO_INIT;
     glm_vec3_sub(pos_a, pos_b, A);
 
-    glm_vec3_normalize_to(A, A); // A is now normalized
-
-    float angle = glm_vec3_dot(pos_a, pos_b);
-
-    vec3 nearestPoint = GLM_VEC3_ZERO_INIT;
-    glm_vec3_scale(A, angle, nearestPoint);
-
-    float nearestDistance = glm_vec3_distance(A, nearestPoint);
+    vec3 plane_normal = {0, 1, 0};
+    float nearestDistance = glm_vec3_dot(A, plane_normal);
 
 #if 0
     if(nearestDistance <= 1.2f)
         LOG_INFO("Nearest: %f", nearestDistance);
+        LOG_INFO("%f", glm_vec3_distance(pos_a, pos_b));
 #endif
 
     // NOTE: may need to use an offset for the radius (i.e, 0.02f)
-    if (nearestDistance <= a->radius) { ret.has_collision = TRUE; }
+    if (nearestDistance <= (a->radius)) { ret.has_collision = TRUE; }
 
     return ret;
 }

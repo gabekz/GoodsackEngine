@@ -27,7 +27,7 @@ init(Entity e)
     // TODO: collider types
     if (collider->type == 1) {
         SphereCollider *sphereCollider = malloc(sizeof(SphereCollider));
-        sphereCollider->radius         = 1.00f;
+        sphereCollider->radius         = .20f;
         // glm_vec3_copy(transform->position, sphereCollider->center);
         // sphereCollider.center = transform.position;
 
@@ -91,29 +91,18 @@ update(Entity e)
           ecs_get(e_compare, C_TRANSFORM);
 
         CollisionPoints points = {.has_collision = 0};
+
+        //
         // determine which collision-test function to use
+        //
+        // sphere v. plane
         if (collider->type == 1 && compareCollider->type == 2) {
-            // sphere v. plane
             points = physics_collision_find_sphere_plane(
               ((Collider *)collider->pCollider)->collider_data,
               ((Collider *)compareCollider->pCollider)->collider_data,
               transform->position,
               compareTransform->position);
         }
-
-#if 0
-            // TESTING RAY INTERSECT
-            Raycast ray = {
-              .origin    = {0.0f, 0.0f, 0.0f},
-              .direction = {0.0f, -1.0f, 0.0f},
-            };
-            CollisionPoints rayTest = physics_collision_find_ray_sphere(
-              &ray,
-              ((Collider *)collider->pCollider)->collider_data,
-              transform->position);
-
-            if (rayTest.has_collision) LOG_INFO("RAY SUCCESS");
-#endif
 
         else if (collider->type == 2 && compareCollider->type == 1) {
             // plane v. sphere
@@ -123,6 +112,21 @@ update(Entity e)
                                                   transform->position,
                                                   compareTransform->position);
         }
+
+#if 1
+            // TESTING RAY INTERSECT
+            Raycast ray = {
+              .origin    = {0.0f, 0.0f, 0.0f},
+              .direction = {-1.0f, 1.0f, 0.0f},
+            };
+            CollisionPoints rayTest = physics_collision_find_ray_sphere(
+              &ray,
+              ((Collider *)collider->pCollider)->collider_data,
+              transform->position);
+
+            if (rayTest.has_collision) LOG_INFO("RAY SUCCESS");
+#endif
+
 
         // Collision points
         if (points.has_collision) {
