@@ -107,13 +107,18 @@ _position_solver(struct ComponentRigidbody *rigidbody,
                 struct ComponentTransform *transform,
                 CollisionResult *collision_result)
 {
-#define USE_VELOCITY      TRUE
-#define AFFECT_POS_DIRECT TRUE
+// velocity
+#define USE_VELOCITY               1
+#define USE_VELOCITY_DELTA         0
+
+// raw position
+#define AFFECT_POS_DIRECT 1
+#define USE_POS_DELTA     1
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
         
-    const float percent = 0.1f;
+    const float percent = 0.8f;
     const float slop = 0.01f;
 
     vec3 correction = {0, 0, 0};
@@ -122,14 +127,19 @@ _position_solver(struct ComponentRigidbody *rigidbody,
     glm_vec3_negate(correction);
 
     //LOG_INFO("correction: %f\t%f\t%f", correction[0], correction[1], correction[2]);
-    //glm_vec3_scale(correction, device_getAnalytics().delta, correction);
 
 #if USE_VELOCITY
+#if USE_VELOCITY_DELTA
+    glm_vec3_scale(correction, device_getAnalytics().delta * rigidbody->mass, correction);
+#endif // USE_DELTA
     // NOTE: This one is pretty interseting..
     glm_vec3_sub(rigidbody->velocity, correction, rigidbody->velocity);
 #endif // USE_VELOCITY
 
 #if AFFECT_POS_DIRECT
+#if USE_POS_DELTA
+    glm_vec3_scale(correction, device_getAnalytics().delta * rigidbody->mass, correction);
+#endif
     glm_vec3_sub(transform->position, correction, transform->position);
 #endif // AFFECT_POS_DIRECT
 }
@@ -140,13 +150,13 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
                 CollisionResult *collision_result)
 {
 
-#define USE_CUTOFF   TRUE
+#define USE_CUTOFF   FALSE
 #define USE_FRICTION TRUE
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    float restitution = 0.7f; // Bounce factor
+    float restitution = 0.5f; // Bounce factor
 
     float vDotN = glm_vec3_dot(rigidbody->velocity, collision_normal);
     float F = -(1.0f + restitution) * vDotN;

@@ -444,6 +444,7 @@ static void
 _scene6(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 6);
+    __set_active_scene_skybox(renderer, skyboxMain);
 
     Texture *texContDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/container/diffuse.png");
