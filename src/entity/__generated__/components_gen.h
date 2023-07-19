@@ -123,6 +123,7 @@ struct ComponentRigidbody
 {
     vec3 gravity, velocity, force;
     float mass;
+    ResRef solver;
 };
 
 struct ComponentCollider

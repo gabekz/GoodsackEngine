@@ -7,6 +7,7 @@
 #include <core/device/device.h>
 
 #include <physics/physics_collision.h>
+#include <physics/physics_solver.h>
 
 static void
 init(Entity e)
@@ -105,7 +106,7 @@ update(Entity e)
         }
 
         // sphere v. sphere
-#if 0
+#if 1
         else if (collider->type == 1 && compareCollider->type == 1) {
             points = physics_collision_find_sphere_sphere(
               ((Collider *)collider->pCollider)->collider_data,
@@ -124,26 +125,22 @@ update(Entity e)
                                                   compareTransform->position);
         }
 
-#if 0
-            // TESTING RAY INTERSECT
-            Raycast ray = {
-              .origin    = {0.0f, 0.0f, 0.0f},
-              .direction = {-1.0f, 1.0f, 0.0f},
-            };
-            CollisionPoints rayTest = physics_collision_find_ray_sphere(
-              &ray,
-              ((Collider *)collider->pCollider)->collider_data,
-              transform->position);
-
-            if (rayTest.has_collision) LOG_INFO("RAY SUCCESS");
-#endif
-
-
         // Collision points
         if (points.has_collision) {
-#if 0
-            LOG_INFO("Collision!");
-#endif
+
+            if(ecs_has(e, C_RIGIDBODY)) {
+                struct ComponentRigidbody *rigidbody = ecs_get(e, C_RIGIDBODY);
+
+                // Create a new collision result using our points
+                // TODO: Send objects A and B
+                CollisionResult result = {
+                    .points = points,
+                };
+
+                // Send that over to the rigidbody solver list
+                physics_solver_push((PhysicsSolver *)rigidbody->solver, result);
+            }
+
             collider->isColliding = points.has_collision;
             break; // TODO: should not break.
                    //- instead, get a collection of points

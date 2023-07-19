@@ -19,11 +19,11 @@ physics_solver_init()
 }
 
 void
-physics_solver_push(PhysicsSolver *solver, CollisionResult *collisionResult)
+physics_solver_push(PhysicsSolver *solver, CollisionResult collisionResult)
 {
-    if (solver->solver_next >= 64) LOG_CRITICAL("Not implemented");
+    if (solver->solver_next >= 64) LOG_CRITICAL("Exceeding solver capacity!");
 
-    solver->solvers[solver->solver_next] = *collisionResult;
+    solver->solvers[solver->solver_next] = collisionResult;
     solver->solver_next++;
     solver->solver_empty = FALSE;
 }

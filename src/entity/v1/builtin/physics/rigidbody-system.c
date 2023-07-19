@@ -6,6 +6,8 @@
 
 #include <core/device/device.h>
 
+#include <physics/physics_solver.h>
+
 static void
 init(Entity e)
 {
@@ -17,6 +19,12 @@ init(Entity e)
 
     glm_vec3_zero(rigidbody->force);
     glm_vec3_zero(rigidbody->velocity);
+
+    // Initialize the physics solver
+    rigidbody->solver = malloc(sizeof(PhysicsSolver));
+    *(PhysicsSolver *)rigidbody->solver = physics_solver_init();
+
+    //LOG_INFO("solvers %u", ((PhysicsSolver *)rigidbody->solver)->solvers_count);
 }
 
 static void
@@ -38,19 +46,29 @@ update(Entity e)
     glm_vec3_scale(rigidbody->gravity, rigidbody->mass, mG);
     glm_vec3_add(rigidbody->force, mG, rigidbody->force);
 
-    // TODO: check intersection here after gravity check
-    if (collider->isColliding) {
+    // --
+    // -- Check for solvers/collision results
+
+    PhysicsSolver *pSolver = (PhysicsSolver *)rigidbody->solver;
+    int total_solvers = (int)pSolver->solver_next;
+
+    for(int i = 0; i < total_solvers; i++) {
+        //LOG_INFO("DO SOLVER");
+
+        CollisionResult *pResult = &pSolver->solvers[i];
 
         // --
         // Poor-position Solver
 
-        vec3 newPos = {0, -0.101f, -1};
-        glm_vec3_copy(newPos, transform->position);
+        //vec3 newPos = {0, -0.101f, -1};
+        //glm_vec3_sub(transform->position, pResult->points.point_a, transform->position);
 
         // --
         // Velocity/Impulse Solver
 
-        vec3 collision_normal = {0, 1, 0};
+        vec3 collision_normal = GLM_VEC3_ZERO_INIT;
+        glm_vec3_copy(pResult->points.normal, collision_normal);
+
         float restitution = 0.5f; // Bounce factor
 
         float vDotN = glm_vec3_dot(rigidbody->velocity, collision_normal);
@@ -61,7 +79,7 @@ update(Entity e)
 
         // cutoff for impulse solver. Can potentially fix issues with
         // double-precision.
-#if 1
+#if 0
         float cutoff = 2; // stop velocity and force when F < this
         if(F < cutoff) {
             glm_vec3_zero(rigidbody->velocity);
@@ -104,6 +122,8 @@ update(Entity e)
         LOG_INFO("%f\t%f\t%f", torque[0], torque[1], torque[2]);
 
 #endif
+        // Pop our solver
+        physics_solver_pop((PhysicsSolver *)rigidbody->solver);
     }
 
     // --

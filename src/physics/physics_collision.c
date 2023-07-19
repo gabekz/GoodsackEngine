@@ -18,8 +18,14 @@ physics_collision_find_sphere_sphere(SphereCollider *a,
 
     ret.has_collision = (distance < a->radius + b->radius);
 
-    //glm_vec3_distance(pos_a, pos_b);
-    //ret.point_a = 
+    // TODO: calculate closest points, NOT positions.
+    if(ret.has_collision) {
+        vec3 normal = GLM_VEC3_ZERO_INIT;
+        glm_vec3_sub(pos_a, pos_b, normal);
+        glm_normalize(normal);
+        glm_vec3_copy(normal, ret.normal);
+        //LOG_INFO("%f\t%f\t%f", normal[0], normal[1], normal[2]);
+    }
 
     return ret;
 }
@@ -46,8 +52,23 @@ physics_collision_find_sphere_plane(SphereCollider *a,
         LOG_INFO("%f", glm_vec3_distance(pos_a, pos_b));
 #endif
 
+    // furthest point_a = pos_a - plane_normal * distance
+
     // NOTE: may need to use an offset for the radius (i.e, 0.02f)
-    if (nearestDistance <= (a->radius)) { ret.has_collision = TRUE; }
+    if (nearestDistance <= (a->radius)) { 
+        ret.has_collision = TRUE;
+        glm_vec3_copy(plane_normal, ret.normal);
+
+        // attempt to get closest point
+#if 0
+        vec3 furthestA = GLM_VEC3_ZERO_INIT;
+        glm_vec3_scale(plane_normal, nearestDistance, furthestA);
+        glm_vec3_add(pos_a, furthestA, ret.point_a);
+        //glm_vec3_subs(ret.point_a, 0.05, ret.point_a);
+        glm_vec3_mul(plane_normal, ret.point_a, ret.point_a);
+        LOG_INFO("%f\t%f\t%f", ret.point_a[0], ret.point_a[1], ret.point_a[2]);
+#endif
+    }
 
     return ret;
 }
