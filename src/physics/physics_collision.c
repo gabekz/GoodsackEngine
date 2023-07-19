@@ -2,6 +2,10 @@
 
 #include <util/logger.h>
 
+// TODO: Rework collision-points calculation
+// [0] Distance should not be sent as the depth. This results in non-predictable
+// physics calculation.
+
 // Sphere v. Sphere
 CollisionPoints
 physics_collision_find_sphere_sphere(SphereCollider *a,
@@ -18,13 +22,14 @@ physics_collision_find_sphere_sphere(SphereCollider *a,
 
     ret.has_collision = (distance < a->radius + b->radius);
 
-    // TODO: calculate closest points, NOT positions.
+    // TODO: [0] calculate closest points, NOT positions.
     if(ret.has_collision) {
         vec3 normal = GLM_VEC3_ZERO_INIT;
         glm_vec3_sub(pos_a, pos_b, normal);
         glm_normalize(normal);
         glm_vec3_copy(normal, ret.normal);
-        //LOG_INFO("%f\t%f\t%f", normal[0], normal[1], normal[2]);
+        ret.depth = (distance);
+        //LOG_INFO("normal: %f\t%f\t%f", normal[0], normal[1], normal[2]);
     }
 
     return ret;
@@ -58,6 +63,12 @@ physics_collision_find_sphere_plane(SphereCollider *a,
     if (nearestDistance <= (a->radius)) { 
         ret.has_collision = TRUE;
         glm_vec3_copy(plane_normal, ret.normal);
+
+        //LOG_INFO("%f", nearestDistance);
+        //LOG_INFO("%f\t%f\t%f", A[0], A[1], A[2]);
+
+        //ret.depth = nearestDistance;
+        ret.depth = -(nearestDistance - 0.2f);
 
         // attempt to get closest point
 #if 0

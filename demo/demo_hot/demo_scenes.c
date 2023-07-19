@@ -30,7 +30,7 @@ __create_camera_entity(ECS *ecs, vec3 position)
     _ecs_add_internal(camera,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = *(float *)position,
+                        .position = {position[0], position[1], position[2]},
                       }));
     return camera;
 }
@@ -470,7 +470,7 @@ _scene6(ECS *ecs, Renderer *renderer)
 
     Entity *pCamera = malloc(sizeof(Entity));
 
-    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 2.0f});
     Entity camera = *pCamera;
 
     // Testing entity on heap memory
@@ -481,7 +481,7 @@ _scene6(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(floorEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = {0.0f, -0.3f, 0.0f},
+                        .position = {0.0f, 0.0f, 0.0f},
                         .scale    = {10.0f, 10.0f, 10.0f},
                       }));
     _ecs_add_internal(floorEntity,
@@ -506,7 +506,7 @@ _scene6(ECS *ecs, Renderer *renderer)
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         //.position = {0.0f, -0.085f, -1.0f},
-                        .position = {0.0f, 5.0f, -1.0f},
+                        .position = {0.2f, 5.0f, -1.0f},
                       }));
 
     _ecs_add_internal(sphereEntity,
@@ -533,7 +533,7 @@ _scene6(ECS *ecs, Renderer *renderer)
                           .cullMode = CULL_CW | CULL_FORWARD,
                         }}));
     // Second sphere
-#if 0
+#if 1
 
     Entity *pSphereEntity2 = malloc(sizeof(Entity));
     *pSphereEntity2        = ecs_new(ecs);
