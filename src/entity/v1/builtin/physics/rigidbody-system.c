@@ -28,6 +28,7 @@ init(Entity e)
 
     glm_vec3_zero(rigidbody->force);
     glm_vec3_zero(rigidbody->velocity);
+    glm_vec3_zero(rigidbody->angular_velocity);
 
     // Initialize the physics solver
     rigidbody->solver = malloc(sizeof(PhysicsSolver));
@@ -77,6 +78,7 @@ update(Entity e)
 
         // Pop our solver
         physics_solver_pop((PhysicsSolver *)rigidbody->solver);
+
     }
 
     // --
@@ -96,6 +98,11 @@ update(Entity e)
     glm_vec3_scale(rigidbody->velocity, device_getAnalytics().delta, vD);
     glm_vec3_add(transform->position, vD, transform->position);
 
+    // orientation += angular_velocity * delta;
+    vec3 aVD = GLM_VEC3_ZERO_INIT;
+    glm_vec3_scale(rigidbody->angular_velocity, device_getAnalytics().delta, aVD);
+    glm_vec3_add(transform->orientation, aVD, transform->orientation);
+
     // --
     // -- Reset net force
 
@@ -108,17 +115,17 @@ _position_solver(struct ComponentRigidbody *rigidbody,
                 CollisionResult *collision_result)
 {
 // velocity
-#define USE_VELOCITY               1
+#define USE_VELOCITY               0
 #define USE_VELOCITY_DELTA         0
 
 // raw position
 #define AFFECT_POS_DIRECT 1
-#define USE_POS_DELTA     1
+#define USE_POS_DELTA     0
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
         
-    const float percent = 0.8f;
+    const float percent = 0.2f;
     const float slop = 0.01f;
 
     vec3 correction = {0, 0, 0};
@@ -150,26 +157,29 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
                 CollisionResult *collision_result)
 {
 
-#define USE_CUTOFF   FALSE
-#define USE_FRICTION TRUE
+#define USE_CUTOFF   1 // a.k.a. FAKE friction
+#define USE_FRICTION 1 // a.k.a. angular velocity
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    float restitution = 0.5f; // Bounce factor
+    float restitution = 0.4f; // Bounce factor
 
     float vDotN = glm_vec3_dot(rigidbody->velocity, collision_normal);
     float F = -(1.0f + restitution) * vDotN;
     F *= rigidbody->mass;
-    vec3 reflect = {0, F / rigidbody->mass, 0};
-    glm_vec3_add(rigidbody->velocity, reflect, rigidbody->velocity);
+
+    //vec3 reflect = {0, F / rigidbody->mass, 0};
+    vec3 reflect = GLM_VEC3_ZERO_INIT;
+    glm_vec3_scale(collision_normal, F / rigidbody->mass, reflect);
 
     //LOG_INFO("%f", F);
     // cutoff for impulse solver. Can potentially fix issues with
     // double-precision.
 #if USE_CUTOFF
-    float cutoff = 3; // stop velocity and force when F < this
-    if(F < cutoff) {
+    float cutoff = 2; // stop velocity and force when F < this
+    if(F < cutoff && F > -cutoff) {
+        glm_vec3_zero(rigidbody->angular_velocity);
         glm_vec3_zero(rigidbody->velocity);
         glm_vec3_zero(rigidbody->force);
     }
@@ -191,7 +201,7 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
 
     //) vec2Centre = pos_a - contactPoint
     vec3 friction_contact = GLM_VEC3_ZERO_INIT;
-    glm_vec3_sub(transform->position, (vec3){0, -0.3f, 0}, friction_contact);
+    glm_vec3_sub(transform->position, collision_normal, friction_contact);
 
     //) Torque = cross(vec2Centre, Ft)
     vec3 torque = GLM_VEC3_ZERO_INIT;
@@ -204,9 +214,17 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
     glm_vec3_divs(torque, I, torque);
     //glm_vec3_normalize(torque);
 
-    glm_vec3_copy(torque, transform->orientation);
+    glm_vec3_copy(torque, rigidbody->angular_velocity);
     //LOG_INFO("%f\t%f\t%f", torque[0], torque[1], torque[2]);
 #endif // USE_FRICTION
+
+    //glm_vec3_normalize(Ft);
+    //glm_vec3_mul(reflect, Ft, reflect);
+
+    //glm_vec3_scale(reflect,500, reflect);
+    //glm_vec3_add(rigidbody->force, reflect, rigidbody->force);
+
+    glm_vec3_add(rigidbody->velocity, reflect, rigidbody->velocity);
  
 }
 

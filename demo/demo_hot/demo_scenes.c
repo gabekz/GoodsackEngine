@@ -543,7 +543,7 @@ _scene6(ECS *ecs, Renderer *renderer)
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         //.position = {0.0f, -0.085f, -1.0f},
-                        .position = {0.0f, 15.0f, -1.0f},
+                        .position = {0.0f, 15.0f, -0.8f},
                       }));
 
     _ecs_add_internal(sphereEntity2,
