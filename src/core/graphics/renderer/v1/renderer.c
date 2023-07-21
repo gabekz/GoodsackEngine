@@ -331,8 +331,8 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 #endif
 
 #if TESTING_DRAW_LINE
-    vec3 start = {0, 0 ,0};
-    vec3 end = {-20, 20, 0};
+    vec3 start = {0, 0, 0};
+    vec3 end   = {-20, 20, 0};
     debug_draw_line(renderer->debugContext, start, end);
 #endif
 

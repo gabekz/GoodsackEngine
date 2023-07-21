@@ -6,7 +6,6 @@
 
 // NOTE: should take DebugContext -> contains shader information
 
-
 // Line start: 0, 0, 0
 // Line direction: 0, 1, 0
 // Line length: 100
@@ -20,8 +19,11 @@ debug_draw_line(DebugContext *debugContext, vec3 start, vec3 end)
     // TEST DRAW LINE
     material_use(debugContext->material);
     mat4 bbMat4 = GLM_MAT4_IDENTITY_INIT;
-    glUniformMatrix4fv(
-      glGetUniformLocation(debugContext->material->shaderProgram->id, "u_Model"), 1, GL_FALSE, (float *)bbMat4);
+    glUniformMatrix4fv(glGetUniformLocation(
+                         debugContext->material->shaderProgram->id, "u_Model"),
+                       1,
+                       GL_FALSE,
+                       (float *)bbMat4);
 
     vao_bind(debugContext->vaoLine);
     // Update the line vertices after binding VAO

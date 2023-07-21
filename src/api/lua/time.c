@@ -4,19 +4,17 @@
 #include <core/device/device.h>
 
 static int
-time_delta(lua_State* L)
+time_delta(lua_State *L)
 {
     lua_pushnumber(L, device_getAnalytics().delta);
     return 1;
 }
 
-static const luaL_Reg time_methods[] = {
-    {"get_delta_time", time_delta},
-    { NULL, NULL }
-};
+static const luaL_Reg time_methods[] = {{"get_delta_time", time_delta},
+                                        {NULL, NULL}};
 
-int 
-luaopen_GoodsackAPI_Time(lua_State * L)
+int
+luaopen_GoodsackAPI_Time(lua_State *L)
 {
     /* create metatable */
     luaL_newmetatable(L, TIME_LIB);

@@ -128,13 +128,13 @@ update(Entity e)
         // Collision points
         if (points.has_collision) {
 
-            if(ecs_has(e, C_RIGIDBODY)) {
+            if (ecs_has(e, C_RIGIDBODY)) {
                 struct ComponentRigidbody *rigidbody = ecs_get(e, C_RIGIDBODY);
 
                 // Create a new collision result using our points
                 // TODO: Send objects A and B
                 CollisionResult result = {
-                    .points = points,
+                  .points = points,
                 };
 
                 // Send that over to the rigidbody solver list

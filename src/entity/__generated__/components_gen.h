@@ -22,7 +22,6 @@ extern "C" {
 #pragma warning Unknown dynamic link import / export semantics.
 #endif
 
-
 // typedef (void *)(ResRef)
 #define ResRef void *
 
@@ -197,7 +196,8 @@ _ecs_init_internal_gen(ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPON, sizeof(struct ComponentWeapon));
-    _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPONSWAY, sizeof(struct ComponentWeaponSway));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_WEAPONSWAY, sizeof(struct ComponentWeaponSway));
 }
 
 #ifdef __cplusplus

@@ -41,10 +41,9 @@ get_cursor_axis(lua_State *L)
 }
 
 static const struct luaL_Reg inputFuncs[] = {
-    {"GetKeyDown", get_key_down},
-    {"get_cursor_axis", get_cursor_axis},
-    {NULL, NULL}
-};
+  {"GetKeyDown", get_key_down},
+  {"get_cursor_axis", get_cursor_axis},
+  {NULL, NULL}};
 
 int
 luaopen_hello(lua_State *L, GLFWwindow *window)

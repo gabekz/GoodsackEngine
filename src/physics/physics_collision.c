@@ -15,21 +15,20 @@ physics_collision_find_sphere_sphere(SphereCollider *a,
 {
     CollisionPoints ret = {.has_collision = 0};
 
-    float distance = sqrt(
-            (pos_a[0] - pos_b[0]) * (pos_a[0] - pos_b[0]) +
-            (pos_a[1] - pos_b[1]) * (pos_a[1] - pos_b[1]) +
-            (pos_a[2] - pos_b[2]) * (pos_a[2] - pos_b[2]));
+    float distance = sqrt((pos_a[0] - pos_b[0]) * (pos_a[0] - pos_b[0]) +
+                          (pos_a[1] - pos_b[1]) * (pos_a[1] - pos_b[1]) +
+                          (pos_a[2] - pos_b[2]) * (pos_a[2] - pos_b[2]));
 
     ret.has_collision = (distance < a->radius + b->radius);
 
     // TODO: [0] calculate closest points, NOT positions.
-    if(ret.has_collision) {
+    if (ret.has_collision) {
         vec3 normal = GLM_VEC3_ZERO_INIT;
         glm_vec3_sub(pos_a, pos_b, normal);
         glm_normalize(normal);
         glm_vec3_copy(normal, ret.normal);
         ret.depth = (distance);
-        //LOG_INFO("normal: %f\t%f\t%f", normal[0], normal[1], normal[2]);
+        // LOG_INFO("normal: %f\t%f\t%f", normal[0], normal[1], normal[2]);
     }
 
     return ret;
@@ -48,7 +47,7 @@ physics_collision_find_sphere_plane(SphereCollider *a,
     vec3 A = GLM_VEC3_ZERO_INIT;
     glm_vec3_sub(pos_a, pos_b, A);
 
-    vec3 plane_normal = {0, 1, 0};
+    vec3 plane_normal     = {0, 1, 0};
     float nearestDistance = glm_vec3_dot(A, plane_normal);
 
 #if 0
@@ -60,14 +59,14 @@ physics_collision_find_sphere_plane(SphereCollider *a,
     // furthest point_a = pos_a - plane_normal * distance
 
     // NOTE: may need to use an offset for the radius (i.e, 0.02f)
-    if (nearestDistance <= (a->radius)) { 
+    if (nearestDistance <= (a->radius)) {
         ret.has_collision = TRUE;
         glm_vec3_copy(plane_normal, ret.normal);
 
-        //LOG_INFO("%f", nearestDistance);
-        //LOG_INFO("%f\t%f\t%f", A[0], A[1], A[2]);
+        // LOG_INFO("%f", nearestDistance);
+        // LOG_INFO("%f\t%f\t%f", A[0], A[1], A[2]);
 
-        //ret.depth = nearestDistance;
+        // ret.depth = nearestDistance;
         ret.depth = -(nearestDistance - 0.2f);
 
         // attempt to get closest point

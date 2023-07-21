@@ -101,18 +101,23 @@ device_setInput(Input input)
     double crntX = input.cursor_position[0];
     double crntY = input.cursor_position[1];
 
-    if(lastX > crntX)       s_input.cursor_axis_raw[0] = -1;
-    else if(lastX < crntX)  s_input.cursor_axis_raw[0] = 1;
-    else                    s_input.cursor_axis_raw[0] = 0;
+    if (lastX > crntX)
+        s_input.cursor_axis_raw[0] = -1;
+    else if (lastX < crntX)
+        s_input.cursor_axis_raw[0] = 1;
+    else
+        s_input.cursor_axis_raw[0] = 0;
 
-    if(lastY > crntY)       s_input.cursor_axis_raw[1] = 1;
-    else if(lastY < crntY)  s_input.cursor_axis_raw[1] = -1;
-    else                    s_input.cursor_axis_raw[1] = 0;
+    if (lastY > crntY)
+        s_input.cursor_axis_raw[1] = 1;
+    else if (lastY < crntY)
+        s_input.cursor_axis_raw[1] = -1;
+    else
+        s_input.cursor_axis_raw[1] = 0;
 
     // store results
     s_input.cursor_position[0] = crntX;
     s_input.cursor_position[1] = crntY;
 
     s_input.holding_right_button = input.holding_right_button;
-
 }
