@@ -374,7 +374,7 @@ else()
     message(STATUS "(Lua) Failed to auto locate")
     set(LUA_DIR "${LIB_DIR}/lua-5.4.4")
     file(GLOB LUA_LIBRARIES "${LUA_DIR}/src/*.c" "${LUA_DIR}/src/*.h")
-    #add_library("lua" ${LUA_LIBRARIES} "Actor")
+    add_library(lua ${LUA_LIBRARIES})
 
     target_include_directories(${RUNTIME_NAME} PUBLIC "${LUA_DIR}/src")
     target_link_libraries(${RUNTIME_NAME} lua)
