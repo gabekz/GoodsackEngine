@@ -95,6 +95,7 @@ jobs:
 
     - name: TestRunner permissions
       run: chmod +x ${{github.workspace}}/dist/testRunner
+      run: ldd ${{github.workspace}}/dist/testRunner
 
     - name: Run Tests
       working-directory: ${{github.workspace}}/dist
