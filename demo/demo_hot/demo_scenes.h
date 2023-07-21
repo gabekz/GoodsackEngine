@@ -21,7 +21,7 @@ enum DEMO_SCENE_NAMES {
 #define DEMO_SCENES_TOTAL 7
 
 #define LOAD_ALL_SCENES 0
-#define INITIAL_SCENE   7
+#define INITIAL_SCENE   6
 
 // Creates and loads every demo scene in this project.
 void

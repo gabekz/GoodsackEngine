@@ -372,7 +372,7 @@ DebugGui::Render()
 
         if (ecs_has(e, C_TRANSFORM)) {
             ImGui::BeginChild(
-              "Transform", ImVec2(0, ImGui::GetFontSize() * 8.0f), true);
+              "Transform", ImVec2(0, ImGui::GetFontSize() * 12.0f), true);
 
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
             ImGui::Text("Transform Component");

@@ -30,7 +30,7 @@ __create_camera_entity(ECS *ecs, vec3 position)
     _ecs_add_internal(camera,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = *(float *)position,
+                        .position = {position[0], position[1], position[2]},
                       }));
     return camera;
 }
@@ -444,6 +444,7 @@ static void
 _scene6(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 6);
+    __set_active_scene_skybox(renderer, skyboxMain);
 
     Texture *texContDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/container/diffuse.png");
@@ -470,7 +471,7 @@ _scene6(ECS *ecs, Renderer *renderer)
 
     Entity *pCamera = malloc(sizeof(Entity));
 
-    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 2.0f});
     Entity camera = *pCamera;
 
     // Testing entity on heap memory
@@ -481,7 +482,7 @@ _scene6(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(floorEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = {0.0f, -0.3f, 0.0f},
+                        .position = {0.0f, 0.0f, 0.0f},
                         .scale    = {10.0f, 10.0f, 10.0f},
                       }));
     _ecs_add_internal(floorEntity,
@@ -506,14 +507,15 @@ _scene6(ECS *ecs, Renderer *renderer)
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         //.position = {0.0f, -0.085f, -1.0f},
-                        .position = {0.0f, 5.0f, -1.0f},
+                        .position = {0.2f, 5.0f, -1.0f},
                       }));
 
     _ecs_add_internal(sphereEntity,
                       C_RIGIDBODY,
                       (void *)(&(struct ComponentRigidbody) {
-                        .gravity = {0.0f, -0.981f, 0.0f},
-                        .mass    = 1.0f,
+                        .gravity = {0.0f, -9.81f, 0.0f},
+                        //.gravity = {0.0f, 0.0f, 0.0f},
+                        .mass    = 10.0f,
                       }));
 
     _ecs_add_internal(sphereEntity,
@@ -531,6 +533,43 @@ _scene6(ECS *ecs, Renderer *renderer)
                           .drawMode = DRAW_ARRAYS,
                           .cullMode = CULL_CW | CULL_FORWARD,
                         }}));
+    // Second sphere
+#if 1
+
+    Entity *pSphereEntity2 = malloc(sizeof(Entity));
+    *pSphereEntity2        = ecs_new(ecs);
+    Entity sphereEntity2   = *pSphereEntity2;
+    _ecs_add_internal(sphereEntity2,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        //.position = {0.0f, -0.085f, -1.0f},
+                        .position = {0.0f, 15.0f, -1.2f},
+                      }));
+
+    _ecs_add_internal(sphereEntity2,
+                      C_RIGIDBODY,
+                      (void *)(&(struct ComponentRigidbody) {
+                        .gravity = {0.0f, -9.81f, 0.0f},
+                        //.gravity = {0.0f, 0.0f, 0.0f},
+                        .mass    = 10.0f,
+                      }));
+
+    _ecs_add_internal(sphereEntity2,
+                      C_COLLIDER,
+                      (void *)(&(struct ComponentCollider) {
+                        .type = 1,
+                      }));
+
+    _ecs_add_internal(sphereEntity2,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matBox,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
+#endif
 }
 
 // Transform parenting test

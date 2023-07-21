@@ -36,6 +36,7 @@
     },
 
     "Rigidbody": {
+        "Resource": [ "solver" ],
         "vec3": [ "gravity", "velocity", "force" ],
         "float": [ "mass" ]
     },

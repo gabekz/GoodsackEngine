@@ -7,6 +7,7 @@
 #include <core/device/device.h>
 
 #include <physics/physics_collision.h>
+#include <physics/physics_solver.h>
 
 static void
 init(Entity e)
@@ -27,7 +28,7 @@ init(Entity e)
     // TODO: collider types
     if (collider->type == 1) {
         SphereCollider *sphereCollider = malloc(sizeof(SphereCollider));
-        sphereCollider->radius         = 1.00f;
+        sphereCollider->radius         = .20f;
         // glm_vec3_copy(transform->position, sphereCollider->center);
         // sphereCollider.center = transform.position;
 
@@ -91,9 +92,12 @@ update(Entity e)
           ecs_get(e_compare, C_TRANSFORM);
 
         CollisionPoints points = {.has_collision = 0};
+
+        //
         // determine which collision-test function to use
+        //
+        // sphere v. plane
         if (collider->type == 1 && compareCollider->type == 2) {
-            // sphere v. plane
             points = physics_collision_find_sphere_plane(
               ((Collider *)collider->pCollider)->collider_data,
               ((Collider *)compareCollider->pCollider)->collider_data,
@@ -101,22 +105,19 @@ update(Entity e)
               compareTransform->position);
         }
 
-#if 0
-            // TESTING RAY INTERSECT
-            Raycast ray = {
-              .origin    = {0.0f, 0.0f, 0.0f},
-              .direction = {0.0f, -1.0f, 0.0f},
-            };
-            CollisionPoints rayTest = physics_collision_find_ray_sphere(
-              &ray,
+        // sphere v. sphere
+#if 1
+        else if (collider->type == 1 && compareCollider->type == 1) {
+            points = physics_collision_find_sphere_sphere(
               ((Collider *)collider->pCollider)->collider_data,
-              transform->position);
-
-            if (rayTest.has_collision) LOG_INFO("RAY SUCCESS");
+              ((Collider *)compareCollider->pCollider)->collider_data,
+              transform->position,
+              compareTransform->position);
+        }
 #endif
 
+        // plane v. sphere
         else if (collider->type == 2 && compareCollider->type == 1) {
-            // plane v. sphere
             points =
               physics_collision_find_plane_sphere(collider->pCollider,
                                                   compareCollider->pCollider,
@@ -126,9 +127,20 @@ update(Entity e)
 
         // Collision points
         if (points.has_collision) {
-#if 0
-            LOG_INFO("Collision!");
-#endif
+
+            if(ecs_has(e, C_RIGIDBODY)) {
+                struct ComponentRigidbody *rigidbody = ecs_get(e, C_RIGIDBODY);
+
+                // Create a new collision result using our points
+                // TODO: Send objects A and B
+                CollisionResult result = {
+                    .points = points,
+                };
+
+                // Send that over to the rigidbody solver list
+                physics_solver_push((PhysicsSolver *)rigidbody->solver, result);
+            }
+
             collider->isColliding = points.has_collision;
             break; // TODO: should not break.
                    //- instead, get a collection of points

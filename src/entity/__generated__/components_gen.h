@@ -121,8 +121,9 @@ struct ComponentModel
 
 struct ComponentRigidbody
 {
-    vec3 gravity, velocity, force;
+    vec3 gravity, velocity, force, angular_velocity;
     float mass;
+    ResRef solver;
 };
 
 struct ComponentCollider

@@ -22,7 +22,11 @@
 // Skybox test
 #include <core/graphics/texture/texture.h>
 
-#define TESTING_DRAW_UI 1
+#include <tools/debug/debug_context.h>
+#include <tools/debug/debug_draw_line.h>
+
+#define TESTING_DRAW_UI   0
+#define TESTING_DRAW_LINE 0
 
 Renderer *
 renderer_init()
@@ -324,6 +328,12 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     billboard_draw(renderer->billboard, pos);
 
     gui_element_draw(renderer->uiImage);
+#endif
+
+#if TESTING_DRAW_LINE
+    vec3 start = {0, 0 ,0};
+    vec3 end = {-20, 20, 0};
+    debug_draw_line(renderer->debugContext, start, end);
 #endif
 
     // computebuffer_draw();
