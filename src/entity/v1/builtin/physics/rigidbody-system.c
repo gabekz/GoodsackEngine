@@ -157,13 +157,13 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
                 CollisionResult *collision_result)
 {
 
-#define USE_CUTOFF   1 // a.k.a. FAKE friction
+#define USE_CUTOFF   0 // a.k.a. FAKE friction
 #define USE_FRICTION 1 // a.k.a. angular velocity
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    float restitution = 0.4f; // Bounce factor
+    float restitution = 0.8f; // Bounce factor
 
     float vDotN = glm_vec3_dot(rigidbody->velocity, collision_normal);
     float F = -(1.0f + restitution) * vDotN;
