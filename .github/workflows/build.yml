@@ -93,8 +93,10 @@ jobs:
       working-directory: ${{github.workspace}}/dist
       run: ls -R
 
-    - name: TestRunner permissions
+    - name: TestRunner Permissions
       run: chmod +x ${{github.workspace}}/dist/testRunner
+
+    - name: Linker Details
       run: ldd ${{github.workspace}}/dist/testRunner
 
     - name: Run Tests
