@@ -59,9 +59,6 @@ jobs:
         name: artifact-build-testRunner
         path: ${{github.workspace}}/build/bin/testRunner
 
-    - name: Artifact Linker Details
-      run: ldd ${{github.workspace}}/dist/testRunner
-
 # Windows Release Build
 
 #  build-windows:
