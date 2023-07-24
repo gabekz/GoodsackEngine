@@ -12,6 +12,7 @@
 #include <core/graphics/lighting/skybox.h>
 #include <core/graphics/ui/billboard.h>
 #include <core/graphics/ui/gui_element.h>
+#include <core/graphics/ui/gui_text.h>
 #include <entity/v1/ecs.h>
 
 #include <core/device/device_context.h>
@@ -25,7 +26,7 @@
 #include <tools/debug/debug_context.h>
 #include <tools/debug/debug_draw_line.h>
 
-#define TESTING_DRAW_UI   0
+#define TESTING_DRAW_UI   1
 #define TESTING_DRAW_LINE 0
 
 Renderer *
@@ -95,11 +96,14 @@ renderer_init()
 
     // GUI test
     Texture *guiTexture =
-      texture_create("../res/fonts/font.bmp",
+      texture_create("../res/textures//gizmo/heart.png",
                      NULL,
                      (TextureOptions) {1, GL_RGBA, false, true});
     ret->uiImage =
-      gui_element_create((vec2) {25, 25}, (vec2) {50, 50}, guiTexture);
+      gui_element_create((vec2) {25, 80}, (vec2) {50, 50}, guiTexture, NULL);
+
+    // Test GUI Text
+    ret->uiText = gui_text_create("Hello, world!");
 
     return ret;
 }
@@ -328,6 +332,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     billboard_draw(renderer->billboard, pos);
 
     gui_element_draw(renderer->uiImage);
+    gui_text_draw(renderer->uiText);
 #endif
 
 #if TESTING_DRAW_LINE

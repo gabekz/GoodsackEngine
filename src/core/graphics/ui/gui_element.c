@@ -11,7 +11,7 @@
 #include <util/maths.h>
 
 #define USING_SPRITE_SHEET FALSE
-#define USING_BLENDING     FALSE
+#define USING_BLENDING     TRUE
 
 #define S_X 1.0f
 #define S_Y 3.0f
@@ -35,9 +35,8 @@
 #define S_NEG_Y 0
 #endif
 
-
 GuiElement *
-gui_element_create(vec2 position, vec2 size, Texture *p_texture)
+gui_element_create(vec2 position, vec2 size, Texture *p_texture, vec4 tex_coords)
 {
     GuiElement *ret = malloc(sizeof(GuiElement));
 
@@ -50,16 +49,28 @@ gui_element_create(vec2 position, vec2 size, Texture *p_texture)
     float size_x_off = size[0] / 2;
     float size_y_off = size[1] / 2;
 
+    float t_pos_x = S_POS_X;
+    float t_neg_x = S_NEG_X;
+    float t_pos_y = S_POS_Y;
+    float t_neg_y = S_NEG_Y;
+
+    if(tex_coords != NULL) {
+        t_pos_x = tex_coords[0];
+        t_neg_x = tex_coords[1];
+        t_pos_y = tex_coords[2];
+        t_neg_y = tex_coords[3];
+    }
+
     ret->vao = vao_create();
     float *rectPos = 
     (float[])
     {
-         size_x_off , -size_y_off, S_POS_X, S_NEG_Y,
-        -size_x_off , -size_y_off, S_NEG_X, S_NEG_Y,
-        -size_x_off ,  size_y_off, S_NEG_X, S_POS_Y,
-         size_x_off ,  size_y_off, S_POS_X, S_POS_Y,
-         size_x_off , -size_y_off, S_POS_X, S_NEG_Y,
-        -size_x_off ,  size_y_off, S_NEG_X, S_POS_Y,
+         size_x_off , -size_y_off, t_pos_x, t_neg_y,
+        -size_x_off , -size_y_off, t_neg_x, t_neg_y,
+        -size_x_off ,  size_y_off, t_neg_x, t_pos_y,
+         size_x_off ,  size_y_off, t_pos_x, t_pos_y,
+         size_x_off , -size_y_off, t_pos_x, t_neg_y,
+        -size_x_off ,  size_y_off, t_neg_x, t_pos_y,
     };
 
     VBO *vbo = vbo_create(rectPos, (2 * 3 * 4) * sizeof(float));
@@ -87,7 +98,6 @@ gui_element_draw(GuiElement *self)
 #if USING_BLENDING
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_DEPTH_TEST);
 #endif
 
     material_use(self->material);
@@ -105,4 +115,8 @@ gui_element_draw(GuiElement *self)
 
     vao_bind(self->vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+#if USING_BLENDING
+    glDisable(GL_BLEND);
+#endif
 }

@@ -8,6 +8,10 @@
 
 #include <util/maths.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 typedef struct GuiElement
 {
     VAO *vao;
@@ -22,9 +26,16 @@ typedef struct GuiElement
 } GuiElement;
 
 GuiElement *
-gui_element_create(vec2 position, vec2 size, Texture *p_texture);
+gui_element_create(vec2 position,
+                   vec2 size,
+                   Texture *p_texture,
+                   vec4 tex_coords);
 
 void
 gui_element_draw(GuiElement *element);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // H_GUI_ELEMENT_H
