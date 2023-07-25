@@ -66,7 +66,7 @@ struct ComponentAudioListener
 struct ComponentAudioSource
 {
     ui32 bufferId;
-    const char *filePath;
+    char filePath[256];
     ui32 looping;
 };
 

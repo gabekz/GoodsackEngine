@@ -515,7 +515,7 @@ _scene6(ECS *ecs, Renderer *renderer)
                       (void *)(&(struct ComponentRigidbody) {
                         .gravity = {0.0f, -9.81f, 0.0f},
                         //.gravity = {0.0f, 0.0f, 0.0f},
-                        .mass    = 10.0f,
+                        .mass = 10.0f,
                       }));
 
     _ecs_add_internal(sphereEntity,
@@ -551,7 +551,7 @@ _scene6(ECS *ecs, Renderer *renderer)
                       (void *)(&(struct ComponentRigidbody) {
                         .gravity = {0.0f, -9.81f, 0.0f},
                         //.gravity = {0.0f, 0.0f, 0.0f},
-                        .mass    = 10.0f,
+                        .mass = 10.0f,
                       }));
 
     _ecs_add_internal(sphereEntity2,
@@ -597,6 +597,9 @@ _scene7(ECS *ecs, Renderer *renderer)
 
     *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 0.0f});
     Entity camera = *pCamera;
+#if DEMO_USING_AUDIO
+    _ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
+#endif // DEMO_USING_AUDIO
 
     // Testing entity on heap memory
     Entity *pFloorEntity = malloc(sizeof(Entity));
@@ -609,6 +612,14 @@ _scene7(ECS *ecs, Renderer *renderer)
                         .position = {0.0f, -0.3f, 0.0f},
                         .scale    = {10.0f, 10.0f, 10.0f},
                       }));
+#if DEMO_USING_AUDIO
+    _ecs_add_internal(floorEntity,
+                      C_AUDIOSOURCE,
+                      (void *)(&(struct ComponentAudioSource) {
+                        .filePath = "../res/audio/test.wav",
+                        .looping  = 0,
+                      }));
+#endif // DEMO_USING_AUDIO
     _ecs_add_internal(floorEntity,
                       C_COLLIDER,
                       (void *)(&(struct ComponentCollider) {

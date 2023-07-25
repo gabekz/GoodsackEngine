@@ -66,7 +66,8 @@ openal_init()
     AL_CHECK(alListener3f(AL_VELOCITY, 0, 0, 0));
     AL_CHECK(alListenerfv(AL_ORIENTATION, listenerOrientation));
 
-    // openal_generate_source();
+    // setup the distance model
+    AL_CHECK(alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED));
 
     return 1;
 }
