@@ -1,4 +1,4 @@
-name: Static Analysis
+name: 📊 Static Analysis
 
 on:
   workflow_call:
