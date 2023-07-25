@@ -126,16 +126,17 @@ option(GOODSACK_DEV "Development Mode" OFF)
 #################################################################
 # GoodsackEngine Runtime Library
 #################################################################
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set(RUNTIME_NAME "GoodsackRuntime")
+add_library(${RUNTIME_NAME} SHARED ${SOURCES})
+set_target_properties(${RUNTIME_NAME} PROPERTIES
     PREFIX ""
     FOLDER "GoodsackEngine"
     DESCRIPTION "GoodsackEngine Runtime"
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
+target_include_directories(${RUNTIME_NAME} PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
 
-target_compile_options(${PROJECT_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
+target_compile_options(${RUNTIME_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 
 #################################################################
 # GoodsackEngine Lua-API Library
@@ -150,7 +151,7 @@ set_target_properties(${API_NAME} PROPERTIES
 
 # Link the include directory to the main project
 target_include_directories(${API_NAME} PUBLIC "${SRC_DIR}")
-target_link_libraries(${API_NAME} ${PROJECT_NAME})
+target_link_libraries(${API_NAME} ${RUNTIME_NAME})
 
 #################################################################
 # Example Projects
@@ -167,7 +168,7 @@ if(GOODSACK_EXAMPLES)
     add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c" ${APP_ICON_RESOURCE})
     target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR})
 
-    target_link_libraries(${DEMO_EXE_NAME} ${PROJECT_NAME} ${API_NAME})
+    target_link_libraries(${DEMO_EXE_NAME} ${RUNTIME_NAME} ${API_NAME})
     target_compile_options(${DEMO_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 
     if(UNIX)
@@ -205,7 +206,7 @@ if(GOODSACK_TEST)
     target_link_libraries(${TEST_EXE_NAME} 
         GTest::gtest 
         GTest::gtest_main
-        ${PROJECT_NAME}
+        ${RUNTIME_NAME}
     )
     add_test(${TEST_EXE_NAME} ${TEST_EXE_NAME})
     set_tests_properties(${TEST_EXE_NAME} PROPERTIES
@@ -230,7 +231,7 @@ endif()
 set(STB_DIR "${LIB_DIR}/stb")
 add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE ${STB_DIR})
-target_link_libraries(${PROJECT_NAME} stb)
+target_link_libraries(${RUNTIME_NAME} stb)
 
 #################################################################
 # Library: cgltf
@@ -238,15 +239,15 @@ target_link_libraries(${PROJECT_NAME} stb)
 set(CGLTF_DIR "${LIB_DIR}/cgltf")
 add_library(cgltf INTERFACE)
 target_include_directories(cgltf INTERFACE ${CGLTF_DIR})
-target_link_libraries(${PROJECT_NAME} cgltf)
+target_link_libraries(${RUNTIME_NAME} cgltf)
 
 #################################################################
 # Library: CGLM
 #################################################################
 set(CGLM_DIR "${LIB_DIR}/cglm")
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
-target_link_libraries(${PROJECT_NAME} cglm cglm_headers) 
-target_compile_definitions(${PROJECT_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
+target_link_libraries(${RUNTIME_NAME} cglm cglm_headers) 
+target_compile_definitions(${RUNTIME_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 
@@ -263,15 +264,15 @@ set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
 
 find_package(glfw3 CONFIG QUIET)
 if(glfw3_FOUND)
-    target_link_libraries(${PROJECT_NAME} glfw)
+    target_link_libraries(${RUNTIME_NAME} glfw)
 else()
     set(GLFW_DIR "${LIB_DIR}/glfw")
     add_subdirectory("${GLFW_DIR}")
-    target_link_libraries(${PROJECT_NAME} "glfw"
+    target_link_libraries(${RUNTIME_NAME} "glfw"
         "${GLFW_LIBRARIES}" "${CMAKE_DL_LIBS}")
-    target_include_directories(${PROJECT_NAME} PRIVATE "${GLFW_DIR}/include")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE "GLFW_INCLUDE_NONE")
-    target_link_libraries(${PROJECT_NAME} "glfw")
+    target_include_directories(${RUNTIME_NAME} PRIVATE "${GLFW_DIR}/include")
+    target_compile_definitions(${RUNTIME_NAME} PRIVATE "GLFW_INCLUDE_NONE")
+    target_link_libraries(${RUNTIME_NAME} "glfw")
 endif()
 
 
@@ -285,9 +286,9 @@ if(UNIX)
     target_compile_options("glad" PRIVATE "-fPIC")
 endif(UNIX)
 target_include_directories("glad" PUBLIC "${GLAD_DIR}/include")
-target_include_directories(${PROJECT_NAME} PUBLIC "${GLAD_DIR}/include")
+target_include_directories(${RUNTIME_NAME} PUBLIC "${GLAD_DIR}/include")
 
-target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
+target_link_libraries(${RUNTIME_NAME} "glad" "${CMAKE_DL_LIBS}")
 
 #################################################################
 # Library: VulkanSDK
@@ -319,19 +320,19 @@ if(NOT Vulkan_FOUND)
 		return()
 	endif()
 endif()
-target_include_directories(${PROJECT_NAME} PUBLIC "${VULKAN_PATH}/Include")
+target_include_directories(${RUNTIME_NAME} PUBLIC "${VULKAN_PATH}/Include")
 #set(VULKAN_VERSION "1.0.33.0")
 #set(VULKAN_LIB_LIST "vulkan")
 # Link directory for vulkan-1
 link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
-target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
+target_link_libraries(${RUNTIME_NAME} Vulkan::Vulkan)
 
 #################################################################
 # Library: ImGui
 #################################################################
 find_package(imgui CONFIG QUIET)
 if(imgui_FOUND)
-    target_link_libraries(${PROJECT_NAME} imgui::imgui) 
+    target_link_libraries(${RUNTIME_NAME} imgui::imgui) 
 else()
     set(IMGUI_DIR "${LIB_DIR}/imgui")
     message(STATUS "(ImGui) Using manual specified path: ${IMGUI_DIR}")
@@ -354,8 +355,8 @@ else()
     target_link_libraries("imgui" "glfw" Vulkan::Vulkan "${CMAKE_DL_LIBS}")
     target_include_directories("imgui" PRIVATE "${VULKAN_PATH}/include")
 
-    target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
-    target_link_libraries(${PROJECT_NAME} "imgui" "${CMAKE_DL_LIBS}")
+    target_include_directories(${RUNTIME_NAME} PRIVATE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
+    target_link_libraries(${RUNTIME_NAME} "imgui" "${CMAKE_DL_LIBS}")
 endif()
 
 #################################################################
@@ -366,17 +367,20 @@ find_package(Lua QUIET)
 if(Lua_FOUND OR LUA_FOUND OR Lua51_FOUND OR LUA51_FOUND)
     message(STATUS "(Lua) Auto located.")
     #include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
-    target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
+    target_link_libraries(${RUNTIME_NAME} ${LUA_LIBRARIES})
     target_link_libraries(${API_NAME} ${LUA_LIBRARIES})
     #target_include_directories(${RPOJECT_NAME} ${LUA_INCLUDE_DIR})
 else()
     message(STATUS "(Lua) Failed to auto locate")
     set(LUA_DIR "${LIB_DIR}/lua-5.4.4")
     file(GLOB LUA_LIBRARIES "${LUA_DIR}/src/*.c" "${LUA_DIR}/src/*.h")
-    #add_library("lua" ${LUA_LIBRARIES} "Actor")
+    add_library(lua ${LUA_LIBRARIES})
+    if(UNIX)
+        target_compile_options(lua PRIVATE "-fPIC")
+    endif(UNIX)
 
-    target_include_directories(${PROJECT_NAME} PUBLIC "${LUA_DIR}/src")
-    target_link_libraries(${PROJECT_NAME} lua)
+    target_include_directories(${RUNTIME_NAME} PUBLIC "${LUA_DIR}/src")
+    target_link_libraries(${RUNTIME_NAME} lua)
 
     target_include_directories(${API_NAME} PUBLIC "${LUA_DIR}/src")
     target_link_libraries(${API_NAME} lua)
@@ -394,7 +398,7 @@ if(NOT nlohmann_json_FOUND)
 else()
     message(STATUS "Auto-located JSON")
 endif()
-target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
+target_link_libraries(${RUNTIME_NAME} nlohmann_json::nlohmann_json)
 
 #################################################################
 # Library: Google Test
@@ -407,7 +411,7 @@ else()
     message("Failed to auto locate")
     set(GTEST_DIR "${LIB_DIR}/googletest") 
     add_subdirectory(${GTEST_DIR})
-    target_include_directories(${PROJECT_NAME} PRIVATE
+    target_include_directories(${RUNTIME_NAME} PRIVATE
         "${GTEST_DIR}" 
         "${GTEST_DIR}/googletest"
         "${GTEST_DIR}/googletest/include"
@@ -428,14 +432,14 @@ message(STATUS "(OpenAL) Auto-locating")
 find_package(OpenAL CONFIG QUIET)
 if(OpenAL_FOUND)
     message(STATUS "(OpenAL) successfully auto-located")
-    target_link_libraries(${PROJECT_NAME} OpenAL::OpenAL)
+    target_link_libraries(${RUNTIME_NAME} OpenAL::OpenAL)
 else()
     message(STATUS "(OpenAL) failed to auto-locate")
     set(OPENAL_DIR "${LIB_DIR}/openal-soft") 
     add_subdirectory(${OPENAL_DIR})
 
-    target_link_libraries(${PROJECT_NAME} OpenAL)
-    target_include_directories(${PROJECT_NAME} PRIVATE
+    target_link_libraries(${RUNTIME_NAME} OpenAL)
+    target_include_directories(${RUNTIME_NAME} PRIVATE
         "${OPENAL_DIR}" 
         "${OPENAL_DIR}/include")
 endif()
