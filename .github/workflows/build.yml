@@ -51,7 +51,7 @@ jobs:
 
     - name: Setup TestRunner
       run: |
-        ls - R
+        ls -R
         chmod +x ${{github.workspace}}/build/bin/testRunner
         ldd ${{github.workspace}}/build/bin/testRunner
 
