@@ -19,6 +19,11 @@
 #include <entity/component/ecs_component_layout_loader.hpp>
 
 #include <util/maths.h>
+#include <util/sysdefs.h>
+
+#ifndef CACHE_LINE
+#define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
+#endif // CACHE_LINE
 
 using namespace entity;
 
@@ -38,16 +43,14 @@ struct ComponentCMapTest : testing::Test
 
     std::map<std::string, ECSComponentLayout *> m_Layouts;
 
-#define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
-    // #define CACHE_ALIGN __declspec(align(CACHE_LINE))
     typedef struct CmpTransform
     {
-        ui16 hasParent;
-        mat4 model;
-        vec3 orientation;
-        void *parent;
-        vec3 position;
-        vec3 scale;
+        CACHE_ALIGN(ui16 hasParent);
+        CACHE_ALIGN(mat4 model);
+        CACHE_ALIGN(vec3 orientation);
+        CACHE_ALIGN(void *parent);
+        CACHE_ALIGN(vec3 position);
+        CACHE_ALIGN(vec3 scale);
     } CmpTransform;
 
     ComponentCMapTest()

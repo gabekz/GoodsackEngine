@@ -1,6 +1,4 @@
 # Goodsack Game Engine
-[![Build](https://github.com/gabekz/gl-renderer/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/gabekz/gl-renderer/actions/workflows/build.yml)
-[![Lint](https://github.com/gabekz/gl-renderer/actions/workflows/lint.yml/badge.svg)](https://github.com/gabekz/gl-renderer/actions/workflows/lint.yml)
 
 ![Alt text](docs/public/sponza.png?raw=true "Hero")
 

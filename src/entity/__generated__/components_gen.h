@@ -12,15 +12,9 @@
 extern "C" {
 #endif //__cplusplus
 
+#ifndef CACHE_LINE
 #define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
-#if defined(SYS_ENV_WIN)
-#define CACHE_ALIGN(...) __declspec(align(CACHE_LINE)) __VA_ARGS__
-#elif defined(SYS_ENV_UNIX)
-#define CACHE_ALIGN(...) __VA_ARGS__ __attribute__((aligned(CACHE_LINE)))
-#else
-#define CACHE_ALIGN void
-#pragma warning Unknown dynamic link import / export semantics.
-#endif
+#endif // CACHE_LINE
 
 // typedef (void *)(ResRef)
 #define ResRef void *

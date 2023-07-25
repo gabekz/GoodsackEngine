@@ -1,0 +1,51 @@
+name: 🐧 Linux Builds
+
+on:
+  workflow_call:
+
+# Global Settings
+env:
+  BUILD_TYPE: Release
+
+jobs:
+# Linux Release Build
+#
+  build-linux:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: Runtime and API
+            tests: true
+            artifact: false
+
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Package Cache
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: xorg-dev libglu1-mesa-dev libvulkan-dev libopenal1 libopenal-data libopenal-dev libpulse-dev ccache
+
+    - name: Setup CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Setup Tests
+      run: |
+        ls -R
+        chmod +x ${{github.workspace}}/build/bin/testRunner
+        ldd ${{github.workspace}}/build/bin/testRunner
+
+    - name: Run Tests
+      if: ${{ matrix.tests }}
+      run: ${{github.workspace}}/build/bin/testRunner
