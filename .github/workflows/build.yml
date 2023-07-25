@@ -103,5 +103,4 @@ jobs:
       run: ldd ${{github.workspace}}/dist/testRunner
 
     - name: Run Tests
-      working-directory: ${{github.workspace}}/dist
       run: ${{github.workspace}}/dist/testRunner
