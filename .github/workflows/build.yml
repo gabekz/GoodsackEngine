@@ -92,15 +92,11 @@ jobs:
         name: artifact-build-testRunner
         path: ${{github.workspace}}/dist/
 
-    - name: Show Artifacts
-      working-directory: ${{github.workspace}}/dist
-      run: ls -R
-
-    - name: TestRunner Permissions
-      run: chmod +x ${{github.workspace}}/dist/testRunner
-
-    - name: Linker Details
-      run: ldd ${{github.workspace}}/dist/testRunner
+    - name: Setup TestRunner
+      run: |
+        ls - R
+        chmod +x ${{github.workspace}}/dist/testRunner
+        ldd ${{github.workspace}}/dist/testRunner
 
     - name: Run Tests
       run: ${{github.workspace}}/dist/testRunner
