@@ -214,7 +214,7 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
     glm_vec3_cross(friction_contact, Ft, torque);
 
     //)
-    //Ball.AngularAccelerate(Torque/Ball.getMomentofIntertia(normalize(torque)))
+    // Ball.AngularAccelerate(Torque/Ball.getMomentofIntertia(normalize(torque)))
     // inertia is I = 2/5mr^2 for solid sphere
 
     float I = 0.4f * rigidbody->mass * 0.2f * 0.2f;
