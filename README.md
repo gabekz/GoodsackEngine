@@ -1,5 +1,4 @@
 # Goodsack Game Engine
-[![Build](https://github.com/gabekz/gl-renderer/actions/workflows/runner_root.yml/badge.svg)](https://github.com/gabekz/gl-renderer/actions/workflows/runner_root.yml)
 
 ![Alt text](docs/public/sponza.png?raw=true "Hero")
 
