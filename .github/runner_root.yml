@@ -1,0 +1,12 @@
+name: Actions
+on: [push, pull_request]
+
+  jobs:
+    static-analysis:
+      name: Static Analysis
+      uses: ./.github/workflows/static_analysis.yml
+
+    linux-build:
+      name: Linux
+      needs: static-analysis
+      uses: ./.github/workflows/linux_builds.yml
