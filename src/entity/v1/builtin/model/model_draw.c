@@ -13,9 +13,8 @@
 #include <tools/debug/debug_draw_bounds.h>
 #include <tools/debug/debug_draw_skeleton.h>
 
-// #define DEBUG_DRAW_SKELETON
-#define DEBUG_DRAW_COLLIDER
-
+#define DEBUG_DRAW_SKELETON  0
+#define DEBUG_DRAW_BOUNDS    0
 #define CULLING_FOR_IMPORTED 1
 
 static void
@@ -186,8 +185,8 @@ init(Entity e)
 
     if (DEVICE_API_OPENGL) {
         if (!(Model *)model->pModel) {
-            model->pModel =
-              model_load_from_file(model->modelPath, transform->scale[0]);
+            model->pModel = model_load_from_file(
+              model->modelPath, transform->scale[0], FALSE);
         }
         model->mesh = ((Model *)model->pModel)->meshes[0];
         // send lightspace matrix from renderer to entity shader
@@ -234,36 +233,36 @@ render(Entity e)
                ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame];
     }
 
-#if defined(DEBUG_DRAW_SKELETON)
-    // draw skeleton
-    if (model->mesh->meshData->isSkinnedMesh) {
-        debug_draw_skeleton(e.ecs->renderer->debugContext,
-                            model->mesh->meshData->skeleton);
-    }
-#endif
     if (pass == REGULAR) {
+#if DEBUG_DRAW_SKELETON
+        // draw skeleton
+        if (model->mesh->meshData->isSkinnedMesh) {
+            debug_draw_skeleton(e.ecs->renderer->debugContext,
+                                model->mesh->meshData->skeleton);
+        }
+#endif
+
+#if DEBUG_DRAW_BOUNDS
+
+        Model *pModel = model->pModel;
+        for (int i = 0; i < pModel->meshesCount; i++) {
+            Mesh *mesh = pModel->meshes[i];
+            debug_draw_bounds(e.ecs->renderer->debugContext,
+                              mesh->meshData->boundingBox,
+                              transform->model);
+        }
+#endif
+
+        // Regular Render
         (DEVICE_API_OPENGL)
           ? DrawModel(model, transform, FALSE, NULL, e.ecs->renderer)
           : DrawModel(model, transform, FALSE, cb, e.ecs->renderer);
+
     } else {
         (DEVICE_API_OPENGL)
           ? DrawModel(model, transform, TRUE, NULL, e.ecs->renderer)
           : DrawModel(model, transform, TRUE, cb, e.ecs->renderer);
     }
-
-#if defined(DEBUG_DRAW_COLLIDER)
-
-    Model *pModel = model->pModel;
-    for (int i = 0; i < pModel->meshesCount; i++) {
-        Mesh *mesh = pModel->meshes[i];
-        debug_draw_bounds(e.ecs->renderer->debugContext,
-                          mesh->meshData->boundingBox,
-                          transform->model);
-    }
-
-    // draw bounding box
-    // Mesh *pMesh = (Mesh *)model->mesh;
-#endif
 }
 
 void

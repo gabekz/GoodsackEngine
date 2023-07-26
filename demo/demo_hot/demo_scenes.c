@@ -10,7 +10,9 @@
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
 
-Texture *texDefSpec, *texDefNorm, *texPbrAo;
+Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
+Skybox *skyboxMain;
+
 static TextureOptions s_texOpsPbr, s_texOpsNrm;
 
 #define MY_THINGY(x) (void *)(&(__typeof(x)))
@@ -28,9 +30,18 @@ __create_camera_entity(ECS *ecs, vec3 position)
     _ecs_add_internal(camera,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = *(float *)position,
+                        .position = {position[0], position[1], position[2]},
                       }));
     return camera;
+}
+
+static void
+__set_active_scene_skybox(Renderer *renderer, Skybox *skybox)
+{
+    Scene *scene = renderer->sceneL[renderer->activeScene];
+
+    scene->skybox     = skybox;
+    scene->has_skybox = TRUE;
 }
 
 static void
@@ -133,6 +144,7 @@ static void
 _scene2(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 2);
+    __set_active_scene_skybox(renderer, skyboxMain);
 
     Texture *texGraniteAlbedo = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/granite/albedo.png");
@@ -388,6 +400,7 @@ static void
 _scene5(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 5);
+    __set_active_scene_skybox(renderer, skyboxMain);
 
     Material *matCharacter =
       material_create(NULL, "../res/shaders/skinning-test.shader", 0);
@@ -395,7 +408,14 @@ _scene5(ECS *ecs, Renderer *renderer)
     Material *matWhite =
       material_create(NULL, "../res/shaders/wireframe.shader", 0);
 
-    Entity e_camera = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
+    Entity *pCamera = malloc(sizeof(Entity));
+    *pCamera        = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
+    Entity e_camera = *pCamera;
+
+    Model *modelSponza =
+      // model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
+      model_load_from_file(
+        "../demo/demo_hot/Resources/models/sponza.glb", 1, TRUE);
 
     Entity e_sponza = ecs_new(ecs);
     _ecs_add_internal(e_sponza,
@@ -409,8 +429,8 @@ _scene5(ECS *ecs, Renderer *renderer)
       C_MODEL,
       (void *)(&(struct ComponentModel) {
         .material = matWhite,
-        //.modelPath  = "../demo/demo_hot/Resources/models/character-anim.gltf",
-        .modelPath = "../demo/demo_hot/Resources/models/sponza.glb",
+        .pModel   = modelSponza,
+        //.modelPath = "../demo/demo_hot/Resources/models/sponza.glb",
         //.modelPath  = "../res/models/test3.gltf",
         .properties = {
           .drawMode = DRAW_ELEMENTS,
@@ -424,6 +444,7 @@ static void
 _scene6(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 6);
+    __set_active_scene_skybox(renderer, skyboxMain);
 
     Texture *texContDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/container/diffuse.png");
@@ -450,7 +471,7 @@ _scene6(ECS *ecs, Renderer *renderer)
 
     Entity *pCamera = malloc(sizeof(Entity));
 
-    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 2.0f});
     Entity camera = *pCamera;
 
     // Testing entity on heap memory
@@ -461,7 +482,7 @@ _scene6(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(floorEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = {0.0f, -0.3f, 0.0f},
+                        .position = {0.0f, 0.0f, 0.0f},
                         .scale    = {10.0f, 10.0f, 10.0f},
                       }));
     _ecs_add_internal(floorEntity,
@@ -486,14 +507,15 @@ _scene6(ECS *ecs, Renderer *renderer)
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         //.position = {0.0f, -0.085f, -1.0f},
-                        .position = {0.0f, 5.0f, -1.0f},
+                        .position = {0.2f, 5.0f, -1.0f},
                       }));
 
     _ecs_add_internal(sphereEntity,
                       C_RIGIDBODY,
                       (void *)(&(struct ComponentRigidbody) {
-                        .gravity = {0.0f, -0.981f, 0.0f},
-                        .mass    = 1.0f,
+                        .gravity = {0.0f, -9.81f, 0.0f},
+                        //.gravity = {0.0f, 0.0f, 0.0f},
+                        .mass = 10.0f,
                       }));
 
     _ecs_add_internal(sphereEntity,
@@ -511,6 +533,43 @@ _scene6(ECS *ecs, Renderer *renderer)
                           .drawMode = DRAW_ARRAYS,
                           .cullMode = CULL_CW | CULL_FORWARD,
                         }}));
+    // Second sphere
+#if 1
+
+    Entity *pSphereEntity2 = malloc(sizeof(Entity));
+    *pSphereEntity2        = ecs_new(ecs);
+    Entity sphereEntity2   = *pSphereEntity2;
+    _ecs_add_internal(sphereEntity2,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        //.position = {0.0f, -0.085f, -1.0f},
+                        .position = {0.0f, 15.0f, -1.2f},
+                      }));
+
+    _ecs_add_internal(sphereEntity2,
+                      C_RIGIDBODY,
+                      (void *)(&(struct ComponentRigidbody) {
+                        .gravity = {0.0f, -9.81f, 0.0f},
+                        //.gravity = {0.0f, 0.0f, 0.0f},
+                        .mass = 10.0f,
+                      }));
+
+    _ecs_add_internal(sphereEntity2,
+                      C_COLLIDER,
+                      (void *)(&(struct ComponentCollider) {
+                        .type = 1,
+                      }));
+
+    _ecs_add_internal(sphereEntity2,
+                      C_MODEL,
+                      (void *)(&(struct ComponentModel) {
+                        .material   = matBox,
+                        .modelPath  = "../res/models/sphere.obj",
+                        .properties = {
+                          .drawMode = DRAW_ARRAYS,
+                          .cullMode = CULL_CW | CULL_FORWARD,
+                        }}));
+#endif
 }
 
 // Transform parenting test
@@ -518,11 +577,7 @@ static void
 _scene7(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 7);
-
-    Texture *texContDiff = texture_create_d(
-      "../demo/demo_hot/Resources/textures/container/diffuse.png");
-    Texture *texContSpec = texture_create_n(
-      "../demo/demo_hot/Resources/textures/container/specular.png");
+    __set_active_scene_skybox(renderer, skyboxMain);
 
     Texture *texBrickDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
@@ -530,22 +585,21 @@ _scene7(ECS *ecs, Renderer *renderer)
       "../demo/demo_hot/Resources/textures/brickwall/normal.png");
 
     Material *matFloor = material_create(NULL,
-                                         "../res/shaders/lit-diffuse.shader",
-                                         3,
+                                         "../res/shaders/pbr.shader",
+                                         5,
                                          texBrickDiff,
                                          texBrickNorm,
-                                         texDefSpec);
-    Material *matBox   = material_create(NULL,
-                                       "../res/shaders/lit-diffuse.shader",
-                                       3,
-                                       texContDiff,
-                                       texDefNorm,
-                                       texContSpec);
+                                         texDefSpec,
+                                         texPbrAo,
+                                         texPbrAo);
 
     Entity *pCamera = malloc(sizeof(Entity));
 
     *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 0.0f});
     Entity camera = *pCamera;
+#if DEMO_USING_AUDIO
+    _ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
+#endif // DEMO_USING_AUDIO
 
     // Testing entity on heap memory
     Entity *pFloorEntity = malloc(sizeof(Entity));
@@ -558,6 +612,14 @@ _scene7(ECS *ecs, Renderer *renderer)
                         .position = {0.0f, -0.3f, 0.0f},
                         .scale    = {10.0f, 10.0f, 10.0f},
                       }));
+#if DEMO_USING_AUDIO
+    _ecs_add_internal(floorEntity,
+                      C_AUDIOSOURCE,
+                      (void *)(&(struct ComponentAudioSource) {
+                        .filePath = "../res/audio/test.wav",
+                        .looping  = 0,
+                      }));
+#endif // DEMO_USING_AUDIO
     _ecs_add_internal(floorEntity,
                       C_COLLIDER,
                       (void *)(&(struct ComponentCollider) {
@@ -573,27 +635,76 @@ _scene7(ECS *ecs, Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
-    Model *modelWeapon =
-      model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
+    Texture *texCerbA = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
+    Texture *texCerbN = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
+    Texture *texCerbM = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
+    Texture *texCerbS = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
+
+    /*
+    Material *matWeapon =
+      material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
+      */
+    Material *matWeapon = material_create(NULL,
+                                          "../res/shaders/pbr.shader",
+                                          5,
+                                          texCerbA,
+                                          texCerbN,
+                                          texCerbM,
+                                          texCerbS,
+                                          texPbrAo);
+
+    Model *modelWeapon = model_load_from_file(
+      "../demo/demo_hot/Resources/models/AK2.glb", 1, FALSE);
+
+    Entity *pWeaponParent = malloc(sizeof(Entity));
+    *pWeaponParent        = ecs_new(ecs);
+    Entity weaponParent   = *pWeaponParent;
+
+    _ecs_add_internal(weaponParent,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position    = {0.0f, 0.0f, 0.0f},
+                        .orientation = {0.0f, 0.0f, 0.0f},
+                        .scale       = {1.0f, 1.0f, 1.0f},
+                        .parent      = pCamera,
+                      }));
+    _ecs_add_internal(weaponParent,
+                      C_WEAPONSWAY,
+                      (void *)(&(struct ComponentWeaponSway) {
+                        .sway_amount = 5,
+                      }));
 
     Entity attachedEntity = ecs_new(ecs);
     _ecs_add_internal(attachedEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .position = {0.0f, 0.0f, 2.0f},
-                        .parent   = pCamera,
+                        .position    = {-0.1f, -0.22f, -0.4340f},
+                        .orientation = {0.0f, 0.0f, -180.0f},
+                        .scale       = {-0.02f, 0.02f, 0.02f},
+                        .parent      = pWeaponParent,
                       }));
 
     _ecs_add_internal(
       attachedEntity,
       C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
+      (void *)(&(struct ComponentModel) {.material   = matWeapon,
                                          .pModel     = modelWeapon,
                                          .modelPath  = NULL,
                                          .properties = {
                                            .drawMode = DRAW_ELEMENTS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
+    _ecs_add_internal(attachedEntity,
+                      C_WEAPON,
+                      (void *)(&(struct ComponentWeapon) {
+                        .damage       = 25,
+                        .pos_starting = {0, 0, 0},
+                        .rot_starting = {0, 0, 0},
+                      }));
 };
 
 #define GLUE_HELPER(x, y)   x##y
@@ -609,6 +720,10 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     texDefSpec  = texture_create_n("../res/textures/defaults/black.png");
     texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo    = texture_create_n("../res/textures/defaults/white.png");
+    texMissing  = texture_create_n("../res/textures/defaults/missing.jpg");
+
+    skyboxMain = skybox_hdr_create(
+      texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr"));
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);

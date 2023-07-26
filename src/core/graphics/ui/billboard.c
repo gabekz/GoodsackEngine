@@ -14,7 +14,8 @@ billboard_create(const char *texturePath, vec2 size)
 
     ret->vao       = vao_create();
     float *rectPos = prim_vert_rect();
-    VBO *vbo       = vbo_create(rectPos, (2 * 3 * 4) * sizeof(float));
+
+    VBO *vbo = vbo_create(rectPos, (2 * 3 * 4) * sizeof(float));
     vbo_bind(vbo);
     vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
     vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
@@ -46,4 +47,6 @@ billboard_draw(Billboard2D *self, vec3 position)
 
     vao_bind(self->vao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+
+    glDisable(GL_BLEND);
 }

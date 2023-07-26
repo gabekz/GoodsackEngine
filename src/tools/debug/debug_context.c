@@ -41,6 +41,20 @@ debug_context_init()
           ibo_create(PRIM_ARR_I_CUBE2, PRIM_SIZ_I_CUBE2 * sizeof(unsigned int));
         ibo_bind(iboBoundingBox);
 
+        // Line VAO
+        vec3 lineStart    = GLM_VEC3_ZERO_INIT;
+        vec3 lineEnd      = GLM_VEC3_ZERO_INIT;
+        float lineverts[] = {lineStart[0],
+                             lineStart[1],
+                             lineStart[2],
+                             lineEnd[0],
+                             lineEnd[1],
+                             lineEnd[2]};
+        ret->vaoLine      = vao_create();
+        VBO *lineVbo      = vbo_create(lineverts, 6 * sizeof(float));
+        vbo_push(lineVbo, 3, GL_FLOAT, GL_FALSE);
+        vao_add_buffer(ret->vaoLine, lineVbo);
+
         // OpenGL Line smoothing
         glLineWidth(1.0f);
         glEnable(GL_LINE_SMOOTH);

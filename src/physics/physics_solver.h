@@ -14,10 +14,10 @@ typedef struct PhysicsSolver_t
 } PhysicsSolver;
 
 PhysicsSolver
-physics_resolver_init();
+physics_solver_init();
 
 void
-physics_solver_push(PhysicsSolver *solver, CollisionResult *collisionResult);
+physics_solver_push(PhysicsSolver *solver, CollisionResult collisionResult);
 
 void
 physics_solver_pop(PhysicsSolver *solver);

@@ -23,6 +23,8 @@ enum DEMO_SCENE_NAMES {
 #define LOAD_ALL_SCENES 0
 #define INITIAL_SCENE   7
 
+#define DEMO_USING_AUDIO 0
+
 // Creates and loads every demo scene in this project.
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer);

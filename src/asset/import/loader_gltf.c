@@ -14,7 +14,7 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
-#define IMPORT_MATERIALS 1
+#define IMPORT_MATERIALS 0
 
 struct AttributeInfo
 {
@@ -529,7 +529,7 @@ _create_material(cgltf_material *gltfMaterial,
 // Loader entry //
 
 Model *
-load_gltf(const char *path, int scale)
+load_gltf(const char *path, int scale, int importMaterials)
 {
     cgltf_options options = {0};
     cgltf_data *data      = NULL;
@@ -582,20 +582,21 @@ load_gltf(const char *path, int scale)
     Model *ret  = malloc(sizeof(Model));
     ret->meshes = malloc(sizeof(Mesh *) * totalObjects);
 
-#if IMPORT_MATERIALS
+    // Create texture/material pools
     ui32 materialsCount      = data->materials_count;
     Material **materialsPool = malloc(sizeof(Material *) * materialsCount);
-    _test_texture_white =
-      texture_create("../res/textures/defaults/white.png",
-                     NULL,
-                     (TextureOptions) {0, GL_RGB, false, false});
-    _test_texture_normal =
-      texture_create("../res/textures/defaults/normal.png",
-                     NULL,
-                     (TextureOptions) {0, GL_RGB, false, false});
-    s_pbrShader = shader_create_program("../res/shaders/pbr.shader");
-    s_loaded_textures_count = 0;
-#endif
+    if (importMaterials) {
+        _test_texture_white =
+          texture_create("../res/textures/defaults/white.png",
+                         NULL,
+                         (TextureOptions) {0, GL_RGB, false, false});
+        _test_texture_normal =
+          texture_create("../res/textures/defaults/normal.png",
+                         NULL,
+                         (TextureOptions) {0, GL_RGB, false, false});
+        s_pbrShader = shader_create_program("../res/shaders/pbr.shader");
+        s_loaded_textures_count = 0;
+    }
 
     ui32 cntMesh = 0;
     for (int i = 0; i < data->nodes_count; i++) {
@@ -611,18 +612,22 @@ load_gltf(const char *path, int scale)
                 glm_translate(localMatrix, data->nodes[i].translation);
                 glm_mat4_copy(localMatrix, ret->meshes[cntMesh]->localMatrix);
 
-#if IMPORT_MATERIALS
-                // Check for material
-                cgltf_material *gltfMaterial =
-                  data->nodes[i].mesh->primitives[j].material;
-                if (gltfMaterial != NULL || gltfMaterial != 0x00) {
-                    Material *mat = _create_material(
-                      gltfMaterial, materialsPool, materialsCount);
+                // Add textures to material pools
+                if (importMaterials) {
 
-                    ret->meshes[cntMesh]->materialImported      = mat;
-                    ret->meshes[cntMesh]->usingImportedMaterial = TRUE;
+                    // Check for material
+                    cgltf_material *gltfMaterial =
+                      data->nodes[i].mesh->primitives[j].material;
+                    if (gltfMaterial != NULL || gltfMaterial != 0x00) {
+                        Material *mat = _create_material(
+                          gltfMaterial, materialsPool, materialsCount);
+
+                        ret->meshes[cntMesh]->materialImported      = mat;
+                        ret->meshes[cntMesh]->usingImportedMaterial = TRUE;
+                    }
+                } else {
+                    ret->meshes[cntMesh]->usingImportedMaterial = FALSE;
                 }
-#endif // IMPORT_MATERIALS
 
                 cntMesh++;
             }

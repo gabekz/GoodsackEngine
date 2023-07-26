@@ -72,6 +72,11 @@ class ECSComponent {
     template <typename T>
     int GetVariable(std::string var, T *destination);
 
+    EcsDataType GetVariableType(std::string var)
+    {
+        return m_componentLayout.getAccessor(var).type;
+    };
+
    private:
     struct
     {

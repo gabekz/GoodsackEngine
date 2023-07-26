@@ -30,6 +30,11 @@
 
 #define DRAWING_MODE GL_TRIANGLES // TODO: Compatibility
 
+#define DEFAULT_CLEAR_COLOR       \
+    {                             \
+        0.15f, 0.15f, 0.15f, 1.0f \
+    }
+
 // Drawing modes
 #define GPU_DRAW_MODE_ARRAYS   0xD000
 #define GPU_DRAW_MODE_ELEMENTS 0xD001

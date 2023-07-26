@@ -12,6 +12,10 @@
 extern "C" {
 #endif //__cplusplus
 
+#ifndef CACHE_LINE
+#define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
+#endif // CACHE_LINE
+
 // typedef (void *)(ResRef)
 #define ResRef void *
 
@@ -26,9 +30,17 @@ typedef enum ECSComponentType_t {
     C_COLLIDER,
     C_TEST,
     C_TRANSFORM,
+    C_WEAPON,
+    C_WEAPONSWAY,
 } ECSComponentType;
 
-#define ECSCOMPONENT_LAST 9
+#define ECSCOMPONENT_LAST 11
+
+#if ECS_COMPONENTS_PACKED
+#pragma pack(push, 1)
+// #else
+//  pragma pack(push, ECS_COMPONENTS_ALIGN_BYTES)
+#endif // ECS_COMPONENTS_PACKED
 
 struct ComponentAnimator
 {
@@ -48,18 +60,18 @@ struct ComponentAudioListener
 struct ComponentAudioSource
 {
     ui32 bufferId;
-    const char *filePath;
+    char filePath[256];
     ui32 looping;
 };
 
 struct ComponentCamera
 {
-    vec3 axisUp;
-    vec3 center;
-    f32 farZ;
-    si32 firstMouse;
-    f32 fov;
-    vec3 front;
+    CACHE_ALIGN(vec3 axisUp);
+    CACHE_ALIGN(vec3 center);
+    CACHE_ALIGN(f32 farZ);
+    CACHE_ALIGN(si32 firstMouse);
+    CACHE_ALIGN(f32 fov);
+    CACHE_ALIGN(vec3 front);
     f32 lastX;
     f32 lastY;
     mat4 model;
@@ -102,8 +114,9 @@ struct ComponentModel
 
 struct ComponentRigidbody
 {
-    vec3 gravity, velocity, force;
+    vec3 gravity, velocity, force, angular_velocity;
     float mass;
+    ResRef solver;
 };
 
 struct ComponentCollider
@@ -121,13 +134,29 @@ struct ComponentTest
 
 struct ComponentTransform
 {
+    ui16 hasParent;
     mat4 model;
-    vec3 orientation;
-    vec3 position;
-    vec3 scale;
-    ui32 hasParent;
+    CACHE_ALIGN(vec3 orientation);
     void *parent;
+    CACHE_ALIGN(vec3 position);
+    CACHE_ALIGN(vec3 scale);
 };
+
+struct ComponentWeapon
+{
+    float damage;
+    CACHE_ALIGN(vec3 pos_starting);
+    CACHE_ALIGN(vec3 rot_starting);
+};
+
+struct ComponentWeaponSway
+{
+    float sway_amount;
+};
+
+#if ECS_COMPONENTS_PACKED
+#pragma pack(pop)
+#endif // ECS_COMPONENTS_PACKED
 
 #ifdef __cplusplus
 }
@@ -160,6 +189,9 @@ _ecs_init_internal_gen(ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(ecs, C_TEST, sizeof(struct ComponentTest));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPON, sizeof(struct ComponentWeapon));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_WEAPONSWAY, sizeof(struct ComponentWeaponSway));
 }
 
 #ifdef __cplusplus

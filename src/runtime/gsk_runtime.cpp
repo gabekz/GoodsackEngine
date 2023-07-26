@@ -37,11 +37,6 @@ static struct
 }
 
 static void
-_lua_test_create_componentlist()
-{
-}
-
-static void
 _gsk_check_args(int argc, char *argv[])
 {
     if (argc > 1) {
@@ -92,7 +87,7 @@ gsk_runtime_setup(int argc, char *argv[])
     s_runtime.ecs = renderer_active_scene(s_runtime.renderer, 0);
 
     // Lighting information
-    vec3 lightPos   = {1.0f, 2.8f, -0.2f};
+    vec3 lightPos   = {1.5f, 2.4f, 0.4f};
     vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
     // UBO Lighting
@@ -134,14 +129,39 @@ gsk_runtime_loop()
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
                                                                "Transform");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TEST, "Test");
+    entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
+                                                               "Weapon");
+    entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPONSWAY,
+                                                               "WeaponSway");
 
     // ECS Lua Init
     entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
 #endif
 
+    // Main Engine Loop
     while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
         device_updateAnalytics(glfwGetTime());
-        // LOG_INFO("FPS: %f", device_getAnalytics().currentFps);
+
+#if 0
+        int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+        if (present) {
+            {
+                int count;
+                const float *axes =
+                  glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
+
+                LOG_INFO("Axes0 %d: %f", 0, axes[0]);
+                LOG_INFO("Axes1 %d: %f", 1, axes[1]);
+            }
+            {
+                int count;
+                const unsigned char *buttons =
+                  glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
+
+                if (buttons[1] == GLFW_PRESS) { LOG_INFO("Press"); }
+            }
+        }
+#endif
 
         if (DEVICE_API_OPENGL) {
 #if USING_LUA

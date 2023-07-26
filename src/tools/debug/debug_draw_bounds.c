@@ -62,11 +62,11 @@ debug_draw_bounds(DebugContext *debugContext, vec3 corners[2], mat4 modelMatrix)
     glm_aabb_center(corners, center);
 
     mat4 m4Transform = GLM_MAT4_IDENTITY_INIT;
-    glm_mat4_mul(*modelMatrix, m4Transform, bbMat4);
+    glm_mat4_mul(modelMatrix, m4Transform, bbMat4);
     glm_translate(m4Transform, center);
     glm_scale(m4Transform, size);
 
-    glm_mat4_mul(*modelMatrix, m4Transform, bbMat4);
+    glm_mat4_mul(modelMatrix, m4Transform, bbMat4);
 
     ui32 shaderId = debugContext->material->shaderProgram->id;
 

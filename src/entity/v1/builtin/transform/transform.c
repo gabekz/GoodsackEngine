@@ -46,17 +46,12 @@ init(Entity e)
     glm_translate(m4i, transform->position);
     glm_mat4_copy(m4i, transform->model);
 
-    // TODO: stupid hack.
-    float scaleCheck =
-      (transform->scale[0] * transform->scale[1] * transform->scale[2]);
-    if (scaleCheck <= 0) { glm_vec3_one(transform->scale); }
+    // stupid hack which basically doesn't allow a zero scale.
+    if (!transform->scale[0] && !transform->scale[1] && !transform->scale[2]) {
+        glm_vec3_one(transform->scale);
+    }
 
-    // glm_mat4_copy(matrix, transform->mvp.matrix);
-    // printf("position %f, %f, %f", transform->position[0],
-    // transform->position[1], transform->position[2]); *transform->mvp.matrix =
-    // matrix; transform->mvp.matrix = matrix; transform->mvp.matrix = matrix;
-
-    // TODO: Make descriptor set HERE
+    // TODO: [vulkan] Make descriptor set HERE
 }
 
 static void

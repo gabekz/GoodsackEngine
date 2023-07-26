@@ -22,6 +22,8 @@
 #define SYS_ENV_UNIX
 #define _GNU_SOURCE_
 
+#define CACHE_LINE 16
+
 #if defined(__x86_64__) || defined(__ppc64__)
 #define SYS_ENV_64
 #else
@@ -41,6 +43,8 @@
 #undef Error
 #undef OK
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
+
+#define CACHE_LINE 16
 
 #endif // SYS_ENV_WIN
 
@@ -72,6 +76,16 @@
 
 #ifndef SYS_DEBUG
 #define SYS_DEBUG SYS_DISABLED
+#endif
+
+// Cache/Memory Alignment
+#if defined(SYS_ENV_WIN)
+#define CACHE_ALIGN(...) __declspec(align(CACHE_LINE)) __VA_ARGS__
+#elif defined(SYS_ENV_UNIX)
+#define CACHE_ALIGN(...) __VA_ARGS__ __attribute__((aligned(CACHE_LINE)))
+#else
+#define CACHE_ALIGN void
+#pragma warning Unknown dynamic link import / export semantics.
 #endif
 
 // -- Types //

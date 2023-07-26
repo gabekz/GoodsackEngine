@@ -10,6 +10,8 @@ typedef struct DebugContext
     VAO *vaoBoundingBox;
     Material *material;
 
+    VAO *vaoLine; // VAO for debug draw line
+
 } DebugContext;
 
 DebugContext *

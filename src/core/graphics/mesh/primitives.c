@@ -23,7 +23,6 @@ primitive_mesh_create(ui32 shape, float scale)
 float *
 prim_vert_rect()
 {
-
     unsigned int size = PRIM_SIZ_V_PLANE;
     float *ret        = malloc(size * sizeof(float));
     for (int i = 0; i < size; i++) {

@@ -32,18 +32,20 @@ update(Entity e)
                               transform->position[2]));
         AL_CHECK(alListener3f(AL_VELOCITY, 0, 0, 0));
 
-        /* TODO: Listener orientation
-        ALfloat listenerOrientation[] = {
-          // View
-          camera->center[0],
-          camera->center[1],
-          camera->center[2],
-          // Axis-Up
-          camera->axisUp[0],
-          camera->axisUp[1],
-          camera->axisUp[2],
-        };
-        */
+        if ((ecs_has(e, C_CAMERA))) {
+            struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
+            ALfloat listenerOrientation[]  = {
+              // View
+              camera->front[0],
+              camera->front[1],
+              camera->front[2],
+              // Axis-Up
+              camera->axisUp[0],
+              camera->axisUp[1],
+              camera->axisUp[2],
+            };
+            AL_CHECK(alListenerfv(AL_ORIENTATION, listenerOrientation));
+        }
     }
 }
 

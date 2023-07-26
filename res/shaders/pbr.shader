@@ -302,6 +302,7 @@ main()
         // TODO: Quick hack for directional lighting
         if (LIGHT_TYPE == 0) {
             L        = normalize(fs_in.lightPos);
+            H = normalize(V + L);
             radiance = fs_in.lightColor * u_light_strength;
         }
 

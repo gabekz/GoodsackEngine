@@ -1,11 +1,13 @@
 #include "lua_debug.h"
 
+#include <util/logger.h>
+
 int
 CheckLua(lua_State *L, int r)
 {
     if (r != LUA_OK) {
         const char *err = lua_tostring(L, -1);
-        printf("[Lua Error]: %s", err);
+        LOG_ERROR("[Lua] %s", err);
         return 0;
     }
     return 1;

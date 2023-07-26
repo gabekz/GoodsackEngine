@@ -36,6 +36,7 @@
     },
 
     "Rigidbody": {
+        "Resource": [ "solver" ],
         "vec3": [ "gravity", "velocity", "force" ],
         "float": [ "mass" ]
     },
@@ -50,5 +51,13 @@
     "Test": {
         "int": [ "movement_increment" ],
         "float": [ "rotation_speed" ]
+    },
+    "Weapon": {
+        "float": ["damage"],
+        "vec3": ["pos_starting", "rot_starting"]
+    },
+
+    "WeaponSway": {
+        "float": ["sway_amount"]
     }
 }

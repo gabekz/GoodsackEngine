@@ -13,12 +13,16 @@ init(Entity e)
 
     struct ComponentAudioSource *audioSource = ecs_get(e, C_AUDIOSOURCE);
 
-    // audioSource->bufferId = openal_generate_source(audioSource->filePath);
+    audioSource->bufferId = openal_generate_source(audioSource->filePath);
 
-    alSourcef(audioSource->bufferId, AL_REFERENCE_DISTANCE, 10.0f);
-    alSourcef(audioSource->bufferId, AL_MAX_DISTANCE, 100.0f);
+    // Distance
+    // AL_CHECK(alDistanceModel(AL_EXPONENT_DISTANCE)); iin LISTENER
+    AL_CHECK(alSourcef(audioSource->bufferId, AL_ROLLOFF_FACTOR, 1));
+    AL_CHECK(alSourcef(audioSource->bufferId, AL_REFERENCE_DISTANCE, 6));
+    AL_CHECK(alSourcef(audioSource->bufferId, AL_MAX_DISTANCE, 15));
 
-    audioSource->looping = 0;
+    // Play on initialization
+    alSourcePlay(audioSource->bufferId);
 }
 
 static void
@@ -37,10 +41,8 @@ update(Entity e)
                             transform->position[2]));
     }
 
-    /*
-    AL_CHECK(alSourcei(audioSource->bufferId, AL_LOOPING,
-                audioSource->looping));
-    */
+    AL_CHECK(
+      alSourcei(audioSource->bufferId, AL_LOOPING, audioSource->looping));
 }
 
 void

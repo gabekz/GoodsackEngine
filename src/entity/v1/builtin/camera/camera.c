@@ -1,4 +1,21 @@
+/** camera.c
+TODO:
+- CameraComponent needs to be split into several parts:
+
+// FOV, Near/Far, Projection
+- CameraComponent
+// MouseLook, sensitivity
+- CameraLookComponent
+
+// Trauma, etc.
+- CameraShakeComponent
+
+// Movement
+- FlyControlComponent
+**/
+
 #include "camera.h"
+
 #include <entity/v1/builtin/camera/camera_input.h>
 #include <entity/v1/builtin/transform/transform.h>
 
@@ -7,6 +24,23 @@
 #include <core/device/device.h>
 #include <entity/v1/ecs.h>
 #include <util/gfx.h>
+
+#define CAMERA_SHAKE 1
+
+#if CAMERA_SHAKE
+static float s_shake = 0.00f;
+
+static float
+_noise(int x, int y)
+{
+    int n;
+
+    n = x + y * 57;
+    n = (n << 13) ^ n;
+    return (1.0 - ((n * ((n * n * 15731) + 789221) + 1376312589) & 0x7fffffff) /
+                    1073741824.0);
+}
+#endif // CAMERA_SHAKE
 
 static void
 _initialize_shader_data(struct ComponentCamera *camera)
@@ -156,15 +190,30 @@ update(Entity e)
     camera->yaw += xOffset;
     camera->pitch += yOffset;
 
+#if CAMERA_SHAKE
+    // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
+    float seed    = 255.0f;
+    float shakeCO = 0.5f * s_shake * _noise(seed, glfwGetTime() * 50.0f);
+#endif // CAMERA_SHAKE
+
     // Clamp pitch
     if (camera->pitch > 89.0f) camera->pitch = 89.0f;
     if (camera->pitch < -89.0f) camera->pitch = -89.0f;
 
     // Calculate camera direction
     vec3 camDirection = GLM_VEC3_ZERO_INIT;
-    camDirection[0]   = cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
-    camDirection[1]   = sin(glm_rad(camera->pitch));
-    camDirection[2]   = sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
+#if CAMERA_SHAKE
+    camDirection[0] = cos(glm_rad(camera->yaw + shakeCO + 1)) *
+                      cos(glm_rad(camera->pitch + shakeCO));
+    camDirection[1] = sin(glm_rad(camera->pitch + shakeCO));
+    camDirection[2] =
+      sin(glm_rad(camera->yaw + shakeCO + 1)) * cos(glm_rad(camera->pitch));
+#else
+    camDirection[0] = cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
+    camDirection[1] = sin(glm_rad(camera->pitch));
+    camDirection[2] = sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
+#endif // CAMERA_SHAKE
+
     glm_vec3_normalize_to(camDirection, camera->front);
 
     // copy front to orientation
@@ -205,6 +254,21 @@ update(Entity e)
 
     // Update camera UBO
     _upload_shader_data(e, camera, transform);
+
+#if CAMERA_SHAKE
+    if (s_shake > 0) {
+        s_shake -= 3 * device_getAnalytics().delta;
+    } else if (s_shake <= 0) {
+        s_shake = 0;
+    }
+
+    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_P) == GLFW_PRESS) {
+        s_shake += 0.165f;
+    }
+    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_O) == GLFW_PRESS) {
+        s_shake = 2;
+    }
+#endif // CAMERA_SHAKE
 }
 
 void

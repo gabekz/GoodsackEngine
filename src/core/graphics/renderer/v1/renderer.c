@@ -11,6 +11,8 @@
 #include <core/graphics/lighting/lighting.h>
 #include <core/graphics/lighting/skybox.h>
 #include <core/graphics/ui/billboard.h>
+#include <core/graphics/ui/gui_element.h>
+#include <core/graphics/ui/gui_text.h>
 #include <entity/v1/ecs.h>
 
 #include <core/device/device_context.h>
@@ -20,6 +22,12 @@
 
 // Skybox test
 #include <core/graphics/texture/texture.h>
+
+#include <tools/debug/debug_context.h>
+#include <tools/debug/debug_draw_line.h>
+
+#define TESTING_DRAW_UI   1
+#define TESTING_DRAW_LINE 0
 
 Renderer *
 renderer_init()
@@ -42,10 +50,10 @@ renderer_init()
       (RENDER_RESOLUTION_OVERRIDE) ? PSX_HEIGHT : DEFAULT_WINDOW_HEIGHT;
 
     // Create the initial scene
-    Scene *scene = malloc(sizeof(Scene));
-
-    scene->id  = 0;
-    scene->ecs = ecs_init(ret);
+    Scene *scene      = malloc(sizeof(Scene));
+    scene->id         = 0;
+    scene->ecs        = ecs_init(ret);
+    scene->has_skybox = FALSE;
 
     Scene **sceneList = malloc(sizeof(Scene *));
     *(sceneList)      = scene;
@@ -54,30 +62,48 @@ renderer_init()
     ret->sceneC      = 1;
     ret->activeScene = 0;
 
-    ret->properties = (RendererProps) {.tonemapper  = 0,
-                                       .exposure    = 2.5f,
-                                       .maxWhite    = 1.0f,
-                                       .gamma       = 2.2f,
-                                       .gammaEnable = TRUE,
-                                       .msaaSamples = 16,
-                                       .msaaEnable  = TRUE};
+    ret->properties = (RendererProps) {.tonemapper      = 0,
+                                       .exposure        = 2.5f,
+                                       .maxWhite        = 1.0f,
+                                       .gamma           = 2.2f,
+                                       .gammaEnable     = TRUE,
+                                       .msaaEnable      = TRUE,
+                                       .msaaSamples     = 4,
+                                       .vignetteAmount  = 0.5f,
+                                       .vignetteFalloff = 0.5f};
 
     ret->shadowmapOptions = (ShadowmapOptions) {
-      .nearPlane = 0.5f,
-      .farPlane  = 7.5f,
-      .camSize   = 10.0f,
+      .nearPlane = 0.02f,
+      .farPlane  = 20.0f,
+      .camSize   = 2.0f,
 
       .normalBiasMin = 0.0025f,
       .normalBiasMax = 0.0005f,
-      .pcfSamples    = 8,
+      .pcfSamples    = 6,
     };
 
     ret->ssaoOptions = (SsaoOptions) {
-      .strength   = 2.5f,
-      .bias       = 0.025f,
-      .radius     = 0.5f,
-      .kernelSize = 64,
+      .strength   = 2.1f,
+      .bias       = 0.0003f,
+      .radius     = 0.15f,
+      .kernelSize = 16,
     };
+
+    // Billboard test
+    vec2 bbsize = {0.01f, 0.01f};
+    ret->billboard =
+      billboard_create("../res/textures/gizmo/light.png", bbsize);
+
+    // GUI test
+    Texture *guiTexture =
+      texture_create("../res/textures//gizmo/heart.png",
+                     NULL,
+                     (TextureOptions) {1, GL_RGBA, false, true});
+    ret->uiImage =
+      gui_element_create((vec2) {25, 80}, (vec2) {50, 50}, guiTexture, NULL);
+
+    // Test GUI Text
+    ret->uiText = gui_text_create("Hello, world!");
 
     return ret;
 }
@@ -93,9 +119,10 @@ renderer_active_scene(Renderer *self, ui16 sceneIndex)
         ui32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
 
         // Create a new, empty scene
-        Scene *newScene = malloc(sizeof(Scene));
-        newScene->id    = newCount;
-        newScene->ecs   = ecs_init(self);
+        Scene *newScene      = malloc(sizeof(Scene));
+        newScene->id         = newCount;
+        newScene->ecs        = ecs_init(self);
+        newScene->has_skybox = FALSE;
 
         // Update the scene list
         Scene **p                  = self->sceneL;
@@ -119,6 +146,8 @@ renderer_start(Renderer *renderer)
     ECS *ecs     = scene->ecs;
 
     if (DEVICE_API_OPENGL) {
+
+// Create the default skybox
 #if 0
         Texture *skyboxCubemap =
           texture_create_cubemap(6,
@@ -129,14 +158,15 @@ renderer_start(Renderer *renderer)
                                  "../res/textures/skybox/front.jpg",
                                  "../res/textures/skybox/back.jpg");
 
-        renderer->skybox = skybox_create(skyboxCubemap);
+        renderer->defaultSkybox = skybox_create(skyboxCubemap);
 #else
-        Skybox *skybox = skybox_hdr_create();
-        skybox->shader = shader_create_program("../res/shaders/skybox.shader");
-        renderer->skybox = skybox;
-
-        skybox_hdr_projection(renderer->skybox);
+        renderer->defaultSkybox = skybox_hdr_create(
+          texture_create_hdr("../res/textures/hdr/thatch_chapel_4k.hdr"));
 #endif
+
+        // Set the current renderer skybox to that of the active scene
+        renderer->activeSkybox =
+          (scene->has_skybox) ? scene->skybox : renderer->defaultSkybox;
 
         prepass_init();
 
@@ -145,7 +175,8 @@ renderer_start(Renderer *renderer)
         glm_mat4_zero(renderer->lightSpaceMatrix);
         glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
 
-        postbuffer_init(renderer->renderWidth, renderer->renderHeight);
+        postbuffer_init(
+          renderer->renderWidth, renderer->renderHeight, &renderer->properties);
 
         // generate SSAO textures
         pass_ssao_init();
@@ -185,7 +216,10 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     /*-------------------------------------------
         Scene Logic/Data update
     */
+
+    device_setInput(device_getInput()); // TODO: Weird hack to reset for axis
     glfwPollEvents();
+
     ecs_event(ecs, ECS_UPDATE);
     ecs_event(ecs, ECS_LATE_UPDATE);
 
@@ -246,31 +280,39 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
     // binding the shadowmap to texture slot 8 (TODO:) for meshes
     shadowmap_bind_texture();
 
-    glActiveTexture(GL_TEXTURE5);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, renderer->skybox->irradianceMap->id);
+    // Bind skybox textures
+    if (scene->has_skybox) {
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_CUBE_MAP,
+                      renderer->activeSkybox->irradianceMap->id);
 
-    glActiveTexture(GL_TEXTURE6);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, renderer->skybox->prefilterMap->id);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_CUBE_MAP,
+                      renderer->activeSkybox->prefilterMap->id);
 
-    glActiveTexture(GL_TEXTURE7);
-    glBindTexture(GL_TEXTURE_2D, renderer->skybox->brdfLUTTexture->id);
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_2D,
+                      renderer->activeSkybox->brdfLUTTexture->id);
+    }
 
     glActiveTexture(GL_TEXTURE9);
     glBindTexture(GL_TEXTURE_2D, pass_ssao_getOutputTextureId());
 
+    // Forward-draw Event
     renderer->currentPass = REGULAR;
     ecs_event(ecs, ECS_RENDER);
 
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
-    glDepthFunc(GL_LEQUAL);
-    skybox_draw(renderer->skybox);
-    glDepthFunc(GL_LESS);
+    if (scene->has_skybox) {
+        glDepthFunc(GL_LEQUAL);
+        skybox_draw(renderer->activeSkybox);
+        glDepthFunc(GL_LESS);
+    }
 
     glPopDebugGroup();
     /*-------------------------------------------
@@ -282,6 +324,22 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     postbuffer_draw(&renderer->properties);
 
     glPopDebugGroup();
+
+    // Testing stuff
+
+#if TESTING_DRAW_UI
+    vec3 pos = GLM_VEC3_ZERO_INIT;
+    billboard_draw(renderer->billboard, pos);
+
+    gui_element_draw(renderer->uiImage);
+    gui_text_draw(renderer->uiText);
+#endif
+
+#if TESTING_DRAW_LINE
+    vec3 start = {0, 0, 0};
+    vec3 end   = {-20, 20, 0};
+    debug_draw_line(renderer->debugContext, start, end);
+#endif
 
     // computebuffer_draw();
 }

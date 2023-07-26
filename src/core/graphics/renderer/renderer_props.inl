@@ -19,6 +19,9 @@ typedef struct RendererProps
     ui32 msaaSamples;
     int msaaEnable;
 
+    float vignetteAmount;
+    float vignetteFalloff;
+
 } RendererProps;
 
 #endif // INL_RENDERER_PROPS
