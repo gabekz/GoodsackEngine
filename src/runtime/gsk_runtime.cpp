@@ -18,6 +18,10 @@
 // #define RENDERER_2
 #define USING_LUA 1
 
+// Starting cursor state
+#define INIT_CURSOR_LOCKED  1
+#define INIT_CURSOR_VISIBLE 0
+
 #ifdef RENDERER_2
 #include <core/graphics/renderer/renderer.hpp>
 #else
@@ -100,9 +104,11 @@ gsk_runtime_setup(int argc, char *argv[])
     // FPS Counter
     device_resetAnalytics();
 
+    // Initialize Graphics Settings
     device_setGraphicsSettings((GraphicsSettings {.swapInterval = 1}));
-    device_setInput(
-      (Input {.cursor_position = {0, 0}, .holding_right_button = 0}));
+    // Initialize Input
+    device_setInput((Input {.cursor_position = {0, 0}}));
+    device_setCursorState(INIT_CURSOR_LOCKED, INIT_CURSOR_VISIBLE);
 
 #ifdef USING_LUA
     // Main Lua entry

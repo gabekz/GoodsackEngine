@@ -1,5 +1,5 @@
-#ifndef H_CONTEXT
-#define H_CONTEXT
+#ifndef H_DEVICE_CONTEXT_H
+#define H_DEVICE_CONTEXT_H
 
 #include <util/gfx.h>
 #include <util/sysdefs.h>
@@ -24,4 +24,4 @@ GLFWwindow *
 createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd);
 // void cleanup(ContextProperties *contextProperties);
 
-#endif // H_CONTEXT
+#endif // H_DEVICE_CONTEXT_H

@@ -1,0 +1,90 @@
+--- weapon_controller ECS system
+-- @module system
+
+local system = {}
+
+local maths = require("maths")
+local keycodes = require("keycodes")
+local Time = require('GoodsackAPI.Time')
+
+local pos_aiming = {
+    -0.318,
+    -0.187,
+    -0.2
+}
+
+local pos_standby = {
+    -0.2,
+    -0.22,
+    -0.4340
+}
+
+local testValue = 0
+
+-------------------------------------
+-- Handles input for the weapon controller.
+-- @param entity Entity Pointer
+-- @param[in, out] rotation Entity Rotation
+-------------------------------------
+local function handle_input(entity, rotation)
+    -- Aiming --
+    if(Input.GetKeyDown(keycodes.MOUSE1)) then
+        entity.Transform.position = pos_aiming
+    else
+        entity.Transform.position = pos_standby
+    end
+
+    -- Movement --
+    if(Input.GetKeyDown(keycodes.W)) then
+        if testValue >= 0 and testValue < 1 then
+            testValue = testValue + 1 * 10 * Time.get_delta_time()
+        end
+
+        rotation[1] = maths.lerp(0, -10, testValue)
+    end
+
+    if(Input.GetKeyDown(keycodes.S)) then
+        rotation[1] = 10
+        testValue = 0
+    end
+
+    if(Input.GetKeyDown(keycodes.A)) then
+        rotation[3] = -175
+    end
+    if(Input.GetKeyDown(keycodes.D)) then
+        rotation[3] = -190
+    end
+
+end
+
+function system.start(entity)
+
+    if not (entity.Weapon) then
+        return nil
+    end
+end
+
+function system.update(entity)
+
+    -- require Weapon and Transform components
+    if entity.Weapon == nil or entity.Transform == nil then
+        return nil
+    end
+
+    local new_rotation = {0, 0, -180}
+
+    if(Input.get_cursor_state().is_locked == true ) then
+        handle_input(entity, new_rotation)
+    end
+
+    -- set position to standby when cursor is locked
+    if(Input.get_cursor_state().is_locked == false) then 
+        entity.Transform.position = pos_standby
+    end
+
+    -- update rotation
+    entity.Transform.orientation = new_rotation 
+end
+
+system.run = function() _ECS_RegisterSystem(system) end
+return system

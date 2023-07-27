@@ -218,6 +218,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     */
 
     device_setInput(device_getInput()); // TODO: Weird hack to reset for axis
+    device_updateCursorState(renderer->window);
     glfwPollEvents();
 
     ecs_event(ecs, ECS_UPDATE);
@@ -328,8 +329,8 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     // Testing stuff
 
 #if TESTING_DRAW_UI
-    vec3 pos = GLM_VEC3_ZERO_INIT;
-    billboard_draw(renderer->billboard, pos);
+    // vec3 pos = GLM_VEC3_ZERO_INIT;
+    // billboard_draw(renderer->billboard, pos);
 
     gui_element_draw(renderer->uiImage);
     gui_text_draw(renderer->uiText);

@@ -158,7 +158,8 @@ update(Entity e)
 
     Input input = device_getInput();
     double cntX, cntY;
-    if (input.holding_right_button == TRUE) {
+
+    if (input.cursor_state.is_locked == TRUE) {
 
         cntX = input.cursor_position[0];
         cntY = input.cursor_position[1];
@@ -223,8 +224,10 @@ update(Entity e)
     // glm_vec3_copy(camDirectionDeg, transform->orientation);
     // glm_mat4_inv(camera->model, transform->model);
 
-    // Process Camera Input
-    camera_input(e, e.ecs->renderer->window);
+    // Process Camera Input as long as the cursor is locked
+    if (input.cursor_state.is_locked == TRUE) {
+        camera_input(e, e.ecs->renderer->window);
+    }
 
     // glm_vec3_add(transform->position, camDirection, camera->front);
 

@@ -1,4 +1,4 @@
---- @module common
+--- @module maths
 local maths = {}
 
 function maths.lerp(start, goal, alpha)

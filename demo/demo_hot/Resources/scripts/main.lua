@@ -3,9 +3,9 @@ package.path = '../demo/demo_hot/Resources/scripts/?.lua;' .. package.path
 --package.path = '../build/bin/?;' .. package.path
 
 -- Running Systems
-require("weapon-system").run()
-require("wepsway-system").run()
-require("camera-input").run()
+require('systems.weapon_controller').run()
+require('systems.weapon_sway').run()
+require('systems.camera_fov').run()
 
 local GoodsackAPI = require('GoodsackAPI')
 
