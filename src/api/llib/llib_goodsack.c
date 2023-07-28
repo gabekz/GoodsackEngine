@@ -2,7 +2,7 @@
 
 #include "GoodsackEngineConfig.h"
 
-#define GOODSACK_LIB "GoodsackAPI"
+#define GOODSACK_LIB "goodsack"
 
 static int
 goodsack_version_info(lua_State *L)
@@ -23,7 +23,7 @@ static const luaL_Reg goodsack_methods[] = {
   {NULL, NULL}};
 
 int
-luaopen_GoodsackAPI(lua_State *L)
+luaopen_goodsack(lua_State *L)
 {
     /* create metatable */
     luaL_newmetatable(L, GOODSACK_LIB);

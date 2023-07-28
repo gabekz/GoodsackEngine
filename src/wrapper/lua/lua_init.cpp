@@ -14,8 +14,6 @@
 
 #include <entity/v1/ecs.h>
 
-#include <api/lua/input/input.h>
-
 void
 LuaInit(const char *file, ECS *ecs)
 {
@@ -28,14 +26,11 @@ LuaInit(const char *file, ECS *ecs)
     // add the global C function (register system) to lua
     lua_register(L, "_ECS_RegisterSystem", entity::Lua_ECSRegisterSystem);
 
-    // Open other libs -- TODO: TESTING
-    luaopen_hello(L, ecs->renderer->window);
-
     if (CheckLua(L, luaL_dofile(L, file))) {
 
         // entry from lua [function main()]
-        lua_getglobal(L, "main");
-        if (lua_isfunction(L, -1)) { CheckLua(L, lua_pcall(L, 0, 0, 0)); }
+        // lua_getglobal(L, "main");
+        // if (lua_isfunction(L, -1)) { CheckLua(L, lua_pcall(L, 0, 0, 0)); }
 
         // entity::LuaEventStore::ECSEvent(ECS_INIT);
         // entity::LuaEventStore::ECSEvent(ECS_UPDATE);

@@ -3,9 +3,7 @@
 
 local system = {}
 
-local maths = require("maths")
 local keycodes = require("keycodes")
-local Time = require('GoodsackAPI.Time')
 
 local pos_aiming = {
     -0.31855,
@@ -35,7 +33,7 @@ local function handle_input(entity, rotation)
     local entity_camera = entity.Weapon.entity_camera
 
     -- Aiming --
-    if(Input.GetKeyDown(keycodes.MOUSE1)) then
+    if(input.GetKeyDown(keycodes.MOUSE1)) then
         entity.Transform.position = pos_aiming
         entity_camera.Camera.fov = fov_aiming
     else
@@ -44,23 +42,23 @@ local function handle_input(entity, rotation)
     end
 
     -- Movement --
-    if(Input.GetKeyDown(keycodes.W)) then
+    if(input.GetKeyDown(keycodes.W)) then
         if testValue >= 0 and testValue < 1 then
-            testValue = testValue + 1 * 10 * Time.get_delta_time()
+            testValue = testValue + 1 * 10 * time.DeltaTime()
         end
 
-        rotation[1] = maths.lerp(0, -10, testValue)
+        rotation[1] = math.Lerp(0, -10, testValue)
     end
 
-    if(Input.GetKeyDown(keycodes.S)) then
+    if(input.GetKeyDown(keycodes.S)) then
         rotation[1] = 10
         testValue = 0
     end
 
-    if(Input.GetKeyDown(keycodes.A)) then
+    if(input.GetKeyDown(keycodes.A)) then
         rotation[3] = -175
     end
-    if(Input.GetKeyDown(keycodes.D)) then
+    if(input.GetKeyDown(keycodes.D)) then
         rotation[3] = -190
     end
 
@@ -77,7 +75,7 @@ function system.update(entity)
 
     local new_rotation = {0, 0, -180}
 
-    if(Input.get_cursor_state().is_locked == true ) then
+    if(input.GetCursorState().is_locked == true ) then
         handle_input(entity, new_rotation)
     else
         entity.Transform.position = pos_standby

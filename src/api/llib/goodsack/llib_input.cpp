@@ -1,40 +1,39 @@
-#include "input.h"
+#include "../common.h"
+#define INPUT_LIB "goodsack.input"
 
 #include <core/device/device.h>
-
+#include <runtime/gsk_runtime.hpp>
 #include <util/gfx.h>
-#include <util/lua_deps.h>
 
-#define MESSAGE "Hello, from input.c!"
+extern "C" {
 
 #define MOUSE_BUTTON_INDEX_BEGIN \
     400 // Keycode for mouse buttons begin at this index
 
-GLFWwindow *s_window;
-
 extern int
-get_key_down(lua_State *L)
+_GetKeyDown(lua_State *L)
 {
-    int keyCode = luaL_checkinteger(L, -1);
+    int keycode          = luaL_checkinteger(L, -1);
+    GLFWwindow *p_window = gsk_runtime_get_renderer()->window;
 
     // Handle Mouse Events
-    if (keyCode >= MOUSE_BUTTON_INDEX_BEGIN) {
+    if (keycode >= MOUSE_BUTTON_INDEX_BEGIN) {
         lua_pushboolean(
           L,
-          glfwGetMouseButton(s_window, keyCode - MOUSE_BUTTON_INDEX_BEGIN) ==
+          glfwGetMouseButton(p_window, keycode - MOUSE_BUTTON_INDEX_BEGIN) ==
             GLFW_PRESS);
 
         return 1;
     }
 
     // Handle Keyboard Events
-    lua_pushboolean(L, glfwGetKey(s_window, keyCode) == GLFW_PRESS);
+    lua_pushboolean(L, glfwGetKey(p_window, keycode) == GLFW_PRESS);
 
     return 1;
 }
 
 extern int
-get_cursor_axis(lua_State *L)
+_GetCursorAxis(lua_State *L)
 {
     // open table
     lua_newtable(L);
@@ -55,7 +54,7 @@ get_cursor_axis(lua_State *L)
 }
 
 extern int
-get_cursor_state(lua_State *L)
+_GetCursorState(lua_State *L)
 {
     // open table
     lua_newtable(L);
@@ -75,25 +74,25 @@ get_cursor_state(lua_State *L)
     return 1;
 }
 
-static const struct luaL_Reg inputFuncs[] = {
-  {"GetKeyDown", get_key_down},
-  {"get_cursor_axis", get_cursor_axis},
-  {"get_cursor_state", get_cursor_state},
+static const luaL_Reg lib_input_methods[] = {
+  {"GetKeyDown", _GetKeyDown},
+  {"GetCursorAxis", _GetCursorAxis},
+  {"GetCursorState", _GetCursorState},
   {NULL, NULL}};
 
-int
-luaopen_hello(lua_State *L, GLFWwindow *window)
+extern int
+luaopen_goodsack_input(lua_State *L)
 {
-    s_window = window;
-    // luaL_newlib(L, functions);
-    // lua_register(L, "get_key_down", get_key_down);
+    /* create metatable */
+    luaL_newmetatable(L, INPUT_LIB);
 
-    lua_newtable(L);
-    lua_setglobal(L, "Input");
+    /* metatable.__index = metatable */
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -1, "__index");
 
-    lua_getglobal(L, "Input");
-    luaL_setfuncs(L, inputFuncs, 0);
-    lua_pop(L, 1);
+    /* register methods */
+    luaL_setfuncs(L, lib_input_methods, 0);
 
     return 1;
+}
 }
