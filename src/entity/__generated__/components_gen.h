@@ -72,22 +72,22 @@ struct ComponentCamera
     CACHE_ALIGN(si32 firstMouse);
     CACHE_ALIGN(f32 fov);
     CACHE_ALIGN(vec3 front);
-    f32 lastX;
-    f32 lastY;
-    mat4 model;
-    f32 nearZ;
-    f32 pitch;
-    mat4 proj;
-    si32 screenHeight;
-    si32 screenWidth;
-    f32 sensitivity;
-    f32 speed;
-    ui32 uboId;
-    ResRef uniformBuffer;
-    ResRef uniformBufferMapped;
-    ResRef uniformBufferMemory;
-    mat4 view;
-    f32 yaw;
+    CACHE_ALIGN(f32 lastX);
+    CACHE_ALIGN(f32 lastY);
+    CACHE_ALIGN(mat4 model);
+    CACHE_ALIGN(f32 nearZ);
+    CACHE_ALIGN(f32 pitch);
+    CACHE_ALIGN(mat4 proj);
+    CACHE_ALIGN(si32 screenHeight);
+    CACHE_ALIGN(si32 screenWidth);
+    CACHE_ALIGN(f32 sensitivity);
+    CACHE_ALIGN(f32 speed);
+    CACHE_ALIGN(ui32 uboId);
+    CACHE_ALIGN(ResRef uniformBuffer);
+    CACHE_ALIGN(ResRef uniformBufferMapped);
+    CACHE_ALIGN(ResRef uniformBufferMemory);
+    CACHE_ALIGN(mat4 view);
+    CACHE_ALIGN(f32 yaw);
 };
 
 struct ComponentLight
