@@ -698,13 +698,16 @@ _scene7(ECS *ecs, Renderer *renderer)
                                            .drawMode = DRAW_ELEMENTS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
-    _ecs_add_internal(attachedEntity,
-                      C_WEAPON,
-                      (void *)(&(struct ComponentWeapon) {
-                        .damage       = 25,
-                        .pos_starting = {0, 0, 0},
-                        .rot_starting = {0, 0, 0},
-                      }));
+    _ecs_add_internal(
+      attachedEntity,
+      C_WEAPON,
+      (void *)(&(struct ComponentWeapon) {
+        .damage       = 25,
+        .pos_starting = {0, 0, 0},
+        .rot_starting = {0, 0, 0},
+        .entity_camera =
+          (int)pCamera->index, // TODO: should be id, but not supported
+      }));
 };
 
 #define GLUE_HELPER(x, y)   x##y

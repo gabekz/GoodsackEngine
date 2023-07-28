@@ -170,9 +170,11 @@ gsk_runtime_loop()
 #endif
 
         if (DEVICE_API_OPENGL) {
+
 #if USING_LUA
             entity::LuaEventStore::ECSEvent(ECS_UPDATE);
-#endif
+#endif // USING_LUA
+
             renderer_tick(s_runtime.renderer);
             s_runtime.debugGui->Render();
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.

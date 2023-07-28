@@ -34,12 +34,13 @@ _resize_callback(GLFWwindow *window, int widthRe, int heightRe)
 static void
 _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    // Quit the application
+    if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
     // Toggle cursor state
-    if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         Input deviceInput = device_getInput();
         device_setCursorState(!deviceInput.cursor_state.is_locked,
                               !deviceInput.cursor_state.is_visible);
@@ -49,22 +50,7 @@ _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 static void
 _mouse_callback(GLFWwindow *window, int button, int action, int mods)
 {
-
-    /*
-    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        // send input coords to device container
-        Input input = device_getInput();
-        if (action == GLFW_PRESS) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            input.holding_right_button = true;
-            device_setInput(input);
-        } else if (action == GLFW_RELEASE) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            input.holding_right_button = false;
-            device_setInput(input);
-        }
-    }
-    */
+    // Nothing here for now!
 }
 
 static void

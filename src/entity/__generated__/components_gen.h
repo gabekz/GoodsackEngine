@@ -144,7 +144,8 @@ struct ComponentTransform
 
 struct ComponentWeapon
 {
-    float damage;
+    CACHE_ALIGN(float damage);
+    CACHE_ALIGN(int entity_camera);
     CACHE_ALIGN(vec3 pos_starting);
     CACHE_ALIGN(vec3 rot_starting);
 };

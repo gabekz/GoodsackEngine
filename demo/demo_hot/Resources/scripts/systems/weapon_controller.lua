@@ -8,7 +8,7 @@ local keycodes = require("keycodes")
 local Time = require('GoodsackAPI.Time')
 
 local pos_aiming = {
-    -0.318,
+    -0.31855,
     -0.187,
     -0.2
 }
@@ -19,6 +19,10 @@ local pos_standby = {
     -0.4340
 }
 
+local fov_aiming = 30
+local fov_standby = 45
+
+
 local testValue = 0
 
 -------------------------------------
@@ -27,11 +31,16 @@ local testValue = 0
 -- @param[in, out] rotation Entity Rotation
 -------------------------------------
 local function handle_input(entity, rotation)
+
+    local entity_camera = entity.Weapon.entity_camera
+
     -- Aiming --
     if(Input.GetKeyDown(keycodes.MOUSE1)) then
         entity.Transform.position = pos_aiming
+        entity_camera.Camera.fov = fov_aiming
     else
         entity.Transform.position = pos_standby
+        entity_camera.Camera.fov = fov_standby
     end
 
     -- Movement --
@@ -57,13 +66,6 @@ local function handle_input(entity, rotation)
 
 end
 
-function system.start(entity)
-
-    if not (entity.Weapon) then
-        return nil
-    end
-end
-
 function system.update(entity)
 
     -- require Weapon and Transform components
@@ -71,14 +73,13 @@ function system.update(entity)
         return nil
     end
 
+    --print("From entity: "..entity.id.."... camera fov is "..camera_ent.Camera.fov.."");
+
     local new_rotation = {0, 0, -180}
 
     if(Input.get_cursor_state().is_locked == true ) then
         handle_input(entity, new_rotation)
-    end
-
-    -- set position to standby when cursor is locked
-    if(Input.get_cursor_state().is_locked == false) then 
+    else
         entity.Transform.position = pos_standby
     end
 

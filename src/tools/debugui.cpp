@@ -115,6 +115,9 @@ DebugGui::Update()
 void
 DebugGui::Render()
 {
+    // ImGui::GetIO().FontGlobalScale = 1.2f;
+    if (!m_debugEnabled) return;
+
     // Create new frame
     if (DEVICE_API_OPENGL) {
         ImGui_ImplOpenGL3_NewFrame();
@@ -125,8 +128,6 @@ DebugGui::Render()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
-    // ImGui::GetIO().FontGlobalScale = 1.2f;
-    if (!m_debugEnabled) return;
 
     // Draw Navbar
     if (ImGui::BeginMainMenuBar()) {
@@ -346,8 +347,8 @@ DebugGui::Render()
                     ImGui::TableNextColumn();
                     if (ImGui::SmallButton("Inspect")) {
                         Entity entity         = (Entity {.id    = (EntityId)row_n,
-                                                         .index = (ui64)row_n,
-                                                         .ecs   = ecs});
+                                                 .index = (ui64)row_n,
+                                                 .ecs   = ecs});
                         m_selectedEntity      = entity;
                         m_showComponentViewer = true;
                     }

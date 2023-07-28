@@ -5,7 +5,7 @@ package.path = '../demo/demo_hot/Resources/scripts/?.lua;' .. package.path
 -- Running Systems
 require('systems.weapon_controller').run()
 require('systems.weapon_sway').run()
-require('systems.camera_fov').run()
+--require('systems.camera_fov').run()
 
 local GoodsackAPI = require('GoodsackAPI')
 

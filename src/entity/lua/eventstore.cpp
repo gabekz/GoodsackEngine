@@ -23,6 +23,9 @@ using namespace entity;
 LuaEventStore::LuaEventStore() {};
 LuaEventStore LuaEventStore::s_Instance;
 
+static void
+pushEntity(lua_State *L, int entityId);
+
 LuaEventStore &
 LuaEventStore::GetInstance()
 {
@@ -158,7 +161,13 @@ _meta_Component_index(lua_State *L)
         lua_pushnumber(L, 3); // number of cells
         lua_rawset(L, -3);
         return 1; // return table
-    };
+
+    } else if (c->GetVariableType(k) == EcsDataType::ENTITY) {
+        int entityId = -1;
+        c->GetVariable(k, &entityId);
+        pushEntity(L, (int)entityId);
+        return 1;
+    }
 
     float var = 0;
     if (c->GetVariable(k, &var)) {
@@ -203,8 +212,10 @@ __create_table_for_entity_component(lua_State *L,
     LUA_DUMP("After settable -3");
 }
 
-void
-pushEntity(lua_State *L, int entityId, ECSComponentLayout &layout)
+// TODO: handle read/write access +
+// TODO: change from Id to Index (or vice-versa)
+static void
+pushEntity(lua_State *L, int entityId)
 {
 
     Entity entityCompare = {.id    = (EntityId)entityId,
@@ -300,7 +311,7 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
                 // lua_pop(L, 1);
                 // lua_rawgeti(L, (int)j - 1,
                 // store.m_functionList[event]->functions[i]);
-                pushEntity(L, (int)j, LuaEventStore::getLayout("Camera"));
+                pushEntity(L, (int)j);
                 LUA_DUMP("Pushed Entity (Table)");
                 //  call event function
                 (CheckLua(L, lua_pcall(L, 1, 0, 0)));

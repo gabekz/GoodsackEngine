@@ -54,7 +54,8 @@
     },
     "Weapon": {
         "float": ["damage"],
-        "vec3": ["pos_starting", "rot_starting"]
+        "vec3": ["pos_starting", "rot_starting"],
+        "entity": [ "entity_camera" ]
     },
 
     "WeaponSway": {
