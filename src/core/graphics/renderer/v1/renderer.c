@@ -96,14 +96,14 @@ renderer_init()
 
     // GUI test
     Texture *guiTexture =
-      texture_create("../res/textures//gizmo/heart.png",
+      texture_create("../res/textures/gizmo/crosshair2.png",
                      NULL,
                      (TextureOptions) {1, GL_RGBA, false, true});
-    ret->uiImage =
-      gui_element_create((vec2) {25, 80}, (vec2) {50, 50}, guiTexture, NULL);
+    ret->uiImage = gui_element_create(
+      (vec2) {1920 / 2, 1080 / 2}, (vec2) {10, 10}, guiTexture, NULL);
 
     // Test GUI Text
-    ret->uiText = gui_text_create("Hello, world!");
+    ret->uiText = gui_text_create("Goodsack");
 
     return ret;
 }
