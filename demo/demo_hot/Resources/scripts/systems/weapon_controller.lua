@@ -18,7 +18,7 @@ local pos_standby = {
 }
 
 local fov_aiming = 30
-local fov_standby = 55
+local fov_standby = 45
 local fov_lerp_speed = 10
 
 -------------------------------------
@@ -79,6 +79,10 @@ function system.update(entity)
         handle_input(entity, new_rotation)
     else
         entity.Transform.position = pos_standby
+
+        -- restore FOV
+        local entity_camera = entity.Weapon.entity_camera
+        entity_camera.Camera.fov = math.Lerp(entity_camera.Camera.fov, fov_standby, time.DeltaTime() * fov_lerp_speed);
     end
 
     -- update rotation

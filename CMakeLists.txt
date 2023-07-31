@@ -103,6 +103,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 file(GLOB_RECURSE API_SOURCES CONFIGURE_DEPENDS
     "${API_DIR}/common.h"
     "${API_DIR}/llib_goodsack.c"
+    "${API_DIR}/llib_vector.c"
     "${API_DIR}/goodsack/llib_time.c"
     "${API_DIR}/goodsack/llib_input.cpp")
 

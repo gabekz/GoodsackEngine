@@ -22,6 +22,8 @@ end
 input       = require('goodsack.input')
 time        = require('goodsack.time')
 
+Vector = require('goodsack.vector')
+
 
 --[[---------------------------------------------------------
 	Extensions

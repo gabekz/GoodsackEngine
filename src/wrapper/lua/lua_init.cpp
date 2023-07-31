@@ -10,6 +10,7 @@
 #include <entity/lua/reg_system.hpp>
 
 #include <wrapper/lua/lua_debug.h>
+#include <wrapper/lua/lua_reg_print.h>>
 
 #include <entity/v1/ecs.h>
 
@@ -18,6 +19,8 @@ LuaInit(const char *file, ECS *ecs)
 {
     lua_State *L = luaL_newstate();
     luaL_openlibs(L);
+
+    luaopen_luaprintlib(L);
 
     entity::LuaEventStore::Initialize(L, ecs);
 

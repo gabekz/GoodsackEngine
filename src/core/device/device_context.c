@@ -35,12 +35,12 @@ static void
 _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     // Quit the application
-    if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
     // Toggle cursor state
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
         Input deviceInput = device_getInput();
         device_setCursorState(!deviceInput.cursor_state.is_locked,
                               !deviceInput.cursor_state.is_visible);
