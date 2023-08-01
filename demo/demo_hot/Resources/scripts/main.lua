@@ -8,11 +8,10 @@ SYSTEM_RUN('systems.weapon_sway')
 
 print("package.path: "..package.path.."")
 
--- test creating a FOO class
+local myvec = Vector(7, 8, 9)
+local myvec2 = Vector(3, 1, 8)
 
-local foo = Vector.new(12)
-local bar = Vector(24)
+myvec = myvec - myvec2
+print(myvec)
 
-print(Vector[13])
-print(foo:DoSomething())
-print(bar:DoSomething())
+print(myvec:Cross(Vector(8, 9, 20)))

@@ -2,9 +2,9 @@ require('goodsack')
 
 local include_dir = [[e:\Projects\GoodsackEngine\src\api\lua\include\]]
 
---
 -- dofile() alias for specified directory
 --
+---@param path string
 include = function(path)
     dofile(include_dir .. path)
 end
