@@ -16,12 +16,21 @@
     },
 
     "Camera": {
-        "int": ["firstMouse", "screenWidth", "screenHeight"],
+        "int": ["screenWidth", "screenHeight"],
         "uint": ["uboId"],
-        "float": ["fov", "speed", "sensitivity", "lastX", "lastY", "yaw", "pitch", "nearZ", "farZ"],
+        "float": ["fov", "nearZ", "farZ"],
         "vec3": ["axisUp", "center", "front"],
         "mat4": ["model", "view", "proj"],
         "Resource": ["uniformBuffer", "uniformBufferMemory", "uniformBufferMapped"]
+    },
+
+    "CameraLook": {
+        "int": ["firstMouse"],
+        "float": ["sensitivity", "lastX", "lastY", "yaw", "pitch"]
+    },
+
+    "CameraMovement": {
+        "float": ["speed"]
     },
 
     "Light": {

@@ -502,13 +502,35 @@ DebugGui::Render()
             struct ComponentCamera &p =
               *(static_cast<struct ComponentCamera *>(ecs_get(e, C_CAMERA)));
             ImGui::DragFloat("FOV", &p.fov, 0.45f, 0.9f);
-            ImGui::DragFloat("Speed", &p.speed, 0.01, 0, 10.0f);
             ImGui::Text("Clipping");
             ImGui::PushItemWidth(100);
             ImGui::DragFloat("Near", &p.nearZ, 0.01, 0, 10);
             ImGui::SameLine();
             ImGui::DragFloat("Far", &p.farZ, 1, 0, 1000);
             ImGui::EndChild();
+        }
+        if (ecs_has(e, C_CAMERALOOK)) {
+            ImGui::BeginChild(
+              "CameraLook", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("CameraLook Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            struct ComponentCameraLook &p =
+              *(static_cast<struct ComponentCameraLook *>(ecs_get(e, C_CAMERALOOK)));
+            ImGui::DragFloat("Sensitivity", &p.sensitivity, 0.45f, 0.9f);
+        }
+
+        if (ecs_has(e, C_CAMERAMOVEMENT)) {
+            ImGui::BeginChild(
+              "CameraMovement", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("CameraMovement Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            struct ComponentCameraMovement &p =
+              *(static_cast<struct ComponentCameraMovement *>(ecs_get(e, C_CAMERAMOVEMENT)));
+            ImGui::DragFloat("Speed ", &p.speed, 0.45f, 0.9f);
         }
 
         if (ecs_has(e, C_AUDIOLISTENER)) {

@@ -11,6 +11,19 @@ typedef struct // Vector_lua_t
     float float3[3];
 } Vector;
 
+#if 0
+static int
+vector__index(lua_State *L)
+{
+    //const char *key   = luaL_checkstring(L, -2);
+    //const char *value = luaL_checkstring(L, -1);
+    if (!lua_rawget(L, 1)) { LOG_INFO("lua raw get");
+    }
+
+    return 1;
+}
+#endif
+
 static int
 _vector__OPERATOR(lua_State *L, int lua_operation)
 {
@@ -137,13 +150,14 @@ luaopen_goodsack_vector(lua_State *L)
                                     {"__tostring", vector__tostring},
                                     {"__add", vector__add},
                                     {"__sub", vector__sub},
+                                    //{"__index", vector__index},
                                     {NULL, NULL}};
 
     static const luaL_Reg meth[] = {{"Cross", vector_Cross}, {NULL, NULL}};
 
     luaL_newmetatable(L, VECTOR_LIB); // -- metatable: goodsack.vector
     luaL_setfuncs(L, meta, 0);
-    // lua_pushcfunction(L, vector_get_x); -- instead of newlib(L, meth)
+    // lua_pushcfunction(L, vector__index); //-- instead of newlib(L, meth)
     luaL_newlib(L, meth);
     lua_setfield(L, -2, "__index");
     lua_pop(L, 1);

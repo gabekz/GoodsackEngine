@@ -132,6 +132,10 @@ gsk_runtime_loop()
 
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERA,
                                                                "Camera");
+    entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERALOOK,
+                                                               "CameraLook");
+    entity::LuaEventStore::GetInstance().RegisterComponentList(
+      C_CAMERAMOVEMENT, "CameraMovement");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
                                                                "Transform");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TEST, "Test");

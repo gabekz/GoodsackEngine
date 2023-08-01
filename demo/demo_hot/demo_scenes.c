@@ -25,6 +25,15 @@ __create_camera_entity(ECS *ecs, vec3 position)
                       C_CAMERA,
                       (void *)(&(struct ComponentCamera) {
                         .axisUp = {0.0f, 1.0f, 0.0f},
+                      }));
+    _ecs_add_internal(camera,
+                      C_CAMERALOOK,
+                      (void *)(&(struct ComponentCameraLook) {
+                        .sensitivity = 1.0f,
+                      }));
+    _ecs_add_internal(camera,
+                      C_CAMERAMOVEMENT,
+                      (void *)(&(struct ComponentCameraMovement) {
                         .speed  = 2.5f,
                       }));
     _ecs_add_internal(camera,

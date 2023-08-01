@@ -26,6 +26,7 @@ TODO:
 #include <util/gfx.h>
 
 #define CAMERA_SHAKE 1
+#define CAMERA_SENSITIVITY_DIVS 10.0f
 
 #if CAMERA_SHAKE
 static float s_shake = 0.00f;
@@ -125,6 +126,7 @@ init(Entity e)
     struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
+    // TODO: remove camera-> screenWidth/screenHeight
     camera->screenWidth  = e.ecs->renderer->windowWidth;
     camera->screenHeight = e.ecs->renderer->windowHeight;
 
@@ -139,21 +141,29 @@ init(Entity e)
     float *center = GLM_VEC3_ZERO; // position + orientation _v
     glm_vec3_mul(transform->position, (vec3) {0.0f, 0.0f, -1.0f}, center);
 
-    camera->lastX = e.ecs->renderer->windowWidth / 2;
-    camera->lastY = e.ecs->renderer->windowHeight / 2;
-    camera->yaw   = -90.0f;
-    camera->pitch = 0;
+    // Camera Look //
 
-    camera->firstMouse = TRUE;
+    if (!(ecs_has(e, C_CAMERALOOK))) return;
+    struct ComponentCameraLook *cameraLook = ecs_get(e, C_CAMERALOOK);
+
+    cameraLook->lastX = e.ecs->renderer->windowWidth / 2;
+    cameraLook->lastY = e.ecs->renderer->windowHeight / 2;
+    cameraLook->yaw   = -90.0f;
+    cameraLook->pitch = 0;
+
+    cameraLook->firstMouse = TRUE;
 }
 
 static void
 update(Entity e)
 {
     if (!(ecs_has(e, C_CAMERA))) return;
+    if (!(ecs_has(e, C_CAMERALOOK))) return;
     if (!(ecs_has(e, C_TRANSFORM))) return;
 
     struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
+    struct ComponentCameraLook *cameraLook       = ecs_get(e, C_CAMERALOOK); // TODO: Move away
+
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
     Input input = device_getInput();
@@ -164,32 +174,32 @@ update(Entity e)
         cntX = input.cursor_position[0];
         cntY = input.cursor_position[1];
 
-        if (camera->firstMouse) {
-            camera->lastX = cntX;
-            camera->lastY = cntY;
+        if (cameraLook->firstMouse) {
+            cameraLook->lastX = cntX;
+            cameraLook->lastY = cntY;
 
-            camera->firstMouse = FALSE;
+            cameraLook->firstMouse = FALSE;
         }
 
     } else {
-        cntX               = camera->lastX;
-        cntY               = camera->lastY;
-        camera->firstMouse = TRUE;
+        cntX                   = cameraLook->lastX;
+        cntY                   = cameraLook->lastY;
+        cameraLook->firstMouse = TRUE;
     }
 
-    float xOffset = cntX - camera->lastX;
-    float yOffset = camera->lastY - cntY;
+    float xOffset = cntX - cameraLook->lastX;
+    float yOffset = cameraLook->lastY - cntY;
 
-    camera->lastX = cntX;
-    camera->lastY = cntY;
+    cameraLook->lastX = cntX;
+    cameraLook->lastY = cntY;
 
-    const float sensitivity = 0.1f;
+    const float sensitivity = cameraLook->sensitivity / CAMERA_SENSITIVITY_DIVS;
 
     xOffset *= sensitivity;
     yOffset *= sensitivity;
 
-    camera->yaw += xOffset;
-    camera->pitch += yOffset;
+    cameraLook->yaw += xOffset;
+    cameraLook->pitch += yOffset;
 
 #if CAMERA_SHAKE
     // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
@@ -198,17 +208,17 @@ update(Entity e)
 #endif // CAMERA_SHAKE
 
     // Clamp pitch
-    if (camera->pitch > 89.0f) camera->pitch = 89.0f;
-    if (camera->pitch < -89.0f) camera->pitch = -89.0f;
+    if (cameraLook->pitch > 89.0f) cameraLook->pitch = 89.0f;
+    if (cameraLook->pitch < -89.0f) cameraLook->pitch = -89.0f;
 
     // Calculate camera direction
     vec3 camDirection = GLM_VEC3_ZERO_INIT;
 #if CAMERA_SHAKE
-    camDirection[0] = cos(glm_rad(camera->yaw + shakeCO + 1)) *
-                      cos(glm_rad(camera->pitch + shakeCO));
-    camDirection[1] = sin(glm_rad(camera->pitch + shakeCO));
-    camDirection[2] =
-      sin(glm_rad(camera->yaw + shakeCO + 1)) * cos(glm_rad(camera->pitch));
+    camDirection[0] = cos(glm_rad(cameraLook->yaw + shakeCO + 1)) *
+                      cos(glm_rad(cameraLook->pitch + shakeCO));
+    camDirection[1] = sin(glm_rad(cameraLook->pitch + shakeCO));
+    camDirection[2] = sin(glm_rad(cameraLook->yaw + shakeCO + 1)) *
+                      cos(glm_rad(cameraLook->pitch));
 #else
     camDirection[0] = cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
     camDirection[1] = sin(glm_rad(camera->pitch));

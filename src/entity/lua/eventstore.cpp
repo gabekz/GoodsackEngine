@@ -240,6 +240,14 @@ pushEntity(lua_State *L, int entityId)
         __create_table_for_entity_component(
           L, "Camera", C_CAMERA, entityCompare);
     }
+    if (ecs_has(entityCompare, C_CAMERALOOK)) {
+        __create_table_for_entity_component(
+          L, "CameraLook", C_CAMERALOOK, entityCompare);
+    }
+    if (ecs_has(entityCompare, C_CAMERAMOVEMENT)) {
+        __create_table_for_entity_component(
+          L, "CameraMovement", C_CAMERAMOVEMENT, entityCompare);
+    }
     if (ecs_has(entityCompare, C_TRANSFORM)) {
         __create_table_for_entity_component(
           L, "Transform", C_TRANSFORM, entityCompare);
