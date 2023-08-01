@@ -74,6 +74,12 @@ struct _renderer
     ui32 hdrTextureId;
 
     DebugContext *debugContext;
+
+    // Camera information
+    struct
+    {
+        ui32 uboId, uboSize;
+    } camera_data;
 };
 
 /**

@@ -25,7 +25,7 @@ TODO:
 #include <entity/v1/ecs.h>
 #include <util/gfx.h>
 
-#define CAMERA_SHAKE 1
+#define CAMERA_SHAKE            1
 #define CAMERA_SENSITIVITY_DIVS 10.0f
 
 #if CAMERA_SHAKE
@@ -53,7 +53,8 @@ _initialize_shader_data(struct ComponentCamera *camera)
     glm_mat4_copy(m4i, camera->view);
     glm_mat4_copy(m4i, camera->proj);
 
-    // Create UBO for camera data
+// Create UBO for camera data
+#if 0
     ui32 uboSize = 4 + sizeof(vec3) + (2 * sizeof(mat4));
     if (DEVICE_API_OPENGL) {
         ui32 uboId;
@@ -63,7 +64,9 @@ _initialize_shader_data(struct ComponentCamera *camera)
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
         glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboId, 0, uboSize);
         camera->uboId = uboId;
-    } else if (DEVICE_API_VULKAN) {
+}
+    else if (DEVICE_API_VULKAN)
+    {
         /*
         VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
 
@@ -74,6 +77,7 @@ _initialize_shader_data(struct ComponentCamera *camera)
         );
         */
     }
+#endif
 }
 
 static void
@@ -82,18 +86,21 @@ _upload_shader_data(Entity e,
                     struct ComponentTransform *transform)
 {
     if (DEVICE_API_OPENGL) {
-        glBindBuffer(GL_UNIFORM_BUFFER, camera->uboId);
+
+        ui32 renderLayer = 0; // TODO: render layer
+        // Get the starting position
+        ui32 ubo_index = renderLayer * e.ecs->renderer->camera_data.uboSize;
+
+        glBindBuffer(GL_UNIFORM_BUFFER, e.ecs->renderer->camera_data.uboId);
         glBufferSubData(
-          GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, transform->position);
+          GL_UNIFORM_BUFFER, 0, sizeof(vec4), transform->position);
         glBufferSubData(GL_UNIFORM_BUFFER,
-                        sizeof(vec3) + 4,
+                        ubo_index + sizeof(vec4),
                         sizeof(mat4),
-                        // camera->uniform.proj);
                         camera->proj);
         glBufferSubData(GL_UNIFORM_BUFFER,
-                        sizeof(mat4) + sizeof(vec3) + 4,
+                        ubo_index + sizeof(mat4) + sizeof(vec4),
                         sizeof(mat4),
-                        // camera->uniform.view);
                         camera->view);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     } else if (DEVICE_API_VULKAN) {
@@ -161,8 +168,9 @@ update(Entity e)
     if (!(ecs_has(e, C_CAMERALOOK))) return;
     if (!(ecs_has(e, C_TRANSFORM))) return;
 
-    struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
-    struct ComponentCameraLook *cameraLook       = ecs_get(e, C_CAMERALOOK); // TODO: Move away
+    struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
+    struct ComponentCameraLook *cameraLook =
+      ecs_get(e, C_CAMERALOOK); // TODO: Move away
 
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 

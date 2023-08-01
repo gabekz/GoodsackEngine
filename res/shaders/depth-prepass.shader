@@ -7,13 +7,20 @@ const bool INVERTED_NORMALS = false;
 
 uniform mat4 u_Model;
 
-layout(std140, binding = 0) uniform Camera
+struct CameraData
 {
-    vec3 position;
+    vec4 position;
     mat4 projection;
     mat4 view;
-}
+};
+
+const int MAX_CAMERAS = 4;
+
+layout(std140, binding = 0) uniform Camera { CameraData cameras[MAX_CAMERAS]; }
 s_Camera;
+
+uniform int u_render_layer = 0; // default render layer (a.k.a. camera target
+                                // that we want to render with)
 
 out VS_OUT
 {
@@ -26,13 +33,15 @@ vs_out;
 void
 main()
 {
-    vec4 viewPos   = s_Camera.view * u_Model * vec4(a_Position, 1.0);
+    CameraData camera = s_Camera.cameras[u_render_layer];
+
+    vec4 viewPos   = camera.view * u_Model * vec4(a_Position, 1.0);
     vs_out.fragPos = viewPos.xyz;
 
-    mat3 normalMatrix = transpose(inverse(mat3(s_Camera.view * u_Model)));
+    mat3 normalMatrix = transpose(inverse(mat3(camera.view * u_Model)));
     vs_out.normal = normalMatrix * (INVERTED_NORMALS ? -a_Normal : a_Normal);
 
-    gl_Position = s_Camera.projection * viewPos;
+    gl_Position = camera.projection * viewPos;
 }
 
 #shader fragment

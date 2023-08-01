@@ -11,12 +11,16 @@ layout(location = 3) in vec3 a_Tangent;
 
 // Set 0
 
-layout(std140, binding = 0) uniform Camera
+struct CameraData
 {
-    vec3 position;
+    vec4 position;
     mat4 projection;
     mat4 view;
-}
+};
+
+const int MAX_CAMERAS = 4;
+
+layout(std140, binding = 0) uniform Camera { CameraData cameras[MAX_CAMERAS]; }
 s_Camera;
 
 layout(std140, binding = 1) uniform Light
@@ -33,6 +37,9 @@ uniform mat4 u_LightSpaceMatrix;
 // uniform bool u_tbn_from_shader = false;
 
 uniform float u_light_strength = 4;
+
+uniform int u_render_layer = 0; // default render layer (a.k.a. camera target
+                                // that we want to render with)
 
 out VS_OUT
 {
@@ -54,6 +61,8 @@ vs_out;
 void
 main()
 {
+    CameraData camera = s_Camera.cameras[u_render_layer];
+
     vs_out.texCoords = a_TexCoords;
 
     vs_out.position = vec3(u_Model * vec4(a_Position, 1.0));
@@ -62,10 +71,10 @@ main()
     vec3 position3 = vec3(u_Model * vec4(a_Position, 1.0));
 
     // Model world-space (screen-space projection)
-    vec4 position = s_Camera.projection * s_Camera.view * vec4(position3, 1);
+    vec4 position = camera.projection * camera.view * vec4(position3, 1);
     vs_out.modelWorldSpace = position;
 
-    vs_out.camPos = s_Camera.position;
+    vs_out.camPos = camera.position.xyz;
 
     vs_out.lightPos   = s_Light.position;
     vs_out.lightColor = s_Light.color.xyz;
@@ -79,7 +88,7 @@ main()
     // Shadowmap
     vs_out.lightWorldSpace = u_LightSpaceMatrix * vec4(vs_out.position, 1.0f);
 
-    gl_Position = s_Camera.projection * s_Camera.view * vec4(position3, 1);
+    gl_Position = camera.projection * camera.view * vec4(position3, 1);
 }
 
 // ---------------------- Fragment -----------------
@@ -302,7 +311,7 @@ main()
         // TODO: Quick hack for directional lighting
         if (LIGHT_TYPE == 0) {
             L        = normalize(fs_in.lightPos);
-            H = normalize(V + L);
+            H        = normalize(V + L);
             radiance = fs_in.lightColor * u_light_strength;
         }
 

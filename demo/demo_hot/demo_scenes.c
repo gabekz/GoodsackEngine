@@ -34,7 +34,7 @@ __create_camera_entity(ECS *ecs, vec3 position)
     _ecs_add_internal(camera,
                       C_CAMERAMOVEMENT,
                       (void *)(&(struct ComponentCameraMovement) {
-                        .speed  = 2.5f,
+                        .speed = 2.5f,
                       }));
     _ecs_add_internal(camera,
                       C_TRANSFORM,
@@ -581,12 +581,19 @@ _scene6(ECS *ecs, Renderer *renderer)
 #endif
 }
 
-// Transform parenting test
+/*----------------------
+ |  Scene 7
+ |  Description: Main transform/weapon test
+ -----------------------*/
 static void
 _scene7(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 7);
     __set_active_scene_skybox(renderer, skyboxMain);
+
+    /*----------------------
+     |  Resources
+     -----------------------*/
 
     Texture *texBrickDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
@@ -602,15 +609,35 @@ _scene7(ECS *ecs, Renderer *renderer)
                                          texPbrAo,
                                          texPbrAo);
 
-    Entity *pCamera = malloc(sizeof(Entity));
+    Texture *texCerbA = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
+    Texture *texCerbN = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
+    Texture *texCerbM = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
+    Texture *texCerbS = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
 
-    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 0.0f});
-    Entity camera = *pCamera;
-#if DEMO_USING_AUDIO
-    _ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
-#endif // DEMO_USING_AUDIO
+    /*
+    Material *matWeapon =
+      material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
+      */
+    Material *matWeapon = material_create(NULL,
+                                          "../res/shaders/pbr.shader",
+                                          5,
+                                          texCerbA,
+                                          texCerbN,
+                                          texCerbM,
+                                          texCerbS,
+                                          texPbrAo);
 
-    // Testing entity on heap memory
+    Model *modelWeapon = model_load_from_file(
+      "../demo/demo_hot/Resources/models/AK2.glb", 1, FALSE);
+
+    /*----------------------
+     |  Entities
+     -----------------------*/
+
     Entity *pFloorEntity = malloc(sizeof(Entity));
     *pFloorEntity        = ecs_new(ecs);
     Entity floorEntity   = *pFloorEntity;
@@ -644,31 +671,35 @@ _scene7(ECS *ecs, Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
-    Texture *texCerbA = texture_create_d(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
-    Texture *texCerbN = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
-    Texture *texCerbM = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
-    Texture *texCerbS = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
+    Entity *pCamera = malloc(sizeof(Entity));
+
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 0.0f});
+    Entity camera = *pCamera;
+#if DEMO_USING_AUDIO
+    _ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
+#endif // DEMO_USING_AUDIO
 
     /*
-    Material *matWeapon =
-      material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
-      */
-    Material *matWeapon = material_create(NULL,
-                                          "../res/shaders/pbr.shader",
-                                          5,
-                                          texCerbA,
-                                          texCerbN,
-                                          texCerbM,
-                                          texCerbS,
-                                          texPbrAo);
+      Camera 2
+    */
+#if 0
+    Entity camera2 = ecs_new(ecs);
+    _ecs_add_internal(camera2,
+                      C_CAMERA,
+                      (void *)(&(struct ComponentCamera) {
+                        .axisUp = {0.0f, 1.0f, 0.0f},
+                        .fov    = 75,
+                      }));
+    _ecs_add_internal(camera2,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .parent = pCamera,
+                      }));
+#endif
 
-    Model *modelWeapon = model_load_from_file(
-      "../demo/demo_hot/Resources/models/AK2.glb", 1, FALSE);
-
+    /*
+      Weapon Parent (weapon-sway)
+    */
     Entity *pWeaponParent = malloc(sizeof(Entity));
     *pWeaponParent        = ecs_new(ecs);
     Entity weaponParent   = *pWeaponParent;

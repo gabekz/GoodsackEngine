@@ -287,7 +287,7 @@ DebugGui::Render()
 
         int TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
-        enum MyItemColumnID { MyItemColumnID_ID, MyItemColumnID_Name };
+        enum MyItemColumnID { MyItemColumnID_Index, MyItemColumnID_Name };
 
         if (ImGui::BeginTable("table_sorting",
                               4,
@@ -295,11 +295,11 @@ DebugGui::Render()
                               ImVec2(0.0f, TEXT_BASE_HEIGHT * 15),
                               0.0f)) {
 
-            ImGui::TableSetupColumn("ID",
+            ImGui::TableSetupColumn("index",
                                     ImGuiTableColumnFlags_DefaultSort |
                                       ImGuiTableColumnFlags_WidthFixed,
                                     0.0f,
-                                    MyItemColumnID_ID);
+                                    MyItemColumnID_Index);
             ImGui::TableSetupColumn("Name",
                                     ImGuiTableColumnFlags_WidthFixed,
                                     0.0f,
@@ -346,7 +346,7 @@ DebugGui::Render()
                     ImGui::TextUnformatted("Entity");
                     ImGui::TableNextColumn();
                     if (ImGui::SmallButton("Inspect")) {
-                        Entity entity         = (Entity {.id    = (EntityId)row_n,
+                        Entity entity         = (Entity {.id    = (EntityId)row_n + 1,
                                                  .index = (ui64)row_n,
                                                  .ecs   = ecs});
                         m_selectedEntity      = entity;
@@ -511,7 +511,7 @@ DebugGui::Render()
         }
         if (ecs_has(e, C_CAMERALOOK)) {
             ImGui::BeginChild(
-              "CameraLook", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+              "Camera Look", ImVec2(0, ImGui::GetFontSize() * 6.0f), true);
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
             ImGui::Text("CameraLook Component");
             ImGui::PopStyleColor();
@@ -519,11 +519,12 @@ DebugGui::Render()
             struct ComponentCameraLook &p =
               *(static_cast<struct ComponentCameraLook *>(ecs_get(e, C_CAMERALOOK)));
             ImGui::DragFloat("Sensitivity", &p.sensitivity, 0.45f, 0.9f);
+            ImGui::EndChild();
         }
 
         if (ecs_has(e, C_CAMERAMOVEMENT)) {
             ImGui::BeginChild(
-              "CameraMovement", ImVec2(0, ImGui::GetFontSize() * 10.0f), true);
+              "Camera Movement", ImVec2(0, ImGui::GetFontSize() * 6.0f), true);
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
             ImGui::Text("CameraMovement Component");
             ImGui::PopStyleColor();
@@ -531,6 +532,7 @@ DebugGui::Render()
             struct ComponentCameraMovement &p =
               *(static_cast<struct ComponentCameraMovement *>(ecs_get(e, C_CAMERAMOVEMENT)));
             ImGui::DragFloat("Speed ", &p.speed, 0.45f, 0.9f);
+            ImGui::EndChild();
         }
 
         if (ecs_has(e, C_AUDIOLISTENER)) {

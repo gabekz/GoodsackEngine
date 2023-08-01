@@ -191,10 +191,19 @@ renderer_start(Renderer *renderer)
 
         renderer->debugContext = debug_context_init();
 
-        // TESTING Compute Shaders
-        // computebuffer_init();
+        // Create camera Uniform Buffer
+        ui32 camera_uboSize = sizeof(vec4) + (2 * sizeof(mat4));
+        ui32 camera_uboId   = NULL;
+        glGenBuffers(1, &camera_uboId);
+        glBindBuffer(GL_UNIFORM_BUFFER, camera_uboId);
+        glBufferData(
+          GL_UNIFORM_BUFFER, camera_uboSize * 4, NULL, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        glBindBufferRange(
+          GL_UNIFORM_BUFFER, 0, camera_uboId, 0, camera_uboSize * 4);
 
-        // render image to quad
+        renderer->camera_data.uboId   = camera_uboId;
+        renderer->camera_data.uboSize = camera_uboSize;
 
     } else if (DEVICE_API_VULKAN) {
         ecs_event(ecs, ECS_INIT);
