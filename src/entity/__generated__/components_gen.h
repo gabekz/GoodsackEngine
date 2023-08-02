@@ -28,6 +28,7 @@ typedef enum ECSComponentType_t {
     C_CAMERAMOVEMENT,
     C_LIGHT,
     C_MODEL,
+    C_RENDERLAYER,
     C_RIGIDBODY,
     C_COLLIDER,
     C_TEST,
@@ -36,7 +37,7 @@ typedef enum ECSComponentType_t {
     C_WEAPONSWAY,
 } ECSComponentType;
 
-#define ECSCOMPONENT_LAST 13
+#define ECSCOMPONENT_LAST 14
 
 #if ECS_COMPONENTS_PACKED
 #pragma pack(push, 1)
@@ -76,9 +77,9 @@ struct ComponentCamera
     CACHE_ALIGN(mat4 model);
     CACHE_ALIGN(f32 nearZ);
     CACHE_ALIGN(mat4 proj);
+    CACHE_ALIGN(ui32 renderLayer);
     CACHE_ALIGN(si32 screenHeight);
     CACHE_ALIGN(si32 screenWidth);
-    CACHE_ALIGN(ui32 uboId);
     CACHE_ALIGN(ResRef uniformBuffer);
     CACHE_ALIGN(ResRef uniformBufferMapped);
     CACHE_ALIGN(ResRef uniformBufferMemory);
@@ -120,6 +121,11 @@ struct ComponentModel
         ui16 drawMode : 2;
         ui16 cullMode : 3;
     } properties;
+};
+
+struct ComponentRenderLayer
+{
+    ui32 renderLayer;
 };
 
 struct ComponentRigidbody
@@ -197,6 +203,8 @@ _ecs_init_internal_gen(ECS *ecs)
       ecs, C_CAMERAMOVEMENT, sizeof(struct ComponentCameraMovement));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_LIGHT, sizeof(struct ComponentLight));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_MODEL, sizeof(struct ComponentModel));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_RENDERLAYER, sizeof(struct ComponentRenderLayer));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_RIGIDBODY, sizeof(struct ComponentRigidbody));
     _ECS_DECL_COMPONENT_INTERN(

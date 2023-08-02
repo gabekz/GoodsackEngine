@@ -29,6 +29,45 @@
 #define TESTING_DRAW_UI   1
 #define TESTING_DRAW_LINE 0
 
+#if 0
+static void
+__update_camera_ubo(Renderer *renderer)
+{
+    for (ui32 i = 0; i < renderer->camera_data.totalCameras; i++) {
+        if (DEVICE_API_OPENGL) {
+            // Get the starting position
+            ui32 ubo_offset = i * (renderer->camera_data.uboSize);
+
+            glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_data.uboId);
+            glBufferSubData(GL_UNIFORM_BUFFER,
+                            ubo_offset,
+                            sizeof(vec4),
+                            &renderer->camera_data.cameras[i]->position);
+            glBufferSubData(
+              GL_UNIFORM_BUFFER,
+              ubo_offset + sizeof(vec4),
+              sizeof(mat4),
+              (float *)*renderer->camera_data.cameras[i]->projection);
+            glBufferSubData(GL_UNIFORM_BUFFER,
+                            ubo_offset + sizeof(mat4) + sizeof(vec4),
+                            sizeof(mat4),
+                            (float *)*renderer->camera_data.cameras[i]->view);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        } else if (DEVICE_API_VULKAN) {
+            // TEST (while we don't have direct descriptor sets for objects)
+            mat4 p = GLM_MAT4_IDENTITY_INIT;
+            // glm_mat4_copy(p, camera->uniform.model);
+            // glm_mat4_copy(p, camera->model);
+            // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1,
+            // 0}); glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1,
+            // 0, 1});
+            // camera->proj[1][1] *= -1;
+            // camera->uniform.proj[1][1] *= -1;
+        }
+    }
+}
+#endif
+
 Renderer *
 renderer_init()
 {
@@ -193,17 +232,31 @@ renderer_start(Renderer *renderer)
 
         // Create camera Uniform Buffer
         ui32 camera_uboSize = sizeof(vec4) + (2 * sizeof(mat4));
-        ui32 camera_uboId   = NULL;
+        ui32 camera_uboId;
         glGenBuffers(1, &camera_uboId);
         glBindBuffer(GL_UNIFORM_BUFFER, camera_uboId);
-        glBufferData(
-          GL_UNIFORM_BUFFER, camera_uboSize * 4, NULL, GL_DYNAMIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER,
+                     camera_uboSize * MAX_CAMERAS,
+                     NULL,
+                     GL_DYNAMIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
         glBindBufferRange(
-          GL_UNIFORM_BUFFER, 0, camera_uboId, 0, camera_uboSize * 4);
+          GL_UNIFORM_BUFFER, 0, camera_uboId, 0, camera_uboSize * MAX_CAMERAS);
 
-        renderer->camera_data.uboId   = camera_uboId;
-        renderer->camera_data.uboSize = camera_uboSize;
+        renderer->camera_data.uboId        = camera_uboId;
+        renderer->camera_data.uboSize      = camera_uboSize;
+        renderer->camera_data.totalCameras = 2; // TODO: find an alternative
+
+#if 0
+        CameraData **camdata = malloc(sizeof(CameraData **) * MAX_CAMERAS);
+        renderer->camera_data.cameras = camdata;
+        for (ui32 i = 0; i < MAX_CAMERAS; i++) {
+            *(renderer->camera_data.cameras + i) = malloc(sizeof(CameraData *));
+            glm_vec4_zero(renderer->camera_data.cameras[i]->position);
+            glm_mat4_identity(renderer->camera_data.cameras[i]->projection);
+            glm_mat4_identity(renderer->camera_data.cameras[i]->view);
+        }
+#endif
 
     } else if (DEVICE_API_VULKAN) {
         ecs_event(ecs, ECS_INIT);
@@ -232,6 +285,9 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 
     ecs_event(ecs, ECS_UPDATE);
     ecs_event(ecs, ECS_LATE_UPDATE);
+
+    // Update all camera UBO's
+    //__update_camera_ubo(renderer);
 
     /*-------------------------------------------
         Pass #0 - Depth Prepass

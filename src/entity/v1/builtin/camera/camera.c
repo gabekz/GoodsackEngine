@@ -64,9 +64,7 @@ _initialize_shader_data(struct ComponentCamera *camera)
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
         glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboId, 0, uboSize);
         camera->uboId = uboId;
-}
-    else if (DEVICE_API_VULKAN)
-    {
+    } else if (DEVICE_API_VULKAN) {
         /*
         VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
 
@@ -85,43 +83,45 @@ _upload_shader_data(Entity e,
                     struct ComponentCamera *camera,
                     struct ComponentTransform *transform)
 {
+    Renderer *renderer = e.ecs->renderer;
+#if 0
+    glm_vec3_copy(
+      transform->position,
+      p_renderer->camera_data.cameras[camera->renderLayer]->position);
+    glm_mat4_copy(
+      camera->proj,
+      p_renderer->camera_data.cameras[camera->renderLayer]->projection);
+    glm_mat4_copy(camera->view,
+                  p_renderer->camera_data.cameras[camera->renderLayer]->view);
+#else
     if (DEVICE_API_OPENGL) {
-
-        ui32 renderLayer = 0; // TODO: render layer
         // Get the starting position
-        ui32 ubo_index = renderLayer * e.ecs->renderer->camera_data.uboSize;
+        ui32 ubo_offset = camera->renderLayer * (renderer->camera_data.uboSize);
 
-        glBindBuffer(GL_UNIFORM_BUFFER, e.ecs->renderer->camera_data.uboId);
+        glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_data.uboId);
         glBufferSubData(
-          GL_UNIFORM_BUFFER, 0, sizeof(vec4), transform->position);
+          GL_UNIFORM_BUFFER, ubo_offset, sizeof(vec4), transform->position);
         glBufferSubData(GL_UNIFORM_BUFFER,
-                        ubo_index + sizeof(vec4),
+                        ubo_offset + sizeof(vec4),
                         sizeof(mat4),
                         camera->proj);
         glBufferSubData(GL_UNIFORM_BUFFER,
-                        ubo_index + sizeof(mat4) + sizeof(vec4),
+                        ubo_offset + sizeof(mat4) + sizeof(vec4),
                         sizeof(mat4),
                         camera->view);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     } else if (DEVICE_API_VULKAN) {
-
         // TEST (while we don't have direct descriptor sets for objects)
         mat4 p = GLM_MAT4_IDENTITY_INIT;
         // glm_mat4_copy(p, camera->uniform.model);
-        glm_mat4_copy(p, camera->model);
-        // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1, 0});
-        // glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1, 0, 1});
+        // glm_mat4_copy(p, camera->model);
+        // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1,
+        // 0}); glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1,
+        // 0, 1});
         camera->proj[1][1] *= -1;
         // camera->uniform.proj[1][1] *= -1;
-
-#if !(USING_GENERATED_COMPONENTS)
-        memcpy(
-          e.ecs->renderer->vulkanDevice
-            ->uniformBuffersMapped[e.ecs->renderer->vulkanDevice->currentFrame],
-          &camera->uniform,
-          sizeof(camera->uniform));
-#endif
     }
+#endif
 }
 
 static void
@@ -165,103 +165,108 @@ static void
 update(Entity e)
 {
     if (!(ecs_has(e, C_CAMERA))) return;
-    if (!(ecs_has(e, C_CAMERALOOK))) return;
     if (!(ecs_has(e, C_TRANSFORM))) return;
 
-    struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
-    struct ComponentCameraLook *cameraLook =
-      ecs_get(e, C_CAMERALOOK); // TODO: Move away
-
+    struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
-    Input input = device_getInput();
-    double cntX, cntY;
+    if (ecs_has(e, C_CAMERALOOK)) {
 
-    if (input.cursor_state.is_locked == TRUE) {
+        struct ComponentCameraLook *cameraLook =
+          ecs_get(e, C_CAMERALOOK); // TODO: Move away
 
-        cntX = input.cursor_position[0];
-        cntY = input.cursor_position[1];
+        Input input = device_getInput();
+        double cntX, cntY;
 
-        if (cameraLook->firstMouse) {
-            cameraLook->lastX = cntX;
-            cameraLook->lastY = cntY;
+        if (input.cursor_state.is_locked == TRUE) {
 
-            cameraLook->firstMouse = FALSE;
+            cntX = input.cursor_position[0];
+            cntY = input.cursor_position[1];
+
+            if (cameraLook->firstMouse) {
+                cameraLook->lastX = cntX;
+                cameraLook->lastY = cntY;
+
+                cameraLook->firstMouse = FALSE;
+            }
+
+        } else {
+            cntX                   = cameraLook->lastX;
+            cntY                   = cameraLook->lastY;
+            cameraLook->firstMouse = TRUE;
         }
 
-    } else {
-        cntX                   = cameraLook->lastX;
-        cntY                   = cameraLook->lastY;
-        cameraLook->firstMouse = TRUE;
-    }
+        float xOffset = cntX - cameraLook->lastX;
+        float yOffset = cameraLook->lastY - cntY;
 
-    float xOffset = cntX - cameraLook->lastX;
-    float yOffset = cameraLook->lastY - cntY;
+        cameraLook->lastX = cntX;
+        cameraLook->lastY = cntY;
 
-    cameraLook->lastX = cntX;
-    cameraLook->lastY = cntY;
+        const float sensitivity =
+          cameraLook->sensitivity / CAMERA_SENSITIVITY_DIVS;
 
-    const float sensitivity = cameraLook->sensitivity / CAMERA_SENSITIVITY_DIVS;
+        xOffset *= sensitivity;
+        yOffset *= sensitivity;
 
-    xOffset *= sensitivity;
-    yOffset *= sensitivity;
-
-    cameraLook->yaw += xOffset;
-    cameraLook->pitch += yOffset;
+        cameraLook->yaw += xOffset;
+        cameraLook->pitch += yOffset;
 
 #if CAMERA_SHAKE
-    // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
-    float seed    = 255.0f;
-    float shakeCO = 0.5f * s_shake * _noise(seed, glfwGetTime() * 50.0f);
+        // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
+        float seed    = 255.0f;
+        float shakeCO = 0.5f * s_shake * _noise(seed, glfwGetTime() * 50.0f);
 #endif // CAMERA_SHAKE
 
-    // Clamp pitch
-    if (cameraLook->pitch > 89.0f) cameraLook->pitch = 89.0f;
-    if (cameraLook->pitch < -89.0f) cameraLook->pitch = -89.0f;
+        // Clamp pitch
+        if (cameraLook->pitch > 89.0f) cameraLook->pitch = 89.0f;
+        if (cameraLook->pitch < -89.0f) cameraLook->pitch = -89.0f;
 
-    // Calculate camera direction
-    vec3 camDirection = GLM_VEC3_ZERO_INIT;
+        // Calculate camera direction
+        vec3 camDirection = GLM_VEC3_ZERO_INIT;
 #if CAMERA_SHAKE
-    camDirection[0] = cos(glm_rad(cameraLook->yaw + shakeCO + 1)) *
-                      cos(glm_rad(cameraLook->pitch + shakeCO));
-    camDirection[1] = sin(glm_rad(cameraLook->pitch + shakeCO));
-    camDirection[2] = sin(glm_rad(cameraLook->yaw + shakeCO + 1)) *
-                      cos(glm_rad(cameraLook->pitch));
+        camDirection[0] = cos(glm_rad(cameraLook->yaw + shakeCO + 1)) *
+                          cos(glm_rad(cameraLook->pitch + shakeCO));
+        camDirection[1] = sin(glm_rad(cameraLook->pitch + shakeCO));
+        camDirection[2] = sin(glm_rad(cameraLook->yaw + shakeCO + 1)) *
+                          cos(glm_rad(cameraLook->pitch));
 #else
-    camDirection[0] = cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
-    camDirection[1] = sin(glm_rad(camera->pitch));
-    camDirection[2] = sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
+        camDirection[0] =
+          cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
+        camDirection[1] = sin(glm_rad(camera->pitch));
+        camDirection[2] =
+          sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
 #endif // CAMERA_SHAKE
 
-    glm_vec3_normalize_to(camDirection, camera->front);
+        glm_vec3_normalize_to(camDirection, camera->front);
 
-    // copy front to orientation
-    float camDirectionDeg[3] = {glm_deg(camera->front[1]),
-                                glm_deg(-camera->front[0]),
-                                glm_deg(-camera->front[2])};
-    // glm_vec3_copy(camDirectionDeg, transform->orientation);
-    // glm_mat4_inv(camera->model, transform->model);
+        // copy front to orientation
+        float camDirectionDeg[3] = {glm_deg(camera->front[1]),
+                                    glm_deg(-camera->front[0]),
+                                    glm_deg(-camera->front[2])};
+        // glm_vec3_copy(camDirectionDeg, transform->orientation);
+        // glm_mat4_inv(camera->model, transform->model);
 
-    // Process Camera Input as long as the cursor is locked
-    if (input.cursor_state.is_locked == TRUE) {
-        camera_input(e, e.ecs->renderer->window);
+        // Process Camera Input as long as the cursor is locked
+        if (input.cursor_state.is_locked == TRUE) {
+            camera_input(e, e.ecs->renderer->window);
+        }
+
+        // glm_vec3_add(transform->position, camDirection, camera->front);
+
+        vec3 cameraUp = GLM_VEC3_ZERO_INIT;
+        glm_cross(camera->axisUp, camera->front, cameraUp);
+        glm_vec3_normalize(cameraUp);
+
+        vec3 p = GLM_VEC3_ZERO_INIT;
+        glm_vec3_add(transform->position, camera->front, p);
+
+        // MVP: view
+        glm_lookat(transform->position, p, camera->axisUp, camera->view);
+        glm_mat4_inv(camera->view, transform->model);
+        // glm_mat4_copy(camera->view, transform->model);
+
+        // LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);
     }
-
-    // glm_vec3_add(transform->position, camDirection, camera->front);
-
-    vec3 cameraUp = GLM_VEC3_ZERO_INIT;
-    glm_cross(camera->axisUp, camera->front, cameraUp);
-    glm_vec3_normalize(cameraUp);
-
-    vec3 p = GLM_VEC3_ZERO_INIT;
-    glm_vec3_add(transform->position, camera->front, p);
-
-    // MVP: view
-    glm_lookat(transform->position, p, camera->axisUp, camera->view);
-    glm_mat4_inv(camera->view, transform->model);
-    // glm_mat4_copy(camera->view, transform->model);
-
-    // LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);
 
     float aspectRatio =
       (float)camera->screenWidth / (float)camera->screenHeight;

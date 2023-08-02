@@ -17,7 +17,7 @@
 
     "Camera": {
         "int": ["screenWidth", "screenHeight"],
-        "uint": ["uboId"],
+        "uint": ["renderLayer"],
         "float": ["fov", "nearZ", "farZ"],
         "vec3": ["axisUp", "center", "front"],
         "mat4": ["model", "view", "proj"],
@@ -42,6 +42,10 @@
         "Resource": [ "material", "mesh", "pModel", "vkVBO"],
         "string": ["modelPath"],
         "uint": ["vbo"]
+    },
+
+    "RenderLayer": {
+        "uint": ["renderLayer"]
     },
 
     "Rigidbody": {

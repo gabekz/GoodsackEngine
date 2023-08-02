@@ -28,6 +28,7 @@ static void
 DrawModel(struct ComponentModel *model,
           struct ComponentTransform *transform,
           ui16 useOverrideMaterial, // Material from renderer
+          ui32 renderLayer,
           VkCommandBuffer commandBuffer,
           Renderer *renderer)
 {
@@ -116,6 +117,11 @@ DrawModel(struct ComponentModel *model,
             glUniform1f(glGetUniformLocation(material->shaderProgram->id,
                                              "u_light_strength"),
                         renderer->light->strength);
+
+            // Set the correct camera layer
+            glUniform1i(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_render_layer"),
+                        renderLayer);
 
             vao_bind(mesh->vao);
 
@@ -223,6 +229,13 @@ render(Entity e)
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
     struct ComponentModel *model         = ecs_get(e, C_MODEL);
 
+    ui32 renderLayer = 0; // DEFAULT RENDER LAYER when not specified.
+    if (ecs_has(e, C_RENDERLAYER)) {
+        renderLayer =
+          (ui32)((struct ComponentRenderLayer *)ecs_get(e, C_RENDERLAYER))
+            ->renderLayer;
+    }
+
     RenderPass pass = e.ecs->renderer->currentPass;
 
     // TODO: get lightspace matrix
@@ -255,13 +268,16 @@ render(Entity e)
 
         // Regular Render
         (DEVICE_API_OPENGL)
-          ? DrawModel(model, transform, FALSE, NULL, e.ecs->renderer)
-          : DrawModel(model, transform, FALSE, cb, e.ecs->renderer);
+          ? DrawModel(
+              model, transform, FALSE, renderLayer, NULL, e.ecs->renderer)
+          : DrawModel(
+              model, transform, FALSE, renderLayer, cb, e.ecs->renderer);
 
     } else {
         (DEVICE_API_OPENGL)
-          ? DrawModel(model, transform, TRUE, NULL, e.ecs->renderer)
-          : DrawModel(model, transform, TRUE, cb, e.ecs->renderer);
+          ? DrawModel(
+              model, transform, TRUE, renderLayer, NULL, e.ecs->renderer)
+          : DrawModel(model, transform, TRUE, renderLayer, cb, e.ecs->renderer);
     }
 }
 

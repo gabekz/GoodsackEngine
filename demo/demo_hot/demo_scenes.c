@@ -24,7 +24,8 @@ __create_camera_entity(ECS *ecs, vec3 position)
     _ecs_add_internal(camera,
                       C_CAMERA,
                       (void *)(&(struct ComponentCamera) {
-                        .axisUp = {0.0f, 1.0f, 0.0f},
+                        .axisUp      = {0.0f, 1.0f, 0.0f},
+                        .renderLayer = 0, // DEFAULT RENDER LAYER (camera-zero)
                       }));
     _ecs_add_internal(camera,
                       C_CAMERALOOK,
@@ -682,18 +683,22 @@ _scene7(ECS *ecs, Renderer *renderer)
     /*
       Camera 2
     */
-#if 0
+#if 1
     Entity camera2 = ecs_new(ecs);
     _ecs_add_internal(camera2,
                       C_CAMERA,
                       (void *)(&(struct ComponentCamera) {
-                        .axisUp = {0.0f, 1.0f, 0.0f},
-                        .fov    = 75,
+                        .axisUp      = {0.0f, 1.0f, 0.0f},
+                        .fov         = 45,
+                        .renderLayer = 1,
                       }));
     _ecs_add_internal(camera2,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
-                        .parent = pCamera,
+                        .position    = {0.0f, 0.2f, 0.0f},
+                        .orientation = {0.0f, 0.0f, 0.0f},
+                        .scale       = {1.0f, 1.0f, 1.0f},
+                        .parent      = pCamera,
                       }));
 #endif
 
@@ -738,6 +743,14 @@ _scene7(ECS *ecs, Renderer *renderer)
                                            .drawMode = DRAW_ELEMENTS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
+
+    // Render layer (only render on camera with specified layer)
+    _ecs_add_internal(attachedEntity,
+                      C_RENDERLAYER,
+                      (void *)(&(struct ComponentRenderLayer) {
+                        .renderLayer = 1,
+                      }));
+
     _ecs_add_internal(
       attachedEntity,
       C_WEAPON,
