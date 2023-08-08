@@ -40,10 +40,17 @@ void
 skybox_draw(Skybox *self)
 {
     // glDepthMask(GL_FALSE);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, self->prefilterMap->id);
-
     shader_use(self->shader);
+    glActiveTexture(GL_TEXTURE0);
+
+#if SKYBOX_DRAW_BLUR
+    glBindTexture(GL_TEXTURE_CUBE_MAP, self->prefilterMap->id);
+    glUniform1i(glGetUniformLocation(self->shader->id, "u_draw_blur"), 1);
+#else
+    glBindTexture(GL_TEXTURE_CUBE_MAP, self->cubemap->id);
+    glUniform1i(glGetUniformLocation(self->shader->id, "u_draw_blur"), 0);
+#endif
+
     vao_bind(self->vao);
     // glDrawArrays(GL_TRIANGLES, 0, 24);
     glDrawElements(GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
@@ -81,7 +88,7 @@ skybox_hdr_create(Texture *hdrTexture)
     for (int i = 0; i < 6; i++) {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                      0,
-                     GL_RGB16F,
+                     GL_SRGB8,
                      512,
                      512,
                      0,

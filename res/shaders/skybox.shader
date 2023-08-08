@@ -49,6 +49,7 @@ main()
 #version 420 core
 out vec4 FragColor;
 
+uniform int u_draw_blur = 0;
 in vec3 TexCoords;
 
 layout(binding = 0) uniform samplerCube skybox;
@@ -56,8 +57,9 @@ layout(binding = 0) uniform samplerCube skybox;
 void
 main()
 {
-    vec3 envColor = textureLod(skybox, TexCoords, 1).rgb;
-    // vec3 envColor = texture(skybox, TexCoords).rgb;
+    vec3 envColor = (u_draw_blur > 0) ? textureLod(skybox, TexCoords, 1).rgb
+                                      : texture(skybox, TexCoords).rgb;
+
     // envColor = envColor / (envColor + vec3(1.0));
     // envColor = pow(envColor, vec3(1.0/2.2));
 
