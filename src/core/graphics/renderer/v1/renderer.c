@@ -246,6 +246,7 @@ renderer_start(Renderer *renderer)
         renderer->camera_data.uboId        = camera_uboId;
         renderer->camera_data.uboSize      = camera_uboSize;
         renderer->camera_data.totalCameras = 2; // TODO: find an alternative
+        renderer->camera_data.activeCamera = 0;
 
 #if 0
         CameraData **camdata = malloc(sizeof(CameraData **) * MAX_CAMERAS);

@@ -90,6 +90,7 @@ struct _renderer
         // CameraData **cameras; // List of cameras
 
         ui32 totalCameras; // TODO: find an alternative
+        ui32 activeCamera;
     } camera_data;
 };
 

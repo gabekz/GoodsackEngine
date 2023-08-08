@@ -2,16 +2,9 @@
 TODO:
 - CameraComponent needs to be split into several parts:
 
-// FOV, Near/Far, Projection
-- CameraComponent
-// MouseLook, sensitivity
-- CameraLookComponent
-
 // Trauma, etc.
 - CameraShakeComponent
 
-// Movement
-- FlyControlComponent
 **/
 
 #include "camera.h"
@@ -237,14 +230,13 @@ update(Entity e)
           sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
 #endif // CAMERA_SHAKE
 
-        glm_vec3_normalize_to(camDirection, camera->front);
+        transform->orientation[0] = glm_deg(camDirection[0]);
+        transform->orientation[1] = glm_deg(camDirection[1]);
+        transform->orientation[2] = glm_deg(camDirection[2]);
+        // glm_vec3_copy(camDirection, camera->front);
 
-        // copy front to orientation
-        float camDirectionDeg[3] = {glm_deg(camera->front[1]),
-                                    glm_deg(-camera->front[0]),
-                                    glm_deg(-camera->front[2])};
-        // glm_vec3_copy(camDirectionDeg, transform->orientation);
-        // glm_mat4_inv(camera->model, transform->model);
+        // LOG_INFO("x: %f\ty:%f\tz:%f", camera->front[0], camera->front[1],
+        // camera->front[2]);
 
         // Process Camera Input as long as the cursor is locked
         if (input.cursor_state.is_locked == TRUE) {
@@ -253,19 +245,32 @@ update(Entity e)
 
         // glm_vec3_add(transform->position, camDirection, camera->front);
 
-        vec3 cameraUp = GLM_VEC3_ZERO_INIT;
-        glm_cross(camera->axisUp, camera->front, cameraUp);
-        glm_vec3_normalize(cameraUp);
+        // TEST
+    }
 
-        vec3 p = GLM_VEC3_ZERO_INIT;
-        glm_vec3_add(transform->position, camera->front, p);
+    camera->front[0] = glm_rad(transform->orientation[0]);
+    camera->front[1] = glm_rad(transform->orientation[1]);
+    camera->front[2] = glm_rad(transform->orientation[2]);
+    glm_normalize_to(camera->front, camera->front);
 
-        // MVP: view
-        glm_lookat(transform->position, p, camera->axisUp, camera->view);
-        glm_mat4_inv(camera->view, transform->model);
-        // glm_mat4_copy(camera->view, transform->model);
+    vec3 p = GLM_VEC3_ZERO_INIT;
+    glm_vec3_add(transform->position, camera->front, p);
 
-        // LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);
+    // MVP: view
+    glm_lookat(transform->position, p, camera->axisUp, camera->view);
+    // glm_mat4_inv(camera->view, transform->model);
+    // glm_mat4_copy(camera->view, transform->model);
+
+    if (transform->hasParent &&
+        ecs_has(*(Entity *)transform->parent, C_CAMERA)) {
+
+        struct ComponentTransform *parent =
+          ecs_get(*(Entity *)transform->parent, C_TRANSFORM);
+        struct ComponentCamera *parentCam =
+          ecs_get(*(Entity *)transform->parent, C_CAMERA);
+
+        glm_vec3_copy(parent->position, transform->position);
+        glm_mat4_copy(parentCam->view, camera->view);
     }
 
     float aspectRatio =

@@ -17,8 +17,8 @@ local pos_standby = {
     -0.4340
 }
 
-local fov_aiming = 50
-local fov_standby = 70
+local fov_aiming = 30
+local fov_standby = 45
 local fov_lerp_speed = 10
 
 -------------------------------------

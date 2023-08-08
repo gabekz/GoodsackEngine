@@ -683,7 +683,7 @@ _scene7(ECS *ecs, Renderer *renderer)
     /*
       Camera 2
     */
-#if 1
+#if DEMO_USING_MULTIPLE_CAMERAS
     Entity camera2 = ecs_new(ecs);
     _ecs_add_internal(camera2,
                       C_CAMERA,
@@ -744,12 +744,14 @@ _scene7(ECS *ecs, Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
+#if DEMO_USING_MULTIPLE_CAMERAS
     // Render layer (only render on camera with specified layer)
     _ecs_add_internal(attachedEntity,
                       C_RENDERLAYER,
                       (void *)(&(struct ComponentRenderLayer) {
                         .renderLayer = 1,
                       }));
+#endif
 
     _ecs_add_internal(
       attachedEntity,
@@ -779,7 +781,7 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     texMissing  = texture_create_n("../res/textures/defaults/missing.jpg");
 
     skyboxMain = skybox_hdr_create(
-      texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr"));
+      texture_create_hdr("../res/textures/hdr/belfast_sunset_puresky_4k.hdr"));
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);
