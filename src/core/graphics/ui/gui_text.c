@@ -1,6 +1,43 @@
 #include "gui_text.h"
 
 #include <ctype.h>
+#include <stdio.h>
+
+static void
+__fill_font_data(char *self_widths, const char *path_font_data)
+{
+    self_widths[0] = 32;
+
+    FILE *p_file;
+    ui32 map_width, map_height;
+    ui32 cell_width, cell_height;
+    char start_character;
+
+    p_file = fopen(path_font_data, "rb");
+    if (p_file == NULL) {
+        LOG_ERROR("Failed to openl file: %s", path_font_data);
+    }
+    fread(&map_width, 4, 1, p_file);
+    fread(&map_height, 4, 1, p_file);
+    fread(&cell_width, 4, 1, p_file);
+    fread(&cell_height, 4, 1, p_file);
+
+    int total_chars = (map_width / cell_width) * (map_height / cell_height);
+
+    fread(&start_character, 1, 1, p_file);
+    LOG_INFO("starting char is: %c", start_character);
+
+    // TODO: Not sure why we have 32 bullshit bytes in the .dat file
+    char filler[32];
+    fread(&filler, 1, 32, p_file);
+
+    fread(self_widths, 1, total_chars, p_file);
+#if 0
+    for (int i = 0; i < total_chars; i++) {
+        LOG_INFO("%d", self_widths[i]);
+    }
+#endif
+}
 
 GuiText *
 gui_text_create(const char *text_string)
@@ -12,7 +49,7 @@ gui_text_create(const char *text_string)
                      NULL,
                      (TextureOptions) {1, GL_RGBA, false, true});
 
-    ret->text = text_string;
+    __fill_font_data(ret->char_spacing, "../res/fonts/font-bfd.dat");
 
     // Create elements for each character in the string
     ui32 char_count      = strlen(text_string);
@@ -36,12 +73,19 @@ gui_text_create(const char *text_string)
 
     // ui32 sprite_alphabet_index_begin =
 
+    // store the last spacing (kerning)
+    int last_effective_spacing = 10;
+
     // Loop through each character
     for (int i = 0; i < char_count; i++) {
         char c = toupper(text_string[i]);
 
         int target = (int)c - atlas_first_char_ascii_num;
         if (target < 0) continue; // TODO
+
+        // NOTE: Target index references the character effective width
+        // LOG_INFO("Target: %d, spacing: %d", target,
+        // ret->char_spacing[target]);
 
         int row = target % sprite_cells_rows;
         int col = (target / sprite_cells_cols);
@@ -63,8 +107,16 @@ gui_text_create(const char *text_string)
           ((col + 1) * sprite_cells_size[1]) / sprite_sheet_size[1];
         tex_coords[3] = ((col)*sprite_cells_size[1]) / sprite_sheet_size[1];
 
+        // Spacing
+        int base_spacing = 25;
+        int spacing      = (base_spacing * i);// + last_effective_spacing;
+
+        // store Kerning
+        last_effective_spacing = (int)(ret->char_spacing[target]);
+        LOG_INFO("new last effective: %d", last_effective_spacing);
+
         // CREATE NEW ELEMENTS
-        ret->elements[i] = gui_element_create((vec2) {25 + (18 * i), 25},
+        ret->elements[i] = gui_element_create((vec2) {50 + (16.5f * i) - last_effective_spacing, 25},
                                               (vec2) {50, 50},
                                               ret->font_atlas,
                                               tex_coords);

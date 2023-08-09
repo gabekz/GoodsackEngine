@@ -142,7 +142,7 @@ renderer_init()
       (vec2) {1920 / 2, 1080 / 2}, (vec2) {10, 10}, guiTexture, NULL);
 
     // Test GUI Text
-    ret->uiText = gui_text_create("Goodsack");
+    ret->uiText = gui_text_create("Goodsack Engine");
 
     return ret;
 }

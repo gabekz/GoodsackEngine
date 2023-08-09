@@ -16,7 +16,8 @@
 #include <entity/v1/builtin/component_test.h>
 
 // #define RENDERER_2
-#define USING_LUA 1
+#define USING_LUA                    1
+#define USING_RUNTIME_LOADING_SCREEN 1
 
 // Starting cursor state
 #define INIT_CURSOR_LOCKED  1
@@ -43,15 +44,18 @@ static struct
 static void
 _gsk_check_args(int argc, char *argv[])
 {
-    if (argc > 1) {
-        for (int i = 0; i < argc; i++) {
-            if (std::string(argv[i]) == "--vulkan") {
-                device_setGraphics(GRAPHICS_API_VULKAN);
-            } else if (std::string(argv[i]) == "--opengl") {
-                device_setGraphics(GRAPHICS_API_OPENGL);
-            } else if (std::string(argv[i]) == "--errlevel") {
-                logger_setLevel(LogLevel_ERROR);
-            }
+    if (argc <= 1) {
+        device_setGraphics(GRAPHICS_API_OPENGL);
+        return;
+    }
+
+    for (int i = 0; i < argc; i++) {
+        if (std::string(argv[i]) == "--vulkan") {
+            device_setGraphics(GRAPHICS_API_VULKAN);
+        } else if (std::string(argv[i]) == "--opengl") {
+            device_setGraphics(GRAPHICS_API_OPENGL);
+        } else if (std::string(argv[i]) == "--errlevel") {
+            logger_setLevel(LogLevel_ERROR);
         }
     }
 }
@@ -109,6 +113,19 @@ gsk_runtime_setup(int argc, char *argv[])
     // Initialize Input
     device_setInput((Input {.cursor_position = {0, 0}}));
     device_setCursorState(INIT_CURSOR_LOCKED, INIT_CURSOR_VISIBLE);
+
+#if USING_RUNTIME_LOADING_SCREEN
+    glfwSwapInterval(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    GuiText *loading_text = gui_text_create("Loading");
+    for (int i = 0; i < 2; i++) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        gui_text_draw(loading_text);
+        glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
+    }
+#endif // RUNTIME_LOADING_SCREEN
 
 #ifdef USING_LUA
     // Main Lua entry

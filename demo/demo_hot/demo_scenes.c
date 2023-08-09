@@ -596,19 +596,21 @@ _scene7(ECS *ecs, Renderer *renderer)
      |  Resources
      -----------------------*/
 
+    /*
     Texture *texBrickDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
+    */
+    Texture *texBrickDiff =
+      texture_create_d("../demo/demo_hot/Resources/textures/prototype.png");
     Texture *texBrickNorm = texture_create_n(
       "../demo/demo_hot/Resources/textures/brickwall/normal.png");
 
     Material *matFloor = material_create(NULL,
-                                         "../res/shaders/pbr.shader",
-                                         5,
+                                         "../res/shaders/lit-diffuse.shader",
+                                         3,
                                          texBrickDiff,
-                                         texBrickNorm,
-                                         texDefSpec,
-                                         texPbrAo,
-                                         texPbrAo);
+                                         texDefNorm,
+                                         texDefSpec);
 
     Texture *texCerbA = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
@@ -774,7 +776,7 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
     // Default textures with options
     s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};
-    s_texOpsPbr = (TextureOptions) {0, GL_SRGB_ALPHA, false, true};
+    s_texOpsPbr = (TextureOptions) {8, GL_SRGB_ALPHA, true, true};
     texDefSpec  = texture_create_n("../res/textures/defaults/black.png");
     texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo    = texture_create_n("../res/textures/defaults/white.png");

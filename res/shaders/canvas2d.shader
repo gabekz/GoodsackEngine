@@ -42,5 +42,7 @@ main()
                    ? texture(t_Texture, fs_in.texCoords) * u_color
                    : u_color;
 
-    out_color = pixel;
+    if (pixel.rgb == vec3(0)) discard;
+
+    out_color = pixel * u_color;
 }
