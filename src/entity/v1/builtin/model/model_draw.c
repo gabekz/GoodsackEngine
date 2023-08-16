@@ -73,7 +73,8 @@ DrawModel(struct ComponentModel *model,
                     texture_bind(mesh->materialImported->textures[1], 10);
                 } else if (!mesh->usingImportedMaterial) {
                     glActiveTexture(GL_TEXTURE10);
-                    texture_bind(((Material *)model->material)->textures[1], 10);
+                    texture_bind(((Material *)model->material)->textures[1],
+                                 10);
                 }
             }
 

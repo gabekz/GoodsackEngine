@@ -97,7 +97,7 @@ init(void)
     InitializeCriticalSection(&s_mutex);
 #else
     pthread_mutex_init(&s_mutex, NULL);
-#endif /* defined(_WIN32) || defined(_WIN64) */
+#endif                 /* defined(_WIN32) || defined(_WIN64) */
     s_initialized = 1; /* true */
 }
 

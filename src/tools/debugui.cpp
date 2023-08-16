@@ -346,10 +346,10 @@ DebugGui::Render()
                     ImGui::TextUnformatted("Entity");
                     ImGui::TableNextColumn();
                     if (ImGui::SmallButton("Inspect")) {
-                        Entity entity         = (Entity {.id    = (EntityId)row_n + 1,
-                                                 .index = (ui64)row_n,
-                                                 .ecs   = ecs});
-                        m_selectedEntity      = entity;
+                        Entity entity    = (Entity {.id    = (EntityId)row_n + 1,
+                                                    .index = (ui64)row_n,
+                                                    .ecs   = ecs});
+                        m_selectedEntity = entity;
                         m_showComponentViewer = true;
                     }
                     ImGui::PopID();
@@ -517,7 +517,8 @@ DebugGui::Render()
             ImGui::PopStyleColor();
             ImGui::Separator();
             struct ComponentCameraLook &p =
-              *(static_cast<struct ComponentCameraLook *>(ecs_get(e, C_CAMERALOOK)));
+              *(static_cast<struct ComponentCameraLook *>(
+                ecs_get(e, C_CAMERALOOK)));
             ImGui::DragFloat("Sensitivity", &p.sensitivity, 0.45f, 0.9f);
             ImGui::EndChild();
         }
@@ -530,7 +531,8 @@ DebugGui::Render()
             ImGui::PopStyleColor();
             ImGui::Separator();
             struct ComponentCameraMovement &p =
-              *(static_cast<struct ComponentCameraMovement *>(ecs_get(e, C_CAMERAMOVEMENT)));
+              *(static_cast<struct ComponentCameraMovement *>(
+                ecs_get(e, C_CAMERAMOVEMENT)));
             ImGui::DragFloat("Speed ", &p.speed, 0.45f, 0.9f);
             ImGui::EndChild();
         }
