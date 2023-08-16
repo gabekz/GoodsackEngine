@@ -6,8 +6,6 @@
 static void
 __fill_font_data(char *self_widths, const char *path_font_data)
 {
-    self_widths[0] = 32;
-
     FILE *p_file;
     ui32 map_width, map_height;
     ui32 cell_width, cell_height;
@@ -15,7 +13,7 @@ __fill_font_data(char *self_widths, const char *path_font_data)
 
     p_file = fopen(path_font_data, "rb");
     if (p_file == NULL) {
-        LOG_ERROR("Failed to openl file: %s", path_font_data);
+        LOG_CRITICAL("Failed to openl file: %s", path_font_data);
     }
     fread(&map_width, 4, 1, p_file);
     fread(&map_height, 4, 1, p_file);
@@ -25,7 +23,7 @@ __fill_font_data(char *self_widths, const char *path_font_data)
     int total_chars = (map_width / cell_width) * (map_height / cell_height);
 
     fread(&start_character, 1, 1, p_file);
-    LOG_INFO("starting char is: %c", start_character);
+    // LOG_INFO("starting char is: %c", start_character);
 
     // TODO: Not sure why we have 32 bullshit bytes in the .dat file
     char filler[32];
@@ -43,6 +41,11 @@ GuiText *
 gui_text_create(const char *text_string)
 {
     GuiText *ret = malloc(sizeof(GuiText));
+
+    const char *font_bmp_path = "../res/fonts/font.bmp";
+    const char *font_dat_path = "../res/fonts/font-bfd.dat";
+
+    LOG_DEBUG("Loading Font: \n%s\n%s", font_bmp_path, font_dat_path);
 
     ret->font_atlas =
       texture_create("../res/fonts/font.bmp",
@@ -93,7 +96,7 @@ gui_text_create(const char *text_string)
         // invert y-axis
         col = sprite_cells_rows - 1 + (sprite_cell_y_incr * col);
 
-        LOG_INFO("Char %c converts to [%d : %d]", c, row, col);
+        // LOG_INFO("Char %c converts to [%d : %d]", c, row, col);
 
         // target is now the target *index* of the font atlas.
 
@@ -109,17 +112,18 @@ gui_text_create(const char *text_string)
 
         // Spacing
         int base_spacing = 25;
-        int spacing      = (base_spacing * i);// + last_effective_spacing;
+        int spacing      = (base_spacing * i); // + last_effective_spacing;
 
         // store Kerning
         last_effective_spacing = (int)(ret->char_spacing[target]);
-        LOG_INFO("new last effective: %d", last_effective_spacing);
+        // LOG_INFO("new last effective: %d", last_effective_spacing);
 
         // CREATE NEW ELEMENTS
-        ret->elements[i] = gui_element_create((vec2) {50 + (16.5f * i) - last_effective_spacing, 25},
-                                              (vec2) {50, 50},
-                                              ret->font_atlas,
-                                              tex_coords);
+        ret->elements[i] = gui_element_create(
+          (vec2) {50 + (16.5f * i) - last_effective_spacing, 25},
+          (vec2) {50, 50},
+          ret->font_atlas,
+          tex_coords);
     }
 
     return ret;

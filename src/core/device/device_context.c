@@ -45,6 +45,10 @@ _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
         device_setCursorState(!deviceInput.cursor_state.is_locked,
                               !deviceInput.cursor_state.is_visible);
     }
+
+    // 1.) Send the key to the input device stack
+    // 2.) (From UPDATE) - GetKey() checks the stack for actions and inputs
+    // 3.) EOF(Endofframe)
 }
 
 static void
@@ -110,6 +114,17 @@ createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
         glDebugInit();
         // Get current OpenGL version
         LOG_INFO("%s\n", glGetString(GL_VERSION));
+
+        unsigned char pixels[16 * 16 * 4];
+        memset(pixels, 0xff, sizeof(pixels));
+
+        GLFWimage *image = malloc(sizeof(GLFWimage));
+        image->width     = 16;
+        image->height    = 16;
+        image->pixels    = pixels;
+
+        GLFWcursor *cursor = glfwCreateCursor(image, 0, 0);
+        if (cursor != NULL) { glfwSetCursor(window, cursor); }
 
         return window;
     }

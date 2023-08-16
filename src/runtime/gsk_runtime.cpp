@@ -18,6 +18,7 @@
 // #define RENDERER_2
 #define USING_LUA                    1
 #define USING_RUNTIME_LOADING_SCREEN 1
+#define USING_JOYSTICK_CONTROLLER    1
 
 // Starting cursor state
 #define INIT_CURSOR_LOCKED  1
@@ -67,7 +68,7 @@ gsk_runtime_setup(int argc, char *argv[])
     int logStat = logger_initConsoleLogger(NULL);
     // logger_initFileLogger("logs/logs.txt", 0, 0);
 
-    logger_setLevel(LogLevel_TRACE);
+    logger_setLevel(LogLevel_NONE);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
@@ -169,7 +170,7 @@ gsk_runtime_loop()
     while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
         device_updateAnalytics(glfwGetTime());
 
-#if 0
+#if USING_JOYSTICK_CONTROLLER
         int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
         if (present) {
             {
