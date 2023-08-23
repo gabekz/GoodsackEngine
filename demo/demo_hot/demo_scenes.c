@@ -783,7 +783,7 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     texMissing  = texture_create_n("../res/textures/defaults/missing.jpg");
 
     skyboxMain = skybox_hdr_create(
-      texture_create_hdr("../res/textures/hdr/belfast_sunset_puresky_4k.hdr"));
+      texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr"));
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);

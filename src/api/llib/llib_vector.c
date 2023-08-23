@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include <util/logger.h>
+#include <util/maths.h>
 
 typedef struct // Vector_lua_t
 {

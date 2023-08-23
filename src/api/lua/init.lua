@@ -1,6 +1,6 @@
 require('goodsack')
 
-local include_dir = [[e:\Projects\GoodsackEngine\src\api\lua\include\]]
+local include_dir = [[/home/gmk/gksrc/projects/GoodsackEngine/src/api/lua/include/]]
 
 -- dofile() alias for specified directory
 --
