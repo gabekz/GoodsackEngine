@@ -34,28 +34,27 @@ _resize_callback(GLFWwindow *window, int widthRe, int heightRe)
 static void
 _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
+    // Quit the application
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
+
+    // Toggle cursor state
+    if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+        Input deviceInput = device_getInput();
+        device_setCursorState(!deviceInput.cursor_state.is_locked,
+                              !deviceInput.cursor_state.is_visible);
+    }
+
+    // 1.) Send the key to the input device stack
+    // 2.) (From UPDATE) - GetKey() checks the stack for actions and inputs
+    // 3.) EOF(Endofframe)
 }
 
 static void
 _mouse_callback(GLFWwindow *window, int button, int action, int mods)
 {
-
-    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        // send input coords to device container
-        Input input = device_getInput();
-        if (action == GLFW_PRESS) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            input.holding_right_button = true;
-            device_setInput(input);
-        } else if (action == GLFW_RELEASE) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            input.holding_right_button = false;
-            device_setInput(input);
-        }
-    }
+    // Nothing here for now!
 }
 
 static void
@@ -115,6 +114,17 @@ createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
         glDebugInit();
         // Get current OpenGL version
         LOG_INFO("%s\n", glGetString(GL_VERSION));
+
+        unsigned char pixels[16 * 16 * 4];
+        memset(pixels, 0xff, sizeof(pixels));
+
+        GLFWimage *image = malloc(sizeof(GLFWimage));
+        image->width     = 16;
+        image->height    = 16;
+        image->pixels    = pixels;
+
+        GLFWcursor *cursor = glfwCreateCursor(image, 0, 0);
+        if (cursor != NULL) { glfwSetCursor(window, cursor); }
 
         return window;
     }

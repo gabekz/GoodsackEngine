@@ -1,6 +1,10 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
@@ -28,4 +32,8 @@ lua_pushobject(lua_State *L, void *object_pointer, const char *metatable_name)
     lua_setmetatable(L, -2);
 }
 
-#endif
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // COMMON_H

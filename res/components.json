@@ -16,12 +16,21 @@
     },
 
     "Camera": {
-        "int": ["firstMouse", "screenWidth", "screenHeight"],
-        "uint": ["uboId"],
-        "float": ["fov", "speed", "sensitivity", "lastX", "lastY", "yaw", "pitch", "nearZ", "farZ"],
+        "int": ["screenWidth", "screenHeight"],
+        "uint": ["renderLayer"],
+        "float": ["fov", "nearZ", "farZ"],
         "vec3": ["axisUp", "center", "front"],
         "mat4": ["model", "view", "proj"],
         "Resource": ["uniformBuffer", "uniformBufferMemory", "uniformBufferMapped"]
+    },
+
+    "CameraLook": {
+        "int": ["firstMouse"],
+        "float": ["sensitivity", "lastX", "lastY", "yaw", "pitch"]
+    },
+
+    "CameraMovement": {
+        "float": ["speed"]
     },
 
     "Light": {
@@ -33,6 +42,10 @@
         "Resource": [ "material", "mesh", "pModel", "vkVBO"],
         "string": ["modelPath"],
         "uint": ["vbo"]
+    },
+
+    "RenderLayer": {
+        "uint": ["renderLayer"]
     },
 
     "Rigidbody": {
@@ -54,7 +67,8 @@
     },
     "Weapon": {
         "float": ["damage"],
-        "vec3": ["pos_starting", "rot_starting"]
+        "vec3": ["pos_starting", "rot_starting"],
+        "entity": [ "entity_camera" ]
     },
 
     "WeaponSway": {

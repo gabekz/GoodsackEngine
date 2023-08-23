@@ -1,5 +1,6 @@
 #include "device.h"
 
+#include <util/gfx.h>
 #include <util/sysdefs.h>
 
 static volatile GraphicsAPI s_device = GRAPHICS_API_OPENGL;
@@ -93,6 +94,22 @@ device_getInput()
 }
 
 void
+device_setCursorState(int is_locked, int is_visible)
+{
+    s_input.cursor_state.is_locked  = is_locked;
+    s_input.cursor_state.is_visible = is_visible;
+}
+
+void
+device_updateCursorState(GLFWwindow *window)
+{
+    glfwSetInputMode(window,
+                     GLFW_CURSOR,
+                     (s_input.cursor_state.is_visible) ? GLFW_CURSOR_NORMAL
+                                                       : GLFW_CURSOR_DISABLED);
+}
+
+void
 device_setInput(Input input)
 {
     double lastX = s_input.cursor_position[0];
@@ -119,5 +136,6 @@ device_setInput(Input input)
     s_input.cursor_position[0] = crntX;
     s_input.cursor_position[1] = crntY;
 
-    s_input.holding_right_button = input.holding_right_button;
+    // s_input.holding_right_button = input.holding_right_button;
+    //_update_cursor_state();
 }

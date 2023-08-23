@@ -118,7 +118,11 @@ getTimestamp(const struct timeval *time, char *timestamp, ui64 size)
     localtime_r(&sec, &calendar);
 #endif
 
+#if LOGGER_LOG_DATE
     strftime(timestamp, size, "%y-%m-%d %H:%M:%S", &calendar);
+#else
+    strftime(timestamp, size, "%H:%M:%S", &calendar);
+#endif
     sprintf(&timestamp[17], ".%06ld", (long)time->tv_usec);
 }
 
@@ -272,15 +276,15 @@ vflog(FILE *fp,
       unsigned long long currentTime,
       unsigned long long *flushedTime)
 {
-    int size;
+    int size       = 0;
     long totalsize = 0;
 
     if (s_logDetail == LogDetail_SIMPLE) {
-        size = fprintf(fp, "[%s] ", levelStr);
+        size = fprintf(fp, "%s [%s] ", timestamp, levelStr);
     } else if (s_logDetail == LogDetail_EXTENDED) {
         size = fprintf(
-          fp, "[%s] %s %ld %s:%d: ", levelStr, timestamp, threadID, file, line);
-    } else if (s_logDetail == LogDetail_NONE) {
+          fp, "%s [%s] %ld %s:%d: ", timestamp, levelStr, threadID, file, line);
+    } else if (s_logDetail == LogDetail_MSG) {
         size = 0;
     }
 
@@ -375,7 +379,7 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
 
     switch (level) {
     case LogLevel_INFO: logger_setDetail(LogDetail_SIMPLE); break;
-    case LogLevel_PRINT: logger_setDetail(LogDetail_NONE); break;
+    case LogLevel_NONE: logger_setDetail(LogDetail_MSG); break;
     default: logger_setDetail(LogDetail_EXTENDED); break;
     }
 
@@ -384,7 +388,7 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
     levelc      = getLevelChar(level);
     threadID    = getCurrentThreadID();
 
-    if (level != LogLevel_PRINT) { setLevelStr(level, 1, levelStr); }
+    if (level != LogLevel_NONE) { setLevelStr(level, TRUE, levelStr); }
 
     getTimestamp(&now, timestamp, sizeof(timestamp));
 

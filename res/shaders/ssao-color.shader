@@ -29,13 +29,20 @@ layout(binding = 3) uniform sampler2D t_Noise;
 
 const vec2 NOISE_SCALE = vec2(1280.0 / 4, 720.0 / 4);
 
-layout(std140, binding = 0) uniform Camera
+struct CameraData
 {
-    vec3 position;
+    vec4 position;
     mat4 projection;
     mat4 view;
-}
+};
+
+const int MAX_CAMERAS = 4;
+
+layout(std140, binding = 0) uniform Camera { CameraData cameras[MAX_CAMERAS]; }
 s_Camera;
+
+uniform int u_render_layer = 0; // default render layer (a.k.a. camera target
+                                // that we want to render with)
 
 in vec2 texCoords;
 out float FragColor;
@@ -69,7 +76,7 @@ main()
 
         // sample position (clip space)
         vec4 offset = vec4(samplePos, 1.0);
-        offset      = s_Camera.projection * offset;
+        offset      = s_Camera.cameras[u_render_layer].projection * offset;
         offset.xyz /= offset.w;              // perspective divide
         offset.xyz = offset.xyz * 0.5 + 0.5; // transform range 0.0 - 1.0
 

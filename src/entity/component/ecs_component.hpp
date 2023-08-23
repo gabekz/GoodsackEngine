@@ -25,6 +25,7 @@ enum class EcsDataType {
     MAT4,
     STRING,
     RESOURCE,
+    ENTITY,
 };
 
 typedef struct DataTypeContainer_t

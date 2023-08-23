@@ -24,8 +24,11 @@ typedef enum ECSComponentType_t {
     C_AUDIOLISTENER,
     C_AUDIOSOURCE,
     C_CAMERA,
+    C_CAMERALOOK,
+    C_CAMERAMOVEMENT,
     C_LIGHT,
     C_MODEL,
+    C_RENDERLAYER,
     C_RIGIDBODY,
     C_COLLIDER,
     C_TEST,
@@ -34,7 +37,7 @@ typedef enum ECSComponentType_t {
     C_WEAPONSWAY,
 } ECSComponentType;
 
-#define ECSCOMPONENT_LAST 11
+#define ECSCOMPONENT_LAST 14
 
 #if ECS_COMPONENTS_PACKED
 #pragma pack(push, 1)
@@ -69,25 +72,33 @@ struct ComponentCamera
     CACHE_ALIGN(vec3 axisUp);
     CACHE_ALIGN(vec3 center);
     CACHE_ALIGN(f32 farZ);
-    CACHE_ALIGN(si32 firstMouse);
     CACHE_ALIGN(f32 fov);
     CACHE_ALIGN(vec3 front);
-    f32 lastX;
-    f32 lastY;
-    mat4 model;
-    f32 nearZ;
-    f32 pitch;
-    mat4 proj;
-    si32 screenHeight;
-    si32 screenWidth;
-    f32 sensitivity;
-    f32 speed;
-    ui32 uboId;
-    ResRef uniformBuffer;
-    ResRef uniformBufferMapped;
-    ResRef uniformBufferMemory;
-    mat4 view;
-    f32 yaw;
+    CACHE_ALIGN(mat4 model);
+    CACHE_ALIGN(f32 nearZ);
+    CACHE_ALIGN(mat4 proj);
+    CACHE_ALIGN(ui32 renderLayer);
+    CACHE_ALIGN(si32 screenHeight);
+    CACHE_ALIGN(si32 screenWidth);
+    CACHE_ALIGN(ResRef uniformBuffer);
+    CACHE_ALIGN(ResRef uniformBufferMapped);
+    CACHE_ALIGN(ResRef uniformBufferMemory);
+    CACHE_ALIGN(mat4 view);
+};
+
+struct ComponentCameraLook
+{
+    CACHE_ALIGN(si32 firstMouse);
+    CACHE_ALIGN(f32 lastX);
+    CACHE_ALIGN(f32 lastY);
+    CACHE_ALIGN(f32 pitch);
+    CACHE_ALIGN(f32 sensitivity);
+    CACHE_ALIGN(f32 yaw);
+};
+
+struct ComponentCameraMovement
+{
+    CACHE_ALIGN(f32 speed);
 };
 
 struct ComponentLight
@@ -110,6 +121,11 @@ struct ComponentModel
         ui16 drawMode : 2;
         ui16 cullMode : 3;
     } properties;
+};
+
+struct ComponentRenderLayer
+{
+    ui32 renderLayer;
 };
 
 struct ComponentRigidbody
@@ -144,7 +160,8 @@ struct ComponentTransform
 
 struct ComponentWeapon
 {
-    float damage;
+    CACHE_ALIGN(float damage);
+    CACHE_ALIGN(int entity_camera);
     CACHE_ALIGN(vec3 pos_starting);
     CACHE_ALIGN(vec3 rot_starting);
 };
@@ -180,8 +197,14 @@ _ecs_init_internal_gen(ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_AUDIOSOURCE, sizeof(struct ComponentAudioSource));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_CAMERA, sizeof(struct ComponentCamera));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_CAMERALOOK, sizeof(struct ComponentCameraLook));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_CAMERAMOVEMENT, sizeof(struct ComponentCameraMovement));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_LIGHT, sizeof(struct ComponentLight));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_MODEL, sizeof(struct ComponentModel));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_RENDERLAYER, sizeof(struct ComponentRenderLayer));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_RIGIDBODY, sizeof(struct ComponentRigidbody));
     _ECS_DECL_COMPONENT_INTERN(

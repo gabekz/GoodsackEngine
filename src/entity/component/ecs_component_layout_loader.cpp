@@ -55,6 +55,7 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
       // Resource reference (void ptr)
       {"Resource",
        (DataTypeContainer {sizeof(void *), 1, EcsDataType::RESOURCE})},
+      {"entity", (DataTypeContainer {sizeof(int), 1, EcsDataType::ENTITY})},
     };
 
     // ----------------------------------------------------------
@@ -194,6 +195,7 @@ extern "C" {
             case EcsDataType::STRING: std::cout << "const char *"; break;
 
             case EcsDataType::RESOURCE: std::cout << "ResRef "; break;
+            case EcsDataType::ENTITY: std::cout << "int "; break;
             default: break;
             }
             std::cout << q.first << ";" << std::endl;

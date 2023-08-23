@@ -115,6 +115,9 @@ DebugGui::Update()
 void
 DebugGui::Render()
 {
+    // ImGui::GetIO().FontGlobalScale = 1.2f;
+    if (!m_debugEnabled) return;
+
     // Create new frame
     if (DEVICE_API_OPENGL) {
         ImGui_ImplOpenGL3_NewFrame();
@@ -125,8 +128,6 @@ DebugGui::Render()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
-    // ImGui::GetIO().FontGlobalScale = 1.2f;
-    if (!m_debugEnabled) return;
 
     // Draw Navbar
     if (ImGui::BeginMainMenuBar()) {
@@ -286,7 +287,7 @@ DebugGui::Render()
 
         int TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
-        enum MyItemColumnID { MyItemColumnID_ID, MyItemColumnID_Name };
+        enum MyItemColumnID { MyItemColumnID_Index, MyItemColumnID_Name };
 
         if (ImGui::BeginTable("table_sorting",
                               4,
@@ -294,11 +295,11 @@ DebugGui::Render()
                               ImVec2(0.0f, TEXT_BASE_HEIGHT * 15),
                               0.0f)) {
 
-            ImGui::TableSetupColumn("ID",
+            ImGui::TableSetupColumn("index",
                                     ImGuiTableColumnFlags_DefaultSort |
                                       ImGuiTableColumnFlags_WidthFixed,
                                     0.0f,
-                                    MyItemColumnID_ID);
+                                    MyItemColumnID_Index);
             ImGui::TableSetupColumn("Name",
                                     ImGuiTableColumnFlags_WidthFixed,
                                     0.0f,
@@ -345,10 +346,10 @@ DebugGui::Render()
                     ImGui::TextUnformatted("Entity");
                     ImGui::TableNextColumn();
                     if (ImGui::SmallButton("Inspect")) {
-                        Entity entity         = (Entity {.id    = (EntityId)row_n,
-                                                         .index = (ui64)row_n,
-                                                         .ecs   = ecs});
-                        m_selectedEntity      = entity;
+                        Entity entity    = (Entity {.id    = (EntityId)row_n + 1,
+                                                    .index = (ui64)row_n,
+                                                    .ecs   = ecs});
+                        m_selectedEntity = entity;
                         m_showComponentViewer = true;
                     }
                     ImGui::PopID();
@@ -501,12 +502,38 @@ DebugGui::Render()
             struct ComponentCamera &p =
               *(static_cast<struct ComponentCamera *>(ecs_get(e, C_CAMERA)));
             ImGui::DragFloat("FOV", &p.fov, 0.45f, 0.9f);
-            ImGui::DragFloat("Speed", &p.speed, 0.01, 0, 10.0f);
             ImGui::Text("Clipping");
             ImGui::PushItemWidth(100);
             ImGui::DragFloat("Near", &p.nearZ, 0.01, 0, 10);
             ImGui::SameLine();
             ImGui::DragFloat("Far", &p.farZ, 1, 0, 1000);
+            ImGui::EndChild();
+        }
+        if (ecs_has(e, C_CAMERALOOK)) {
+            ImGui::BeginChild(
+              "Camera Look", ImVec2(0, ImGui::GetFontSize() * 6.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("CameraLook Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            struct ComponentCameraLook &p =
+              *(static_cast<struct ComponentCameraLook *>(
+                ecs_get(e, C_CAMERALOOK)));
+            ImGui::DragFloat("Sensitivity", &p.sensitivity, 0.45f, 0.9f);
+            ImGui::EndChild();
+        }
+
+        if (ecs_has(e, C_CAMERAMOVEMENT)) {
+            ImGui::BeginChild(
+              "Camera Movement", ImVec2(0, ImGui::GetFontSize() * 6.0f), true);
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            ImGui::Text("CameraMovement Component");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            struct ComponentCameraMovement &p =
+              *(static_cast<struct ComponentCameraMovement *>(
+                ecs_get(e, C_CAMERAMOVEMENT)));
+            ImGui::DragFloat("Speed ", &p.speed, 0.45f, 0.9f);
             ImGui::EndChild();
         }
 

@@ -2,10 +2,11 @@
 
 #include "GoodsackEngineConfig.h"
 
-#define GOODSACK_LIB "GoodsackAPI"
+#define GOODSACK_LIB            "goodsack"
+#define LLIB_GOODSACK_IS_GLOBAL 1
 
 static int
-goodsack_version_info(lua_State *L)
+_VERSION(lua_State *L)
 {
     lua_pushfstring(L,
                     "%s %d.%d.%d.%d",
@@ -18,22 +19,27 @@ goodsack_version_info(lua_State *L)
 }
 
 static const luaL_Reg goodsack_methods[] = {
-  {"__tostring", goodsack_version_info},
-  {"version_info", goodsack_version_info},
-  {NULL, NULL}};
+  {"__tostring", _VERSION}, {"VERSION", _VERSION}, {NULL, NULL}};
 
 int
-luaopen_GoodsackAPI(lua_State *L)
+luaopen_goodsack(lua_State *L)
 {
     /* create metatable */
+#if LLIB_GOODSACK_IS_GLOBAL
+    lua_getglobal(L, "_G");
+#else
     luaL_newmetatable(L, GOODSACK_LIB);
-
     /* metatable.__index = metatable */
     lua_pushvalue(L, -1);
     lua_setfield(L, -1, "__index");
+#endif // LLIB_GOODSACK_IS_GLOBAL
 
     /* register methods */
     luaL_setfuncs(L, goodsack_methods, 0);
+
+#if LLIB_GOODSACK_IS_GLOBAL
+    lua_pop(L, 1);
+#endif // LLIB_GOODSACK_IS_GLOBAL
 
     return 1;
 }

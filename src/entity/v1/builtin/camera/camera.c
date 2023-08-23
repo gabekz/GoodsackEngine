@@ -2,16 +2,9 @@
 TODO:
 - CameraComponent needs to be split into several parts:
 
-// FOV, Near/Far, Projection
-- CameraComponent
-// MouseLook, sensitivity
-- CameraLookComponent
-
 // Trauma, etc.
 - CameraShakeComponent
 
-// Movement
-- FlyControlComponent
 **/
 
 #include "camera.h"
@@ -25,7 +18,8 @@ TODO:
 #include <entity/v1/ecs.h>
 #include <util/gfx.h>
 
-#define CAMERA_SHAKE 1
+#define CAMERA_SHAKE            1
+#define CAMERA_SENSITIVITY_DIVS 10.0f
 
 #if CAMERA_SHAKE
 static float s_shake = 0.00f;
@@ -52,7 +46,8 @@ _initialize_shader_data(struct ComponentCamera *camera)
     glm_mat4_copy(m4i, camera->view);
     glm_mat4_copy(m4i, camera->proj);
 
-    // Create UBO for camera data
+// Create UBO for camera data
+#if 0
     ui32 uboSize = 4 + sizeof(vec3) + (2 * sizeof(mat4));
     if (DEVICE_API_OPENGL) {
         ui32 uboId;
@@ -73,6 +68,7 @@ _initialize_shader_data(struct ComponentCamera *camera)
         );
         */
     }
+#endif
 }
 
 static void
@@ -80,40 +76,45 @@ _upload_shader_data(Entity e,
                     struct ComponentCamera *camera,
                     struct ComponentTransform *transform)
 {
+    Renderer *renderer = e.ecs->renderer;
+#if 0
+    glm_vec3_copy(
+      transform->position,
+      p_renderer->camera_data.cameras[camera->renderLayer]->position);
+    glm_mat4_copy(
+      camera->proj,
+      p_renderer->camera_data.cameras[camera->renderLayer]->projection);
+    glm_mat4_copy(camera->view,
+                  p_renderer->camera_data.cameras[camera->renderLayer]->view);
+#else
     if (DEVICE_API_OPENGL) {
-        glBindBuffer(GL_UNIFORM_BUFFER, camera->uboId);
+        // Get the starting position
+        ui32 ubo_offset = camera->renderLayer * (renderer->camera_data.uboSize);
+
+        glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_data.uboId);
         glBufferSubData(
-          GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, transform->position);
+          GL_UNIFORM_BUFFER, ubo_offset, sizeof(vec4), transform->position);
         glBufferSubData(GL_UNIFORM_BUFFER,
-                        sizeof(vec3) + 4,
+                        ubo_offset + sizeof(vec4),
                         sizeof(mat4),
-                        // camera->uniform.proj);
                         camera->proj);
         glBufferSubData(GL_UNIFORM_BUFFER,
-                        sizeof(mat4) + sizeof(vec3) + 4,
+                        ubo_offset + sizeof(mat4) + sizeof(vec4),
                         sizeof(mat4),
-                        // camera->uniform.view);
                         camera->view);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     } else if (DEVICE_API_VULKAN) {
-
         // TEST (while we don't have direct descriptor sets for objects)
         mat4 p = GLM_MAT4_IDENTITY_INIT;
         // glm_mat4_copy(p, camera->uniform.model);
-        glm_mat4_copy(p, camera->model);
-        // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1, 0});
-        // glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1, 0, 1});
+        // glm_mat4_copy(p, camera->model);
+        // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1,
+        // 0}); glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1,
+        // 0, 1});
         camera->proj[1][1] *= -1;
         // camera->uniform.proj[1][1] *= -1;
-
-#if !(USING_GENERATED_COMPONENTS)
-        memcpy(
-          e.ecs->renderer->vulkanDevice
-            ->uniformBuffersMapped[e.ecs->renderer->vulkanDevice->currentFrame],
-          &camera->uniform,
-          sizeof(camera->uniform));
-#endif
     }
+#endif
 }
 
 static void
@@ -125,6 +126,7 @@ init(Entity e)
     struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
+    // TODO: remove camera-> screenWidth/screenHeight
     camera->screenWidth  = e.ecs->renderer->windowWidth;
     camera->screenHeight = e.ecs->renderer->windowHeight;
 
@@ -139,12 +141,17 @@ init(Entity e)
     float *center = GLM_VEC3_ZERO; // position + orientation _v
     glm_vec3_mul(transform->position, (vec3) {0.0f, 0.0f, -1.0f}, center);
 
-    camera->lastX = e.ecs->renderer->windowWidth / 2;
-    camera->lastY = e.ecs->renderer->windowHeight / 2;
-    camera->yaw   = -90.0f;
-    camera->pitch = 0;
+    // Camera Look //
 
-    camera->firstMouse = TRUE;
+    if (!(ecs_has(e, C_CAMERALOOK))) return;
+    struct ComponentCameraLook *cameraLook = ecs_get(e, C_CAMERALOOK);
+
+    cameraLook->lastX = e.ecs->renderer->windowWidth / 2;
+    cameraLook->lastY = e.ecs->renderer->windowHeight / 2;
+    cameraLook->yaw   = -90.0f;
+    cameraLook->pitch = 0;
+
+    cameraLook->firstMouse = TRUE;
 }
 
 static void
@@ -156,91 +163,115 @@ update(Entity e)
     struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
     struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
 
-    Input input = device_getInput();
-    double cntX, cntY;
-    if (input.holding_right_button == TRUE) {
+    if (ecs_has(e, C_CAMERALOOK)) {
 
-        cntX = input.cursor_position[0];
-        cntY = input.cursor_position[1];
+        struct ComponentCameraLook *cameraLook =
+          ecs_get(e, C_CAMERALOOK); // TODO: Move away
 
-        if (camera->firstMouse) {
-            camera->lastX = cntX;
-            camera->lastY = cntY;
+        Input input = device_getInput();
+        double cntX, cntY;
 
-            camera->firstMouse = FALSE;
+        if (input.cursor_state.is_locked == TRUE) {
+
+            cntX = input.cursor_position[0];
+            cntY = input.cursor_position[1];
+
+            if (cameraLook->firstMouse) {
+                cameraLook->lastX = cntX;
+                cameraLook->lastY = cntY;
+
+                cameraLook->firstMouse = FALSE;
+            }
+
+        } else {
+            cntX                   = cameraLook->lastX;
+            cntY                   = cameraLook->lastY;
+            cameraLook->firstMouse = TRUE;
         }
 
-    } else {
-        cntX               = camera->lastX;
-        cntY               = camera->lastY;
-        camera->firstMouse = TRUE;
+        float xOffset = cntX - cameraLook->lastX;
+        float yOffset = cameraLook->lastY - cntY;
+
+        cameraLook->lastX = cntX;
+        cameraLook->lastY = cntY;
+
+        const float sensitivity =
+          cameraLook->sensitivity / CAMERA_SENSITIVITY_DIVS;
+
+        xOffset *= sensitivity;
+        yOffset *= sensitivity;
+
+        cameraLook->yaw += xOffset;
+        cameraLook->pitch += yOffset;
+
+#if CAMERA_SHAKE
+        // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
+        float seed    = 255.0f;
+        float shakeCO = 0.5f * s_shake * _noise(seed, glfwGetTime() * 50.0f);
+#endif // CAMERA_SHAKE
+
+        // Clamp pitch
+        if (cameraLook->pitch > 89.0f) cameraLook->pitch = 89.0f;
+        if (cameraLook->pitch < -89.0f) cameraLook->pitch = -89.0f;
+
+        // Calculate camera direction
+        vec3 camDirection = GLM_VEC3_ZERO_INIT;
+#if CAMERA_SHAKE
+        camDirection[0] = cos(glm_rad(cameraLook->yaw + shakeCO + 1)) *
+                          cos(glm_rad(cameraLook->pitch + shakeCO));
+        camDirection[1] = sin(glm_rad(cameraLook->pitch + shakeCO));
+        camDirection[2] = sin(glm_rad(cameraLook->yaw + shakeCO + 1)) *
+                          cos(glm_rad(cameraLook->pitch));
+#else
+        camDirection[0] =
+          cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
+        camDirection[1] = sin(glm_rad(camera->pitch));
+        camDirection[2] =
+          sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
+#endif // CAMERA_SHAKE
+
+        transform->orientation[0] = glm_deg(camDirection[0]);
+        transform->orientation[1] = glm_deg(camDirection[1]);
+        transform->orientation[2] = glm_deg(camDirection[2]);
+        // glm_vec3_copy(camDirection, camera->front);
+
+        // LOG_INFO("x: %f\ty:%f\tz:%f", camera->front[0], camera->front[1],
+        // camera->front[2]);
+
+        // Process Camera Input as long as the cursor is locked
+        if (input.cursor_state.is_locked == TRUE) {
+            camera_input(e, e.ecs->renderer->window);
+        }
+
+        // glm_vec3_add(transform->position, camDirection, camera->front);
+
+        // TEST
     }
 
-    float xOffset = cntX - camera->lastX;
-    float yOffset = camera->lastY - cntY;
-
-    camera->lastX = cntX;
-    camera->lastY = cntY;
-
-    const float sensitivity = 0.1f;
-
-    xOffset *= sensitivity;
-    yOffset *= sensitivity;
-
-    camera->yaw += xOffset;
-    camera->pitch += yOffset;
-
-#if CAMERA_SHAKE
-    // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
-    float seed    = 255.0f;
-    float shakeCO = 0.5f * s_shake * _noise(seed, glfwGetTime() * 50.0f);
-#endif // CAMERA_SHAKE
-
-    // Clamp pitch
-    if (camera->pitch > 89.0f) camera->pitch = 89.0f;
-    if (camera->pitch < -89.0f) camera->pitch = -89.0f;
-
-    // Calculate camera direction
-    vec3 camDirection = GLM_VEC3_ZERO_INIT;
-#if CAMERA_SHAKE
-    camDirection[0] = cos(glm_rad(camera->yaw + shakeCO + 1)) *
-                      cos(glm_rad(camera->pitch + shakeCO));
-    camDirection[1] = sin(glm_rad(camera->pitch + shakeCO));
-    camDirection[2] =
-      sin(glm_rad(camera->yaw + shakeCO + 1)) * cos(glm_rad(camera->pitch));
-#else
-    camDirection[0] = cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
-    camDirection[1] = sin(glm_rad(camera->pitch));
-    camDirection[2] = sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
-#endif // CAMERA_SHAKE
-
-    glm_vec3_normalize_to(camDirection, camera->front);
-
-    // copy front to orientation
-    float camDirectionDeg[3] = {glm_deg(camera->front[1]),
-                                glm_deg(-camera->front[0]),
-                                glm_deg(-camera->front[2])};
-    // glm_vec3_copy(camDirectionDeg, transform->orientation);
-    // glm_mat4_inv(camera->model, transform->model);
-
-    // Process Camera Input
-    camera_input(e, e.ecs->renderer->window);
-
-    // glm_vec3_add(transform->position, camDirection, camera->front);
-
-    vec3 cameraUp = GLM_VEC3_ZERO_INIT;
-    glm_cross(camera->axisUp, camera->front, cameraUp);
-    glm_vec3_normalize(cameraUp);
+    camera->front[0] = glm_rad(transform->orientation[0]);
+    camera->front[1] = glm_rad(transform->orientation[1]);
+    camera->front[2] = glm_rad(transform->orientation[2]);
+    glm_normalize_to(camera->front, camera->front);
 
     vec3 p = GLM_VEC3_ZERO_INIT;
     glm_vec3_add(transform->position, camera->front, p);
 
     // MVP: view
     glm_lookat(transform->position, p, camera->axisUp, camera->view);
-    glm_mat4_inv(camera->view, transform->model);
+    // glm_mat4_inv(camera->view, transform->model);
     // glm_mat4_copy(camera->view, transform->model);
 
-    // LOG_INFO("\tPitch: %f\tYaw:%f", camera->pitch, camera->yaw);
+    if (transform->hasParent &&
+        ecs_has(*(Entity *)transform->parent, C_CAMERA)) {
+
+        struct ComponentTransform *parent =
+          ecs_get(*(Entity *)transform->parent, C_TRANSFORM);
+        struct ComponentCamera *parentCam =
+          ecs_get(*(Entity *)transform->parent, C_CAMERA);
+
+        glm_vec3_copy(parent->position, transform->position);
+        glm_mat4_copy(parentCam->view, camera->view);
+    }
 
     float aspectRatio =
       (float)camera->screenWidth / (float)camera->screenHeight;

@@ -39,5 +39,8 @@ local keycodes = {
     X = 88,
     Y = 89,
     Z = 90,
+
+    MOUSE0 = 400,
+    MOUSE1 = 401,
 }
 return keycodes

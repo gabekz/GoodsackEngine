@@ -16,7 +16,13 @@
 #include <entity/v1/builtin/component_test.h>
 
 // #define RENDERER_2
-#define USING_LUA 1
+#define USING_LUA                    1
+#define USING_RUNTIME_LOADING_SCREEN 1
+#define USING_JOYSTICK_CONTROLLER    1
+
+// Starting cursor state
+#define INIT_CURSOR_LOCKED  1
+#define INIT_CURSOR_VISIBLE 0
 
 #ifdef RENDERER_2
 #include <core/graphics/renderer/renderer.hpp>
@@ -39,15 +45,18 @@ static struct
 static void
 _gsk_check_args(int argc, char *argv[])
 {
-    if (argc > 1) {
-        for (int i = 0; i < argc; i++) {
-            if (std::string(argv[i]) == "--vulkan") {
-                device_setGraphics(GRAPHICS_API_VULKAN);
-            } else if (std::string(argv[i]) == "--opengl") {
-                device_setGraphics(GRAPHICS_API_OPENGL);
-            } else if (std::string(argv[i]) == "--errlevel") {
-                logger_setLevel(LogLevel_ERROR);
-            }
+    if (argc <= 1) {
+        device_setGraphics(GRAPHICS_API_OPENGL);
+        return;
+    }
+
+    for (int i = 0; i < argc; i++) {
+        if (std::string(argv[i]) == "--vulkan") {
+            device_setGraphics(GRAPHICS_API_VULKAN);
+        } else if (std::string(argv[i]) == "--opengl") {
+            device_setGraphics(GRAPHICS_API_OPENGL);
+        } else if (std::string(argv[i]) == "--errlevel") {
+            logger_setLevel(LogLevel_ERROR);
         }
     }
 }
@@ -59,7 +68,7 @@ gsk_runtime_setup(int argc, char *argv[])
     int logStat = logger_initConsoleLogger(NULL);
     // logger_initFileLogger("logs/logs.txt", 0, 0);
 
-    logger_setLevel(LogLevel_TRACE);
+    logger_setLevel(LogLevel_NONE);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
@@ -100,9 +109,24 @@ gsk_runtime_setup(int argc, char *argv[])
     // FPS Counter
     device_resetAnalytics();
 
+    // Initialize Graphics Settings
     device_setGraphicsSettings((GraphicsSettings {.swapInterval = 1}));
-    device_setInput(
-      (Input {.cursor_position = {0, 0}, .holding_right_button = 0}));
+    // Initialize Input
+    device_setInput((Input {.cursor_position = {0, 0}}));
+    device_setCursorState(INIT_CURSOR_LOCKED, INIT_CURSOR_VISIBLE);
+
+#if USING_RUNTIME_LOADING_SCREEN
+    glfwSwapInterval(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    GuiText *loading_text = gui_text_create("Loading");
+    for (int i = 0; i < 2; i++) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        gui_text_draw(loading_text);
+        glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
+    }
+#endif // RUNTIME_LOADING_SCREEN
 
 #ifdef USING_LUA
     // Main Lua entry
@@ -126,6 +150,10 @@ gsk_runtime_loop()
 
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERA,
                                                                "Camera");
+    entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERALOOK,
+                                                               "CameraLook");
+    entity::LuaEventStore::GetInstance().RegisterComponentList(
+      C_CAMERAMOVEMENT, "CameraMovement");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
                                                                "Transform");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TEST, "Test");
@@ -142,7 +170,7 @@ gsk_runtime_loop()
     while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
         device_updateAnalytics(glfwGetTime());
 
-#if 0
+#if USING_JOYSTICK_CONTROLLER
         int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
         if (present) {
             {
@@ -164,9 +192,11 @@ gsk_runtime_loop()
 #endif
 
         if (DEVICE_API_OPENGL) {
+
 #if USING_LUA
             entity::LuaEventStore::ECSEvent(ECS_UPDATE);
-#endif
+#endif // USING_LUA
+
             renderer_tick(s_runtime.renderer);
             s_runtime.debugGui->Render();
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.

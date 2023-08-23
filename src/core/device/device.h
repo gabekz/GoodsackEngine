@@ -1,6 +1,7 @@
 #ifndef H_DEVICE_API
 #define H_DEVICE_API
 
+#include <util/gfx.h>
 #include <util/sysdefs.h>
 
 #ifdef __cplusplus
@@ -34,13 +35,21 @@ typedef struct Analytics
     // ui32 currentDrawCalls;
 } Analytics;
 
+// typedef enum { CURSOR_LOCK_MODE_NONE, CURSOR_LOCK_MODE_LOCKED }
+// CursorLockMode;
+
 typedef struct Input
 {
     // Mouse Cursor
     double cursor_position[2];
     double cursor_axis_raw[2];
-    // Misc
-    int holding_right_button;
+
+    struct
+    {
+        int is_locked;
+        int is_visible;
+    } cursor_state;
+
 } Input;
 
 // Functions
@@ -52,6 +61,7 @@ device_setGraphics(GraphicsAPI api);
 
 GraphicsSettings
 device_getGraphicsSettings();
+
 void
 device_setGraphicsSettings(GraphicsSettings settings);
 
@@ -66,6 +76,12 @@ Input
 device_getInput();
 void
 device_setInput(Input input);
+
+void
+device_setCursorState(int is_locked, int is_visible);
+
+void
+device_updateCursorState(GLFWwindow *window);
 
 #ifdef __cplusplus
 }

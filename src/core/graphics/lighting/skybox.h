@@ -6,6 +6,9 @@
 
 #include <core/graphics/shader/shader.h>
 
+// 0 -- Regular | 1 -- Blurred Render
+#define SKYBOX_DRAW_BLUR 0
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -89,7 +89,7 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 #################################################################
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
-set(API_DIR "${SRC_DIR}/api")
+set(API_DIR "${SRC_DIR}/api/llib")
 
 set(TEST_SUBDIR_REGEX ".*__tests__.*")
 # set(API_SUBDIR_REGEX ".*__api__.*")
@@ -101,10 +101,11 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 
 # Lua API-only sources
 file(GLOB_RECURSE API_SOURCES CONFIGURE_DEPENDS
-    "${API_DIR}/goodsack_engine.c"
-    "${API_DIR}/time.c"
-    #"${SRC_DIR}/core/device/device.c"
-    "${API_DIR}/common.h")
+    "${API_DIR}/common.h"
+    "${API_DIR}/llib_goodsack.c"
+    "${API_DIR}/llib_vector.c"
+    "${API_DIR}/goodsack/llib_time.c"
+    "${API_DIR}/goodsack/llib_input.cpp")
 
 # For each item in our list
 foreach (item ${SOURCES})
@@ -122,6 +123,7 @@ option(GOODSACK_EXAMPLES "Build eaxmple projects" ON)
 option(GOODSACK_TEST "Build the TestRunner executable" ON)
 option(GOODSACK_TEST_COVERAGE "Collect test coverage files" OFF)
 option(GOODSACK_DEV "Development Mode" OFF)
+option(GOODSACK_API_OMIT_PREFIX "Prefix" OFF)
 
 #################################################################
 # GoodsackEngine Runtime Library
@@ -129,7 +131,9 @@ option(GOODSACK_DEV "Development Mode" OFF)
 set(RUNTIME_NAME "GoodsackRuntime")
 add_library(${RUNTIME_NAME} SHARED ${SOURCES})
 set_target_properties(${RUNTIME_NAME} PROPERTIES
-    PREFIX ""
+    if(GOODSACK_API_OMIT_PREFIX)
+        PREFIX ""
+    endif(GOODSACK_API_OMIT_PREFIX)
     FOLDER "GoodsackEngine"
     DESCRIPTION "GoodsackEngine Runtime"
 )
@@ -141,7 +145,7 @@ target_compile_options(${RUNTIME_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 #################################################################
 # GoodsackEngine Lua-API Library
 #################################################################
-set(API_NAME "GoodsackAPI")
+set(API_NAME "goodsack")
 add_library(${API_NAME} SHARED ${API_SOURCES})
 set_target_properties(${API_NAME} PROPERTIES
     PREFIX ""

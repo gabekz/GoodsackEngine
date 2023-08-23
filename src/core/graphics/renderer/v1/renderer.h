@@ -29,9 +29,17 @@ extern "C" {
 #define PSX_WIDTH                  320
 #define PSX_HEIGHT                 240
 
+#define MAX_CAMERAS 4
+
 typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
 
 typedef struct _renderer Renderer;
+
+typedef struct CameraData
+{
+    vec4 position;
+    mat4 projection, view;
+} CameraData;
 
 struct _renderer
 {
@@ -74,6 +82,16 @@ struct _renderer
     ui32 hdrTextureId;
 
     DebugContext *debugContext;
+
+    // Camera information
+    struct
+    {
+        ui32 uboId, uboSize;
+        // CameraData **cameras; // List of cameras
+
+        ui32 totalCameras; // TODO: find an alternative
+        ui32 activeCamera;
+    } camera_data;
 };
 
 /**

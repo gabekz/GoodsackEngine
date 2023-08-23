@@ -24,8 +24,18 @@ __create_camera_entity(ECS *ecs, vec3 position)
     _ecs_add_internal(camera,
                       C_CAMERA,
                       (void *)(&(struct ComponentCamera) {
-                        .axisUp = {0.0f, 1.0f, 0.0f},
-                        .speed  = 2.5f,
+                        .axisUp      = {0.0f, 1.0f, 0.0f},
+                        .renderLayer = 0, // DEFAULT RENDER LAYER (camera-zero)
+                      }));
+    _ecs_add_internal(camera,
+                      C_CAMERALOOK,
+                      (void *)(&(struct ComponentCameraLook) {
+                        .sensitivity = 1.0f,
+                      }));
+    _ecs_add_internal(camera,
+                      C_CAMERAMOVEMENT,
+                      (void *)(&(struct ComponentCameraMovement) {
+                        .speed = 2.5f,
                       }));
     _ecs_add_internal(camera,
                       C_TRANSFORM,
@@ -572,36 +582,65 @@ _scene6(ECS *ecs, Renderer *renderer)
 #endif
 }
 
-// Transform parenting test
+/*----------------------
+ |  Scene 7
+ |  Description: Main transform/weapon test
+ -----------------------*/
 static void
 _scene7(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 7);
     __set_active_scene_skybox(renderer, skyboxMain);
 
+    /*----------------------
+     |  Resources
+     -----------------------*/
+
+    /*
     Texture *texBrickDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
+    */
+    Texture *texBrickDiff =
+      texture_create_d("../demo/demo_hot/Resources/textures/prototype.png");
     Texture *texBrickNorm = texture_create_n(
       "../demo/demo_hot/Resources/textures/brickwall/normal.png");
 
     Material *matFloor = material_create(NULL,
-                                         "../res/shaders/pbr.shader",
-                                         5,
+                                         "../res/shaders/lit-diffuse.shader",
+                                         3,
                                          texBrickDiff,
-                                         texBrickNorm,
-                                         texDefSpec,
-                                         texPbrAo,
-                                         texPbrAo);
+                                         texDefNorm,
+                                         texDefSpec);
 
-    Entity *pCamera = malloc(sizeof(Entity));
+    Texture *texCerbA = texture_create_d(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
+    Texture *texCerbN = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
+    Texture *texCerbM = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
+    Texture *texCerbS = texture_create_n(
+      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
 
-    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 0.0f});
-    Entity camera = *pCamera;
-#if DEMO_USING_AUDIO
-    _ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
-#endif // DEMO_USING_AUDIO
+    /*
+    Material *matWeapon =
+      material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
+      */
+    Material *matWeapon = material_create(NULL,
+                                          "../res/shaders/pbr.shader",
+                                          5,
+                                          texCerbA,
+                                          texCerbN,
+                                          texCerbM,
+                                          texCerbS,
+                                          texPbrAo);
 
-    // Testing entity on heap memory
+    Model *modelWeapon = model_load_from_file(
+      "../demo/demo_hot/Resources/models/AK2.glb", 1, FALSE);
+
+    /*----------------------
+     |  Entities
+     -----------------------*/
+
     Entity *pFloorEntity = malloc(sizeof(Entity));
     *pFloorEntity        = ecs_new(ecs);
     Entity floorEntity   = *pFloorEntity;
@@ -635,31 +674,39 @@ _scene7(ECS *ecs, Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
-    Texture *texCerbA = texture_create_d(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
-    Texture *texCerbN = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
-    Texture *texCerbM = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
-    Texture *texCerbS = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
+    Entity *pCamera = malloc(sizeof(Entity));
+
+    *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 0.0f});
+    Entity camera = *pCamera;
+#if DEMO_USING_AUDIO
+    _ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
+#endif // DEMO_USING_AUDIO
 
     /*
-    Material *matWeapon =
-      material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
-      */
-    Material *matWeapon = material_create(NULL,
-                                          "../res/shaders/pbr.shader",
-                                          5,
-                                          texCerbA,
-                                          texCerbN,
-                                          texCerbM,
-                                          texCerbS,
-                                          texPbrAo);
+      Camera 2
+    */
+#if DEMO_USING_MULTIPLE_CAMERAS
+    Entity camera2 = ecs_new(ecs);
+    _ecs_add_internal(camera2,
+                      C_CAMERA,
+                      (void *)(&(struct ComponentCamera) {
+                        .axisUp      = {0.0f, 1.0f, 0.0f},
+                        .fov         = 45,
+                        .renderLayer = 1,
+                      }));
+    _ecs_add_internal(camera2,
+                      C_TRANSFORM,
+                      (void *)(&(struct ComponentTransform) {
+                        .position    = {0.0f, 0.2f, 0.0f},
+                        .orientation = {0.0f, 0.0f, 0.0f},
+                        .scale       = {1.0f, 1.0f, 1.0f},
+                        .parent      = pCamera,
+                      }));
+#endif
 
-    Model *modelWeapon = model_load_from_file(
-      "../demo/demo_hot/Resources/models/AK2.glb", 1, FALSE);
-
+    /*
+      Weapon Parent (weapon-sway)
+    */
     Entity *pWeaponParent = malloc(sizeof(Entity));
     *pWeaponParent        = ecs_new(ecs);
     Entity weaponParent   = *pWeaponParent;
@@ -698,13 +745,26 @@ _scene7(ECS *ecs, Renderer *renderer)
                                            .drawMode = DRAW_ELEMENTS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
+
+#if DEMO_USING_MULTIPLE_CAMERAS
+    // Render layer (only render on camera with specified layer)
     _ecs_add_internal(attachedEntity,
-                      C_WEAPON,
-                      (void *)(&(struct ComponentWeapon) {
-                        .damage       = 25,
-                        .pos_starting = {0, 0, 0},
-                        .rot_starting = {0, 0, 0},
+                      C_RENDERLAYER,
+                      (void *)(&(struct ComponentRenderLayer) {
+                        .renderLayer = 1,
                       }));
+#endif
+
+    _ecs_add_internal(
+      attachedEntity,
+      C_WEAPON,
+      (void *)(&(struct ComponentWeapon) {
+        .damage       = 25,
+        .pos_starting = {0, 0, 0},
+        .rot_starting = {0, 0, 0},
+        .entity_camera =
+          (int)pCamera->index, // TODO: should be id, but not supported
+      }));
 };
 
 #define GLUE_HELPER(x, y)   x##y
@@ -716,7 +776,7 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
     // Default textures with options
     s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};
-    s_texOpsPbr = (TextureOptions) {0, GL_SRGB_ALPHA, false, true};
+    s_texOpsPbr = (TextureOptions) {8, GL_SRGB_ALPHA, true, true};
     texDefSpec  = texture_create_n("../res/textures/defaults/black.png");
     texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
     texPbrAo    = texture_create_n("../res/textures/defaults/white.png");

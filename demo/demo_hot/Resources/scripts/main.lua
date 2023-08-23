@@ -3,14 +3,15 @@ package.path = '../demo/demo_hot/Resources/scripts/?.lua;' .. package.path
 --package.path = '../build/bin/?;' .. package.path
 
 -- Running Systems
-require("weapon-system").run()
-require("wepsway-system").run()
-require("camera-input").run()
+SYSTEM_RUN('systems.weapon_controller')
+SYSTEM_RUN('systems.weapon_sway')
 
-local GoodsackAPI = require('GoodsackAPI')
+print("package.path: "..package.path.."")
 
-function main()
-    print("Lua entry")
-    print("package.path: "..package.path.."")
-    print(GoodsackAPI.version_info())
-end
+local myvec = Vector(7, 8, 9)
+local myvec2 = Vector(3, 1, 8)
+
+myvec = myvec - myvec2
+print(myvec)
+
+print(myvec:Cross(Vector(8, 9, 20)))
