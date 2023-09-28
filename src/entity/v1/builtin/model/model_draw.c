@@ -66,6 +66,7 @@ DrawModel(struct ComponentModel *model,
             material_use(material);
 
             // TESTING for normal-map in G-Buffer
+            // TODO: Breaks when normal-map doesn't exist
             if (renderer->currentPass == DEPTH_PREPASS) {
                 if (mesh->usingImportedMaterial &&
                     mesh->materialImported->texturesCount > 1) {

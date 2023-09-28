@@ -7,6 +7,8 @@
 #include <entity/v1/builtin/component_test.h>
 #include <entity/v1/builtin/components.h>
 
+#define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
+
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
 
@@ -382,6 +384,9 @@ _scene4(ECS *ecs, Renderer *renderer)
     Material *matCharacter =
       material_create(NULL, "../res/shaders/skinning-test.shader", 0);
 
+    Model *modelCharacter = model_load_from_file(
+      "../demo/demo_hot/Resources/models/character-anim.gltf", 1, FALSE);
+
     Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
 
     Entity characterEntity = ecs_new(ecs);
@@ -394,15 +399,12 @@ _scene4(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(
       characterEntity,
       C_MODEL,
-      (void *)(&(struct ComponentModel) {
-        .material  = matCharacter,
-        .modelPath = "../demo/demo_hot/Resources/models/character-anim.gltf",
-        //.modelPath  = "../demo/demo_hot/Resources/models/sponza.glb",
-        //.modelPath  = "../res/models/test3.gltf",
-        .properties = {
-          .drawMode = DRAW_ELEMENTS,
-          .cullMode = CULL_CW | CULL_FORWARD,
-        }}));
+      (void *)(&(struct ComponentModel) {.material   = matCharacter,
+                                         .pModel     = modelCharacter,
+                                         .properties = {
+                                           .drawMode = DRAW_ELEMENTS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
     _ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
@@ -596,21 +598,22 @@ _scene7(ECS *ecs, Renderer *renderer)
      |  Resources
      -----------------------*/
 
-    /*
     Texture *texBrickDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
-    */
+    /*
     Texture *texBrickDiff =
       texture_create_d("../demo/demo_hot/Resources/textures/prototype.png");
+      */
     Texture *texBrickNorm = texture_create_n(
       "../demo/demo_hot/Resources/textures/brickwall/normal.png");
 
     Material *matFloor = material_create(NULL,
-                                         "../res/shaders/lit-diffuse.shader",
-                                         3,
+                                         "../res/shaders/pbr.shader",
+                                         4,
                                          texBrickDiff,
-                                         texDefNorm,
-                                         texDefSpec);
+                                         texBrickNorm,
+                                         texDefSpec,
+                                         texPbrAo);
 
     Texture *texCerbA = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
@@ -766,10 +769,6 @@ _scene7(ECS *ecs, Renderer *renderer)
           (int)pCamera->index, // TODO: should be id, but not supported
       }));
 };
-
-#define GLUE_HELPER(x, y)   x##y
-#define GLUE(x, y)          GLUE_HELPER(x, y)
-#define LOAD_SCENE(__index) GLUE(_scene, __index)(ecs, renderer)
 
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer)

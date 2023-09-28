@@ -35,12 +35,6 @@ typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
 
 typedef struct _renderer Renderer;
 
-typedef struct CameraData
-{
-    vec4 position;
-    mat4 projection, view;
-} CameraData;
-
 struct _renderer
 {
     GLFWwindow *window;

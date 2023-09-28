@@ -15,7 +15,7 @@
 
 #include <entity/v1/ecs.h>
 
-// #include <entity/v1/builtin/transform/transform.h>
+#define EVENTSTORE_LUA_VEC3_CLASS 1
 
 using namespace entity;
 
@@ -25,6 +25,13 @@ LuaEventStore LuaEventStore::s_Instance;
 
 static void
 pushEntity(lua_State *L, int entityId);
+
+#if EVENTSTORE_LUA_VEC3_CLASS
+
+static void
+pushVector(lua_State *L);
+
+#endif
 
 LuaEventStore &
 LuaEventStore::GetInstance()

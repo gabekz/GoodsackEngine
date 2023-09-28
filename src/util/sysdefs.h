@@ -78,7 +78,8 @@
 #define SYS_DEBUG SYS_DISABLED
 #endif
 
-// Cache/Memory Alignment
+// -- Cache/Memory Alignment //
+
 #if defined(SYS_ENV_WIN)
 #define CACHE_ALIGN(...) __declspec(align(CACHE_LINE)) __VA_ARGS__
 #elif defined(SYS_ENV_UNIX)
@@ -87,6 +88,11 @@
 #define CACHE_ALIGN void
 #pragma warning Unknown dynamic link import / export semantics.
 #endif
+
+// -- Generally useful string-macros
+
+#define GLUE_HELPER(x, y) x##y
+#define GLUE(x, y)        GLUE_HELPER(x, y)
 
 // -- Types //
 
