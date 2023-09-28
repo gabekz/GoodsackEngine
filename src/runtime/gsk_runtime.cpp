@@ -8,7 +8,7 @@
 #include <core/device/device.h>
 #include <core/graphics/lighting/lighting.h>
 #include <entity/v1/ecs.h>
-#include <tools/debugui.hpp>
+#include <tools/debug/debug_toolbar.hpp>
 #include <wrapper/lua/lua_init.hpp>
 
 #include <entity/lua/eventstore.hpp>
@@ -37,7 +37,7 @@ static struct
 {
     ECS *ecs;
     Renderer *renderer;
-    DebugGui *debugGui;
+    gsk::tools::DebugToolbar *p_debug_toolbar;
 
 } s_runtime;
 }
@@ -103,8 +103,8 @@ gsk_runtime_setup(int argc, char *argv[])
     s_runtime.renderer->light =
       lighting_initialize((float *)lightPos, (float *)lightColor);
 
-    // Create DebugGui
-    s_runtime.debugGui = new DebugGui(s_runtime.renderer);
+    // Create DebugToolbar
+    s_runtime.p_debug_toolbar = new gsk::tools::DebugToolbar(s_runtime.renderer);
 
     // FPS Counter
     device_resetAnalytics();
@@ -198,7 +198,7 @@ gsk_runtime_loop()
 #endif // USING_LUA
 
             renderer_tick(s_runtime.renderer);
-            s_runtime.debugGui->Render();
+            s_runtime.p_debug_toolbar->render();
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
         } else if (DEVICE_API_VULKAN) {
             glfwPollEvents();
@@ -208,7 +208,7 @@ gsk_runtime_loop()
                                      s_runtime.renderer->window);
             s_runtime.renderer->currentPass = REGULAR;
             ecs_event(s_runtime.ecs, ECS_RENDER);
-            s_runtime.debugGui->Render();
+            s_runtime.p_debug_toolbar->render();
             vulkan_render_draw_end(s_runtime.renderer->vulkanDevice,
                                    s_runtime.renderer->window);
         }
@@ -222,7 +222,7 @@ gsk_runtime_loop()
         vulkan_device_cleanup(s_runtime.renderer->vulkanDevice);
     }
 
-    delete (s_runtime.debugGui);
+    delete (s_runtime.p_debug_toolbar);
     glfwTerminate();
 }
 

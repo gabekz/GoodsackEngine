@@ -1,4 +1,4 @@
-#include "debugui.hpp"
+#include "debug_toolbar.hpp"
 
 #include <stdio.h>
 
@@ -20,12 +20,14 @@ extern "C" {
 
 #include <core/drivers/vulkan/vulkan.h>
 
+#include <tools/debug/debug_panel.hpp>
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_vulkan.h"
 
-DebugGui::DebugGui(Renderer *renderer)
+gsk::tools::DebugToolbar::DebugToolbar(Renderer *renderer)
 {
     IMGUI_CHECKVERSION();
 
@@ -70,7 +72,9 @@ DebugGui::DebugGui(Renderer *renderer)
     ImGui::StyleColorsDark();
     // SetStyle();
 
-    m_renderer            = renderer;
+    m_renderer = renderer;
+
+#if 1
     m_showEntityViewer    = false;
     m_showComponentViewer = false;
     m_showSceneViewer     = false;
@@ -78,11 +82,12 @@ DebugGui::DebugGui(Renderer *renderer)
     m_showExample         = false;
     m_showAssets          = false;
     m_showProfiler        = false;
+#endif
 
-    SetVisibility(true);
+    set_visibility(true);
 }
 
-DebugGui::~DebugGui()
+gsk::tools::DebugToolbar::~DebugToolbar()
 {
     if (DEVICE_API_OPENGL) {
         ImGui_ImplOpenGL3_Shutdown();
@@ -94,26 +99,32 @@ DebugGui::~DebugGui()
 }
 
 void
-DebugGui::SetVisibility(bool value)
+gsk::tools::DebugToolbar::set_visibility(bool value)
 {
     m_debugEnabled = value;
 }
 void
-DebugGui::ToggleVisibility()
+gsk::tools::DebugToolbar::toggle_visibility(void)
 {
     m_debugEnabled = !m_debugEnabled;
 }
 
 void
-DebugGui::Update()
+gsk::tools::DebugToolbar::update(void)
 {
     if (glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS) {
-        ToggleVisibility();
+        toggle_visibility();
     }
 }
 
 void
-DebugGui::Render()
+gsk::tools::DebugToolbar::add_panel(gsk::tools::DebugPanel *panel)
+{
+    debug_panels.push_back(panel);
+}
+
+void
+gsk::tools::DebugToolbar::render(void)
 {
     // ImGui::GetIO().FontGlobalScale = 1.2f;
     if (!m_debugEnabled) return;
@@ -157,6 +168,20 @@ DebugGui::Render()
         }
 
         ImGui::EndMainMenuBar();
+    }
+
+    // Draw [vector] panels
+    for (auto it = debug_panels.begin(); it != debug_panels.end(); ++it) {
+        DebugPanel *panel = (*it);
+        if (panel->visible) {
+            ImGui::BeginGroup();
+            ImGui::Begin("Title", &(panel->visible));
+
+            panel->draw();
+
+            ImGui::End();
+            ImGui::EndGroup();
+        }
     }
 
     // Draw Panels
@@ -347,8 +372,8 @@ DebugGui::Render()
                     ImGui::TableNextColumn();
                     if (ImGui::SmallButton("Inspect")) {
                         Entity entity    = (Entity {.id    = (EntityId)row_n + 1,
-                                                    .index = (ui64)row_n,
-                                                    .ecs   = ecs});
+                                                 .index = (ui64)row_n,
+                                                 .ecs   = ecs});
                         m_selectedEntity = entity;
                         m_showComponentViewer = true;
                     }
