@@ -1,16 +1,14 @@
 #include "debug_panel.hpp"
-
 #include <util/logger.h>
 
 void
-gsk::tools::DebugPanel::draw()
+gsk::tools::DebugPanel::draw(void)
 {
     LOG_INFO("Hello");
 }
 
-// ------- panels -------- //
-
 void
-gsk::tools::panels::SceneViewer::draw() {
-    LOG_INFO("Overriden");
+gsk::tools::DebugPanel::set_menu_index(int menu_index)
+{
+    this->menu_index = menu_index;
 }

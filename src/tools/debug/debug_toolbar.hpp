@@ -24,7 +24,7 @@ class DebugToolbar {
     void set_visibility(bool value);
     void toggle_visibility(void);
 
-    void add_panel(DebugPanel *panel);
+    void add_panel(DebugPanel *panel, int menu_index);
 
     void update(void);
     void render(void);
@@ -50,12 +50,13 @@ class DebugToolbar {
 
     bool m_debugEnabled;
 
-    enum class Menus { FILE, SCENE, PIPELINE };
-    const char *p_menus[DEBUG_MENUS_COUNT] = {"File", "Scene", "Pipeline"};
+    enum class Menus { File, Scene, Pipeline };
+    const char *p_menu_names[DEBUG_MENUS_COUNT] = {"File", "Scene", "Pipeline"};
 
    private:
     int m_sceneQueued;
     std::vector<DebugPanel *> debug_panels;
+    bool show_example_panel = false;
 };
 
 } // namespace tools

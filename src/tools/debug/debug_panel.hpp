@@ -1,24 +1,34 @@
 #ifndef __DEBUG_PANEL_HPP__
 #define __DEBUG_PANEL_HPP__
 
+extern "C" {
+#include <core/graphics/renderer/v1/renderer.h>
+}
+
+#include <string>
+
+#define _DECL_DEBUG_PANEL(x)     x(std::string str) : DebugPanel(str) {};
+#define _DECL_DEBUG_PANEL2(x, y) x(y) : DebugPanel(y) {};
+
 namespace gsk {
 namespace tools {
 
 class DebugPanel {
    public:
-    // DebugPanel();
+    DebugPanel(std::string str) : title(str) {};
     // virtual ~DebugPanel();
 
-    virtual void draw() = 0;
-    bool visible        = false;
-};
+    virtual void draw(void) = 0;
+    void set_menu_index(int menu_index);
 
-namespace panels {
-class SceneViewer : public DebugPanel {
-   public:
-    virtual void draw();
+    bool visible            = false;
+    const char *panel_title = "My Title";
+    int menu_index          = -1;
+
+    std::string title;
+
+    Renderer *p_renderer;
 };
-} // namespace panels
 
 } // namespace tools
 } // namespace gsk
