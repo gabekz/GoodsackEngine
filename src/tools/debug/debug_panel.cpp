@@ -4,7 +4,7 @@
 void
 gsk::tools::DebugPanel::draw(void)
 {
-    LOG_INFO("Hello");
+    LOG_WARN("unimplemented draw()");
 }
 
 void

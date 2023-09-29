@@ -3,6 +3,16 @@
 #include <entity/v1/ecs.h>
 #include <imgui.h>
 
+#include <tools/debug/panels/debug_panel_component_viewer.hpp>
+
+using ComponentViewer = gsk::tools::panels::ComponentViewer;
+
+void
+gsk::tools::panels::EntityViewer::set_component_viewer(ComponentViewer *ref)
+{
+    if (ref) { p_component_viewer = ref; }
+}
+
 void
 gsk::tools::panels::EntityViewer::draw(void)
 {
@@ -108,11 +118,12 @@ gsk::tools::panels::EntityViewer::draw(void)
                 TextUnformatted("Entity");
                 TableNextColumn();
                 if (SmallButton("Inspect")) {
-                    Entity entity   = (Entity {.id    = (EntityId)row_n + 1,
+                    Entity entity = (Entity {.id    = (EntityId)row_n + 1,
                                              .index = (ui64)row_n,
                                              .ecs   = ecs});
-                    selected_entity = entity;
-                    // TODO: m_showComponentViewer = true;
+
+                    // display the component viewer panel
+                    p_component_viewer->show_for_entity(entity);
                 }
                 PopID();
             }

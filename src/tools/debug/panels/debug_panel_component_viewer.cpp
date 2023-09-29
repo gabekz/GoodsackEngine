@@ -9,6 +9,13 @@
 #include <core/graphics/mesh/model.h>
 
 void
+gsk::tools::panels::ComponentViewer::show_for_entity(Entity entity)
+{
+    selected_entity = entity;
+    visible         = true;
+}
+
+void
 gsk::tools::panels::ComponentViewer::draw(void)
 {
     using namespace ImGui;

@@ -8,13 +8,21 @@ namespace gsk {
 namespace tools {
 namespace panels {
 
+// forward declare ComponentViewer
+class ComponentViewer;
+
 class EntityViewer : public DebugPanel {
+
    public:
     _DECL_DEBUG_PANEL(EntityViewer);
+
     virtual void draw(void);
 
+    void set_component_viewer(ComponentViewer *ref);
+
    private:
-    Entity selected_entity;
+    ComponentViewer *p_component_viewer; // pointer to component viewer
+                                         // for toggling its panel
 };
 
 } // namespace panels

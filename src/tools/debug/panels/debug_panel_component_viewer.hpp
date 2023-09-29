@@ -13,6 +13,8 @@ class ComponentViewer : public DebugPanel {
     _DECL_DEBUG_PANEL(ComponentViewer);
     virtual void draw(void);
 
+    void show_for_entity(Entity entity);
+
    private:
     Entity selected_entity;
 };

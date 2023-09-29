@@ -36,21 +36,9 @@ class DebugToolbar {
    protected:
     Renderer *m_renderer;
 
-#if 1
-    bool m_showExample;
-    bool m_showSceneViewer;
-    bool m_showSceneLighting;
-    bool m_showEntityViewer;
-    bool m_showComponentViewer;
-    bool m_showAssets;
-    bool m_showProfiler;
-#endif
-
-    Entity m_selectedEntity;
-
     bool m_debugEnabled;
 
-    enum class Menus { File, Scene, Pipeline };
+    enum class Menus { File, Scene, Pipeline, None };
     const char *p_menu_names[DEBUG_MENUS_COUNT] = {"File", "Scene", "Pipeline"};
 
    private:

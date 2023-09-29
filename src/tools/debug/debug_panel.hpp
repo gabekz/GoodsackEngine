@@ -21,9 +21,8 @@ class DebugPanel {
     virtual void draw(void) = 0;
     void set_menu_index(int menu_index);
 
-    bool visible            = false;
-    const char *panel_title = "My Title";
-    int menu_index          = -1;
+    bool visible   = false;
+    int menu_index = -1;
 
     std::string title;
 

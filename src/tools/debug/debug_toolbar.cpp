@@ -10,19 +10,14 @@
 extern "C" {
 #include <core/graphics/renderer/v1/renderer.h>
 }
-#include <core/graphics/renderer/pipeline/pass_shadowmap.h>
 
 #include <core/device/device.h>
-#include <core/drivers/alsoft/alsoft_debug.h>
-
-#include <entity/v1/builtin/component_test.h>
-#include <entity/v1/builtin/components.h>
-
 #include <core/drivers/vulkan/vulkan.h>
 
 #include <tools/debug/debug_panel.hpp>
 // debug panels
 #include <tools/debug/panels/debug_panel_assets.hpp>
+#include <tools/debug/panels/debug_panel_component_viewer.hpp>
 #include <tools/debug/panels/debug_panel_entity_viewer.hpp>
 #include <tools/debug/panels/debug_panel_lighting.hpp>
 #include <tools/debug/panels/debug_panel_profiler.hpp>
@@ -80,19 +75,15 @@ gsk::tools::DebugToolbar::DebugToolbar(Renderer *renderer)
 
     m_renderer = renderer;
 
-#if 1
-    m_showEntityViewer    = false;
-    m_showComponentViewer = false;
-    m_showSceneViewer     = false;
-    m_showSceneLighting   = false;
-    m_showExample         = false;
-    m_showAssets          = false;
-    m_showProfiler        = false;
-#endif
-
-    // Create panels
+    // Create menu panels
     {
         using namespace gsk::tools::panels;
+
+        // Create EntityViewer panel, attach a new ComponentViewer pointer to
+        // it.
+        ComponentViewer *p_component_viewer = new ComponentViewer("Components");
+        EntityViewer *p_entity_viewer = new EntityViewer("Entities");
+        p_entity_viewer->set_component_viewer(p_component_viewer);
 
         // "File" Menu
         // NONE
@@ -101,8 +92,9 @@ gsk::tools::DebugToolbar::DebugToolbar(Renderer *renderer)
         add_panel((DebugPanel *)(new SceneViewer("Change Scene")),
                   (int)Menus::Scene);
         add_panel((DebugPanel *)(new Lighting("Lighting")), (int)Menus::Scene);
-        add_panel((DebugPanel *)(new EntityViewer("Entities")),
-                  (int)Menus::Scene);
+
+        add_panel(p_entity_viewer, (int)Menus::Scene);
+        add_panel(p_component_viewer, (int)Menus::None); // Don't show this in the toolbar
 
         // "Pipeline" Menu
         add_panel((DebugPanel *)(new Assets("Assets")), (int)Menus::Pipeline);
@@ -200,35 +192,6 @@ gsk::tools::DebugToolbar::render(void)
                 ImGui::EndMenu();
             }
         }
-
-#if 0
-
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("ImGui Demo")) { m_showExample = true; }
-            if (ImGui::MenuItem("Exit")) {
-                glfwSetWindowShouldClose(m_renderer->window, GLFW_TRUE);
-            }
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Scene")) {
-            if (ImGui::MenuItem("Change Scene")) {
-                m_showSceneViewer = true;
-                m_sceneQueued     = 0;
-            }
-            if (ImGui::MenuItem("Lighting")) { m_showSceneLighting = true; }
-            ImGui::Separator();
-            if (ImGui::MenuItem("Entities")) { m_showEntityViewer = true; }
-            if (ImGui::MenuItem("Systems")) { m_showEntityViewer = true; }
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Pipeline")) {
-            if (ImGui::MenuItem("Assets")) { m_showAssets = true; }
-            if (ImGui::MenuItem("Graphics")) { m_showProfiler = true; }
-            ImGui::EndMenu();
-        }
-#endif
 
         ImGui::EndMainMenuBar();
     }
