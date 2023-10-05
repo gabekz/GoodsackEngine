@@ -1,48 +1,48 @@
-#ifndef H_FILESYSTEM
-#define H_FILESYSTEM
+#ifndef __FILESYSTEM_H__
+#define __FILESYSTEM_H__
 
-#include <util/sysdefs.h>
+#define GSK_FS_MAX_PATH    260
+#define GSK_FS_MAX_SEG_LEN 99
 
-#define FILESYSTEM_PATH_EXE
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
-#define FILESYSTEM_WORKING_DIRECTORY
-#define FILESYSTEM_RESOURCES_DIRECTORY
-#define FILESYSTEM_DEBUG_DIRECTORY
-
-#ifndef MAX_PATH
-#define MAX_PATH 260
-#endif
-
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-
-typedef struct goodsack_file
+typedef struct gsk_URI
 {
-    char *fileExtension;
-} goodsack_file;
+    // char uri_full[GSK_FS_MAX_PATH];
+    char scheme[GSK_FS_MAX_SEG_LEN]; // scheme
+    char macro[GSK_FS_MAX_SEG_LEN];  // macro/alias - always relative
+    char path[GSK_FS_MAX_SEG_LEN];
+} gsk_URI;
 
-static inline void
-_GetDir()
+typedef struct gsk_Path
 {
-    TCHAR NPath[260];
-
-    GetCurrentDirectory(MAX_PATH, NPath);
-}
+    char path[GSK_FS_MAX_PATH]; // absolute path
+    gsk_URI uri;
+} gsk_Path;
 
 // memstream utilities //
 
+#if 0
 static void filesystem_memstream(BUFFER, LEN);
 static void filesystem_flush(BUFFER);
+#endif
 // filesystem_path(FS_DIR_DEBUG, "logs/logs.txt");
 
 // file properties //
 
-static inline char *
-filesystem_get_extension(const char *path)
-{
-    char *ext = strrchr(path, '.');
-    return ext;
-}
+char *
+gsk_filesystem_get_extension(const char *path);
 
-#endif // H_FILESYSTEM
+gsk_URI
+gsk_filesystem_uri(const char *uri_path);
+
+gsk_Path
+gsk_filesystem_path_from_uri(const char *uri_path);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // __FILESYSTEM_H__
