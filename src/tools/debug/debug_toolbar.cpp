@@ -82,7 +82,7 @@ gsk::tools::DebugToolbar::DebugToolbar(Renderer *renderer)
         // Create EntityViewer panel, attach a new ComponentViewer pointer to
         // it.
         ComponentViewer *p_component_viewer = new ComponentViewer("Components");
-        EntityViewer *p_entity_viewer = new EntityViewer("Entities");
+        EntityViewer *p_entity_viewer       = new EntityViewer("Entities");
         p_entity_viewer->set_component_viewer(p_component_viewer);
 
         // "File" Menu
@@ -94,7 +94,8 @@ gsk::tools::DebugToolbar::DebugToolbar(Renderer *renderer)
         add_panel((DebugPanel *)(new Lighting("Lighting")), (int)Menus::Scene);
 
         add_panel(p_entity_viewer, (int)Menus::Scene);
-        add_panel(p_component_viewer, (int)Menus::None); // Don't show this in the toolbar
+        add_panel(p_component_viewer,
+                  (int)Menus::None); // Don't show this in the toolbar
 
         // "Pipeline" Menu
         add_panel((DebugPanel *)(new Assets("Assets")), (int)Menus::Pipeline);
@@ -149,6 +150,8 @@ void
 gsk::tools::DebugToolbar::render(void)
 {
     // ImGui::GetIO().FontGlobalScale = 1.2f;
+    // ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+
     if (!m_debugEnabled) return;
 
     // Create new frame

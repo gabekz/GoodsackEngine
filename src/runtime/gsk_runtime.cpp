@@ -7,22 +7,15 @@
 
 #include <core/device/device.h>
 #include <core/graphics/lighting/lighting.h>
+#include <entity/lua/eventstore.hpp>
 #include <entity/v1/ecs.h>
-#include <tools/debug/debug_toolbar.hpp>
 #include <wrapper/lua/lua_init.hpp>
 
-#include <entity/lua/eventstore.hpp>
+#if GSK_RUNTIME_USE_DEBUG
+#include <tools/debug/debug_toolbar.hpp>
+#endif // GSK_RUNTIME_USE_DEBUG
 
 #include <entity/v1/builtin/component_test.h>
-
-// #define RENDERER_2
-#define USING_LUA                    1
-#define USING_RUNTIME_LOADING_SCREEN 1
-#define USING_JOYSTICK_CONTROLLER    1
-
-// Starting cursor state
-#define INIT_CURSOR_LOCKED  1
-#define INIT_CURSOR_VISIBLE 0
 
 #ifdef RENDERER_2
 #include <core/graphics/renderer/renderer.hpp>
@@ -37,7 +30,10 @@ static struct
 {
     ECS *ecs;
     Renderer *renderer;
+
+#if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
+#endif // GSK_RUNTIME_DEBUG
 
 } s_runtime;
 }
@@ -103,8 +99,11 @@ gsk_runtime_setup(int argc, char *argv[])
     s_runtime.renderer->light =
       lighting_initialize((float *)lightPos, (float *)lightColor);
 
+#if GSK_RUNTIME_USE_DEBUG
     // Create DebugToolbar
-    s_runtime.p_debug_toolbar = new gsk::tools::DebugToolbar(s_runtime.renderer);
+    s_runtime.p_debug_toolbar =
+      new gsk::tools::DebugToolbar(s_runtime.renderer);
+#endif // GSK_RUNTIME_USE_DEBUG
 
     // FPS Counter
     device_resetAnalytics();
@@ -198,7 +197,11 @@ gsk_runtime_loop()
 #endif // USING_LUA
 
             renderer_tick(s_runtime.renderer);
+
+#if GSK_RUNTIME_USE_DEBUG
             s_runtime.p_debug_toolbar->render();
+#endif // GSK_RUNTIME_USE_DEBUG
+
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
         } else if (DEVICE_API_VULKAN) {
             glfwPollEvents();
@@ -208,7 +211,11 @@ gsk_runtime_loop()
                                      s_runtime.renderer->window);
             s_runtime.renderer->currentPass = REGULAR;
             ecs_event(s_runtime.ecs, ECS_RENDER);
+
+#if GSK_RUNTIME_USE_DEBUG
             s_runtime.p_debug_toolbar->render();
+#endif // GSK_RUNTIME_USE_DEBUG
+
             vulkan_render_draw_end(s_runtime.renderer->vulkanDevice,
                                    s_runtime.renderer->window);
         }
@@ -222,7 +229,10 @@ gsk_runtime_loop()
         vulkan_device_cleanup(s_runtime.renderer->vulkanDevice);
     }
 
+#if GSK_RUNTIME_USE_DEBUG
     delete (s_runtime.p_debug_toolbar);
+#endif // GSK_RUNTIME_USE_DEBUG
+
     glfwTerminate();
 }
 
