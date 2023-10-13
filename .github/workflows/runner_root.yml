@@ -9,5 +9,4 @@ jobs:
 
   linux-build:
     name: 🐧 Linux
-    needs: static-analysis
     uses: ./.github/workflows/linux_builds.yml
