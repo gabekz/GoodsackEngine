@@ -9,8 +9,6 @@ project(
     DESCRIPTION "Realtime 3D Rendering Engine"
     HOMEPAGE_URL "github.com/gabekz/GoodsackEngine")
 
-configure_file(GoodsackEngineConfig.h.in GoodsackEngineConfig.h)
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -88,6 +86,7 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 # Source files
 #################################################################
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
 set(API_DIR "${SRC_DIR}/api/llib")
 
@@ -447,3 +446,10 @@ else()
         "${OPENAL_DIR}" 
         "${OPENAL_DIR}/include")
 endif()
+
+#################################################################
+# Set configure_file
+# NOTE: Should always be the last thing in our main CMakeLists.txt
+#################################################################
+
+configure_file(GoodsackEngineConfig.h.in GoodsackEngineConfig.h)

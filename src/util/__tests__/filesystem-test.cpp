@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include <util/filesystem.h>
+#include <util/sysdefs.h>
 
 TEST(Util_Filesystem, URI_Parse)
 {
@@ -20,7 +21,13 @@ TEST(Util_Filesystem, URI_Parse)
     EXPECT_EQ(uri3.scheme[0], NULL);
     EXPECT_EQ(uri3.macro[0], NULL);
     EXPECT_EQ(uri3.path[0], NULL);
-
-    gsk_Path p1 = gsk_filesystem_path_from_uri("res://textures/white.jpg");
-    ASSERT_STREQ(p1.path, "hello!");
 }
+
+// TODO: Windows-only test
+#if defined(SYS_ENV_WIN)
+TEST(Util_Filesystem, Path_Checking)
+{
+    gsk_Path p1 = gsk_filesystem_path_from_uri("gsk://textures/white.jpg");
+    ASSERT_STREQ(p1.path, "E:/Projects/GoodsackEngine/res/textures/white.jpg");
+}
+#endif // SYS_ENV_WIN

@@ -8,12 +8,17 @@
 extern "C" {
 #endif // __cplusplus
 
+// absolute path from the provided uri
+#define GSK_PATH(uri) (gsk_filesystem_path_from_uri(uri).path)
+
 typedef struct gsk_URI
 {
     // char uri_full[GSK_FS_MAX_PATH];
     char scheme[GSK_FS_MAX_SEG_LEN]; // scheme
     char macro[GSK_FS_MAX_SEG_LEN];  // macro/alias - always relative
     char path[GSK_FS_MAX_SEG_LEN];
+
+    // TODO: Filename and extension (for :macro expansion)
 } gsk_URI;
 
 typedef struct gsk_Path

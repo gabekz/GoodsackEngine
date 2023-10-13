@@ -6,6 +6,7 @@ on:
 # Global Settings
 env:
   BUILD_TYPE: Release
+  BUILD_CONFIG_FNAME: GoodsackEngineConfig.h
 
 jobs:
 # Linux Release Build
@@ -39,6 +40,10 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Show configuration
+      run: |
+        cat ${{github.workspace}}/build/${{env.BUILD_CONFIG_FNAME}}
 
     - name: Setup Tests
       run: |
