@@ -1,5 +1,6 @@
 #include "gsk_runtime.hpp"
 
+#include <util/filesystem.h>
 #include <util/logger.h>
 #include <util/sysdefs.h>
 
@@ -58,7 +59,7 @@ _gsk_check_args(int argc, char *argv[])
 }
 
 ui32
-gsk_runtime_setup(int argc, char *argv[])
+gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 {
     // Setup logger
     int logStat = logger_initConsoleLogger(NULL);
@@ -76,6 +77,8 @@ gsk_runtime_setup(int argc, char *argv[])
     case GRAPHICS_API_VULKAN: LOG_INFO("Device API is Vulkan"); break;
     default: LOG_ERROR("Device API Failed to retreive Graphics Backend"); break;
     }
+
+    gsk_filesystem_initialize(root_dir);
 
     // Initialize Renderer
 #ifdef RENDERER_2
@@ -129,7 +132,7 @@ gsk_runtime_setup(int argc, char *argv[])
 
 #ifdef USING_LUA
     // Main Lua entry
-    LuaInit("../demo/demo_hot/Resources/scripts/main.lua", s_runtime.ecs);
+    LuaInit(GSK_PATH("data://scripts/main.lua"), s_runtime.ecs);
 #endif
 
 #endif

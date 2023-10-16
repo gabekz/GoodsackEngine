@@ -26,7 +26,7 @@ extern "C" {
 #define GSK_RUNTIME_USE_DEBUG 1
 
 ui32
-gsk_runtime_setup(int argc, char *argv[]);
+gsk_runtime_setup(const char *project_root, int argc, char *argv[]);
 
 void
 gsk_runtime_loop();

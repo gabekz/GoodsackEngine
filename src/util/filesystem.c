@@ -8,6 +8,12 @@
 #include <windows.h>
 #endif // SYS_ENV_WIN
 
+static struct
+{
+    char gsk_root[GSK_FS_MAX_PATH];
+    char proj_root[GSK_FS_MAX_PATH];
+} s_path_roots;
+
 static void
 _to_forward_slash(char *buffer)
 {
@@ -37,7 +43,7 @@ _get_absolute_path(char *buffer)
 #else // path to resource directory (from configure_file)
     char b[GSK_FS_MAX_PATH] = (_GOODSACK_FS_DIR_DATA "/");
     // strcat(b, "/res");
-    strcpy(buffer, b);
+    strcpy(buffer, s_path_roots.gsk_root);
     _to_forward_slash(buffer);
     return;
 #endif
@@ -58,6 +64,16 @@ gsk_filesystem_get_extension(const char *path)
     return ext;
 }
 
+void
+gsk_filesystem_initialize(const char *project_root)
+{
+    _STATIC_ASSERT((_GOODSACK_FS_DIR_DATA));
+    if (project_root == NULL) { LOG_ERROR("Failed to initialize filesystem"); }
+
+    strcpy(s_path_roots.gsk_root, (_GOODSACK_FS_DIR_DATA "/"));
+    strcpy(s_path_roots.proj_root, project_root);
+}
+
 gsk_URI
 gsk_filesystem_uri(const char *uri_path)
 {
@@ -73,6 +89,7 @@ gsk_filesystem_uri(const char *uri_path)
 
     return ret;
 }
+
 gsk_Path
 gsk_filesystem_path_from_uri(const char *uri_path)
 {
@@ -88,18 +105,17 @@ gsk_filesystem_path_from_uri(const char *uri_path)
 
     // Project-specific data directory
     if (!strcmp(ret.uri.scheme, "data")) {
-        strcat(absolute_path, "C:/Projects");
+        strcat(absolute_path, s_path_roots.proj_root);
     }
     // Engine-specific data directory
     else if (!strcmp(ret.uri.scheme, "gsk")) {
 
         char buff[256] = "";
         _get_absolute_path(buff);
-
         strcat(absolute_path, buff);
-        strcat(absolute_path, ret.uri.path);
     }
 
+    strcat(absolute_path, ret.uri.path);
     strcpy(ret.path, absolute_path);
     return ret;
 }

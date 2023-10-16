@@ -35,7 +35,8 @@ static void filesystem_flush(BUFFER);
 #endif
 // filesystem_path(FS_DIR_DEBUG, "logs/logs.txt");
 
-// file properties //
+void
+gsk_filesystem_initialize(const char *root);
 
 char *
 gsk_filesystem_get_extension(const char *path);

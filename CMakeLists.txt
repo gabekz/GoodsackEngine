@@ -174,6 +174,9 @@ if(GOODSACK_EXAMPLES)
     target_link_libraries(${DEMO_EXE_NAME} ${RUNTIME_NAME} ${API_NAME})
     target_compile_options(${DEMO_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 
+    target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_ROOT=\"${DEMO_DIR}\"")
+    target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_DATA=\"${DEMO_DIR}/Resources\"")
+
     if(UNIX)
         set_target_properties(${DEMO_EXE_NAME}
         PROPERTIES
