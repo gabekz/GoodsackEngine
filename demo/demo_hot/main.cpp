@@ -24,7 +24,7 @@ main(int argc, char *argv[])
     };
 #endif
 
-    _STATIC_ASSERT((_PROJ_DIR_ROOT));
+    static_assert((_PROJ_DIR_ROOT), "path-root definition required");
     gsk_runtime_setup((_PROJ_DIR_DATA "/"), argc, argv);
 
     demo_scenes_create(gsk_runtime_get_ecs(), gsk_runtime_get_renderer());

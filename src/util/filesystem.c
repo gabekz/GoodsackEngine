@@ -36,11 +36,11 @@ _get_absolute_path(char *buffer)
 {
 #if defined(SYS_ENV_WIN)
 
-#if 0 // path to executable
+#if 0
     GetModuleFileName(NULL, buffer, GSK_FS_MAX_PATH);
-#elif 0 // path to working directory
+#elif 0
     GetCurrentDirectory(GSK_FS_MAX_PATH, buffer);
-#else // path to resource directory (from configure_file)
+#else
     char b[GSK_FS_MAX_PATH] = (_GOODSACK_FS_DIR_DATA "/");
     // strcat(b, "/res");
     strcpy(buffer, s_path_roots.gsk_root);
