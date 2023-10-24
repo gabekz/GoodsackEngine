@@ -89,6 +89,16 @@
 #pragma warning Unknown dynamic link import / export semantics.
 #endif
 
+// -- Assert //
+
+#ifdef __cplusplus
+#ifndef _Static_assert
+#define _Static_assert static_assert
+#endif // _Static_assert
+#endif // __cplusplus
+#define STATIC_ASSERT(test_true) \
+    _Static_assert((test_true), "(" #test_true ") failed")
+
 // -- Generally useful string-macros
 
 #define GLUE_HELPER(x, y) x##y

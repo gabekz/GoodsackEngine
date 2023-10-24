@@ -67,7 +67,6 @@ gsk_filesystem_get_extension(const char *path)
 void
 gsk_filesystem_initialize(const char *project_root)
 {
-    static_assert((_GOODSACK_FS_DIR_DATA));
     if (project_root == NULL) { LOG_ERROR("Failed to initialize filesystem"); }
 
     strcpy(s_path_roots.gsk_root, (_GOODSACK_FS_DIR_DATA "/"));
