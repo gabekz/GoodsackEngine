@@ -63,7 +63,7 @@ renderer_init()
     ret->activeScene = 0;
 
     ret->properties = (RendererProps) {.tonemapper      = 0,
-                                       .exposure        = 2.5f,
+                                       .exposure        = 9.5f,
                                        .maxWhite        = 1.0f,
                                        .gamma           = 2.2f,
                                        .gammaEnable     = TRUE,
@@ -77,17 +77,22 @@ renderer_init()
       .farPlane  = 20.0f,
       .camSize   = 2.0f,
 
-      .normalBiasMin = 0.0025f,
-      .normalBiasMax = 0.0005f,
-      .pcfSamples    = 6,
+      .normalBiasMin = 0.0004f,
+      .normalBiasMax = 0.0006f,
+      .pcfSamples    = 4,
     };
 
     ret->ssaoOptions = (SsaoOptions) {
-      .strength   = 2.1f,
-      .bias       = 0.0003f,
-      .radius     = 0.15f,
-      .kernelSize = 16,
+      .strength   = 1.0f,
+      .bias       = 0.00035f,
+      .radius     = 0.1255f,
+      .kernelSize = 32,
     };
+
+    // Ambient options
+    glm_vec3_one(ret->lightOptions.ambient_color_multiplier);
+    ret->lightOptions.ambient_strength   = 1.0f;
+    ret->lightOptions.prefilter_strength = 1.0f;
 
     // Billboard test
     vec2 bbsize = {0.01f, 0.01f};

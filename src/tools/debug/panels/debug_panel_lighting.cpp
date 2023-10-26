@@ -13,6 +13,17 @@ gsk::tools::panels::Lighting::draw(void)
     DragFloat("Light Strength", &p_renderer->light->strength, 1, 0, 100);
 
     Separator();
+    Text("Ambient Light");
+    ColorEdit3("Ambient Color",
+               p_renderer->lightOptions.ambient_color_multiplier);
+    SliderFloat(
+      "Ambient Strength", &p_renderer->lightOptions.ambient_strength, 0, 1);
+    SliderFloat("Prefilter Influence",
+                &p_renderer->lightOptions.prefilter_strength,
+                0,
+                1);
+
+    Separator();
     Text("Shadowmap");
     DragFloat(
       "Near Plane", &p_renderer->shadowmapOptions.nearPlane, 0.1f, 0, 20);

@@ -132,6 +132,20 @@ DrawModel(struct ComponentModel *model,
                                              "u_light_strength"),
                         renderer->light->strength);
 
+            // Ambient options
+            glUniform3fv(
+              glGetUniformLocation(material->shaderProgram->id,
+                                   "u_ambient_color_multiplier"),
+              1,
+              (float *)renderer->lightOptions.ambient_color_multiplier);
+
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_ambient_strength"),
+                        renderer->lightOptions.ambient_strength);
+            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
+                                             "u_prefilter_strength"),
+                        renderer->lightOptions.prefilter_strength);
+
             // Set the correct camera layer
             glUniform1i(glGetUniformLocation(material->shaderProgram->id,
                                              "u_render_layer"),

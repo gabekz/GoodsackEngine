@@ -71,6 +71,12 @@ struct _renderer
     ShadowmapOptions shadowmapOptions;
     SsaoOptions ssaoOptions;
 
+    struct
+    {
+        vec3 ambient_color_multiplier;
+        float ambient_strength, prefilter_strength;
+    } lightOptions;
+
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
     ui32 hdrTextureId;

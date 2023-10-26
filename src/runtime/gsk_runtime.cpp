@@ -95,8 +95,8 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
     s_runtime.ecs = renderer_active_scene(s_runtime.renderer, 0);
 
     // Lighting information
-    vec3 lightPos   = {1.5f, 2.4f, 0.4f};
-    vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    vec3 lightPos   = {1.5f, 2.4f, -0.5f};
+    vec4 lightColor = {0.95f, 0.87f, 0.78f, 1.0f};
 
     // UBO Lighting
     s_runtime.renderer->light =
