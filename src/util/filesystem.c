@@ -1,6 +1,8 @@
 #include "filesystem.h"
 #include <GoodsackEngineConfig.h> // We need build info
 
+#include <string.h>
+
 #include <util/logger.h>
 #include <util/sysdefs.h>
 
@@ -34,27 +36,36 @@ _strip_filename(char *buffer)
 static void
 _get_absolute_path(char *buffer)
 {
+
+    /*------------------------------------------------------
+      Some directory check testing stuff                  */
+
+#if 0
 #if defined(SYS_ENV_WIN)
 
 #if 0
     GetModuleFileName(NULL, buffer, GSK_FS_MAX_PATH);
 #elif 0
     GetCurrentDirectory(GSK_FS_MAX_PATH, buffer);
-#else
+#endif
     char b[GSK_FS_MAX_PATH] = (_GOODSACK_FS_DIR_DATA "/");
     // strcat(b, "/res");
     strcpy(buffer, s_path_roots.gsk_root);
     _to_forward_slash(buffer);
     return;
-#endif
-
-#elif defined(SYS_ENV_UNIX)
-    LOG_ERROR("Not implemented");
-
 #endif // SYS_ENV_WIN
+#endif // 0
+       /*-----------------------------------------------------*/
 
+    char b[GSK_FS_MAX_PATH] = (_GOODSACK_FS_DIR_DATA "/");
+    // strcat(b, "/res");
+    strcpy(buffer, s_path_roots.gsk_root);
     _to_forward_slash(buffer);
+    return;
+
+#if 0 // TODO: no need for this right now
     _strip_filename(buffer);
+#endif
 }
 
 char *

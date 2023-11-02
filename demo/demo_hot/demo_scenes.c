@@ -674,8 +674,8 @@ _scene7(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(
       floorEntity,
       C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matFloor,
-                                         .modelPath  = "../res/models/plane.obj",
+      (void *)(&(struct ComponentModel) {.material  = matFloor,
+                                         .modelPath = "../res/models/plane.obj",
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,

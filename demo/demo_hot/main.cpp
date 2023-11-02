@@ -24,7 +24,10 @@ main(int argc, char *argv[])
     };
 #endif
 
+    // TODO: This is lazy
+#ifdef SYS_ENV_WIN
     STATIC_ASSERT((_PROJ_DIR_ROOT), "path-root definition required");
+#endif
     gsk_runtime_setup((_PROJ_DIR_DATA "/"), argc, argv);
 
     demo_scenes_create(gsk_runtime_get_ecs(), gsk_runtime_get_renderer());
