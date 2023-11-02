@@ -39,8 +39,8 @@
 #define GPU_DRAW_MODE_ARRAYS   0xD000
 #define GPU_DRAW_MODE_ELEMENTS 0xD001
 
-#define SHADOW_WIDTH  2048
-#define SHADOW_HEIGHT 2048
+#define SHADOW_WIDTH  4096
+#define SHADOW_HEIGHT 4096
 
 static inline void
 clearGLState()

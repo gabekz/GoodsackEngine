@@ -29,45 +29,6 @@
 #define TESTING_DRAW_UI   1
 #define TESTING_DRAW_LINE 0
 
-#if 0
-static void
-__update_camera_ubo(Renderer *renderer)
-{
-    for (ui32 i = 0; i < renderer->camera_data.totalCameras; i++) {
-        if (DEVICE_API_OPENGL) {
-            // Get the starting position
-            ui32 ubo_offset = i * (renderer->camera_data.uboSize);
-
-            glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_data.uboId);
-            glBufferSubData(GL_UNIFORM_BUFFER,
-                            ubo_offset,
-                            sizeof(vec4),
-                            &renderer->camera_data.cameras[i]->position);
-            glBufferSubData(
-              GL_UNIFORM_BUFFER,
-              ubo_offset + sizeof(vec4),
-              sizeof(mat4),
-              (float *)*renderer->camera_data.cameras[i]->projection);
-            glBufferSubData(GL_UNIFORM_BUFFER,
-                            ubo_offset + sizeof(mat4) + sizeof(vec4),
-                            sizeof(mat4),
-                            (float *)*renderer->camera_data.cameras[i]->view);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        } else if (DEVICE_API_VULKAN) {
-            // TEST (while we don't have direct descriptor sets for objects)
-            mat4 p = GLM_MAT4_IDENTITY_INIT;
-            // glm_mat4_copy(p, camera->uniform.model);
-            // glm_mat4_copy(p, camera->model);
-            // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1,
-            // 0}); glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1,
-            // 0, 1});
-            // camera->proj[1][1] *= -1;
-            // camera->uniform.proj[1][1] *= -1;
-        }
-    }
-}
-#endif
-
 Renderer *
 renderer_init()
 {
@@ -102,7 +63,7 @@ renderer_init()
     ret->activeScene = 0;
 
     ret->properties = (RendererProps) {.tonemapper      = 0,
-                                       .exposure        = 2.5f,
+                                       .exposure        = 9.5f,
                                        .maxWhite        = 1.0f,
                                        .gamma           = 2.2f,
                                        .gammaEnable     = TRUE,
@@ -116,17 +77,22 @@ renderer_init()
       .farPlane  = 20.0f,
       .camSize   = 2.0f,
 
-      .normalBiasMin = 0.0025f,
-      .normalBiasMax = 0.0005f,
-      .pcfSamples    = 6,
+      .normalBiasMin = 0.0004f,
+      .normalBiasMax = 0.0006f,
+      .pcfSamples    = 4,
     };
 
     ret->ssaoOptions = (SsaoOptions) {
-      .strength   = 2.1f,
-      .bias       = 0.0003f,
-      .radius     = 0.15f,
-      .kernelSize = 16,
+      .strength   = 1.0f,
+      .bias       = 0.00035f,
+      .radius     = 0.1255f,
+      .kernelSize = 32,
     };
+
+    // Ambient options
+    glm_vec3_one(ret->lightOptions.ambient_color_multiplier);
+    ret->lightOptions.ambient_strength   = 1.0f;
+    ret->lightOptions.prefilter_strength = 1.0f;
 
     // Billboard test
     vec2 bbsize = {0.01f, 0.01f};

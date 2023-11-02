@@ -7,6 +7,10 @@
 #include <entity/v1/builtin/component_test.h>
 #include <entity/v1/builtin/components.h>
 
+#include <util/filesystem.h>
+
+#define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
+
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
 
@@ -60,16 +64,18 @@ _scene0(ECS *ecs, Renderer *renderer)
     ecs = renderer_active_scene(renderer, 0);
 
     Texture *texEarthDiff =
-      texture_create_d("../demo/demo_hot/Resources/textures/earth/diffuse.png");
+      texture_create_d(GSK_PATH("data://textures/earth/diffuse.png"));
     Texture *texEarthNorm =
-      texture_create_n("../demo/demo_hot/Resources/textures/earth/normal.png");
+      texture_create_n(GSK_PATH("data://textures/earth/normal.png"));
+    texture_create_n(GSK_PATH("data://textures/earth/normal.png"));
 
-    Material *matSuzanne = material_create(NULL,
-                                           "../res/shaders/lit-diffuse.shader",
-                                           3,
-                                           texEarthDiff,
-                                           texEarthNorm,
-                                           texDefSpec);
+    Material *matSuzanne =
+      material_create(NULL,
+                      GSK_PATH("gsk://shaders/lit-diffuse.shader"),
+                      3,
+                      texEarthDiff,
+                      texEarthNorm,
+                      texDefSpec);
 
     Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
@@ -79,7 +85,7 @@ _scene0(ECS *ecs, Renderer *renderer)
                       C_MODEL,
                       (void *)(&(struct ComponentModel) {
                         .material   = matSuzanne,
-                        .modelPath  = "../res/models/sphere.obj",
+                        .modelPath  = GSK_PATH("gsk://models/sphere.obj"),
                         .properties = {
                           .drawMode = DRAW_ARRAYS,
                           .cullMode = CULL_CW | CULL_FORWARD,
@@ -382,6 +388,9 @@ _scene4(ECS *ecs, Renderer *renderer)
     Material *matCharacter =
       material_create(NULL, "../res/shaders/skinning-test.shader", 0);
 
+    Model *modelCharacter = model_load_from_file(
+      "../demo/demo_hot/Resources/models/character-anim.gltf", 1, FALSE);
+
     Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
 
     Entity characterEntity = ecs_new(ecs);
@@ -394,15 +403,12 @@ _scene4(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(
       characterEntity,
       C_MODEL,
-      (void *)(&(struct ComponentModel) {
-        .material  = matCharacter,
-        .modelPath = "../demo/demo_hot/Resources/models/character-anim.gltf",
-        //.modelPath  = "../demo/demo_hot/Resources/models/sponza.glb",
-        //.modelPath  = "../res/models/test3.gltf",
-        .properties = {
-          .drawMode = DRAW_ELEMENTS,
-          .cullMode = CULL_CW | CULL_FORWARD,
-        }}));
+      (void *)(&(struct ComponentModel) {.material   = matCharacter,
+                                         .pModel     = modelCharacter,
+                                         .properties = {
+                                           .drawMode = DRAW_ELEMENTS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
     _ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
@@ -596,37 +602,38 @@ _scene7(ECS *ecs, Renderer *renderer)
      |  Resources
      -----------------------*/
 
+    Texture *texBrickDiff =
+      texture_create_d(GSK_PATH("data://textures/brickwall/diffuse.png"));
     /*
-    Texture *texBrickDiff = texture_create_d(
-      "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
-    */
     Texture *texBrickDiff =
       texture_create_d("../demo/demo_hot/Resources/textures/prototype.png");
-    Texture *texBrickNorm = texture_create_n(
-      "../demo/demo_hot/Resources/textures/brickwall/normal.png");
+      */
+    Texture *texBrickNorm =
+      texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
 
     Material *matFloor = material_create(NULL,
-                                         "../res/shaders/lit-diffuse.shader",
-                                         3,
+                                         GSK_PATH("gsk://shaders/pbr.shader"),
+                                         4,
                                          texBrickDiff,
-                                         texDefNorm,
-                                         texDefSpec);
+                                         texBrickNorm,
+                                         texDefSpec,
+                                         texPbrAo);
 
-    Texture *texCerbA = texture_create_d(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
-    Texture *texCerbN = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
-    Texture *texCerbM = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
-    Texture *texCerbS = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
+    Texture *texCerbA =
+      texture_create_d(GSK_PATH("data://textures/pbr/cerberus/Cerberus_A.tga"));
+    Texture *texCerbN =
+      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_N.tga"));
+    Texture *texCerbM =
+      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_M.tga"));
+    Texture *texCerbS =
+      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_R.tga"));
 
     /*
     Material *matWeapon =
       material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
       */
     Material *matWeapon = material_create(NULL,
-                                          "../res/shaders/pbr.shader",
+                                          GSK_PATH("gsk://shaders/pbr.shader"),
                                           5,
                                           texCerbA,
                                           texCerbN,
@@ -634,8 +641,8 @@ _scene7(ECS *ecs, Renderer *renderer)
                                           texCerbS,
                                           texPbrAo);
 
-    Model *modelWeapon = model_load_from_file(
-      "../demo/demo_hot/Resources/models/AK2.glb", 1, FALSE);
+    Model *modelWeapon =
+      model_load_from_file(GSK_PATH("data://models/AK2.glb"), 1, FALSE);
 
     /*----------------------
      |  Entities
@@ -767,23 +774,22 @@ _scene7(ECS *ecs, Renderer *renderer)
       }));
 };
 
-#define GLUE_HELPER(x, y)   x##y
-#define GLUE(x, y)          GLUE_HELPER(x, y)
-#define LOAD_SCENE(__index) GLUE(_scene, __index)(ecs, renderer)
-
 void
 demo_scenes_create(ECS *ecs, Renderer *renderer)
 {
     // Default textures with options
     s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};
     s_texOpsPbr = (TextureOptions) {8, GL_SRGB_ALPHA, true, true};
-    texDefSpec  = texture_create_n("../res/textures/defaults/black.png");
-    texDefNorm  = texture_create_n("../res/textures/defaults/normal.png");
-    texPbrAo    = texture_create_n("../res/textures/defaults/white.png");
-    texMissing  = texture_create_n("../res/textures/defaults/missing.jpg");
+    texDefSpec =
+      texture_create_n(GSK_PATH("gsk://textures/defaults/black.png"));
+    texDefNorm =
+      texture_create_n(GSK_PATH("gsk://textures/defaults/normal.png"));
+    texPbrAo = texture_create_n(GSK_PATH("gsk://textures/defaults/white.png"));
+    texMissing =
+      texture_create_n(GSK_PATH("gsk://textures/defaults/missing.jpg"));
 
     skyboxMain = skybox_hdr_create(
-      texture_create_hdr("../res/textures/hdr/sky_cloudy_ref.hdr"));
+      texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);

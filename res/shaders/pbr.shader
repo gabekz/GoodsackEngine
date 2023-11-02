@@ -119,6 +119,11 @@ uniform float u_ssao_strength = 2.5;
 // TODO: temp light strength
 uniform float u_light_strength = 4;
 
+// Ambient options
+uniform vec3 u_ambient_color_multiplier = vec3(1);
+uniform float u_ambient_strength        = 1; // diffuse + specluar + AO
+uniform float u_prefilter_strength      = 1; // Prefiltered Map ambient colors
+
 /*
 layout (std140, set = 2, binding = 0) uniform ObjectTextures {
     sampler2D t_Albedo;
@@ -306,13 +311,17 @@ main()
         vec3 H            = normalize(V + L);
         float distance    = length(fs_in.lightPos - fs_in.position);
         float attenuation = 1.0 / (distance * distance); // distance^2 for Gamma
-        vec3 radiance     = (fs_in.lightColor * u_light_strength) * attenuation;
+
+        sV = calcShadow(fs_in.lightWorldSpace, L, true);
+
+        vec3 radiance =
+          (fs_in.lightColor * u_light_strength * (1 - sV)) * attenuation;
 
         // TODO: Quick hack for directional lighting
         if (LIGHT_TYPE == 0) {
             L        = normalize(fs_in.lightPos);
             H        = normalize(V + L);
-            radiance = fs_in.lightColor * u_light_strength;
+            radiance = fs_in.lightColor * u_light_strength * (1 - sV);
         }
 
         float NdotL = max(dot(N, L), FEATHER);
@@ -346,7 +355,7 @@ main()
         kD *= 1.0 - metallic;
 
         // shadow-coverage factor
-        sV = calcShadow(fs_in.lightWorldSpace, L, true);
+        // sV = calcShadow(fs_in.lightWorldSpace, L, true);
         // sV = calcShadow(fs_in.lightWorldSpace, normalized(fs_in.lightPos),
         // true);
 
@@ -375,11 +384,13 @@ main()
     vec3 ambient     = (diffuse + specular) * calcAo(aoStrength);
 
     // vec3 shadowColor = vec3(0.0);
-    vec3 shadowColor      = fs_in.lightColor * 0.002;
-    float shadowIntensity = 1.0;
-    shadowColor           = (1 - (sV * (vec3(shadowIntensity) - shadowColor)));
+    vec3 shadowColor = (ambient * u_ambient_strength) *
+                       mix(vec3(1), prefilteredColor, u_prefilter_strength) *
+                       u_ambient_color_multiplier;
 
-    vec3 color = (ambient + Lo) * shadowColor;
+    vec3 shadowMask = (1 - (sV * (1 - shadowColor))); // Mask shadow visibility
+
+    vec3 color = (ambient + Lo) * shadowMask;
 
     // HDR
     // color = color / (color + vec3(1.0));

@@ -1,5 +1,6 @@
 #include "gsk_runtime.hpp"
 
+#include <util/filesystem.h>
 #include <util/logger.h>
 #include <util/sysdefs.h>
 
@@ -7,22 +8,15 @@
 
 #include <core/device/device.h>
 #include <core/graphics/lighting/lighting.h>
+#include <entity/lua/eventstore.hpp>
 #include <entity/v1/ecs.h>
-#include <tools/debugui.hpp>
 #include <wrapper/lua/lua_init.hpp>
 
-#include <entity/lua/eventstore.hpp>
+#if GSK_RUNTIME_USE_DEBUG
+#include <tools/debug/debug_toolbar.hpp>
+#endif // GSK_RUNTIME_USE_DEBUG
 
 #include <entity/v1/builtin/component_test.h>
-
-// #define RENDERER_2
-#define USING_LUA                    1
-#define USING_RUNTIME_LOADING_SCREEN 1
-#define USING_JOYSTICK_CONTROLLER    1
-
-// Starting cursor state
-#define INIT_CURSOR_LOCKED  1
-#define INIT_CURSOR_VISIBLE 0
 
 #ifdef RENDERER_2
 #include <core/graphics/renderer/renderer.hpp>
@@ -37,7 +31,10 @@ static struct
 {
     ECS *ecs;
     Renderer *renderer;
-    DebugGui *debugGui;
+
+#if GSK_RUNTIME_USE_DEBUG
+    gsk::tools::DebugToolbar *p_debug_toolbar;
+#endif // GSK_RUNTIME_DEBUG
 
 } s_runtime;
 }
@@ -62,7 +59,7 @@ _gsk_check_args(int argc, char *argv[])
 }
 
 ui32
-gsk_runtime_setup(int argc, char *argv[])
+gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 {
     // Setup logger
     int logStat = logger_initConsoleLogger(NULL);
@@ -81,6 +78,8 @@ gsk_runtime_setup(int argc, char *argv[])
     default: LOG_ERROR("Device API Failed to retreive Graphics Backend"); break;
     }
 
+    gsk_filesystem_initialize(root_dir);
+
     // Initialize Renderer
 #ifdef RENDERER_2
     Renderer renderer = new Renderer();
@@ -96,15 +95,18 @@ gsk_runtime_setup(int argc, char *argv[])
     s_runtime.ecs = renderer_active_scene(s_runtime.renderer, 0);
 
     // Lighting information
-    vec3 lightPos   = {1.5f, 2.4f, 0.4f};
-    vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    vec3 lightPos   = {1.5f, 2.4f, -0.5f};
+    vec4 lightColor = {0.95f, 0.87f, 0.78f, 1.0f};
 
     // UBO Lighting
     s_runtime.renderer->light =
       lighting_initialize((float *)lightPos, (float *)lightColor);
 
-    // Create DebugGui
-    s_runtime.debugGui = new DebugGui(s_runtime.renderer);
+#if GSK_RUNTIME_USE_DEBUG
+    // Create DebugToolbar
+    s_runtime.p_debug_toolbar =
+      new gsk::tools::DebugToolbar(s_runtime.renderer);
+#endif // GSK_RUNTIME_USE_DEBUG
 
     // FPS Counter
     device_resetAnalytics();
@@ -130,7 +132,7 @@ gsk_runtime_setup(int argc, char *argv[])
 
 #ifdef USING_LUA
     // Main Lua entry
-    LuaInit("../demo/demo_hot/Resources/scripts/main.lua", s_runtime.ecs);
+    LuaInit(GSK_PATH("data://scripts/main.lua"), s_runtime.ecs);
 #endif
 
 #endif
@@ -198,7 +200,11 @@ gsk_runtime_loop()
 #endif // USING_LUA
 
             renderer_tick(s_runtime.renderer);
-            s_runtime.debugGui->Render();
+
+#if GSK_RUNTIME_USE_DEBUG
+            s_runtime.p_debug_toolbar->render();
+#endif // GSK_RUNTIME_USE_DEBUG
+
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
         } else if (DEVICE_API_VULKAN) {
             glfwPollEvents();
@@ -208,7 +214,11 @@ gsk_runtime_loop()
                                      s_runtime.renderer->window);
             s_runtime.renderer->currentPass = REGULAR;
             ecs_event(s_runtime.ecs, ECS_RENDER);
-            s_runtime.debugGui->Render();
+
+#if GSK_RUNTIME_USE_DEBUG
+            s_runtime.p_debug_toolbar->render();
+#endif // GSK_RUNTIME_USE_DEBUG
+
             vulkan_render_draw_end(s_runtime.renderer->vulkanDevice,
                                    s_runtime.renderer->window);
         }
@@ -222,7 +232,10 @@ gsk_runtime_loop()
         vulkan_device_cleanup(s_runtime.renderer->vulkanDevice);
     }
 
-    delete (s_runtime.debugGui);
+#if GSK_RUNTIME_USE_DEBUG
+    delete (s_runtime.p_debug_toolbar);
+#endif // GSK_RUNTIME_USE_DEBUG
+
     glfwTerminate();
 }
 

@@ -14,8 +14,19 @@ extern "C" {
 }
 #endif
 
+// #define RENDERER_2
+#define USING_LUA                    1
+#define USING_RUNTIME_LOADING_SCREEN 1
+#define USING_JOYSTICK_CONTROLLER    1
+
+// Starting cursor state
+#define INIT_CURSOR_LOCKED  1
+#define INIT_CURSOR_VISIBLE 0
+
+#define GSK_RUNTIME_USE_DEBUG 1
+
 ui32
-gsk_runtime_setup(int argc, char *argv[]);
+gsk_runtime_setup(const char *project_root, int argc, char *argv[]);
 
 void
 gsk_runtime_loop();

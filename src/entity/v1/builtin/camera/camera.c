@@ -131,9 +131,9 @@ init(Entity e)
     camera->screenHeight = e.ecs->renderer->windowHeight;
 
     // Defaults
-    if (camera->fov <= 0) { camera->fov = 45.0f; }
-    if (camera->nearZ <= 0) { camera->nearZ = 0.1f; }
-    if (camera->farZ <= 0) { camera->farZ = 100.0f; }
+    if (camera->fov <= 0) { camera->fov = 70.0f; }
+    if (camera->nearZ <= 0) { camera->nearZ = 0.005f; }
+    if (camera->farZ <= 0) { camera->farZ = 1200.0f; }
 
     // Create camera UBO
     _initialize_shader_data(camera);
