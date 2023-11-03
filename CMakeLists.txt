@@ -124,11 +124,14 @@ option(GOODSACK_TEST_COVERAGE "Collect test coverage files" OFF)
 option(GOODSACK_DEV "Development Mode" OFF)
 option(GOODSACK_API_OMIT_PREFIX "Prefix" OFF)
 
+add_subdirectory(thirdparty)
+
 #################################################################
 # GoodsackEngine Runtime Library
 #################################################################
 set(RUNTIME_NAME "GoodsackRuntime")
 add_library(${RUNTIME_NAME} SHARED ${SOURCES})
+
 set_target_properties(${RUNTIME_NAME} PROPERTIES
     if(GOODSACK_API_OMIT_PREFIX)
         PREFIX ""
@@ -140,6 +143,18 @@ set_target_properties(${RUNTIME_NAME} PROPERTIES
 target_include_directories(${RUNTIME_NAME} PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
 
 target_compile_options(${RUNTIME_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
+
+target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_cglm)
+target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_glfw)
+target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_glad)
+target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_vulkan)
+target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_imgui)
+target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_lua)
+target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_alsoft)
+
+target_link_libraries(${RUNTIME_NAME} PRIVATE ThirdParty_stb)
+target_link_libraries(${RUNTIME_NAME} PRIVATE ThirdParty_json)
+target_link_libraries(${RUNTIME_NAME} PRIVATE ThirdParty_cgltf)
 
 #################################################################
 # GoodsackEngine Lua-API Library
@@ -203,251 +218,31 @@ endif()
 # TestRunner Executable
 #################################################################
 if(GOODSACK_TEST)
-    set(TEST_EXE_NAME "testRunner")
     enable_testing()
 
-    add_executable(${TEST_EXE_NAME} ${TEST_SOURCES} )
-    target_include_directories(${TEST_EXE_NAME} PRIVATE "${SRC_DIR}")
+    add_executable(GoodsackEngine_Test ${TEST_SOURCES} )
+    target_include_directories(GoodsackEngine_Test PRIVATE "${SRC_DIR}")
     # Link test executable against gtest & gtest_main
-    target_link_libraries(${TEST_EXE_NAME} 
-        GTest::gtest 
-        GTest::gtest_main
+    target_link_libraries(GoodsackEngine_Test
+        ThirdParty_gtest
         ${RUNTIME_NAME}
     )
-    add_test(${TEST_EXE_NAME} ${TEST_EXE_NAME})
-    set_tests_properties(${TEST_EXE_NAME} PROPERTIES
+    add_test(GoodsackEngine_Test GoodsackEngine_Test) # currently single-test model
+    set_tests_properties(GoodsackEngine_Test PROPERTIES
         WORKING_DIRECTORY "${SRC_DIR}")
-    target_compile_options(${TEST_EXE_NAME} PUBLIC ${TEST_EXE_OPTIONS})
+    target_compile_options(GoodsackEngine_Test PUBLIC ${TEST_EXE_OPTIONS})
+
+    set_target_properties(GoodsackEngine_Test PROPERTIES FOLDER "GoodsackEngine/internal")
 
     if(UNIX)
-        set_target_properties(${TEST_EXE_NAME}
+        set_target_properties(GoodsackEngine_Test
         PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        OUTPUT_NAME "testRunner"
     )
     endif(UNIX)
-endif()
-
-######## 3rd-PARTY LIBRARIES ####################################
-
-#################################################################
-# Library: STB
-#################################################################
-set(STB_DIR "${LIB_DIR}/stb")
-add_library(stb INTERFACE)
-target_include_directories(stb INTERFACE ${STB_DIR})
-target_link_libraries(${RUNTIME_NAME} stb)
-
-#################################################################
-# Library: cgltf
-#################################################################
-set(CGLTF_DIR "${LIB_DIR}/cgltf")
-add_library(cgltf INTERFACE)
-target_include_directories(cgltf INTERFACE ${CGLTF_DIR})
-target_link_libraries(${RUNTIME_NAME} cgltf)
-
-#################################################################
-# Library: CGLM
-#################################################################
-set(CGLM_DIR "${LIB_DIR}/cglm")
-add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
-target_link_libraries(${RUNTIME_NAME} cglm cglm_headers) 
-target_compile_definitions(${RUNTIME_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
-target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
-target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
-
-set_target_properties(cglm PROPERTIES FOLDER "ThirdParty")
-#target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
-
-#################################################################
-# Library: GLFW
-#################################################################
-set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
-set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
-set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
-set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
-
-find_package(glfw3 CONFIG QUIET)
-if(glfw3_FOUND)
-    target_link_libraries(${RUNTIME_NAME} glfw)
-else()
-    set(GLFW_DIR "${LIB_DIR}/glfw")
-    add_subdirectory("${GLFW_DIR}")
-    target_link_libraries(${RUNTIME_NAME} "glfw"
-        "${GLFW_LIBRARIES}" "${CMAKE_DL_LIBS}")
-    target_include_directories(${RUNTIME_NAME} PRIVATE "${GLFW_DIR}/include")
-    target_compile_definitions(${RUNTIME_NAME} PRIVATE "GLFW_INCLUDE_NONE")
-    target_link_libraries(${RUNTIME_NAME} "glfw")
-endif()
-
-
-#################################################################
-# Library: GLAD
-#################################################################
-set(GLAD_DIR "${LIB_DIR}/glad")
-add_library("glad" STATIC "${GLAD_DIR}/src/gl.c")
-set_target_properties(glad PROPERTIES FOLDER "ThirdParty")
-if(UNIX)
-    target_compile_options("glad" PRIVATE "-fPIC")
-endif(UNIX)
-target_include_directories("glad" PUBLIC "${GLAD_DIR}/include")
-target_include_directories(${RUNTIME_NAME} PUBLIC "${GLAD_DIR}/include")
-
-target_link_libraries(${RUNTIME_NAME} "glad" "${CMAKE_DL_LIBS}")
-
-#################################################################
-# Library: VulkanSDK
-#################################################################
-message(STATUS "(Vulkan) Attempting auto locate Vulkan using CMake.....")
-
-# Find Vulkan Path using CMake's Vulkan Module
-# This will return Boolean 'Vulkan_FOUND' indicating the status
-# of find as success(ON) or fail(OFF).
-# Include directory path - 'Vulkan_INCLUDE_DIRS' and 'Vulkan_LIBRARY'
-# with required libraries.
-find_package(Vulkan QUIET)
-
-# Try extracting VulkanSDK path from ${Vulkan_INCLUDE_DIRS}
-if (NOT ${Vulkan_INCLUDE_DIRS} STREQUAL "")
-	set(VULKAN_PATH ${Vulkan_INCLUDE_DIRS})
-	STRING(REGEX REPLACE "/Include" "" VULKAN_PATH ${VULKAN_PATH})
-endif()
-if(NOT Vulkan_FOUND)
-	# CMake may fail to locate the libraries but could be able to 
-	# provide some path in Vulkan SDK include directory variable
-	# 'Vulkan_INCLUDE_DIRS', try to extract path from this.
-	message(STATUS "Failed to locate Vulkan SDK, retrying again...")
-	if(EXISTS "${VULKAN_PATH}")
-		message(STATUS "Successfully located the Vulkan SDK: ${VULKAN_PATH}")
-	else()
-		message("Error: Unable to locate Vulkan SDK.")
-		# message("and specify manually path using 'VULKAN_SDK' and 'VULKAN_VERSION' variables in the CMakeLists.txt.")
-		return()
-	endif()
-endif()
-target_include_directories(${RUNTIME_NAME} PUBLIC "${VULKAN_PATH}/Include")
-#set(VULKAN_VERSION "1.0.33.0")
-#set(VULKAN_LIB_LIST "vulkan")
-# Link directory for vulkan-1
-link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
-target_link_libraries(${RUNTIME_NAME} Vulkan::Vulkan)
-
-#################################################################
-# Library: ImGui
-#################################################################
-find_package(imgui CONFIG QUIET)
-if(imgui_FOUND)
-    target_link_libraries(${RUNTIME_NAME} imgui::imgui) 
-else()
-    set(IMGUI_DIR "${LIB_DIR}/imgui")
-    message(STATUS "(ImGui) Using manual specified path: ${IMGUI_DIR}")
-
-    add_library("imgui" STATIC
-                      "${IMGUI_DIR}/imgui.cpp"
-                      "${IMGUI_DIR}/imgui_demo.cpp"
-                      "${IMGUI_DIR}/imgui_draw.cpp"
-                      "${IMGUI_DIR}/imgui_tables.cpp"
-                      "${IMGUI_DIR}/imgui_widgets.cpp"
-
-                      "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
-                      "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
-                      "${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp")
-    if(UNIX)
-        target_compile_options("imgui" PRIVATE "-fPIC")
-    endif(UNIX)
-
-    target_include_directories("imgui" PRIVATE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
-    target_link_libraries("imgui" "glfw" Vulkan::Vulkan "${CMAKE_DL_LIBS}")
-    target_include_directories("imgui" PRIVATE "${VULKAN_PATH}/include")
-
-    target_include_directories(${RUNTIME_NAME} PRIVATE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
-    target_link_libraries(${RUNTIME_NAME} "imgui" "${CMAKE_DL_LIBS}")
-endif()
-
-#################################################################
-# Library: Lua
-#################################################################
-message(STATUS "(Lua) Attempting auto locate Lua using CMake.....")
-find_package(Lua QUIET)
-if(Lua_FOUND OR LUA_FOUND OR Lua51_FOUND OR LUA51_FOUND)
-    message(STATUS "(Lua) Auto located.")
-    #include_directories(/usr/local/include ${LUA_INCLUDE_DIR})
-    target_link_libraries(${RUNTIME_NAME} ${LUA_LIBRARIES})
-    target_link_libraries(${API_NAME} ${LUA_LIBRARIES})
-    #target_include_directories(${RPOJECT_NAME} ${LUA_INCLUDE_DIR})
-else()
-    message(STATUS "(Lua) Failed to auto locate")
-    set(LUA_DIR "${LIB_DIR}/lua-5.4.4")
-    file(GLOB LUA_LIBRARIES "${LUA_DIR}/src/*.c" "${LUA_DIR}/src/*.h")
-    add_library(lua ${LUA_LIBRARIES})
-    if(UNIX)
-        target_compile_options(lua PRIVATE "-fPIC")
-    endif(UNIX)
-
-    target_include_directories(${RUNTIME_NAME} PUBLIC "${LUA_DIR}/src")
-    target_link_libraries(${RUNTIME_NAME} lua)
-
-    target_include_directories(${API_NAME} PUBLIC "${LUA_DIR}/src")
-    target_link_libraries(${API_NAME} lua)
-endif()
-
-#################################################################
-# Library: JSON
-#################################################################
-find_package(nlohmann_json QUIET) # NOTE: nlohmann-json in vcpkg
-if(NOT nlohmann_json_FOUND)
-    message(STATUS "failed to find JSON")
-    set(JSON_BuildTests OFF CACHE INTERNAL "")
-    set(JSON_INSTALL OFF CACHE INTERNAL "")
-    add_subdirectory("${LIB_DIR}/json")
-else()
-    message(STATUS "Auto-located JSON")
-endif()
-target_link_libraries(${RUNTIME_NAME} nlohmann_json::nlohmann_json)
-
-#################################################################
-# Library: Google Test
-#################################################################
-set(INSTALL_GTEST OFF CACHE INTERNAL "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)")
-find_package(GTest CONFIG QUIET)
-if(GTest_FOUND)
-    message("GTest auto located")
-else()
-    message("Failed to auto locate")
-    set(GTEST_DIR "${LIB_DIR}/googletest") 
-    add_subdirectory(${GTEST_DIR})
-    target_include_directories(${RUNTIME_NAME} PRIVATE
-        "${GTEST_DIR}" 
-        "${GTEST_DIR}/googletest"
-        "${GTEST_DIR}/googletest/include"
-        "${GTEST_DIR}/googlemock"
-        "${GTEST_DIR}/googlemock/include")
-endif()
-
-#################################################################
-# Library: OpenAL Soft
-#################################################################
-
-set(ALSOFT_INSTALL OFF CACHE INTERNAL "Install main library")
-set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "Build example programs")
-set(ALSOFT_UTILS OFF CACHE INTERNAL "Build utility programs")
-set(ALSOFT_NO_CONFIG_UTIL ON CACHE INTERNAL "Disable building the alsoft-config utility")
-
-message(STATUS "(OpenAL) Auto-locating")
-find_package(OpenAL CONFIG QUIET)
-if(OpenAL_FOUND)
-    message(STATUS "(OpenAL) successfully auto-located")
-    target_link_libraries(${RUNTIME_NAME} OpenAL::OpenAL)
-else()
-    message(STATUS "(OpenAL) failed to auto-locate")
-    set(OPENAL_DIR "${LIB_DIR}/openal-soft") 
-    add_subdirectory(${OPENAL_DIR})
-
-    target_link_libraries(${RUNTIME_NAME} OpenAL)
-    target_include_directories(${RUNTIME_NAME} PRIVATE
-        "${OPENAL_DIR}" 
-        "${OPENAL_DIR}/include")
 endif()
 
 #################################################################
