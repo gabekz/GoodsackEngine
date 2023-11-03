@@ -7,6 +7,7 @@ on:
 env:
   BUILD_TYPE: Release
   BUILD_CONFIG_FNAME: GoodsackEngineConfig.h
+  TEST_EXECUTABLE: GoodsackEngine_Test
 
 jobs:
 # Linux Release Build
@@ -48,9 +49,9 @@ jobs:
     - name: Setup Tests
       run: |
         ls -R
-        chmod +x ${{github.workspace}}/build/bin/testRunner
-        ldd ${{github.workspace}}/build/bin/testRunner
+        chmod +x ${{github.workspace}}/build/bin/${{env.TEST_EXECUTABLE}}
+        ldd ${{github.workspace}}/build/bin/${{env.TEST_EXECUTABLE}}
 
     - name: Run Tests
       if: ${{ matrix.tests }}
-      run: ${{github.workspace}}/build/bin/testRunner
+      run: ${{github.workspace}}/build/bin/${{env.TEST_EXECUTABLE}}

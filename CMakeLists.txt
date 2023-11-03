@@ -129,47 +129,54 @@ add_subdirectory(thirdparty)
 #################################################################
 # GoodsackEngine Runtime Library
 #################################################################
-set(RUNTIME_NAME "GoodsackRuntime")
-add_library(${RUNTIME_NAME} SHARED ${SOURCES})
+add_library(GoodsackEngine_runtime SHARED ${SOURCES})
 
-set_target_properties(${RUNTIME_NAME} PROPERTIES
+set_target_properties(GoodsackEngine_runtime PROPERTIES
     if(GOODSACK_API_OMIT_PREFIX)
         PREFIX ""
     endif(GOODSACK_API_OMIT_PREFIX)
     FOLDER "GoodsackEngine"
-    DESCRIPTION "GoodsackEngine Runtime"
+    DESCRIPTION "GoodsackEngine Runtime Library"
 )
 
-target_include_directories(${RUNTIME_NAME} PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
+target_include_directories(GoodsackEngine_runtime PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
 
-target_compile_options(${RUNTIME_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
+target_compile_options(GoodsackEngine_runtime PUBLIC ${PROJECT_EXE_OPTIONS})
 
-target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_cglm)
-target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_glfw)
-target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_glad)
-target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_vulkan)
-target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_imgui)
-target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_lua)
-target_link_libraries(${RUNTIME_NAME} PUBLIC ThirdParty_alsoft)
+target_link_libraries(GoodsackEngine_runtime PUBLIC
+    ThirdParty_cglm
+    ThirdParty_glfw
+    ThirdParty_glad
+    ThirdParty_vulkan
+    ThirdParty_imgui
+    ThirdParty_lua
+    ThirdParty_alsoft
+)
 
-target_link_libraries(${RUNTIME_NAME} PRIVATE ThirdParty_stb)
-target_link_libraries(${RUNTIME_NAME} PRIVATE ThirdParty_json)
-target_link_libraries(${RUNTIME_NAME} PRIVATE ThirdParty_cgltf)
+target_link_libraries(GoodsackEngine_runtime PRIVATE 
+    ThirdParty_stb
+    ThirdParty_json
+    ThirdParty_cgltf
+)
+
+#if(GOODSACK_TEST)
+#    target_link_libraries(GoodsackEngine_runtime PRIVATE ThirdParty_gtest)
+#endif()
 
 #################################################################
 # GoodsackEngine Lua-API Library
 #################################################################
-set(API_NAME "goodsack")
-add_library(${API_NAME} SHARED ${API_SOURCES})
-set_target_properties(${API_NAME} PROPERTIES
+add_library(GoodsackEngine_api SHARED ${API_SOURCES})
+set_target_properties(GoodsackEngine_api PROPERTIES
     PREFIX ""
     FOLDER "GoodsackEngine"
     DESCRIPTION "GoodsackEngine API"
+    OUTPUT_NAME "goodsack"
 )
 
 # Link the include directory to the main project
-target_include_directories(${API_NAME} PUBLIC "${SRC_DIR}")
-target_link_libraries(${API_NAME} ${RUNTIME_NAME})
+target_include_directories(GoodsackEngine_api PUBLIC "${SRC_DIR}")
+target_link_libraries(GoodsackEngine_api GoodsackEngine_runtime)
 
 #################################################################
 # Example Projects
@@ -186,11 +193,13 @@ if(GOODSACK_EXAMPLES)
     add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c" ${APP_ICON_RESOURCE})
     target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR})
 
-    target_link_libraries(${DEMO_EXE_NAME} ${RUNTIME_NAME} ${API_NAME})
+    target_link_libraries(${DEMO_EXE_NAME} GoodsackEngine_runtime GoodsackEngine_api)
     target_compile_options(${DEMO_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 
     target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_ROOT=\"${DEMO_DIR}\"")
     target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_DATA=\"${DEMO_DIR}/Resources\"")
+
+    set_target_properties(${DEMO_EXE_NAME} PROPERTIES FOLDER "Projects")
 
     if(UNIX)
         set_target_properties(${DEMO_EXE_NAME}
@@ -219,20 +228,40 @@ endif()
 #################################################################
 if(GOODSACK_TEST)
     enable_testing()
-
     add_executable(GoodsackEngine_Test ${TEST_SOURCES} )
-    target_include_directories(GoodsackEngine_Test PRIVATE "${SRC_DIR}")
-    # Link test executable against gtest & gtest_main
-    target_link_libraries(GoodsackEngine_Test
-        ThirdParty_gtest
-        ${RUNTIME_NAME}
+
+    ######################################################
+    # Library: Google Test
+    set(INSTALL_GTEST OFF CACHE INTERNAL "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)")
+    find_package(GTest CONFIG QUIET)
+    if(GTest_FOUND)
+        message("GTest auto located")
+    else()
+        message("Failed to auto locate")
+        set(GTEST_DIR "${LIB_DIR}/googletest") 
+        add_subdirectory(${GTEST_DIR})
+        target_include_directories(GoodsackEngine_Test PRIVATE 
+            "${GTEST_DIR}" 
+            "${GTEST_DIR}/googletest"
+            "${GTEST_DIR}/googletest/include"
+            "${GTEST_DIR}/googlemock"
+            "${GTEST_DIR}/googlemock/include")
+    endif()
+    ######################################################
+
+    #target_include_directories(GoodsackEngine_Test PRIVATE "${SRC_DIR}")
+    target_link_libraries(GoodsackEngine_Test 
+        GTest::gtest
+        GTest::gtest_main
+        GoodsackEngine_runtime
     )
+
+    set_target_properties(GoodsackEngine_Test PROPERTIES FOLDER "GoodsackEngine/internal")
+    target_compile_options(GoodsackEngine_Test PUBLIC ${TEST_EXE_OPTIONS})
+
     add_test(GoodsackEngine_Test GoodsackEngine_Test) # currently single-test model
     set_tests_properties(GoodsackEngine_Test PROPERTIES
         WORKING_DIRECTORY "${SRC_DIR}")
-    target_compile_options(GoodsackEngine_Test PUBLIC ${TEST_EXE_OPTIONS})
-
-    set_target_properties(GoodsackEngine_Test PROPERTIES FOLDER "GoodsackEngine/internal")
 
     if(UNIX)
         set_target_properties(GoodsackEngine_Test
@@ -240,8 +269,7 @@ if(GOODSACK_TEST)
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-        OUTPUT_NAME "testRunner"
-    )
+        )
     endif(UNIX)
 endif()
 

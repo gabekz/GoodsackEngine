@@ -40,15 +40,15 @@ target_include_directories(ThirdParty_cgltf INTERFACE "${LIB_DIR}/cgltf")
 # Library: CGLM
 #################################################################
 add_library(ThirdParty_cglm INTERFACE)
+
 set(CGLM_DIR "${LIB_DIR}/cglm")
 
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
 set_target_properties(cglm PROPERTIES FOLDER "ThirdParty")
 
 target_link_libraries(ThirdParty_cglm INTERFACE cglm cglm_headers) 
+target_include_directories(ThirdParty_cglm INTERFACE cglm_headers)
 target_compile_definitions(ThirdParty_cglm INTERFACE "CGLM_ALL_UNALIGNED")
-set_target_properties(ThirdParty_cglm PROPERTIES FOLDER "ThirdParty")
-#target_compile_definitions(${TEST_EXE_NAME} PUBLIC "CGLM_ALL_UNALIGNED")
 
 #################################################################
 # Library: GLFW
@@ -189,29 +189,6 @@ else()
     #target_include_directories(${API_NAME} PUBLIC "${LUA_DIR}/src")
     #target_link_libraries(${API_NAME} lua)
 endif()
-
-#################################################################
-# Library: Google Test
-#################################################################
-add_library(ThirdParty_gtest INTERFACE)
-
-set(INSTALL_GTEST OFF CACHE INTERNAL "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)")
-find_package(GTest CONFIG QUIET)
-if(GTest_FOUND)
-    message("GTest auto located")
-else()
-    message("Failed to auto locate")
-    set(GTEST_DIR "${LIB_DIR}/googletest") 
-    add_subdirectory(${GTEST_DIR})
-    target_include_directories(ThirdParty_gtest INTERFACE
-        "${GTEST_DIR}" 
-        "${GTEST_DIR}/googletest"
-        "${GTEST_DIR}/googletest/include"
-        "${GTEST_DIR}/googlemock"
-        "${GTEST_DIR}/googlemock/include")
-endif()
-
-target_link_libraries(ThirdParty_gtest INTERFACE GTest::gtest GTest::gtest_main)
 
 #################################################################
 # Library: OpenAL Soft
