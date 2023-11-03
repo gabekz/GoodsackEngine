@@ -21,7 +21,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <cglm/cglm.h>
+#include "cglm/cglm.h"
 #include <cglm/struct.h>
 #ifdef __cplusplus
 }

@@ -4,7 +4,7 @@
 #include <entity/v1/ecs.h>
 #include <util/sysdefs.h>
 
-#define LUA_INIT_FILE_PATH "../src/api/lua/init.lua"
+#define LUA_INIT_FILE_PATH "gsk://../src/api/lua/init.lua"
 
 void
 LuaInit(const char *file, ECS *ecs);

@@ -8,6 +8,7 @@
 #include <core/graphics/mesh/primitives.h>
 #include <core/graphics/shader/shader.h>
 
+#include <util/filesystem.h>
 #include <util/gfx.h>
 #include <util/logger.h>
 #include <util/sysdefs.h>
@@ -128,7 +129,7 @@ postbuffer_init(ui32 width, ui32 height, RendererProps *properties)
     frameHeight = height;
 
     // Shader
-    shader = shader_create_program("../res/shaders/framebuffer.shader");
+    shader = shader_create_program(GSK_PATH("gsk://shaders/framebuffer.shader"));
     shader_use(shader);
     glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
 

@@ -5,6 +5,7 @@
 #include <core/graphics/mesh/primitives.h>
 #include <core/graphics/renderer/pipeline/pass_prepass.h>
 
+#include <util/filesystem.h>
 #include <util/logger.h>
 #include <util/maths.h>
 #include <util/sysdefs.h>
@@ -101,8 +102,10 @@ pass_ssao_init()
 
     // Create Shaders
     //---------------
-    s_ssaoOutShader = shader_create_program("../res/shaders/ssao-color.shader");
-    s_ssaoBlurShader = shader_create_program("../res/shaders/ssao-blur.shader");
+    s_ssaoOutShader =
+      shader_create_program(GSK_PATH("gsk://shaders/ssao-color.shader"));
+    s_ssaoBlurShader =
+      shader_create_program(GSK_PATH("gsk://shaders/ssao-blur.shader"));
 
     // Sample Kernel
     //--------------

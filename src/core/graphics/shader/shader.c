@@ -123,7 +123,7 @@ ParseShader(const char *path)
     short mode = -1; /* -1: NONE | 0: Vert | 1: Frag */
 
     if ((fptr = fopen(path, "rb")) == NULL) {
-        printf("Error opening %s\n", path);
+        LOG_ERROR("Error opening %s\n", path);
         exit(1);
     }
 

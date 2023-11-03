@@ -3,6 +3,8 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#include <util/filesystem.h>
+
 static void
 __fill_font_data(char *self_widths, const char *path_font_data)
 {
@@ -42,17 +44,15 @@ gui_text_create(const char *text_string)
 {
     GuiText *ret = malloc(sizeof(GuiText));
 
-    const char *font_bmp_path = "../res/fonts/font.bmp";
-    const char *font_dat_path = "../res/fonts/font-bfd.dat";
+    const char *font_bmp_path = GSK_PATH("gsk://fonts/font.bmp");
+    const char *font_dat_path = GSK_PATH("gsk://fonts/font-bfd.dat");
 
     LOG_DEBUG("Loading Font: \n%s\n%s", font_bmp_path, font_dat_path);
 
-    ret->font_atlas =
-      texture_create("../res/fonts/font.bmp",
-                     NULL,
-                     (TextureOptions) {1, GL_RGBA, false, true});
+    ret->font_atlas = texture_create(
+      font_bmp_path, NULL, (TextureOptions) {1, GL_RGBA, false, true});
 
-    __fill_font_data(ret->char_spacing, "../res/fonts/font-bfd.dat");
+    __fill_font_data(ret->char_spacing, font_dat_path);
 
     // Create elements for each character in the string
     ui32 char_count      = strlen(text_string);

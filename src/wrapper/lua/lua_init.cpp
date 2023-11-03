@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <util/filesystem.h>
 #include <util/logger.h>
 #include <util/lua_deps.h>
 
@@ -27,8 +28,9 @@ LuaInit(const char *file, ECS *ecs)
     // add the global C function (register system) to lua
     lua_register(L, "_ECS_RegisterSystem", entity::Lua_ECSRegisterSystem);
 
-    if (!CheckLua(L, luaL_dofile(L, LUA_INIT_FILE_PATH))) {
-        LOG_CRITICAL("Failed to read engine lua entry: %s", LUA_INIT_FILE_PATH);
+    if (!CheckLua(L, luaL_dofile(L, GSK_PATH(LUA_INIT_FILE_PATH)))) {
+        LOG_CRITICAL("Failed to read engine lua entry: %s",
+                     GSK_PATH(LUA_INIT_FILE_PATH));
     }
 
     if (!CheckLua(L, luaL_dofile(L, file))) {

@@ -1,8 +1,8 @@
 #ifndef __FILESYSTEM_H__
 #define __FILESYSTEM_H__
 
-#define GSK_FS_MAX_PATH    260
-#define GSK_FS_MAX_SEG_LEN 99
+#define GSK_FS_MAX_PATH    256
+#define GSK_FS_MAX_SEG_LEN 256
 
 #ifdef __cplusplus
 extern "C" {

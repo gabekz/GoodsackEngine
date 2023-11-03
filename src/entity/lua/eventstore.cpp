@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <util/filesystem.h>
 #include <util/lua_deps.h>
 #include <wrapper/lua/lua_debug.h>
 
@@ -65,7 +66,7 @@ LuaEventStore::Initialize(lua_State *L, ECS *ecs)
     s_Instance.m_Lua     = L;
 
     s_Instance.m_Layouts =
-      entity::component::parse_components_from_json("../res/components.json");
+      entity::component::parse_components_from_json(GSK_PATH("gsk://components.json"));
 
     // TODO: More testing
     s_Instance.m_ecs = ecs;

@@ -11,6 +11,7 @@
 #include <util/sysdefs.h>
 
 #include "demo_scenes.h"
+#include <GoodsackEngineConfig.h>
 
 #include <runtime/gsk_runtime.hpp>
 
@@ -26,7 +27,8 @@ main(int argc, char *argv[])
 
     // TODO: This is lazy
 #ifdef SYS_ENV_WIN
-    STATIC_ASSERT((_PROJ_DIR_ROOT), "path-root definition required");
+    STATIC_ASSERT((_PROJ_DIR_ROOT), "project path-root definition required");
+    STATIC_ASSERT((_GOODSACK_FS_DIR_ROOT), "GSK path-root definition required");
 #endif
     gsk_runtime_setup((_PROJ_DIR_DATA "/"), argc, argv);
 

@@ -4,6 +4,7 @@
 #include <core/graphics/material/material.h>
 #include <core/graphics/mesh/primitives.h>
 
+#include <util/filesystem.h>
 #include <util/gfx.h>
 #include <util/maths.h>
 
@@ -21,12 +22,11 @@ billboard_create(const char *texturePath, vec2 size)
     vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
     vao_add_buffer(ret->vao, vbo);
 
-    ret->texture = texture_create("../res/textures/gizmo/light.png",
-                                  NULL,
-                                  (TextureOptions) {1, GL_RGBA, true, true});
+    ret->texture = texture_create(
+      texturePath, NULL, (TextureOptions) {1, GL_RGBA, true, true});
 
-    ret->material =
-      material_create(NULL, "../res/shaders/billboard.shader", 1, ret->texture);
+    ret->material = material_create(
+      NULL, GSK_PATH("gsk://shaders/billboard.shader"), 1, ret->texture);
 
     return ret;
 }

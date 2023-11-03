@@ -9,6 +9,7 @@
 #include <util/gfx.h>
 #include <util/sysdefs.h>
 #include <util/maths.h>
+#include <util/filesystem.h>
 
 #define USING_SPRITE_SHEET FALSE
 #define USING_BLENDING     TRUE
@@ -82,7 +83,7 @@ gui_element_create(vec2 position, vec2 size, Texture *p_texture, vec4 tex_coords
     ret->using_texture = (p_texture != NULL) ? TRUE : FALSE;
 
     ret->material =
-      material_create(NULL, "../res/shaders/canvas2d.shader", 0, NULL);
+      material_create(NULL, GSK_PATH("gsk://shaders/canvas2d.shader"), 0, NULL);
 
     if(ret->using_texture) {
         ret->texture = p_texture;

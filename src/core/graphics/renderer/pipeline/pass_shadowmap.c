@@ -8,6 +8,7 @@
 #include <core/graphics/material/material.h>
 #include <core/graphics/shader/shader.h>
 
+#include <util/filesystem.h>
 #include <util/gfx.h>
 #include <util/maths.h>
 #include <util/sysdefs.h>
@@ -70,7 +71,8 @@ shadowmap_init()
     glm_mat4_mul(lightProjection, lightView, lightSpaceMatrix);
     */
 
-    shaderDepthMap   = shader_create_program("../res/shaders/depth-map.shader");
+    shaderDepthMap =
+      shader_create_program(GSK_PATH("gsk://shaders/depth-map.shader"));
     materialDepthMap = material_create(shaderDepthMap, NULL, 0);
 }
 

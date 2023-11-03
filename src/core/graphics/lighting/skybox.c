@@ -1,5 +1,7 @@
 #include "skybox.h"
 
+#include <util/filesystem.h>
+
 #include <core/drivers/opengl/opengl.h>
 #include <core/graphics/mesh/mesh.h>
 #include <core/graphics/mesh/primitives.h>
@@ -30,7 +32,7 @@ skybox_create(Texture *cubemap)
     ibo_bind(ibo);
     free(vbo);
     ShaderProgram *shader =
-      shader_create_program("../res/shaders/skybox.shader");
+      shader_create_program(GSK_PATH("gsk://shaders/skybox.shader"));
     ret->shader = shader;
 
     return ret;
@@ -173,24 +175,24 @@ skybox_hdr_create(Texture *hdrTexture)
     cubemapProjectionVAO = vao;
 
     ShaderProgram *shaderP =
-      shader_create_program("../res/shaders/hdr-cubemap.shader");
+      shader_create_program(GSK_PATH("gsk://shaders/hdr-cubemap.shader"));
     cubemapProjectionShader = shaderP;
 
     ShaderProgram *shaderConvolute =
-      shader_create_program("../res/shaders/hdr-convolute.shader");
+      shader_create_program(GSK_PATH("gsk://shaders/hdr-convolute.shader"));
     cubemapShaderConvolute = shaderConvolute;
 
     ShaderProgram *shaderPrefilter =
-      shader_create_program("../res/shaders/hdr-prefilter.shader");
+      shader_create_program(GSK_PATH("gsk://shaders/hdr-prefilter.shader"));
     cubemapShaderPrefilter = shaderPrefilter;
 
     ShaderProgram *brdfShader =
-      shader_create_program("../res/shaders/hdr-brdf.shader");
+      shader_create_program(GSK_PATH("gsk://shaders/hdr-brdf.shader"));
     cubemapBrdfShader = brdfShader;
 
     // Base skybox-render shader
     ShaderProgram *baseShader =
-      shader_create_program("../res/shaders/skybox.shader");
+      shader_create_program(GSK_PATH("gsk://shaders/skybox.shader"));
 
     cubemapProjectionFBO = captureFBO;
     cubemapProjectionRBO = captureRBO;

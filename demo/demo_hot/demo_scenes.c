@@ -418,11 +418,8 @@ _scene5(ECS *ecs, Renderer *renderer)
     ecs = renderer_active_scene(renderer, 5);
     __set_active_scene_skybox(renderer, skyboxMain);
 
-    Material *matCharacter =
-      material_create(NULL, "../res/shaders/skinning-test.shader", 0);
-
-    Material *matWhite =
-      material_create(NULL, "../res/shaders/wireframe.shader", 0);
+    Material *matWire =
+      material_create(NULL, GSK_PATH("gsk://shaders/wireframe.shader"), 0);
 
     Entity *pCamera = malloc(sizeof(Entity));
     *pCamera        = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
@@ -430,8 +427,7 @@ _scene5(ECS *ecs, Renderer *renderer)
 
     Model *modelSponza =
       // model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
-      model_load_from_file(
-        "../demo/demo_hot/Resources/models/sponza.glb", 1, TRUE);
+      model_load_from_file(GSK_PATH("data://models/sponza.glb"), 1, TRUE);
 
     Entity e_sponza = ecs_new(ecs);
     _ecs_add_internal(e_sponza,
@@ -444,7 +440,7 @@ _scene5(ECS *ecs, Renderer *renderer)
       e_sponza,
       C_MODEL,
       (void *)(&(struct ComponentModel) {
-        .material = matWhite,
+        .material = matWire,
         .pModel   = modelSponza,
         //.modelPath = "../demo/demo_hot/Resources/models/sponza.glb",
         //.modelPath  = "../res/models/test3.gltf",
@@ -611,8 +607,10 @@ _scene7(ECS *ecs, Renderer *renderer)
     Texture *texBrickNorm =
       texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
 
+    char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
+
     Material *matFloor = material_create(NULL,
-                                         GSK_PATH("gsk://shaders/pbr.shader"),
+                                         pbr_shader_path,
                                          4,
                                          texBrickDiff,
                                          texBrickNorm,
@@ -633,7 +631,7 @@ _scene7(ECS *ecs, Renderer *renderer)
       material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
       */
     Material *matWeapon = material_create(NULL,
-                                          GSK_PATH("gsk://shaders/pbr.shader"),
+                                          pbr_shader_path,
                                           5,
                                           texCerbA,
                                           texCerbN,
@@ -643,6 +641,9 @@ _scene7(ECS *ecs, Renderer *renderer)
 
     Model *modelWeapon =
       model_load_from_file(GSK_PATH("data://models/AK2.glb"), 1, FALSE);
+
+    Model *modelPlane =
+      model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
 
     /*----------------------
      |  Entities
@@ -674,8 +675,8 @@ _scene7(ECS *ecs, Renderer *renderer)
     _ecs_add_internal(
       floorEntity,
       C_MODEL,
-      (void *)(&(struct ComponentModel) {.material  = matFloor,
-                                         .modelPath = "../res/models/plane.obj",
+      (void *)(&(struct ComponentModel) {.material   = matFloor,
+                                         .pModel     = modelPlane,
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,

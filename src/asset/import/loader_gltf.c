@@ -8,6 +8,7 @@
 #include <core/graphics/shader/shader.h>
 #include <core/graphics/texture/texture.h>
 
+#include <util/filesystem.h>
 #include <util/logger.h>
 #include <util/maths.h>
 
@@ -427,7 +428,7 @@ static Texture **s_loaded_textures;
 static int s_loaded_textures_count;
 
 #define TEXTURE_POOL_COUNT 70
-#define TEST_PATH          "../demo/demo_hot/Resources/textures/sponza/"
+#define TEST_PATH_URI      "data://textures/sponza/"
 
 Texture *
 __texture_lookup(const char *path, TextureOptions options)
@@ -483,11 +484,12 @@ _create_material(cgltf_material *gltfMaterial,
 
         // Base texture
         if (textureContainer->base_color_texture.texture) {
-            char p[256] = TEST_PATH;
+            char p[256] = TEST_PATH_URI;
             const char *diffuseUri =
               textureContainer->base_color_texture.texture->image->uri;
             strcat(p, diffuseUri);
-            material_add_texture(material, __texture_lookup(p, texPbrOptions));
+            material_add_texture(material,
+                                 __texture_lookup(GSK_PATH(p), texPbrOptions));
         } else {
             material_add_texture(material, _test_texture_white);
         }
@@ -495,23 +497,24 @@ _create_material(cgltf_material *gltfMaterial,
         if (gltfMaterial->normal_texture.texture) {
 
             // Normal texture
-            char q[256] = TEST_PATH;
+            char q[256] = TEST_PATH_URI;
             const char *nrmUri =
               gltfMaterial->normal_texture.texture->image->uri;
             strcat(q, nrmUri);
-            material_add_texture(material,
-                                 __texture_lookup(q, texNormalMapOptions));
+            material_add_texture(
+              material, __texture_lookup(GSK_PATH(q), texNormalMapOptions));
         } else {
             material_add_texture(material, _test_texture_normal);
         }
 
         if (textureContainer->metallic_roughness_texture.texture) {
             // Roughness
-            char r[256] = TEST_PATH;
+            char r[256] = TEST_PATH_URI;
             const char *roughnessUri =
               textureContainer->metallic_roughness_texture.texture->image->uri;
             strcat(r, roughnessUri);
-            material_add_texture(material, __texture_lookup(r, texPbrOptions));
+            material_add_texture(material,
+                                 __texture_lookup(GSK_PATH(r), texPbrOptions));
         } else {
             material_add_texture(material, _test_texture_white);
         }
@@ -523,7 +526,7 @@ _create_material(cgltf_material *gltfMaterial,
     }
 
     // Failed
-    return material_create(NULL, "../res/shaders/white.shader", 0);
+    return material_create(NULL, GSK_PATH("gsk://shaders/white.shader"), 0);
 }
 
 // Loader entry //
@@ -587,14 +590,15 @@ load_gltf(const char *path, int scale, int importMaterials)
     Material **materialsPool = malloc(sizeof(Material *) * materialsCount);
     if (importMaterials) {
         _test_texture_white =
-          texture_create("../res/textures/defaults/white.png",
+          texture_create(GSK_PATH("gsk://textures/defaults/white.png"),
                          NULL,
                          (TextureOptions) {0, GL_RGB, false, false});
         _test_texture_normal =
-          texture_create("../res/textures/defaults/normal.png",
+          texture_create(GSK_PATH("gsk://textures/defaults/normal.png"),
                          NULL,
                          (TextureOptions) {0, GL_RGB, false, false});
-        s_pbrShader = shader_create_program("../res/shaders/pbr.shader");
+        s_pbrShader =
+          shader_create_program(GSK_PATH("gsk://shaders/pbr.shader"));
         s_loaded_textures_count = 0;
     }
 

@@ -1,5 +1,7 @@
 #include "debug_context.h"
 
+#include <util/filesystem.h>
+
 #include <core/device/device.h>
 #include <core/drivers/opengl/opengl.h>
 
@@ -26,7 +28,8 @@ debug_context_init()
         IBO *ibo = ibo_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(ui32));
         ibo_bind(ibo);
 
-        ret->material = material_create(NULL, "../res/shaders/white.shader", 0);
+        ret->material =
+          material_create(NULL, GSK_PATH("gsk://shaders/white.shader"), 0);
 
         // Bounding box
         ret->vaoBoundingBox = vao_create();

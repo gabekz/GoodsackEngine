@@ -1,5 +1,7 @@
 #include "pass_prepass.h"
 
+#include <util/filesystem.h>
+
 #include <core/graphics/material/material.h>
 #include <core/graphics/mesh/primitives.h>
 #include <core/graphics/shader/shader.h>
@@ -93,7 +95,7 @@ prepass_init()
 
     // create shader and material
     s_depthPrepassShader =
-      shader_create_program("../res/shaders/depth-prepass.shader");
+      shader_create_program(GSK_PATH("gsk://shaders/depth-prepass.shader"));
     s_depthPrepassMaterial = material_create(s_depthPrepassShader, NULL, 0);
 
     // Create Rectangle

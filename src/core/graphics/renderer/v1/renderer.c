@@ -16,6 +16,7 @@
 #include <entity/v1/ecs.h>
 
 #include <core/device/device_context.h>
+#include <util/filesystem.h>
 
 #include <core/device/device.h>
 #include <core/drivers/vulkan/vulkan_device.h>
@@ -97,11 +98,11 @@ renderer_init()
     // Billboard test
     vec2 bbsize = {0.01f, 0.01f};
     ret->billboard =
-      billboard_create("../res/textures/gizmo/light.png", bbsize);
+      billboard_create(GSK_PATH("gsk://textures/gizmo/light.png"), bbsize);
 
     // GUI test
     Texture *guiTexture =
-      texture_create("../res/textures/gizmo/crosshair2.png",
+      texture_create(GSK_PATH("gsk://textures/gizmo/crosshair2.png"),
                      NULL,
                      (TextureOptions) {1, GL_RGBA, false, true});
     ret->uiImage = gui_element_create(
@@ -165,8 +166,8 @@ renderer_start(Renderer *renderer)
 
         renderer->defaultSkybox = skybox_create(skyboxCubemap);
 #else
-        renderer->defaultSkybox = skybox_hdr_create(
-          texture_create_hdr("../res/textures/hdr/thatch_chapel_4k.hdr"));
+        renderer->defaultSkybox = skybox_hdr_create(texture_create_hdr(
+          GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 #endif
 
         // Set the current renderer skybox to that of the active scene
