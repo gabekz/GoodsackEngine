@@ -118,11 +118,13 @@ endforeach()
 
 ######## EXECUTABLES ############################################
 
-option(GOODSACK_EXAMPLES "Build eaxmple projects" ON)
+option(GOODSACK_BUILD_EXAMPLES "Build eaxmple projects" ON)
 option(GOODSACK_TEST "Build the TestRunner executable" ON)
 option(GOODSACK_TEST_COVERAGE "Collect test coverage files" OFF)
 option(GOODSACK_DEV "Development Mode" OFF)
 option(GOODSACK_API_OMIT_PREFIX "Prefix" OFF)
+
+######## subdirectories #########################################
 
 add_subdirectory(thirdparty)
 
@@ -159,6 +161,15 @@ target_link_libraries(GoodsackEngine_runtime PRIVATE
     ThirdParty_cgltf
 )
 
+
+set_target_properties(GoodsackEngine_runtime
+PROPERTIES
+ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib/archive"
+LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib"
+RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/bin"
+RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
+
 #if(GOODSACK_TEST)
 #    target_link_libraries(GoodsackEngine_runtime PRIVATE ThirdParty_gtest)
 #endif()
@@ -174,6 +185,14 @@ set_target_properties(GoodsackEngine_api PROPERTIES
     OUTPUT_NAME "goodsack"
 )
 
+set_target_properties(GoodsackEngine_api
+PROPERTIES
+ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib/archive"
+LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib"
+RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/bin"
+RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
+
 # Link the include directory to the main project
 target_include_directories(GoodsackEngine_api PUBLIC "${SRC_DIR}")
 target_link_libraries(GoodsackEngine_api GoodsackEngine_runtime)
@@ -181,47 +200,9 @@ target_link_libraries(GoodsackEngine_api GoodsackEngine_runtime)
 #################################################################
 # Example Projects
 #################################################################
-if(GOODSACK_EXAMPLES)
-    set(DEMO_EXE_NAME "demo")
-    set(DEMO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/demo/demo_hot")
-
-    # Application icon (Windows only)
-    if(MSVC)
-        set(APP_ICON_RESOURCE "${DEMO_DIR}/appicon.rc")
-    endif(MSVC)
-
-    add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c" ${APP_ICON_RESOURCE})
-    target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR})
-
-    target_link_libraries(${DEMO_EXE_NAME} GoodsackEngine_runtime GoodsackEngine_api)
-    target_compile_options(${DEMO_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
-
-    target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_ROOT=\"${DEMO_DIR}\"")
-    target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_DATA=\"${DEMO_DIR}/Resources\"")
-
-    set_target_properties(${DEMO_EXE_NAME} PROPERTIES FOLDER "Projects")
-
-    if(UNIX)
-        set_target_properties(${DEMO_EXE_NAME}
-        PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-        RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-        )
-
-        get_target_property(TESTRESPATH ${DEMO_EXE_NAME} RESOURCES_OUTPUT_DIRECTORY)
-        message(STATUS "Resources Path specified at: ${TESTRESPATH}")
-
-        # add_custom_command(TARGET ${DEMO_EXE_NAME} POST_BUILD
-        #                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        #                    ${CMAKE_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:${DEMO_EXE_NAME}>/Resources)
-        add_custom_command(TARGET ${DEMO_EXE_NAME} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy_directory
-                           ${CMAKE_SOURCE_DIR}/res/ ${TESTRESPATH}/res)
-    endif(UNIX)
-
-endif()
+if(GOODSACK_BUILD_EXAMPLES)
+add_subdirectory(demo)
+endif(GOODSACK_BUILD_EXAMPLES)
 
 #################################################################
 # TestRunner Executable

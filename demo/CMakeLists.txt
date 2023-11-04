@@ -1,6 +1,3 @@
-#################################################################
-# Example Projects
-#################################################################
 set(DEMO_EXE_NAME "demo")
 set(DEMO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/demo_hot")
 
@@ -12,21 +9,23 @@ endif(MSVC)
 add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c" ${APP_ICON_RESOURCE})
 target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR})
 
-target_link_libraries(${DEMO_EXE_NAME} PUBLIC
-    ${RUNTIME_NAME})
-
-target_include_directories(${DEMO_EXE_NAME} PUBLIC ${SRC_DIR})
-target_include_directories(${DEMO_EXE_NAME} PUBLIC "${VULKAN_PATH}/Include")
+target_link_libraries(${DEMO_EXE_NAME} GoodsackEngine_runtime GoodsackEngine_api)
 target_compile_options(${DEMO_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 
+target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_ROOT=\"${DEMO_DIR}\"")
+target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_DATA=\"${DEMO_DIR}/Resources\"")
+
+set_target_properties(${DEMO_EXE_NAME} PROPERTIES FOLDER "Projects")
+
+#if(UNIX)
+set_target_properties(${DEMO_EXE_NAME}
+PROPERTIES
+ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib/archive"
+LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib"
+RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/bin"
+RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
 if(UNIX)
-    set_target_properties(${DEMO_EXE_NAME}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-    RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-    )
 
     get_target_property(TESTRESPATH ${DEMO_EXE_NAME} RESOURCES_OUTPUT_DIRECTORY)
     message(STATUS "Resources Path specified at: ${TESTRESPATH}")
