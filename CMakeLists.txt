@@ -34,7 +34,7 @@ endif()
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${default_build_type}' \
-as none was specified.")
+    as none was specified.")
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
   # Set the possible values of build type for cmake-gui
@@ -85,8 +85,8 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 #################################################################
 # Source files
 #################################################################
-set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
+set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk/gsk")
+set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk_data")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
 set(API_DIR "${SRC_DIR}/api/llib")
 
@@ -161,7 +161,6 @@ target_link_libraries(GoodsackEngine_runtime PRIVATE
     ThirdParty_cgltf
 )
 
-
 set_target_properties(GoodsackEngine_runtime
 PROPERTIES
 ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib/archive"
@@ -201,6 +200,7 @@ target_link_libraries(GoodsackEngine_api GoodsackEngine_runtime)
 # Example Projects
 #################################################################
 if(GOODSACK_BUILD_EXAMPLES)
+message("Building example projects..")
 add_subdirectory(demo)
 endif(GOODSACK_BUILD_EXAMPLES)
 

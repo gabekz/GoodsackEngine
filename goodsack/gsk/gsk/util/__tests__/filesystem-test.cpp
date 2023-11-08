@@ -30,6 +30,7 @@ TEST(Util_Filesystem, Path_Checking)
     gsk_filesystem_initialize("test");
 
     gsk_Path p1 = gsk_filesystem_path_from_uri("gsk://textures/white.jpg");
-    ASSERT_STREQ(p1.path, "E:/Projects/GoodsackEngine/res/textures/white.jpg");
+    ASSERT_STREQ(p1.path,
+                 "E:/Projects/GoodsackEngine/goodsack/gsk_data/textures/white.jpg");
 }
 #endif // SYS_ENV_WIN
