@@ -1,24 +1,24 @@
-[submodule "thirdparty/glfw"]
-	path = thirdparty/glfw
-	url = https://github.com/glfw/glfw
-[submodule "thirdparty/cglm"]
-	path = thirdparty/cglm
+[submodule "cglm"]
+	path = goodsack/gsk/thirdparty/cglm
 	url = https://github.com/recp/cglm
-[submodule "thirdparty/imgui"]
-	path = thirdparty/imgui
-	url = https://github.com/ocornut/imgui.git
-[submodule "thirdparty/json"]
-	path = thirdparty/json
-	url = https://www.github.com/nlohmann/json.git
-[submodule "thirdparty/googletest"]
-	path = thirdparty/googletest
-	url = https://github.com/google/googletest
-[submodule "thirdparty/openal-soft"]
-	path = thirdparty/openal-soft
-	url = https://github.com/kcat/openal-soft
-[submodule "thirdparty/vulkan"]
-	path = thirdparty/vulkan
-	url = https://github.com/KhronosGroup/Vulkan-Headers
-[submodule "thirdparty/cgltf"]
-	path = thirdparty/cgltf
+[submodule "cgltf"]
+	path = goodsack/gsk/thirdparty/cgltf
 	url = https://github.com/jkuhlmann/cgltf
+[submodule "glfw"]
+	path = goodsack/gsk/thirdparty/glfw
+	url = https://github.com/glfw/glfw
+[submodule "googletest"]
+	path = goodsack/gsk/thirdparty/googletest
+	url = https://github.com/google/googletest
+[submodule "imgui"]
+	path = goodsack/gsk/thirdparty/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "json"]
+	path = goodsack/gsk/thirdparty/json
+	url = https://www.github.com/nlohmann/json.git
+[submodule "openal-soft"]
+	path = goodsack/gsk/thirdparty/openal-soft
+	url = https://github.com/kcat/openal-soft
+[submodule "vulkan"]
+	path = goodsack/gsk/thirdparty/vulkan
+	url = https://github.com/KhronosGroup/Vulkan-Headers

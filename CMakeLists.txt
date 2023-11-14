@@ -87,7 +87,7 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 #################################################################
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk/gsk")
 set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk_data")
-set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
+set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk/thirdparty")
 set(API_DIR "${SRC_DIR}/api/llib")
 
 set(TEST_SUBDIR_REGEX ".*__tests__.*")
@@ -126,7 +126,7 @@ option(GOODSACK_API_OMIT_PREFIX "Prefix" OFF)
 
 ######## subdirectories #########################################
 
-add_subdirectory(thirdparty)
+add_subdirectory(goodsack/gsk/thirdparty)
 
 #################################################################
 # GoodsackEngine Runtime Library
