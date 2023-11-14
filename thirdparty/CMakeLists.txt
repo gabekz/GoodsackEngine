@@ -1,7 +1,6 @@
 ######## 3rd-PARTY LIBRARIES ####################################
 
 add_library(ThirdParty INTERFACE)
-target_link_libraries(ThirdParty INTERFACE cglm)
 
 #################################################################
 # Library: STB
@@ -9,23 +8,17 @@ target_link_libraries(ThirdParty INTERFACE cglm)
 add_library(ThirdParty_stb INTERFACE)
 target_include_directories(ThirdParty_stb INTERFACE "${LIB_DIR}/stb")
 
-#target_sources(ThirdParty_stb PUBLIC
-#    FILE_SET HEADERS
-#    BASE_DIRS ${STB_DIR}
-#    FILES "${STB_DIR}/stb_image.h"
-#)
-
 #################################################################
 # Library: JSON
 #################################################################
 find_package(nlohmann_json QUIET) # NOTE: nlohmann-json in vcpkg
 if(NOT nlohmann_json_FOUND)
-    message(STATUS "failed to find JSON")
+    message(STATUS "(nlohmann_json) - failed to find package. Using local")
     set(JSON_BuildTests OFF CACHE INTERNAL "")
     set(JSON_INSTALL OFF CACHE INTERNAL "")
     add_subdirectory("${LIB_DIR}/json")
 else()
-    message(STATUS "Auto-located JSON")
+    message(STATUS "(nlohmann_json) - auto located")
 endif()
 add_library(ThirdParty_json INTERFACE)
 target_link_libraries(ThirdParty_json INTERFACE nlohmann_json::nlohmann_json)

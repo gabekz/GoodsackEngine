@@ -2,6 +2,8 @@ CMakeFiles/
 build/
 out/
 
+vcpkg_installed/
+
 .cache/
 .cap/
 .captures/
@@ -12,4 +14,4 @@ out/
 CMakeSettings.json
 compile_commands.json
 
-res/textures/hdr
+goodsack/gsk_data/textures/hdr

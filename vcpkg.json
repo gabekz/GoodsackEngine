@@ -1,0 +1,21 @@
+{
+  "dependencies": [
+    "nlohmann-json",
+    "gtest",
+    {
+      "name": "imgui",
+      "features": [
+        "glfw-binding",
+        "opengl3-binding",
+        "win32-binding",
+        "vulkan-binding"
+      ]
+    },
+    {
+      "name": "lua",
+      "version>=": "5.4.6"
+    },
+    "openal-soft"
+  ],
+  "builtin-baseline": "421579b6e6cac42d9a5a5935e53e218ce94a347f"
+}
