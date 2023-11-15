@@ -15,7 +15,7 @@ target_compile_options(${DEMO_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})
 target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_ROOT=\"${DEMO_DIR}\"")
 target_compile_definitions(${DEMO_EXE_NAME} PUBLIC "_PROJ_DIR_DATA=\"${DEMO_DIR}/Resources\"")
 
-set_target_properties(${DEMO_EXE_NAME} PROPERTIES FOLDER "Projects")
+set_target_properties(${DEMO_EXE_NAME} PROPERTIES FOLDER "GoodsackEngine/Projects")
 
 #if(UNIX)
 set_target_properties(${DEMO_EXE_NAME}

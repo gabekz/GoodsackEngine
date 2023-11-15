@@ -1,16 +1,23 @@
 ######## 3rd-PARTY LIBRARIES ####################################
 
+function(setup_thirdparty_lib LIBNAME)
+    add_library(ThirdParty_${LIBNAME} INTERFACE)
+    set_target_properties(ThirdParty_${LIBNAME} PROPERTIES FOLDER ${LIB_FOLDER_PATH}/${LIBNAME})
+endfunction(set_library_folder)
+
 add_library(ThirdParty INTERFACE)
 
 #################################################################
 # Library: STB
 #################################################################
-add_library(ThirdParty_stb INTERFACE)
+setup_thirdparty_lib(stb)
 target_include_directories(ThirdParty_stb INTERFACE "${LIB_DIR}/stb")
 
 #################################################################
 # Library: JSON
 #################################################################
+setup_thirdparty_lib(json)
+
 find_package(nlohmann_json QUIET) # NOTE: nlohmann-json in vcpkg
 if(NOT nlohmann_json_FOUND)
     message(STATUS "(nlohmann_json) - failed to find package. Using local")
@@ -20,24 +27,22 @@ if(NOT nlohmann_json_FOUND)
 else()
     message(STATUS "(nlohmann_json) - auto located")
 endif()
-add_library(ThirdParty_json INTERFACE)
 target_link_libraries(ThirdParty_json INTERFACE nlohmann_json::nlohmann_json)
 
 #################################################################
 # Library: cgltf
 #################################################################
-add_library(ThirdParty_cgltf INTERFACE)
+setup_thirdparty_lib(cgltf)
 target_include_directories(ThirdParty_cgltf INTERFACE "${LIB_DIR}/cgltf")
 
 #################################################################
 # Library: CGLM
 #################################################################
-add_library(ThirdParty_cglm INTERFACE)
+setup_thirdparty_lib(cglm)
 
 set(CGLM_DIR "${LIB_DIR}/cglm")
-
 add_subdirectory("${CGLM_DIR}" EXCLUDE_FROM_ALL)
-set_target_properties(cglm PROPERTIES FOLDER "ThirdParty")
+set_target_properties(cglm PROPERTIES FOLDER ${LIB_FOLDER_PATH})
 
 target_link_libraries(ThirdParty_cglm INTERFACE cglm cglm_headers) 
 target_include_directories(ThirdParty_cglm INTERFACE cglm_headers)
@@ -46,7 +51,7 @@ target_compile_definitions(ThirdParty_cglm INTERFACE "CGLM_ALL_UNALIGNED")
 #################################################################
 # Library: GLFW
 #################################################################
-add_library(ThirdParty_glfw INTERFACE)
+setup_thirdparty_lib(glfw)
 
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
 set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
@@ -67,11 +72,11 @@ endif()
 #################################################################
 # Library: GLAD
 #################################################################
-add_library(ThirdParty_glad INTERFACE)
+setup_thirdparty_lib(glad)
 
 set(GLAD_DIR "${LIB_DIR}/glad")
 add_library(glad STATIC "${GLAD_DIR}/src/gl.c")
-set_target_properties(glad PROPERTIES FOLDER "ThirdParty")
+set_target_properties(glad PROPERTIES FOLDER ${LIB_FOLDER_PATH})
 if(UNIX)
     target_compile_options(glad PRIVATE "-fPIC")
 endif(UNIX)
@@ -83,7 +88,7 @@ target_link_libraries(ThirdParty_glad INTERFACE glad "${CMAKE_DL_LIBS}")
 #################################################################
 # Library: VulkanSDK
 #################################################################
-add_library(ThirdParty_vulkan INTERFACE)
+setup_thirdparty_lib(vulkan)
 
 message(STATUS "(Vulkan) Attempting auto locate Vulkan using CMake.....")
 
@@ -122,7 +127,7 @@ target_link_libraries(ThirdParty_vulkan INTERFACE Vulkan::Vulkan)
 #################################################################
 # Library: ImGui
 #################################################################
-add_library(ThirdParty_imgui INTERFACE)
+setup_thirdparty_lib(imgui)
 
 find_package(imgui CONFIG QUIET)
 if(imgui_FOUND)
@@ -157,7 +162,7 @@ endif()
 #################################################################
 # Library: Lua
 #################################################################
-add_library(ThirdParty_lua INTERFACE)
+setup_thirdparty_lib(lua)
 
 message(STATUS "(Lua) Attempting auto locate Lua using CMake.....")
 find_package(Lua QUIET)
@@ -186,7 +191,7 @@ endif()
 #################################################################
 # Library: OpenAL Soft
 #################################################################
-add_library(ThirdParty_alsoft INTERFACE)
+setup_thirdparty_lib(alsoft)
 
 set(ALSOFT_INSTALL OFF CACHE INTERNAL "Install main library")
 set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "Build example programs")

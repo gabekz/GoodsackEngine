@@ -1,6 +1,6 @@
 #################################################################
-# "Below" Game Engine - CMake Configuration
-# https://www.github.com/gabekz/gl-renderer
+# Goodsack Game Engine - CMake Configuration
+# https://www.github.com/gabekz/GoodsackEngine
 
 cmake_minimum_required(VERSION 3.20)
 project(
@@ -17,10 +17,6 @@ include(colors)
 define_colors()
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
-# set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #################################################################
 # Release Targets (not multi-configuration friendly..)
@@ -83,12 +79,15 @@ endif()
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 
 #################################################################
-# Source files
+# Source files + Paths
 #################################################################
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk/gsk")
 set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk_data")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk/thirdparty")
 set(API_DIR "${SRC_DIR}/api/llib")
+
+set(LIB_FOLDER_PATH "GoodsackEngine/ThirdParty")
+
 
 set(TEST_SUBDIR_REGEX ".*__tests__.*")
 # set(API_SUBDIR_REGEX ".*__api__.*")
