@@ -130,6 +130,9 @@ main(void)
 
 ```
 
+> # ![Sponza](docs/public/sponza.png?raw=true "Sponza Example")
+> output
+
 ---
 
 ## Build
