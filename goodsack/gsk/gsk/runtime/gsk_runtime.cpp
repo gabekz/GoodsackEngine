@@ -31,7 +31,7 @@ extern "C" {
 static struct
 {
     ECS *ecs;
-    Renderer *renderer;
+    gsk_Renderer *renderer;
 
 #if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
@@ -83,17 +83,17 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 
     // Initialize Renderer
 #ifdef RENDERER_2
-    Renderer renderer = new Renderer();
-    // ECSManager ecs = Renderer.
+    gsk_Renderer renderer = new gsk_Renderer();
+    // ECSManager ecs = gsk_Renderer.
     gsk_Scene scene0 = renderer->SetActiveScene(0);
 #else
-    s_runtime.renderer = renderer_init();
+    s_runtime.renderer = gsk_renderer_init();
 
     int winWidth  = s_runtime.renderer->windowWidth;
     int winHeight = s_runtime.renderer->windowHeight;
 
     // Initialize ECS
-    s_runtime.ecs = renderer_active_scene(s_runtime.renderer, 0);
+    s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, 0);
 
     // Lighting information
     vec3 lightPos   = {1.5f, 2.4f, -0.5f};
@@ -144,7 +144,7 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 void
 gsk_runtime_loop()
 {
-    renderer_start(s_runtime.renderer); // Initialization for the render loop
+    gsk_renderer_start(s_runtime.renderer); // Initialization for the render loop
 
 #if USING_LUA
 
@@ -201,7 +201,7 @@ gsk_runtime_loop()
             entity::LuaEventStore::ECSEvent(ECS_UPDATE);
 #endif // USING_LUA
 
-            renderer_tick(s_runtime.renderer);
+            gsk_renderer_tick(s_runtime.renderer);
 
 #if GSK_RUNTIME_USE_DEBUG
             s_runtime.p_debug_toolbar->render();
@@ -246,7 +246,7 @@ gsk_runtime_get_ecs()
 {
     return s_runtime.ecs;
 }
-Renderer *
+gsk_Renderer *
 gsk_runtime_get_renderer()
 {
     return s_runtime.renderer;
@@ -255,5 +255,5 @@ gsk_runtime_get_renderer()
 void
 gsk_runtime_set_scene(ui16 sceneIndex)
 {
-    s_runtime.ecs = renderer_active_scene(s_runtime.renderer, sceneIndex);
+    s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, sceneIndex);
 }

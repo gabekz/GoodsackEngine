@@ -21,7 +21,7 @@ class DebugPanel;
 
 class DebugToolbar {
    public:
-    DebugToolbar(Renderer *renderer);
+    DebugToolbar(gsk_Renderer *renderer);
     ~DebugToolbar();
 
     void set_visibility(bool value);
@@ -37,7 +37,7 @@ class DebugToolbar {
 #endif
 
    protected:
-    Renderer *m_renderer;
+    gsk_Renderer *m_renderer;
 
     bool m_debugEnabled;
 

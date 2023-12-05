@@ -102,7 +102,7 @@ struct _ecs
     ui32 nextIndex;
     ui32 capacity;
 
-    Renderer *renderer;
+    gsk_Renderer *renderer;
 
     ECSComponentList component_lists[ECSCOMPONENT_LAST + 1];
     ECSSystem *systems;
@@ -126,7 +126,7 @@ _ecs_add_internal(Entity entity, ui32 component_id, void *value);
 /*-------------------------------------------*/
 
 ECS *
-ecs_init(Renderer *renderer);
+ecs_init(gsk_Renderer *renderer);
 Entity
 ecs_new(ECS *self);
 

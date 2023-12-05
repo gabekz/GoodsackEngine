@@ -53,7 +53,7 @@ __create_camera_entity(ECS *ecs, vec3 position)
 }
 
 static void
-__set_active_scene_skybox(Renderer *renderer, gsk_Skybox *skybox)
+__set_active_scene_skybox(gsk_Renderer *renderer, gsk_Skybox *skybox)
 {
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
 
@@ -62,9 +62,9 @@ __set_active_scene_skybox(Renderer *renderer, gsk_Skybox *skybox)
 }
 
 static void
-_scene0(ECS *ecs, Renderer *renderer)
+_scene0(ECS *ecs, gsk_Renderer *renderer)
 {
-    ecs = renderer_active_scene(renderer, 0);
+    ecs = gsk_renderer_active_scene(renderer, 0);
 
     gsk_Texture *texEarthDiff =
       texture_create_d(GSK_PATH("data://textures/earth/diffuse.png"));
@@ -96,9 +96,9 @@ _scene0(ECS *ecs, Renderer *renderer)
 }
 
 static void
-_scene1(ECS *ecs, Renderer *renderer)
+_scene1(ECS *ecs, gsk_Renderer *renderer)
 {
-    ecs = renderer_active_scene(renderer, 1);
+    ecs = gsk_renderer_active_scene(renderer, 1);
 
     gsk_Texture *texContDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/container/diffuse.png");
@@ -160,9 +160,9 @@ _scene1(ECS *ecs, Renderer *renderer)
 }
 
 static void
-_scene2(ECS *ecs, Renderer *renderer)
+_scene2(ECS *ecs, gsk_Renderer *renderer)
 {
-    ecs = renderer_active_scene(renderer, 2);
+    ecs = gsk_renderer_active_scene(renderer, 2);
     __set_active_scene_skybox(renderer, skyboxMain);
 
     gsk_Texture *texGraniteAlbedo = texture_create_d(
@@ -321,10 +321,10 @@ _scene2(ECS *ecs, Renderer *renderer)
 }
 
 static void
-_scene3(ECS *ecs, Renderer *renderer)
+_scene3(ECS *ecs, gsk_Renderer *renderer)
 {
 
-    ecs = renderer_active_scene(renderer, 3);
+    ecs = gsk_renderer_active_scene(renderer, 3);
 
     gsk_Texture *texCerbA = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
@@ -384,9 +384,9 @@ _scene3(ECS *ecs, Renderer *renderer)
 }
 
 static void
-_scene4(ECS *ecs, Renderer *renderer)
+_scene4(ECS *ecs, gsk_Renderer *renderer)
 {
-    ecs = renderer_active_scene(renderer, 4);
+    ecs = gsk_renderer_active_scene(renderer, 4);
 
     gsk_Material *matCharacter =
       gsk_material_create(NULL, "../res/shaders/skinning-test.shader", 0);
@@ -416,9 +416,9 @@ _scene4(ECS *ecs, Renderer *renderer)
 }
 
 static void
-_scene5(ECS *ecs, Renderer *renderer)
+_scene5(ECS *ecs, gsk_Renderer *renderer)
 {
-    ecs = renderer_active_scene(renderer, 5);
+    ecs = gsk_renderer_active_scene(renderer, 5);
     __set_active_scene_skybox(renderer, skyboxMain);
 
     gsk_Material *matWire =
@@ -456,9 +456,9 @@ _scene5(ECS *ecs, Renderer *renderer)
 
 // physics test
 static void
-_scene6(ECS *ecs, Renderer *renderer)
+_scene6(ECS *ecs, gsk_Renderer *renderer)
 {
-    ecs = renderer_active_scene(renderer, 6);
+    ecs = gsk_renderer_active_scene(renderer, 6);
     __set_active_scene_skybox(renderer, skyboxMain);
 
     gsk_Texture *texContDiff = texture_create_d(
@@ -592,9 +592,9 @@ _scene6(ECS *ecs, Renderer *renderer)
  |  Description: Main transform/weapon test
  -----------------------*/
 static void
-_scene7(ECS *ecs, Renderer *renderer)
+_scene7(ECS *ecs, gsk_Renderer *renderer)
 {
-    ecs = renderer_active_scene(renderer, 7);
+    ecs = gsk_renderer_active_scene(renderer, 7);
     __set_active_scene_skybox(renderer, skyboxMain);
 
     /*----------------------
@@ -779,7 +779,7 @@ _scene7(ECS *ecs, Renderer *renderer)
 };
 
 void
-demo_scenes_create(ECS *ecs, Renderer *renderer)
+demo_scenes_create(ECS *ecs, gsk_Renderer *renderer)
 {
     // Default textures with options
     s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};

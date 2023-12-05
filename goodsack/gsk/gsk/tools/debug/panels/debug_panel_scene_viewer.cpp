@@ -28,8 +28,8 @@ gsk::tools::panels::SceneViewer::draw(void)
         if (scene_queued > p_renderer->sceneC || scene_queued < 0) {
             scene_queued = 0;
         } else {
-            renderer_active_scene(p_renderer, scene_queued);
-            renderer_start(p_renderer);
+            gsk_renderer_active_scene(p_renderer, scene_queued);
+            gsk_renderer_start(p_renderer);
             scene_queued = p_renderer->activeScene;
         }
     }

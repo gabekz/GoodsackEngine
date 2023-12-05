@@ -10,11 +10,11 @@
 #include "core/graphics/renderer/renderer_props.inl"
 
 void
-postbuffer_init(ui32 width, ui32 height, RendererProps *properties);
+postbuffer_init(ui32 width, ui32 height, gsk_RendererProps *properties);
 void
 postbuffer_bind(int enableMSAA);
 void
-postbuffer_draw(RendererProps *properties);
+postbuffer_draw(gsk_RendererProps *properties);
 void
 postbuffer_resize(ui32 winWidth, ui32 winHeight);
 void

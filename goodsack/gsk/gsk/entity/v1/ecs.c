@@ -30,7 +30,7 @@
 #endif
 
 ECS *
-ecs_init(Renderer *renderer)
+ecs_init(gsk_Renderer *renderer)
 {
     ECS *ecs = malloc(sizeof(ECS));
 

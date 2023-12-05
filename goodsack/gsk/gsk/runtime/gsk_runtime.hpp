@@ -32,7 +32,7 @@ gsk_runtime_loop();
 
 ECS *
 gsk_runtime_get_ecs();
-Renderer *
+gsk_Renderer *
 gsk_runtime_get_renderer();
 
 void

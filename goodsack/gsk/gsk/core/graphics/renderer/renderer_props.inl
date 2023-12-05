@@ -11,7 +11,7 @@
 //enum Tonemappers { Reinhard = 0, ACES };
 
 // Renderer Properties
-typedef struct RendererProps
+typedef struct gsk_RendererProps
 {
     ui32 tonemapper;
 
@@ -27,6 +27,6 @@ typedef struct RendererProps
     float vignetteAmount;
     float vignetteFalloff;
 
-} RendererProps;
+} gsk_RendererProps;
 
 #endif // __RENDERER_PROPS_INL__

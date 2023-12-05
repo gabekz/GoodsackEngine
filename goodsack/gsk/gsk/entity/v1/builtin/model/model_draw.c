@@ -34,7 +34,7 @@ DrawModel(struct ComponentModel *model,
           ui16 useOverrideMaterial, // Material from renderer
           ui32 renderLayer,
           VkCommandBuffer commandBuffer,
-          Renderer *renderer)
+          gsk_Renderer *renderer)
 {
     if (DEVICE_API_OPENGL) {
 

@@ -81,7 +81,7 @@ _upload_shader_data(Entity e,
                     struct ComponentCamera *camera,
                     struct ComponentTransform *transform)
 {
-    Renderer *renderer = e.ecs->renderer;
+    gsk_Renderer *renderer = e.ecs->renderer;
 #if 0
     glm_vec3_copy(
       transform->position,

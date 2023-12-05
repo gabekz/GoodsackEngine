@@ -12,7 +12,7 @@ void
 gsk::tools::panels::Profiler::draw(void)
 {
     using namespace ImGui;
-    RendererProps *props = &p_renderer->properties;
+    gsk_RendererProps *props = &p_renderer->properties;
 
     if (CollapsingHeader("Performace")) {
         Separator();

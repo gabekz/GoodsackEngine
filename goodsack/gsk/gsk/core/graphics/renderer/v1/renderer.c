@@ -36,13 +36,13 @@
 #define TESTING_DRAW_UI   1
 #define TESTING_DRAW_LINE 0
 
-Renderer *
-renderer_init()
+gsk_Renderer *
+gsk_renderer_init()
 {
     int winWidth  = DEFAULT_WINDOW_WIDTH;
     int winHeight = DEFAULT_WINDOW_HEIGHT;
 
-    Renderer *ret = malloc(sizeof(Renderer));
+    gsk_Renderer *ret = malloc(sizeof(gsk_Renderer));
     GLFWwindow *window =
       /*context*/ createWindow(winWidth, winHeight, &ret->vulkanDevice);
 
@@ -69,7 +69,7 @@ renderer_init()
     ret->sceneC      = 1;
     ret->activeScene = 0;
 
-    ret->properties = (RendererProps) {.tonemapper      = 0,
+    ret->properties = (gsk_RendererProps) {.tonemapper      = 0,
                                        .exposure        = 9.5f,
                                        .maxWhite        = 1.0f,
                                        .gamma           = 2.2f,
@@ -121,7 +121,7 @@ renderer_init()
 }
 
 ECS *
-renderer_active_scene(Renderer *self, ui16 sceneIndex)
+gsk_renderer_active_scene(gsk_Renderer *self, ui16 sceneIndex)
 {
     LOG_INFO("Loading scene: id %d", sceneIndex);
     ui32 sceneCount = self->sceneC;
@@ -151,7 +151,7 @@ renderer_active_scene(Renderer *self, ui16 sceneIndex)
 }
 
 void
-renderer_start(Renderer *renderer)
+gsk_renderer_start(gsk_Renderer *renderer)
 {
     // Scene initialization
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
@@ -234,14 +234,14 @@ renderer_start(Renderer *renderer)
 
     } else if (DEVICE_API_VULKAN) {
         ecs_event(ecs, ECS_INIT);
-        // LOG_DEBUG("Renderer Start-Phase is not implemented in Vulkan");
+        // LOG_DEBUG("gsk_Renderer Start-Phase is not implemented in Vulkan");
     }
 }
 
 /* Render Functions for the pipeline */
 
 static void
-renderer_tick_OPENGL(Renderer *renderer, gsk_Scene *scene, ECS *ecs)
+renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, ECS *ecs)
 {
     // Settings
     glfwSwapInterval(device_getGraphicsSettings().swapInterval);
@@ -385,7 +385,7 @@ renderer_tick_OPENGL(Renderer *renderer, gsk_Scene *scene, ECS *ecs)
 }
 
 /*
-void renderer_tick_VULKAN(Renderer *renderer, ECS *ecs) {
+void renderer_tick_VULKAN(gsk_Renderer *renderer, ECS *ecs) {
 
 // Update Analytics Data
 
@@ -400,7 +400,7 @@ void renderer_tick_VULKAN(Renderer *renderer, ECS *ecs) {
 */
 
 void
-renderer_tick(Renderer *renderer)
+gsk_renderer_tick(gsk_Renderer *renderer)
 {
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
     ECS *ecs     = scene->ecs;

@@ -32,7 +32,7 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_vulkan.h"
 
-gsk::tools::DebugToolbar::DebugToolbar(Renderer *renderer)
+gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
 {
     IMGUI_CHECKVERSION();
 

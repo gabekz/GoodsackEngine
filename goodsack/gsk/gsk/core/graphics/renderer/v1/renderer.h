@@ -39,12 +39,10 @@ extern "C" {
 
 typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
 
-typedef struct _renderer Renderer;
-
-struct _renderer
+typedef struct gsk_Renderer
 {
     GLFWwindow *window;
-    RendererProps properties;      // Frame properties/configuration
+    gsk_RendererProps properties;      // Frame properties/configuration
     int windowWidth, windowHeight; // window resolution
     int renderWidth, renderHeight; // render resolution
 
@@ -98,20 +96,20 @@ struct _renderer
         ui32 totalCameras; // TODO: find an alternative
         ui32 activeCamera;
     } camera_data;
-};
+} gsk_Renderer;
 
 /**
  * Initialize the Renderer.
  * @return allocated Renderer structure
  */
-Renderer *
-renderer_init();
+gsk_Renderer *
+gsk_renderer_init();
 
 // Rendering Loop
 void
-renderer_start(Renderer *renderer);
+gsk_renderer_start(gsk_Renderer *renderer);
 void
-renderer_tick(Renderer *renderer);
+gsk_renderer_tick(gsk_Renderer *renderer);
 
 /* scene management */
 
@@ -124,7 +122,7 @@ renderer_tick(Renderer *renderer);
  * @return Pointer to the ECS struct owned by the scene
  */
 struct _ecs *
-renderer_active_scene(Renderer *self, ui16 sceneIndex);
+gsk_renderer_active_scene(gsk_Renderer *self, ui16 sceneIndex);
 //-------------------------------
 
 // #endif // __cplusplus

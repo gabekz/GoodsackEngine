@@ -28,7 +28,7 @@ class DebugPanel {
 
     std::string title;
 
-    Renderer *p_renderer;
+    gsk_Renderer *p_renderer;
 };
 
 } // namespace tools
