@@ -9,6 +9,6 @@
 #include "entity/v1/ecs.h"
 
 void
-s_collider_setup_system_init(ECS *ecs);
+s_collider_setup_system_init(gsk_ECS *ecs);
 
 #endif // __COLLIDER_SETUP_SYSTEM_H__

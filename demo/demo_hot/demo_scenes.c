@@ -24,27 +24,27 @@ static TextureOptions s_texOpsPbr, s_texOpsNrm;
 
 #define MY_THINGY(x) (void *)(&(__typeof(x)))
 
-static Entity
-__create_camera_entity(ECS *ecs, vec3 position)
+static gsk_Entity
+__create_camera_entity(gsk_ECS *ecs, vec3 position)
 {
-    Entity camera = ecs_new(ecs);
-    _ecs_add_internal(camera,
+    gsk_Entity camera = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(camera,
                       C_CAMERA,
                       (void *)(&(struct ComponentCamera) {
                         .axisUp      = {0.0f, 1.0f, 0.0f},
                         .renderLayer = 0, // DEFAULT RENDER LAYER (camera-zero)
                       }));
-    _ecs_add_internal(camera,
+    _gsk_ecs_add_internal(camera,
                       C_CAMERALOOK,
                       (void *)(&(struct ComponentCameraLook) {
                         .sensitivity = 1.0f,
                       }));
-    _ecs_add_internal(camera,
+    _gsk_ecs_add_internal(camera,
                       C_CAMERAMOVEMENT,
                       (void *)(&(struct ComponentCameraMovement) {
                         .speed = 2.5f,
                       }));
-    _ecs_add_internal(camera,
+    _gsk_ecs_add_internal(camera,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {position[0], position[1], position[2]},
@@ -62,7 +62,7 @@ __set_active_scene_skybox(gsk_Renderer *renderer, gsk_Skybox *skybox)
 }
 
 static void
-_scene0(ECS *ecs, gsk_Renderer *renderer)
+_scene0(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 0);
 
@@ -80,11 +80,11 @@ _scene0(ECS *ecs, gsk_Renderer *renderer)
                       texEarthNorm,
                       texDefSpec);
 
-    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
-    Entity suzanneObject = ecs_new(ecs);
-    _ecs_add_internal(suzanneObject, C_TRANSFORM, NULL);
-    _ecs_add_internal(suzanneObject,
+    gsk_Entity suzanneObject = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(suzanneObject, C_TRANSFORM, NULL);
+    _gsk_ecs_add_internal(suzanneObject,
                       C_MODEL,
                       (void *)(&(struct ComponentModel) {
                         .material   = matSuzanne,
@@ -96,7 +96,7 @@ _scene0(ECS *ecs, gsk_Renderer *renderer)
 }
 
 static void
-_scene1(ECS *ecs, gsk_Renderer *renderer)
+_scene1(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 1);
 
@@ -123,16 +123,16 @@ _scene1(ECS *ecs, gsk_Renderer *renderer)
                                        texDefNorm,
                                        texContSpec);
 
-    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
-    Entity floorEntity = ecs_new(ecs);
-    _ecs_add_internal(floorEntity,
+    gsk_Entity floorEntity = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(floorEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, -0.3f, 0.0f},
                         .scale    = {10.0f, 10.0f, 10.0f},
                       }));
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       floorEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material  = matFloor,
@@ -142,13 +142,13 @@ _scene1(ECS *ecs, gsk_Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
-    Entity boxEntity = ecs_new(ecs);
-    _ecs_add_internal(boxEntity,
+    gsk_Entity boxEntity = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(boxEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, -0.085f, 0.0f},
                       }));
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       boxEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matBox,
@@ -160,7 +160,7 @@ _scene1(ECS *ecs, gsk_Renderer *renderer)
 }
 
 static void
-_scene2(ECS *ecs, gsk_Renderer *renderer)
+_scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 2);
     __set_active_scene_skybox(renderer, skyboxMain);
@@ -237,15 +237,15 @@ _scene2(ECS *ecs, gsk_Renderer *renderer)
                                         texGoldSpecular,
                                         texPbrAo);
 
-    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
-    Entity sphereEntity = ecs_new(ecs);
-    _ecs_add_internal(sphereEntity,
+    gsk_Entity sphereEntity = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(sphereEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, 0.0f, 0.0f},
                       }));
-    _ecs_add_internal(sphereEntity,
+    _gsk_ecs_add_internal(sphereEntity,
                       C_MODEL,
                       (void *)(&(struct ComponentModel) {
                         .material   = matGranite,
@@ -254,13 +254,13 @@ _scene2(ECS *ecs, gsk_Renderer *renderer)
                           .drawMode = DRAW_ARRAYS,
                           .cullMode = CULL_CW | CULL_FORWARD,
                         }}));
-    Entity sphereEntity2 = ecs_new(ecs);
-    _ecs_add_internal(sphereEntity2,
+    gsk_Entity sphereEntity2 = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(sphereEntity2,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {-0.5f, 0.0f, 0.0f},
                       }));
-    _ecs_add_internal(sphereEntity2,
+    _gsk_ecs_add_internal(sphereEntity2,
                       C_MODEL,
                       (void *)(&(struct ComponentModel) {
                         .material   = matRust,
@@ -270,13 +270,13 @@ _scene2(ECS *ecs, gsk_Renderer *renderer)
                           .cullMode = CULL_CW | CULL_FORWARD,
                         }}));
 
-    Entity sphereEntity3 = ecs_new(ecs);
-    _ecs_add_internal(sphereEntity3,
+    gsk_Entity sphereEntity3 = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(sphereEntity3,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.5f, 0.0f, 0.0f},
                       }));
-    _ecs_add_internal(sphereEntity3,
+    _gsk_ecs_add_internal(sphereEntity3,
                       C_MODEL,
                       (void *)(&(struct ComponentModel) {
                         .material   = matBrass,
@@ -285,13 +285,13 @@ _scene2(ECS *ecs, gsk_Renderer *renderer)
                           .drawMode = DRAW_ARRAYS,
                           .cullMode = CULL_CW | CULL_FORWARD,
                         }}));
-    Entity sphereEntity4 = ecs_new(ecs);
-    _ecs_add_internal(sphereEntity4,
+    gsk_Entity sphereEntity4 = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(sphereEntity4,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {1.0f, 0.0f, 0.0f},
                       }));
-    _ecs_add_internal(sphereEntity4,
+    _gsk_ecs_add_internal(sphereEntity4,
                       C_MODEL,
                       (void *)(&(struct ComponentModel) {
                         .material   = matGold,
@@ -302,7 +302,7 @@ _scene2(ECS *ecs, gsk_Renderer *renderer)
                         }}));
 
 #if 0
-    Entity floorEntity2 = ecs_new(ecs);
+    gsk_Entity floorEntity2 = gsk_ecs_new(ecs);
    _ecs_add_internal(floorEntity2,
             C_TRANSFORM,
             (void *)(&(struct ComponentTransform) {
@@ -321,7 +321,7 @@ _scene2(ECS *ecs, gsk_Renderer *renderer)
 }
 
 static void
-_scene3(ECS *ecs, gsk_Renderer *renderer)
+_scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
 
     ecs = gsk_renderer_active_scene(renderer, 3);
@@ -344,8 +344,8 @@ _scene3(ECS *ecs, gsk_Renderer *renderer)
                                         texCerbS,
                                         texPbrAo);
 
-    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
-    _ecs_add_internal(camera,
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
+    _gsk_ecs_add_internal(camera,
                       C_TEST,
                       (void *)(&(struct ComponentTest) {
                         .rotation_speed = 11, .movement_increment = 5,
@@ -353,7 +353,7 @@ _scene3(ECS *ecs, gsk_Renderer *renderer)
                       }));
 
 #if 1
-    Entity entCerb                              = ecs_new(ecs);
+    gsk_Entity entCerb                              = gsk_ecs_new(ecs);
     struct ComponentTransform compCerbTransform = {
       .position = {0.0f, 0.0f, 0.0f},
       .scale    = {4.0f, 4.0f, 4.0f},
@@ -365,16 +365,16 @@ _scene3(ECS *ecs, gsk_Renderer *renderer)
         .drawMode = DRAW_ARRAYS,
         .cullMode = CULL_CW | CULL_FORWARD,
       }};
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       entCerb,
       C_TRANSFORM,
       (void *)((struct ComponentTransform *)&compCerbTransform));
 
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
 #endif
 #if 0
-    _ecs_add_internal(entCerb,
+    _gsk_ecs_add_internal(entCerb,
                       C_TEST,
                       (void *)(&(struct ComponentTest) {
                         .rotation_speed     = 50.0f,
@@ -384,7 +384,7 @@ _scene3(ECS *ecs, gsk_Renderer *renderer)
 }
 
 static void
-_scene4(ECS *ecs, gsk_Renderer *renderer)
+_scene4(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 4);
 
@@ -394,16 +394,16 @@ _scene4(ECS *ecs, gsk_Renderer *renderer)
     gsk_Model *modelCharacter = gsk_model_load_from_file(
       "../demo/demo_hot/Resources/models/character-anim.gltf", 1, FALSE);
 
-    Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
 
-    Entity characterEntity = ecs_new(ecs);
-    _ecs_add_internal(characterEntity,
+    gsk_Entity characterEntity = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(characterEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, 0.0f, 0.0f},
                         //.scale = {0.001f, 0.001f, 0.001f},
                       }));
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       characterEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matCharacter,
@@ -412,11 +412,11 @@ _scene4(ECS *ecs, gsk_Renderer *renderer)
                                            .drawMode = DRAW_ELEMENTS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
-    _ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
+    _gsk_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
 static void
-_scene5(ECS *ecs, gsk_Renderer *renderer)
+_scene5(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 5);
     __set_active_scene_skybox(renderer, skyboxMain);
@@ -424,22 +424,22 @@ _scene5(ECS *ecs, gsk_Renderer *renderer)
     gsk_Material *matWire =
       gsk_material_create(NULL, GSK_PATH("gsk://shaders/wireframe.shader"), 0);
 
-    Entity *pCamera = malloc(sizeof(Entity));
+    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
     *pCamera        = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
-    Entity e_camera = *pCamera;
+    gsk_Entity e_camera = *pCamera;
 
     gsk_Model *modelSponza =
       // gsk_model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
       gsk_model_load_from_file(GSK_PATH("data://models/sponza.glb"), 1, TRUE);
 
-    Entity e_sponza = ecs_new(ecs);
-    _ecs_add_internal(e_sponza,
+    gsk_Entity e_sponza = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(e_sponza,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, -1.5f, 0.0f},
                         .scale    = {0.001f, 0.001f, 0.001f},
                       }));
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       e_sponza,
       C_MODEL,
       (void *)(&(struct ComponentModel) {
@@ -451,12 +451,12 @@ _scene5(ECS *ecs, gsk_Renderer *renderer)
           .drawMode = DRAW_ELEMENTS,
           .cullMode = CULL_CW | CULL_FORWARD,
         }}));
-    //_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
+    //_gsk_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
 // physics test
 static void
-_scene6(ECS *ecs, gsk_Renderer *renderer)
+_scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 6);
     __set_active_scene_skybox(renderer, skyboxMain);
@@ -484,28 +484,28 @@ _scene6(ECS *ecs, gsk_Renderer *renderer)
                                        texDefNorm,
                                        texContSpec);
 
-    Entity *pCamera = malloc(sizeof(Entity));
+    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
 
     *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 2.0f});
-    Entity camera = *pCamera;
+    gsk_Entity camera = *pCamera;
 
     // Testing entity on heap memory
-    Entity *pFloorEntity = malloc(sizeof(Entity));
-    *pFloorEntity        = ecs_new(ecs);
-    Entity floorEntity   = *pFloorEntity;
+    gsk_Entity *pFloorEntity = malloc(sizeof(gsk_Entity));
+    *pFloorEntity        = gsk_ecs_new(ecs);
+    gsk_Entity floorEntity   = *pFloorEntity;
 
-    _ecs_add_internal(floorEntity,
+    _gsk_ecs_add_internal(floorEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, 0.0f, 0.0f},
                         .scale    = {10.0f, 10.0f, 10.0f},
                       }));
-    _ecs_add_internal(floorEntity,
+    _gsk_ecs_add_internal(floorEntity,
                       C_COLLIDER,
                       (void *)(&(struct ComponentCollider) {
                         .type = 2,
                       }));
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       floorEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material  = matFloor,
@@ -515,17 +515,17 @@ _scene6(ECS *ecs, gsk_Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
-    Entity *pSphereEntity = malloc(sizeof(Entity));
-    *pSphereEntity        = ecs_new(ecs);
-    Entity sphereEntity   = *pSphereEntity;
-    _ecs_add_internal(sphereEntity,
+    gsk_Entity *pSphereEntity = malloc(sizeof(gsk_Entity));
+    *pSphereEntity        = gsk_ecs_new(ecs);
+    gsk_Entity sphereEntity   = *pSphereEntity;
+    _gsk_ecs_add_internal(sphereEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         //.position = {0.0f, -0.085f, -1.0f},
                         .position = {0.2f, 5.0f, -1.0f},
                       }));
 
-    _ecs_add_internal(sphereEntity,
+    _gsk_ecs_add_internal(sphereEntity,
                       C_RIGIDBODY,
                       (void *)(&(struct ComponentRigidbody) {
                         .gravity = {0.0f, -9.81f, 0.0f},
@@ -533,13 +533,13 @@ _scene6(ECS *ecs, gsk_Renderer *renderer)
                         .mass = 10.0f,
                       }));
 
-    _ecs_add_internal(sphereEntity,
+    _gsk_ecs_add_internal(sphereEntity,
                       C_COLLIDER,
                       (void *)(&(struct ComponentCollider) {
                         .type = 1,
                       }));
 
-    _ecs_add_internal(sphereEntity,
+    _gsk_ecs_add_internal(sphereEntity,
                       C_MODEL,
                       (void *)(&(struct ComponentModel) {
                         .material   = matBox,
@@ -551,17 +551,17 @@ _scene6(ECS *ecs, gsk_Renderer *renderer)
     // Second sphere
 #if 1
 
-    Entity *pSphereEntity2 = malloc(sizeof(Entity));
-    *pSphereEntity2        = ecs_new(ecs);
-    Entity sphereEntity2   = *pSphereEntity2;
-    _ecs_add_internal(sphereEntity2,
+    gsk_Entity *pSphereEntity2 = malloc(sizeof(gsk_Entity));
+    *pSphereEntity2        = gsk_ecs_new(ecs);
+    gsk_Entity sphereEntity2   = *pSphereEntity2;
+    _gsk_ecs_add_internal(sphereEntity2,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         //.position = {0.0f, -0.085f, -1.0f},
                         .position = {0.0f, 15.0f, -1.2f},
                       }));
 
-    _ecs_add_internal(sphereEntity2,
+    _gsk_ecs_add_internal(sphereEntity2,
                       C_RIGIDBODY,
                       (void *)(&(struct ComponentRigidbody) {
                         .gravity = {0.0f, -9.81f, 0.0f},
@@ -569,13 +569,13 @@ _scene6(ECS *ecs, gsk_Renderer *renderer)
                         .mass = 10.0f,
                       }));
 
-    _ecs_add_internal(sphereEntity2,
+    _gsk_ecs_add_internal(sphereEntity2,
                       C_COLLIDER,
                       (void *)(&(struct ComponentCollider) {
                         .type = 1,
                       }));
 
-    _ecs_add_internal(sphereEntity2,
+    _gsk_ecs_add_internal(sphereEntity2,
                       C_MODEL,
                       (void *)(&(struct ComponentModel) {
                         .material   = matBox,
@@ -592,7 +592,7 @@ _scene6(ECS *ecs, gsk_Renderer *renderer)
  |  Description: Main transform/weapon test
  -----------------------*/
 static void
-_scene7(ECS *ecs, gsk_Renderer *renderer)
+_scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 7);
     __set_active_scene_skybox(renderer, skyboxMain);
@@ -652,30 +652,30 @@ _scene7(ECS *ecs, gsk_Renderer *renderer)
      |  Entities
      -----------------------*/
 
-    Entity *pFloorEntity = malloc(sizeof(Entity));
-    *pFloorEntity        = ecs_new(ecs);
-    Entity floorEntity   = *pFloorEntity;
+    gsk_Entity *pFloorEntity = malloc(sizeof(gsk_Entity));
+    *pFloorEntity        = gsk_ecs_new(ecs);
+    gsk_Entity floorEntity   = *pFloorEntity;
 
-    _ecs_add_internal(floorEntity,
+    _gsk_ecs_add_internal(floorEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position = {0.0f, -0.3f, 0.0f},
                         .scale    = {10.0f, 10.0f, 10.0f},
                       }));
 #if DEMO_USING_AUDIO
-    _ecs_add_internal(floorEntity,
+    _gsk_ecs_add_internal(floorEntity,
                       C_AUDIOSOURCE,
                       (void *)(&(struct ComponentAudioSource) {
                         .filePath = "../res/audio/test.wav",
                         .looping  = 0,
                       }));
 #endif // DEMO_USING_AUDIO
-    _ecs_add_internal(floorEntity,
+    _gsk_ecs_add_internal(floorEntity,
                       C_COLLIDER,
                       (void *)(&(struct ComponentCollider) {
                         .type = 2,
                       }));
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       floorEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matFloor,
@@ -685,27 +685,27 @@ _scene7(ECS *ecs, gsk_Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
-    Entity *pCamera = malloc(sizeof(Entity));
+    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
 
     *pCamera      = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 0.0f});
-    Entity camera = *pCamera;
+    gsk_Entity camera = *pCamera;
 #if DEMO_USING_AUDIO
-    _ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
+    _gsk_ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
 #endif // DEMO_USING_AUDIO
 
     /*
       Camera 2
     */
 #if DEMO_USING_MULTIPLE_CAMERAS
-    Entity camera2 = ecs_new(ecs);
-    _ecs_add_internal(camera2,
+    gsk_Entity camera2 = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(camera2,
                       C_CAMERA,
                       (void *)(&(struct ComponentCamera) {
                         .axisUp      = {0.0f, 1.0f, 0.0f},
                         .fov         = 45,
                         .renderLayer = 1,
                       }));
-    _ecs_add_internal(camera2,
+    _gsk_ecs_add_internal(camera2,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position    = {0.0f, 0.2f, 0.0f},
@@ -718,11 +718,11 @@ _scene7(ECS *ecs, gsk_Renderer *renderer)
     /*
       Weapon Parent (weapon-sway)
     */
-    Entity *pWeaponParent = malloc(sizeof(Entity));
-    *pWeaponParent        = ecs_new(ecs);
-    Entity weaponParent   = *pWeaponParent;
+    gsk_Entity *pWeaponParent = malloc(sizeof(gsk_Entity));
+    *pWeaponParent        = gsk_ecs_new(ecs);
+    gsk_Entity weaponParent   = *pWeaponParent;
 
-    _ecs_add_internal(weaponParent,
+    _gsk_ecs_add_internal(weaponParent,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position    = {0.0f, 0.0f, 0.0f},
@@ -730,14 +730,14 @@ _scene7(ECS *ecs, gsk_Renderer *renderer)
                         .scale       = {1.0f, 1.0f, 1.0f},
                         .parent      = pCamera,
                       }));
-    _ecs_add_internal(weaponParent,
+    _gsk_ecs_add_internal(weaponParent,
                       C_WEAPONSWAY,
                       (void *)(&(struct ComponentWeaponSway) {
                         .sway_amount = 5,
                       }));
 
-    Entity attachedEntity = ecs_new(ecs);
-    _ecs_add_internal(attachedEntity,
+    gsk_Entity attachedEntity = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(attachedEntity,
                       C_TRANSFORM,
                       (void *)(&(struct ComponentTransform) {
                         .position    = {-0.1f, -0.22f, -0.4340f},
@@ -746,7 +746,7 @@ _scene7(ECS *ecs, gsk_Renderer *renderer)
                         .parent      = pWeaponParent,
                       }));
 
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       attachedEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matWeapon,
@@ -759,14 +759,14 @@ _scene7(ECS *ecs, gsk_Renderer *renderer)
 
 #if DEMO_USING_MULTIPLE_CAMERAS
     // Render layer (only render on camera with specified layer)
-    _ecs_add_internal(attachedEntity,
+    _gsk_ecs_add_internal(attachedEntity,
                       C_RENDERLAYER,
                       (void *)(&(struct ComponentRenderLayer) {
                         .renderLayer = 1,
                       }));
 #endif
 
-    _ecs_add_internal(
+    _gsk_ecs_add_internal(
       attachedEntity,
       C_WEAPON,
       (void *)(&(struct ComponentWeapon) {
@@ -779,7 +779,7 @@ _scene7(ECS *ecs, gsk_Renderer *renderer)
 };
 
 void
-demo_scenes_create(ECS *ecs, gsk_Renderer *renderer)
+demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     // Default textures with options
     s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};

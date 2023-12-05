@@ -59,7 +59,7 @@ gsk_renderer_init()
     // Create the initial scene
     gsk_Scene *scene      = malloc(sizeof(gsk_Scene));
     scene->id         = 0;
-    scene->ecs        = ecs_init(ret);
+    scene->ecs        = gsk_ecs_init(ret);
     scene->has_skybox = FALSE;
 
     gsk_Scene **sceneList = malloc(sizeof(gsk_Scene *));
@@ -120,7 +120,7 @@ gsk_renderer_init()
     return ret;
 }
 
-ECS *
+gsk_ECS *
 gsk_renderer_active_scene(gsk_Renderer *self, ui16 sceneIndex)
 {
     LOG_INFO("Loading scene: id %d", sceneIndex);
@@ -133,7 +133,7 @@ gsk_renderer_active_scene(gsk_Renderer *self, ui16 sceneIndex)
         // Create a new, empty scene
         gsk_Scene *newScene      = malloc(sizeof(gsk_Scene));
         newScene->id         = newCount;
-        newScene->ecs        = ecs_init(self);
+        newScene->ecs        = gsk_ecs_init(self);
         newScene->has_skybox = FALSE;
 
         // Update the scene list
@@ -155,7 +155,7 @@ gsk_renderer_start(gsk_Renderer *renderer)
 {
     // Scene initialization
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
-    ECS *ecs     = scene->ecs;
+    gsk_ECS *ecs     = scene->ecs;
 
     if (DEVICE_API_OPENGL) {
 
@@ -196,12 +196,12 @@ gsk_renderer_start(gsk_Renderer *renderer)
         // renderer->skybox = gsk_skybox_create(skyboxCubemap);
 
         // Send ECS event init
-        ecs_event(ecs, ECS_INIT);
+        gsk_ecs_event(ecs, ECS_INIT);
 
         // glEnable(GL_FRAMEBUFFER_SRGB);
         clearGLState();
 
-        renderer->debugContext = debug_context_init();
+        renderer->debugContext = gsk_debug_context_init();
 
         // Create camera Uniform Buffer
         ui32 camera_uboSize = sizeof(vec4) + (2 * sizeof(mat4));
@@ -233,7 +233,7 @@ gsk_renderer_start(gsk_Renderer *renderer)
 #endif
 
     } else if (DEVICE_API_VULKAN) {
-        ecs_event(ecs, ECS_INIT);
+        gsk_ecs_event(ecs, ECS_INIT);
         // LOG_DEBUG("gsk_Renderer Start-Phase is not implemented in Vulkan");
     }
 }
@@ -241,7 +241,7 @@ gsk_renderer_start(gsk_Renderer *renderer)
 /* Render Functions for the pipeline */
 
 static void
-renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, ECS *ecs)
+renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 {
     // Settings
     glfwSwapInterval(device_getGraphicsSettings().swapInterval);
@@ -257,8 +257,8 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, ECS *ecs)
     device_updateCursorState(renderer->window);
     glfwPollEvents();
 
-    ecs_event(ecs, ECS_UPDATE);
-    ecs_event(ecs, ECS_LATE_UPDATE);
+    gsk_ecs_event(ecs, ECS_UPDATE);
+    gsk_ecs_event(ecs, ECS_LATE_UPDATE);
 
     // Update all camera UBO's
     //__update_camera_ubo(renderer);
@@ -271,7 +271,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, ECS *ecs)
     prepass_bind();
     renderer->currentPass      = DEPTH_PREPASS;
     renderer->explicitMaterial = prepass_getMaterial();
-    ecs_event(ecs, ECS_RENDER);
+    gsk_ecs_event(ecs, ECS_RENDER);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glPopDebugGroup();
@@ -296,7 +296,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, ECS *ecs)
     renderer->currentPass      = SHADOW;
     renderer->explicitMaterial = shadowmap_getMaterial();
     // TODO: Clean this up...
-    ecs_event(ecs, ECS_RENDER);
+    gsk_ecs_event(ecs, ECS_RENDER);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -344,7 +344,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, ECS *ecs)
 
     // Forward-draw Event
     renderer->currentPass = REGULAR;
-    ecs_event(ecs, ECS_RENDER);
+    gsk_ecs_event(ecs, ECS_RENDER);
 
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
@@ -378,22 +378,22 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, ECS *ecs)
 #if TESTING_DRAW_LINE
     vec3 start = {0, 0, 0};
     vec3 end   = {-20, 20, 0};
-    debug_draw_line(renderer->debugContext, start, end);
+    gsk_debug_draw_line(renderer->debugContext, start, end);
 #endif
 
     // computebuffer_draw();
 }
 
 /*
-void renderer_tick_VULKAN(gsk_Renderer *renderer, ECS *ecs) {
+void renderer_tick_VULKAN(gsk_Renderer *renderer, gsk_ECS *ecs) {
 
 // Update Analytics Data
 
     glfwPollEvents();
 
-    ecs_event(ecs, ECS_UPDATE);
+    gsk_ecs_event(ecs, ECS_UPDATE);
     renderer->currentPass = REGULAR;
-    ecs_event(ecs, ECS_RENDER);
+    gsk_ecs_event(ecs, ECS_RENDER);
 
     vulkan_render_draw(renderer->vulkanDevice, renderer->window);
 }
@@ -403,7 +403,7 @@ void
 gsk_renderer_tick(gsk_Renderer *renderer)
 {
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
-    ECS *ecs     = scene->ecs;
+    gsk_ECS *ecs     = scene->ecs;
 
     if (DEVICE_API_OPENGL) {
         renderer_tick_OPENGL(renderer, scene, ecs);

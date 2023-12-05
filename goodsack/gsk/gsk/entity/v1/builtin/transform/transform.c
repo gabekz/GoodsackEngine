@@ -32,10 +32,10 @@ void transform_rotate(struct ComponentTransform *transform, vec3 rotation) {
 */
 
 static void
-init(Entity e)
+init(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_TRANSFORM))) return;
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
     transform->hasParent                 = false; // if not already set..
 
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
@@ -44,7 +44,7 @@ init(Entity e)
     if (transform->parent) {
         transform->hasParent = true;
         struct ComponentTransform *parentTransform =
-          ecs_get(*(Entity *)transform->parent, C_TRANSFORM);
+          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
         glm_mat4_copy(transform->parent, m4i);
     }
 
@@ -60,22 +60,22 @@ init(Entity e)
 }
 
 static void
-late_update(Entity e)
+late_update(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_TRANSFORM))) return;
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
 
-    if (ecs_has(e, C_CAMERA)) {
-        struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
+    if (gsk_ecs_has(e, C_CAMERA)) {
+        struct ComponentCamera *camera = gsk_ecs_get(e, C_CAMERA);
         glm_mat4_inv(camera->view, transform->model);
         return;
     }
 
     if (transform->hasParent) {
         struct ComponentTransform *parent =
-          ecs_get(*(Entity *)transform->parent, C_TRANSFORM);
+          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
         glm_mat4_copy(parent->model, m4i);
     }
 
@@ -91,15 +91,15 @@ late_update(Entity e)
 }
 
 void
-s_transform_init(ECS *ecs)
+s_transform_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
-    ecs_system_register(ecs,
-                        ((ECSSystem) {
-                          .init        = (ECSSubscriber)init,
+    gsk_ecs_system_register(ecs,
+                        ((gsk_ECSSystem) {
+                          .init        = (gsk_ECSSubscriber)init,
                           .destroy     = NULL,
                           .render      = NULL,
                           .update      = NULL,
-                          .late_update = (ECSSubscriber)late_update,
+                          .late_update = (gsk_ECSSubscriber)late_update,
                         }));
 }

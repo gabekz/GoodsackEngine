@@ -210,16 +210,16 @@ DrawModel(struct ComponentModel *model,
 }
 
 static void
-init(Entity e)
+init(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_TRANSFORM))) return;
-    if (!(ecs_has(e, C_MODEL))) return;
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(e, C_MODEL))) return;
 
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
-    struct ComponentModel *model         = ecs_get(e, C_MODEL);
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
+    struct ComponentModel *model         = gsk_ecs_get(e, C_MODEL);
 
     // TODO: stupid hack grabbing only scale.x...
-    // mesh->model = load_obj(mesh->modelPath, transform->scale[0]);
+    // mesh->model = gsk_load_obj(mesh->modelPath, transform->scale[0]);
 
     if (DEVICE_API_OPENGL) {
         if (!(gsk_Model *)model->pModel) {
@@ -239,7 +239,7 @@ init(Entity e)
     } else if (DEVICE_API_VULKAN) {
         model->mesh = malloc(sizeof(gsk_Mesh));
         ((gsk_Mesh *)(model->mesh))->meshData =
-          load_obj(model->modelPath, transform->scale[0]);
+          gsk_load_obj(model->modelPath, transform->scale[0]);
 
         VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
 
@@ -254,17 +254,17 @@ init(Entity e)
 }
 
 static void
-render(Entity e)
+render(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_TRANSFORM))) return;
-    if (!(ecs_has(e, C_MODEL))) return;
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
-    struct ComponentModel *model         = ecs_get(e, C_MODEL);
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(e, C_MODEL))) return;
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
+    struct ComponentModel *model         = gsk_ecs_get(e, C_MODEL);
 
     ui32 renderLayer = 0; // DEFAULT RENDER LAYER when not specified.
-    if (ecs_has(e, C_RENDERLAYER)) {
+    if (gsk_ecs_has(e, C_RENDERLAYER)) {
         renderLayer =
-          (ui32)((struct ComponentRenderLayer *)ecs_get(e, C_RENDERLAYER))
+          (ui32)((struct ComponentRenderLayer *)gsk_ecs_get(e, C_RENDERLAYER))
             ->renderLayer;
     }
 
@@ -282,7 +282,7 @@ render(Entity e)
 #if DEBUG_DRAW_SKELETON
         // draw skeleton
         if (model->mesh->meshData->isSkinnedMesh) {
-            debug_draw_skeleton(e.ecs->renderer->debugContext,
+            gsk_debug_draw_skeleton(e.ecs->renderer->debugContext,
                                 model->mesh->meshData->skeleton);
         }
 #endif
@@ -292,7 +292,7 @@ render(Entity e)
         gsk_Model *pModel = model->pModel;
         for (int i = 0; i < pModel->meshesCount; i++) {
             Mesh *mesh = pModel->meshes[i];
-            debug_draw_bounds(e.ecs->renderer->debugContext,
+            gsk_debug_draw_bounds(e.ecs->renderer->debugContext,
                               mesh->meshData->boundingBox,
                               transform->model);
         }
@@ -314,14 +314,14 @@ render(Entity e)
 }
 
 void
-s_model_draw_init(ECS *ecs)
+s_model_draw_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(ecs, C_MODEL, sizeof(struct ComponentModel));
-    ecs_system_register(ecs,
-                        ((ECSSystem) {
-                          .init    = (ECSSubscriber)init,
+    gsk_ecs_system_register(ecs,
+                        ((gsk_ECSSystem) {
+                          .init    = (gsk_ECSSubscriber)init,
                           .destroy = NULL,
-                          .render  = (ECSSubscriber)render,
+                          .render  = (gsk_ECSSubscriber)render,
                           .update  = NULL,
                         }));
 }

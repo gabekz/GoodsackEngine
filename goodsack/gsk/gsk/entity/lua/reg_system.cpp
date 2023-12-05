@@ -72,7 +72,7 @@ entity::Lua_ECSRegisterSystem(lua_State *L)
             fList[i]->functions[(fList[i]->size) - 1] = f;
 
             LOG_INFO("function list: %s\tnewSize %i",
-                     _ecs_EventToString(i),
+                     _gsk_ecs_EventToString(i),
                      fList[i]->size);
         } else {
             // we want to pop this if not a function. Registering as

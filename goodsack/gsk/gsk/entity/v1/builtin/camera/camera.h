@@ -53,6 +53,6 @@ struct ComponentCamera
 #endif
 
 void
-s_camera_init(ECS *ecs);
+s_camera_init(gsk_ECS *ecs);
 
 #endif // __CAMERA_H__

@@ -12,11 +12,11 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
-AudioData *
-load_wav(const char *filepath)
+gsk_AudioData *
+gsk_load_wav(const char *filepath)
 {
 
-    AudioData *ret = malloc(sizeof(AudioData));
+    gsk_AudioData *ret = malloc(sizeof(gsk_AudioData));
 
     FILE *filePtr;
     char magic[4];

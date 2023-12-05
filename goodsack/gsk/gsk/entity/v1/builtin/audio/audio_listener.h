@@ -16,6 +16,6 @@ struct ComponentAudioListener
 #endif
 
 void
-s_audio_listener_init(ECS *ecs);
+s_audio_listener_init(gsk_ECS *ecs);
 
 #endif // __AUDIO_LISTENER_H__

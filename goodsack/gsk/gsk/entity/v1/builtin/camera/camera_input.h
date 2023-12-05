@@ -10,6 +10,6 @@
 #include "util/gfx.h"
 
 void
-camera_input(Entity cameraEntity, GLFWwindow *);
+camera_input(gsk_Entity cameraEntity, GLFWwindow *);
 
 #endif // __CAMERA_INPUT_H__

@@ -24,7 +24,7 @@ class LuaEventStore {
     LuaEventStore(const LuaEventStore &) = delete;
 
     static LuaEventStore &GetInstance();
-    static void Initialize(lua_State *L, ECS *ecs);
+    static void Initialize(lua_State *L, gsk_ECS *ecs);
     static void ECSEvent(enum ECSEvent event);
 
     static ECSComponentLayout &getLayout(const char *layout)
@@ -33,7 +33,7 @@ class LuaEventStore {
     };
 
     // TEST
-    // static Entity entity;
+    // static gsk_Entity entity;
 
     struct Lua_Functions
     {
@@ -55,7 +55,7 @@ class LuaEventStore {
                                const char *layoutKey);
 
     // TESTING 2
-    ECS *m_ecs;
+    gsk_ECS *m_ecs;
 
    protected:
     struct Lua_Functions **m_functionList;

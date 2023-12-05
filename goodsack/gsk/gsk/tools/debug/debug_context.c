@@ -13,10 +13,10 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/primitives.h"
 
-DebugContext *
-debug_context_init()
+gsk_DebugContext *
+gsk_debug_context_init()
 {
-    DebugContext *ret = malloc(sizeof(DebugContext));
+    gsk_DebugContext *ret = malloc(sizeof(gsk_DebugContext));
 
     if (DEVICE_API_OPENGL) {
         ret->vaoCube = vao_create();

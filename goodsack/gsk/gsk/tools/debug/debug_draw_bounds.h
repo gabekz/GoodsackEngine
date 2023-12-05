@@ -10,7 +10,7 @@
 #include "tools/debug/debug_context.h"
 
 void
-debug_draw_bounds(DebugContext *debugContext,
+gsk_debug_draw_bounds(gsk_DebugContext *debugContext,
                   vec3 corners[2],
                   mat4 modelMatrix);
 

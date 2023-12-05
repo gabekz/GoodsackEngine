@@ -49,7 +49,7 @@ _draw_aabb(BoundingBox *box, mat4 *modelMatrix)
 #endif
 
 void
-debug_draw_bounds(DebugContext *debugContext, vec3 corners[2], mat4 modelMatrix)
+gsk_debug_draw_bounds(gsk_DebugContext *debugContext, vec3 corners[2], mat4 modelMatrix)
 {
     vao_bind(debugContext->vaoBoundingBox);
     gsk_material_use(debugContext->material);

@@ -31,6 +31,6 @@ void
 transform_scale(struct ComponentTransform *transform);
 
 void
-s_transform_init(ECS *ecs);
+s_transform_init(gsk_ECS *ecs);
 
 #endif // H_C_TRANSFORM

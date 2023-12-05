@@ -10,7 +10,7 @@
 #include "tools/debug/debug_context.h"
 
 void
-debug_draw_skeleton(DebugContext *debugContext, gsk_Skeleton *skeleton)
+gsk_debug_draw_skeleton(gsk_DebugContext *debugContext, gsk_Skeleton *skeleton)
 {
     vao_bind(debugContext->vaoCube);
     gsk_material_use(debugContext->material);

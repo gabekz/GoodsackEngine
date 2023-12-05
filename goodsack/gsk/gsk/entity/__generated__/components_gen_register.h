@@ -5,7 +5,7 @@
 #include <entity/v1/ecs.h>
 
 static inline void
-_ecs_init_internal_gen(ECS *ecs)
+_ecs_init_internal_gen(gsk_ECS *ecs)
 {
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));

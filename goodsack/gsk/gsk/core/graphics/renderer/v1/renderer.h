@@ -85,7 +85,7 @@ typedef struct gsk_Renderer
     VulkanDeviceContext *vulkanDevice;
     ui32 hdrTextureId;
 
-    DebugContext *debugContext;
+    gsk_DebugContext *debugContext;
 
     // Camera information
     struct
@@ -119,9 +119,9 @@ gsk_renderer_tick(gsk_Renderer *renderer);
  *
  * @param[in] self Pointer to the renderer
  * @param[in] sceneIndex Index of the scene to load/create
- * @return Pointer to the ECS struct owned by the scene
+ * @return Pointer to the gsk_ECS struct owned by the scene
  */
-struct _ecs *
+struct gsk_ECS *
 gsk_renderer_active_scene(gsk_Renderer *self, ui16 sceneIndex);
 //-------------------------------
 

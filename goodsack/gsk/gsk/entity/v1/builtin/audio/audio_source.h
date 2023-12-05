@@ -20,6 +20,6 @@ typedef struct ComponentAudioSource
 #endif
 
 void
-s_audio_source_init(ECS *ecs);
+s_audio_source_init(gsk_ECS *ecs);
 
 #endif // __AUDIO_SOURCE_H__

@@ -14,13 +14,13 @@
 #include "physics/physics_solver.h"
 
 static void
-init(Entity e)
+init(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_COLLIDER))) return;
-    if (!(ecs_has(e, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(e, C_COLLIDER))) return;
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
 
-    struct ComponentCollider *collider   = ecs_get(e, C_COLLIDER);
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
     collider->isColliding = false; // TODO: remove <- this is for testing
 
@@ -65,35 +65,35 @@ init(Entity e)
 }
 
 static void
-update(Entity e)
+update(gsk_Entity e)
 {
     // test for collisions
-    if (!(ecs_has(e, C_COLLIDER))) return;
-    if (!(ecs_has(e, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(e, C_COLLIDER))) return;
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
 
-    struct ComponentCollider *collider   = ecs_get(e, C_COLLIDER);
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
     collider->isColliding = 0;
 
     for (int i = 0; i < e.ecs->nextIndex; i++) {
-        if (e.index == (EntityId)i) continue; // do not check self
+        if (e.index == (gsk_EntityId)i) continue; // do not check self
 
         // TODO: fix look-up
-        Entity e_compare = {
-          .id    = (EntityId)i + 1,
-          .index = (EntityId)i,
+        gsk_Entity e_compare = {
+          .id    = (gsk_EntityId)i + 1,
+          .index = (gsk_EntityId)i,
           .ecs   = e.ecs,
         };
 
-        if (!ecs_has(e_compare, C_COLLIDER)) continue;
-        if (!ecs_has(e_compare, C_TRANSFORM)) continue;
+        if (!gsk_ecs_has(e_compare, C_COLLIDER)) continue;
+        if (!gsk_ecs_has(e_compare, C_TRANSFORM)) continue;
 
         struct ComponentCollider *compareCollider =
-          ecs_get(e_compare, C_COLLIDER);
+          gsk_ecs_get(e_compare, C_COLLIDER);
 
         struct ComponentTransform *compareTransform =
-          ecs_get(e_compare, C_TRANSFORM);
+          gsk_ecs_get(e_compare, C_TRANSFORM);
 
         gsk_CollisionPoints points = {.has_collision = 0};
 
@@ -132,8 +132,8 @@ update(Entity e)
         // Collision points
         if (points.has_collision) {
 
-            if (ecs_has(e, C_RIGIDBODY)) {
-                struct ComponentRigidbody *rigidbody = ecs_get(e, C_RIGIDBODY);
+            if (gsk_ecs_has(e, C_RIGIDBODY)) {
+                struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
 
                 // Create a new collision result using our points
                 // TODO: Send objects A and B
@@ -153,14 +153,14 @@ update(Entity e)
 }
 
 void
-s_collider_setup_system_init(ECS *ecs)
+s_collider_setup_system_init(gsk_ECS *ecs)
 {
-    ecs_system_register(ecs,
-                        ((ECSSystem) {
-                          .init        = (ECSSubscriber)init,
+    gsk_ecs_system_register(ecs,
+                        ((gsk_ECSSystem) {
+                          .init        = (gsk_ECSSubscriber)init,
                           .destroy     = NULL,
                           .render      = NULL,
-                          .update      = (ECSSubscriber)update,
+                          .update      = (gsk_ECSSubscriber)update,
                           .late_update = NULL,
                         }));
 }

@@ -67,7 +67,7 @@ entity::ECSComponentList::ECSComponentList(ECSComponentType componentTypeIndex,
                                            ECSComponentLayout &layout)
     : m_componentLayout(layout)
 {
-    ECS *ecs      = entity::LuaEventStore::GetInstance().m_ecs;
+    gsk_ECS *ecs      = entity::LuaEventStore::GetInstance().m_ecs;
     ui32 capacity = ecs->capacity;
 
     // m_componentsList = malloc(sizeof(ECSComponent **) * ECSCom)
@@ -75,12 +75,12 @@ entity::ECSComponentList::ECSComponentList(ECSComponentType componentTypeIndex,
     m_components = (ECSComponent **)malloc(sizeof(ECSComponent *) * capacity);
     for (int i = 0; i < capacity; i++) {
         //
-        if (ecs_has(
-              Entity {.id = (EntityId)i, .index = (EntityId)i, .ecs = ecs},
+        if (gsk_ecs_has(
+              gsk_Entity {.id = (gsk_EntityId)i, .index = (gsk_EntityId)i, .ecs = ecs},
               componentTypeIndex)) {
             m_components[i] = new ECSComponent(
-              (void *)ecs_get(
-                Entity {.id = (EntityId)i, .index = (EntityId)i, .ecs = ecs},
+              (void *)gsk_ecs_get(
+                gsk_Entity {.id = (gsk_EntityId)i, .index = (gsk_EntityId)i, .ecs = ecs},
                 componentTypeIndex),
               layout);
         } else {

@@ -23,7 +23,7 @@
 #endif
 
 gsk_MeshData *
-load_obj(const char *path, float scale)
+gsk_load_obj(const char *path, float scale)
 {
 
     FILE *stream = NULL;

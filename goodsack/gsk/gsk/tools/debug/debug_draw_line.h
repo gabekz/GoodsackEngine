@@ -10,6 +10,6 @@
 #include "util/maths.h"
 
 void
-debug_draw_line(DebugContext *debugContext, vec3 start, vec3 end);
+gsk_debug_draw_line(gsk_DebugContext *debugContext, vec3 start, vec3 end);
 
 #endif // __DEBUG_DRAW_LINE_H__

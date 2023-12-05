@@ -248,7 +248,7 @@ extern "C" {
     std::cout << header2 << std::endl;
 
     // Create initializer Component Register
-    std::cout << "static inline void\n_ecs_init_internal_gen(ECS *ecs) {"
+    std::cout << "static inline void\n_ecs_init_internal_gen(gsk_ECS *ecs) {"
               << std::endl;
     for (const auto &p : map) {
         std::string nameUpper = p.first;

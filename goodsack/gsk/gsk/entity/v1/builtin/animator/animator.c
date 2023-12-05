@@ -13,13 +13,13 @@
 #include "entity/__generated__/components_gen.h"
 
 static void
-init(Entity e)
+init(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_ANIMATOR))) return;
-    if (!(ecs_has(e, C_MODEL))) return;
+    if (!(gsk_ecs_has(e, C_ANIMATOR))) return;
+    if (!(gsk_ecs_has(e, C_MODEL))) return;
 
-    struct ComponentAnimator *animator = ecs_get(e, C_ANIMATOR);
-    struct ComponentModel *model       = ecs_get(e, C_MODEL);
+    struct ComponentAnimator *animator = gsk_ecs_get(e, C_ANIMATOR);
+    struct ComponentModel *model       = gsk_ecs_get(e, C_MODEL);
 
     gsk_Mesh *mesh = model->mesh;
 
@@ -40,13 +40,13 @@ init(Entity e)
 }
 
 static void
-update(Entity e)
+update(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_ANIMATOR))) return;
-    if (!(ecs_has(e, C_MODEL))) return;
+    if (!(gsk_ecs_has(e, C_ANIMATOR))) return;
+    if (!(gsk_ecs_has(e, C_MODEL))) return;
 
-    struct ComponentAnimator *animator = ecs_get(e, C_ANIMATOR);
-    struct ComponentModel *model       = ecs_get(e, C_MODEL);
+    struct ComponentAnimator *animator = gsk_ecs_get(e, C_ANIMATOR);
+    struct ComponentModel *model       = gsk_ecs_get(e, C_MODEL);
     gsk_Mesh *mesh                         = model->mesh;
 
     if (!mesh->meshData->isSkinnedMesh) return;
@@ -103,14 +103,14 @@ update(Entity e)
 }
 
 void
-s_animator_init(ECS *ecs)
+s_animator_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
-    ecs_system_register(ecs,
-                        ((ECSSystem) {
-                          .init    = (ECSSubscriber)init,
+    gsk_ecs_system_register(ecs,
+                        ((gsk_ECSSystem) {
+                          .init    = (gsk_ECSSubscriber)init,
                           .destroy = NULL,
                           .render  = NULL,
-                          .update  = (ECSSubscriber)update,
+                          .update  = (gsk_ECSSubscriber)update,
                         }));
 }

@@ -14,9 +14,9 @@
 #include <AL/al.h>
 
 static void
-init(Entity e)
+init(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_AUDIOLISTENER))) return;
+    if (!(gsk_ecs_has(e, C_AUDIOLISTENER))) return;
 
     // TODO: Move initialization out of here. Should be initializing
     // Audio device in main program.
@@ -24,23 +24,23 @@ init(Entity e)
 }
 
 static void
-update(Entity e)
+update(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_AUDIOLISTENER))) return;
+    if (!(gsk_ecs_has(e, C_AUDIOLISTENER))) return;
 
     // AL_CHECK(alListener3f(AL_POSITION, 0, 0, 1.0f));
     // AL_CHECK(alListener3f(AL_VELOCITY, 0, 0, 0));
 
-    if ((ecs_has(e, C_TRANSFORM))) {
-        struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    if ((gsk_ecs_has(e, C_TRANSFORM))) {
+        struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
         AL_CHECK(alListener3f(AL_POSITION,
                               transform->position[0],
                               transform->position[1],
                               transform->position[2]));
         AL_CHECK(alListener3f(AL_VELOCITY, 0, 0, 0));
 
-        if ((ecs_has(e, C_CAMERA))) {
-            struct ComponentCamera *camera = ecs_get(e, C_CAMERA);
+        if ((gsk_ecs_has(e, C_CAMERA))) {
+            struct ComponentCamera *camera = gsk_ecs_get(e, C_CAMERA);
             ALfloat listenerOrientation[]  = {
               // View
               camera->front[0],
@@ -57,15 +57,15 @@ update(Entity e)
 }
 
 void
-s_audio_listener_init(ECS *ecs)
+s_audio_listener_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(
     // ecs, C_AUDIO_LISTENER, sizeof(struct ComponentAudioListener));
-    ecs_system_register(ecs,
-                        ((ECSSystem) {
-                          .init    = (ECSSubscriber)init,
+    gsk_ecs_system_register(ecs,
+                        ((gsk_ECSSystem) {
+                          .init    = (gsk_ECSSubscriber)init,
                           .destroy = NULL,
                           .render  = NULL,
-                          .update  = (ECSSubscriber)update,
+                          .update  = (gsk_ECSSubscriber)update,
                         }));
 }

@@ -26,7 +26,7 @@ ALuint
 openal_buffer_create(const char *filePath)
 {
     // Load .wav file
-    AudioData *rawData = load_wav(filePath);
+    gsk_AudioData *rawData = gsk_load_wav(filePath);
     ALenum format      = FileToEnum(rawData->numChannels, rawData->samples);
 
     ALuint buffer;

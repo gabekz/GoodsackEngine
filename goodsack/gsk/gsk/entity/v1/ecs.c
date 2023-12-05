@@ -29,14 +29,14 @@
 #include "entity/__generated__/components_gen.h"
 #endif
 
-ECS *
-ecs_init(gsk_Renderer *renderer)
+gsk_ECS *
+gsk_ecs_init(gsk_Renderer *renderer)
 {
-    ECS *ecs = malloc(sizeof(ECS));
+    gsk_ECS *ecs = malloc(sizeof(gsk_ECS));
 
     // Initialize entity capacity
     ui32 capacity  = 64;
-    ecs->ids       = malloc(capacity * sizeof(EntityId));
+    ecs->ids       = malloc(capacity * sizeof(gsk_EntityId));
     ecs->capacity  = capacity;
     ecs->nextId    = 1;
     ecs->nextIndex = 0;
@@ -45,7 +45,7 @@ ecs_init(gsk_Renderer *renderer)
 
     // Initialize systems and components
     ecs->systems_size = 0;
-    ecs->systems      = malloc(1 * sizeof(ECSSystem));
+    ecs->systems      = malloc(1 * sizeof(gsk_ECSSystem));
 
     s_transform_init(ecs);
 
@@ -68,8 +68,8 @@ ecs_init(gsk_Renderer *renderer)
     return ecs;
 }
 
-Entity
-ecs_new(ECS *self)
+gsk_Entity
+gsk_ecs_new(gsk_ECS *self)
 {
     ui32 capacity = self->capacity;
     // check if we have available capcity
@@ -78,8 +78,8 @@ ecs_new(ECS *self)
         // TODO: Reallocate component lists
     }
 
-    Entity entity =
-      (Entity) {.id    = self->nextId,
+    gsk_Entity entity =
+      (gsk_Entity) {.id    = self->nextId,
                 .index = self->nextIndex, // TODO: alignment (for deletion)
                 .ecs   = self};
 
@@ -93,10 +93,10 @@ ecs_new(ECS *self)
 }
 
 void
-_ecs_add_internal(Entity entity, ui32 component_id, void *value)
+_gsk_ecs_add_internal(gsk_Entity entity, ui32 component_id, void *value)
 {
-    ECS *ecs               = entity.ecs;
-    ECSComponentList *list = &ecs->component_lists[component_id];
+    gsk_ECS *ecs               = entity.ecs;
+    gsk_ECSComponentList *list = &ecs->component_lists[component_id];
     ui32 size              = (entity.index * ECS_TAG_SIZE) +
                 (list->component_size * (entity.index + 1));
     // printf("index of tag for Entity [%d]: %d", entity.index, size);
@@ -114,7 +114,7 @@ _ecs_add_internal(Entity entity, ui32 component_id, void *value)
     ui32 index =
       (entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index));
     if (value != NULL) {
-        memcpy((char *)((char *)((ECSComponentList *)list->components) + index),
+        memcpy((char *)((char *)((gsk_ECSComponentList *)list->components) + index),
                value,
                list->component_size);
         // list = realloc(list, list.components_size+1 * sizeof());
@@ -122,9 +122,9 @@ _ecs_add_internal(Entity entity, ui32 component_id, void *value)
 }
 
 int
-ecs_has(Entity entity, ECSComponentType component_id)
+gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id)
 {
-    ECSComponentList *list = &entity.ecs->component_lists[component_id];
+    gsk_ECSComponentList *list = &entity.ecs->component_lists[component_id];
 
     ui32 size = (entity.index * ECS_TAG_SIZE) +
                 (list->component_size * (entity.index + 1));
@@ -140,10 +140,10 @@ ecs_has(Entity entity, ECSComponentType component_id)
 }
 
 void *
-ecs_get(Entity entity, ECSComponentType component_id)
+gsk_ecs_get(gsk_Entity entity, ECSComponentType component_id)
 {
-    assert(ecs_has(entity, component_id));
-    ECSComponentList *list = &entity.ecs->component_lists[component_id];
+    assert(gsk_ecs_has(entity, component_id));
+    gsk_ECSComponentList *list = &entity.ecs->component_lists[component_id];
 
     ui32 size =
       ((entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index)));
@@ -152,7 +152,7 @@ ecs_get(Entity entity, ECSComponentType component_id)
     // printf("\necs_get - id: %d, index %d, id: %d", component_id, size,
     // entity.id);
     return (
-      char *)((char *)(ECSComponentList *)(entity.ecs
+      char *)((char *)(gsk_ECSComponentList *)(entity.ecs
                                              ->component_lists[component_id]
                                              .components) +
               size);
@@ -160,11 +160,11 @@ ecs_get(Entity entity, ECSComponentType component_id)
 }
 
 void
-ecs_system_register(ECS *self, ECSSystem system)
+gsk_ecs_system_register(gsk_ECS *self, gsk_ECSSystem system)
 {
     ui32 newSize = self->systems_size + 1;
 
-    ECSSystem *p  = realloc(self->systems, newSize * sizeof(ECSSystem));
+    gsk_ECSSystem *p  = realloc(self->systems, newSize * sizeof(gsk_ECSSystem));
     self->systems = p;
 
     self->systems[newSize - 1] = system;
@@ -172,7 +172,7 @@ ecs_system_register(ECS *self, ECSSystem system)
 }
 
 void
-ecs_component_register(ECS *self, ui32 component_id, ui64 size)
+gsk_ecs_component_register(gsk_ECS *self, ui32 component_id, ui64 size)
 {
     self->component_lists[component_id].component_size = size;
     ui32 aSize                                         = size + ECS_TAG_SIZE;
@@ -188,19 +188,19 @@ ecs_component_register(ECS *self, ui32 component_id, ui64 size)
 }
 
 void
-ecs_event(ECS *self, enum ECSEvent event)
+gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
 {
 
     // Loop through each system, fire the appropriate event
     for (int i = 0; i < self->systems_size; i++) {
-        ECSSubscriber func = self->systems[i].subscribers[event];
+        gsk_ECSSubscriber func = self->systems[i].subscribers[event];
         if (func == NULL) {
             // func();
             continue;
         }
         // Call the function per-entity
         for (int j = 0; j < self->nextIndex; j++) {
-            Entity e = (Entity) {.id = self->ids[j], .index = j, .ecs = self};
+            gsk_Entity e = (gsk_Entity) {.id = self->ids[j], .index = j, .ecs = self};
             func(e);
         }
     }

@@ -9,7 +9,7 @@
 #include "core/drivers/opengl/opengl.h"
 #include "core/graphics/material/material.h"
 
-typedef struct DebugContext
+typedef struct gsk_DebugContext
 {
     VAO *vaoCube;
     VAO *vaoBoundingBox;
@@ -17,9 +17,9 @@ typedef struct DebugContext
 
     VAO *vaoLine; // VAO for debug draw line
 
-} DebugContext;
+} gsk_DebugContext;
 
-DebugContext *
-debug_context_init();
+gsk_DebugContext *
+gsk_debug_context_init();
 
 #endif // __DEBUG_CONTEXT_H__

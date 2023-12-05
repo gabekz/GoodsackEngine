@@ -14,18 +14,18 @@
 #if USING_GENERATED_COMPONENTS
 #define _ECS_DECL_COMPONENT(_self, _id, _size) void()
 #define _ECS_DECL_COMPONENT_INTERN(_self, _id, _size) \
-    ecs_component_register(_self, _id, _size)
+    gsk_ecs_component_register(_self, _id, _size)
 #else
 #define _ECS_DECL_COMPONENT(_self, _id, _size) \
-    ecs_component_register(_self, _id, _size)
+    gsk_ecs_component_register(_self, _id, _size)
 #endif
 
 #define _ecs_add3(e, c, v)                \
     ({                                    \
         __typeof__(v) _v = (v);           \
-        _ecs_add_internal((e), (c), &_v); \
+        _gsk_ecs_add_internal((e), (c), &_v); \
     })
-#define _ecs_add2(e, c) _ecs_add_internal((e), (c), NULL)
+#define _ecs_add2(e, c) _gsk_ecs_add_internal((e), (c), NULL)
 
 #define _ecs_add_overload(_1, _2, _3, NAME, ...) NAME
 #define ecs_add(...) \
@@ -35,15 +35,16 @@
 extern "C" {
 #endif
 
-typedef struct _ecs_entity Entity;
-typedef union _ecs_system ECSSystem;
-typedef struct _ecs_component_list ECSComponentList;
+typedef struct gsk_Entity gsk_Entity;
+typedef union gsk_ECSSystem gsk_ECSSystem;
+typedef struct gsk_ECSComponentList gsk_ECSComponentList;
 
-typedef void (*ECSSubscriber)(Entity);
-typedef ui64 EntityId;
+typedef void (*gsk_ECSSubscriber)(gsk_Entity);
+typedef ui64 gsk_EntityId;
 
-typedef struct _ecs ECS;
+typedef struct gsk_ECS gsk_ECS;
 
+// TODO: Fix this placement (dep-cyclical issue)
 #include <core/graphics/renderer/v1/renderer.h>
 
 #if USING_GENERATED_COMPONENTS
@@ -79,16 +80,16 @@ inline void _ecs_init_internal(ECS *ecs) {
 
 /*-------------------------------------------*/
 
-struct _ecs_entity
+struct gsk_Entity
 {
-    EntityId id;
+    gsk_EntityId id;
     ui64 index;
-    ECS *ecs;
+    gsk_ECS *ecs;
 };
 
 /*-------------------------------------------*/
 
-struct _ecs_component_list
+struct gsk_ECSComponentList
 {
     void *components;
     ui64 component_size;
@@ -96,52 +97,52 @@ struct _ecs_component_list
     ui64 *entity_index_list;
 };
 
-struct _ecs
+struct gsk_ECS
 {
-    EntityId *ids, nextId;
+    gsk_EntityId *ids, nextId;
     ui32 nextIndex;
     ui32 capacity;
 
     gsk_Renderer *renderer;
 
-    ECSComponentList component_lists[ECSCOMPONENT_LAST + 1];
-    ECSSystem *systems;
+    gsk_ECSComponentList component_lists[ECSCOMPONENT_LAST + 1];
+    gsk_ECSSystem *systems;
     ui32 systems_size;
 };
 
 /*-------------------------------------------*/
 
-union _ecs_system {
+union gsk_ECSSystem {
     struct
     {
-        ECSSubscriber init, destroy, render, update, late_update;
+        gsk_ECSSubscriber init, destroy, render, update, late_update;
     };
 
-    ECSSubscriber subscribers[ECSEVENT_LAST + 1];
+    gsk_ECSSubscriber subscribers[ECSEVENT_LAST + 1];
 };
 
 void
-_ecs_add_internal(Entity entity, ui32 component_id, void *value);
+_gsk_ecs_add_internal(gsk_Entity entity, ui32 component_id, void *value);
 
 /*-------------------------------------------*/
 
-ECS *
-ecs_init(gsk_Renderer *renderer);
-Entity
-ecs_new(ECS *self);
+gsk_ECS *
+gsk_ecs_init(gsk_Renderer *renderer);
+gsk_Entity
+gsk_ecs_new(gsk_ECS *self);
 
 int
-ecs_has(Entity entity, ECSComponentType component_id);
+gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id);
 void *
-ecs_get(Entity entity, ECSComponentType component_id);
+gsk_ecs_get(gsk_Entity entity, ECSComponentType component_id);
 
 void
-ecs_system_register(ECS *self, ECSSystem system);
+gsk_ecs_system_register(gsk_ECS *self, gsk_ECSSystem system);
 void
-ecs_component_register(ECS *self, ui32 component_id, ui64 size);
+gsk_ecs_component_register(gsk_ECS *self, ui32 component_id, ui64 size);
 
 void
-ecs_event(ECS *self, enum ECSEvent event);
+gsk_ecs_event(gsk_ECS *self, enum ECSEvent event);
 
 #ifdef __cplusplus
 }

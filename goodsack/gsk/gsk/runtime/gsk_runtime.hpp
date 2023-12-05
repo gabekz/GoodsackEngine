@@ -30,7 +30,7 @@ gsk_runtime_setup(const char *project_root, int argc, char *argv[]);
 void
 gsk_runtime_loop();
 
-ECS *
+gsk_ECS *
 gsk_runtime_get_ecs();
 gsk_Renderer *
 gsk_runtime_get_renderer();

@@ -11,20 +11,20 @@
 #include "entity/v1/builtin/transform/transform.h"
 
 void
-camera_input(Entity cameraEntity, GLFWwindow *window)
+camera_input(gsk_Entity cameraEntity, GLFWwindow *window)
 {
 
-    if (!ecs_has(cameraEntity, C_CAMERA) ||
-        !ecs_has(cameraEntity, C_CAMERAMOVEMENT) ||
-        !ecs_has(cameraEntity, C_TRANSFORM)) {
+    if (!gsk_ecs_has(cameraEntity, C_CAMERA) ||
+        !gsk_ecs_has(cameraEntity, C_CAMERAMOVEMENT) ||
+        !gsk_ecs_has(cameraEntity, C_TRANSFORM)) {
         LOG_ERROR("camera_input() has incorrect component dependencies!");
         return;
     }
 
-    struct ComponentCamera *camera = ecs_get(cameraEntity, C_CAMERA);
+    struct ComponentCamera *camera = gsk_ecs_get(cameraEntity, C_CAMERA);
     struct ComponentCameraMovement *cameraMovement =
-      ecs_get(cameraEntity, C_CAMERAMOVEMENT);
-    struct ComponentTransform *transform = ecs_get(cameraEntity, C_TRANSFORM);
+      gsk_ecs_get(cameraEntity, C_CAMERAMOVEMENT);
+    struct ComponentTransform *transform = gsk_ecs_get(cameraEntity, C_TRANSFORM);
 
     float *p     = GLM_VEC3_ZERO;
     float *cross = GLM_VEC3_ZERO;

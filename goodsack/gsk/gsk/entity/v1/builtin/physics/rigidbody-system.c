@@ -22,13 +22,13 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
                 struct ComponentTransform *transform,
                 gsk_CollisionResult *collision_result);
 static void
-init(Entity e)
+init(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_RIGIDBODY))) return;
-    if (!(ecs_has(e, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
 
-    struct ComponentRigidbody *rigidbody = ecs_get(e, C_RIGIDBODY);
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
     glm_vec3_zero(rigidbody->force);
     glm_vec3_zero(rigidbody->velocity);
@@ -43,15 +43,15 @@ init(Entity e)
 }
 
 static void
-update(Entity e)
+update(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_RIGIDBODY))) return;
-    if (!(ecs_has(e, C_COLLIDER))) return;
-    if (!(ecs_has(e, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
+    if (!(gsk_ecs_has(e, C_COLLIDER))) return;
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
 
-    struct ComponentRigidbody *rigidbody = ecs_get(e, C_RIGIDBODY);
-    struct ComponentCollider *collider   = ecs_get(e, C_COLLIDER);
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
+    struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
     // --
     // -- Add gravity to net force (mass considered)
@@ -239,14 +239,14 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
 }
 
 void
-s_rigidbody_system_init(ECS *ecs)
+s_rigidbody_system_init(gsk_ECS *ecs)
 {
-    ecs_system_register(ecs,
-                        ((ECSSystem) {
-                          .init        = (ECSSubscriber)init,
+    gsk_ecs_system_register(ecs,
+                        ((gsk_ECSSystem) {
+                          .init        = (gsk_ECSSubscriber)init,
                           .destroy     = NULL,
                           .render      = NULL,
-                          .update      = (ECSSubscriber)update,
+                          .update      = (gsk_ECSSubscriber)update,
                           .late_update = NULL,
                         }));
 }

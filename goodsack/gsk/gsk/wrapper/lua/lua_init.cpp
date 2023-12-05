@@ -21,7 +21,7 @@
 
 
 void
-LuaInit(const char *file, ECS *ecs)
+LuaInit(const char *file, gsk_ECS *ecs)
 {
     lua_State *L = luaL_newstate();
     luaL_openlibs(L);

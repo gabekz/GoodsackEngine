@@ -12,11 +12,11 @@
 #include "entity/v1/builtin/transform/transform.h"
 
 static void
-init(Entity e)
+init(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_AUDIOSOURCE))) return;
+    if (!(gsk_ecs_has(e, C_AUDIOSOURCE))) return;
 
-    struct ComponentAudioSource *audioSource = ecs_get(e, C_AUDIOSOURCE);
+    struct ComponentAudioSource *audioSource = gsk_ecs_get(e, C_AUDIOSOURCE);
 
     audioSource->bufferId = openal_generate_source(audioSource->filePath);
 
@@ -31,14 +31,14 @@ init(Entity e)
 }
 
 static void
-update(Entity e)
+update(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_AUDIOSOURCE))) return;
-    struct ComponentAudioSource *audioSource = ecs_get(e, C_AUDIOSOURCE);
+    if (!(gsk_ecs_has(e, C_AUDIOSOURCE))) return;
+    struct ComponentAudioSource *audioSource = gsk_ecs_get(e, C_AUDIOSOURCE);
 
     // Update position relative to transform
-    if ((ecs_has(e, C_TRANSFORM))) {
-        struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    if ((gsk_ecs_has(e, C_TRANSFORM))) {
+        struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
         AL_CHECK(alSource3f(audioSource->bufferId,
                             AL_POSITION,
                             transform->position[0],
@@ -51,15 +51,15 @@ update(Entity e)
 }
 
 void
-s_audio_source_init(ECS *ecs)
+s_audio_source_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(
     //  ecs, C_AUDIO_SOURCE, sizeof(struct ComponentAudioSource));
-    ecs_system_register(ecs,
-                        ((ECSSystem) {
-                          .init    = (ECSSubscriber)init,
+    gsk_ecs_system_register(ecs,
+                        ((gsk_ECSSystem) {
+                          .init    = (gsk_ECSSubscriber)init,
                           .destroy = NULL,
                           .render  = NULL,
-                          .update  = (ECSSubscriber)update,
+                          .update  = (gsk_ECSSubscriber)update,
                         }));
 }

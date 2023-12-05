@@ -9,6 +9,6 @@
 #include "entity/v1/ecs.h"
 
 void
-s_rigidbody_system_init(ECS *ecs);
+s_rigidbody_system_init(gsk_ECS *ecs);
 
 #endif // __RIGIDBODY_SYSTEM_H__

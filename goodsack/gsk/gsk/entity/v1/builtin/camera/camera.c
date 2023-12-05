@@ -77,7 +77,7 @@ _initialize_shader_data(struct ComponentCamera *camera)
 }
 
 static void
-_upload_shader_data(Entity e,
+_upload_shader_data(gsk_Entity e,
                     struct ComponentCamera *camera,
                     struct ComponentTransform *transform)
 {
@@ -123,13 +123,13 @@ _upload_shader_data(Entity e,
 }
 
 static void
-init(Entity e)
+init(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_CAMERA))) return;
-    if (!(ecs_has(e, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(e, C_CAMERA))) return;
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
 
-    struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    struct ComponentCamera *camera       = gsk_ecs_get(e, C_CAMERA);
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
     // TODO: remove camera-> screenWidth/screenHeight
     camera->screenWidth  = e.ecs->renderer->windowWidth;
@@ -148,8 +148,8 @@ init(Entity e)
 
     // Camera Look //
 
-    if (!(ecs_has(e, C_CAMERALOOK))) return;
-    struct ComponentCameraLook *cameraLook = ecs_get(e, C_CAMERALOOK);
+    if (!(gsk_ecs_has(e, C_CAMERALOOK))) return;
+    struct ComponentCameraLook *cameraLook = gsk_ecs_get(e, C_CAMERALOOK);
 
     cameraLook->lastX = e.ecs->renderer->windowWidth / 2;
     cameraLook->lastY = e.ecs->renderer->windowHeight / 2;
@@ -160,18 +160,18 @@ init(Entity e)
 }
 
 static void
-update(Entity e)
+update(gsk_Entity e)
 {
-    if (!(ecs_has(e, C_CAMERA))) return;
-    if (!(ecs_has(e, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(e, C_CAMERA))) return;
+    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
 
-    struct ComponentCamera *camera       = ecs_get(e, C_CAMERA);
-    struct ComponentTransform *transform = ecs_get(e, C_TRANSFORM);
+    struct ComponentCamera *camera       = gsk_ecs_get(e, C_CAMERA);
+    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
-    if (ecs_has(e, C_CAMERALOOK)) {
+    if (gsk_ecs_has(e, C_CAMERALOOK)) {
 
         struct ComponentCameraLook *cameraLook =
-          ecs_get(e, C_CAMERALOOK); // TODO: Move away
+          gsk_ecs_get(e, C_CAMERALOOK); // TODO: Move away
 
         Input input = device_getInput();
         double cntX, cntY;
@@ -267,12 +267,12 @@ update(Entity e)
     // glm_mat4_copy(camera->view, transform->model);
 
     if (transform->hasParent &&
-        ecs_has(*(Entity *)transform->parent, C_CAMERA)) {
+        gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA)) {
 
         struct ComponentTransform *parent =
-          ecs_get(*(Entity *)transform->parent, C_TRANSFORM);
+          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
         struct ComponentCamera *parentCam =
-          ecs_get(*(Entity *)transform->parent, C_CAMERA);
+          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_CAMERA);
 
         glm_vec3_copy(parent->position, transform->position);
         glm_mat4_copy(parentCam->view, camera->view);
@@ -308,14 +308,14 @@ update(Entity e)
 }
 
 void
-s_camera_init(ECS *ecs)
+s_camera_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(ecs, C_CAMERA, sizeof(struct ComponentCamera));
-    ecs_system_register(ecs,
-                        ((ECSSystem) {
-                          .init    = (ECSSubscriber)init,
+    gsk_ecs_system_register(ecs,
+                        ((gsk_ECSSystem) {
+                          .init    = (gsk_ECSSubscriber)init,
                           .destroy = NULL,
                           .render  = NULL,
-                          .update  = (ECSSubscriber)update,
+                          .update  = (gsk_ECSSubscriber)update,
                         }));
 }

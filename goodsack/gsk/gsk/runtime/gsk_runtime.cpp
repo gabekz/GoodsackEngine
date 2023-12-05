@@ -30,7 +30,7 @@
 extern "C" {
 static struct
 {
-    ECS *ecs;
+    gsk_ECS *ecs;
     gsk_Renderer *renderer;
 
 #if GSK_RUNTIME_USE_DEBUG
@@ -211,11 +211,11 @@ gsk_runtime_loop()
         } else if (DEVICE_API_VULKAN) {
             glfwPollEvents();
             // debugGui->Update();
-            ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
+            gsk_ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
             vulkan_render_draw_begin(s_runtime.renderer->vulkanDevice,
                                      s_runtime.renderer->window);
             s_runtime.renderer->currentPass = REGULAR;
-            ecs_event(s_runtime.ecs, ECS_RENDER);
+            gsk_ecs_event(s_runtime.ecs, ECS_RENDER);
 
 #if GSK_RUNTIME_USE_DEBUG
             s_runtime.p_debug_toolbar->render();
@@ -241,7 +241,7 @@ gsk_runtime_loop()
     glfwTerminate();
 }
 
-ECS *
+gsk_ECS *
 gsk_runtime_get_ecs()
 {
     return s_runtime.ecs;

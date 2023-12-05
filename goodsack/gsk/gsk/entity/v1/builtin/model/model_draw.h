@@ -9,6 +9,6 @@
 #include "entity/v1/ecs.h"
 
 void
-s_model_draw_init(ECS *ecs);
+s_model_draw_init(gsk_ECS *ecs);
 
 #endif // __MODEL_DRAW_H__

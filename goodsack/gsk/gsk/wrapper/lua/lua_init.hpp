@@ -13,6 +13,6 @@
 #define LUA_INIT_FILE_PATH "gsk://../gsk/gsk/api/lua/init.lua"
 
 void
-LuaInit(const char *file, ECS *ecs);
+LuaInit(const char *file, gsk_ECS *ecs);
 
 #endif // __LUA_INIT_H__

@@ -30,7 +30,7 @@ gsk_model_load_from_file(const char *path, f32 scale, ui16 importMaterials)
     // Check file extension
     if (!strcmp(ext, ".obj")) {
         model           = malloc(sizeof(gsk_Model));
-        gsk_MeshData *mesh0 = load_obj(path, 1.0f); // always importing with
+        gsk_MeshData *mesh0 = gsk_load_obj(path, 1.0f); // always importing with
                                                 // scale 1.0 here
 
         model->meshes      = malloc(sizeof(gsk_Mesh *) * 1);

@@ -23,7 +23,7 @@ enum ECSEvent {
 #define ECSEVENT_FIRST ECS_INIT
 #define ECSEVENT_LAST  ECS_LATE_UPDATE
 
-#define ECSEVENT_STRING(x) (_ecs_EventToString(x))
+#define ECSEVENT_STRING(x) (_gsk_ecs_EventToString(x))
 
 #define ECS_TAG_SIZE   1 // Tag size as bytes
 #define ECS_TAG_UNUSED 0b00000000
@@ -46,7 +46,7 @@ extern "C" {
 
 // Event enum as a [Lua] function name
 inline const char *
-_ecs_EventToString(int event)
+_gsk_ecs_EventToString(int event)
 {
     switch (event) {
     case ECS_INIT: return "start";

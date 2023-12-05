@@ -9,7 +9,7 @@
 #include "tools/debug/debug_context.h"
 #include "util/maths.h"
 
-// NOTE: should take DebugContext -> contains shader information
+// NOTE: should take gsk_DebugContext -> contains shader information
 
 // Line start: 0, 0, 0
 // Line direction: 0, 1, 0
@@ -17,7 +17,7 @@
 // Line end: 0, 100, 0
 
 void
-debug_draw_line(DebugContext *debugContext, vec3 start, vec3 end)
+gsk_debug_draw_line(gsk_DebugContext *debugContext, vec3 start, vec3 end)
 {
     float vertices[] = {start[0], start[1], start[2], end[0], end[1], end[2]};
 

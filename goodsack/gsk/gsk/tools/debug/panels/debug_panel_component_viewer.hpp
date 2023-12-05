@@ -18,10 +18,10 @@ class ComponentViewer : public DebugPanel {
     _DECL_DEBUG_PANEL(ComponentViewer);
     virtual void draw(void);
 
-    void show_for_entity(Entity entity);
+    void show_for_entity(gsk_Entity entity);
 
    private:
-    Entity selected_entity;
+    gsk_Entity selected_entity;
 };
 
 } // namespace panels

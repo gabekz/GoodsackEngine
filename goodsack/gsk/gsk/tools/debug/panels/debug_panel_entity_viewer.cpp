@@ -24,7 +24,7 @@ gsk::tools::panels::EntityViewer::draw(void)
     using namespace ImGui;
 
     // Get current scene
-    ECS *ecs = p_renderer->sceneL[p_renderer->activeScene]->ecs;
+    gsk_ECS *ecs = p_renderer->sceneL[p_renderer->activeScene]->ecs;
 
 #if 0
         ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow |
@@ -42,8 +42,8 @@ gsk::tools::panels::EntityViewer::draw(void)
             if (i == node_clicked) node_flags |= ImGuiTreeNodeFlags_Selected;
 
             // Grab entity by ID
-            Entity e =
-              (Entity {.id = (EntityId)i, .index = (ui64)i, .ecs = ecs});
+            gsk_Entity e =
+              (gsk_Entity {.id = (gsk_EntityId)i, .index = (ui64)i, .ecs = ecs});
 
             std::string str = std::to_string(e.index) + " | ";
             str += "Entity id: " + std::to_string(e.id);
@@ -123,7 +123,7 @@ gsk::tools::panels::EntityViewer::draw(void)
                 TextUnformatted("Entity");
                 TableNextColumn();
                 if (SmallButton("Inspect")) {
-                    Entity entity = (Entity {.id    = (EntityId)row_n + 1,
+                    gsk_Entity entity = (gsk_Entity {.id    = (gsk_EntityId)row_n + 1,
                                              .index = (ui64)row_n,
                                              .ecs   = ecs});
 

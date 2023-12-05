@@ -22,6 +22,6 @@ struct ComponentAnimator
 #endif
 
 void
-s_animator_init(ECS *ecs);
+s_animator_init(gsk_ECS *ecs);
 
 #endif // __ANIMATOR_H__

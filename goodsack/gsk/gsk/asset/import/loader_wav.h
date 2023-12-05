@@ -14,17 +14,17 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct
+typedef struct gsk_AudioData
 {
     si32 sampleRate;
     ui32 numChannels, samples, dataSize;
     ui16 *data;
-} AudioData;
+} gsk_AudioData;
 
 // WAV file loader.
-// @return struct AudioData
-AudioData *
-load_wav(const char *filepath);
+// @return struct gsk_AudioData
+gsk_AudioData *
+gsk_load_wav(const char *filepath);
 
 #ifdef __cplusplus
 extern "C" {

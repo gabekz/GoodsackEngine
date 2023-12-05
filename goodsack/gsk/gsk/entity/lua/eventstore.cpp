@@ -46,7 +46,7 @@ LuaEventStore::GetInstance()
 }
 
 void
-LuaEventStore::Initialize(lua_State *L, ECS *ecs)
+LuaEventStore::Initialize(lua_State *L, gsk_ECS *ecs)
 {
     // create function store
     lua_newtable(L);
@@ -196,7 +196,7 @@ static void
 __create_table_for_entity_component(lua_State *L,
                                     const char *componentName,
                                     ECSComponentType componentType,
-                                    Entity entity)
+                                    gsk_Entity entity)
 {
 
     std::string a         = std::to_string(entity.id);
@@ -231,7 +231,7 @@ static void
 pushEntity(lua_State *L, int entityId)
 {
 
-    Entity entityCompare = {.id    = (EntityId)entityId,
+    gsk_Entity entityCompare = {.id    = (gsk_EntityId)entityId,
                             .index = (ui64)entityId,
                             .ecs   = LuaEventStore::GetInstance().m_ecs};
 
@@ -249,30 +249,30 @@ pushEntity(lua_State *L, int entityId)
     // TODO: Move create to separate function (per Component?)
     // use luaL_getmetatable(L, const char *tname)
 
-    if (ecs_has(entityCompare, C_CAMERA)) {
+    if (gsk_ecs_has(entityCompare, C_CAMERA)) {
         __create_table_for_entity_component(
           L, "Camera", C_CAMERA, entityCompare);
     }
-    if (ecs_has(entityCompare, C_CAMERALOOK)) {
+    if (gsk_ecs_has(entityCompare, C_CAMERALOOK)) {
         __create_table_for_entity_component(
           L, "CameraLook", C_CAMERALOOK, entityCompare);
     }
-    if (ecs_has(entityCompare, C_CAMERAMOVEMENT)) {
+    if (gsk_ecs_has(entityCompare, C_CAMERAMOVEMENT)) {
         __create_table_for_entity_component(
           L, "CameraMovement", C_CAMERAMOVEMENT, entityCompare);
     }
-    if (ecs_has(entityCompare, C_TRANSFORM)) {
+    if (gsk_ecs_has(entityCompare, C_TRANSFORM)) {
         __create_table_for_entity_component(
           L, "Transform", C_TRANSFORM, entityCompare);
     }
-    if (ecs_has(entityCompare, C_TEST)) {
+    if (gsk_ecs_has(entityCompare, C_TEST)) {
         __create_table_for_entity_component(L, "Test", C_TEST, entityCompare);
     }
-    if (ecs_has(entityCompare, C_WEAPON)) {
+    if (gsk_ecs_has(entityCompare, C_WEAPON)) {
         __create_table_for_entity_component(
           L, "Weapon", C_WEAPON, entityCompare);
     }
-    if (ecs_has(entityCompare, C_WEAPONSWAY)) {
+    if (gsk_ecs_has(entityCompare, C_WEAPONSWAY)) {
         __create_table_for_entity_component(
           L, "WeaponSway", C_WEAPONSWAY, entityCompare);
     }

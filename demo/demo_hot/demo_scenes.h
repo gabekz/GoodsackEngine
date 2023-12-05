@@ -33,7 +33,7 @@ enum DEMO_SCENE_NAMES {
 
 // Creates and loads every demo scene in this project.
 void
-demo_scenes_create(ECS *ecs, gsk_Renderer *renderer);
+demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer);
 
 #ifdef __cplusplus
 }
