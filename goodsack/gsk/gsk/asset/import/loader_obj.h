@@ -8,7 +8,7 @@
 
 #include "core/graphics/mesh/mesh.h"
 
-MeshData *
+gsk_MeshData *
 load_obj(const char *path, float scale);
 
 #endif // __LOADER_OBJ_H__

@@ -44,9 +44,9 @@ DrawModel(struct ComponentModel *model,
             printf("Disable culling");
         }
 #endif
-        Model *pModel = model->pModel;
+        gsk_Model *pModel = model->pModel;
         for (int i = 0; i < pModel->meshesCount; i++) {
-            Mesh *mesh = pModel->meshes[i];
+            gsk_Mesh *mesh = pModel->meshes[i];
             Material *material;
 
             // Select Material
@@ -86,7 +86,7 @@ DrawModel(struct ComponentModel *model,
             // Skinned Matrix array buffer
             if (mesh->meshData->isSkinnedMesh) {
                 mat4 skinnedMatrices[MAX_BONES];
-                Skeleton *pSkeleton = mesh->meshData->skeleton;
+                gsk_Skeleton *pSkeleton = mesh->meshData->skeleton;
                 for (int i = 0; i < pSkeleton->jointsCount; i++) {
                     glm_mat4_copy(pSkeleton->joints[i]->pose.mSkinningMatrix,
                                   skinnedMatrices[i]);
@@ -157,7 +157,7 @@ DrawModel(struct ComponentModel *model,
 
             vao_bind(mesh->vao);
 
-            MeshData *data = mesh->meshData;
+            gsk_MeshData *data = mesh->meshData;
             ui32 vertices  = data->vertexCount;
             ui32 indices   = data->indicesCount;
 
@@ -202,10 +202,10 @@ DrawModel(struct ComponentModel *model,
         // Bind Vertex/Index buffers
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(
-          commandBuffer, 0, 1, &((Mesh *)model->mesh)->vkVBO->buffer, offsets);
+          commandBuffer, 0, 1, &((gsk_Mesh *)model->mesh)->vkVBO->buffer, offsets);
 
         // Draw command
-        vkCmdDraw(commandBuffer, ((Mesh *)model->mesh)->vkVBO->size, 1, 0, 0);
+        vkCmdDraw(commandBuffer, ((gsk_Mesh *)model->mesh)->vkVBO->size, 1, 0, 0);
     }
 }
 
@@ -222,11 +222,11 @@ init(Entity e)
     // mesh->model = load_obj(mesh->modelPath, transform->scale[0]);
 
     if (DEVICE_API_OPENGL) {
-        if (!(Model *)model->pModel) {
-            model->pModel = model_load_from_file(
+        if (!(gsk_Model *)model->pModel) {
+            model->pModel = gsk_model_load_from_file(
               model->modelPath, transform->scale[0], FALSE);
         }
-        model->mesh = ((Model *)model->pModel)->meshes[0];
+        model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
         // send lightspace matrix from renderer to entity shader
         ShaderProgram *shader = ((Material *)model->material)->shaderProgram;
         shader_use(shader);
@@ -237,8 +237,8 @@ init(Entity e)
           (float *)e.ecs->renderer->lightSpaceMatrix);
         // TODO: send model matrix to shader
     } else if (DEVICE_API_VULKAN) {
-        model->mesh = malloc(sizeof(Mesh));
-        ((Mesh *)(model->mesh))->meshData =
+        model->mesh = malloc(sizeof(gsk_Mesh));
+        ((gsk_Mesh *)(model->mesh))->meshData =
           load_obj(model->modelPath, transform->scale[0]);
 
         VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
@@ -248,8 +248,8 @@ init(Entity e)
           context->device,
           context->graphicsQueue,
           context->commandPool,
-          ((Mesh *)model->mesh)->meshData->buffers.out,
-          ((Mesh *)model->mesh)->meshData->buffers.outI * sizeof(float));
+          ((gsk_Mesh *)model->mesh)->meshData->buffers.out,
+          ((gsk_Mesh *)model->mesh)->meshData->buffers.outI * sizeof(float));
     }
 }
 
@@ -289,7 +289,7 @@ render(Entity e)
 
 #if DEBUG_DRAW_BOUNDS
 
-        Model *pModel = model->pModel;
+        gsk_Model *pModel = model->pModel;
         for (int i = 0; i < pModel->meshesCount; i++) {
             Mesh *mesh = pModel->meshes[i];
             debug_draw_bounds(e.ecs->renderer->debugContext,

@@ -10,6 +10,6 @@
 #include "tools/debug/debug_context.h"
 
 void
-debug_draw_skeleton(DebugContext *debugContext, Skeleton *skeleton);
+debug_draw_skeleton(DebugContext *debugContext, gsk_Skeleton *skeleton);
 
 #endif // __DEBUG_DRAW_SKELETON_H__

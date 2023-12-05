@@ -21,14 +21,14 @@ init(Entity e)
     struct ComponentAnimator *animator = ecs_get(e, C_ANIMATOR);
     struct ComponentModel *model       = ecs_get(e, C_MODEL);
 
-    Mesh *mesh = model->mesh;
+    gsk_Mesh *mesh = model->mesh;
 
     if (!mesh->meshData->isSkinnedMesh) return;
 
-    Skeleton *skeleton   = mesh->meshData->skeleton;
-    Animation *animation = skeleton->animation;
+    gsk_Skeleton *skeleton   = mesh->meshData->skeleton;
+    gsk_Animation *animation = skeleton->animation;
 
-    animation_set_keyframe(animation, 0);
+    gsk_animation_set_keyframe(animation, 0);
 
     animator->cntAnimation = animation;
     animator->cntTime      = 0;
@@ -47,7 +47,7 @@ update(Entity e)
 
     struct ComponentAnimator *animator = ecs_get(e, C_ANIMATOR);
     struct ComponentModel *model       = ecs_get(e, C_MODEL);
-    Mesh *mesh                         = model->mesh;
+    gsk_Mesh *mesh                         = model->mesh;
 
     if (!mesh->meshData->isSkinnedMesh) return;
 
@@ -57,17 +57,17 @@ update(Entity e)
 
         if (animator->cntTime < animator->cntAnimation->keyframesCount-1) {
             animator->cntTime++;
-            animation_set_keyframe(animator->cntAnimation, animator->cntTime);
+            gsk_animation_set_keyframe(animator->cntAnimation, animator->cntTime);
         } else {
             animator->cntTime = 0;
-            animation_set_keyframe(animator->cntAnimation, 0);
+            gsk_animation_set_keyframe(animator->cntAnimation, 0);
         }
     }
 #else
 
     animator->timerNow += (device_getAnalytics().delta) * 1.0;
 
-    Animation *cntAnimation = animator->cntAnimation;
+    gsk_Animation *cntAnimation = animator->cntAnimation;
     if (animator->timerNow >= cntAnimation->duration) {
         animator->timerNow         = 0;
 
@@ -82,17 +82,17 @@ update(Entity e)
     // LOG_INFO("Timer: %.2f", animator->timerNow);
 
     ui32 cntKeyframeIndex = animator->cntKeyframeIndex;
-    Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
+    gsk_Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
 
     ui32 nxtKeyframeIndex = cntKeyframeIndex + 1;
-    Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];
+    gsk_Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];
 
     float ratio = (animator->timerNow - cntKeyframe->frameTime) /
                   (nxtKeyframe->frameTime - cntKeyframe->frameTime);
 
     if (ratio >= nxtKeyframe->frameTime) {
-        // animation_set_keyframe(animator->cntAnimation, 0);
-        animation_set_keyframe_lerp(
+        // gsk_animation_set_keyframe(animator->cntAnimation, 0);
+        gsk_animation_set_keyframe_lerp(
           animator->cntAnimation, nxtKeyframeIndex, ratio);
         animator->cntKeyframeIndex = nxtKeyframeIndex;
     }

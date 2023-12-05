@@ -22,7 +22,7 @@
 #define strtok_s(x, y, z) strtok_r(x, y, z)
 #endif
 
-MeshData *
+gsk_MeshData *
 load_obj(const char *path, float scale)
 {
 
@@ -203,7 +203,7 @@ load_obj(const char *path, float scale)
 #endif
 
     // Output
-    MeshData *ret    = malloc(sizeof(MeshData));
+    gsk_MeshData *ret    = malloc(sizeof(gsk_MeshData));
     ret->vertexCount = outI;
 
 #if 1 // Calcuate TBN for each triangle/vertex

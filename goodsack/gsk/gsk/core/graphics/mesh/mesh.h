@@ -30,8 +30,8 @@ extern "C" {
 // type of MESH
 // MESH_SKINNED
 
-// MeshData - API-agonstic buffer information
-typedef struct MeshData
+// gsk_MeshData - API-agonstic buffer information
+typedef struct gsk_MeshData
 {
     ui32 vertexCount;
     ui32 indicesCount;
@@ -56,7 +56,7 @@ typedef struct MeshData
     } buffers;
 
     // TODO: Move to model
-    Skeleton *skeleton;
+    gsk_Skeleton *skeleton;
     int isSkinnedMesh;
 
     // TODO: Move
@@ -64,12 +64,12 @@ typedef struct MeshData
 
     vec3 boundingBox[2];
 
-} MeshData;
+} gsk_MeshData;
 
-typedef struct Mesh
+typedef struct gsk_Mesh
 {
     // Mesh data
-    MeshData *meshData;
+    gsk_MeshData *meshData;
     mat4 localMatrix;
 
     // Mesh GPU buffers
@@ -79,7 +79,7 @@ typedef struct Mesh
     // Imported material data
     ui32 usingImportedMaterial;
     Material *materialImported;
-} Mesh;
+} gsk_Mesh;
 
 /**
  * Assemble mesh per Graphics API spec.
@@ -88,8 +88,8 @@ typedef struct Mesh
  * @param[in] mesh data
  * @return pointer to allocated Model structure.
  */
-Mesh *
-mesh_assemble(MeshData *meshData);
+gsk_Mesh *
+gsk_mesh_assemble(gsk_MeshData *meshData);
 
 #ifdef __cplusplus
 }

@@ -391,7 +391,7 @@ _scene4(ECS *ecs, Renderer *renderer)
     Material *matCharacter =
       material_create(NULL, "../res/shaders/skinning-test.shader", 0);
 
-    Model *modelCharacter = model_load_from_file(
+    gsk_Model *modelCharacter = gsk_model_load_from_file(
       "../demo/demo_hot/Resources/models/character-anim.gltf", 1, FALSE);
 
     Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
@@ -428,9 +428,9 @@ _scene5(ECS *ecs, Renderer *renderer)
     *pCamera        = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
     Entity e_camera = *pCamera;
 
-    Model *modelSponza =
-      // model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
-      model_load_from_file(GSK_PATH("data://models/sponza.glb"), 1, TRUE);
+    gsk_Model *modelSponza =
+      // gsk_model_load_from_file("../demo/demo_hot/Resources/models/AK.glb", 1);
+      gsk_model_load_from_file(GSK_PATH("data://models/sponza.glb"), 1, TRUE);
 
     Entity e_sponza = ecs_new(ecs);
     _ecs_add_internal(e_sponza,
@@ -642,11 +642,11 @@ _scene7(ECS *ecs, Renderer *renderer)
                                           texCerbS,
                                           texPbrAo);
 
-    Model *modelWeapon =
-      model_load_from_file(GSK_PATH("data://models/AK2.glb"), 1, FALSE);
+    gsk_Model *modelWeapon =
+      gsk_model_load_from_file(GSK_PATH("data://models/AK2.glb"), 1, FALSE);
 
-    Model *modelPlane =
-      model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
+    gsk_Model *modelPlane =
+      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
 
     /*----------------------
      |  Entities

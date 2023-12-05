@@ -9,11 +9,11 @@
 
 #include "util/sysdefs.h"
 
-Mesh *
+gsk_Mesh *
 primitive_mesh_create(ui32 shape, float scale)
 {
 
-    Mesh *ret = malloc(sizeof(Mesh));
+    gsk_Mesh *ret = malloc(sizeof(gsk_Mesh));
 
     switch (shape) {
     case PRIMITIVE_CUBE:

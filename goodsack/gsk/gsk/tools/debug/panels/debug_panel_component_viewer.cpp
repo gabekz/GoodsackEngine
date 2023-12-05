@@ -102,7 +102,7 @@ gsk::tools::panels::ComponentViewer::draw(void)
         PopStyleColor();
         Separator();
 
-        Text("Meshes: %u", ((Model *)p.pModel)->meshesCount);
+        Text("Meshes: %u", ((gsk_Model *)p.pModel)->meshesCount);
 
         bool shadowVal = true;
         BeginDisabled();

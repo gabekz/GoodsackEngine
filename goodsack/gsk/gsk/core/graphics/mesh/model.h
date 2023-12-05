@@ -23,20 +23,20 @@ typedef struct ModelOptions
 } TextureOptions;
 #endif
 
-typedef struct Model
+typedef struct gsk_Model
 {
 
     const char *modelPath;
 
-    Mesh **meshes;
+    gsk_Mesh **meshes;
     ui32 meshesCount;
 
     ModelFileType fileType;
 
-} Model;
+} gsk_Model;
 
-Model *
-model_load_from_file(const char *path, f32 scale, ui16 importMaterials);
+gsk_Model *
+gsk_model_load_from_file(const char *path, f32 scale, ui16 importMaterials);
 
 #ifdef __cplusplus
 }

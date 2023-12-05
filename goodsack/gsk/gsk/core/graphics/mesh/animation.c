@@ -11,16 +11,16 @@
 #include "core/graphics/mesh/mesh_helpers.inl"
 
 void
-animation_set_keyframe(Animation *animation, ui32 keyframe)
+gsk_animation_set_keyframe(gsk_Animation *animation, ui32 keyframe)
 {
-    Skeleton *skeleton = animation->pSkeleton;
+    gsk_Skeleton *skeleton = animation->pSkeleton;
     for (int i = 0; i < skeleton->jointsCount; i++) {
 
-        Pose currentPose = skeleton->joints[i]->pose;
-        Pose nextPose    = *animation->keyframes[keyframe]->poses[i];
+        gsk_Pose currentPose = skeleton->joints[i]->pose;
+        gsk_Pose nextPose    = *animation->keyframes[keyframe]->poses[i];
 
-        // Pose newPose = LERP(currentPose, newPose, t);
-        Pose newPose              = nextPose;
+        // gsk_Pose newPose = LERP(currentPose, newPose, t);
+        gsk_Pose newPose              = nextPose;
         skeleton->joints[i]->pose = nextPose;
 
         // Local
@@ -36,16 +36,16 @@ animation_set_keyframe(Animation *animation, ui32 keyframe)
 }
 
 void
-animation_set_keyframe_lerp(Animation *animation, ui32 keyframe, float ratio)
+gsk_animation_set_keyframe_lerp(gsk_Animation *animation, ui32 keyframe, float ratio)
 {
-    Skeleton *skeleton = animation->pSkeleton;
+    gsk_Skeleton *skeleton = animation->pSkeleton;
     for (int i = 0; i < skeleton->jointsCount; i++) {
 
         ui32 keyframeActual = keyframe;
-        Pose currentPose    = *animation->keyframes[keyframe - 1]->poses[i];
-        Pose nextPose       = *animation->keyframes[keyframe]->poses[i];
+        gsk_Pose currentPose    = *animation->keyframes[keyframe - 1]->poses[i];
+        gsk_Pose nextPose       = *animation->keyframes[keyframe]->poses[i];
 
-        Pose newPose;
+        gsk_Pose newPose;
 
         glm_vec3_lerp(currentPose.translation,
                       nextPose.translation,

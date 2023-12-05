@@ -86,11 +86,11 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
 
 // Animation Data
 
-static Animation *
-__fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
+static gsk_Animation *
+__fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
 {
     ui32 inputsCount     = gltfAnimation->samplers[0].input->count;
-    Keyframe **keyframes = malloc(sizeof(Keyframe *) * inputsCount);
+    gsk_Keyframe **keyframes = malloc(sizeof(gsk_Keyframe *) * inputsCount);
 
     // Get all frame-times
     float *frameTimes = malloc(inputsCount * sizeof(float));
@@ -99,14 +99,14 @@ __fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
           gltfAnimation->samplers[0].input, i, frameTimes + i, 8);
 
         // set keyframe information
-        keyframes[i]            = malloc(sizeof(Keyframe));
+        keyframes[i]            = malloc(sizeof(gsk_Keyframe));
         keyframes[i]->frameTime = frameTimes[i];
         keyframes[i]->index     = i;
 
-        keyframes[i]->poses = malloc(skeleton->jointsCount * sizeof(Pose *));
+        keyframes[i]->poses = malloc(skeleton->jointsCount * sizeof(gsk_Pose *));
 
         for (int j = 0; j < skeleton->jointsCount; j++) {
-            keyframes[i]->poses[j]            = malloc(sizeof(Pose));
+            keyframes[i]->poses[j]            = malloc(sizeof(gsk_Pose));
             keyframes[i]->poses[j]->hasMatrix = 0;
         }
     }
@@ -170,7 +170,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
     }
 
     // Animation data
-    Animation *animation      = malloc(sizeof(Animation));
+    gsk_Animation *animation      = malloc(sizeof(gsk_Animation));
     animation->duration       = frameTimes[inputsCount - 1];
     animation->keyframes      = keyframes;
     animation->keyframesCount = inputsCount;
@@ -192,14 +192,14 @@ __fill_animation_data(cgltf_animation *gltfAnimation, Skeleton *skeleton)
     return animation;
 }
 
-static Joint
-_create_joint_recurse(Skeleton *skeleton,
+static gsk_Joint
+_create_joint_recurse(gsk_Skeleton *skeleton,
                       ui32 id,
-                      Joint *parent,
+                      gsk_Joint *parent,
                       cgltf_node **jointsNode,
                       cgltf_skin *skinNode)
 {
-    Joint joint;
+    gsk_Joint joint;
     joint.id             = id;
     joint.name           = jointsNode[id]->name;
     joint.parent         = parent;
@@ -233,7 +233,7 @@ _create_joint_recurse(Skeleton *skeleton,
     glm_mat4_copy(matrixLocal, joint.pose.mTransform);
 
     // Allocate and assign
-    skeleton->joints[id]  = malloc(sizeof(Joint));
+    skeleton->joints[id]  = malloc(sizeof(gsk_Joint));
     *skeleton->joints[id] = joint;
 
     skeleton->jointsCount = id + 1;
@@ -252,10 +252,10 @@ _create_joint_recurse(Skeleton *skeleton,
 
 // Vertex Data
 
-static MeshData *
+static gsk_MeshData *
 _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 {
-    MeshData *ret = malloc(sizeof(MeshData));
+    gsk_MeshData *ret = malloc(sizeof(gsk_MeshData));
 
     // TODO: Get more than just the first primitive
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
@@ -340,7 +340,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // If we have a skinned mesh
     if (ret->isSkinnedMesh >= 1) {
 
-        Skeleton *skeleton = malloc(sizeof(Skeleton));
+        gsk_Skeleton *skeleton = malloc(sizeof(gsk_Skeleton));
         ret->skeleton      = skeleton;
 
         // Skeleton information //
@@ -356,7 +356,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
                  armatureNode->children_count);
 
         // List of all joints in skeleton
-        skeleton->joints = malloc(sizeof(Joint *) * data->skins->joints_count);
+        skeleton->joints = malloc(sizeof(gsk_Joint *) * data->skins->joints_count);
 
         // Create skeleton recursively
         _create_joint_recurse(
@@ -413,7 +413,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
               gltfAnimations[i].samplers_count,
               gltfAnimations[i].channels_count);
 
-            Animation *animation =
+            gsk_Animation *animation =
               __fill_animation_data(&gltfAnimations[i], skeleton);
             //_skeleton_set_keyframe(
             //  animation, 0); // sets all the skeleton poses to keyframe 20
@@ -537,8 +537,8 @@ _create_material(cgltf_material *gltfMaterial,
 
 // Loader entry //
 
-Model *
-load_gltf(const char *path, int scale, int importMaterials)
+gsk_Model *
+gsk_load_gltf(const char *path, int scale, int importMaterials)
 {
     cgltf_options options = {0};
     cgltf_data *data      = NULL;
@@ -588,8 +588,8 @@ load_gltf(const char *path, int scale, int importMaterials)
         totalObjects += data->meshes[i].primitives_count;
     }
 
-    Model *ret  = malloc(sizeof(Model));
-    ret->meshes = malloc(sizeof(Mesh *) * totalObjects);
+    gsk_Model *ret  = malloc(sizeof(gsk_Model));
+    ret->meshes = malloc(sizeof(gsk_Mesh *) * totalObjects);
 
     // Create texture/material pools
     ui32 materialsCount      = data->materials_count;
@@ -614,9 +614,9 @@ load_gltf(const char *path, int scale, int importMaterials)
         if (data->nodes[i].mesh != 0) {
             // Each primitive in the mesh
             for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++) {
-                MeshData *meshData = _load_mesh_vertex_data(
+                gsk_MeshData *meshData = _load_mesh_vertex_data(
                   &data->nodes[i].mesh->primitives[j], data);
-                ret->meshes[cntMesh] = mesh_assemble(meshData);
+                ret->meshes[cntMesh] = gsk_mesh_assemble(meshData);
 
                 mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
                 glm_translate(localMatrix, data->nodes[i].translation);

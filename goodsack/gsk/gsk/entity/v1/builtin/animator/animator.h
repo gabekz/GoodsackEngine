@@ -13,7 +13,7 @@
 struct ComponentAnimator
 {
     int cntTime;
-    Animation *cntAnimation;
+    gsk_Animation *cntAnimation;
 
     float timerStart, timerNow;
 

@@ -25,8 +25,8 @@ struct ComponentModel
 {
     Material *material;
     const char *modelPath;
-    Mesh *mesh;
-    Model *pModel;
+    gsk_Mesh *mesh;
+    gsk_Model *pModel;
 
     struct
     {

@@ -11,12 +11,12 @@
 #include "asset/import/loader_obj.h"
 #include "core/device/device.h"
 
-Mesh *
-mesh_assemble(MeshData *meshData)
+gsk_Mesh *
+gsk_mesh_assemble(gsk_MeshData *meshData)
 {
-    Mesh *mesh     = malloc(sizeof(Mesh));
+    gsk_Mesh *mesh     = malloc(sizeof(gsk_Mesh));
     mesh->meshData = meshData;
-    MeshData *data = mesh->meshData;
+    gsk_MeshData *data = mesh->meshData;
 
     if (DEVICE_API_OPENGL) {
         // Create the VAO
@@ -75,7 +75,7 @@ mesh_assemble(MeshData *meshData)
 #endif
 
     } else if (DEVICE_API_VULKAN) {
-        LOG_WARN("mesh_assemble() not implemented for Vulkan!");
+        LOG_WARN("gsk_mesh_assemble() not implemented for Vulkan!");
     }
 
 #if 0 // USE_SKINNED_MESH

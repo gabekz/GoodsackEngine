@@ -128,7 +128,7 @@
 	    10, 12, 11, \
 	    13, 15, 14}
 
-Mesh *primitive_mesh_create(ui32 shape, float scale);
+gsk_Mesh *primitive_mesh_create(ui32 shape, float scale);
 
 void primitive_pyramid(float* out);
 float* prim_vert_rect();

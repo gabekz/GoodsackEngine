@@ -16,15 +16,15 @@
 extern "C" {
 #endif
 
-typedef struct Animation Animation;
-typedef struct Keyframe Keyframe;
+typedef struct gsk_Animation gsk_Animation;
+typedef struct gsk_Keyframe gsk_Keyframe;
 
-typedef struct Joint Joint;
-typedef struct Skeleton Skeleton;
+typedef struct gsk_Joint gsk_Joint;
+typedef struct gsk_Skeleton gsk_Skeleton;
 
-typedef struct Pose Pose;
+typedef struct gsk_Pose gsk_Pose;
 
-struct Pose
+struct gsk_Pose
 {
     vec3 translation;
     vec3 scale;
@@ -35,21 +35,21 @@ struct Pose
     int hasMatrix;
 };
 
-struct Joint
+struct gsk_Joint
 {
     char *name;
     ui16 id;
 
-    Joint *parent;
+    gsk_Joint *parent;
     ui16 childrenCount;
 
-    Pose pose; // current pose
+    gsk_Pose pose; // current pose
     mat4 mInvBindPose;
 };
 
-struct Skeleton
+struct gsk_Skeleton
 {
-    Joint **joints;
+    gsk_Joint **joints;
     ui16 jointsCount;
 
     // GPU Buffers
@@ -60,30 +60,30 @@ struct Skeleton
     void *skinningBuffer;
     ui32 skinningBufferSize;
 
-    Animation *animation; // change to list
+    gsk_Animation *animation; // change to list
 
     mat4 rootMatrix;
 
     char *name;
 };
 
-struct Keyframe
+struct gsk_Keyframe
 {
     ui32 index;
     float frameTime;
 
-    Pose **poses;
+    gsk_Pose **poses;
     ui32 posesCount;
 };
 
-struct Animation
+struct gsk_Animation
 {
     char *name;     // animation name
     float duration; // animation time
 
-    Skeleton *pSkeleton; // reference to associated skeleton
+    gsk_Skeleton *pSkeleton; // reference to associated skeleton
 
-    Keyframe **keyframes;
+    gsk_Keyframe **keyframes;
     ui32 keyframesCount;
 };
 
@@ -91,10 +91,12 @@ struct Animation
 // animation_play(Animation *animation, ui32 index);
 
 void
-animation_set_keyframe(Animation *animation, ui32 keyframe);
+gsk_animation_set_keyframe(gsk_Animation *animation, ui32 keyframe);
 
 void
-animation_set_keyframe_lerp(Animation *animation, ui32 keyframe, float ratio);
+gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
+                                ui32 keyframe,
+                                float ratio);
 
 #ifdef __cplusplus
 }

@@ -15,14 +15,14 @@ extern "C" {
 #endif // __cplusplus
 
 static void
-_joint_transform_local(Joint *joint, float *outMatrix)
+_joint_transform_local(gsk_Joint *joint, float *outMatrix)
 {
     float *lm = outMatrix;
 
     if (joint->pose.hasMatrix) {
         memcpy(lm, joint->pose.mTransform, sizeof(float) * 16);
     } else {
-        Pose *node = &joint->pose;
+        gsk_Pose *node = &joint->pose;
         float tx   = node->translation[0];
         float ty   = node->translation[1];
         float tz   = node->translation[2];
@@ -59,12 +59,12 @@ _joint_transform_local(Joint *joint, float *outMatrix)
 }
 
 static void
-_joint_transform_world(Joint *joint, float *outMatrix)
+_joint_transform_world(gsk_Joint *joint, float *outMatrix)
 {
     float *lm = outMatrix;
     _joint_transform_local(joint, lm);
 
-    Joint *parent = joint->parent;
+    gsk_Joint *parent = joint->parent;
 
     while (parent) {
         float pm[16];
