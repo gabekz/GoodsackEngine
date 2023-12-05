@@ -35,5 +35,5 @@ if(UNIX)
     #                    ${CMAKE_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:${DEMO_EXE_NAME}>/Resources)
     add_custom_command(TARGET ${DEMO_EXE_NAME} POST_BUILD
                        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/res/ ${TESTRESPATH}/res)
+                       ${CMAKE_SOURCE_DIR}/goodsack/gsk_data ${TESTRESPATH}/gsk_data)
 endif(UNIX)
