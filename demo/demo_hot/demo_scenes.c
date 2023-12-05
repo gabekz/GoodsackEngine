@@ -1,13 +1,16 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "demo_scenes.h"
 
-#include <entity/v1/ecs.h>
+#include "util/filesystem.h"
 
-// #include <core/graphics/renderer/v1/renderer.h>
+#include "entity/v1/builtin/component_test.h"
+#include "entity/v1/builtin/components.h"
+#include "entity/v1/ecs.h"
 
-#include <entity/v1/builtin/component_test.h>
-#include <entity/v1/builtin/components.h>
-
-#include <util/filesystem.h>
 
 #define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
 

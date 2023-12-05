@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef H_DEMO_SCENES
 #define H_DEMO_SCENES
 
-#include <core/graphics/renderer/v1/renderer.h>
-#include <entity/v1/ecs.h>
+#include "core/graphics/renderer/v1/renderer.h"
+#include "entity/v1/ecs.h"
 
 #ifdef __cplusplus
 extern "C" {

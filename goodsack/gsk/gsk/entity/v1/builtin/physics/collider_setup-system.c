@@ -24,23 +24,23 @@ init(Entity e)
 
     collider->isColliding = false; // TODO: remove <- this is for testing
 
-    collider->pCollider = (Collider *)malloc(sizeof(Collider));
-    ((Collider *)collider->pCollider)->collider_data_type = collider->type;
+    collider->pCollider = (gsk_Collider *)malloc(sizeof(gsk_Collider));
+    ((gsk_Collider *)collider->pCollider)->collider_data_type = collider->type;
 
-    //(Collider *)(collider->pCollider).position = transform->position;
+    //(gsk_Collider *)(collider->pCollider).position = transform->position;
 
     // TODO: collider types
     if (collider->type == 1) {
-        SphereCollider *sphereCollider = malloc(sizeof(SphereCollider));
+        gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
         sphereCollider->radius         = .20f;
         // glm_vec3_copy(transform->position, sphereCollider->center);
         // sphereCollider.center = transform.position;
 
-        ((Collider *)collider->pCollider)->collider_data =
-          (SphereCollider *)sphereCollider;
+        ((gsk_Collider *)collider->pCollider)->collider_data =
+          (gsk_SphereCollider *)sphereCollider;
 
     } else if (collider->type == 2) {
-        PlaneCollider *planeCollider = malloc(sizeof(PlaneCollider));
+        gsk_PlaneCollider *planeCollider = malloc(sizeof(gsk_PlaneCollider));
         // planeCollider->distance      = 0.0175f;
         planeCollider->distance = 10;
         glm_vec3_zero(planeCollider->plane);
@@ -59,8 +59,8 @@ init(Entity e)
                  planeCollider->normal[1],
                  planeCollider->normal[2]);
 
-        ((Collider *)collider->pCollider)->collider_data =
-          (PlaneCollider *)planeCollider;
+        ((gsk_Collider *)collider->pCollider)->collider_data =
+          (gsk_PlaneCollider *)planeCollider;
     }
 }
 
@@ -95,16 +95,16 @@ update(Entity e)
         struct ComponentTransform *compareTransform =
           ecs_get(e_compare, C_TRANSFORM);
 
-        CollisionPoints points = {.has_collision = 0};
+        gsk_CollisionPoints points = {.has_collision = 0};
 
         //
         // determine which collision-test function to use
         //
         // sphere v. plane
         if (collider->type == 1 && compareCollider->type == 2) {
-            points = physics_collision_find_sphere_plane(
-              ((Collider *)collider->pCollider)->collider_data,
-              ((Collider *)compareCollider->pCollider)->collider_data,
+            points = gsk_physics_collision_find_sphere_plane(
+              ((gsk_Collider *)collider->pCollider)->collider_data,
+              ((gsk_Collider *)compareCollider->pCollider)->collider_data,
               transform->position,
               compareTransform->position);
         }
@@ -112,9 +112,9 @@ update(Entity e)
         // sphere v. sphere
 #if 1
         else if (collider->type == 1 && compareCollider->type == 1) {
-            points = physics_collision_find_sphere_sphere(
-              ((Collider *)collider->pCollider)->collider_data,
-              ((Collider *)compareCollider->pCollider)->collider_data,
+            points = gsk_physics_collision_find_sphere_sphere(
+              ((gsk_Collider *)collider->pCollider)->collider_data,
+              ((gsk_Collider *)compareCollider->pCollider)->collider_data,
               transform->position,
               compareTransform->position);
         }
@@ -123,7 +123,7 @@ update(Entity e)
         // plane v. sphere
         else if (collider->type == 2 && compareCollider->type == 1) {
             points =
-              physics_collision_find_plane_sphere(collider->pCollider,
+              gsk_physics_collision_find_plane_sphere(collider->pCollider,
                                                   compareCollider->pCollider,
                                                   transform->position,
                                                   compareTransform->position);
@@ -137,12 +137,12 @@ update(Entity e)
 
                 // Create a new collision result using our points
                 // TODO: Send objects A and B
-                CollisionResult result = {
+                gsk_CollisionResult result = {
                   .points = points,
                 };
 
                 // Send that over to the rigidbody solver list
-                physics_solver_push((PhysicsSolver *)rigidbody->solver, result);
+                gsk_physics_solver_push((gsk_PhysicsSolver *)rigidbody->solver, result);
             }
 
             collider->isColliding = points.has_collision;

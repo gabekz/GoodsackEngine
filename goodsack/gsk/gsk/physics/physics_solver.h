@@ -6,28 +6,29 @@
 #ifndef __PHYSICS_SOLVER_H__
 #define __PHYSICS_SOLVER_H__
 
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
-#include <physics/physics_types.inl>
+#include "physics/physics_types.inl"
 
-typedef struct PhysicsSolver_t
+typedef struct gsk_PhysicsSolver
 {
-    CollisionResult *solvers;
+    gsk_CollisionResult *solvers;
     ui64 solvers_count, solver_next;
     ui16 solver_empty;
-} PhysicsSolver;
+} gsk_PhysicsSolver;
 
-PhysicsSolver
-physics_solver_init();
-
-void
-physics_solver_push(PhysicsSolver *solver, CollisionResult collisionResult);
+gsk_PhysicsSolver
+gsk_physics_solver_init();
 
 void
-physics_solver_pop(PhysicsSolver *solver);
+gsk_physics_solver_push(gsk_PhysicsSolver *solver,
+                        gsk_CollisionResult collision_result);
 
 void
-physics_solver_step(PhysicsSolver *solver);
+gsk_physics_solver_pop(gsk_PhysicsSolver *solver);
+
+void
+gsk_physics_solver_step(gsk_PhysicsSolver *solver);
 
 #endif // __PHYSICS_SOLVER_H__

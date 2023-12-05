@@ -12,13 +12,13 @@
 // physics calculation.
 
 // Sphere v. Sphere
-CollisionPoints
-physics_collision_find_sphere_sphere(SphereCollider *a,
-                                     SphereCollider *b,
+gsk_CollisionPoints
+gsk_physics_collision_find_sphere_sphere(gsk_SphereCollider *a,
+                                     gsk_SphereCollider *b,
                                      vec3 pos_a,
                                      vec3 pos_b)
 {
-    CollisionPoints ret = {.has_collision = 0};
+    gsk_CollisionPoints ret = {.has_collision = 0};
 
     float distance = sqrt((pos_a[0] - pos_b[0]) * (pos_a[0] - pos_b[0]) +
                           (pos_a[1] - pos_b[1]) * (pos_a[1] - pos_b[1]) +
@@ -40,13 +40,13 @@ physics_collision_find_sphere_sphere(SphereCollider *a,
 }
 
 // Sphere v. Plane
-CollisionPoints
-physics_collision_find_sphere_plane(SphereCollider *a,
-                                    PlaneCollider *b,
+gsk_CollisionPoints
+gsk_physics_collision_find_sphere_plane(gsk_SphereCollider *a,
+                                    gsk_PlaneCollider *b,
                                     vec3 pos_a,
                                     vec3 pos_b)
 {
-    CollisionPoints ret = {.has_collision = 0};
+    gsk_CollisionPoints ret = {.has_collision = 0};
 
     // A = q - plane.p[0]
     vec3 A = GLM_VEC3_ZERO_INIT;
@@ -89,22 +89,22 @@ physics_collision_find_sphere_plane(SphereCollider *a,
 }
 
 // Plane v. Sphere
-CollisionPoints
-physics_collision_find_plane_sphere(PlaneCollider *a,
-                                    SphereCollider *b,
+gsk_CollisionPoints
+gsk_physics_collision_find_plane_sphere(gsk_PlaneCollider *a,
+                                    gsk_SphereCollider *b,
                                     vec3 pos_a,
                                     vec3 pos_b)
 {
-    return (CollisionPoints) {.has_collision = 0};
+    return (gsk_CollisionPoints) {.has_collision = 0};
 }
 
-// Raycast v. Sphere
-CollisionPoints
-physics_collision_find_ray_sphere(Raycast *ray,
-                                  SphereCollider *sphere,
+// gsk_Raycast v. Sphere
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,
+                                  gsk_SphereCollider *sphere,
                                   vec3 pos_sphere)
 {
-    CollisionPoints ret = {.has_collision = 0};
+    gsk_CollisionPoints ret = {.has_collision = 0};
 
     vec3 oc = GLM_VEC3_ZERO_INIT;
     glm_vec3_sub(ray->origin, pos_sphere, oc);

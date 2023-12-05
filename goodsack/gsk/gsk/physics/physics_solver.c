@@ -10,11 +10,11 @@
 #include "physics/physics_types.inl"
 #include "util/logger.h"
 
-PhysicsSolver
-physics_solver_init()
+gsk_PhysicsSolver
+gsk_physics_solver_init()
 {
-    PhysicsSolver ret = {
-      .solvers       = malloc(sizeof(CollisionResult) * 64),
+    gsk_PhysicsSolver ret = {
+      .solvers       = malloc(sizeof(gsk_CollisionResult) * 64),
       .solvers_count = 64,
       .solver_next   = 0,
       .solver_empty  = TRUE,
@@ -24,17 +24,17 @@ physics_solver_init()
 }
 
 void
-physics_solver_push(PhysicsSolver *solver, CollisionResult collisionResult)
+gsk_physics_solver_push(gsk_PhysicsSolver *solver, gsk_CollisionResult collision_result)
 {
     if (solver->solver_next >= 64) LOG_CRITICAL("Exceeding solver capacity!");
 
-    solver->solvers[solver->solver_next] = collisionResult;
+    solver->solvers[solver->solver_next] = collision_result;
     solver->solver_next++;
     solver->solver_empty = FALSE;
 }
 
 void
-physics_solver_pop(PhysicsSolver *solver)
+gsk_physics_solver_pop(gsk_PhysicsSolver *solver)
 {
     if (solver->solver_empty) {
         LOG_WARN("Trying to pop empty PhysicsSolver list");
@@ -50,7 +50,7 @@ physics_solver_pop(PhysicsSolver *solver)
 }
 
 void
-physics_solver_step(PhysicsSolver *solver)
+gsk_physics_solver_step(gsk_PhysicsSolver *solver)
 {
     if (solver->solver_empty) {
         assert(solver->solver_next == 0);
@@ -59,5 +59,5 @@ physics_solver_step(PhysicsSolver *solver)
 
     // TODO: run all solvers
 
-    physics_solver_pop(solver); // pop when resolved
+    gsk_physics_solver_pop(solver); // pop when resolved
 }

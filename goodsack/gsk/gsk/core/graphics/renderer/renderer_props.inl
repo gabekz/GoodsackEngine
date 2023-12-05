@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef __RENDERER_PROPS_INL__
 #define __RENDERER_PROPS_INL__
 

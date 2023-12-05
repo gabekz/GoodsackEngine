@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifdef _WIN32
 // #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #pragma optimize("", off)
@@ -6,14 +11,14 @@
 #include <iostream>
 #include <string>
 
-#include <util/logger.h>
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "util/logger.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
 #include "demo_scenes.h"
-#include <GoodsackEngineConfig.h>
+#include <GoodsackEngineConfig.h> // TODO: Change this
 
-#include <runtime/gsk_runtime.hpp>
+#include "runtime/gsk_runtime.hpp"
 
 int
 main(int argc, char *argv[])

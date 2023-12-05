@@ -13,23 +13,23 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct CollisionPoints_t
+typedef struct gsk_CollisionPoints
 {
     vec3 point_a;       // furthest point of A into B
     vec3 point_b;       // furthest point of B into A
     vec3 normal;        // point_b - point_a normalized
     float depth;        // Length of point_b - point_a
     ui16 has_collision; // bool
-} CollisionPoints;
+} gsk_CollisionPoints;
 
-typedef struct CollisionResult_t
+typedef struct gsk_CollisionResult
 {
     void *object_a;
     void *object_b;
-    CollisionPoints points;
-} CollisionResult;
+    gsk_CollisionPoints points;
+} gsk_CollisionResult;
 
-typedef struct Collider_t
+typedef struct gsk_Collider
 {
     void *collider_data;
     ui16 collider_data_type;
@@ -37,29 +37,29 @@ typedef struct Collider_t
     vec3 position;
 
     ui16 is_dynamic, is_trigger;
-} Collider;
+} gsk_Collider;
 
-typedef struct SphereCollider_t
+typedef struct gsk_SphereCollider
 {
     vec3 center;
     float radius;
-} SphereCollider;
+} gsk_SphereCollider;
 
-typedef struct PlaneCollider_t
+typedef struct gsk_PlaneCollider
 {
     vec3 plane, normal;
     float distance;
-} PlaneCollider;
+} gsk_PlaneCollider;
 
-typedef struct BoxCollider_t
+typedef struct gsk_BoxCollider
 {
     vec3 bounds[2];
-} BoxCollider;
+} gsk_BoxCollider;
 
-typedef struct Raycast_t
+typedef struct gsk_Raycast
 {
     vec3 origin, direction;
-} Raycast;
+} gsk_Raycast;
 
 #ifdef __cplusplus
 }

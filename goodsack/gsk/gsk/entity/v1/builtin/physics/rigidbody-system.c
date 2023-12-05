@@ -15,12 +15,12 @@
 static void
 _position_solver(struct ComponentRigidbody *rigidbody,
                  struct ComponentTransform *transform,
-                 CollisionResult *collision_result);
+                 gsk_CollisionResult *collision_result);
 
 static void
 _impulse_solver(struct ComponentRigidbody *rigidbody,
                 struct ComponentTransform *transform,
-                CollisionResult *collision_result);
+                gsk_CollisionResult *collision_result);
 static void
 init(Entity e)
 {
@@ -35,8 +35,8 @@ init(Entity e)
     glm_vec3_zero(rigidbody->angular_velocity);
 
     // Initialize the physics solver
-    rigidbody->solver                   = malloc(sizeof(PhysicsSolver));
-    *(PhysicsSolver *)rigidbody->solver = physics_solver_init();
+    rigidbody->solver                   = malloc(sizeof(gsk_PhysicsSolver));
+    *(gsk_PhysicsSolver *)rigidbody->solver = gsk_physics_solver_init();
 
     // LOG_INFO("solvers %u", ((PhysicsSolver
     // *)rigidbody->solver)->solvers_count);
@@ -64,13 +64,13 @@ update(Entity e)
     // --
     // -- Check for solvers/collision results
 
-    PhysicsSolver *pSolver = (PhysicsSolver *)rigidbody->solver;
+    gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
     int total_solvers      = (int)pSolver->solver_next;
 
     for (int i = 0; i < total_solvers; i++) {
         // LOG_INFO("DO SOLVER");
 
-        CollisionResult *pResult = &pSolver->solvers[i];
+        gsk_CollisionResult *pResult = &pSolver->solvers[i];
 
         vec3 collision_normal = GLM_VEC3_ZERO_INIT;
         glm_vec3_copy(pResult->points.normal, collision_normal);
@@ -82,7 +82,7 @@ update(Entity e)
         _impulse_solver(rigidbody, transform, pResult);
 
         // Pop our solver
-        physics_solver_pop((PhysicsSolver *)rigidbody->solver);
+        gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
     }
 
     // --
@@ -117,7 +117,7 @@ update(Entity e)
 static void
 _position_solver(struct ComponentRigidbody *rigidbody,
                  struct ComponentTransform *transform,
-                 CollisionResult *collision_result)
+                 gsk_CollisionResult *collision_result)
 {
 // velocity
 #define USE_VELOCITY       0
@@ -164,7 +164,7 @@ _position_solver(struct ComponentRigidbody *rigidbody,
 static void
 _impulse_solver(struct ComponentRigidbody *rigidbody,
                 struct ComponentTransform *transform,
-                CollisionResult *collision_result)
+                gsk_CollisionResult *collision_result)
 {
 
 #define USE_CUTOFF   0 // a.k.a. FAKE friction
