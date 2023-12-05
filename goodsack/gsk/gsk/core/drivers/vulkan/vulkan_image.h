@@ -1,10 +1,15 @@
-#ifndef H_VULKAN_IMAGE
-#define H_VULKAN_IMAGE
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/drivers/vulkan/vulkan_support.h>
+#ifndef __VULKAN_IMAGE_H__
+#define __VULKAN_IMAGE_H__
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#include "util/gfx.h"
+#include "util/sysdefs.h"
+
+#include "core/drivers/vulkan/vulkan_support.h"
 
 #ifdef __cplusplus
 extern "C" {

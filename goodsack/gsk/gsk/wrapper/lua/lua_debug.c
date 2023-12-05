@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "lua_debug.h"
 
-#include <util/logger.h>
+#include "util/logger.h"
 
 int
 CheckLua(lua_State *L, int r)

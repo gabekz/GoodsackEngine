@@ -1,11 +1,16 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "common.h"
 #define VECTOR_LIB "goodsack.vector"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <util/logger.h>
-#include <util/maths.h>
+#include "util/logger.h"
+#include "util/maths.h"
 
 typedef struct // Vector_lua_t
 {

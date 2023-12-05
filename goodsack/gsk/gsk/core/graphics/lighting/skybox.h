@@ -1,10 +1,14 @@
-#ifndef H_SKYBOX
-#define H_SKYBOX
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/texture/texture.h>
+#ifndef __SKYBOX_H__
+#define __SKYBOX_H__
 
-#include <core/graphics/shader/shader.h>
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/shader/shader.h"
+#include "core/graphics/texture/texture.h"
 
 // 0 -- Regular | 1 -- Blurred Render
 #define SKYBOX_DRAW_BLUR 0
@@ -41,4 +45,4 @@ skybox_hdr_projection(Skybox *skybox);
 }
 #endif
 
-#endif // H_SKYBOX
+#endif // __SKYBOX_H__

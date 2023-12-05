@@ -1,8 +1,13 @@
-#ifndef H_C_ANIMATOR
-#define H_C_ANIMATOR
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/graphics/mesh/animation.h>
-#include <entity/v1/ecs.h>
+#ifndef __ANIMATOR_H__
+#define __ANIMATOR_H__
+
+#include "core/graphics/mesh/animation.h"
+#include "entity/v1/ecs.h"
 
 #if !(USING_GENERATED_COMPONENTS)
 struct ComponentAnimator
@@ -19,4 +24,4 @@ struct ComponentAnimator
 void
 s_animator_init(ECS *ecs);
 
-#endif // H_C_ANIMATOR
+#endif // __ANIMATOR_H__

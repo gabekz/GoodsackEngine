@@ -1,17 +1,22 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 /* Shadowmap depth-texture pass */
 #include "pass_shadowmap.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/material/material.h>
-#include <core/graphics/shader/shader.h>
+#include "util/filesystem.h"
+#include "util/gfx.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
-#include <util/filesystem.h>
-#include <util/gfx.h>
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/material/material.h"
+#include "core/graphics/shader/shader.h"
 
 static ShaderProgram *shaderDepthMap;
 static Material *materialDepthMap;

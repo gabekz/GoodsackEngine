@@ -1,7 +1,12 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "device.h"
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
 static volatile GraphicsAPI s_device = GRAPHICS_API_OPENGL;
 static volatile GraphicsSettings s_deviceSettings;

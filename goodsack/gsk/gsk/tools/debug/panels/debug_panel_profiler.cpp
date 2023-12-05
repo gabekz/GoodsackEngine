@@ -1,5 +1,11 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "debug_panel_profiler.hpp"
-#include <core/device/device.h>
+
+#include "core/device/device.h"
 #include <imgui.h>
 
 void

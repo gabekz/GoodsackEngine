@@ -1,8 +1,13 @@
-#ifndef H_PASS_SCREEN
-#define H_PASS_SCREEN
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/graphics/renderer/renderer_props.inl>
-#include <util/sysdefs.h>
+#ifndef __PASS_SCREEN_H__
+#define __PASS_SCREEN_H__
+
+#include "util/sysdefs.h"
+#include "core/graphics/renderer/renderer_props.inl"
 
 void
 postbuffer_init(ui32 width, ui32 height, RendererProps *properties);
@@ -15,4 +20,4 @@ postbuffer_resize(ui32 winWidth, ui32 winHeight);
 void
 postbuffer_cleanup();
 
-#endif
+#endif // __PASS_SCREEN_H__

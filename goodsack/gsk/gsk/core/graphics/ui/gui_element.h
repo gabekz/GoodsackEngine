@@ -1,12 +1,17 @@
-#ifndef H_GUI_ELEMENT_H
-#define H_GUI_ELEMENT_H
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/drivers/opengl/opengl.h>
+#ifndef __GUI_ELEMENT_H__
+#define __GUI_ELEMENT_H__
 
-#include <core/graphics/material/material.h>
-#include <core/graphics/texture/texture.h>
+#include "util/maths.h"
 
-#include <util/maths.h>
+#include "core/drivers/opengl/opengl.h"
+
+#include "core/graphics/material/material.h"
+#include "core/graphics/texture/texture.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,4 +43,4 @@ gui_element_draw(GuiElement *element);
 }
 #endif // __cplusplus
 
-#endif // H_GUI_ELEMENT_H
+#endif // __GUI_ELEMENT_H__

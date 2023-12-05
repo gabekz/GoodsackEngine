@@ -1,7 +1,12 @@
-#ifndef H_DEBUG
-#define H_DEBUG
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/lua_deps.h>
+#ifndef __LUA_DEBUG_H__
+#define __LUA_DEBUG_H__
+
+#include "util/lua_deps.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,4 +29,4 @@ dumpstack(lua_State *L, const char *message);
 }
 #endif
 
-#endif // H_DEBUG
+#endif // __LUA_DEBUG_H__

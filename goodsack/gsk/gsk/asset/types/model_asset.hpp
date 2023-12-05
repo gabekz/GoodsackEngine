@@ -1,7 +1,12 @@
-#ifndef HPP_MODEL_ASSET
-#define HPP_MODEL_ASSET
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <asset/asset.hpp>
+#ifndef __MODEL_ASSET_HPP__
+#define __MODEL_ASSET_HPP__
+
+#include "asset/asset.hpp"
 
 namespace goodsack {
 namespace asset {
@@ -25,4 +30,4 @@ class ModelAsset : public Asset {
 } // namespace asset
 }; // namespace goodsack
 
-#endif
+#endif // __MODEL_ASSET_HPP__

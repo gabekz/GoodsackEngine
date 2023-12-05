@@ -1,8 +1,13 @@
-#ifndef H_C_TRANSFORM
-#define H_C_TRANSFORM
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <entity/v1/ecs.h>
-#include <util/maths.h>
+#ifndef __TRANSFORM_H__
+#define __TRANSFORM_H__
+
+#include "entity/v1/ecs.h"
+#include "util/maths.h"
 
 #if !(USING_GENERATED_COMPONENTS)
 struct ComponentTransform

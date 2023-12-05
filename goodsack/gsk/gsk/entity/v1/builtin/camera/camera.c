@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 /** camera.c
 TODO:
 - CameraComponent needs to be split into several parts:
@@ -9,14 +14,14 @@ TODO:
 
 #include "camera.h"
 
-#include <entity/v1/builtin/camera/camera_input.h>
-#include <entity/v1/builtin/transform/transform.h>
-
 #include <string.h>
 
-#include <core/device/device.h>
-#include <entity/v1/ecs.h>
-#include <util/gfx.h>
+#include "util/gfx.h"
+
+#include "core/device/device.h"
+#include "entity/v1/ecs.h"
+#include "entity/v1/builtin/camera/camera_input.h"
+#include "entity/v1/builtin/transform/transform.h"
 
 #define CAMERA_SHAKE            1
 #define CAMERA_SENSITIVITY_DIVS 10.0f

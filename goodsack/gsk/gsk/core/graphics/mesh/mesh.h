@@ -1,15 +1,20 @@
-#ifndef H_MESH
-#define H_MESH
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#ifndef __MESH_H__
+#define __MESH_H__
 
-#include <core/drivers/opengl/opengl_buffer.h>
-#include <core/drivers/vulkan/vulkan_vertex_buffer.h>
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
-#include <core/graphics/material/material.h>
-#include <core/graphics/mesh/animation.h>
-#include <core/graphics/texture/texture.h>
+#include "core/drivers/opengl/opengl_buffer.h"
+#include "core/drivers/vulkan/vulkan_vertex_buffer.h"
+
+#include "core/graphics/material/material.h"
+#include "core/graphics/mesh/animation.h"
+#include "core/graphics/texture/texture.h"
 
 #define DRAW_ARRAYS             0x00
 #define DRAW_ELEMENTS           0x01
@@ -90,4 +95,4 @@ mesh_assemble(MeshData *meshData);
 }
 #endif
 
-#endif // H_MESH
+#endif // __MESH_H__

@@ -1,10 +1,15 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_image.h"
 
-#include <core/drivers/vulkan/vulkan_buffer.h>
-#include <core/drivers/vulkan/vulkan_command.h>
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#include "core/drivers/vulkan/vulkan_buffer.h"
+#include "core/drivers/vulkan/vulkan_command.h"
 
 void
 vulkan_image_create(VkPhysicalDevice physicalDevice,

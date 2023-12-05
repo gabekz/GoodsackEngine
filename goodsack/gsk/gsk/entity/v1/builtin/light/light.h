@@ -1,10 +1,15 @@
-#ifndef H_C_LIGHT
-#define H_C_LIGHT
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#ifndef __LIGHT_H__
+#define __LIGHT_H__
 
-#include <entity/ecs.h>
+#include "util/maths.h"
+#include "util/sysdefs.h"
+
+#include "entity/ecs.h"
 
 #if !(USING_GENERATED_COMPONENTS)
 struct ComponentLight
@@ -14,4 +19,4 @@ struct ComponentLight
 };
 #endif
 
-#endif // H_C_LIGHT
+#endif // __LIGHT_H__

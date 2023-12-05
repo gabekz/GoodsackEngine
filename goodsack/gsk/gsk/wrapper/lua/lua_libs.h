@@ -1,12 +1,17 @@
-#ifndef H_LUA_LIBS
-#define H_LUA_LIBS
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __LUA_LIBS_H__
+#define __LUA_LIBS_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define LUA_LIB
-#include <util/lua_deps.h>
+#include "util/lua_deps.h"
 
 void
 open_all_libs(lua_State *L);
@@ -15,4 +20,4 @@ open_all_libs(lua_State *L);
 }
 #endif
 
-#endif // H_LUA_LIBS
+#endif // __LUA_LIBS_H__

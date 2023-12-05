@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 /*-----------------------------------------
  * System-specific definitions
  * --------------------------------------*/
 
-#ifndef H_SYSDEFS
-#define H_SYSDEFS
+#ifndef __SYSDEFS_H__
+#define __SYSDEFS_H__
 
 // -- Platform definitions //
 
@@ -152,4 +157,4 @@ typedef std::string     string;
 #endif
 #endif
 
-#endif // H_SYSDEFS
+#endif // __SYSDEFS_H__

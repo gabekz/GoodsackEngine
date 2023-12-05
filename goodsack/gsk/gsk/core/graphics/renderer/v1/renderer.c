@@ -1,31 +1,37 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "renderer.h"
-#include <core/graphics/renderer/pipeline/pass_compute.h>
-#include <core/graphics/renderer/pipeline/pipeline.h>
 
 #include <stdio.h>
 
-#include <util/gfx.h>
-#include <util/logger.h>
-#include <util/sysdefs.h>
+#include "util/filesystem.h"
+#include "util/gfx.h"
+#include "util/logger.h"
+#include "util/sysdefs.h"
 
-#include <core/graphics/lighting/lighting.h>
-#include <core/graphics/lighting/skybox.h>
-#include <core/graphics/ui/billboard.h>
-#include <core/graphics/ui/gui_element.h>
-#include <core/graphics/ui/gui_text.h>
-#include <entity/v1/ecs.h>
+#include "core/graphics/renderer/pipeline/pass_compute.h"
+#include "core/graphics/renderer/pipeline/pipeline.h"
 
-#include <core/device/device_context.h>
-#include <util/filesystem.h>
+#include "core/graphics/lighting/lighting.h"
+#include "core/graphics/lighting/skybox.h"
+#include "core/graphics/ui/billboard.h"
+#include "core/graphics/ui/gui_element.h"
+#include "core/graphics/ui/gui_text.h"
 
-#include <core/device/device.h>
-#include <core/drivers/vulkan/vulkan_device.h>
+#include "entity/v1/ecs.h"
+
+#include "core/device/device_context.h"
+#include "core/device/device.h"
+#include "core/drivers/vulkan/vulkan_device.h"
 
 // Skybox test
-#include <core/graphics/texture/texture.h>
+#include "core/graphics/texture/texture.h"
 
-#include <tools/debug/debug_context.h>
-#include <tools/debug/debug_draw_line.h>
+#include "tools/debug/debug_context.h"
+#include "tools/debug/debug_draw_line.h"
 
 #define TESTING_DRAW_UI   1
 #define TESTING_DRAW_LINE 0

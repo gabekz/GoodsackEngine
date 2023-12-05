@@ -1,7 +1,14 @@
-#ifndef H_COMPONENT_TEST
-#define H_COMPONENT_TEST
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <entity/ecsdefs.h>
+// TODO: Remove this system
+
+#ifndef __COMPONENT_TEST_H__
+#define __COMPONENT_TEST_H__
+
+#include "entity/ecsdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,4 +26,4 @@ typedef struct ComponentTest
 }
 #endif
 
-#endif // H_COMPONENT_TEST
+#endif // __COMPONENT_TEST_H__

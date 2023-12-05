@@ -160,6 +160,8 @@ target_link_libraries(GoodsackEngine_runtime PRIVATE
     ThirdParty_cgltf
 )
 
+target_include_directories(GoodsackEngine_runtime PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk")
+
 set_target_properties(GoodsackEngine_runtime
 PROPERTIES
 ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib/archive"

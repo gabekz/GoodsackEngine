@@ -1,10 +1,15 @@
-#ifndef H_PHYSICS_COLLISION
-#define H_PHYSICS_COLLISION
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#ifndef __PHYSICS_COLLISION_H__
+#define __PHYSICS_COLLISION_H__
 
-#include <physics/physics_types.inl>
+#include "util/maths.h"
+#include "util/sysdefs.h"
+
+#include "physics/physics_types.inl"
 
 Collider
 physics_collider_new(ui16 type);
@@ -44,4 +49,4 @@ physics_collision_find_ray_sphere(Raycast *ray,
 }
 #endif // __cplusplus
 
-#endif // H_PHYSICS_COLLISION
+#endif // __PHYSICS_COLLISION_H__

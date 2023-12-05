@@ -1,7 +1,12 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "alsoft_buffer.h"
 
-#include <asset/import/loader_wav.h>
-#include <core/drivers/alsoft/alsoft_debug.h>
+#include "asset/import/loader_wav.h"
+#include "core/drivers/alsoft/alsoft_debug.h"
 
 /* static */
 

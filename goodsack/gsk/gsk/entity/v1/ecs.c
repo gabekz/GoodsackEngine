@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "ecs.h"
 
 #include <assert.h>
@@ -5,23 +10,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/sysdefs.h>
+#include "util/sysdefs.h"
 
-#include <entity/v1/builtin/animator/animator.h>
-#include <entity/v1/builtin/audio/audio_listener.h>
-#include <entity/v1/builtin/audio/audio_source.h>
-#include <entity/v1/builtin/camera/camera.h>
-#include <entity/v1/builtin/component_test.h>
-#include <entity/v1/builtin/model/model_draw.h>
-#include <entity/v1/builtin/transform/transform.h>
+#include "entity/v1/builtin/animator/animator.h"
+#include "entity/v1/builtin/audio/audio_listener.h"
+#include "entity/v1/builtin/audio/audio_source.h"
+#include "entity/v1/builtin/camera/camera.h"
+#include "entity/v1/builtin/component_test.h"
+#include "entity/v1/builtin/model/model_draw.h"
+#include "entity/v1/builtin/transform/transform.h"
 
 // Physics
-#include <entity/v1/builtin/physics/collider_setup-system.h>
-#include <entity/v1/builtin/physics/rigidbody-system.h>
+#include "entity/v1/builtin/physics/collider_setup-system.h"
+#include "entity/v1/builtin/physics/rigidbody-system.h"
 
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION
-#include <entity/__generated__/components_gen.h>
+#include "entity/__generated__/components_gen.h"
 #endif
 
 ECS *

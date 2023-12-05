@@ -1,5 +1,10 @@
-#ifndef H_VULKAN_DESCRIPTOR
-#define H_VULKAN_DESCRIPTOR
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __VULKAN_DESCRIPTOR_H__
+#define __VULKAN_DESCRIPTOR_H__
 
 #include <util/gfx.h>
 #include <util/sysdefs.h>
@@ -31,4 +36,4 @@ vulkan_descriptor_sets_create(VkDevice device,
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_DESCRIPTOR
+#endif // __VULKAN_DESCRIPTOR_H__

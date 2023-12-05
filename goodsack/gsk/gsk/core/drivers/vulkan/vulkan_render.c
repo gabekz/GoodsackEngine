@@ -1,12 +1,17 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_render.h"
 
-#include <util/gfx.h>
+#include "util/gfx.h"
 
-#include <core/drivers/vulkan/vulkan_command.h>
-#include <core/drivers/vulkan/vulkan_device.h>
-#include <core/drivers/vulkan/vulkan_support.h>
+#include "core/drivers/vulkan/vulkan_command.h"
+#include "core/drivers/vulkan/vulkan_device.h"
+#include "core/drivers/vulkan/vulkan_support.h"
 
-#include <core/graphics/mesh/primitives.h>
+#include "core/graphics/mesh/primitives.h"
 
 #define TEST_RENDER_PRIMITIVE 0 // 0 - Model Loader | 1 - Primitive
 #define TEST_RENDER_MODE      0 // 0 - VkCmdDraw    | 1 - VkCmdDrawIndexed

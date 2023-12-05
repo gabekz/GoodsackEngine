@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_descriptor_builder.h"
 
 void

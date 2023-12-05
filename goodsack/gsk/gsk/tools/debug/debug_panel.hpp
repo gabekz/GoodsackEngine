@@ -1,11 +1,13 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef __DEBUG_PANEL_HPP__
 #define __DEBUG_PANEL_HPP__
 
-extern "C" {
-#include <core/graphics/renderer/v1/renderer.h>
-}
-
 #include <string>
+#include "core/graphics/renderer/v1/renderer.h"
 
 #define _DECL_DEBUG_PANEL(x)     x(std::string str) : DebugPanel(str) {};
 #define _DECL_DEBUG_PANEL2(x, y) x(y) : DebugPanel(y) {};

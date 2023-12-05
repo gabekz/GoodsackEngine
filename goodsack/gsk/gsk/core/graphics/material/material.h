@@ -1,10 +1,15 @@
-#ifndef H_MATERIAL
-#define H_MATERIAL
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/sysdefs.h>
+#ifndef __MATERIAL_H__
+#define __MATERIAL_H__
 
-#include <core/graphics/shader/shader.h>
-#include <core/graphics/texture/texture.h>
+#include "util/sysdefs.h"
+
+#include "core/graphics/shader/shader.h"
+#include "core/graphics/texture/texture.h"
 
 typedef struct _material Material;
 
@@ -31,4 +36,4 @@ material_use(Material *self);
 void
 material_add_texture(Material *self, Texture *texture);
 
-#endif // H_MATERIAL
+#endif // __MATERIAL_H__

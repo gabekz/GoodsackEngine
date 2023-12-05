@@ -1,14 +1,19 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_swapchain.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <util/logger.h>
-#include <util/maths.h>
+#include "util/logger.h"
+#include "util/maths.h"
 
-#include <core/drivers/vulkan/vulkan_depth.h>
-#include <core/drivers/vulkan/vulkan_framebuffer.h>
-#include <core/drivers/vulkan/vulkan_support.h>
+#include "core/drivers/vulkan/vulkan_depth.h"
+#include "core/drivers/vulkan/vulkan_framebuffer.h"
+#include "core/drivers/vulkan/vulkan_support.h"
 
 VulkanSwapChainDetails *
 vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface)

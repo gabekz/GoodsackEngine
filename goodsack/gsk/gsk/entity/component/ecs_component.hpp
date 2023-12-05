@@ -1,14 +1,19 @@
-#ifndef HPP_ECS_COMPONENT
-#define HPP_ECS_COMPONENT
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __ECS_COMPONENT_HPP__
+#define __ECS_COMPONENT_HPP__
 
 #include <map>
 #include <string>
 #include <type_traits>
 
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
-#include <entity/v1/ecs.h>
+#include "entity/v1/ecs.h"
 
 namespace entity {
 
@@ -160,4 +165,4 @@ inline // mat4 specialization
     return 0;
 }
 
-#endif // HPP_ECS_COMPONENT
+#endif // __ECS_COMPONENT_HPP__

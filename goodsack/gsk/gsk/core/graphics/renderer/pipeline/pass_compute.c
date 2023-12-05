@@ -1,12 +1,18 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "pass_compute.h"
 
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/shader/shader.h>
-#include <core/graphics/texture/texture.h>
+#include "util/sysdefs.h"
 
-#include <core/graphics/mesh/primitives.h>
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/shader/shader.h"
+#include "core/graphics/texture/texture.h"
 
-#include <core/device/device.h>
+#include "core/device/device.h"
+#include "core/graphics/mesh/primitives.h"
 
 static ui32 csTexture;
 static ShaderProgram *csShader;

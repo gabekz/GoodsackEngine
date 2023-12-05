@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "debug_panel_scene_viewer.hpp"
 #include <imgui.h>
 

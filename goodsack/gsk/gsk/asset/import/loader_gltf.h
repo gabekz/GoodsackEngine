@@ -1,8 +1,13 @@
-#ifndef H_LOADER_GLTF
-#define H_LOADER_GLTF
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/graphics/mesh/mesh.h>
-#include <core/graphics/mesh/model.h>
+#ifndef __LOADER_GLTF_H__
+#define __LOADER_GLTF_H__
+
+#include "core/graphics/mesh/mesh.h"
+#include "core/graphics/mesh/model.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,4 +20,4 @@ load_gltf(const char *path, int scale, int importMaterials);
 }
 #endif // __cplusplus
 
-#endif // H_LOADER_GLTF
+#endif // __LOADER_GLTF_H__

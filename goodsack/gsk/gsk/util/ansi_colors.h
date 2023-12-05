@@ -1,8 +1,10 @@
 /*
- * This is free and unencumbered software released into the public domain.
- *
- * For more information, please refer to <https://unlicense.org>
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
  */
+
+#ifndef __ANSI_COLORS_H__
+#define __ANSI_COLORS_H__
 
 // Regular text
 #ifdef WIN32
@@ -95,3 +97,5 @@
 #define CRESET      "\e[1;0m"
 #define COLOR_RESET "\e[1;0m"
 #endif
+
+#endif // __ANSI_COLORS_H__

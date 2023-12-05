@@ -1,8 +1,14 @@
-#ifndef H_OPENAL_DEBUG
-#define H_OPENAL_DEBUG
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __ALSOFT_DEBUG_H__
+#define __ALSOFT_DEBUG_H__
+
+#include "util/sysdefs.h"
 
 #include <AL/al.h>
-#include <util/sysdefs.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,4 +31,4 @@ openal_debug_callback();
 }
 #endif // __cplusplus
 
-#endif // H_OPENAL_DEBUG
+#endif // __ALSOFT_DEBUG_H__

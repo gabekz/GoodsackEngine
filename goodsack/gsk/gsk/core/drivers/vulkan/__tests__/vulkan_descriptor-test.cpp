@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 /*T*********************************************************************
  * FILENAME:        vulkan_descriptor-test.cpp
  *
@@ -8,13 +13,15 @@
  *
  *T*/
 
-#include <gtest/gtest.h>
 #include <stdlib.h>
 
-#include <core/drivers/vulkan/vulkan_descriptor_builder.h>
+#include "util/gfx.h"
+#include "util/maths.h"
 
-#include <util/gfx.h>
-#include <util/maths.h>
+#include "core/drivers/vulkan/vulkan_descriptor_builder.h"
+
+// TODO: Move to thirdparty directive - gkutuzov/GoodsackEngine#19
+#include <gtest/gtest.h>
 
 struct VulkanDescriptorTest : testing::Test
 {

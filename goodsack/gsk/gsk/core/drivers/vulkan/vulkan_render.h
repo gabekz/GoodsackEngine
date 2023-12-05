@@ -1,7 +1,12 @@
-#ifndef H_VULKAN_RENDER
-#define H_VULKAN_RENDER
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/drivers/vulkan/vulkan_device.h>
+#ifndef __VULKAN_RENDER_H__
+#define __VULKAN_RENDER_H__
+
+#include "core/drivers/vulkan/vulkan_device.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,4 +29,4 @@ vulkan_render_draw_end(VulkanDeviceContext *context, GLFWwindow *window);
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_RENDER
+#endif // __VULKAN_RENDER_H__

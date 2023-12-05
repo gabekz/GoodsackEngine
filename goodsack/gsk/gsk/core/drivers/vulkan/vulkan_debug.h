@@ -1,7 +1,12 @@
-#ifndef H_VULKAN_DEBUG
-#define H_VULKAN_DEBUG
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
+#ifndef __VULKAN_DEBUG_H__
+#define __VULKAN_DEBUG_H__
+
+#include "util/gfx.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,4 +33,4 @@ vulkan_debug_messenger_create(VkInstance instance,
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_DEBUG
+#endif // __VULKAN_DEBUG_H__

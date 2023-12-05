@@ -1,16 +1,22 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "loader_gltf.h"
 #pragma optimize("", off)
 
-#include <core/graphics/mesh/mesh.h>
-#include <core/graphics/mesh/mesh_helpers.inl>
+#include "util/filesystem.h"
+#include "util/logger.h"
+#include "util/maths.h"
 
-#include <core/graphics/material/material.h>
-#include <core/graphics/shader/shader.h>
-#include <core/graphics/texture/texture.h>
+#include "core/graphics/mesh/mesh.h"
+#include "core/graphics/mesh/mesh_helpers.inl"
 
-#include <util/filesystem.h>
-#include <util/logger.h>
-#include <util/maths.h>
+#include "core/graphics/material/material.h"
+#include "core/graphics/shader/shader.h"
+#include "core/graphics/texture/texture.h"
+
 
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>

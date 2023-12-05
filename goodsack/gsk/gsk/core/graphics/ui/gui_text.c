@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "gui_text.h"
 
 #include <ctype.h>
 #include <stdio.h>
 
-#include <util/filesystem.h>
+#include "util/filesystem.h"
 
 static void
 __fill_font_data(char *self_widths, const char *path_font_data)

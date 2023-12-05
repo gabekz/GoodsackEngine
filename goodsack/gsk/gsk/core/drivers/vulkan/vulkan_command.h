@@ -1,8 +1,13 @@
-#ifndef H_VULKAN_COMMAND
-#define H_VULKAN_COMMAND
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#ifndef __VULKAN_COMMAND_H__
+#define __VULKAN_COMMAND_H__
+
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,4 +36,4 @@ vulkan_command_stc_end(VkDevice device,
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_COMMAND
+#endif // __VULKAN_COMMAND_H__

@@ -1,4 +1,10 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "opengl_buffer.h"
+
 #include <stdlib.h>
 
 VAO *

@@ -1,9 +1,13 @@
-#ifndef H_C_AUDIO_SOURCE
-#define H_C_AUDIO_SOURCE
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <entity/v1/ecs.h>
+#ifndef __AUDIO_SOURCE_H__
+#define __AUDIO_SOURCE_H__
 
-#include <core/drivers/alsoft/alsoft.h>
+#include "entity/v1/ecs.h"
+#include "core/drivers/alsoft/alsoft.h"
 
 #if !(USING_GENERATED_COMPONENTS)
 typedef struct ComponentAudioSource
@@ -18,4 +22,4 @@ typedef struct ComponentAudioSource
 void
 s_audio_source_init(ECS *ecs);
 
-#endif // H_C_AUDIO_LISTENER
+#endif // __AUDIO_SOURCE_H__

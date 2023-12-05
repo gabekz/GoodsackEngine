@@ -1,12 +1,17 @@
-#ifndef H_TEXTURE
-#define H_TEXTURE
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __TEXTURE_H__
+#define __TEXTURE_H__
 
 #include <stdlib.h>
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
-#include <core/drivers/vulkan/vulkan.h>
+#include "core/drivers/vulkan/vulkan.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,4 +65,4 @@ texture_cleanup(Texture *self, VulkanDeviceContext *vkDevice);
 }
 #endif // __cplusplus
 
-#endif // H_TEXTURE
+#endif // __TEXTURE_H__

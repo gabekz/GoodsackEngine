@@ -1,8 +1,13 @@
-#ifndef H_SHADER
-#define H_SHADER
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#ifndef __SHADER_H__
+#define __SHADER_H__
+
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,4 +74,4 @@ shader_uniform(ShaderProgram *shader,
 }
 #endif // __cplusplus
 
-#endif // H_SHADER
+#endif // __SHADER_H__

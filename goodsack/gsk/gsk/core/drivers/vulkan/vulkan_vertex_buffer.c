@@ -1,12 +1,18 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_vertex_buffer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <core/drivers/vulkan/vulkan_buffer.h>
-#include <core/drivers/vulkan/vulkan_support.h>
-#include <util/logger.h>
+#include "util/logger.h"
+
+#include "core/drivers/vulkan/vulkan_buffer.h"
+#include "core/drivers/vulkan/vulkan_support.h"
 
 /*
 #include <util/maths.h>

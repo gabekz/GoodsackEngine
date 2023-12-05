@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "physics_collision.h"
 
-#include <util/logger.h>
+#include "util/logger.h"
 
 // TODO: Rework collision-points calculation
 // [0] Distance should not be sent as the depth. This results in non-predictable

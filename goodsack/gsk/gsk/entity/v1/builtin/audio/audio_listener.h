@@ -1,7 +1,12 @@
-#ifndef H_C_AUDIO_LISTENER
-#define H_C_AUDIO_LISTENER
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <entity/v1/ecs.h>
+#ifndef __AUDIO_LISTENER_H__
+#define __AUDIO_LISTENER_H__
+
+#include "entity/v1/ecs.h"
 
 #if !(USING_GENERATED_COMPONENTS)
 struct ComponentAudioListener
@@ -13,4 +18,4 @@ struct ComponentAudioListener
 void
 s_audio_listener_init(ECS *ecs);
 
-#endif // H_C_AUDIO_LISTENER
+#endif // __AUDIO_LISTENER_H__

@@ -1,7 +1,12 @@
-#ifndef H_OPENGL_DEBUG
-#define H_OPENGL_DEBUG
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
+#ifndef __OPENGL_DEBUG_H__
+#define __OPENGL_DEBUG_H__
+
+#include "util/gfx.h"
 
 void APIENTRY
 glDebugOutput(GLenum source,
@@ -23,4 +28,4 @@ GLClearError();
 void
 GLCheckError();
 
-#endif // H_OPENGL_DEBUG
+#endif // __OPENGL_DEBUG_H__

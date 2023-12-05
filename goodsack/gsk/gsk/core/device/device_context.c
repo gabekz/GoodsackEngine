@@ -1,21 +1,26 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "device_context.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/gfx.h>
-#include <util/logger.h>
-
-#include <util/sysdefs.h>
-
-#include <core/device/device.h>
-#include <core/drivers/opengl/opengl.h>
-#include <core/drivers/vulkan/vulkan.h>
-
-#include <core/graphics/renderer/pipeline/pass_screen.h>
-
+// TODO: Move this
 #include <GoodsackEngineConfig.h>
+
+#include "util/gfx.h"
+#include "util/logger.h"
+#include "util/sysdefs.h"
+
+#include "core/device/device.h"
+#include "core/drivers/opengl/opengl.h"
+#include "core/drivers/vulkan/vulkan.h"
+
+#include "core/graphics/renderer/pipeline/pass_screen.h"
 
 static void
 _error_callback(int error, const char *description)

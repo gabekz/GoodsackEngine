@@ -1,5 +1,10 @@
-#ifndef H_MATHS
-#define H_MATHS
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __MATHS_H__
+#define __MATHS_H__
 
 #ifdef MIN
 #undef MIN
@@ -28,4 +33,4 @@ extern "C" {
 #endif
 #include "math.h"
 
-#endif // H_MATHS
+#endif // __MATHS_H__

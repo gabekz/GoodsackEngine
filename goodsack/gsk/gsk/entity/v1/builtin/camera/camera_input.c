@@ -1,8 +1,14 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "camera_input.h"
 
-#include <core/device/device.h>
-#include <entity/v1/builtin/transform/transform.h>
-#include <util/logger.h>
+#include "util/logger.h"
+
+#include "core/device/device.h"
+#include "entity/v1/builtin/transform/transform.h"
 
 void
 camera_input(Entity cameraEntity, GLFWwindow *window)

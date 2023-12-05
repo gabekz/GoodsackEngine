@@ -1,14 +1,19 @@
-#ifndef H_VULKAN_DEVICE
-#define H_VULKAN_DEVICE
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#ifndef __VULKAN_DEVICE_H__
+#define __VULKAN_DEVICE_H__
 
-#include <core/drivers/vulkan/vulkan_depth.h>
-#include <core/drivers/vulkan/vulkan_index_buffer.h>
-#include <core/drivers/vulkan/vulkan_pipeline.h>
-#include <core/drivers/vulkan/vulkan_swapchain.h>
-#include <core/drivers/vulkan/vulkan_vertex_buffer.h>
+#include "util/gfx.h"
+#include "util/sysdefs.h"
+
+#include "core/drivers/vulkan/vulkan_depth.h"
+#include "core/drivers/vulkan/vulkan_index_buffer.h"
+#include "core/drivers/vulkan/vulkan_pipeline.h"
+#include "core/drivers/vulkan/vulkan_swapchain.h"
+#include "core/drivers/vulkan/vulkan_vertex_buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -87,4 +92,4 @@ static inline void init_vulkan() {
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_DEVICE
+#endif // __VULKAN_DEVICE_H__

@@ -1,8 +1,13 @@
-#ifndef H_VULKAN_VERTEX_BUFFER
-#define H_VULKAN_VERTEX_BUFFER
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#ifndef __VULKAN_VERTEX_BUFFER_H__
+#define __VULKAN_VERTEX_BUFFER_H__
+
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
 #if __cplusplus
 extern "C" {
@@ -40,4 +45,4 @@ vulkan_vertex_buffer_get_attribute_descriptions();
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_VERTEX_BUFFER
+#endif // __VULKAN_VERTEX_BUFFER_H__

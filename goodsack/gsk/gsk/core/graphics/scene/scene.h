@@ -1,5 +1,10 @@
-#ifndef H_SCENE
-#define H_SCENE
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __SCENE_H__
+#define __SCENE_H__
 
 /* scene steps::
  * 1) Initialize and set active camera
@@ -24,4 +29,4 @@ typedef struct Scene_t
     ui16 has_skybox;
 } Scene;
 
-#endif // H_SCENE
+#endif // __SCENE_H__

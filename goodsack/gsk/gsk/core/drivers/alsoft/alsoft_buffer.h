@@ -1,8 +1,15 @@
-#ifndef H_OPENAL_BUFFER
-#define H_OPENAL_BUFFER
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
+#ifndef __ALSOFT_BUFFER_H__
+#define __ALSOFT_BUFFER_H__
+
+#include "util/sysdefs.h"
+
+// TODO: Move to thirdparty directive - gkutuzov/GoodsackEngine#19
 #include <AL/al.h>
-#include <util/sysdefs.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,4 +37,4 @@ openal_buffer_cleanup(ALuint buffer);
 }
 #endif // __cplusplus
 
-#endif // H_OPENAL_BUFFER
+#endif // __ALSOFT_BUFFER_H__

@@ -1,11 +1,16 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "skybox.h"
 
-#include <util/filesystem.h>
+#include "util/filesystem.h"
 
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/mesh/mesh.h>
-#include <core/graphics/mesh/primitives.h>
-#include <core/graphics/shader/shader.h>
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/mesh/mesh.h"
+#include "core/graphics/mesh/primitives.h"
+#include "core/graphics/shader/shader.h"
 
 static ui32 cubemapProjectionFBO;
 static ui32 cubemapProjectionRBO;

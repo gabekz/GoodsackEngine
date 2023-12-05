@@ -1,7 +1,12 @@
-#ifndef H_OPENGL
-#define H_OPENGL
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/drivers/opengl/opengl_buffer.h>
-#include <core/drivers/opengl/opengl_debug.h>
+#ifndef __OPENGL_H__
+#define __OPENGL_H__
 
-#endif // H_OPENGL
+#include "core/drivers/opengl/opengl_buffer.h"
+#include "core/drivers/opengl/opengl_debug.h"
+
+#endif // __OPENGL_H__

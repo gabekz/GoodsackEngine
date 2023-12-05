@@ -1,8 +1,13 @@
-#ifndef H_VULKAN_INDEX_BUFFER
-#define H_VULKAN_INDEX_BUFFER
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#ifndef __VULKAN_INDEX_BUFFER_H__
+#define __VULKAN_INDEX_BUFFER_H__
+
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,4 +32,4 @@ vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_INDEX_BUFFER
+#endif // __VULKAN_INDEX_BUFFER_H__

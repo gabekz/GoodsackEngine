@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "logger.h"
 
 #include <assert.h>
@@ -5,8 +10,8 @@
 #include <string.h>
 #include <time.h>
 
-#include <util/ansi_colors.h>
-#include <util/sysdefs.h>
+#include "util/ansi_colors.h"
+#include "util/sysdefs.h"
 
 #ifdef SYS_ENV_WIN
 #include <stdlib.h>

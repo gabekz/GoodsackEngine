@@ -1,11 +1,16 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_framebuffer.h"
 
 #include <stdlib.h>
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
-#include <core/drivers/vulkan/vulkan_support.h>
+#include "core/drivers/vulkan/vulkan_support.h"
 
 VkFramebuffer *
 vulkan_framebuffer_create(VkDevice device,

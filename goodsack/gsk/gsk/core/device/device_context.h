@@ -1,5 +1,10 @@
-#ifndef H_DEVICE_CONTEXT_H
-#define H_DEVICE_CONTEXT_H
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __DEVICE_CONTEXT_H__
+#define __DEVICE_CONTEXT_H__
 
 #include <util/gfx.h>
 #include <util/sysdefs.h>
@@ -24,4 +29,4 @@ GLFWwindow *
 createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd);
 // void cleanup(ContextProperties *contextProperties);
 
-#endif // H_DEVICE_CONTEXT_H
+#endif // __DEVICE_CONTEXT_H__

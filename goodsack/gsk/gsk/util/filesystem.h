@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef __FILESYSTEM_H__
 #define __FILESYSTEM_H__
 

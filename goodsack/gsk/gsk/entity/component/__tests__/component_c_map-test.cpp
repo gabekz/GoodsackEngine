@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 /*T*********************************************************************
  * FILENAME:        component_c_map-test.cpp
  *
@@ -10,16 +15,16 @@
  *
  *T*/
 
-#include <gtest/gtest.h>
 #include <stdlib.h>
 
-#include <entity/component/ecs_component.hpp>
-#include <util/lua_deps.h>
+#include "util/lua_deps.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
-#include <entity/component/ecs_component_layout_loader.hpp>
+#include "entity/component/ecs_component.hpp"
+#include "entity/component/ecs_component_layout_loader.hpp"
 
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include <gtest/gtest.h>
 
 #ifndef CACHE_LINE
 #define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES

@@ -1,12 +1,17 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "billboard.h"
 
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/material/material.h>
-#include <core/graphics/mesh/primitives.h>
+#include "util/filesystem.h"
+#include "util/gfx.h"
+#include "util/maths.h"
 
-#include <util/filesystem.h>
-#include <util/gfx.h>
-#include <util/maths.h>
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/material/material.h"
+#include "core/graphics/mesh/primitives.h"
 
 Billboard2D *
 billboard_create(const char *texturePath, vec2 size)

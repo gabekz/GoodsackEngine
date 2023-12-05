@@ -1,7 +1,12 @@
-#ifndef H_LOADER_WAV
-#define H_LOADER_WAV
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/sysdefs.h>
+#ifndef __LOADER_WAV_H__
+#define __LOADER_WAV_H__
+
+#include "util/sysdefs.h"
 
 #define SAMPLING_RATE 44100
 
@@ -25,4 +30,4 @@ load_wav(const char *filepath);
 extern "C" {
 #endif // __cplusplus
 
-#endif // H_LOADER_WAV
+#endif // __LOADER_WAV_H__

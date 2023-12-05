@@ -1,10 +1,17 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "audio_listener.h"
 
-#include <AL/al.h>
-#include <core/drivers/alsoft/alsoft.h>
-#include <core/drivers/alsoft/alsoft_debug.h>
+#include "core/drivers/alsoft/alsoft.h"
+#include "core/drivers/alsoft/alsoft_debug.h"
 
-#include <entity/v1/builtin/transform/transform.h>
+#include "entity/v1/builtin/transform/transform.h"
+
+// TODO: Move to thirdparty directive - gabekz/GoodsackEngine#19
+#include <AL/al.h>
 
 static void
 init(Entity e)

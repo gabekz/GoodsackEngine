@@ -1,11 +1,16 @@
-#ifndef H_LOGGER
-#define H_LOGGER
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __LOGGER_H__
+#define __LOGGER_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "stdio.h"
+#include <stdio.h>
 
 #ifndef __FILE_NAME__
 #define __FILE_NAME__ __FILE__
@@ -95,4 +100,4 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...);
 } /* extern "C" { */
 #endif /* __cplusplus */
 
-#endif // H_LOGGER
+#endif // __LOGGER_H__

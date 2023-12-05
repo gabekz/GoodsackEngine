@@ -1,14 +1,20 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "alsoft.h"
 
 #include <stdlib.h>
 #include <string.h>
 
+#include "util/logger.h"
+
+#include "core/drivers/alsoft/alsoft_buffer.h"
+#include "core/drivers/alsoft/alsoft_debug.h"
+
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <core/drivers/alsoft/alsoft_buffer.h>
-#include <core/drivers/alsoft/alsoft_debug.h>
-
-#include <util/logger.h>
 
 /* static */
 

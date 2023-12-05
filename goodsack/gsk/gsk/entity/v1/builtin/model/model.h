@@ -1,11 +1,18 @@
-#ifndef H_C_MODEL
-#define H_C_MODEL
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/graphics/material/material.h>
-#include <core/graphics/mesh/mesh.h>
-#include <core/graphics/mesh/model.h>
+#ifndef __MODEL_C_H__
+#define __MODEL_C_H__
 
-#include <entity/v1/ecs.h>
+// TODO: Remove file
+
+#include "core/graphics/material/material.h"
+#include "core/graphics/mesh/mesh.h"
+#include "core/graphics/mesh/model.h"
+
+#include "entity/v1/ecs.h"
 
 #define CULL_DISABLED 0x10
 #define CULL_CW       0x00
@@ -32,4 +39,4 @@ struct ComponentModel
 };
 #endif
 
-#endif // H_C_MODEL
+#endif // __MODEL_C_H__

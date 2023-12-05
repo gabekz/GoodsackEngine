@@ -1,8 +1,13 @@
-#ifndef H_DEVICE_API
-#define H_DEVICE_API
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#ifndef __DEVICE_H__
+#define __DEVICE_H__
+
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -87,4 +92,4 @@ device_updateCursorState(GLFWwindow *window);
 }
 #endif // __cplusplus
 
-#endif // H_DEVICE_API
+#endif // __DEVICE_H__

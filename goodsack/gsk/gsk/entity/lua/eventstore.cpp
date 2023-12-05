@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "eventstore.hpp"
 
 #include <iostream>
@@ -7,14 +12,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/filesystem.h>
-#include <util/lua_deps.h>
-#include <wrapper/lua/lua_debug.h>
+#include "util/filesystem.h"
+#include "util/lua_deps.h"
 
-#include <entity/component/ecs_component.hpp>
-#include <entity/component/ecs_component_layout_loader.hpp>
+#include "wrapper/lua/lua_debug.h"
 
-#include <entity/v1/ecs.h>
+#include "entity/component/ecs_component.hpp"
+#include "entity/component/ecs_component_layout_loader.hpp"
+#include "entity/v1/ecs.h"
 
 #define EVENTSTORE_LUA_VEC3_CLASS 1
 

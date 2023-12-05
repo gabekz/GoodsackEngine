@@ -1,5 +1,10 @@
-#ifndef H_BILLBOARD
-#define H_BILLBOARD
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __BILLBOARD_H__
+#define __BILLBOARD_H__
 
 #include <core/drivers/opengl/opengl.h>
 
@@ -20,4 +25,4 @@ billboard_create(const char *texturePath, vec2 size);
 void
 billboard_draw(Billboard2D *billboard, vec3 position);
 
-#endif // H_BILLBOARD
+#endif // __BILLBOARD_H__

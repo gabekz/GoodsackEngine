@@ -1,3 +1,8 @@
+--[[
+ -- Copyright (c) 2023, Gabriel Kutuzov
+ -- SPDX-License-Identifier: MIT
+ --]]
+
 function math.Lerp(start, goal, alpha)
     return start + (goal - start) * alpha;
 end

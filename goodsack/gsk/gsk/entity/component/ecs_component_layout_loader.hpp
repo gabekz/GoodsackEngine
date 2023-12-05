@@ -1,12 +1,17 @@
-#ifndef HPP_ECS_COMPONENT_LAYOUT_LOADER
-#define HPP_ECS_COMPONENT_LAYOUT_LOADER
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __ECS_COMPONENT_LAYOUT_LOADER_HPP__
+#define __ECS_COMPONENT_LAYOUT_LOADER_HPP__
 
 #include <map>
 #include <string>
 
-#include <entity/component/ecs_component.hpp>
+#include "util/sysdefs.h"
+#include "entity/component/ecs_component.hpp"
 
-#include <util/sysdefs.h>
 
 namespace entity {
 namespace component {
@@ -23,4 +28,4 @@ generate_cpp_types(std::string path, ComponentLayoutMap map);
 
 }; // namespace entity
 
-#endif // HPP_ECS_COMPONENT_LAYOUT_LOADER
+#endif // __ECS_COMPONENT_LAYOUT_LOADER_HPP__

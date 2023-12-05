@@ -1,8 +1,13 @@
-#ifndef H_PASS_SHADOWMAP
-#define H_PASS_SHADOWMAP
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/graphics/material/material.h>
-#include <util/maths.h>
+#ifndef __PASS_SHADOWMAP_H__
+#define __PASS_SHADOWMAP_H__
+
+#include "util/maths.h"
+#include "core/graphics/material/material.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,4 +54,4 @@ shadowmap_getMatrix();
 }
 #endif // __cplusplus
 
-#endif
+#endif // __PASS_SHADOWMAP_H__

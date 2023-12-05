@@ -1,15 +1,21 @@
-#include "texture.h"
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "texture.h"
 
 #include <stdarg.h>
 
-#include <util/logger.h>
-#include <util/sysdefs.h>
+#include "util/logger.h"
+#include "util/sysdefs.h"
 
-#include <core/device/device.h>
-#include <core/drivers/vulkan/vulkan.h>
+#include "core/device/device.h"
+#include "core/drivers/vulkan/vulkan.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+// TODO: Move to thirdparty directive - gkutuzov/GoodsackEngine#19
+#include "stb_image.h"
 
 #define TEXTURE_WRAPPING GL_REPEAT
 

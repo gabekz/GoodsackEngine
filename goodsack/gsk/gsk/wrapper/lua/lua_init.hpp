@@ -1,12 +1,18 @@
-#ifndef H_LUA_INIT
-#define H_LUA_INIT
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <entity/v1/ecs.h>
-#include <util/sysdefs.h>
+#ifndef __LUA_INIT_H__
+#define __LUA_INIT_H__
 
+#include "entity/v1/ecs.h"
+#include "util/sysdefs.h"
+
+// TODO: replace hardcoded path
 #define LUA_INIT_FILE_PATH "gsk://../gsk/gsk/api/lua/init.lua"
 
 void
 LuaInit(const char *file, ECS *ecs);
 
-#endif // H_LUA_INIT
+#endif // __LUA_INIT_H__

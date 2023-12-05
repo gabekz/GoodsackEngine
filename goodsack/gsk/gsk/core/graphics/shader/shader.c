@@ -1,10 +1,7 @@
-/* File: shader.c
-
-   Shader function' implmenetations.
-
-*/
-
-// TODO: This needs a full refactor..
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "shader.h"
 
@@ -12,10 +9,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <core/device/device.h>
-#include <util/logger.h>
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "util/logger.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
+
+#include "core/device/device.h"
 
 #ifdef SYS_ENV_WIN
 #include <fcntl.h>
@@ -24,8 +22,12 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <windows.h>
+#endif // SYS_ENV_WIN
 
-// WIN ONLY {TODO}
+// Windows-only function
+// TODO: possibly move to util/filesystem.h
+#ifdef SYS_ENV_WIN
+
 static FILE *
 open_memstream(char **buffer, int bufferLen)
 {
@@ -56,7 +58,7 @@ open_memstream(char **buffer, int bufferLen)
                 strerror(GetLastError()));
         exit(GetLastError());
     }
-#else
+#else // WIN32
     bp =
       mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
     if (bp == MAP_FAILED) {
@@ -66,7 +68,7 @@ open_memstream(char **buffer, int bufferLen)
                 strerror(errno));
         exit(errno);
     }
-#endif
+#endif // WIN32
 
     /* return stream that is now buffer-mapped */
     return stream;

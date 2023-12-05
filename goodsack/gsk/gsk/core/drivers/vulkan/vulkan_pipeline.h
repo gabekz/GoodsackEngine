@@ -1,7 +1,12 @@
-#ifndef H_VULKAN_PIPELINE
-#define H_VULKAN_PIPELINE
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
+#ifndef __VULKAN_PIPELINE_H__
+#define __VULKAN_PIPELINE_H__
+
+#include "util/gfx.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,4 +36,4 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_PIPELINE
+#endif // __VULKAN_PIPELINE_H__

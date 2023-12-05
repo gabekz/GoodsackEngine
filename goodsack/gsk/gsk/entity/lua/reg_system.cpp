@@ -1,9 +1,15 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "reg_system.hpp"
 
-#include <entity/ecsdefs.h>
-#include <entity/lua/eventstore.hpp>
-#include <util/logger.h>
-#include <wrapper/lua/lua_debug.h>
+#include "util/logger.h"
+
+#include "entity/ecsdefs.h"
+#include "entity/lua/eventstore.hpp"
+#include "wrapper/lua/lua_debug.h"
 
 using namespace entity;
 

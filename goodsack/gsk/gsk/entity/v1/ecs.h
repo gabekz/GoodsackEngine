@@ -1,8 +1,13 @@
-#ifndef H_ECS
-#define H_ECS
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <entity/ecsdefs.h>
-#include <util/sysdefs.h>
+#ifndef __ECS_H__
+#define __ECS_H__
+
+#include "util/sysdefs.h"
+#include "entity/ecsdefs.h"
 
 #define _ECS_DECL_SYSTEM(_name) extern void _name##_init();
 
@@ -142,4 +147,4 @@ ecs_event(ECS *self, enum ECSEvent event);
 }
 #endif
 
-#endif // H_ECS
+#endif // __ECS_H__

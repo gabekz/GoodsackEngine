@@ -1,12 +1,17 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_uniform_buffer.h"
 
 #include <string.h>
 
-#include <core/drivers/vulkan/vulkan_buffer.h>
-#include <core/drivers/vulkan/vulkan_support.h>
+#include "util/gfx.h"
+#include "util/maths.h"
 
-#include <util/gfx.h>
-#include <util/maths.h>
+#include "core/drivers/vulkan/vulkan_buffer.h"
+#include "core/drivers/vulkan/vulkan_support.h"
 
 void
 vulkan_uniform_buffer_create(VkPhysicalDevice physicalDevice,

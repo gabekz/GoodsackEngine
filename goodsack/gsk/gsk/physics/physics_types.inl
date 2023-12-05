@@ -1,8 +1,13 @@
-#ifndef INL_PHYSICS_TYPES
-#define INL_PHYSICS_TYPES
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#ifndef __PHYSICS_TYPES_INL__
+#define __PHYSICS_TYPES_INL__
+
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,4 +65,4 @@ typedef struct Raycast_t
 }
 #endif // __cplusplus
 
-#endif // INL_PHYSICS_TYPES
+#endif // __PHYSICS_TYPES_INL__

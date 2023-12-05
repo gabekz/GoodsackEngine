@@ -1,7 +1,7 @@
-#ifndef INL_RENDERER_PROPS
-#define INL_RENDERER_PROPS
+#ifndef __RENDERER_PROPS_INL__
+#define __RENDERER_PROPS_INL__
 
-#include <util/sysdefs.h>
+#include "util/sysdefs.h"
 
 //enum Tonemappers { Reinhard = 0, ACES };
 
@@ -24,4 +24,4 @@ typedef struct RendererProps
 
 } RendererProps;
 
-#endif // INL_RENDERER_PROPS
+#endif // __RENDERER_PROPS_INL__

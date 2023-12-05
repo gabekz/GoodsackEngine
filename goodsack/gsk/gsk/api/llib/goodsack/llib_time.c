@@ -1,7 +1,12 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "../common.h"
 #define TIME_LIB "goodsack.time"
 
-#include <core/device/device.h>
+#include "core/device/device.h"
 
 static int
 time_delta(lua_State *L)

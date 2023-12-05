@@ -1,15 +1,20 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "loader_obj.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/gfx.h>
-#include <util/logger.h>
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "util/gfx.h"
+#include "util/logger.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
-#include <core/graphics/mesh/mesh.h>
+#include "core/graphics/mesh/mesh.h"
 
 #define LOGGING_OBJ
 

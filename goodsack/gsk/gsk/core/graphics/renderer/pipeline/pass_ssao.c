@@ -1,18 +1,22 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "pass_ssao.h"
-
-#include <core/drivers/opengl/opengl.h>
-
-#include <core/graphics/mesh/primitives.h>
-#include <core/graphics/renderer/pipeline/pass_prepass.h>
-
-#include <util/filesystem.h>
-#include <util/logger.h>
-#include <util/maths.h>
-#include <util/sysdefs.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#include "util/filesystem.h"
+#include "util/logger.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
+
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/mesh/primitives.h"
+#include "core/graphics/renderer/pipeline/pass_prepass.h"
 
 static vec3 s_ssaoSamples[64];
 static ui32 s_ssaoFBO;

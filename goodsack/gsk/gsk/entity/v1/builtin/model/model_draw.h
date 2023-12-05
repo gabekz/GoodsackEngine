@@ -1,9 +1,14 @@
-#ifndef H_MODEL_DRAW
-#define H_MODEL_DRAW
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <entity/v1/ecs.h>
+#ifndef __MODEL_DRAW_H__
+#define __MODEL_DRAW_H__
+
+#include "entity/v1/ecs.h"
 
 void
 s_model_draw_init(ECS *ecs);
 
-#endif // H_MODEL_DRAW
+#endif // __MODEL_DRAW_H__

@@ -1,5 +1,10 @@
-#ifndef H_VULKAN_FRAMEBUFFER
-#define H_VULKAN_FRAMEBUFFER
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __VULKAN_FRAMEBUFFER_H__
+#define __VULKAN_FRAMEBUFFER_H__
 
 #include <util/gfx.h>
 #include <util/sysdefs.h>
@@ -20,4 +25,4 @@ vulkan_framebuffer_create(VkDevice device,
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_FRAMEBUFFER
+#endif // __VULKAN_FRAMEBUFFER_H__

@@ -1,7 +1,13 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "primitives.h"
 
 #include <stdlib.h>
-#include <util/sysdefs.h>
+
+#include "util/sysdefs.h"
 
 Mesh *
 primitive_mesh_create(ui32 shape, float scale)

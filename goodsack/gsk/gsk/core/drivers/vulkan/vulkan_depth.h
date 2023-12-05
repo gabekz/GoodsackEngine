@@ -1,7 +1,12 @@
-#ifndef H_VULKAN_DEPTH
-#define H_VULKAN_DEPTH
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
+#ifndef __VULKAN_DEPTH_H__
+#define __VULKAN_DEPTH_H__
+
+#include "util/gfx.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,4 +31,4 @@ vulkan_depth_create_resources(VkPhysicalDevice physicalDevice,
 }
 #endif // __cplusplus
 
-#endif // H_VULKAN_DEPTH
+#endif // __VULKAN_DEPTH_H__

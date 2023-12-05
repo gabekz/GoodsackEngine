@@ -1,12 +1,14 @@
-#ifndef LOADER_OBJ_H
-#define LOADER_OBJ_H
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-// #include "../glbuffer/glbuffer.h"
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/mesh/mesh.h>
-#include <util/sysdefs.h>
+#ifndef __LOADER_OBJ_H__
+#define __LOADER_OBJ_H__
+
+#include "core/graphics/mesh/mesh.h"
 
 MeshData *
 load_obj(const char *path, float scale);
 
-#endif /* LOADER_OBJ_H */
+#endif // __LOADER_OBJ_H__

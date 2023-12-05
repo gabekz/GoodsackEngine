@@ -1,10 +1,15 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef H_VULKAN_SWAPCHAIN
 #define H_VULKAN_SWAPCHAIN
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
-#include <core/drivers/vulkan/vulkan_depth.h>
+#include "core/drivers/vulkan/vulkan_depth.h"
 
 #ifdef __cplusplus
 extern "C" {

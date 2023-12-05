@@ -1,5 +1,10 @@
-#ifndef H_GFX
-#define H_GFX
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __GFX_H__
+#define __GFX_H__
 
 // Only include this once as well
 #ifndef GLFW_INCLUDE_NONE
@@ -55,4 +60,4 @@ clearGLState()
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
-#endif // H_GFX
+#endif // __GFX_H__

@@ -1,7 +1,12 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "lua_reg_print.h"
 
-#include <util/logger.h>
-#include <wrapper/lua/lua_debug.h>
+#include "util/logger.h"
+#include "wrapper/lua/lua_debug.h"
 
 static int
 lua_print(lua_State *L)

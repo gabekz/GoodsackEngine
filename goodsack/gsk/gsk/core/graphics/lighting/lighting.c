@@ -1,7 +1,12 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "lighting.h"
 
-#include <core/device/device.h>
-#include <util/sysdefs.h>
+#include "util/sysdefs.h"
+#include "core/device/device.h"
 
 Light *
 lighting_initialize(vec3 lightPos, vec4 lightColor)

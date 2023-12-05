@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_depth.h"
 
 #include <stdlib.h>
 
-#include <core/drivers/vulkan/vulkan_image.h>
-#include <util/gfx.h>
+#include "util/gfx.h"
+#include "core/drivers/vulkan/vulkan_image.h"
 
 static VkFormat
 _FindSupportedFormat(VkPhysicalDevice physicalDevice,

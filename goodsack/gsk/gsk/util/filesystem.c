@@ -1,10 +1,16 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "filesystem.h"
-#include <GoodsackEngineConfig.h> // We need build info
 
 #include <string.h>
 
-#include <util/logger.h>
-#include <util/sysdefs.h>
+#include <GoodsackEngineConfig.h> // We need build info
+
+#include "util/logger.h"
+#include "util/sysdefs.h"
 
 #if defined(SYS_ENV_WIN)
 #include <windows.h>

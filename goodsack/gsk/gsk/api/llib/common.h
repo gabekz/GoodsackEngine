@@ -1,5 +1,10 @@
-#ifndef COMMON_H
-#define COMMON_H
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,4 +41,4 @@ lua_pushobject(lua_State *L, void *object_pointer, const char *metatable_name)
 }
 #endif // __cplusplus
 
-#endif // COMMON_H
+#endif // __COMMON_H__

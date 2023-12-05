@@ -1,13 +1,18 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_pipeline.h"
 
 #include <stdlib.h>
 
-#include <core/drivers/vulkan/vulkan_depth.h>
-#include <core/drivers/vulkan/vulkan_descriptor.h>
-#include <core/drivers/vulkan/vulkan_uniform_buffer.h>
-#include <core/drivers/vulkan/vulkan_vertex_buffer.h>
+#include "util/logger.h"
 
-#include <util/logger.h>
+#include "core/drivers/vulkan/vulkan_depth.h"
+#include "core/drivers/vulkan/vulkan_descriptor.h"
+#include "core/drivers/vulkan/vulkan_uniform_buffer.h"
+#include "core/drivers/vulkan/vulkan_vertex_buffer.h"
 
 struct FileDescriptor
 {

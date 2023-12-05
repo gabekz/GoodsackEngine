@@ -1,8 +1,15 @@
-#include <gtest/gtest.h>
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include <stdlib.h>
 
-#include <util/filesystem.h>
-#include <util/sysdefs.h>
+#include "util/filesystem.h"
+#include "util/sysdefs.h"
+
+// TODO: replace with thirdparty root-include 
+#include <gtest/gtest.h>
 
 TEST(Util_Filesystem, URI_Parse)
 {

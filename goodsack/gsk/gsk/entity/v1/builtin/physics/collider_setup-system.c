@@ -1,13 +1,17 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "collider_setup-system.h"
 
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
-#include <core/device/device.h>
+#include "core/device/device.h"
 
-#include <physics/physics_collision.h>
-#include <physics/physics_solver.h>
+#include "physics/physics_collision.h"
+#include "physics/physics_solver.h"
 
 static void
 init(Entity e)

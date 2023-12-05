@@ -1,12 +1,17 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "debug_context.h"
 
-#include <util/filesystem.h>
+#include "util/filesystem.h"
 
-#include <core/device/device.h>
-#include <core/drivers/opengl/opengl.h>
+#include "core/device/device.h"
+#include "core/drivers/opengl/opengl.h"
 
-#include <core/graphics/material/material.h>
-#include <core/graphics/mesh/primitives.h>
+#include "core/graphics/material/material.h"
+#include "core/graphics/mesh/primitives.h"
 
 DebugContext *
 debug_context_init()

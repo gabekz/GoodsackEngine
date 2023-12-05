@@ -1,5 +1,10 @@
-#ifndef H_C_CAMERA
-#define H_C_CAMERA
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __CAMERA_H__
+#define __CAMERA_H__
 
 #include <util/gfx.h>
 #include <util/maths.h>
@@ -50,4 +55,4 @@ struct ComponentCamera
 void
 s_camera_init(ECS *ecs);
 
-#endif // H_C_CAMERA
+#endif // __CAMERA_H__

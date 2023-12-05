@@ -1,7 +1,10 @@
-#ifndef H_PASS_COMPUTE
-#define H_PASS_COMPUTE
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/sysdefs.h>
+#ifndef __PASS_COMPUTE_H__
+#define __PASS_COMPUTE_H__
 
 void
 computebuffer_init();
@@ -9,4 +12,4 @@ computebuffer_init();
 void
 computebuffer_draw();
 
-#endif
+#endif // __PASS_COMPUTE_H__

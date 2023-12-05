@@ -1,10 +1,16 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_index_buffer.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include <core/drivers/vulkan/vulkan_buffer.h>
-#include <util/gfx.h>
+#include "util/gfx.h"
+
+#include "core/drivers/vulkan/vulkan_buffer.h"
 
 VulkanIndexBuffer *
 vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,

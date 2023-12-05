@@ -1,5 +1,11 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "debug_panel.hpp"
-#include <util/logger.h>
+
+#include "util/logger.h"
 
 void
 gsk::tools::DebugPanel::draw(void)

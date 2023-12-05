@@ -1,8 +1,13 @@
-#ifndef HPP_TEXTURE_ASSET
-#define HPP_TEXTURE_ASSET
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <asset/asset.hpp>
-#include <util/sysdefs.h>
+#ifndef __TEXTURE_ASSET_HPP__
+#define __TEXTURE_ASSET_HPP__
+
+#include "util/sysdefs.h"
+#include "asset/asset.hpp"
 
 namespace goodsack {
 namespace asset {
@@ -31,4 +36,4 @@ class TextureAsset : public Asset {
 } // namespace asset
 } // namespace goodsack
 
-#endif
+#endif // __TEXTURE_ASSET_HPP__

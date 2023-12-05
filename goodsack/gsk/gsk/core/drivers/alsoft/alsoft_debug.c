@@ -1,13 +1,19 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "alsoft_debug.h"
 
 #include <stdlib.h>
 #include <string.h>
 
+#include "util/logger.h"
+#include "asset/import/loader_wav.h"
+
+// TODO: Move to thirdparty directive - gkutuzov/GoodsackEngine#19
 #include <AL/al.h>
 #include <AL/alc.h>
-
-#include <asset/import/loader_wav.h>
-#include <util/logger.h>
 
 int
 openal_debug_callback()

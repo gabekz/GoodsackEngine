@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "debug_draw_skeleton.h"
 
-#include <core/graphics/mesh/mesh.h>
-#include <core/graphics/mesh/primitives.h>
-#include <tools/debug/debug_context.h>
+#include "core/graphics/mesh/mesh.h"
+#include "core/graphics/mesh/primitives.h"
+#include "tools/debug/debug_context.h"
 
 void
 debug_draw_skeleton(DebugContext *debugContext, Skeleton *skeleton)

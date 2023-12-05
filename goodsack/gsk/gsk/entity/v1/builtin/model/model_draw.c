@@ -1,17 +1,21 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "model_draw.h"
 
-#include <entity/v1/builtin/model/model.h>
-#include <entity/v1/builtin/transform/transform.h>
+#include "asset/import/loader_obj.h"
+#include "entity/v1/builtin/model/model.h"
+#include "entity/v1/builtin/transform/transform.h"
+#include "entity/v1/ecs.h"
 
-#include <asset/import/loader_obj.h>
-#include <core/graphics/mesh/mesh.h>
-#include <core/graphics/shader/shader.h>
-#include <entity/v1/ecs.h>
+#include "core/device/device.h"
+#include "core/graphics/mesh/mesh.h"
+#include "core/graphics/shader/shader.h"
 
-#include <core/device/device.h>
-
-#include <tools/debug/debug_draw_bounds.h>
-#include <tools/debug/debug_draw_skeleton.h>
+#include "tools/debug/debug_draw_bounds.h"
+#include "tools/debug/debug_draw_skeleton.h"
 
 #define DEBUG_DRAW_SKELETON  0
 #define DEBUG_DRAW_BOUNDS    0

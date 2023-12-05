@@ -1,8 +1,13 @@
-#ifndef H_VULKAN_DESCRIPTOR_BUILDER
-#define H_VULKAN_DESCRIPTOR_BUILDER
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#ifndef __VULKAN_DESCRIPTOR_BUILDER_H__
+#define __VULKAN_DESCRIPTOR_BUILDER_H__
+
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,4 +65,4 @@ vulkan_descriptor_builder_bind_image(ui32 binding,
 }
 #endif // __cplusplus
 
-#endif
+#endif // __VULKAN_DESCRIPTOR_BUILDER_H__

@@ -1,12 +1,16 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "rigidbody-system.h"
 
-#include <util/logger.h>
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "util/logger.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
-#include <core/device/device.h>
-
-#include <physics/physics_solver.h>
+#include "core/device/device.h"
+#include "physics/physics_solver.h"
 
 static void
 _position_solver(struct ComponentRigidbody *rigidbody,

@@ -1,12 +1,15 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef __DEBUG_TOOLBAR_HPP__
 #define __DEBUG_TOOLBAR_HPP__
 
 #include <vector>
 
-extern "C" {
-#include <core/graphics/renderer/v1/renderer.h>
-}
-#include <entity/v1/ecs.h>
+#include "core/graphics/renderer/v1/renderer.h"
+#include "entity/v1/ecs.h"
 
 #define DEBUG_MENUS_COUNT 3
 

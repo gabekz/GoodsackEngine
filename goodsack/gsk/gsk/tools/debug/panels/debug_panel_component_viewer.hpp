@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef __DEBUG_PANEL_COMPONENT_VIEWER_HPP__
 #define __DEBUG_PANEL_COMPONENT_VIEWER_HPP__
 
-#include <entity/v1/ecs.h>
-#include <tools/debug/debug_panel.hpp>
+#include "entity/v1/ecs.h"
+#include "tools/debug/debug_panel.hpp"
 
 namespace gsk {
 namespace tools {

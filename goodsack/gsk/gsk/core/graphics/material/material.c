@@ -1,14 +1,19 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "material.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 
-#include <util/gfx.h>
-#include <util/logger.h>
+#include "util/gfx.h"
+#include "util/logger.h"
 
-#include <core/device/device.h>
-#include <core/graphics/shader/shader.h>
-#include <core/graphics/texture/texture.h>
+#include "core/device/device.h"
+#include "core/graphics/shader/shader.h"
+#include "core/graphics/texture/texture.h"
 
 Material *
 material_create(ShaderProgram *shader,

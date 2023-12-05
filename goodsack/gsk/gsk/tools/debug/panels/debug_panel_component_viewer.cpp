@@ -1,12 +1,18 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "debug_panel_component_viewer.hpp"
 
-#include <entity/v1/ecs.h>
-#include <imgui.h>
+#include "entity/v1/ecs.h"
 
-#include <core/device/device.h>
-#include <core/drivers/alsoft/alsoft.h>
-#include <core/drivers/alsoft/alsoft_debug.h>
-#include <core/graphics/mesh/model.h>
+#include "core/device/device.h"
+#include "core/drivers/alsoft/alsoft.h"
+#include "core/drivers/alsoft/alsoft_debug.h"
+#include "core/graphics/mesh/model.h"
+
+#include <imgui.h>
 
 void
 gsk::tools::panels::ComponentViewer::show_for_entity(Entity entity)

@@ -1,15 +1,20 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 // clang-format off
 
 #include "gui_element.h"
 
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/material/material.h>
-#include <core/graphics/mesh/primitives.h>
+#include "util/gfx.h"
+#include "util/sysdefs.h"
+#include "util/maths.h"
+#include "util/filesystem.h"
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
-#include <util/maths.h>
-#include <util/filesystem.h>
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/material/material.h"
+#include "core/graphics/mesh/primitives.h"
 
 #define USING_SPRITE_SHEET FALSE
 #define USING_BLENDING     TRUE

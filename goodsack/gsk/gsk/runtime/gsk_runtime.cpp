@@ -1,29 +1,30 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "gsk_runtime.hpp"
 
-#include <util/filesystem.h>
-#include <util/logger.h>
-#include <util/sysdefs.h>
+#include "util/filesystem.h"
+#include "util/logger.h"
+#include "util/sysdefs.h"
 
-#include <core/device/device.h>
-
-#include <core/device/device.h>
-#include <core/graphics/lighting/lighting.h>
-#include <entity/lua/eventstore.hpp>
-#include <entity/v1/ecs.h>
-#include <wrapper/lua/lua_init.hpp>
+#include "core/device/device.h"
+#include "core/graphics/lighting/lighting.h"
+#include "entity/lua/eventstore.hpp"
+#include "entity/v1/ecs.h"
+#include "wrapper/lua/lua_init.hpp"
 
 #if GSK_RUNTIME_USE_DEBUG
-#include <tools/debug/debug_toolbar.hpp>
+#include "tools/debug/debug_toolbar.hpp"
 #endif // GSK_RUNTIME_USE_DEBUG
 
-#include <entity/v1/builtin/component_test.h>
+#include "entity/v1/builtin/component_test.h"
 
 #ifdef RENDERER_2
-#include <core/graphics/renderer/renderer.hpp>
+#include "core/graphics/renderer/renderer.hpp"
 #else
-extern "C" {
-#include <core/graphics/renderer/v1/renderer.h>
-}
+#include "core/graphics/renderer/v1/renderer.h"
 #endif
 
 extern "C" {
@@ -132,6 +133,7 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 
 #ifdef USING_LUA
     // Main Lua entry
+    // TODO: possibly refactor this path (make mutable)
     LuaInit(GSK_PATH("data://scripts/main.lua"), s_runtime.ecs);
 #endif
 

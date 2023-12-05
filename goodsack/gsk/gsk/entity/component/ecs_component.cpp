@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "ecs_component.hpp"
 
 #include <cstring>
@@ -7,9 +12,9 @@
 #include <string>
 
 #include <stdlib.h>
-
 #include <assert.h>
-#include <entity/lua/eventstore.hpp>
+
+#include "entity/lua/eventstore.hpp"
 
 #if GET_TAG
 // #include <entity/ecsdefs.h>

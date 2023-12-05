@@ -1,11 +1,16 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 /*-----------------------------------------
  * VAO, VBO and IBO header
  * --------------------------------------*/
 
-#ifndef H_OPENGL_BUFFER
-#define H_OPENGL_BUFFER
+#ifndef __OPENGL_BUFFER_H__
+#define __OPENGL_BUFFER_H__
 
-#include <util/gfx.h>
+#include "util/gfx.h"
 
 typedef struct _VAO VAO;
 typedef struct _VBO VBO;
@@ -73,4 +78,4 @@ ibo_bind(IBO *self);
 void
 ibo_destroy(IBO *self);
 
-#endif // H_OPENGL_BUFFER
+#endif // __OPENGL_BUFFER_H__

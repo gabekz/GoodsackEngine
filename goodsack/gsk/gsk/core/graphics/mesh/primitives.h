@@ -1,10 +1,15 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 // clang-format off
 
-#ifndef PRIMITIVES_H
-#define PRIMITIVES_H
+#ifndef __PRIMITIVES_H__
+#define __PRIMITIVES_H__
 
-#include <util/sysdefs.h>
-#include <core/graphics/mesh/mesh.h>
+#include "util/sysdefs.h"
+#include "core/graphics/mesh/mesh.h"
 
 #define PRIMITIVE_PLANE     0xAB00
 #define PRIMITIVE_CUBE      0xAB01
@@ -128,4 +133,4 @@ Mesh *primitive_mesh_create(ui32 shape, float scale);
 void primitive_pyramid(float* out);
 float* prim_vert_rect();
 
-#endif // PRIMITIVES_H
+#endif // __PRIMITIVES_H__

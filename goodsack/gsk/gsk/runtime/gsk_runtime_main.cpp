@@ -1,8 +1,16 @@
-#include <runtime/gsk_runtime.hpp>
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <filesystem>
+#include "runtime/gsk_runtime.hpp"
+
 #include <iostream>
-#include <util/sysdefs.h>
+#if defined (SYS_ENV_WIN)
+#include <filesystem>
+#endif
+
+#include "util/sysdefs.h"
 
 static void
 _gsk_getFilepathInfo()

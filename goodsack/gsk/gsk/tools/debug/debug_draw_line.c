@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "debug_draw_line.h"
 
-#include <core/drivers/opengl/opengl.h>
-#include <tools/debug/debug_context.h>
-#include <util/maths.h>
+#include "core/drivers/opengl/opengl.h"
+#include "tools/debug/debug_context.h"
+#include "util/maths.h"
 
 // NOTE: should take DebugContext -> contains shader information
 

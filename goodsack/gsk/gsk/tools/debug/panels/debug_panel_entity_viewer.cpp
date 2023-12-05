@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "debug_panel_entity_viewer.hpp"
 
-#include <entity/v1/ecs.h>
-#include <imgui.h>
+#include "entity/v1/ecs.h"
+#include "tools/debug/panels/debug_panel_component_viewer.hpp"
 
-#include <tools/debug/panels/debug_panel_component_viewer.hpp>
+#include <imgui.h>
 
 using ComponentViewer = gsk::tools::panels::ComponentViewer;
 

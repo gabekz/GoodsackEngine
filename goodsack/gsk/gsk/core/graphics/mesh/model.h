@@ -1,8 +1,13 @@
-#ifndef H_MODEL
-#define H_MODEL
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/graphics/mesh/mesh.h>
-#include <util/sysdefs.h>
+#ifndef __MODEL_H__
+#define __MODEL_H__
+
+#include "util/sysdefs.h"
+#include "core/graphics/mesh/mesh.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,4 +42,4 @@ model_load_from_file(const char *path, f32 scale, ui16 importMaterials);
 }
 #endif // __cplusplus
 
-#endif // H_MODEL
+#endif // __MODEL_H__

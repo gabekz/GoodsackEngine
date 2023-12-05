@@ -1,5 +1,10 @@
-#ifndef H_LUA_DEPS
-#define H_LUA_DEPS
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __LUA_DEPS_H__
+#define __LUA_DEPS_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,4 +18,4 @@ extern "C" {
 }
 #endif
 
-#endif // H_LUA_DEPS
+#endif // __LUA_DEPS_H__

@@ -1,15 +1,20 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "model.h"
 
-#include <core/graphics/mesh/mesh.h>
-#include <util/logger.h>
-#include <util/sysdefs.h>
-
-#include <asset/import/loader_gltf.h>
-#include <asset/import/loader_obj.h>
-
-#include <util/maths.h>
-
 #include <string.h>
+
+#include "util/logger.h"
+#include "util/sysdefs.h"
+#include "util/maths.h"
+
+#include "core/graphics/mesh/mesh.h"
+
+#include "asset/import/loader_gltf.h"
+#include "asset/import/loader_obj.h"
 
 Model *
 model_load_from_file(const char *path, f32 scale, ui16 importMaterials)

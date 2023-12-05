@@ -1,8 +1,14 @@
-#ifndef INL_MESH_HELPERS
-#define INL_MESH_HELPERS
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/graphics/mesh/mesh.h>
+#ifndef __MESH_HELPERS_INL__
+#define __MESH_HELPERS_INL__
+
 #include <string.h>
+
+#include "core/graphics/mesh/mesh.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -91,4 +97,4 @@ _joint_transform_world(Joint *joint, float *outMatrix)
 }
 #endif // __cplusplus
 
-#endif // H_MESH_HELPERS
+#endif // __MESH_HELPERS_INL__

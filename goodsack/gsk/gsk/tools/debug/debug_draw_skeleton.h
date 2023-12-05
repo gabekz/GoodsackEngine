@@ -1,10 +1,15 @@
-#ifndef H_DEBUG_DRAW_SKELETON
-#define H_DEBUG_DRAW_SKELETON
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/graphics/mesh/mesh.h>
-#include <tools/debug/debug_context.h>
+#ifndef __DEBUG_DRAW_SKELETON_H__
+#define __DEBUG_DRAW_SKELETON_H__
+
+#include "core/graphics/mesh/mesh.h"
+#include "tools/debug/debug_context.h"
 
 void
 debug_draw_skeleton(DebugContext *debugContext, Skeleton *skeleton);
 
-#endif // H_DEBUG_DRAW_SKELETON
+#endif // __DEBUG_DRAW_SKELETON_H__

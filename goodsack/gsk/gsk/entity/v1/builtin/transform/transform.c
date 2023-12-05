@@ -1,7 +1,12 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "transform.h"
 
-#include <core/graphics/shader/shader.h>
-#include <entity/v1/ecs.h>
+#include "core/graphics/shader/shader.h"
+#include "entity/v1/ecs.h"
 
 // #define ECS_SYSTEM
 //  ECS_SYSTEM_DECLARE()

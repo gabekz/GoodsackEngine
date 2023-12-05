@@ -1,7 +1,12 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_debug.h"
 
-#include <core/drivers/vulkan/vulkan_support.h>
-#include <util/logger.h>
+#include "util/logger.h"
+#include "core/drivers/vulkan/vulkan_support.h"
 
 VKAPI_ATTR VkBool32 VKAPI_CALL
 vulkan_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

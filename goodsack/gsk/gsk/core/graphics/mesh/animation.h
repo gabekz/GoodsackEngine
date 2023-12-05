@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#ifndef H_ANIMATION
-#define H_ANIMATION
+#ifndef __ANIMATION_H__
+#define __ANIMATION_H__
 
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
 #define MAX_BONES         256
 #define MAX_BONE_NAME_LEN 256
@@ -96,4 +100,4 @@ animation_set_keyframe_lerp(Animation *animation, ui32 keyframe, float ratio);
 }
 #endif
 
-#endif // H_ANIMATION
+#endif // __ANIMATION_H__

@@ -1,17 +1,22 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 /* Final screen pass (Post Processing + MSAA applied) */
 #include "pass_screen.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/mesh/primitives.h>
-#include <core/graphics/shader/shader.h>
+#include "util/filesystem.h"
+#include "util/gfx.h"
+#include "util/logger.h"
+#include "util/sysdefs.h"
 
-#include <util/filesystem.h>
-#include <util/gfx.h>
-#include <util/logger.h>
-#include <util/sysdefs.h>
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/mesh/primitives.h"
+#include "core/graphics/shader/shader.h"
 
 static ui32 msFBO, sbFBO;
 static ui32 msRBO, sbRBO;

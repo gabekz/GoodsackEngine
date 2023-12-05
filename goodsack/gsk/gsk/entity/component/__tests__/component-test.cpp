@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 /*T*********************************************************************
  * FILENAME:        component-test.cpp
  *
@@ -10,15 +15,16 @@
  *
  *T*/
 
-#include <gtest/gtest.h>
 #include <stdlib.h>
 
-#include <entity/component/ecs_component.hpp>
-#include <util/lua_deps.h>
+#include "util/lua_deps.h"
+#include "util/maths.h"
 
-#include <entity/component/ecs_component_layout_loader.hpp>
+#include "entity/component/ecs_component.hpp"
+#include "entity/component/ecs_component_layout_loader.hpp"
 
-#include <util/maths.h>
+
+#include <gtest/gtest.h>
 
 using namespace entity;
 

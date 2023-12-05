@@ -1,12 +1,17 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "pass_prepass.h"
 
-#include <util/filesystem.h>
+#include "util/filesystem.h"
 
-#include <core/graphics/material/material.h>
-#include <core/graphics/mesh/primitives.h>
-#include <core/graphics/shader/shader.h>
+#include "core/graphics/material/material.h"
+#include "core/graphics/mesh/primitives.h"
+#include "core/graphics/shader/shader.h"
 
-#include <core/drivers/opengl/opengl.h>
+#include "core/drivers/opengl/opengl.h"
 
 static ShaderProgram *s_depthPrepassShader;
 static Material *s_depthPrepassMaterial;

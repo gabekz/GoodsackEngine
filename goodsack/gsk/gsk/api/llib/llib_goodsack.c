@@ -1,5 +1,11 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "common.h"
 
+// TODO: Move this
 #include "GoodsackEngineConfig.h"
 
 #define GOODSACK_LIB            "goodsack"

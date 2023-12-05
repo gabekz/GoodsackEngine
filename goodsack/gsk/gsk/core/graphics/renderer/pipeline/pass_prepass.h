@@ -1,7 +1,12 @@
-#ifndef H_PASS_PREPASS
-#define H_PASS_PREPASS
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/graphics/material/material.h>
+#ifndef __PASS_PREPASS_H__
+#define __PASS_PREPASS_H__
+
+#include "core/graphics/material/material.h"
 
 void
 prepass_init();
@@ -20,4 +25,4 @@ prepass_getPosition();
 ui32
 prepass_getNormal();
 
-#endif // H_PASS_PREPASS
+#endif // __PASS_PREPASS_H__

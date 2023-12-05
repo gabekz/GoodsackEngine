@@ -1,11 +1,16 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "loader_wav.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/logger.h>
-#include <util/sysdefs.h>
+#include "util/logger.h"
+#include "util/sysdefs.h"
 
 AudioData *
 load_wav(const char *filepath)

@@ -1,9 +1,15 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "../common.h"
 #define INPUT_LIB "goodsack.input"
 
-#include <core/device/device.h>
-#include <runtime/gsk_runtime.hpp>
-#include <util/gfx.h>
+#include "util/gfx.h"
+
+#include "core/device/device.h"
+#include "runtime/gsk_runtime.hpp"
 
 extern "C" {
 

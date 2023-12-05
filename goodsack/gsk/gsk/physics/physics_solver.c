@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "physics_solver.h"
 
 #include <assert.h>
 
-#include <physics/physics_types.inl>
-#include <util/logger.h>
+#include "physics/physics_types.inl"
+#include "util/logger.h"
 
 PhysicsSolver
 physics_solver_init()

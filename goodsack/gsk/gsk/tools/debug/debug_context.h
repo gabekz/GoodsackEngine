@@ -1,8 +1,13 @@
-#ifndef H_DEBUG_CONTEXT
-#define H_DEBUG_CONTEXT
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/material/material.h>
+#ifndef __DEBUG_CONTEXT_H__
+#define __DEBUG_CONTEXT_H__
+
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/material/material.h"
 
 typedef struct DebugContext
 {
@@ -17,4 +22,4 @@ typedef struct DebugContext
 DebugContext *
 debug_context_init();
 
-#endif // H_DEBUG_CONTEXT
+#endif // __DEBUG_CONTEXT_H__

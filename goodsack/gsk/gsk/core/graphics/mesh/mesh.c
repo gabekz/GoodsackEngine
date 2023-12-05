@@ -1,9 +1,15 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "mesh.h"
 
-#include <asset/import/loader_gltf.h>
-#include <asset/import/loader_obj.h>
-#include <core/device/device.h>
-#include <util/logger.h>
+#include "util/logger.h"
+
+#include "asset/import/loader_gltf.h"
+#include "asset/import/loader_obj.h"
+#include "core/device/device.h"
 
 Mesh *
 mesh_assemble(MeshData *meshData)

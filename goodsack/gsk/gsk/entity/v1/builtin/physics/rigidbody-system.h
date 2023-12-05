@@ -1,9 +1,14 @@
-#ifndef H_RIGIDBODY_SYSTEM
-#define H_RIGIDBODY_SYSTEM
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <entity/v1/ecs.h>
+#ifndef __RIGIDBODY_SYSTEM_H__
+#define __RIGIDBODY_SYSTEM_H__
+
+#include "entity/v1/ecs.h"
 
 void
 s_rigidbody_system_init(ECS *ecs);
 
-#endif // H_RIGIDBODY_SYSTEM
+#endif // __RIGIDBODY_SYSTEM_H__

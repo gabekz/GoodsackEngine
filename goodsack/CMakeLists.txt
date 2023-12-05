@@ -1,1 +1,3 @@
-# TODO: Handle libs and related thirdparty HERE
+#################################################################
+# goodsack/CmakeLists.txt
+

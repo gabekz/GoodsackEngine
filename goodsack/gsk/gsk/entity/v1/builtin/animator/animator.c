@@ -1,11 +1,16 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "animator.h"
 
-#include <core/graphics/mesh/animation.h>
-#include <entity/v1/builtin/components.h>
+#include "core/graphics/mesh/animation.h"
+#include "entity/v1/builtin/components.h"
 
-#include <core/device/device.h>
+#include "core/device/device.h"
 
-#include <entity/__generated__/components_gen.h>
+#include "entity/__generated__/components_gen.h"
 
 static void
 init(Entity e)

@@ -1,7 +1,13 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_descriptor.h"
-#include <core/drivers/vulkan/vulkan_support.h>
 
 #include <stdlib.h>
+
+#include "core/drivers/vulkan/vulkan_support.h"
 
 VkDescriptorPool
 vulkan_descriptor_pool_create(VkDevice device)

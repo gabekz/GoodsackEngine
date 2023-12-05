@@ -1,9 +1,14 @@
-#ifndef H_COLLIDER_SETUP_SYSTEM
-#define H_COLLIDER_SETUP_SYSTEM
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <entity/v1/ecs.h>
+#ifndef __COLLIDER_SETUP_SYSTEM_H__
+#define __COLLIDER_SETUP_SYSTEM_H__
+
+#include "entity/v1/ecs.h"
 
 void
 s_collider_setup_system_init(ECS *ecs);
 
-#endif // H_COLLIDER_SETUP_SYSTEM
+#endif // __COLLIDER_SETUP_SYSTEM_H__

@@ -1,5 +1,10 @@
-#ifndef H_GUI_TEXT_H
-#define H_GUI_TEXT_H
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __GUI_TEXT_H__
+#define __GUI_TEXT_H__
 
 #include <core/graphics/texture/texture.h>
 #include <core/graphics/ui/gui_element.h>
@@ -32,4 +37,4 @@ gui_text_draw(GuiText *self);
 }
 #endif // __cplusplus
 
-#endif // H_GUI_TEXT_H
+#endif // __GUI_TEXT_H__

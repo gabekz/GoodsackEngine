@@ -1,12 +1,18 @@
-#ifndef H_LIGHTING
-#define H_LIGHTING
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
+#ifndef __LIGHTING_H__
+#define __LIGHTING_H__
+
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/shader/shader.h"
+#include "core/graphics/texture/texture.h"
+
+// TODO: Move to thirdparty directive - gkutuzov/GoodsackEngine#19
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
-
-#include <core/drivers/opengl/opengl.h>
-#include <core/graphics/shader/shader.h>
-#include <core/graphics/texture/texture.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,4 +39,4 @@ lighting_update(Light *light, vec3 lightPos, vec4 lightColor);
 }
 #endif
 
-#endif // H_LIGHTING
+#endif // __LIGHTING_H__

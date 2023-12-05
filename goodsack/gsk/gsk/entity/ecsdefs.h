@@ -1,7 +1,12 @@
-#ifndef H_ECSDEFS
-#define H_ECSDEFS
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/sysdefs.h>
+#ifndef __ECSDEFS_H__
+#define __ECSDEFS_H__
+
+#include "util/sysdefs.h"
 
 // #ifdef __cplusplus
 // enum ECSEvent { ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE };

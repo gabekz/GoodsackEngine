@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 // Debugging APIENTRY
 
 #include "opengl_debug.h"
@@ -5,8 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <util/gfx.h>
-#include <util/logger.h>
+#include "util/gfx.h"
+#include "util/logger.h"
 
 void APIENTRY
 glDebugOutput(GLenum source,

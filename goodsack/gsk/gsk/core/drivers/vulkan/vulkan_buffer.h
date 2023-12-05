@@ -1,8 +1,13 @@
-#ifndef H_VULKAN_BUFFER
-#define H_VULKAN_BUFFER
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#ifndef __VULKAN_BUFFER_H__
+#define __VULKAN_BUFFER_H__
+
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
 // TODO: Possibly move to vulkan_memory
 ui32
@@ -27,4 +32,4 @@ vulkan_buffer_copy(VkDevice device,
                    VkBuffer dstBuffer,
                    VkDeviceSize size);
 
-#endif // H_VULKAN_BUFFER
+#endif // __VULKAN_BUFFER_H__

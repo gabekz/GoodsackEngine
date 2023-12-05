@@ -1,28 +1,32 @@
-#include "debug_toolbar.hpp"
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <stdio.h>
+#include "debug_toolbar.hpp"
 
 #include <iostream>
 #include <string>
 
-#include <entity/v1/ecs.h>
+#include <stdio.h>
 
-extern "C" {
-#include <core/graphics/renderer/v1/renderer.h>
-}
+#include "entity/v1/ecs.h"
 
-#include <core/device/device.h>
-#include <core/drivers/vulkan/vulkan.h>
+#include "core/graphics/renderer/v1/renderer.h"
 
-#include <tools/debug/debug_panel.hpp>
+#include "core/device/device.h"
+#include "core/drivers/vulkan/vulkan.h"
+
+#include "tools/debug/debug_panel.hpp"
 // debug panels
-#include <tools/debug/panels/debug_panel_assets.hpp>
-#include <tools/debug/panels/debug_panel_component_viewer.hpp>
-#include <tools/debug/panels/debug_panel_entity_viewer.hpp>
-#include <tools/debug/panels/debug_panel_lighting.hpp>
-#include <tools/debug/panels/debug_panel_profiler.hpp>
-#include <tools/debug/panels/debug_panel_scene_viewer.hpp>
+#include "tools/debug/panels/debug_panel_assets.hpp"
+#include "tools/debug/panels/debug_panel_component_viewer.hpp"
+#include "tools/debug/panels/debug_panel_entity_viewer.hpp"
+#include "tools/debug/panels/debug_panel_lighting.hpp"
+#include "tools/debug/panels/debug_panel_profiler.hpp"
+#include "tools/debug/panels/debug_panel_scene_viewer.hpp"
 
+// TODO: thirdparty root-include
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"

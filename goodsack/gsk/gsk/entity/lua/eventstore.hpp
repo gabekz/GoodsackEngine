@@ -1,5 +1,10 @@
-#ifndef HPP_EVENTSTORE
-#define HPP_EVENTSTORE
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __EVENTSTORE_HPP__
+#define __EVENTSTORE_HPP__
 
 #include <entity/component/ecs_component.hpp>
 #include <entity/component/ecs_component_layout_loader.hpp>
@@ -66,4 +71,4 @@ class LuaEventStore {
 
 } // namespace entity
 
-#endif // HPP_EVENTSTORE
+#endif // __EVENTSTORE_HPP__

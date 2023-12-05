@@ -1,25 +1,31 @@
-#ifndef H_RENDERER
-#define H_RENDERER
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/gfx.h>
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#ifndef __RENDERER_H__
+#define __RENDERER_H__
 
-#include <core/graphics/lighting/lighting.h>
-#include <core/graphics/lighting/skybox.h>
-#include <core/graphics/material/material.h>
-#include <core/graphics/renderer/renderer_props.inl>
-#include <core/graphics/scene/scene.h>
-#include <core/graphics/ui/billboard.h>
-#include <core/graphics/ui/gui_element.h>
-#include <core/graphics/ui/gui_text.h>
+#include "util/gfx.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
-#include <core/graphics/renderer/pipeline/pass_shadowmap.h>
-#include <core/graphics/renderer/pipeline/pass_ssao.h>
+#include "core/graphics/lighting/lighting.h"
+#include "core/graphics/lighting/skybox.h"
+#include "core/graphics/material/material.h"
+#include "core/graphics/scene/scene.h"
+#include "core/graphics/ui/billboard.h"
+#include "core/graphics/ui/gui_element.h"
+#include "core/graphics/ui/gui_text.h"
 
-#include <core/drivers/vulkan/vulkan_device.h>
+#include "core/graphics/renderer/renderer_props.inl"
 
-#include <tools/debug/debug_context.h>
+#include "core/graphics/renderer/pipeline/pass_shadowmap.h"
+#include "core/graphics/renderer/pipeline/pass_ssao.h"
+
+#include "core/drivers/vulkan/vulkan_device.h"
+
+#include "tools/debug/debug_context.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -127,4 +133,4 @@ renderer_active_scene(Renderer *self, ui16 sceneIndex);
 }
 #endif
 
-#endif // H_RENDERER
+#endif // __RENDERER_H__

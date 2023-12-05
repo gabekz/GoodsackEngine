@@ -1,18 +1,17 @@
-#ifndef HPP_GSK_RUNTIME
-#define HPP_GSK_RUNTIME
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/sysdefs.h>
+// TODO: Refactor this file in next commit
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef __GSK_RUNTIME_HPP__
+#define __GSK_RUNTIME_HPP__
 
-#include <core/graphics/renderer/v1/renderer.h>
-#include <entity/v1/ecs.h>
+#include "util/sysdefs.h"
 
-#ifdef __cplusplus
-}
-#endif
+#include "core/graphics/renderer/v1/renderer.h"
+#include "entity/v1/ecs.h"
 
 // #define RENDERER_2
 #define USING_LUA                    1
@@ -39,4 +38,4 @@ gsk_runtime_get_renderer();
 void
 gsk_runtime_set_scene(ui16 sceneIndex);
 
-#endif // H_GSK_RUNTIME
+#endif // __GSK_RUNTIME_HPP__

@@ -1,7 +1,12 @@
-#ifndef H_PASS_SSAO
-#define H_PASS_SSAO
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/sysdefs.h>
+#ifndef __PASS_SSAO_H__
+#define __PASS_SSAO_H__
+
+#include "util/sysdefs.h"
 
 typedef struct SsaoOptions
 {
@@ -19,4 +24,4 @@ pass_ssao_bind();
 ui32
 pass_ssao_getOutputTextureId();
 
-#endif // H_PASS_SSAO
+#endif // __PASS_SSAO_H__

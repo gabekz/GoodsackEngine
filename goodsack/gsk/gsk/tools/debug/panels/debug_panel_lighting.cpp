@@ -1,4 +1,10 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "debug_panel_lighting.hpp"
+
 #include <imgui.h>
 
 void

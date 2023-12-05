@@ -1,19 +1,24 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "lua_init.hpp"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/filesystem.h>
-#include <util/logger.h>
-#include <util/lua_deps.h>
+#include "util/filesystem.h"
+#include "util/logger.h"
+#include "util/lua_deps.h"
 
-#include <entity/lua/eventstore.hpp>
-#include <entity/lua/reg_system.hpp>
+#include "entity/lua/eventstore.hpp"
+#include "entity/lua/reg_system.hpp"
+#include "entity/v1/ecs.h"
 
-#include <wrapper/lua/lua_debug.h>
-#include <wrapper/lua/lua_reg_print.h>
+#include "wrapper/lua/lua_debug.h"
+#include "wrapper/lua/lua_reg_print.h"
 
-#include <entity/v1/ecs.h>
 
 void
 LuaInit(const char *file, ECS *ecs)

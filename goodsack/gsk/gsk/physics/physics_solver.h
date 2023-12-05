@@ -1,5 +1,10 @@
-#ifndef H_PHYSICS_SOLVER_H
-#define H_PHYSICS_SOLVER_H
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __PHYSICS_SOLVER_H__
+#define __PHYSICS_SOLVER_H__
 
 #include <util/maths.h>
 #include <util/sysdefs.h>
@@ -25,4 +30,4 @@ physics_solver_pop(PhysicsSolver *solver);
 void
 physics_solver_step(PhysicsSolver *solver);
 
-#endif // H_PHYSICS_SOLVER_H
+#endif // __PHYSICS_SOLVER_H__

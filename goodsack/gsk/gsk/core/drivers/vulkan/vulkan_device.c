@@ -1,6 +1,9 @@
-#include "vulkan_device.h"
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/sysdefs.h>
+#include "vulkan_device.h"
 
 #ifdef SYS_ENV_UNIX
 #define VK_USE_PLATFORM_XCB_KHR
@@ -10,20 +13,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/gfx.h>
-#include <util/logger.h>
+#include "util/sysdefs.h"
+#include "util/gfx.h"
+#include "util/logger.h"
 
-#include <core/graphics/texture/texture.h>
+#include "core/graphics/texture/texture.h"
 
-#include <core/drivers/vulkan/vulkan_command.h>
-#include <core/drivers/vulkan/vulkan_debug.h>
-#include <core/drivers/vulkan/vulkan_descriptor.h>
-#include <core/drivers/vulkan/vulkan_support.h>
-#include <core/drivers/vulkan/vulkan_swapchain.h>
-#include <core/drivers/vulkan/vulkan_vertex_buffer.h>
+#include "core/drivers/vulkan/vulkan_command.h"
+#include "core/drivers/vulkan/vulkan_debug.h"
+#include "core/drivers/vulkan/vulkan_descriptor.h"
+#include "core/drivers/vulkan/vulkan_support.h"
+#include "core/drivers/vulkan/vulkan_swapchain.h"
+#include "core/drivers/vulkan/vulkan_vertex_buffer.h"
 
-#include <asset/import/loader_obj.h>
-#include <core/graphics/mesh/primitives.h>
+#include "asset/import/loader_obj.h"
+#include "core/graphics/mesh/primitives.h"
 
 /* static */
 

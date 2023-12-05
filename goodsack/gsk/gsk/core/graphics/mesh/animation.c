@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "animation.h"
 
-#include <core/graphics/mesh/mesh.h>
-#include <core/graphics/mesh/mesh_helpers.inl>
-
 #include <string.h>
+
+#include "core/graphics/mesh/mesh.h"
+#include "core/graphics/mesh/mesh_helpers.inl"
 
 void
 animation_set_keyframe(Animation *animation, ui32 keyframe)

@@ -1,12 +1,17 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_buffer.h"
 
 #include <string.h>
 
-#include <core/drivers/vulkan/vulkan_command.h>
-#include <core/drivers/vulkan/vulkan_support.h>
+#include "util/gfx.h"
+#include "util/logger.h"
 
-#include <util/gfx.h>
-#include <util/logger.h>
+#include "core/drivers/vulkan/vulkan_command.h"
+#include "core/drivers/vulkan/vulkan_support.h"
 
 ui32
 vulkan_memory_type(VkPhysicalDevice physicalDevice,

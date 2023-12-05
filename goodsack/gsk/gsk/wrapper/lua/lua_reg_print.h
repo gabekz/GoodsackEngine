@@ -1,7 +1,12 @@
-#ifndef H_REG_PRINT
-#define H_REG_PRINT
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/lua_deps.h>
+#ifndef __REG_PRINT_H__
+#define __REG_PRINT_H__
+
+#include "util/lua_deps.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,4 +19,4 @@ luaopen_luaprintlib(lua_State *L);
 }
 #endif
 
-#endif // H_REG_PRINT
+#endif // __REG_PRINT_H__

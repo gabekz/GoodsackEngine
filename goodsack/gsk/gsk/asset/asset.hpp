@@ -1,7 +1,12 @@
-#ifndef HPP_ASSET
-#define HPP_ASSET
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/sysdefs.h>
+#ifndef __ASSET_HPP__
+#define __ASSET_HPP__
+
+#include "util/sysdefs.h"
 
 namespace goodsack {
 namespace asset {
@@ -34,4 +39,4 @@ class Asset {
 } // namespace asset
 }; // namespace goodsack
 
-#endif // HPP_ASSET
+#endif // __ASSET_HPP__

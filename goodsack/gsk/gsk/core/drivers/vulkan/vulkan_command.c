@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "vulkan_command.h"
 
 #include <stdlib.h>
 
-#include <core/drivers/vulkan/vulkan_device.h>
-#include <core/drivers/vulkan/vulkan_support.h>
+#include "core/drivers/vulkan/vulkan_device.h"
+#include "core/drivers/vulkan/vulkan_support.h"
 
 VkCommandPool
 vulkan_command_pool_create(VkPhysicalDevice physicalDevice, VkDevice device)

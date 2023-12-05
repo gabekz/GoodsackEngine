@@ -1,7 +1,13 @@
-// TODO: Parser    - ordering + sub-struct
-// TODO: Parser    - strings (ECSString a.k.a. char * const)
-// TODO: Generator - ordering
-// TODO: This whole thing is a damn mess..
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+/* TODO: Parser    - ordering + sub-struct
+   TODO: Parser    - strings (ECSString a.k.a. char * const)
+   TODO: Generator - ordering
+   TODO: This whole thing is a damn mess..
+*/
 
 #include "ecs_component_layout_loader.hpp"
 
@@ -10,13 +16,16 @@
 #include <map>
 #include <string>
 
-#include <util/logger.h>
-#include <util/maths.h>
-
-#include <nlohmann/json.hpp>
 #include <stdlib.h>
 
-#include <entity/component/ecs_component.hpp>
+#include "util/logger.h"
+#include "util/maths.h"
+
+#include "entity/component/ecs_component.hpp"
+
+// TODO: Move to thirdparty directive - gabekz/GoodsackEngine#19
+#include <nlohmann/json.hpp>
+
 
 using json = nlohmann::json;
 

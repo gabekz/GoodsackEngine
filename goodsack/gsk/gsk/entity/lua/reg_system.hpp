@@ -1,7 +1,12 @@
-#ifndef HPP_REG_SYSTEM
-#define HPP_REG_SYSTEM
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/lua_deps.h>
+#ifndef __REG_SYSTEM_HPP__
+#define __REG_SYSTEM_HPP__
+
+#include "util/lua_deps.h"
 
 namespace entity {
 
@@ -11,4 +16,4 @@ Lua_ECSRegisterSystem(lua_State *L);
 }
 } // namespace entity
 
-#endif // HPP_REG_SYSTEM
+#endif // __REG_SYSTEM_HPP__

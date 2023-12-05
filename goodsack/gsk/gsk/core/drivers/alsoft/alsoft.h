@@ -1,8 +1,14 @@
-#ifndef H_OPENAL
-#define H_OPENAL
+/*
+ * Copyright (c) 2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef __ALSOFT_H__
+#define __ALSOFT_H__
+
+#include "util/sysdefs.h"
 
 #include <AL/al.h>
-#include <util/sysdefs.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,4 +27,4 @@ openal_generate_source(const char *filepath);
 }
 #endif // __cplusplus
 
-#endif // H_OPENAL
+#endif // __ALSOFT_H__

@@ -1,8 +1,13 @@
-#ifndef H_VULKAN_SUPPORT
-#define H_VULKAN_SUPPORT
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
 
-#include <util/logger.h>
-#include <util/sysdefs.h>
+#ifndef __VULKAN_SUPPORT_H__
+#define __VULKAN_SUPPORT_H__
+
+#include "util/logger.h"
+#include "util/sysdefs.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
@@ -37,4 +42,4 @@
         if (err) { LOG_CRITICAL("Vulkan error: %s", x); } \
     } while (0)
 
-#endif // H_VULKAN_SUPPORT
+#endif // __VULKAN_SUPPORT_H__
