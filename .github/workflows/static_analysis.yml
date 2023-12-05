@@ -13,10 +13,7 @@ jobs:
     strategy:
       matrix:
         path:
-          - check: 'goodsack/gsk'
-            exclude: '(thirdparty|__generated__)'
-          - check: 'demo'
-            exclude: '' # Nothing to exclude
+          - 'goodsack/gsk/gsk'
     steps:
       - uses: actions/checkout@v3
       - name: Run clang-format style check for C/C++/Protobuf programs.
