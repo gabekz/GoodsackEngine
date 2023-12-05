@@ -23,8 +23,8 @@
 
 #include "entity/v1/ecs.h"
 
-#include "core/device/device_context.h"
 #include "core/device/device.h"
+#include "core/device/device_context.h"
 #include "core/drivers/vulkan/vulkan_device.h"
 
 // gsk_Skybox test
@@ -57,27 +57,27 @@ gsk_renderer_init()
       (RENDER_RESOLUTION_OVERRIDE) ? PSX_HEIGHT : DEFAULT_WINDOW_HEIGHT;
 
     // Create the initial scene
-    gsk_Scene *scene      = malloc(sizeof(gsk_Scene));
+    gsk_Scene *scene  = malloc(sizeof(gsk_Scene));
     scene->id         = 0;
     scene->ecs        = gsk_ecs_init(ret);
     scene->has_skybox = FALSE;
 
     gsk_Scene **sceneList = malloc(sizeof(gsk_Scene *));
-    *(sceneList)      = scene;
+    *(sceneList)          = scene;
 
     ret->sceneL      = sceneList;
     ret->sceneC      = 1;
     ret->activeScene = 0;
 
     ret->properties = (gsk_RendererProps) {.tonemapper      = 0,
-                                       .exposure        = 9.5f,
-                                       .maxWhite        = 1.0f,
-                                       .gamma           = 2.2f,
-                                       .gammaEnable     = TRUE,
-                                       .msaaEnable      = TRUE,
-                                       .msaaSamples     = 4,
-                                       .vignetteAmount  = 0.5f,
-                                       .vignetteFalloff = 0.5f};
+                                           .exposure        = 9.5f,
+                                           .maxWhite        = 1.0f,
+                                           .gamma           = 2.2f,
+                                           .gammaEnable     = TRUE,
+                                           .msaaEnable      = TRUE,
+                                           .msaaSamples     = 4,
+                                           .vignetteAmount  = 0.5f,
+                                           .vignetteFalloff = 0.5f};
 
     ret->shadowmapOptions = (ShadowmapOptions) {
       .nearPlane = 0.02f,
@@ -131,13 +131,13 @@ gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex)
         u32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
 
         // Create a new, empty scene
-        gsk_Scene *newScene      = malloc(sizeof(gsk_Scene));
+        gsk_Scene *newScene  = malloc(sizeof(gsk_Scene));
         newScene->id         = newCount;
         newScene->ecs        = gsk_ecs_init(self);
         newScene->has_skybox = FALSE;
 
         // Update the scene list
-        gsk_Scene **p                  = self->sceneL;
+        gsk_Scene **p              = self->sceneL;
         self->sceneL               = realloc(p, newCount * sizeof(gsk_Scene *));
         self->sceneL[newCount - 1] = newScene;
         self->sceneC               = newCount;
@@ -253,7 +253,8 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
         gsk_Scene Logic/Data update
     */
 
-    gsk_device_setInput(gsk_device_getInput()); // TODO: Weird hack to reset for axis
+    gsk_device_setInput(
+      gsk_device_getInput()); // TODO: Weird hack to reset for axis
     device_updateCursorState(renderer->window);
     glfwPollEvents();
 

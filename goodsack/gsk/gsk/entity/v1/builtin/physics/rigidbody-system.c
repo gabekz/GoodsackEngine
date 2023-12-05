@@ -35,7 +35,7 @@ init(gsk_Entity e)
     glm_vec3_zero(rigidbody->angular_velocity);
 
     // Initialize the physics solver
-    rigidbody->solver                   = malloc(sizeof(gsk_PhysicsSolver));
+    rigidbody->solver                       = malloc(sizeof(gsk_PhysicsSolver));
     *(gsk_PhysicsSolver *)rigidbody->solver = gsk_physics_solver_init();
 
     // LOG_INFO("solvers %u", ((PhysicsSolver
@@ -65,7 +65,7 @@ update(gsk_Entity e)
     // -- Check for solvers/collision results
 
     gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
-    int total_solvers      = (int)pSolver->solver_next;
+    int total_solvers          = (int)pSolver->solver_next;
 
     for (int i = 0; i < total_solvers; i++) {
         // LOG_INFO("DO SOLVER");
@@ -145,8 +145,9 @@ _position_solver(struct ComponentRigidbody *rigidbody,
 
 #if USE_VELOCITY
 #if USE_VELOCITY_DELTA
-    glm_vec3_scale(
-      correction, gsk_device_getAnalytics().delta * rigidbody->mass, correction);
+    glm_vec3_scale(correction,
+                   gsk_device_getAnalytics().delta * rigidbody->mass,
+                   correction);
 #endif // USE_DELTA
     // NOTE: This one is pretty interseting..
     glm_vec3_sub(rigidbody->velocity, correction, rigidbody->velocity);
@@ -154,8 +155,9 @@ _position_solver(struct ComponentRigidbody *rigidbody,
 
 #if AFFECT_POS_DIRECT
 #if USE_POS_DELTA
-    glm_vec3_scale(
-      correction, gsk_device_getAnalytics().delta * rigidbody->mass, correction);
+    glm_vec3_scale(correction,
+                   gsk_device_getAnalytics().delta * rigidbody->mass,
+                   correction);
 #endif
     glm_vec3_sub(transform->position, correction, transform->position);
 #endif // AFFECT_POS_DIRECT
@@ -242,11 +244,11 @@ void
 s_rigidbody_system_init(gsk_ECS *ecs)
 {
     gsk_ecs_system_register(ecs,
-                        ((gsk_ECSSystem) {
-                          .init        = (gsk_ECSSubscriber)init,
-                          .destroy     = NULL,
-                          .render      = NULL,
-                          .update      = (gsk_ECSSubscriber)update,
-                          .late_update = NULL,
-                        }));
+                            ((gsk_ECSSystem) {
+                              .init        = (gsk_ECSSubscriber)init,
+                              .destroy     = NULL,
+                              .render      = NULL,
+                              .update      = (gsk_ECSSubscriber)update,
+                              .late_update = NULL,
+                            }));
 }

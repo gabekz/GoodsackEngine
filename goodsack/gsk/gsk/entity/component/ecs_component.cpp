@@ -11,8 +11,8 @@
 #include <map>
 #include <string>
 
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include "entity/lua/eventstore.hpp"
 
@@ -67,7 +67,7 @@ entity::ECSComponentList::ECSComponentList(ECSComponentType componentTypeIndex,
                                            ECSComponentLayout &layout)
     : m_componentLayout(layout)
 {
-    gsk_ECS *ecs      = entity::LuaEventStore::GetInstance().m_ecs;
+    gsk_ECS *ecs = entity::LuaEventStore::GetInstance().m_ecs;
     u32 capacity = ecs->capacity;
 
     // m_componentsList = malloc(sizeof(ECSComponent **) * ECSCom)
@@ -75,13 +75,15 @@ entity::ECSComponentList::ECSComponentList(ECSComponentType componentTypeIndex,
     m_components = (ECSComponent **)malloc(sizeof(ECSComponent *) * capacity);
     for (int i = 0; i < capacity; i++) {
         //
-        if (gsk_ecs_has(
-              gsk_Entity {.id = (gsk_EntityId)i, .index = (gsk_EntityId)i, .ecs = ecs},
-              componentTypeIndex)) {
+        if (gsk_ecs_has(gsk_Entity {.id    = (gsk_EntityId)i,
+                                    .index = (gsk_EntityId)i,
+                                    .ecs   = ecs},
+                        componentTypeIndex)) {
             m_components[i] = new ECSComponent(
-              (void *)gsk_ecs_get(
-                gsk_Entity {.id = (gsk_EntityId)i, .index = (gsk_EntityId)i, .ecs = ecs},
-                componentTypeIndex),
+              (void *)gsk_ecs_get(gsk_Entity {.id    = (gsk_EntityId)i,
+                                              .index = (gsk_EntityId)i,
+                                              .ecs   = ecs},
+                                  componentTypeIndex),
               layout);
         } else {
             m_components[i] = new ECSComponent(layout);

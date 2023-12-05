@@ -42,7 +42,7 @@ typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
 typedef struct gsk_Renderer
 {
     GLFWwindow *window;
-    gsk_RendererProps properties;      // Frame properties/configuration
+    gsk_RendererProps properties;  // Frame properties/configuration
     int windowWidth, windowHeight; // window resolution
     int renderWidth, renderHeight; // render resolution
 

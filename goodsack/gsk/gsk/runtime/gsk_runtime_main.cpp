@@ -6,7 +6,7 @@
 #include "runtime/gsk_runtime.hpp"
 
 #include <iostream>
-#if defined (SYS_ENV_WIN)
+#if defined(SYS_ENV_WIN)
 #include <filesystem>
 #endif
 

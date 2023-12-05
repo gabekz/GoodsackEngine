@@ -7,8 +7,8 @@
 
 #include <stdlib.h>
 
-#include "util/gfx.h"
 #include "core/drivers/vulkan/vulkan_image.h"
+#include "util/gfx.h"
 
 static VkFormat
 _FindSupportedFormat(VkPhysicalDevice physicalDevice,

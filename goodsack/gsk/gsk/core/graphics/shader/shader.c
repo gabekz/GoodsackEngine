@@ -58,7 +58,7 @@ open_memstream(char **buffer, int bufferLen)
                 strerror(GetLastError()));
         exit(GetLastError());
     }
-#else // WIN32
+#else  // WIN32
     bp =
       mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
     if (bp == MAP_FAILED) {
@@ -222,8 +222,8 @@ gsk_shader_program_create(const char *path)
         glDeleteShader(fs);
 
         gsk_ShaderProgram *ret = malloc(sizeof(gsk_ShaderProgram));
-        ret->id            = program;
-        ret->shaderSource  = ss;
+        ret->id                = program;
+        ret->shaderSource      = ss;
         return ret;
 
     } else if (GSK_DEVICE_API_VULKAN) {
@@ -237,7 +237,7 @@ gsk_ShaderProgram *
 gsk_shader_compute_program_create(const char *path)
 {
     gsk_ShaderSource *ss = ParseShader(path);
-    u32 program     = glCreateProgram();
+    u32 program          = glCreateProgram();
     u32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss->shaderCompute);
 
     glAttachShader(program, csSingle);
@@ -247,8 +247,8 @@ gsk_shader_compute_program_create(const char *path)
     glDeleteShader(csSingle);
 
     gsk_ShaderProgram *ret = malloc(sizeof(gsk_ShaderProgram));
-    ret->id            = program;
-    ret->shaderSource  = ss;
+    ret->id                = program;
+    ret->shaderSource      = ss;
     return ret;
 }
 
@@ -261,9 +261,9 @@ gsk_shader_use(gsk_ShaderProgram *shader)
 #if _GSK_SHADER_EASY_UNIFORMS
 void
 gsk_shader_uniform(gsk_ShaderProgram *shader,
-               const char *uniform,
-               u32 type,
-               void *data)
+                   const char *uniform,
+                   u32 type,
+                   void *data)
 {
     u32 location = glGetUniformLocation(shader->id, uniform);
 

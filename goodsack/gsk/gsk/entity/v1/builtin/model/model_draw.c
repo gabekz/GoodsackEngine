@@ -158,8 +158,8 @@ DrawModel(struct ComponentModel *model,
             gsk_gl_vertex_array_bind(mesh->vao);
 
             gsk_MeshData *data = mesh->meshData;
-            u32 vertices  = data->vertexCount;
-            u32 indices   = data->indicesCount;
+            u32 vertices       = data->vertexCount;
+            u32 indices        = data->indicesCount;
 
             u16 drawMode = model->properties.drawMode;
 
@@ -201,11 +201,15 @@ DrawModel(struct ComponentModel *model,
 #endif
         // Bind Vertex/Index buffers
         VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(
-          commandBuffer, 0, 1, &((gsk_Mesh *)model->mesh)->vkVBO->buffer, offsets);
+        vkCmdBindVertexBuffers(commandBuffer,
+                               0,
+                               1,
+                               &((gsk_Mesh *)model->mesh)->vkVBO->buffer,
+                               offsets);
 
         // Draw command
-        vkCmdDraw(commandBuffer, ((gsk_Mesh *)model->mesh)->vkVBO->size, 1, 0, 0);
+        vkCmdDraw(
+          commandBuffer, ((gsk_Mesh *)model->mesh)->vkVBO->size, 1, 0, 0);
     }
 }
 
@@ -228,7 +232,8 @@ init(gsk_Entity e)
         }
         model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
         // send lightspace matrix from renderer to entity shader
-        gsk_ShaderProgram *shader = ((gsk_Material *)model->material)->shaderProgram;
+        gsk_ShaderProgram *shader =
+          ((gsk_Material *)model->material)->shaderProgram;
         gsk_shader_use(shader);
         glUniformMatrix4fv(
           glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
@@ -283,7 +288,7 @@ render(gsk_Entity e)
         // draw skeleton
         if (model->mesh->meshData->isSkinnedMesh) {
             gsk_debug_draw_skeleton(e.ecs->renderer->debugContext,
-                                model->mesh->meshData->skeleton);
+                                    model->mesh->meshData->skeleton);
         }
 #endif
 
@@ -293,8 +298,8 @@ render(gsk_Entity e)
         for (int i = 0; i < pModel->meshesCount; i++) {
             Mesh *mesh = pModel->meshes[i];
             gsk_debug_draw_bounds(e.ecs->renderer->debugContext,
-                              mesh->meshData->boundingBox,
-                              transform->model);
+                                  mesh->meshData->boundingBox,
+                                  transform->model);
         }
 #endif
 
@@ -318,10 +323,10 @@ s_model_draw_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(ecs, C_MODEL, sizeof(struct ComponentModel));
     gsk_ecs_system_register(ecs,
-                        ((gsk_ECSSystem) {
-                          .init    = (gsk_ECSSubscriber)init,
-                          .destroy = NULL,
-                          .render  = (gsk_ECSSubscriber)render,
-                          .update  = NULL,
-                        }));
+                            ((gsk_ECSSystem) {
+                              .init    = (gsk_ECSSubscriber)init,
+                              .destroy = NULL,
+                              .render  = (gsk_ECSSubscriber)render,
+                              .update  = NULL,
+                            }));
 }

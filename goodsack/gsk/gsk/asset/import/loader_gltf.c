@@ -17,7 +17,6 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
-
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
@@ -89,7 +88,7 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
 static gsk_Animation *
 __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
 {
-    u32 inputsCount     = gltfAnimation->samplers[0].input->count;
+    u32 inputsCount          = gltfAnimation->samplers[0].input->count;
     gsk_Keyframe **keyframes = malloc(sizeof(gsk_Keyframe *) * inputsCount);
 
     // Get all frame-times
@@ -103,7 +102,8 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
         keyframes[i]->frameTime = frameTimes[i];
         keyframes[i]->index     = i;
 
-        keyframes[i]->poses = malloc(skeleton->jointsCount * sizeof(gsk_Pose *));
+        keyframes[i]->poses =
+          malloc(skeleton->jointsCount * sizeof(gsk_Pose *));
 
         for (int j = 0; j < skeleton->jointsCount; j++) {
             keyframes[i]->poses[j]            = malloc(sizeof(gsk_Pose));
@@ -170,7 +170,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
     }
 
     // Animation data
-    gsk_Animation *animation      = malloc(sizeof(gsk_Animation));
+    gsk_Animation *animation  = malloc(sizeof(gsk_Animation));
     animation->duration       = frameTimes[inputsCount - 1];
     animation->keyframes      = keyframes;
     animation->keyframesCount = inputsCount;
@@ -261,7 +261,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
 
     u32 vertCount      = attribInfo.posData->count;
-    ret->vertexCount    = vertCount;
+    ret->vertexCount   = vertCount;
     u32 vPosBufferSize = vertCount * sizeof(float) * 3;
     u32 vTexBufferSize = vertCount * sizeof(float) * 2;
     u32 vNrmBufferSize = vertCount * sizeof(float) * 3;
@@ -341,7 +341,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     if (ret->isSkinnedMesh >= 1) {
 
         gsk_Skeleton *skeleton = malloc(sizeof(gsk_Skeleton));
-        ret->skeleton      = skeleton;
+        ret->skeleton          = skeleton;
 
         // Skeleton information //
 
@@ -356,7 +356,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
                  armatureNode->children_count);
 
         // List of all joints in skeleton
-        skeleton->joints = malloc(sizeof(gsk_Joint *) * data->skins->joints_count);
+        skeleton->joints =
+          malloc(sizeof(gsk_Joint *) * data->skins->joints_count);
 
         // Create skeleton recursively
         _create_joint_recurse(
@@ -368,7 +369,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         u32 jointsBufferSize  = vertCount * 4 * sizeof(u32);
         u32 weightsBufferSize = vertCount * 4 * sizeof(float);
 
-        u32 *jointsBuffer   = malloc(jointsBufferSize);
+        u32 *jointsBuffer    = malloc(jointsBufferSize);
         float *weightsBuffer = malloc(weightsBufferSize);
 
         // ret->skeleton->skinningBuffer    = skinningBuffer;
@@ -456,9 +457,10 @@ __texture_lookup(const char *path, TextureOptions options)
 
     // Resize pool if needed
     if (s_loaded_textures_count >= TEXTURE_POOL_COUNT) {
-        s_loaded_textures = realloc(
-          s_loaded_textures,
-          sizeof(gsk_Texture *) * (s_loaded_textures_count + TEXTURE_POOL_COUNT));
+        s_loaded_textures =
+          realloc(s_loaded_textures,
+                  sizeof(gsk_Texture *) *
+                    (s_loaded_textures_count + TEXTURE_POOL_COUNT));
     }
 
     s_loaded_textures[s_loaded_textures_count] =
@@ -494,8 +496,8 @@ _create_material(cgltf_material *gltfMaterial,
             const char *diffuseUri =
               textureContainer->base_color_texture.texture->image->uri;
             strcat(p, diffuseUri);
-            gsk_material_add_texture(material,
-                                 __texture_lookup(GSK_PATH(p), texPbrOptions));
+            gsk_material_add_texture(
+              material, __texture_lookup(GSK_PATH(p), texPbrOptions));
         } else {
             gsk_material_add_texture(material, _test_texture_white);
         }
@@ -519,8 +521,8 @@ _create_material(cgltf_material *gltfMaterial,
             const char *roughnessUri =
               textureContainer->metallic_roughness_texture.texture->image->uri;
             strcat(r, roughnessUri);
-            gsk_material_add_texture(material,
-                                 __texture_lookup(GSK_PATH(r), texPbrOptions));
+            gsk_material_add_texture(
+              material, __texture_lookup(GSK_PATH(r), texPbrOptions));
         } else {
             gsk_material_add_texture(material, _test_texture_white);
         }
@@ -588,12 +590,13 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
         totalObjects += data->meshes[i].primitives_count;
     }
 
-    gsk_Model *ret  = malloc(sizeof(gsk_Model));
-    ret->meshes = malloc(sizeof(gsk_Mesh *) * totalObjects);
+    gsk_Model *ret = malloc(sizeof(gsk_Model));
+    ret->meshes    = malloc(sizeof(gsk_Mesh *) * totalObjects);
 
     // Create texture/material pools
-    u32 materialsCount      = data->materials_count;
-    gsk_Material **materialsPool = malloc(sizeof(gsk_Material *) * materialsCount);
+    u32 materialsCount = data->materials_count;
+    gsk_Material **materialsPool =
+      malloc(sizeof(gsk_Material *) * materialsCount);
     if (importMaterials) {
         _test_texture_white =
           texture_create(GSK_PATH("gsk://textures/defaults/white.png"),

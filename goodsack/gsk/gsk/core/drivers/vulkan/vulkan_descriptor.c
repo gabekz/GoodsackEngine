@@ -12,7 +12,7 @@
 VkDescriptorPool
 vulkan_descriptor_pool_create(VkDevice device)
 {
-    u32 poolSizesCount              = 11;
+    u32 poolSizesCount               = 11;
     VkDescriptorPoolSize poolSizes[] = {
       // Descriptor Type                             Descriptor Count
       {VK_DESCRIPTOR_TYPE_SAMPLER, 10},

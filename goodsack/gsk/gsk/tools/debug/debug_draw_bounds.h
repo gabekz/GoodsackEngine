@@ -11,7 +11,7 @@
 
 void
 gsk_debug_draw_bounds(gsk_DebugContext *debugContext,
-                  vec3 corners[2],
-                  mat4 modelMatrix);
+                      vec3 corners[2],
+                      mat4 modelMatrix);
 
 #endif // __DEBUG_DRAW_BOUNDS_H__

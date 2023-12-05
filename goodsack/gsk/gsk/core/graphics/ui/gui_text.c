@@ -60,7 +60,7 @@ gsk_gui_text_create(const char *text_string)
     __fill_font_data(ret->char_spacing, font_dat_path);
 
     // Create elements for each character in the string
-    u32 char_count      = strlen(text_string);
+    u32 char_count       = strlen(text_string);
     ret->character_count = char_count;
     ret->elements        = malloc(sizeof(gsk_GuiElement *) * char_count);
 

@@ -5,8 +5,8 @@
 
 #include "lighting.h"
 
-#include "util/sysdefs.h"
 #include "core/device/device.h"
+#include "util/sysdefs.h"
 
 gsk_Light *
 gsk_lighting_initialize(vec3 lightPos, vec4 lightColor)

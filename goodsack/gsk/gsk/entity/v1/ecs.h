@@ -6,8 +6,8 @@
 #ifndef __ECS_H__
 #define __ECS_H__
 
-#include "util/sysdefs.h"
 #include "entity/ecsdefs.h"
+#include "util/sysdefs.h"
 
 #define _ECS_DECL_SYSTEM(_name) extern void _name##_init();
 
@@ -20,9 +20,9 @@
     gsk_ecs_component_register(_self, _id, _size)
 #endif
 
-#define _ecs_add3(e, c, v)                \
-    ({                                    \
-        __typeof__(v) _v = (v);           \
+#define _ecs_add3(e, c, v)                    \
+    ({                                        \
+        __typeof__(v) _v = (v);               \
         _gsk_ecs_add_internal((e), (c), &_v); \
     })
 #define _ecs_add2(e, c) _gsk_ecs_add_internal((e), (c), NULL)

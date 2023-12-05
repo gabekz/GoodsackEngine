@@ -21,7 +21,8 @@ gsk_billboard_create(const char *texturePath, vec2 size)
     ret->vao       = gsk_gl_vertex_array_create();
     float *rectPos = prim_vert_rect();
 
-    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float));
+    gsk_GlVertexBuffer *vbo =
+      gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float));
     gsk_gl_vertex_buffer_bind(vbo);
     gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);

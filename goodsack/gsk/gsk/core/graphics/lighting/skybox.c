@@ -23,17 +23,18 @@ static gsk_ShaderProgram *cubemapBrdfShader;
 gsk_Skybox *
 gsk_skybox_create(gsk_Texture *cubemap)
 {
-    gsk_Skybox *ret  = malloc(sizeof(gsk_Skybox));
-    ret->cubemap = cubemap;
+    gsk_Skybox *ret = malloc(sizeof(gsk_Skybox));
+    ret->cubemap    = cubemap;
 
     gsk_GlVertexArray *vao = gsk_gl_vertex_array_create();
-    ret->vao = vao;
+    ret->vao               = vao;
 
-    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
+    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
+      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
     gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_array_add_buffer(vao, vbo);
-    gsk_GlIndexBuffer *ibo =
-      gsk_gl_index_buffer_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
+    gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
+      PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
     gsk_gl_index_buffer_bind(ibo);
     free(vbo);
     gsk_ShaderProgram *shader =
@@ -170,12 +171,13 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     // Simple cube for rendering
     gsk_GlVertexArray *vao = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vao);
-    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
+    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
+      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
     gsk_gl_vertex_buffer_bind(vbo);
     gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_array_add_buffer(vao, vbo);
-    gsk_GlIndexBuffer *ibo =
-      gsk_gl_index_buffer_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
+    gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
+      PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
     gsk_gl_index_buffer_bind(ibo);
     cubemapProjectionVAO = vao;
 
@@ -205,7 +207,7 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     // Reset
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    gsk_Skybox *ret             = malloc(sizeof(gsk_Skybox));
+    gsk_Skybox *ret         = malloc(sizeof(gsk_Skybox));
     ret->cubemap            = malloc(sizeof(gsk_Texture));
     ret->cubemap->id        = skyboxCubemap;
     ret->irradianceMap      = malloc(sizeof(gsk_Texture));
@@ -228,9 +230,9 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
 gsk_Texture *
 gsk_skybox_hdr_projection(gsk_Skybox *skybox)
 {
-    u32 captureFBO                = cubemapProjectionFBO;
-    u32 captureRBO                = cubemapProjectionRBO;
-    gsk_GlVertexArray *vao                       = cubemapProjectionVAO;
+    u32 captureFBO                     = cubemapProjectionFBO;
+    u32 captureRBO                     = cubemapProjectionRBO;
+    gsk_GlVertexArray *vao             = cubemapProjectionVAO;
     gsk_ShaderProgram *shaderP         = cubemapProjectionShader;
     gsk_ShaderProgram *shaderConvolute = cubemapShaderConvolute;
     gsk_ShaderProgram *shaderPrefilter = cubemapShaderPrefilter;
@@ -395,7 +397,8 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
     gsk_GlVertexArray *vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    gsk_GlVertexBuffer *vboRect =
+      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);

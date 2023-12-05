@@ -6,8 +6,8 @@
 #ifndef __MODEL_H__
 #define __MODEL_H__
 
-#include "util/sysdefs.h"
 #include "core/graphics/mesh/mesh.h"
+#include "util/sysdefs.h"
 
 #ifdef __cplusplus
 extern "C" {

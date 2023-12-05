@@ -8,8 +8,8 @@
 #include <string.h>
 
 #include "util/logger.h"
-#include "util/sysdefs.h"
 #include "util/maths.h"
+#include "util/sysdefs.h"
 
 #include "core/graphics/mesh/mesh.h"
 
@@ -29,9 +29,9 @@ gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials)
     gsk_Model *model;
     // Check file extension
     if (!strcmp(ext, ".obj")) {
-        model           = malloc(sizeof(gsk_Model));
+        model               = malloc(sizeof(gsk_Model));
         gsk_MeshData *mesh0 = gsk_load_obj(path, 1.0f); // always importing with
-                                                // scale 1.0 here
+                                                        // scale 1.0 here
 
         model->meshes      = malloc(sizeof(gsk_Mesh *) * 1);
         model->meshes[0]   = gsk_mesh_assemble(mesh0);

@@ -6,8 +6,8 @@
 #ifndef __PASS_SCREEN_H__
 #define __PASS_SCREEN_H__
 
-#include "util/sysdefs.h"
 #include "core/graphics/renderer/renderer_props.inl"
+#include "util/sysdefs.h"
 
 void
 postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties);

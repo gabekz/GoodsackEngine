@@ -203,13 +203,13 @@ gsk_load_obj(const char *path, float scale)
 #endif
 
     // Output
-    gsk_MeshData *ret    = malloc(sizeof(gsk_MeshData));
-    ret->vertexCount = outI;
+    gsk_MeshData *ret = malloc(sizeof(gsk_MeshData));
+    ret->vertexCount  = outI;
 
 #if 1 // Calcuate TBN for each triangle/vertex
     u32 totalTriangles = fL * 3;
     // float* outTBN = malloc(2 * 3 * totalTriangles * sizeof(float));
-    float *outTBN    = malloc(totalTriangles * 3 * 2 * sizeof(GLfloat));
+    float *outTBN   = malloc(totalTriangles * 3 * 2 * sizeof(GLfloat));
     u32 cntTriangle = 0;
     for (int i = 0; i < totalTriangles; i += 3) {
 

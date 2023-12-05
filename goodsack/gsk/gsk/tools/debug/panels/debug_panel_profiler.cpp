@@ -28,7 +28,8 @@ gsk::tools::panels::Profiler::draw(void)
         Text("Window");
         int vsync = gsk_device_getGraphicsSettings().swapInterval;
         Checkbox("VSync", (bool *)&vsync);
-        gsk_device_setGraphicsSettings((gsk_GraphicsSettings({.swapInterval = vsync})));
+        gsk_device_setGraphicsSettings(
+          (gsk_GraphicsSettings({.swapInterval = vsync})));
 
         Separator();
         Text("Ambient Occlusion");

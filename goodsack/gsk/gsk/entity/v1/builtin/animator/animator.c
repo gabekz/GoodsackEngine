@@ -47,7 +47,7 @@ update(gsk_Entity e)
 
     struct ComponentAnimator *animator = gsk_ecs_get(e, C_ANIMATOR);
     struct ComponentModel *model       = gsk_ecs_get(e, C_MODEL);
-    gsk_Mesh *mesh                         = model->mesh;
+    gsk_Mesh *mesh                     = model->mesh;
 
     if (!mesh->meshData->isSkinnedMesh) return;
 
@@ -69,7 +69,7 @@ update(gsk_Entity e)
 
     gsk_Animation *cntAnimation = animator->cntAnimation;
     if (animator->timerNow >= cntAnimation->duration) {
-        animator->timerNow         = 0;
+        animator->timerNow = 0;
 
 #if 1 // for the sake of testing -> going to set keyframe to 1
         animator->cntKeyframeIndex = 1;
@@ -81,10 +81,10 @@ update(gsk_Entity e)
 
     // LOG_INFO("Timer: %.2f", animator->timerNow);
 
-    u32 cntKeyframeIndex = animator->cntKeyframeIndex;
+    u32 cntKeyframeIndex      = animator->cntKeyframeIndex;
     gsk_Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
 
-    u32 nxtKeyframeIndex = cntKeyframeIndex + 1;
+    u32 nxtKeyframeIndex      = cntKeyframeIndex + 1;
     gsk_Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];
 
     float ratio = (animator->timerNow - cntKeyframe->frameTime) /
@@ -107,10 +107,10 @@ s_animator_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
     gsk_ecs_system_register(ecs,
-                        ((gsk_ECSSystem) {
-                          .init    = (gsk_ECSSubscriber)init,
-                          .destroy = NULL,
-                          .render  = NULL,
-                          .update  = (gsk_ECSSubscriber)update,
-                        }));
+                            ((gsk_ECSSystem) {
+                              .init    = (gsk_ECSSubscriber)init,
+                              .destroy = NULL,
+                              .render  = NULL,
+                              .update  = (gsk_ECSSubscriber)update,
+                            }));
 }

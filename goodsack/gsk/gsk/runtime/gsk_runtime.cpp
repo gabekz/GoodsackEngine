@@ -144,7 +144,8 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 void
 gsk_runtime_loop()
 {
-    gsk_renderer_start(s_runtime.renderer); // Initialization for the render loop
+    gsk_renderer_start(
+      s_runtime.renderer); // Initialization for the render loop
 
 #if USING_LUA
 

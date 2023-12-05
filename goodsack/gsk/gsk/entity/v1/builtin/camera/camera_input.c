@@ -24,7 +24,8 @@ camera_input(gsk_Entity cameraEntity, GLFWwindow *window)
     struct ComponentCamera *camera = gsk_ecs_get(cameraEntity, C_CAMERA);
     struct ComponentCameraMovement *cameraMovement =
       gsk_ecs_get(cameraEntity, C_CAMERAMOVEMENT);
-    struct ComponentTransform *transform = gsk_ecs_get(cameraEntity, C_TRANSFORM);
+    struct ComponentTransform *transform =
+      gsk_ecs_get(cameraEntity, C_TRANSFORM);
 
     float *p     = GLM_VEC3_ZERO;
     float *cross = GLM_VEC3_ZERO;

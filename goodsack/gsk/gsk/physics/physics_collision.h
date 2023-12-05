@@ -16,34 +16,37 @@ gsk_physics_collider_new(u16 type);
 
 // general?
 gsk_CollisionPoints
-gsk_physics_test_collision(gsk_Collider *a, gsk_Collider *b, vec3 pos_a, vec3 pos_b);
+gsk_physics_test_collision(gsk_Collider *a,
+                           gsk_Collider *b,
+                           vec3 pos_a,
+                           vec3 pos_b);
 
 // Sphere v. Sphere
 gsk_CollisionPoints
 gsk_physics_collision_find_sphere_sphere(gsk_SphereCollider *a,
-                                     gsk_SphereCollider *b,
-                                     vec3 pos_a,
-                                     vec3 pos_b);
+                                         gsk_SphereCollider *b,
+                                         vec3 pos_a,
+                                         vec3 pos_b);
 
 // Sphere v. Plane
 gsk_CollisionPoints
 gsk_physics_collision_find_sphere_plane(gsk_SphereCollider *a,
-                                    gsk_PlaneCollider *b,
-                                    vec3 pos_a,
-                                    vec3 pos_b);
+                                        gsk_PlaneCollider *b,
+                                        vec3 pos_a,
+                                        vec3 pos_b);
 
 // Plane v. Sphere
 gsk_CollisionPoints
 gsk_physics_collision_find_plane_sphere(gsk_PlaneCollider *a,
-                                    gsk_SphereCollider *b,
-                                    vec3 pos_a,
-                                    vec3 pos_b);
+                                        gsk_SphereCollider *b,
+                                        vec3 pos_a,
+                                        vec3 pos_b);
 
 // gsk_Raycast v. Sphere
 gsk_CollisionPoints
 gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,
-                                  gsk_SphereCollider *sphere,
-                                  vec3 pos_sphere);
+                                      gsk_SphereCollider *sphere,
+                                      vec3 pos_sphere);
 
 #ifdef __cplusplus
 }

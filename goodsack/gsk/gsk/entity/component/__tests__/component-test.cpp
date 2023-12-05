@@ -23,7 +23,6 @@
 #include "entity/component/ecs_component.hpp"
 #include "entity/component/ecs_component_layout_loader.hpp"
 
-
 #include <gtest/gtest.h>
 
 using namespace entity;

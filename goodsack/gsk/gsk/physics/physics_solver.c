@@ -24,7 +24,8 @@ gsk_physics_solver_init()
 }
 
 void
-gsk_physics_solver_push(gsk_PhysicsSolver *solver, gsk_CollisionResult collision_result)
+gsk_physics_solver_push(gsk_PhysicsSolver *solver,
+                        gsk_CollisionResult collision_result)
 {
     if (solver->solver_next >= 64) LOG_CRITICAL("Exceeding solver capacity!");
 

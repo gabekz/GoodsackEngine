@@ -70,8 +70,8 @@ LuaEventStore::Initialize(lua_State *L, gsk_ECS *ecs)
     s_Instance.m_tableId = luaL_ref(L, LUA_REGISTRYINDEX);
     s_Instance.m_Lua     = L;
 
-    s_Instance.m_Layouts =
-      entity::component::parse_components_from_json(GSK_PATH("gsk://components.json"));
+    s_Instance.m_Layouts = entity::component::parse_components_from_json(
+      GSK_PATH("gsk://components.json"));
 
     // TODO: More testing
     s_Instance.m_ecs = ecs;
@@ -232,8 +232,8 @@ pushEntity(lua_State *L, int entityId)
 {
 
     gsk_Entity entityCompare = {.id    = (gsk_EntityId)entityId,
-                            .index = (u64)entityId,
-                            .ecs   = LuaEventStore::GetInstance().m_ecs};
+                                .index = (u64)entityId,
+                                .ecs   = LuaEventStore::GetInstance().m_ecs};
 
     std::string a = std::to_string(entityId);
 

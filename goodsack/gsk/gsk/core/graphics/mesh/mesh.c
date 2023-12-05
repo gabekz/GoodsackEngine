@@ -15,7 +15,7 @@ gsk_Mesh *
 gsk_mesh_assemble(gsk_MeshData *meshData)
 {
     gsk_Mesh *mesh     = malloc(sizeof(gsk_Mesh));
-    mesh->meshData = meshData;
+    mesh->meshData     = meshData;
     gsk_MeshData *data = mesh->meshData;
 
     if (GSK_DEVICE_API_OPENGL) {
@@ -25,20 +25,24 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
         mesh->vao = vao;
 
         gsk_GlVertexBuffer *vbo =
-          // gsk_gl_vertex_buffer_create(data->buffers.out, data->buffers.outI * sizeof(float));
+          // gsk_gl_vertex_buffer_create(data->buffers.out, data->buffers.outI *
+          // sizeof(float));
           gsk_gl_vertex_buffer_create(data->buffers.out, data->buffers.outI);
 
         // TODO: Temporarily disabled IBO for .obj extensions
         // if (data->buffers.bufferIndices != NULL && strcmp(ext, ".obj")) {
         if (data->buffers.bufferIndices_size > 0) {
-            gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(data->buffers.bufferIndices,
-                                  data->buffers.bufferIndices_size);
+            gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
+              data->buffers.bufferIndices, data->buffers.bufferIndices_size);
         }
 
         // Push our data into our single VBO
-        if (data->buffers.vL > 0) gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
-        if (data->buffers.vtL > 0) gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
-        if (data->buffers.vnL > 0) gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
+        if (data->buffers.vL > 0)
+            gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
+        if (data->buffers.vtL > 0)
+            gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
+        if (data->buffers.vnL > 0)
+            gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
 
         if (data->hasTBN == 2) { // TODO: REWORK PLEASE
             gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
@@ -49,11 +53,12 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
         // TBN Buffer
         if (data->hasTBN == 1) {
             // TBN vertex buffer
-            gsk_GlVertexBuffer *vboTBN =
-              gsk_gl_vertex_buffer_create(data->buffers.outTBN,
-                         data->trianglesCount * 3 * 2 * sizeof(GLfloat));
+            gsk_GlVertexBuffer *vboTBN = gsk_gl_vertex_buffer_create(
+              data->buffers.outTBN,
+              data->trianglesCount * 3 * 2 * sizeof(GLfloat));
             gsk_gl_vertex_buffer_push(vboTBN, 3, GL_FLOAT, GL_FALSE); // tangent
-            gsk_gl_vertex_buffer_push(vboTBN, 3, GL_FLOAT, GL_FALSE); // bitangent
+            gsk_gl_vertex_buffer_push(
+              vboTBN, 3, GL_FLOAT, GL_FALSE); // bitangent
             gsk_gl_vertex_array_add_buffer(vao, vboTBN);
             // free(data->buffers.outTBN);
         }
@@ -61,15 +66,16 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
 #if 1
 
         if (data->isSkinnedMesh) {
-            gsk_GlVertexBuffer *vboJoints = gsk_gl_vertex_buffer_create(data->skeleton->bufferJoints,
-                                        data->skeleton->bufferJointsSize);
+            gsk_GlVertexBuffer *vboJoints = gsk_gl_vertex_buffer_create(
+              data->skeleton->bufferJoints, data->skeleton->bufferJointsSize);
             gsk_gl_vertex_buffer_push(
               vboJoints, 4, GL_UNSIGNED_INT, GL_FALSE); // (affected by) joints
             gsk_gl_vertex_array_add_buffer(vao, vboJoints);
 
-            gsk_GlVertexBuffer *vboWeights = gsk_gl_vertex_buffer_create(data->skeleton->bufferWeights,
-                                         data->skeleton->bufferWeightsSize);
-            gsk_gl_vertex_buffer_push(vboWeights, 4, GL_FLOAT, GL_FALSE); // associated weights
+            gsk_GlVertexBuffer *vboWeights = gsk_gl_vertex_buffer_create(
+              data->skeleton->bufferWeights, data->skeleton->bufferWeightsSize);
+            gsk_gl_vertex_buffer_push(
+              vboWeights, 4, GL_FLOAT, GL_FALSE); // associated weights
             gsk_gl_vertex_array_add_buffer(vao, vboWeights);
         }
 #endif

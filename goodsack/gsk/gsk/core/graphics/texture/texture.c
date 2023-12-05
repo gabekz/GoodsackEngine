@@ -24,8 +24,8 @@ texture_create(const char *path,
                VulkanDeviceContext *vkDevice,
                TextureOptions options)
 {
-    gsk_Texture *tex  = malloc(sizeof(gsk_Texture));
-    tex->filePath = path;
+    gsk_Texture *tex = malloc(sizeof(gsk_Texture));
+    tex->filePath    = path;
 
     // TODO: create parameter
     stbi_set_flip_vertically_on_load(options.flip_vertically);
@@ -173,7 +173,7 @@ texture_create_cubemap(u32 faceCount, ...)
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
 
     gsk_Texture *tex = malloc(sizeof(gsk_Texture));
-    tex->id      = textureId;
+    tex->id          = textureId;
 
     va_list ap;
     va_start(ap, faceCount);

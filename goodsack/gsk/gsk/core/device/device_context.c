@@ -66,7 +66,7 @@ static void
 _cursor_callback(GLFWwindow *window, double xpos, double ypos)
 {
     // send input coords to device container
-    gsk_Input input              = gsk_device_getInput();
+    gsk_Input input          = gsk_device_getInput();
     input.cursor_position[0] = xpos;
     input.cursor_position[1] = ypos;
 

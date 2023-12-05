@@ -19,9 +19,9 @@ TODO:
 #include "util/gfx.h"
 
 #include "core/device/device.h"
-#include "entity/v1/ecs.h"
 #include "entity/v1/builtin/camera/camera_input.h"
 #include "entity/v1/builtin/transform/transform.h"
+#include "entity/v1/ecs.h"
 
 #define CAMERA_SHAKE            1
 #define CAMERA_SENSITIVITY_DIVS 10.0f
@@ -312,10 +312,10 @@ s_camera_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(ecs, C_CAMERA, sizeof(struct ComponentCamera));
     gsk_ecs_system_register(ecs,
-                        ((gsk_ECSSystem) {
-                          .init    = (gsk_ECSSubscriber)init,
-                          .destroy = NULL,
-                          .render  = NULL,
-                          .update  = (gsk_ECSSubscriber)update,
-                        }));
+                            ((gsk_ECSSystem) {
+                              .init    = (gsk_ECSSubscriber)init,
+                              .destroy = NULL,
+                              .render  = NULL,
+                              .update  = (gsk_ECSSubscriber)update,
+                            }));
 }

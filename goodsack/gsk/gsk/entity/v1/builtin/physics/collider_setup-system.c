@@ -32,7 +32,7 @@ init(gsk_Entity e)
     // TODO: collider types
     if (collider->type == 1) {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
-        sphereCollider->radius         = .20f;
+        sphereCollider->radius             = .20f;
         // glm_vec3_copy(transform->position, sphereCollider->center);
         // sphereCollider.center = transform.position;
 
@@ -122,18 +122,19 @@ update(gsk_Entity e)
 
         // plane v. sphere
         else if (collider->type == 2 && compareCollider->type == 1) {
-            points =
-              gsk_physics_collision_find_plane_sphere(collider->pCollider,
-                                                  compareCollider->pCollider,
-                                                  transform->position,
-                                                  compareTransform->position);
+            points = gsk_physics_collision_find_plane_sphere(
+              collider->pCollider,
+              compareCollider->pCollider,
+              transform->position,
+              compareTransform->position);
         }
 
         // Collision points
         if (points.has_collision) {
 
             if (gsk_ecs_has(e, C_RIGIDBODY)) {
-                struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
+                struct ComponentRigidbody *rigidbody =
+                  gsk_ecs_get(e, C_RIGIDBODY);
 
                 // Create a new collision result using our points
                 // TODO: Send objects A and B
@@ -142,7 +143,8 @@ update(gsk_Entity e)
                 };
 
                 // Send that over to the rigidbody solver list
-                gsk_physics_solver_push((gsk_PhysicsSolver *)rigidbody->solver, result);
+                gsk_physics_solver_push((gsk_PhysicsSolver *)rigidbody->solver,
+                                        result);
             }
 
             collider->isColliding = points.has_collision;
@@ -156,11 +158,11 @@ void
 s_collider_setup_system_init(gsk_ECS *ecs)
 {
     gsk_ecs_system_register(ecs,
-                        ((gsk_ECSSystem) {
-                          .init        = (gsk_ECSSubscriber)init,
-                          .destroy     = NULL,
-                          .render      = NULL,
-                          .update      = (gsk_ECSSubscriber)update,
-                          .late_update = NULL,
-                        }));
+                            ((gsk_ECSSystem) {
+                              .init        = (gsk_ECSSubscriber)init,
+                              .destroy     = NULL,
+                              .render      = NULL,
+                              .update      = (gsk_ECSSubscriber)update,
+                              .late_update = NULL,
+                            }));
 }

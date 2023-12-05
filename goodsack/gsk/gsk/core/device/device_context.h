@@ -11,7 +11,7 @@
 
 #include "core/drivers/vulkan/vulkan_device.h"
 
-typedef struct gsk_ApplicationProperties 
+typedef struct gsk_ApplicationProperties
 {
     const char *title;
     const char *description;

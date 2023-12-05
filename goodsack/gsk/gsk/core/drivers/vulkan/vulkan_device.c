@@ -13,9 +13,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util/sysdefs.h"
 #include "util/gfx.h"
 #include "util/logger.h"
+#include "util/sysdefs.h"
 
 #include "core/graphics/texture/texture.h"
 
@@ -231,7 +231,7 @@ vulkan_device_create()
 
     // Physical Device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    u32 deviceCount                = 0;
+    u32 deviceCount                 = 0;
     VK_CHECK(
       vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, NULL));
 
@@ -264,7 +264,7 @@ vulkan_device_create()
     ret->physicalDeviceProperties = deviceProperties;
 
     // Create Logical Device
-    u32 graphicsFamily = vulkan_device_find_queue_families(physicalDevice);
+    u32 graphicsFamily  = vulkan_device_find_queue_families(physicalDevice);
     float queuePriority = 1.0f;
 
     VkDeviceQueueCreateInfo queueCreateInfo = {

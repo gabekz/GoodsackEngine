@@ -95,11 +95,11 @@ s_transform_init(gsk_ECS *ecs)
 {
     //_ECS_DECL_COMPONENT(ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
     gsk_ecs_system_register(ecs,
-                        ((gsk_ECSSystem) {
-                          .init        = (gsk_ECSSubscriber)init,
-                          .destroy     = NULL,
-                          .render      = NULL,
-                          .update      = NULL,
-                          .late_update = (gsk_ECSSubscriber)late_update,
-                        }));
+                            ((gsk_ECSSystem) {
+                              .init        = (gsk_ECSSubscriber)init,
+                              .destroy     = NULL,
+                              .render      = NULL,
+                              .update      = NULL,
+                              .late_update = (gsk_ECSSubscriber)late_update,
+                            }));
 }

@@ -32,9 +32,9 @@ typedef struct gsk_GuiElement
 
 gsk_GuiElement *
 gsk_gui_element_create(vec2 position,
-                   vec2 size,
-                   gsk_Texture *p_texture,
-                   vec4 tex_coords);
+                       vec2 size,
+                       gsk_Texture *p_texture,
+                       vec4 tex_coords);
 
 void
 gsk_gui_element_draw(gsk_GuiElement *element);

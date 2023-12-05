@@ -41,7 +41,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
         Separator();
         // wow, this is ridiculous..
         struct ComponentTransform &p =
-          *(static_cast<struct ComponentTransform *>(gsk_ecs_get(e, C_TRANSFORM)));
+          *(static_cast<struct ComponentTransform *>(
+            gsk_ecs_get(e, C_TRANSFORM)));
         vec3 t = GLM_VEC3_ZERO_INIT;
         DragFloat3("Position", p.position, 0.1f, -3000, 3000);
         // BeginDisabled();
@@ -67,7 +68,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
         Separator();
 
         struct ComponentRigidbody &p =
-          *(static_cast<struct ComponentRigidbody *>(gsk_ecs_get(e, C_RIGIDBODY)));
+          *(static_cast<struct ComponentRigidbody *>(
+            gsk_ecs_get(e, C_RIGIDBODY)));
 
         DragFloat3("Gravity", p.gravity, 0.1f, -3000, 3000);
         DragFloat3("Velocity", p.velocity, 0.1f, -3000, 3000);
@@ -169,8 +171,9 @@ gsk::tools::panels::ComponentViewer::draw(void)
         Text("CameraLook Component");
         PopStyleColor();
         Separator();
-        struct ComponentCameraLook &p = *(
-          static_cast<struct ComponentCameraLook *>(gsk_ecs_get(e, C_CAMERALOOK)));
+        struct ComponentCameraLook &p =
+          *(static_cast<struct ComponentCameraLook *>(
+            gsk_ecs_get(e, C_CAMERALOOK)));
         DragFloat("Sensitivity", &p.sensitivity, 0.45f, 0.9f);
         EndChild();
     }

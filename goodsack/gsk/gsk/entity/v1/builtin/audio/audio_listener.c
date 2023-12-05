@@ -62,10 +62,10 @@ s_audio_listener_init(gsk_ECS *ecs)
     //_ECS_DECL_COMPONENT(
     // ecs, C_AUDIO_LISTENER, sizeof(struct ComponentAudioListener));
     gsk_ecs_system_register(ecs,
-                        ((gsk_ECSSystem) {
-                          .init    = (gsk_ECSSubscriber)init,
-                          .destroy = NULL,
-                          .render  = NULL,
-                          .update  = (gsk_ECSSubscriber)update,
-                        }));
+                            ((gsk_ECSSystem) {
+                              .init    = (gsk_ECSSubscriber)init,
+                              .destroy = NULL,
+                              .render  = NULL,
+                              .update  = (gsk_ECSSubscriber)update,
+                            }));
 }

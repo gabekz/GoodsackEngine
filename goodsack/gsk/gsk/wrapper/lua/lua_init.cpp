@@ -19,7 +19,6 @@
 #include "wrapper/lua/lua_debug.h"
 #include "wrapper/lua/lua_reg_print.h"
 
-
 void
 LuaInit(const char *file, gsk_ECS *ecs)
 {

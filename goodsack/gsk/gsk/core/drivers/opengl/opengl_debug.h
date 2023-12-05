@@ -10,12 +10,12 @@
 
 void APIENTRY
 _gsk_gl_debug_output(GLenum source,
-              GLenum type,
-              unsigned int id,
-              GLenum severity,
-              GLsizei length,
-              const char *message,
-              const void *userParam);
+                     GLenum type,
+                     unsigned int id,
+                     GLenum severity,
+                     GLsizei length,
+                     const char *message,
+                     const void *userParam);
 
 void
 _gsk_gl_debug_init();

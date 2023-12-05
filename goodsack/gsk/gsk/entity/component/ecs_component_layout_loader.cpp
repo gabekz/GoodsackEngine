@@ -26,7 +26,6 @@
 // TODO: Move to thirdparty directive - gabekz/GoodsackEngine#19
 #include <nlohmann/json.hpp>
 
-
 using json = nlohmann::json;
 
 entity::component::ComponentLayoutMap

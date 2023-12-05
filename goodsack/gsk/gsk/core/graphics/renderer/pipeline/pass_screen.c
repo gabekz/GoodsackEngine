@@ -134,7 +134,8 @@ postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties)
     frameHeight = height;
 
     // Shader
-    shader = gsk_shader_program_create(GSK_PATH("gsk://shaders/framebuffer.shader"));
+    shader =
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/framebuffer.shader"));
     gsk_shader_use(shader);
     glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
 
@@ -142,7 +143,8 @@ postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties)
     vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    gsk_GlVertexBuffer *vboRect =
+      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);

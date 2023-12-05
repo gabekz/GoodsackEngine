@@ -17,9 +17,9 @@
 
 gsk_Material *
 gsk_material_create(gsk_ShaderProgram *shader,
-                const char *shaderPath,
-                u32 textureCount,
-                ...)
+                    const char *shaderPath,
+                    u32 textureCount,
+                    ...)
 {
 
     gsk_Material *ret = malloc(sizeof(gsk_Material));
@@ -28,7 +28,8 @@ gsk_material_create(gsk_ShaderProgram *shader,
     } else if (shaderPath != "" || shaderPath != NULL) {
         ret->shaderProgram = gsk_shader_program_create(shaderPath);
     } else {
-        LOG_ERROR("You need to pass either a gsk_ShaderProgram or a valid path");
+        LOG_ERROR(
+          "You need to pass either a gsk_ShaderProgram or a valid path");
         return NULL;
     }
 

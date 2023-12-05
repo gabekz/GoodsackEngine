@@ -16,8 +16,8 @@
  * 3) Process Systems
  */
 
-#include "util/sysdefs.h"
 #include "core/graphics/lighting/skybox.h"
+#include "util/sysdefs.h"
 
 typedef struct gsk_Scene
 {

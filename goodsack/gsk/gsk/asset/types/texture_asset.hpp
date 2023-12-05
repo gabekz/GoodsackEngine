@@ -6,8 +6,8 @@
 #ifndef __TEXTURE_ASSET_HPP__
 #define __TEXTURE_ASSET_HPP__
 
-#include "util/sysdefs.h"
 #include "asset/asset.hpp"
+#include "util/sysdefs.h"
 
 namespace goodsack {
 namespace asset {

@@ -26,7 +26,8 @@ computebuffer_init()
     // shader Program
     const char *csPath = "../res/shaders/hello.compute";
     csShader           = gsk_shader_compute_program_create(csPath);
-    shader2 = gsk_shader_program_create("../res/shaders/framebuffer-simple.shader");
+    shader2 =
+      gsk_shader_program_create("../res/shaders/framebuffer-simple.shader");
 
     // texture size
     const u32 TEXTURE_WIDTH = 320, TEXTURE_HEIGHT = 180;
@@ -52,7 +53,8 @@ computebuffer_init()
     vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    gsk_GlVertexBuffer *vboRect =
+      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);

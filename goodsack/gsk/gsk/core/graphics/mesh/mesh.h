@@ -43,7 +43,7 @@ typedef struct gsk_MeshData
     {
         // attribute buffers
         float *v, *vt, *vn; // position, texCoord, normal
-        u32 vL, vtL, vnL;  // lengths
+        u32 vL, vtL, vnL;   // lengths
 
         float *out;
         u32 outI;

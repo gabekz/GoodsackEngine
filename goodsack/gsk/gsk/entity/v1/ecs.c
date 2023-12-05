@@ -35,7 +35,7 @@ gsk_ecs_init(gsk_Renderer *renderer)
     gsk_ECS *ecs = malloc(sizeof(gsk_ECS));
 
     // Initialize entity capacity
-    u32 capacity  = 64;
+    u32 capacity   = 64;
     ecs->ids       = malloc(capacity * sizeof(gsk_EntityId));
     ecs->capacity  = capacity;
     ecs->nextId    = 1;
@@ -80,8 +80,8 @@ gsk_ecs_new(gsk_ECS *self)
 
     gsk_Entity entity =
       (gsk_Entity) {.id    = self->nextId,
-                .index = self->nextIndex, // TODO: alignment (for deletion)
-                .ecs   = self};
+                    .index = self->nextIndex, // TODO: alignment (for deletion)
+                    .ecs   = self};
 
     // TODO: Fill next available slot (if deletion)
 
@@ -97,8 +97,8 @@ _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
 {
     gsk_ECS *ecs               = entity.ecs;
     gsk_ECSComponentList *list = &ecs->component_lists[component_id];
-    u32 size              = (entity.index * ECS_TAG_SIZE) +
-                (list->component_size * (entity.index + 1));
+    u32 size                   = (entity.index * ECS_TAG_SIZE) +
+               (list->component_size * (entity.index + 1));
     // printf("index of tag for Entity [%d]: %d", entity.index, size);
 
     char *tag = (char *)((void *)list->components) + size;
@@ -114,9 +114,10 @@ _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
     u32 index =
       (entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index));
     if (value != NULL) {
-        memcpy((char *)((char *)((gsk_ECSComponentList *)list->components) + index),
-               value,
-               list->component_size);
+        memcpy(
+          (char *)((char *)((gsk_ECSComponentList *)list->components) + index),
+          value,
+          list->component_size);
         // list = realloc(list, list.components_size+1 * sizeof());
     }
 }
@@ -127,7 +128,7 @@ gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id)
     gsk_ECSComponentList *list = &entity.ecs->component_lists[component_id];
 
     u32 size = (entity.index * ECS_TAG_SIZE) +
-                (list->component_size * (entity.index + 1));
+               (list->component_size * (entity.index + 1));
     // printf("index of tag for Entity [%d]: %d", entity.index, size);
     char *tag = (char *)((void *)list->components) + size;
     int value = *tag;
@@ -153,8 +154,8 @@ gsk_ecs_get(gsk_Entity entity, ECSComponentType component_id)
     // entity.id);
     return (
       char *)((char *)(gsk_ECSComponentList *)(entity.ecs
-                                             ->component_lists[component_id]
-                                             .components) +
+                                                 ->component_lists[component_id]
+                                                 .components) +
               size);
     // return ECSCL_GET(&entity.ecs->component_lists[component_id], entity.id);
 }
@@ -164,8 +165,8 @@ gsk_ecs_system_register(gsk_ECS *self, gsk_ECSSystem system)
 {
     u32 newSize = self->systems_size + 1;
 
-    gsk_ECSSystem *p  = realloc(self->systems, newSize * sizeof(gsk_ECSSystem));
-    self->systems = p;
+    gsk_ECSSystem *p = realloc(self->systems, newSize * sizeof(gsk_ECSSystem));
+    self->systems    = p;
 
     self->systems[newSize - 1] = system;
     self->systems_size         = newSize;
@@ -175,7 +176,7 @@ void
 gsk_ecs_component_register(gsk_ECS *self, u32 component_id, u64 size)
 {
     self->component_lists[component_id].component_size = size;
-    u32 aSize                                         = size + ECS_TAG_SIZE;
+    u32 aSize                                          = size + ECS_TAG_SIZE;
 
     self->component_lists[component_id].components =
       calloc(self->capacity, aSize);
@@ -200,7 +201,8 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
         }
         // Call the function per-entity
         for (int j = 0; j < self->nextIndex; j++) {
-            gsk_Entity e = (gsk_Entity) {.id = self->ids[j], .index = j, .ecs = self};
+            gsk_Entity e =
+              (gsk_Entity) {.id = self->ids[j], .index = j, .ecs = self};
             func(e);
         }
     }

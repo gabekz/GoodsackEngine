@@ -8,7 +8,7 @@
 #include "util/filesystem.h"
 #include "util/sysdefs.h"
 
-// TODO: replace with thirdparty root-include 
+// TODO: replace with thirdparty root-include
 #include <gtest/gtest.h>
 
 TEST(Util_Filesystem, URI_Parse)
@@ -37,7 +37,8 @@ TEST(Util_Filesystem, Path_Checking)
     gsk_filesystem_initialize("test");
 
     gsk_Path p1 = gsk_filesystem_path_from_uri("gsk://textures/white.jpg");
-    ASSERT_STREQ(p1.path,
-                 "E:/Projects/GoodsackEngine/goodsack/gsk_data/textures/white.jpg");
+    ASSERT_STREQ(
+      p1.path,
+      "E:/Projects/GoodsackEngine/goodsack/gsk_data/textures/white.jpg");
 }
 #endif // SYS_ENV_WIN

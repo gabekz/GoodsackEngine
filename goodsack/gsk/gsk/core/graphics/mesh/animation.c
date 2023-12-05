@@ -20,7 +20,7 @@ gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe)
         gsk_Pose nextPose    = *animation->keyframes[keyframe]->poses[i];
 
         // gsk_Pose newPose = LERP(currentPose, newPose, t);
-        gsk_Pose newPose              = nextPose;
+        gsk_Pose newPose          = nextPose;
         skeleton->joints[i]->pose = nextPose;
 
         // Local
@@ -36,14 +36,16 @@ gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe)
 }
 
 void
-gsk_animation_set_keyframe_lerp(gsk_Animation *animation, u32 keyframe, float ratio)
+gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
+                                u32 keyframe,
+                                float ratio)
 {
     gsk_Skeleton *skeleton = animation->pSkeleton;
     for (int i = 0; i < skeleton->jointsCount; i++) {
 
-        u32 keyframeActual = keyframe;
-        gsk_Pose currentPose    = *animation->keyframes[keyframe - 1]->poses[i];
-        gsk_Pose nextPose       = *animation->keyframes[keyframe]->poses[i];
+        u32 keyframeActual   = keyframe;
+        gsk_Pose currentPose = *animation->keyframes[keyframe - 1]->poses[i];
+        gsk_Pose nextPose    = *animation->keyframes[keyframe]->poses[i];
 
         gsk_Pose newPose;
 

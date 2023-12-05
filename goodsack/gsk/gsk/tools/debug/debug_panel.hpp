@@ -6,8 +6,8 @@
 #ifndef __DEBUG_PANEL_HPP__
 #define __DEBUG_PANEL_HPP__
 
-#include <string>
 #include "core/graphics/renderer/v1/renderer.h"
+#include <string>
 
 #define _DECL_DEBUG_PANEL(x)     x(std::string str) : DebugPanel(str) {};
 #define _DECL_DEBUG_PANEL2(x, y) x(y) : DebugPanel(y) {};

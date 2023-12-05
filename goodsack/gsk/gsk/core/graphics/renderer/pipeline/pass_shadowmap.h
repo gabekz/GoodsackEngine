@@ -6,8 +6,8 @@
 #ifndef __PASS_SHADOWMAP_H__
 #define __PASS_SHADOWMAP_H__
 
-#include "util/maths.h"
 #include "core/graphics/material/material.h"
+#include "util/maths.h"
 
 #ifdef __cplusplus
 extern "C" {

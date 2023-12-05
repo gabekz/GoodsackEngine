@@ -5,8 +5,8 @@
 
 #include "vulkan_debug.h"
 
-#include "util/logger.h"
 #include "core/drivers/vulkan/vulkan_support.h"
+#include "util/logger.h"
 
 VKAPI_ATTR VkBool32 VKAPI_CALL
 vulkan_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

@@ -123,9 +123,10 @@ gsk::tools::panels::EntityViewer::draw(void)
                 TextUnformatted("Entity");
                 TableNextColumn();
                 if (SmallButton("Inspect")) {
-                    gsk_Entity entity = (gsk_Entity {.id    = (gsk_EntityId)row_n + 1,
-                                             .index = (u64)row_n,
-                                             .ecs   = ecs});
+                    gsk_Entity entity =
+                      (gsk_Entity {.id    = (gsk_EntityId)row_n + 1,
+                                   .index = (u64)row_n,
+                                   .ecs   = ecs});
 
                     // display the component viewer panel
                     p_component_viewer->show_for_entity(entity);
