@@ -73,27 +73,26 @@ update(gsk_Entity e)
         animator->cntKeyframeIndex = 1;
         return;
     }
-}
 
-// LOG_INFO("Timer: %.2f", animator->timerNow);
+    // LOG_INFO("Timer: %.2f", animator->timerNow);
 
-u32 cntKeyframeIndex = animator->cntKeyframeIndex;
-gsk_Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
+    u32 cntKeyframeIndex      = animator->cntKeyframeIndex;
+    gsk_Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
 
-u32 nxtKeyframeIndex = cntKeyframeIndex + 1;
-gsk_Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];
+    u32 nxtKeyframeIndex      = cntKeyframeIndex + 1;
+    gsk_Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];
 
-float ratio = (animator->timerNow - cntKeyframe->frameTime) /
-              (nxtKeyframe->frameTime - cntKeyframe->frameTime);
+    float ratio = (animator->timerNow - cntKeyframe->frameTime) /
+                  (nxtKeyframe->frameTime - cntKeyframe->frameTime);
 
-if (ratio >= nxtKeyframe->frameTime) {
-    // gsk_animation_set_keyframe(animator->cntAnimation, 0);
-    gsk_animation_set_keyframe_lerp(
-      animator->cntAnimation, nxtKeyframeIndex, ratio);
-    animator->cntKeyframeIndex = nxtKeyframeIndex;
-}
+    if (ratio >= nxtKeyframe->frameTime) {
+        // gsk_animation_set_keyframe(animator->cntAnimation, 0);
+        gsk_animation_set_keyframe_lerp(
+          animator->cntAnimation, nxtKeyframeIndex, ratio);
+        animator->cntKeyframeIndex = nxtKeyframeIndex;
+    }
 
-// evaluate whether timerNow is closer to current or next keyframe
+    // evaluate whether timerNow is closer to current or next keyframe
 
 #endif
 }
