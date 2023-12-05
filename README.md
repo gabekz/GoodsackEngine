@@ -35,11 +35,108 @@ Feel free to stick around if you love game engine development!
 
 ---
 
-# Installation
+## Example usage
+
+ECS components created here: https://github.com/gabekz/GoodsackEngine/goodsack/gsk_data/components.json
+
+```C
+/*--------------------------------------------------------------------------
+  
+   Example showing how one might go about creating a basic scene.
+
+   As of December 2023, the symbols are not accurate. To make this
+   look cleaner, I have modified the code to show what the function
+   names are expected to become. See 'demo_hot' in the 'demos/' directory
+   for an accurate depiction.
+   
+ --------------------------------------------------------------------------*/
+
+static void
+CreateAndLoadMyScene(gsk_ECS *ecs_handle, gsk_Renderer *renderer)
+{
+    //------------------------------------------------
+    // Scene setup
+
+    ecs_handle = gsk_renderer_active_scene(renderer, 2); // set runtime to scene index 2
+    gsk_set_active_scene_skybox(renderer, SKYBOX_MAIN);
+
+    //------------------------------------------------
+    // Create resources (lazy-load at scene startup)
+
+    gsk_Model *model_sponza=
+      gsk_model_load_from_file("data://models/sponza.glb", TRUE, TRUE);
+
+    //------------------------------------------------
+    // Create camera entity
+
+    gsk_Entity ent_camera = gsk_ecs_new(ecs_handle);
+    gsk_ecs_add(ent_camera,
+                C_CAMERA,
+                ((struct ComponentCamera) {
+                    .axis_up      = {0.0f, 1.0f, 0.0f},
+                    .render_layer = 0,
+                }));
+    gsk_ecs_add(ent_camera,
+                C_CAMERALOOK,
+                ((struct ComponentCameraLook) {
+                    .sensitivity = 1.0f,
+                }));
+    gsk_ecs_add(ent_camera,
+                C_CAMERAMOVEMENT,
+                ((struct ComponentCameraMovement) {
+                    .speed = 2.5f,
+                }));
+    gsk_ecs_add(ent_camera,
+                C_TRANSFORM,
+                ((struct ComponentTransform) {
+                    .position = {0, 10, 0},
+                }));
+
+    //------------------------------------------------
+    // Create sponza entity
+
+    gsk_Entity e_sponza = gsk_ecs_new(ecs_handle);
+    gsk_ecs_add(e_sponza,
+                C_TRANSFORM,
+                ((struct ComponentTransform) {
+                    .position = {0.0f, -1.5f, 0.0f},
+                    .scale    = {0.001f, 0.001f, 0.001f},
+                }));
+    gsk_ecs_add(e_sponza,
+                C_MODEL,
+                ((struct ComponentModel) {
+                    .pModel   = model_sponza,
+                }));
+}
+
+//------------------------------------------------
+// Program entry
+
+int
+main(void)
+{
+    gsk_runtime_setup((_PROJ_DIR_DATA "/"), argc, argv);
+
+    gsk_ECS *p_ecs             = gsk_runtime_get_ecs();
+    gsk_Renderer *p_renderer   = gsk_runtime_get_renderer();
+
+    CreateAndLoadMyScene(p_ecs, p_renderer);
+    gsk_runtime_set_scene(2); // Set the active scene. Note, already done in CreateAndLoadMyScene()
+
+    gsk_runtime_loop();
+
+    return 0;
+}
+
+```
+
+---
+
+## Build
 
 ## [Linux] Building with CMake
 
-Building with CMake is pretty easy here. Navigating to the root directory, we can run the following:
+Building for Linux is fairly straight-forward. Navigating to the root directory, we can run the following:
 
 ```
 mkdir build && cd build
