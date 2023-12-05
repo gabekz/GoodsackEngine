@@ -1,6 +1,6 @@
 # ![Goodsack](docs/public/gsk_banner.png?raw=true "Hero")
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/gabekz/GoodsackEngine/blob/nov23_buildsys/LICENSE.txt)
-[![Build](https://github.com/gabekz/GoodsackEngine/actions/workflows/runner_root.yml/badge.svg)](https://github.com/gabekz/GoodsackEngine/actions/workflows/runner_root.yml)
+[![Build/CI](https://github.com/gabekz/GoodsackEngine/actions/workflows/runner_root.yml/badge.svg?event=push)](https://github.com/gabekz/GoodsackEngine/actions/workflows/runner_root.yml)
 
 ---
 
