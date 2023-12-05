@@ -18,17 +18,17 @@ gsk::tools::panels::Profiler::draw(void)
         Separator();
         Text("Analytics");
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("%f FPS", device_getAnalytics().currentFps);
-        Text("%f ms", device_getAnalytics().currentMs);
+        Text("%f FPS", gsk_device_getAnalytics().currentFps);
+        Text("%f ms", gsk_device_getAnalytics().currentMs);
         PopStyleColor();
     }
 
     if (CollapsingHeader("Settings")) {
         Separator();
         Text("Window");
-        int vsync = device_getGraphicsSettings().swapInterval;
+        int vsync = gsk_device_getGraphicsSettings().swapInterval;
         Checkbox("VSync", (bool *)&vsync);
-        device_setGraphicsSettings((GraphicsSettings({.swapInterval = vsync})));
+        gsk_device_setGraphicsSettings((gsk_GraphicsSettings({.swapInterval = vsync})));
 
         Separator();
         Text("Ambient Occlusion");

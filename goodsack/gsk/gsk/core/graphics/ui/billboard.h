@@ -14,7 +14,7 @@
 
 typedef struct gsk_Billboard2D
 {
-    VAO *vao;
+    gsk_GlVertexArray *vao;
     gsk_Texture *texture;
     gsk_Material *material;
 } gsk_Billboard2D;

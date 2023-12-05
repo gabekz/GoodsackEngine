@@ -15,21 +15,21 @@ extern "C" {
 
 // API
 
-#define DEVICE_API_OPENGL device_getGraphics() == GRAPHICS_API_OPENGL
-#define DEVICE_API_VULKAN device_getGraphics() == GRAPHICS_API_VULKAN
+#define GSK_DEVICE_API_OPENGL gsk_device_getGraphics() == GRAPHICS_API_OPENGL
+#define GSK_DEVICE_API_VULKAN gsk_device_getGraphics() == GRAPHICS_API_VULKAN
 
-typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } GraphicsAPI;
+typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } gsk_GraphicsAPI;
 
 // Settings
 
-typedef struct GraphicsSettings
+typedef struct gsk_GraphicsSettings
 {
     int swapInterval; // VSync
-} GraphicsSettings;
+} gsk_GraphicsSettings;
 
 // Analytics
 
-typedef struct Analytics
+typedef struct gsk_Analytics
 {
     double currentFps;
     double currentMs;
@@ -38,12 +38,12 @@ typedef struct Analytics
     double lastFrame;
 
     // u32 currentDrawCalls;
-} Analytics;
+} gsk_Analytics;
 
 // typedef enum { CURSOR_LOCK_MODE_NONE, CURSOR_LOCK_MODE_LOCKED }
 // CursorLockMode;
 
-typedef struct Input
+typedef struct gsk_Input
 {
     // Mouse Cursor
     double cursor_position[2];
@@ -55,32 +55,35 @@ typedef struct Input
         int is_visible;
     } cursor_state;
 
-} Input;
+} gsk_Input;
 
 // Functions
 
-GraphicsAPI
-device_getGraphics();
+gsk_GraphicsAPI
+gsk_device_getGraphics();
 void
-device_setGraphics(GraphicsAPI api);
+gsk_device_setGraphics(gsk_GraphicsAPI api);
 
-GraphicsSettings
-device_getGraphicsSettings();
+gsk_GraphicsSettings
+gsk_device_getGraphicsSettings();
 
 void
-device_setGraphicsSettings(GraphicsSettings settings);
+gsk_device_setGraphicsSettings(gsk_GraphicsSettings settings);
 
-Analytics
-device_getAnalytics();
-void
-device_resetAnalytics();
-void
-device_updateAnalytics(double time);
+gsk_Analytics
+gsk_device_getAnalytics();
 
-Input
-device_getInput();
 void
-device_setInput(Input input);
+gsk_device_resetAnalytics();
+
+void
+gsk_device_updateAnalytics(double time);
+
+gsk_Input
+gsk_device_getInput();
+
+void
+gsk_device_setInput(gsk_Input input);
 
 void
 device_setCursorState(int is_locked, int is_visible);

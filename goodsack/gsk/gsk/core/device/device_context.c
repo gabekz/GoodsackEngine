@@ -46,7 +46,7 @@ _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 
     // Toggle cursor state
     if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
-        Input deviceInput = device_getInput();
+        gsk_Input deviceInput = gsk_device_getInput();
         device_setCursorState(!deviceInput.cursor_state.is_locked,
                               !deviceInput.cursor_state.is_visible);
     }
@@ -66,15 +66,15 @@ static void
 _cursor_callback(GLFWwindow *window, double xpos, double ypos)
 {
     // send input coords to device container
-    Input input              = device_getInput();
+    gsk_Input input              = gsk_device_getInput();
     input.cursor_position[0] = xpos;
     input.cursor_position[1] = ypos;
 
-    device_setInput(input);
+    gsk_device_setInput(input);
 }
 
 GLFWwindow *
-createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
+gsk_window_create(int winWidth, int winHeight, VulkanDeviceContext **vkd)
 {
 
     glfwSetErrorCallback(_error_callback);
@@ -84,7 +84,7 @@ createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
     }
 
     // OpenGL
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -116,7 +116,7 @@ createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
         glfwSetMouseButtonCallback(window, _mouse_callback);
 
         // Initialize GL debug callback
-        glDebugInit();
+        _gsk_gl_debug_init();
         // Get current OpenGL version
         LOG_INFO("%s\n", glGetString(GL_VERSION));
 
@@ -135,7 +135,7 @@ createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd)
     }
 
     // Vulkan
-    else if (DEVICE_API_VULKAN) {
+    else if (GSK_DEVICE_API_VULKAN) {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 

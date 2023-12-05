@@ -205,7 +205,7 @@ ParseShader(const char *path)
 gsk_ShaderProgram *
 gsk_shader_program_create(const char *path)
 {
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         gsk_ShaderSource *ss = ParseShader(path);
 
         u32 program = glCreateProgram();
@@ -226,7 +226,7 @@ gsk_shader_program_create(const char *path)
         ret->shaderSource  = ss;
         return ret;
 
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
         LOG_DEBUG("Shader not implemented for Vulkan");
         return NULL;
     }

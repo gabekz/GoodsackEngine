@@ -14,7 +14,7 @@
 #include "util/logger.h"
 
 void APIENTRY
-glDebugOutput(GLenum source,
+_gsk_gl_debug_output(GLenum source,
               GLenum type,
               unsigned int id,
               GLenum severity,
@@ -73,7 +73,7 @@ glDebugOutput(GLenum source,
 }
 
 void
-glDebugInit()
+_gsk_gl_debug_init()
 {
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -81,7 +81,7 @@ glDebugInit()
     if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(glDebugOutput, NULL);
+        glDebugMessageCallback(_gsk_gl_debug_output, NULL);
         glDebugMessageControl(
           GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
         glDebugMessageControl(
@@ -90,20 +90,20 @@ glDebugInit()
 }
 // ~~~
 void
-_error_callback_gl(int error, const char *description)
+_gsk_gl_error_callback(int error, const char *description)
 {
     LOG_ERROR("%s", description);
 }
 
 void
-GLClearError()
+_gsk_gl_error_clear()
 {
     while (glGetError() != GL_NO_ERROR)
         ;
 }
 
 void
-GLCheckError()
+_gsk_gl_error_check()
 {
     GLenum error = glGetError();
     while (error) {

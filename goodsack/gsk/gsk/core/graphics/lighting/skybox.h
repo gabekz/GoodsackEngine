@@ -24,7 +24,7 @@ typedef struct gsk_Skybox
     gsk_Texture *irradianceMap;
     gsk_Texture *prefilterMap;
     gsk_Texture *brdfLUTTexture;
-    VAO *vao;
+    gsk_GlVertexArray *vao;
     gsk_ShaderProgram *shader;
 } gsk_Skybox;
 

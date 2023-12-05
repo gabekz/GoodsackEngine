@@ -48,7 +48,7 @@ texture_create(const char *path,
         LOG_CRITICAL("Failed to load texture data!");
     }
 
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         glGenTextures(1, &tex->id);
         glBindTexture(GL_TEXTURE_2D, tex->id);
 
@@ -82,9 +82,9 @@ texture_create(const char *path,
             glTexParameterf(
               GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, options.af_range);
         }
-    } // DEVICE_API_OPENGL
+    } // GSK_DEVICE_API_OPENGL
 
-    else if (DEVICE_API_VULKAN && vkDevice) {
+    else if (GSK_DEVICE_API_VULKAN && vkDevice) {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
@@ -158,7 +158,7 @@ texture_create(const char *path,
         tex->vulkan.textureSampler = vulkan_image_texture_sampler(
           vkDevice->device, vkDevice->physicalDeviceProperties);
 
-    } // DEVICE_API_VULKAN
+    } // GSK_DEVICE_API_VULKAN
 
     if (localBuffer) { stbi_image_free(localBuffer); }
 
@@ -267,7 +267,7 @@ texture_unbind()
 void
 texture_cleanup(gsk_Texture *self, VulkanDeviceContext *vkDevice)
 {
-    if (DEVICE_API_VULKAN && vkDevice) {
+    if (GSK_DEVICE_API_VULKAN && vkDevice) {
         vkDestroyImage(vkDevice->device, self->vulkan.textureImage, NULL);
         vkFreeMemory(vkDevice->device, self->vulkan.textureImageMemory, NULL);
     }

@@ -23,7 +23,7 @@ static u32 msRBO, sbRBO;
 static u32 msTexture, sbTexture;
 
 static gsk_ShaderProgram *shader;
-static VAO *vaoRect;
+static gsk_GlVertexArray *vaoRect;
 
 static u32 frameWidth, frameHeight;
 
@@ -139,14 +139,14 @@ postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties)
     glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
 
     // Create Rectangle
-    vaoRect = vao_create();
-    vao_bind(vaoRect);
+    vaoRect = gsk_gl_vertex_array_create();
+    gsk_gl_vertex_array_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
-    VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
-    vbo_bind(vboRect);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vaoRect, vboRect);
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    gsk_gl_vertex_buffer_bind(vboRect);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_array_add_buffer(vaoRect, vboRect);
     free(rectPositions);
 
     // Create Framebuffer
@@ -197,7 +197,7 @@ postbuffer_draw(gsk_RendererProps *properties)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, frameWidth, frameHeight);
 
-    vao_bind(vaoRect);
+    gsk_gl_vertex_array_bind(vaoRect);
     gsk_shader_use(shader);
     glUniform1i(glGetUniformLocation(shader->id, "u_Tonemapper"),
                 properties->tonemapper);
@@ -235,7 +235,7 @@ postbuffer_draw(gsk_RendererProps *properties)
                       GL_COLOR_BUFFER_BIT,
                       GL_NEAREST);
 
-    vao_bind(vaoRect);
+    gsk_gl_vertex_array_bind(vaoRect);
     gsk_shader_use(shader2);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);

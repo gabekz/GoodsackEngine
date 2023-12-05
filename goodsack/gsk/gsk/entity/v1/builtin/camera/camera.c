@@ -54,7 +54,7 @@ _initialize_shader_data(struct ComponentCamera *camera)
 // Create UBO for camera data
 #if 0
     u32 uboSize = 4 + sizeof(vec3) + (2 * sizeof(mat4));
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         u32 uboId;
         glGenBuffers(1, &uboId);
         glBindBuffer(GL_UNIFORM_BUFFER, uboId);
@@ -62,7 +62,7 @@ _initialize_shader_data(struct ComponentCamera *camera)
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
         glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboId, 0, uboSize);
         camera->uboId = uboId;
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
         /*
         VulkanDeviceContext *context = e.ecs->renderer->vulkanDevice;
 
@@ -92,7 +92,7 @@ _upload_shader_data(gsk_Entity e,
     glm_mat4_copy(camera->view,
                   p_renderer->camera_data.cameras[camera->renderLayer]->view);
 #else
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         // Get the starting position
         u32 ubo_offset = camera->renderLayer * (renderer->camera_data.uboSize);
 
@@ -108,7 +108,7 @@ _upload_shader_data(gsk_Entity e,
                         sizeof(mat4),
                         camera->view);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
         // TEST (while we don't have direct descriptor sets for objects)
         mat4 p = GLM_MAT4_IDENTITY_INIT;
         // glm_mat4_copy(p, camera->uniform.model);
@@ -173,7 +173,7 @@ update(gsk_Entity e)
         struct ComponentCameraLook *cameraLook =
           gsk_ecs_get(e, C_CAMERALOOK); // TODO: Move away
 
-        Input input = device_getInput();
+        gsk_Input input = gsk_device_getInput();
         double cntX, cntY;
 
         if (input.cursor_state.is_locked == TRUE) {
@@ -293,7 +293,7 @@ update(gsk_Entity e)
 
 #if CAMERA_SHAKE
     if (s_shake > 0) {
-        s_shake -= 3 * device_getAnalytics().delta;
+        s_shake -= 3 * gsk_device_getAnalytics().delta;
     } else if (s_shake <= 0) {
         s_shake = 0;
     }

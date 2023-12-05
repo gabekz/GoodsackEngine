@@ -19,7 +19,7 @@ extern "C" {
 
 typedef struct gsk_GuiElement
 {
-    VAO *vao;
+    gsk_GlVertexArray *vao;
     gsk_Texture *texture;
     gsk_Material *material;
 

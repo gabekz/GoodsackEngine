@@ -11,11 +11,11 @@
 
 typedef struct gsk_DebugContext
 {
-    VAO *vaoCube;
-    VAO *vaoBoundingBox;
+    gsk_GlVertexArray *vaoCube;
+    gsk_GlVertexArray *vaoBoundingBox;
     gsk_Material *material;
 
-    VAO *vaoLine; // VAO for debug draw line
+    gsk_GlVertexArray *vaoLine; // VAO for debug draw line
 
 } gsk_DebugContext;
 

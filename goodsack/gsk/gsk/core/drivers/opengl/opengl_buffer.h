@@ -12,70 +12,79 @@
 
 #include "util/gfx.h"
 
-typedef struct _VAO VAO;
-typedef struct _VBO VBO;
-typedef struct _IBO IBO;
+typedef struct gsk_GlBufferElement
+{
+    unsigned int count;
+    unsigned int type;
+    unsigned int normalized;
+} gsk_GlBufferElement;
 
-typedef struct _BufferElement BufferElement;
-
-struct _VAO
+typedef struct gsk_GlVertexArray
 {
     unsigned int id;
-    BufferElement *elements;
+    gsk_GlBufferElement *elements;
     unsigned int elementsCount;
-};
+} gsk_GlVertexArray;
 
-struct _VBO
+typedef struct gsk_GlVertexBuffer
 {
     unsigned int id;
     unsigned int type;
 
     unsigned int stride;
-    BufferElement *elements; // components - i.e, positions, texCoords, etc.
     unsigned int elementsSize;
-};
+    gsk_GlBufferElement *elements;
+} gsk_GlVertexBuffer;
 
-struct _IBO
+typedef struct gsk_GlIndexBuffer
 {
     unsigned int id;
     unsigned int count;
-};
+} gsk_GlIndexBuffer;
 
-struct _BufferElement
-{
-    unsigned int count;
-    unsigned int type;
-    unsigned int normalized;
-};
+// gsk_GlVertexArray
 
-// VAO
-VAO *
-vao_create();
+gsk_GlVertexArray *
+gsk_gl_vertex_array_create();
+
 void
-vao_bind(VAO *self);
+gsk_gl_vertex_array_bind(gsk_GlVertexArray *self);
+
 void
-vao_add_buffer(VAO *self, VBO *vbo);
+gsk_gl_vertex_array_add_buffer(gsk_GlVertexArray *self,
+                               gsk_GlVertexBuffer *vbo);
 
 // VBO
-VBO *
-vbo_create(const void *data, unsigned int size);
+
+gsk_GlVertexBuffer *
+gsk_gl_vertex_buffer_create(const void *data, unsigned int size);
+
 void
-vbo_bind(VBO *self);
+gsk_gl_vertex_buffer_bind(gsk_GlVertexBuffer *self);
+
 void
-vbo_unbind();
+gsk_gl_vertex_buffer_unbind();
+
 void
-vbo_destroy(VBO *self);
+gsk_gl_vertex_buffer_destroy(gsk_GlVertexBuffer *self);
+
 void
-vbo_push(VBO *self, GLuint count, GLuint type, GLuint normalized);
+gsk_gl_vertex_buffer_push(gsk_GlVertexBuffer *self,
+                          GLuint count,
+                          GLuint type,
+                          GLuint normalized);
+
 int
-getElementTypeSize(GLuint type);
+gsk_gl_get_element_type_size(GLuint type);
 
 // IBO
-IBO *
-ibo_create(const void *data, unsigned int size);
+gsk_GlIndexBuffer *
+gsk_gl_index_buffer_create(const void *data, unsigned int size);
+
 void
-ibo_bind(IBO *self);
+gsk_gl_index_buffer_bind(gsk_GlIndexBuffer *self);
+
 void
-ibo_destroy(IBO *self);
+gsk_gl_index_buffer_destroy(gsk_GlIndexBuffer *self);
 
 #endif // __OPENGL_BUFFER_H__

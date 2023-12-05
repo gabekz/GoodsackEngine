@@ -23,7 +23,7 @@ static u32 s_depthPrepassTextureId;
 static u32 s_gPosition;
 static u32 s_gNormal;
 
-static VAO *s_vaoRect;
+static gsk_GlVertexArray *s_vaoRect;
 
 void
 prepass_init()
@@ -104,14 +104,14 @@ prepass_init()
     s_depthPrepassMaterial = gsk_material_create(s_depthPrepassShader, NULL, 0);
 
     // Create Rectangle
-    s_vaoRect = vao_create();
-    vao_bind(s_vaoRect);
+    s_vaoRect = gsk_gl_vertex_array_create();
+    gsk_gl_vertex_array_bind(s_vaoRect);
     float *rectPositions = prim_vert_rect();
-    VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
-    vbo_bind(vboRect);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(s_vaoRect, vboRect);
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    gsk_gl_vertex_buffer_bind(vboRect);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_array_add_buffer(s_vaoRect, vboRect);
     free(rectPositions);
 
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -153,7 +153,7 @@ prepass_bind()
 void
 prepass_draw()
 {
-    vao_bind(s_vaoRect);
+    gsk_gl_vertex_array_bind(s_vaoRect);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

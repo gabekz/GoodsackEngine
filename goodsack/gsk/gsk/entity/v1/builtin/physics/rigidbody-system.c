@@ -91,7 +91,7 @@ update(gsk_Entity e)
     // velocity += force / mass * delta;
     vec3 fDm = GLM_VEC3_ZERO_INIT;
     glm_vec3_divs(rigidbody->force, rigidbody->mass, fDm);
-    glm_vec3_scale(fDm, device_getAnalytics().delta, fDm);
+    glm_vec3_scale(fDm, gsk_device_getAnalytics().delta, fDm);
     glm_vec3_add(rigidbody->velocity, fDm, rigidbody->velocity);
 
     // --
@@ -99,13 +99,13 @@ update(gsk_Entity e)
 
     // position += velocity * delta;
     vec3 vD = GLM_VEC3_ZERO_INIT;
-    glm_vec3_scale(rigidbody->velocity, device_getAnalytics().delta, vD);
+    glm_vec3_scale(rigidbody->velocity, gsk_device_getAnalytics().delta, vD);
     glm_vec3_add(transform->position, vD, transform->position);
 
     // orientation += angular_velocity * delta;
     vec3 aVD = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(
-      rigidbody->angular_velocity, device_getAnalytics().delta, aVD);
+      rigidbody->angular_velocity, gsk_device_getAnalytics().delta, aVD);
     glm_vec3_add(transform->orientation, aVD, transform->orientation);
 
     // --
@@ -146,7 +146,7 @@ _position_solver(struct ComponentRigidbody *rigidbody,
 #if USE_VELOCITY
 #if USE_VELOCITY_DELTA
     glm_vec3_scale(
-      correction, device_getAnalytics().delta * rigidbody->mass, correction);
+      correction, gsk_device_getAnalytics().delta * rigidbody->mass, correction);
 #endif // USE_DELTA
     // NOTE: This one is pretty interseting..
     glm_vec3_sub(rigidbody->velocity, correction, rigidbody->velocity);
@@ -155,7 +155,7 @@ _position_solver(struct ComponentRigidbody *rigidbody,
 #if AFFECT_POS_DIRECT
 #if USE_POS_DELTA
     glm_vec3_scale(
-      correction, device_getAnalytics().delta * rigidbody->mass, correction);
+      correction, gsk_device_getAnalytics().delta * rigidbody->mass, correction);
 #endif
     glm_vec3_sub(transform->position, correction, transform->position);
 #endif // AFFECT_POS_DIRECT

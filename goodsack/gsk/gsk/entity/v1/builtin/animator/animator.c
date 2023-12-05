@@ -65,7 +65,7 @@ update(gsk_Entity e)
     }
 #else
 
-    animator->timerNow += (device_getAnalytics().delta) * 1.0;
+    animator->timerNow += (gsk_device_getAnalytics().delta) * 1.0;
 
     gsk_Animation *cntAnimation = animator->cntAnimation;
     if (animator->timerNow >= cntAnimation->duration) {

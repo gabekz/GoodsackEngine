@@ -17,7 +17,7 @@
 static u32 csTexture;
 static gsk_ShaderProgram *csShader;
 static gsk_ShaderProgram *shader2;
-static VAO *vaoRect;
+static gsk_GlVertexArray *vaoRect;
 
 void
 computebuffer_init()
@@ -49,14 +49,14 @@ computebuffer_init()
                  NULL);
 
     // Create Rectangle
-    vaoRect = vao_create();
-    vao_bind(vaoRect);
+    vaoRect = gsk_gl_vertex_array_create();
+    gsk_gl_vertex_array_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
-    VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
-    vbo_bind(vboRect);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vaoRect, vboRect);
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    gsk_gl_vertex_buffer_bind(vboRect);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_array_add_buffer(vaoRect, vboRect);
     free(rectPositions);
 }
 
@@ -79,6 +79,6 @@ computebuffer_draw()
     gsk_shader_use(shader2);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, csTexture);
-    vao_bind(vaoRect);
+    gsk_gl_vertex_array_bind(vaoRect);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 }

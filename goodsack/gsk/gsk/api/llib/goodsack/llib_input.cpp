@@ -45,11 +45,11 @@ _GetCursorAxis(lua_State *L)
     lua_newtable(L);
 
     lua_pushnumber(L, 1);
-    lua_pushnumber(L, device_getInput().cursor_axis_raw[0]);
+    lua_pushnumber(L, gsk_device_getInput().cursor_axis_raw[0]);
     lua_rawset(L, -3); // insert cell and pop
 
     lua_pushnumber(L, 2);
-    lua_pushnumber(L, device_getInput().cursor_axis_raw[1]);
+    lua_pushnumber(L, gsk_device_getInput().cursor_axis_raw[1]);
     lua_rawset(L, -3); // insert cell and pop
 
     lua_pushliteral(L, "n");
@@ -66,11 +66,11 @@ _GetCursorState(lua_State *L)
     lua_newtable(L);
 
     lua_pushstring(L, "is_locked");
-    lua_pushboolean(L, device_getInput().cursor_state.is_locked);
+    lua_pushboolean(L, gsk_device_getInput().cursor_state.is_locked);
     lua_rawset(L, -3); // insert cell and pop
 
     lua_pushstring(L, "is_visible");
-    lua_pushnumber(L, device_getInput().cursor_state.is_visible);
+    lua_pushnumber(L, gsk_device_getInput().cursor_state.is_visible);
     lua_rawset(L, -3); // insert cell and pop
 
     lua_pushliteral(L, "n");

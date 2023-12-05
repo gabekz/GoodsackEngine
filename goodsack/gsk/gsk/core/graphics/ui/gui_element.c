@@ -67,7 +67,7 @@ gsk_gui_element_create(vec2 position, vec2 size, gsk_Texture *p_texture, vec4 te
         t_neg_y = tex_coords[3];
     }
 
-    ret->vao = vao_create();
+    ret->vao = gsk_gl_vertex_array_create();
     float *rectPos = 
     (float[])
     {
@@ -79,11 +79,11 @@ gsk_gui_element_create(vec2 position, vec2 size, gsk_Texture *p_texture, vec4 te
         -size_x_off ,  size_y_off, t_neg_x, t_pos_y,
     };
 
-    VBO *vbo = vbo_create(rectPos, (2 * 3 * 4) * sizeof(float));
-    vbo_bind(vbo);
-    vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(ret->vao, vbo);
+    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float));
+    gsk_gl_vertex_buffer_bind(vbo);
+    gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_array_add_buffer(ret->vao, vbo);
 
     ret->using_texture = (p_texture != NULL) ? TRUE : FALSE;
 
@@ -119,7 +119,7 @@ gsk_gui_element_draw(gsk_GuiElement *self)
       glGetUniformLocation(self->material->shaderProgram->id, "u_using_texture"),
       self->using_texture);
 
-    vao_bind(self->vao);
+    gsk_gl_vertex_array_bind(self->vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
 #if USING_BLENDING

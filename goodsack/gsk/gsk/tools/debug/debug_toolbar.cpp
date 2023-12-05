@@ -40,10 +40,10 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
     ImGuiIO &io = ImGui::GetIO();
 
     // Setup Platform/Renderer bindings
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
         ImGui_ImplGlfw_InitForVulkan(renderer->window, true);
 
         VulkanDeviceContext *vkDevice  = renderer->vulkanDevice;
@@ -112,9 +112,9 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
 
 gsk::tools::DebugToolbar::~DebugToolbar()
 {
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         ImGui_ImplOpenGL3_Shutdown();
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
         ImGui_ImplVulkan_Shutdown();
     }
     ImGui_ImplGlfw_Shutdown();
@@ -159,11 +159,11 @@ gsk::tools::DebugToolbar::render(void)
     if (!m_debugEnabled) return;
 
     // Create new frame
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -223,9 +223,9 @@ gsk::tools::DebugToolbar::render(void)
     // Render
     ImGui::Render();
 
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
 #if 1
         VulkanDeviceContext *vkDevice = m_renderer->vulkanDevice;
         ImGui_ImplVulkan_RenderDrawData(

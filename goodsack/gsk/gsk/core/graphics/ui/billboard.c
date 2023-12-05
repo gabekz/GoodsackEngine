@@ -18,14 +18,14 @@ gsk_billboard_create(const char *texturePath, vec2 size)
 {
     gsk_Billboard2D *ret = malloc(sizeof(gsk_Billboard2D));
 
-    ret->vao       = vao_create();
+    ret->vao       = gsk_gl_vertex_array_create();
     float *rectPos = prim_vert_rect();
 
-    VBO *vbo = vbo_create(rectPos, (2 * 3 * 4) * sizeof(float));
-    vbo_bind(vbo);
-    vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vbo, 2, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(ret->vao, vbo);
+    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float));
+    gsk_gl_vertex_buffer_bind(vbo);
+    gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_array_add_buffer(ret->vao, vbo);
 
     ret->texture = texture_create(
       texturePath, NULL, (TextureOptions) {1, GL_RGBA, true, true});
@@ -50,7 +50,7 @@ gsk_billboard_draw(gsk_Billboard2D *self, vec3 position)
       1,
       (float *)position);
 
-    vao_bind(self->vao);
+    gsk_gl_vertex_array_bind(self->vao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 
     glDisable(GL_BLEND);

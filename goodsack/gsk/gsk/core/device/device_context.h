@@ -6,14 +6,12 @@
 #ifndef __DEVICE_CONTEXT_H__
 #define __DEVICE_CONTEXT_H__
 
-#include <util/gfx.h>
-#include <util/sysdefs.h>
+#include "util/gfx.h"
+#include "util/sysdefs.h"
 
-#include <core/drivers/vulkan/vulkan_device.h>
+#include "core/drivers/vulkan/vulkan_device.h"
 
-typedef struct _applicationProperties ApplicationProperties;
-
-struct _applicationProperties
+typedef struct gsk_ApplicationProperties 
 {
     const char *title;
     const char *description;
@@ -23,10 +21,10 @@ struct _applicationProperties
         int major : 1;
         int minor : 1;
     } version;
-};
+} gsk_ApplicationProperties;
 
 GLFWwindow *
-createWindow(int winWidth, int winHeight, VulkanDeviceContext **vkd);
+gsk_window_create(int winWidth, int winHeight, VulkanDeviceContext **vkd);
 // void cleanup(ContextProperties *contextProperties);
 
 #endif // __DEVICE_CONTEXT_H__

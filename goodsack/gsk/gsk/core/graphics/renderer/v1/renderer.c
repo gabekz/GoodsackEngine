@@ -44,7 +44,7 @@ gsk_renderer_init()
 
     gsk_Renderer *ret = malloc(sizeof(gsk_Renderer));
     GLFWwindow *window =
-      /*context*/ createWindow(winWidth, winHeight, &ret->vulkanDevice);
+      /*context*/ gsk_window_create(winWidth, winHeight, &ret->vulkanDevice);
 
     ret->window       = window;
     ret->windowWidth  = winWidth;
@@ -157,7 +157,7 @@ gsk_renderer_start(gsk_Renderer *renderer)
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
     gsk_ECS *ecs     = scene->ecs;
 
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
 
 // Create the default skybox
 #if 0
@@ -232,7 +232,7 @@ gsk_renderer_start(gsk_Renderer *renderer)
         }
 #endif
 
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
         gsk_ecs_event(ecs, ECS_INIT);
         // LOG_DEBUG("gsk_Renderer Start-Phase is not implemented in Vulkan");
     }
@@ -244,7 +244,7 @@ static void
 renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 {
     // Settings
-    glfwSwapInterval(device_getGraphicsSettings().swapInterval);
+    glfwSwapInterval(gsk_device_getGraphicsSettings().swapInterval);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -253,7 +253,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
         gsk_Scene Logic/Data update
     */
 
-    device_setInput(device_getInput()); // TODO: Weird hack to reset for axis
+    gsk_device_setInput(gsk_device_getInput()); // TODO: Weird hack to reset for axis
     device_updateCursorState(renderer->window);
     glfwPollEvents();
 
@@ -405,9 +405,9 @@ gsk_renderer_tick(gsk_Renderer *renderer)
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
     gsk_ECS *ecs     = scene->ecs;
 
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         renderer_tick_OPENGL(renderer, scene, ecs);
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
         // renderer_tick_VULKAN(renderer, ecs);
     }
 }

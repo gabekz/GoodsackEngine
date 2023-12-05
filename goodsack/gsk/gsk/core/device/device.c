@@ -8,9 +8,9 @@
 #include "util/gfx.h"
 #include "util/sysdefs.h"
 
-static volatile GraphicsAPI s_device = GRAPHICS_API_OPENGL;
-static volatile GraphicsSettings s_deviceSettings;
-static volatile Input s_input;
+static volatile gsk_GraphicsAPI s_device = GRAPHICS_API_OPENGL;
+static volatile gsk_GraphicsSettings s_deviceSettings;
+static volatile gsk_Input s_input;
 ;
 static volatile int s_initialized = 0; // false
 
@@ -18,47 +18,47 @@ static struct
 {
     u32 counter;
     double prevTime, timeDiff;
-    Analytics analytics;
+    gsk_Analytics analytics;
 } s_ald; // Analytic Data
 
 // API
 
-GraphicsAPI
-device_getGraphics()
+gsk_GraphicsAPI
+gsk_device_getGraphics()
 {
     return s_device;
 }
 
 void
-device_setGraphics(GraphicsAPI api)
+gsk_device_setGraphics(gsk_GraphicsAPI api)
 {
     s_device = api;
 }
 
 // Settings
 
-GraphicsSettings
-device_getGraphicsSettings()
+gsk_GraphicsSettings
+gsk_device_getGraphicsSettings()
 {
     return s_deviceSettings;
 }
 
 void
-device_setGraphicsSettings(GraphicsSettings settings)
+gsk_device_setGraphicsSettings(gsk_GraphicsSettings settings)
 {
     s_deviceSettings = settings;
 }
 
 // Analytics
 
-Analytics
-device_getAnalytics()
+gsk_Analytics
+gsk_device_getAnalytics()
 {
     return s_ald.analytics;
 }
 
 void
-device_resetAnalytics()
+gsk_device_resetAnalytics()
 {
     s_ald.counter  = 0;
     s_ald.prevTime = 0;
@@ -71,7 +71,7 @@ device_resetAnalytics()
 }
 
 void
-device_updateAnalytics(double time)
+gsk_device_updateAnalytics(double time)
 {
     // Delta Time
     s_ald.analytics.delta     = time - s_ald.analytics.lastFrame;
@@ -92,8 +92,8 @@ device_updateAnalytics(double time)
     }
 }
 
-Input
-device_getInput()
+gsk_Input
+gsk_device_getInput()
 {
     return s_input;
 }
@@ -115,7 +115,7 @@ device_updateCursorState(GLFWwindow *window)
 }
 
 void
-device_setInput(Input input)
+gsk_device_setInput(gsk_Input input)
 {
     double lastX = s_input.cursor_position[0];
     double lastY = s_input.cursor_position[1];

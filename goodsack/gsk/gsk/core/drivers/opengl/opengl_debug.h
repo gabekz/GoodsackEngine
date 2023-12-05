@@ -9,7 +9,7 @@
 #include "util/gfx.h"
 
 void APIENTRY
-glDebugOutput(GLenum source,
+_gsk_gl_debug_output(GLenum source,
               GLenum type,
               unsigned int id,
               GLenum severity,
@@ -18,14 +18,15 @@ glDebugOutput(GLenum source,
               const void *userParam);
 
 void
-glDebugInit();
-// ~~~
-void
-_error_callback_gl(int error, const char *description);
+_gsk_gl_debug_init();
 
 void
-GLClearError();
+_gsk_gl_error_callback(int error, const char *description);
+
 void
-GLCheckError();
+_gsk_gl_error_clear();
+
+void
+_gsk_gl_error_check();
 
 #endif // __OPENGL_DEBUG_H__

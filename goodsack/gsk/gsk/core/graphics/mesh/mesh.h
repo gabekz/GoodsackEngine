@@ -73,7 +73,7 @@ typedef struct gsk_Mesh
     mat4 localMatrix;
 
     // Mesh GPU buffers
-    VAO *vao;
+    gsk_GlVertexArray *vao;
     VulkanVertexBuffer *vkVBO;
 
     // Imported material data

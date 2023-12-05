@@ -14,7 +14,7 @@
 
 static u32 cubemapProjectionFBO;
 static u32 cubemapProjectionRBO;
-static VAO *cubemapProjectionVAO;
+static gsk_GlVertexArray *cubemapProjectionVAO;
 static gsk_ShaderProgram *cubemapProjectionShader;
 static gsk_ShaderProgram *cubemapShaderConvolute;
 static gsk_ShaderProgram *cubemapShaderPrefilter;
@@ -26,15 +26,15 @@ gsk_skybox_create(gsk_Texture *cubemap)
     gsk_Skybox *ret  = malloc(sizeof(gsk_Skybox));
     ret->cubemap = cubemap;
 
-    VAO *vao = vao_create();
+    gsk_GlVertexArray *vao = gsk_gl_vertex_array_create();
     ret->vao = vao;
 
-    VBO *vbo = vbo_create(PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
-    vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vao, vbo);
-    IBO *ibo =
-      ibo_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
-    ibo_bind(ibo);
+    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
+    gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_array_add_buffer(vao, vbo);
+    gsk_GlIndexBuffer *ibo =
+      gsk_gl_index_buffer_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
+    gsk_gl_index_buffer_bind(ibo);
     free(vbo);
     gsk_ShaderProgram *shader =
       gsk_shader_program_create(GSK_PATH("gsk://shaders/skybox.shader"));
@@ -58,7 +58,7 @@ gsk_skybox_draw(gsk_Skybox *self)
     glUniform1i(glGetUniformLocation(self->shader->id, "u_draw_blur"), 0);
 #endif
 
-    vao_bind(self->vao);
+    gsk_gl_vertex_array_bind(self->vao);
     // glDrawArrays(GL_TRIANGLES, 0, 24);
     glDrawElements(GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
 }
@@ -168,15 +168,15 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Simple cube for rendering
-    VAO *vao = vao_create();
-    vao_bind(vao);
-    VBO *vbo = vbo_create(PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
-    vbo_bind(vbo);
-    vbo_push(vbo, 3, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vao, vbo);
-    IBO *ibo =
-      ibo_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
-    ibo_bind(ibo);
+    gsk_GlVertexArray *vao = gsk_gl_vertex_array_create();
+    gsk_gl_vertex_array_bind(vao);
+    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
+    gsk_gl_vertex_buffer_bind(vbo);
+    gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_array_add_buffer(vao, vbo);
+    gsk_GlIndexBuffer *ibo =
+      gsk_gl_index_buffer_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
+    gsk_gl_index_buffer_bind(ibo);
     cubemapProjectionVAO = vao;
 
     gsk_ShaderProgram *shaderP =
@@ -230,7 +230,7 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
 {
     u32 captureFBO                = cubemapProjectionFBO;
     u32 captureRBO                = cubemapProjectionRBO;
-    VAO *vao                       = cubemapProjectionVAO;
+    gsk_GlVertexArray *vao                       = cubemapProjectionVAO;
     gsk_ShaderProgram *shaderP         = cubemapProjectionShader;
     gsk_ShaderProgram *shaderConvolute = cubemapShaderConvolute;
     gsk_ShaderProgram *shaderPrefilter = cubemapShaderPrefilter;
@@ -301,7 +301,7 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // render 1x1 cube
-        vao_bind(vao);
+        gsk_gl_vertex_array_bind(vao);
         glDrawElements(
           GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
     }
@@ -331,7 +331,7 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // render 1x1 cube
-        vao_bind(vao);
+        gsk_gl_vertex_array_bind(vao);
         glDrawElements(
           GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
     }
@@ -374,7 +374,7 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // render 1x1 cube
-            vao_bind(vao);
+            gsk_gl_vertex_array_bind(vao);
             glDrawElements(
               GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
         }
@@ -392,14 +392,14 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Create Rectangle
-    VAO *vaoRect = vao_create();
-    vao_bind(vaoRect);
+    gsk_GlVertexArray *vaoRect = gsk_gl_vertex_array_create();
+    gsk_gl_vertex_array_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
-    VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
-    vbo_bind(vboRect);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vaoRect, vboRect);
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    gsk_gl_vertex_buffer_bind(vboRect);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_array_add_buffer(vaoRect, vboRect);
     free(rectPositions);
     // Draw Quad
     glDisable(GL_DEPTH_TEST);

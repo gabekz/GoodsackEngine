@@ -44,15 +44,15 @@ static void
 _gsk_check_args(int argc, char *argv[])
 {
     if (argc <= 1) {
-        device_setGraphics(GRAPHICS_API_OPENGL);
+        gsk_device_setGraphics(GRAPHICS_API_OPENGL);
         return;
     }
 
     for (int i = 0; i < argc; i++) {
         if (std::string(argv[i]) == "--vulkan") {
-            device_setGraphics(GRAPHICS_API_VULKAN);
+            gsk_device_setGraphics(GRAPHICS_API_VULKAN);
         } else if (std::string(argv[i]) == "--opengl") {
-            device_setGraphics(GRAPHICS_API_OPENGL);
+            gsk_device_setGraphics(GRAPHICS_API_OPENGL);
         } else if (std::string(argv[i]) == "--errlevel") {
             logger_setLevel(LogLevel_ERROR);
         }
@@ -73,7 +73,7 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 
     _gsk_check_args(argc, argv);
 
-    switch (device_getGraphics()) {
+    switch (gsk_device_getGraphics()) {
     case GRAPHICS_API_OPENGL: LOG_INFO("Device API is OpenGL"); break;
     case GRAPHICS_API_VULKAN: LOG_INFO("Device API is Vulkan"); break;
     default: LOG_ERROR("Device API Failed to retreive Graphics Backend"); break;
@@ -110,12 +110,12 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 #endif // GSK_RUNTIME_USE_DEBUG
 
     // FPS Counter
-    device_resetAnalytics();
+    gsk_device_resetAnalytics();
 
     // Initialize Graphics Settings
-    device_setGraphicsSettings((GraphicsSettings {.swapInterval = 1}));
-    // Initialize Input
-    device_setInput((Input {.cursor_position = {0, 0}}));
+    gsk_device_setGraphicsSettings((gsk_GraphicsSettings {.swapInterval = 1}));
+    // Initialize gsk_Input
+    gsk_device_setInput((gsk_Input {.cursor_position = {0, 0}}));
     device_setCursorState(INIT_CURSOR_LOCKED, INIT_CURSOR_VISIBLE);
 
 #if USING_RUNTIME_LOADING_SCREEN
@@ -172,7 +172,7 @@ gsk_runtime_loop()
 
     // Main Engine Loop
     while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
-        device_updateAnalytics(glfwGetTime());
+        gsk_device_updateAnalytics(glfwGetTime());
 
 #if USING_JOYSTICK_CONTROLLER
         int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
@@ -195,7 +195,7 @@ gsk_runtime_loop()
         }
 #endif
 
-        if (DEVICE_API_OPENGL) {
+        if (GSK_DEVICE_API_OPENGL) {
 
 #if USING_LUA
             entity::LuaEventStore::ECSEvent(ECS_UPDATE);
@@ -208,7 +208,7 @@ gsk_runtime_loop()
 #endif // GSK_RUNTIME_USE_DEBUG
 
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
-        } else if (DEVICE_API_VULKAN) {
+        } else if (GSK_DEVICE_API_VULKAN) {
             glfwPollEvents();
             // debugGui->Update();
             gsk_ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
@@ -229,7 +229,7 @@ gsk_runtime_loop()
     LOG_TRACE("Closing Application");
 
     // Cleanup
-    if (DEVICE_API_VULKAN) {
+    if (GSK_DEVICE_API_VULKAN) {
         vkDeviceWaitIdle(s_runtime.renderer->vulkanDevice->device);
         vulkan_device_cleanup(s_runtime.renderer->vulkanDevice);
     }

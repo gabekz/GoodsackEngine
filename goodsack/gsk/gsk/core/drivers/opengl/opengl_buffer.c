@@ -7,28 +7,28 @@
 
 #include <stdlib.h>
 
-VAO *
-vao_create()
+gsk_GlVertexArray *
+gsk_gl_vertex_array_create()
 {
-    VAO *ret           = malloc(sizeof(VAO));
-    ret->elementsCount = 0;
+    gsk_GlVertexArray *ret = malloc(sizeof(gsk_GlVertexArray));
+    ret->elementsCount     = 0;
     glGenVertexArrays(1, &ret->id);
 
     return ret;
 }
 
 void
-vao_bind(VAO *self)
+gsk_gl_vertex_array_bind(gsk_GlVertexArray *self)
 {
     glBindVertexArray(self->id);
 }
 
 void
-vao_add_buffer(VAO *self, VBO *vbo)
+gsk_gl_vertex_array_add_buffer(gsk_GlVertexArray *self, gsk_GlVertexBuffer *vbo)
 {
-    vao_bind(self);
-    vbo_bind(vbo);
-    BufferElement *elements = vbo->elements;
+    gsk_gl_vertex_array_bind(self);
+    gsk_gl_vertex_buffer_bind(vbo);
+    gsk_GlBufferElement *elements = vbo->elements;
 
     unsigned int offset      = 0;
     unsigned int newElements = 0;
@@ -43,7 +43,7 @@ vao_add_buffer(VAO *self, VBO *vbo)
         printf("element %d count: %d\n", j, elements[i].count);
 #endif
 
-        BufferElement element = elements[i];
+        gsk_GlBufferElement element = elements[i];
 
         glEnableVertexAttribArray(j);
         glVertexAttribPointer(j,
@@ -53,7 +53,7 @@ vao_add_buffer(VAO *self, VBO *vbo)
                               vbo->stride,
                               (const void *)offset);
 
-        offset += element.count * getElementTypeSize(element.type);
+        offset += element.count * gsk_gl_get_element_type_size(element.type);
         newElements++;
     }
 
@@ -62,7 +62,7 @@ vao_add_buffer(VAO *self, VBO *vbo)
 }
 
 int
-getElementTypeSize(GLuint type)
+gsk_gl_get_element_type_size(GLuint type)
 {
     switch (type) {
     case GL_FLOAT: return sizeof(GLfloat);
@@ -72,11 +72,11 @@ getElementTypeSize(GLuint type)
     return -1;
 }
 
-VBO *
-vbo_create(const void *data, unsigned int size)
+gsk_GlVertexBuffer *
+gsk_gl_vertex_buffer_create(const void *data, unsigned int size)
 {
-    VBO *vbo      = malloc(sizeof(VBO));
-    vbo->elements = calloc(0, sizeof(BufferElement));
+    gsk_GlVertexBuffer *vbo = malloc(sizeof(gsk_GlVertexBuffer));
+    vbo->elements           = calloc(0, sizeof(gsk_GlBufferElement));
 
     vbo->elementsSize = 0;
     vbo->stride       = 0;
@@ -90,33 +90,36 @@ vbo_create(const void *data, unsigned int size)
 }
 
 void
-vbo_bind(VBO *self)
+gsk_gl_vertex_buffer_bind(gsk_GlVertexBuffer *self)
 {
     glBindBuffer(GL_ARRAY_BUFFER, self->id);
 }
 
 void
-vbo_unbind()
+gsk_gl_vertex_buffer_unbind()
 {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void
-vbo_destroy(VBO *self)
+gsk_gl_vertex_buffer_destroy(gsk_GlVertexBuffer *self)
 {
     glDeleteBuffers(1, &self->id);
 }
 
 void
-vbo_push(VBO *self, GLuint count, GLuint type, GLuint normalized)
+gsk_gl_vertex_buffer_push(gsk_GlVertexBuffer *self,
+                          GLuint count,
+                          GLuint type,
+                          GLuint normalized)
 {
 
     unsigned int size = self->elementsSize + 1;
 
     void *p        = (void *)self->elements;
-    self->elements = realloc(p, size * sizeof(BufferElement));
+    self->elements = realloc(p, size * sizeof(gsk_GlBufferElement));
 
-    BufferElement *element = self->elements + (size - 1);
+    gsk_GlBufferElement *element = self->elements + (size - 1);
     /*
     self->elements[newSize].count       = count;
     self->elements[newSize].type        = type;
@@ -126,14 +129,14 @@ vbo_push(VBO *self, GLuint count, GLuint type, GLuint normalized)
     element->type       = type;
     element->normalized = normalized;
 
-    self->stride += sizeof(getElementTypeSize(type)) * count;
+    self->stride += sizeof(gsk_gl_get_element_type_size(type)) * count;
     self->elementsSize = size;
 }
 
-IBO *
-ibo_create(const void *data, unsigned int size)
+gsk_GlIndexBuffer *
+gsk_gl_index_buffer_create(const void *data, unsigned int size)
 {
-    IBO *ibo = malloc(sizeof(IBO));
+    gsk_GlIndexBuffer *ibo = malloc(sizeof(gsk_GlIndexBuffer));
 
     glGenBuffers(1, &ibo->id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->id);
@@ -143,13 +146,13 @@ ibo_create(const void *data, unsigned int size)
 }
 
 void
-ibo_bind(IBO *self)
+gsk_gl_index_buffer_bind(gsk_GlIndexBuffer *self)
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->id);
 }
 
 void
-ibo_destroy(IBO *self)
+gsk_gl_index_buffer_destroy(gsk_GlIndexBuffer *self)
 {
     glDeleteBuffers(1, &self->id);
 }

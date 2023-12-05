@@ -28,7 +28,7 @@ static u32 s_ssaoBlurFBO;
 static u32 s_ssaoBlurOutTextureId;
 static gsk_ShaderProgram *s_ssaoBlurShader;
 
-static VAO *vaoRect;
+static gsk_GlVertexArray *vaoRect;
 
 static float
 _noise(int x, int y)
@@ -167,14 +167,14 @@ pass_ssao_init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     // Create Rectangle
-    vaoRect = vao_create();
-    vao_bind(vaoRect);
+    vaoRect = gsk_gl_vertex_array_create();
+    gsk_gl_vertex_array_bind(vaoRect);
     float *rectPositions = prim_vert_rect();
-    VBO *vboRect = vbo_create(rectPositions, (2 * 3 * 4) * sizeof(float));
-    vbo_bind(vboRect);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vbo_push(vboRect, 2, GL_FLOAT, GL_FALSE);
-    vao_add_buffer(vaoRect, vboRect);
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    gsk_gl_vertex_buffer_bind(vboRect);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
+    gsk_gl_vertex_array_add_buffer(vaoRect, vboRect);
     free(rectPositions);
 }
 
@@ -227,7 +227,7 @@ pass_ssao_bind(SsaoOptions options)
                 options.kernelSize);
 
     // draw quad
-    vao_bind(vaoRect);
+    gsk_gl_vertex_array_bind(vaoRect);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 
     // blur SSAO
@@ -246,7 +246,7 @@ pass_ssao_bind(SsaoOptions options)
     glBindTexture(GL_TEXTURE_2D, s_ssaoOutTextureId);
 
     // draw quad
-    vao_bind(vaoRect);
+    gsk_gl_vertex_array_bind(vaoRect);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
 
     glEnable(GL_DEPTH_TEST);

@@ -124,7 +124,7 @@ gsk::tools::panels::ComponentViewer::draw(void)
         // 128);
 
         if (CollapsingHeader("Textures")) {
-            if (DEVICE_API_OPENGL) {
+            if (GSK_DEVICE_API_OPENGL) {
                 int textureCount = ((gsk_Material *)p.material)->texturesCount;
                 // Display textures
                 for (int i = 0; i < textureCount; i++) {
@@ -142,7 +142,7 @@ gsk::tools::panels::ComponentViewer::draw(void)
                          ((gsk_Material *)p.material)->textures[i]->height,
                          "");
                 }
-            } // DEVICE_API_OPENGL
+            } // GSK_DEVICE_API_OPENGL
         }     // Textures collapsing header
         EndChild();
     }

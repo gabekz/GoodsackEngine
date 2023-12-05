@@ -30,7 +30,7 @@ gsk_debug_draw_line(gsk_DebugContext *debugContext, vec3 start, vec3 end)
                        GL_FALSE,
                        (float *)bbMat4);
 
-    vao_bind(debugContext->vaoLine);
+    gsk_gl_vertex_array_bind(debugContext->vaoLine);
     // Update the line vertices after binding VAO
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), &vertices);
     glDrawArrays(GL_LINES, 0, 2);

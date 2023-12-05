@@ -36,7 +36,7 @@ DrawModel(struct ComponentModel *model,
           VkCommandBuffer commandBuffer,
           gsk_Renderer *renderer)
 {
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
 
 // Handle culling
 #if 0
@@ -155,7 +155,7 @@ DrawModel(struct ComponentModel *model,
                                              "u_render_layer"),
                         renderLayer);
 
-            vao_bind(mesh->vao);
+            gsk_gl_vertex_array_bind(mesh->vao);
 
             gsk_MeshData *data = mesh->meshData;
             u32 vertices  = data->vertexCount;
@@ -178,7 +178,7 @@ DrawModel(struct ComponentModel *model,
         }
         glDisable(GL_CULL_FACE);
 
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
 
 #if 0
         // Bind transform Model (MVP) and Position (vec3) descriptor set
@@ -221,7 +221,7 @@ init(gsk_Entity e)
     // TODO: stupid hack grabbing only scale.x...
     // mesh->model = gsk_load_obj(mesh->modelPath, transform->scale[0]);
 
-    if (DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL) {
         if (!(gsk_Model *)model->pModel) {
             model->pModel = gsk_model_load_from_file(
               model->modelPath, transform->scale[0], FALSE);
@@ -236,7 +236,7 @@ init(gsk_Entity e)
           GL_FALSE,
           (float *)e.ecs->renderer->lightSpaceMatrix);
         // TODO: send model matrix to shader
-    } else if (DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN) {
         model->mesh = malloc(sizeof(gsk_Mesh));
         ((gsk_Mesh *)(model->mesh))->meshData =
           gsk_load_obj(model->modelPath, transform->scale[0]);
@@ -273,7 +273,7 @@ render(gsk_Entity e)
     // TODO: get lightspace matrix
 
     VkCommandBuffer cb;
-    if (DEVICE_API_VULKAN) {
+    if (GSK_DEVICE_API_VULKAN) {
         cb = e.ecs->renderer->vulkanDevice
                ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame];
     }
@@ -299,14 +299,14 @@ render(gsk_Entity e)
 #endif
 
         // Regular Render
-        (DEVICE_API_OPENGL)
+        (GSK_DEVICE_API_OPENGL)
           ? DrawModel(
               model, transform, FALSE, renderLayer, NULL, e.ecs->renderer)
           : DrawModel(
               model, transform, FALSE, renderLayer, cb, e.ecs->renderer);
 
     } else {
-        (DEVICE_API_OPENGL)
+        (GSK_DEVICE_API_OPENGL)
           ? DrawModel(
               model, transform, TRUE, renderLayer, NULL, e.ecs->renderer)
           : DrawModel(model, transform, TRUE, renderLayer, cb, e.ecs->renderer);
