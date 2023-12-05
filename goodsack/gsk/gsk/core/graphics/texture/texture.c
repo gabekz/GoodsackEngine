@@ -19,12 +19,12 @@
 
 #define TEXTURE_WRAPPING GL_REPEAT
 
-Texture *
+gsk_Texture *
 texture_create(const char *path,
                VulkanDeviceContext *vkDevice,
                TextureOptions options)
 {
-    Texture *tex  = malloc(sizeof(Texture));
+    gsk_Texture *tex  = malloc(sizeof(gsk_Texture));
     tex->filePath = path;
 
     // TODO: create parameter
@@ -165,14 +165,14 @@ texture_create(const char *path,
     return tex;
 }
 
-Texture *
+gsk_Texture *
 texture_create_cubemap(ui32 faceCount, ...)
 {
     ui32 textureId;
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
 
-    Texture *tex = malloc(sizeof(Texture));
+    gsk_Texture *tex = malloc(sizeof(gsk_Texture));
     tex->id      = textureId;
 
     va_list ap;
@@ -208,12 +208,12 @@ texture_create_cubemap(ui32 faceCount, ...)
     return tex;
 }
 
-Texture *
+gsk_Texture *
 texture_create_hdr(const char *path)
 {
     LOG_INFO("Loading HDR Image at path: %s", path);
 
-    Texture *tex = malloc(sizeof(Texture));
+    gsk_Texture *tex = malloc(sizeof(gsk_Texture));
 
     stbi_set_flip_vertically_on_load(TRUE);
     float *data = stbi_loadf(path, &tex->width, &tex->height, &tex->bpp, 0);
@@ -250,7 +250,7 @@ texture_create_hdr(const char *path)
 }
 
 void
-texture_bind(Texture *self, ui32 slot)
+texture_bind(gsk_Texture *self, ui32 slot)
 {
     self->activeSlot = slot;
     glActiveTexture(GL_TEXTURE0 + slot);
@@ -265,7 +265,7 @@ texture_unbind()
 }
 
 void
-texture_cleanup(Texture *self, VulkanDeviceContext *vkDevice)
+texture_cleanup(gsk_Texture *self, VulkanDeviceContext *vkDevice)
 {
     if (DEVICE_API_VULKAN && vkDevice) {
         vkDestroyImage(vkDevice->device, self->vulkan.textureImage, NULL);

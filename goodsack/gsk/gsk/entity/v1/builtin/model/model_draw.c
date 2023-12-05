@@ -47,7 +47,7 @@ DrawModel(struct ComponentModel *model,
         gsk_Model *pModel = model->pModel;
         for (int i = 0; i < pModel->meshesCount; i++) {
             gsk_Mesh *mesh = pModel->meshes[i];
-            Material *material;
+            gsk_Material *material;
 
             // Select Material
             if (mesh->usingImportedMaterial && !useOverrideMaterial) {
@@ -67,7 +67,7 @@ DrawModel(struct ComponentModel *model,
                 material = model->material;
             }
 
-            material_use(material);
+            gsk_material_use(material);
 
             // TESTING for normal-map in G-Buffer
             // TODO: Breaks when normal-map doesn't exist
@@ -78,7 +78,7 @@ DrawModel(struct ComponentModel *model,
                     texture_bind(mesh->materialImported->textures[1], 10);
                 } else if (!mesh->usingImportedMaterial) {
                     glActiveTexture(GL_TEXTURE10);
-                    texture_bind(((Material *)model->material)->textures[1],
+                    texture_bind(((gsk_Material *)model->material)->textures[1],
                                  10);
                 }
             }
@@ -228,8 +228,8 @@ init(Entity e)
         }
         model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
         // send lightspace matrix from renderer to entity shader
-        ShaderProgram *shader = ((Material *)model->material)->shaderProgram;
-        shader_use(shader);
+        gsk_ShaderProgram *shader = ((gsk_Material *)model->material)->shaderProgram;
+        gsk_shader_use(shader);
         glUniformMatrix4fv(
           glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
           1,

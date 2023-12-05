@@ -41,10 +41,10 @@
 #define S_NEG_Y 0
 #endif
 
-GuiElement *
-gui_element_create(vec2 position, vec2 size, Texture *p_texture, vec4 tex_coords)
+gsk_GuiElement *
+gsk_gui_element_create(vec2 position, vec2 size, gsk_Texture *p_texture, vec4 tex_coords)
 {
-    GuiElement *ret = malloc(sizeof(GuiElement));
+    gsk_GuiElement *ret = malloc(sizeof(gsk_GuiElement));
 
     glm_vec2_copy(position, ret->position);
     glm_vec2_copy(size, ret->size);
@@ -88,25 +88,25 @@ gui_element_create(vec2 position, vec2 size, Texture *p_texture, vec4 tex_coords
     ret->using_texture = (p_texture != NULL) ? TRUE : FALSE;
 
     ret->material =
-      material_create(NULL, GSK_PATH("gsk://shaders/canvas2d.shader"), 0, NULL);
+      gsk_material_create(NULL, GSK_PATH("gsk://shaders/canvas2d.shader"), 0, NULL);
 
     if(ret->using_texture) {
         ret->texture = p_texture;
-        material_add_texture(ret->material, ret->texture);
+        gsk_material_add_texture(ret->material, ret->texture);
     }
 
     return ret;
 }
 
 void
-gui_element_draw(GuiElement *self)
+gsk_gui_element_draw(gsk_GuiElement *self)
 {
 #if USING_BLENDING
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 #endif
 
-    material_use(self->material);
+    gsk_material_use(self->material);
 
     // send position to shader
     glUniform2fv(

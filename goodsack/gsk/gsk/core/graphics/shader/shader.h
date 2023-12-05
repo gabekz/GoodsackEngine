@@ -13,9 +13,9 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct _shaderProgram ShaderProgram;
-typedef struct _shaderSource ShaderSource;
+#define _GSK_SHADER_EASY_UNIFORMS 0
 
+#if _GSK_SHADER_EASY_UNIFORMS
 typedef enum UniformType {
     UNIFORM_1f = 0,
     UNIFORM_2f,
@@ -43,32 +43,35 @@ typedef enum UniformType {
     UNIFORM_4iv,
 
 } UniformType;
+#endif // _GSK_SHADER_EASY_UNIFORMS
 
-struct _shaderProgram
-{
-    ui32 id;
-    ShaderSource *shaderSource;
-};
-
-struct _shaderSource
+typedef struct gsk_ShaderSource
 {
     char *shaderVertex, *shaderFragment, *shaderCompute;
-};
+} gsk_ShaderSource;
 
-ShaderProgram *
-shader_create_program(const char *path);
+typedef struct gsk_ShaderProgram
+{
+    ui32 id;
+    gsk_ShaderSource *shaderSource;
+} gsk_ShaderProgram;
 
-ShaderProgram *
-shader_create_compute_program(const char *path);
+gsk_ShaderProgram *
+gsk_shader_program_create(const char *path);
+
+gsk_ShaderProgram *
+gsk_shader_compute_program_create(const char *path);
 
 void
-shader_use(ShaderProgram *shader);
+gsk_shader_use(gsk_ShaderProgram *shader);
 
+#if _GSK_SHADER_EASY_UNIFORMS
 void
-shader_uniform(ShaderProgram *shader,
-               const char *uniform,
-               ui32 type,
-               void *data);
+gsk_shader_uniform(gsk_ShaderProgram *shader,
+                   const char *uniform,
+                   ui32 type,
+                   void *data);
+#endif // _GSK_SHADER_EASY_UNIFORMS
 
 #ifdef __cplusplus
 }

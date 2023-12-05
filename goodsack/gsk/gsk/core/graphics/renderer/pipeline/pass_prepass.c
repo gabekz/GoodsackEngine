@@ -13,8 +13,8 @@
 
 #include "core/drivers/opengl/opengl.h"
 
-static ShaderProgram *s_depthPrepassShader;
-static Material *s_depthPrepassMaterial;
+static gsk_ShaderProgram *s_depthPrepassShader;
+static gsk_Material *s_depthPrepassMaterial;
 
 static ui32 s_depthPrepassFBO;
 static ui32 s_depthPrepassTextureId;
@@ -100,8 +100,8 @@ prepass_init()
 
     // create shader and material
     s_depthPrepassShader =
-      shader_create_program(GSK_PATH("gsk://shaders/depth-prepass.shader"));
-    s_depthPrepassMaterial = material_create(s_depthPrepassShader, NULL, 0);
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/depth-prepass.shader"));
+    s_depthPrepassMaterial = gsk_material_create(s_depthPrepassShader, NULL, 0);
 
     // Create Rectangle
     s_vaoRect = vao_create();
@@ -141,7 +141,7 @@ prepass_bind()
     glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, 1280, 720); // TODO: width and height
 
-    shader_use(s_depthPrepassShader);
+    gsk_shader_use(s_depthPrepassShader);
 
     // Bind the shadowmap to texture slot 0
     // glActiveTexture(GL_TEXTURE0);
@@ -159,7 +159,7 @@ prepass_draw()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-Material *
+gsk_Material *
 prepass_getMaterial()
 {
     return s_depthPrepassMaterial;

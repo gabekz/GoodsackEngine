@@ -48,22 +48,22 @@ struct _renderer
     int windowWidth, windowHeight; // window resolution
     int renderWidth, renderHeight; // render resolution
 
-    Scene **sceneL;
+    gsk_Scene **sceneL;
     ui16 sceneC, activeScene;
 
     RenderPass currentPass; // TODO: rename -> RenderStage
-    Material *explicitMaterial;
+    gsk_Material *explicitMaterial;
 
-    Billboard2D *billboard; // Billboard testing
-    GuiElement *uiImage;    // GuiElement test
-    GuiText *uiText;        // GuiText test
+    gsk_Billboard2D *billboard; // Billboard testing
+    gsk_GuiElement *uiImage;    // GuiElement test
+    gsk_GuiText *uiText;        // GuiText test
 
-    Skybox *activeSkybox;  // Active skybox that is being rendered
-    Skybox *defaultSkybox; // Default skybox set for each scene on creation
+    gsk_Skybox *activeSkybox;  // Active skybox that is being rendered
+    gsk_Skybox *defaultSkybox; // Default skybox set for each scene on creation
 
     // Hacky shit for temporary shadowmap values
-    ShaderProgram *shaderDepthMap;
-    Material *materialDepthMap;
+    gsk_ShaderProgram *shaderDepthMap;
+    gsk_Material *materialDepthMap;
     ui32 depthMapFBO;
     ui32 depthMapTexture;
     mat4 lightSpaceMatrix;
@@ -73,7 +73,7 @@ struct _renderer
     ui32 totalVertices;
 
     // TODO: Fix this shit as well.
-    Light *light;
+    gsk_Light *light;
     ShadowmapOptions shadowmapOptions;
     SsaoOptions ssaoOptions;
 

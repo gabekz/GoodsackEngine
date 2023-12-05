@@ -15,8 +15,8 @@
 #include "core/graphics/mesh/primitives.h"
 
 static ui32 csTexture;
-static ShaderProgram *csShader;
-static ShaderProgram *shader2;
+static gsk_ShaderProgram *csShader;
+static gsk_ShaderProgram *shader2;
 static VAO *vaoRect;
 
 void
@@ -25,8 +25,8 @@ computebuffer_init()
 
     // shader Program
     const char *csPath = "../res/shaders/hello.compute";
-    csShader           = shader_create_compute_program(csPath);
-    shader2 = shader_create_program("../res/shaders/framebuffer-simple.shader");
+    csShader           = gsk_shader_compute_program_create(csPath);
+    shader2 = gsk_shader_program_create("../res/shaders/framebuffer-simple.shader");
 
     // texture size
     const ui32 TEXTURE_WIDTH = 320, TEXTURE_HEIGHT = 180;
@@ -69,14 +69,14 @@ computebuffer_draw()
     totalFrames++;
     glBindImageTexture(0, csTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
-    shader_use(csShader);
+    gsk_shader_use(csShader);
     glUniform1f(glGetUniformLocation(csShader->id, "t"), totalFrames);
     glDispatchCompute((ui32)320, (ui32)180, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    shader_use(shader2);
+    gsk_shader_use(shader2);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, csTexture);
     vao_bind(vaoRect);

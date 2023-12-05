@@ -18,8 +18,8 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/shader/shader.h"
 
-static ShaderProgram *shaderDepthMap;
-static Material *materialDepthMap;
+static gsk_ShaderProgram *shaderDepthMap;
+static gsk_Material *materialDepthMap;
 static ui32 depthMapFBO;
 static ui32 depthMapTexture;
 static mat4 lightSpaceMatrix;
@@ -77,14 +77,14 @@ shadowmap_init()
     */
 
     shaderDepthMap =
-      shader_create_program(GSK_PATH("gsk://shaders/depth-map.shader"));
-    materialDepthMap = material_create(shaderDepthMap, NULL, 0);
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/depth-map.shader"));
+    materialDepthMap = gsk_material_create(shaderDepthMap, NULL, 0);
 }
 
 void
 shadowmap_bind()
 {
-    shader_use(shaderDepthMap);
+    gsk_shader_use(shaderDepthMap);
     glUniformMatrix4fv(
       glGetUniformLocation(shaderDepthMap->id, "u_LightSpaceMatrix"),
       1,
@@ -131,7 +131,7 @@ shadowmap_bind_texture()
     glBindTexture(GL_TEXTURE_2D, depthMapTexture);
 }
 
-Material *
+gsk_Material *
 shadowmap_getMaterial()
 {
     return materialDepthMap;

@@ -125,11 +125,11 @@ gsk::tools::panels::ComponentViewer::draw(void)
 
         if (CollapsingHeader("Textures")) {
             if (DEVICE_API_OPENGL) {
-                int textureCount = ((Material *)p.material)->texturesCount;
+                int textureCount = ((gsk_Material *)p.material)->texturesCount;
                 // Display textures
                 for (int i = 0; i < textureCount; i++) {
                     Separator();
-                    Image((void *)(intptr_t)((Material *)p.material)
+                    Image((void *)(intptr_t)((gsk_Material *)p.material)
                             ->textures[i]
                             ->id,
                           ImVec2(200, 200),
@@ -137,9 +137,9 @@ gsk::tools::panels::ComponentViewer::draw(void)
                           ImVec2(1, 0));
                     SameLine();
                     Text("File Path: %s\nDimensions: %dx%d\nType: %s",
-                         ((Material *)p.material)->textures[i]->filePath,
-                         ((Material *)p.material)->textures[i]->width,
-                         ((Material *)p.material)->textures[i]->height,
+                         ((gsk_Material *)p.material)->textures[i]->filePath,
+                         ((gsk_Material *)p.material)->textures[i]->width,
+                         ((gsk_Material *)p.material)->textures[i]->height,
                          "");
                 }
             } // DEVICE_API_OPENGL

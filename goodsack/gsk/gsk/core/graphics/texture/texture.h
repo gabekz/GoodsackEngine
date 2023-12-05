@@ -25,7 +25,7 @@ typedef struct TextureOptions
 } TextureOptions;
 // TextureOptions_default = {0, GL_RGB, false, 1};
 
-typedef struct Texture
+typedef struct gsk_Texture
 {
     const char *filePath;
     si32 bpp;
@@ -41,25 +41,25 @@ typedef struct Texture
         VkImageView textureImageView;
         VkSampler textureSampler;
     } vulkan;
-} Texture;
+} gsk_Texture;
 
-Texture *
+gsk_Texture *
 texture_create(const char *path,
                VulkanDeviceContext *vkDevice,
                TextureOptions options);
 
-Texture *
+gsk_Texture *
 texture_create_cubemap(ui32 faceCount, ...);
-Texture *
+gsk_Texture *
 texture_create_hdr(const char *path);
 
 void
-texture_bind(Texture *self, ui32 slot);
+texture_bind(gsk_Texture *self, ui32 slot);
 void
 texture_unbind();
 
 void
-texture_cleanup(Texture *self, VulkanDeviceContext *vkDevice);
+texture_cleanup(gsk_Texture *self, VulkanDeviceContext *vkDevice);
 
 #ifdef __cplusplus
 }

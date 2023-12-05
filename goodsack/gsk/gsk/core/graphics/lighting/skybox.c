@@ -15,15 +15,15 @@
 static ui32 cubemapProjectionFBO;
 static ui32 cubemapProjectionRBO;
 static VAO *cubemapProjectionVAO;
-static ShaderProgram *cubemapProjectionShader;
-static ShaderProgram *cubemapShaderConvolute;
-static ShaderProgram *cubemapShaderPrefilter;
-static ShaderProgram *cubemapBrdfShader;
+static gsk_ShaderProgram *cubemapProjectionShader;
+static gsk_ShaderProgram *cubemapShaderConvolute;
+static gsk_ShaderProgram *cubemapShaderPrefilter;
+static gsk_ShaderProgram *cubemapBrdfShader;
 
-Skybox *
-skybox_create(Texture *cubemap)
+gsk_Skybox *
+gsk_skybox_create(gsk_Texture *cubemap)
 {
-    Skybox *ret  = malloc(sizeof(Skybox));
+    gsk_Skybox *ret  = malloc(sizeof(gsk_Skybox));
     ret->cubemap = cubemap;
 
     VAO *vao = vao_create();
@@ -36,18 +36,18 @@ skybox_create(Texture *cubemap)
       ibo_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
     ibo_bind(ibo);
     free(vbo);
-    ShaderProgram *shader =
-      shader_create_program(GSK_PATH("gsk://shaders/skybox.shader"));
+    gsk_ShaderProgram *shader =
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/skybox.shader"));
     ret->shader = shader;
 
     return ret;
 }
 
 void
-skybox_draw(Skybox *self)
+gsk_skybox_draw(gsk_Skybox *self)
 {
     // glDepthMask(GL_FALSE);
-    shader_use(self->shader);
+    gsk_shader_use(self->shader);
     glActiveTexture(GL_TEXTURE0);
 
 #if SKYBOX_DRAW_BLUR
@@ -65,8 +65,8 @@ skybox_draw(Skybox *self)
 
 // HDR
 
-Skybox *
-skybox_hdr_create(Texture *hdrTexture)
+gsk_Skybox *
+gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
 {
     clearGLState();
     glEnable(GL_DEPTH_TEST);
@@ -179,25 +179,25 @@ skybox_hdr_create(Texture *hdrTexture)
     ibo_bind(ibo);
     cubemapProjectionVAO = vao;
 
-    ShaderProgram *shaderP =
-      shader_create_program(GSK_PATH("gsk://shaders/hdr-cubemap.shader"));
+    gsk_ShaderProgram *shaderP =
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-cubemap.shader"));
     cubemapProjectionShader = shaderP;
 
-    ShaderProgram *shaderConvolute =
-      shader_create_program(GSK_PATH("gsk://shaders/hdr-convolute.shader"));
+    gsk_ShaderProgram *shaderConvolute =
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-convolute.shader"));
     cubemapShaderConvolute = shaderConvolute;
 
-    ShaderProgram *shaderPrefilter =
-      shader_create_program(GSK_PATH("gsk://shaders/hdr-prefilter.shader"));
+    gsk_ShaderProgram *shaderPrefilter =
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-prefilter.shader"));
     cubemapShaderPrefilter = shaderPrefilter;
 
-    ShaderProgram *brdfShader =
-      shader_create_program(GSK_PATH("gsk://shaders/hdr-brdf.shader"));
+    gsk_ShaderProgram *brdfShader =
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-brdf.shader"));
     cubemapBrdfShader = brdfShader;
 
     // Base skybox-render shader
-    ShaderProgram *baseShader =
-      shader_create_program(GSK_PATH("gsk://shaders/skybox.shader"));
+    gsk_ShaderProgram *baseShader =
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/skybox.shader"));
 
     cubemapProjectionFBO = captureFBO;
     cubemapProjectionRBO = captureRBO;
@@ -205,41 +205,41 @@ skybox_hdr_create(Texture *hdrTexture)
     // Reset
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    Skybox *ret             = malloc(sizeof(Skybox));
-    ret->cubemap            = malloc(sizeof(Texture));
+    gsk_Skybox *ret             = malloc(sizeof(gsk_Skybox));
+    ret->cubemap            = malloc(sizeof(gsk_Texture));
     ret->cubemap->id        = skyboxCubemap;
-    ret->irradianceMap      = malloc(sizeof(Texture));
+    ret->irradianceMap      = malloc(sizeof(gsk_Texture));
     ret->irradianceMap->id  = irradianceMap;
-    ret->prefilterMap       = malloc(sizeof(Texture));
+    ret->prefilterMap       = malloc(sizeof(gsk_Texture));
     ret->prefilterMap->id   = prefilterMap;
-    ret->brdfLUTTexture     = malloc(sizeof(Texture));
+    ret->brdfLUTTexture     = malloc(sizeof(gsk_Texture));
     ret->brdfLUTTexture->id = brdfLUTTexture;
     ret->vao                = vao;
     ret->hdrTexture         = hdrTexture;
     ret->shader             = baseShader;
 
     // Skybox Projection
-    skybox_hdr_projection(ret);
+    gsk_skybox_hdr_projection(ret);
 
     // Return
     return ret;
 }
 
-Texture *
-skybox_hdr_projection(Skybox *skybox)
+gsk_Texture *
+gsk_skybox_hdr_projection(gsk_Skybox *skybox)
 {
     ui32 captureFBO                = cubemapProjectionFBO;
     ui32 captureRBO                = cubemapProjectionRBO;
     VAO *vao                       = cubemapProjectionVAO;
-    ShaderProgram *shaderP         = cubemapProjectionShader;
-    ShaderProgram *shaderConvolute = cubemapShaderConvolute;
-    ShaderProgram *shaderPrefilter = cubemapShaderPrefilter;
-    ShaderProgram *brdfShader      = cubemapBrdfShader;
-    Texture *hdrTexture            = skybox->hdrTexture;
-    Texture *cubemapTexture        = skybox->cubemap;
-    Texture *irradianceMap         = skybox->irradianceMap;
-    Texture *prefilterMap          = skybox->prefilterMap;
-    Texture *brdfLUTTexture        = skybox->brdfLUTTexture;
+    gsk_ShaderProgram *shaderP         = cubemapProjectionShader;
+    gsk_ShaderProgram *shaderConvolute = cubemapShaderConvolute;
+    gsk_ShaderProgram *shaderPrefilter = cubemapShaderPrefilter;
+    gsk_ShaderProgram *brdfShader      = cubemapBrdfShader;
+    gsk_Texture *hdrTexture            = skybox->hdrTexture;
+    gsk_Texture *cubemapTexture        = skybox->cubemap;
+    gsk_Texture *irradianceMap         = skybox->irradianceMap;
+    gsk_Texture *prefilterMap          = skybox->prefilterMap;
+    gsk_Texture *brdfLUTTexture        = skybox->brdfLUTTexture;
 
     mat4 captureProjection = GLM_MAT4_IDENTITY_INIT;
     glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 10.0f, captureProjection);
@@ -275,7 +275,7 @@ skybox_hdr_projection(Skybox *skybox)
                captureViews[5]);
 
     // Convert HDR equirectangular map to cubemap equivalent
-    shader_use(shaderP);
+    gsk_shader_use(shaderP);
     glUniformMatrix4fv(glGetUniformLocation(shaderP->id, "projection"),
                        1,
                        GL_FALSE,
@@ -308,7 +308,7 @@ skybox_hdr_projection(Skybox *skybox)
     // Convoluted Map
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture->id);
-    shader_use(shaderConvolute);
+    gsk_shader_use(shaderConvolute);
     glUniformMatrix4fv(glGetUniformLocation(shaderConvolute->id, "projection"),
                        1,
                        GL_FALSE,
@@ -350,7 +350,7 @@ skybox_hdr_projection(Skybox *skybox)
         glViewport(0, 0, mipWidth, mipHeight);
 
         float roughness = (float)mip / (float)(maxMipLevels - 1);
-        shader_use(shaderPrefilter);
+        gsk_shader_use(shaderPrefilter);
         glUniform1f(glGetUniformLocation(shaderPrefilter->id, "u_Roughness"),
                     roughness);
         glUniformMatrix4fv(
@@ -388,7 +388,7 @@ skybox_hdr_projection(Skybox *skybox)
                            0);
 
     glViewport(0, 0, 512, 512);
-    shader_use(brdfShader);
+    gsk_shader_use(brdfShader);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Create Rectangle

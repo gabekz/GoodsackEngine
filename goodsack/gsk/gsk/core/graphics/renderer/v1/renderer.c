@@ -27,7 +27,7 @@
 #include "core/device/device.h"
 #include "core/drivers/vulkan/vulkan_device.h"
 
-// Skybox test
+// gsk_Skybox test
 #include "core/graphics/texture/texture.h"
 
 #include "tools/debug/debug_context.h"
@@ -57,12 +57,12 @@ renderer_init()
       (RENDER_RESOLUTION_OVERRIDE) ? PSX_HEIGHT : DEFAULT_WINDOW_HEIGHT;
 
     // Create the initial scene
-    Scene *scene      = malloc(sizeof(Scene));
+    gsk_Scene *scene      = malloc(sizeof(gsk_Scene));
     scene->id         = 0;
     scene->ecs        = ecs_init(ret);
     scene->has_skybox = FALSE;
 
-    Scene **sceneList = malloc(sizeof(Scene *));
+    gsk_Scene **sceneList = malloc(sizeof(gsk_Scene *));
     *(sceneList)      = scene;
 
     ret->sceneL      = sceneList;
@@ -104,18 +104,18 @@ renderer_init()
     // Billboard test
     vec2 bbsize = {0.01f, 0.01f};
     ret->billboard =
-      billboard_create(GSK_PATH("gsk://textures/gizmo/light.png"), bbsize);
+      gsk_billboard_create(GSK_PATH("gsk://textures/gizmo/light.png"), bbsize);
 
     // GUI test
-    Texture *guiTexture =
+    gsk_Texture *guiTexture =
       texture_create(GSK_PATH("gsk://textures/gizmo/crosshair2.png"),
                      NULL,
                      (TextureOptions) {1, GL_RGBA, false, true});
-    ret->uiImage = gui_element_create(
+    ret->uiImage = gsk_gui_element_create(
       (vec2) {1920 / 2, 1080 / 2}, (vec2) {10, 10}, guiTexture, NULL);
 
     // Test GUI Text
-    ret->uiText = gui_text_create("Goodsack Engine");
+    ret->uiText = gsk_gui_text_create("Goodsack Engine");
 
     return ret;
 }
@@ -131,14 +131,14 @@ renderer_active_scene(Renderer *self, ui16 sceneIndex)
         ui32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
 
         // Create a new, empty scene
-        Scene *newScene      = malloc(sizeof(Scene));
+        gsk_Scene *newScene      = malloc(sizeof(gsk_Scene));
         newScene->id         = newCount;
         newScene->ecs        = ecs_init(self);
         newScene->has_skybox = FALSE;
 
         // Update the scene list
-        Scene **p                  = self->sceneL;
-        self->sceneL               = realloc(p, newCount * sizeof(Scene *));
+        gsk_Scene **p                  = self->sceneL;
+        self->sceneL               = realloc(p, newCount * sizeof(gsk_Scene *));
         self->sceneL[newCount - 1] = newScene;
         self->sceneC               = newCount;
     }
@@ -154,14 +154,14 @@ void
 renderer_start(Renderer *renderer)
 {
     // Scene initialization
-    Scene *scene = renderer->sceneL[renderer->activeScene];
+    gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
     ECS *ecs     = scene->ecs;
 
     if (DEVICE_API_OPENGL) {
 
 // Create the default skybox
 #if 0
-        Texture *skyboxCubemap =
+        gsk_Texture *skyboxCubemap =
           texture_create_cubemap(6,
                                  "../res/textures/skybox/right.jpg",
                                  "../res/textures/skybox/left.jpg",
@@ -170,9 +170,9 @@ renderer_start(Renderer *renderer)
                                  "../res/textures/skybox/front.jpg",
                                  "../res/textures/skybox/back.jpg");
 
-        renderer->defaultSkybox = skybox_create(skyboxCubemap);
+        renderer->defaultSkybox = gsk_skybox_create(skyboxCubemap);
 #else
-        renderer->defaultSkybox = skybox_hdr_create(texture_create_hdr(
+        renderer->defaultSkybox = gsk_skybox_hdr_create(texture_create_hdr(
           GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 #endif
 
@@ -193,7 +193,7 @@ renderer_start(Renderer *renderer)
         // generate SSAO textures
         pass_ssao_init();
 
-        // renderer->skybox = skybox_create(skyboxCubemap);
+        // renderer->skybox = gsk_skybox_create(skyboxCubemap);
 
         // Send ECS event init
         ecs_event(ecs, ECS_INIT);
@@ -241,7 +241,7 @@ renderer_start(Renderer *renderer)
 /* Render Functions for the pipeline */
 
 static void
-renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
+renderer_tick_OPENGL(Renderer *renderer, gsk_Scene *scene, ECS *ecs)
 {
     // Settings
     glfwSwapInterval(device_getGraphicsSettings().swapInterval);
@@ -250,7 +250,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     /*-------------------------------------------
-        Scene Logic/Data update
+        gsk_Scene Logic/Data update
     */
 
     device_setInput(device_getInput()); // TODO: Weird hack to reset for axis
@@ -282,7 +282,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
       GL_DEBUG_SOURCE_APPLICATION, 1, -1, "Pass: Shadowmap Depth");
 
     // update lighting information
-    lighting_update(
+    gsk_lighting_update(
       renderer->light, renderer->light->position, renderer->light->color);
     // update shadowmap position
     shadowmap_update(renderer->light->position, renderer->shadowmapOptions);
@@ -350,7 +350,7 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
     // the postprocessing buffer as it is now)
     if (scene->has_skybox) {
         glDepthFunc(GL_LEQUAL);
-        skybox_draw(renderer->activeSkybox);
+        gsk_skybox_draw(renderer->activeSkybox);
         glDepthFunc(GL_LESS);
     }
 
@@ -369,10 +369,10 @@ renderer_tick_OPENGL(Renderer *renderer, Scene *scene, ECS *ecs)
 
 #if TESTING_DRAW_UI
     // vec3 pos = GLM_VEC3_ZERO_INIT;
-    // billboard_draw(renderer->billboard, pos);
+    // gsk_billboard_draw(renderer->billboard, pos);
 
-    gui_element_draw(renderer->uiImage);
-    gui_text_draw(renderer->uiText);
+    gsk_gui_element_draw(renderer->uiImage);
+    gsk_gui_text_draw(renderer->uiText);
 #endif
 
 #if TESTING_DRAW_LINE
@@ -402,7 +402,7 @@ void renderer_tick_VULKAN(Renderer *renderer, ECS *ecs) {
 void
 renderer_tick(Renderer *renderer)
 {
-    Scene *scene = renderer->sceneL[renderer->activeScene];
+    gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
     ECS *ecs     = scene->ecs;
 
     if (DEVICE_API_OPENGL) {

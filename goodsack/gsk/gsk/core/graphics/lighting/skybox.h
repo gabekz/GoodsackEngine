@@ -17,29 +17,29 @@
 extern "C" {
 #endif
 
-typedef struct Skybox
+typedef struct gsk_Skybox
 {
-    Texture *cubemap;
-    Texture *hdrTexture;
-    Texture *irradianceMap;
-    Texture *prefilterMap;
-    Texture *brdfLUTTexture;
+    gsk_Texture *cubemap;
+    gsk_Texture *hdrTexture;
+    gsk_Texture *irradianceMap;
+    gsk_Texture *prefilterMap;
+    gsk_Texture *brdfLUTTexture;
     VAO *vao;
-    ShaderProgram *shader;
-} Skybox;
+    gsk_ShaderProgram *shader;
+} gsk_Skybox;
 
-Skybox *
-skybox_create(Texture *cubemap);
+gsk_Skybox *
+gsk_skybox_create(gsk_Texture *cubemap);
 
 void
-skybox_draw(Skybox *self);
+gsk_skybox_draw(gsk_Skybox *self);
 
 // HDR
 
-Skybox *
-skybox_hdr_create();
-Texture *
-skybox_hdr_projection(Skybox *skybox);
+gsk_Skybox *
+gsk_skybox_hdr_create();
+gsk_Texture *
+gsk_skybox_hdr_projection(gsk_Skybox *skybox);
 
 #ifdef __cplusplus
 }

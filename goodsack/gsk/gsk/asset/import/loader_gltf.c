@@ -426,22 +426,22 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
 // Material Data //
 
-static Texture *_test_texture_white;
-static Texture *_test_texture_normal;
-static ShaderProgram *s_pbrShader;
+static gsk_Texture *_test_texture_white;
+static gsk_Texture *_test_texture_normal;
+static gsk_ShaderProgram *s_pbrShader;
 
-static Texture **s_loaded_textures;
+static gsk_Texture **s_loaded_textures;
 static int s_loaded_textures_count;
 
 #define TEXTURE_POOL_COUNT 70
 #define TEST_PATH_URI      "data://textures/sponza/"
 
-Texture *
+gsk_Texture *
 __texture_lookup(const char *path, TextureOptions options)
 {
 
     if (s_loaded_textures_count == 0) {
-        s_loaded_textures = malloc(sizeof(Texture *) * TEXTURE_POOL_COUNT);
+        s_loaded_textures = malloc(sizeof(gsk_Texture *) * TEXTURE_POOL_COUNT);
         s_loaded_textures_count = 1;
 
         s_loaded_textures[0] = texture_create(strdup(path), NULL, options);
@@ -458,7 +458,7 @@ __texture_lookup(const char *path, TextureOptions options)
     if (s_loaded_textures_count >= TEXTURE_POOL_COUNT) {
         s_loaded_textures = realloc(
           s_loaded_textures,
-          sizeof(Texture *) * (s_loaded_textures_count + TEXTURE_POOL_COUNT));
+          sizeof(gsk_Texture *) * (s_loaded_textures_count + TEXTURE_POOL_COUNT));
     }
 
     s_loaded_textures[s_loaded_textures_count] =
@@ -467,9 +467,9 @@ __texture_lookup(const char *path, TextureOptions options)
     return s_loaded_textures[s_loaded_textures_count - 1];
 }
 
-static Material *
+static gsk_Material *
 _create_material(cgltf_material *gltfMaterial,
-                 Material **materials,
+                 gsk_Material **materials,
                  ui32 materialsCount)
 {
 
@@ -483,7 +483,7 @@ _create_material(cgltf_material *gltfMaterial,
     // PBR textures
     if (gltfMaterial->has_pbr_metallic_roughness) {
 
-        Material *material = material_create(s_pbrShader, NULL, 0);
+        gsk_Material *material = gsk_material_create(s_pbrShader, NULL, 0);
 
         cgltf_pbr_metallic_roughness *textureContainer =
           &gltfMaterial->pbr_metallic_roughness;
@@ -494,10 +494,10 @@ _create_material(cgltf_material *gltfMaterial,
             const char *diffuseUri =
               textureContainer->base_color_texture.texture->image->uri;
             strcat(p, diffuseUri);
-            material_add_texture(material,
+            gsk_material_add_texture(material,
                                  __texture_lookup(GSK_PATH(p), texPbrOptions));
         } else {
-            material_add_texture(material, _test_texture_white);
+            gsk_material_add_texture(material, _test_texture_white);
         }
 
         if (gltfMaterial->normal_texture.texture) {
@@ -507,10 +507,10 @@ _create_material(cgltf_material *gltfMaterial,
             const char *nrmUri =
               gltfMaterial->normal_texture.texture->image->uri;
             strcat(q, nrmUri);
-            material_add_texture(
+            gsk_material_add_texture(
               material, __texture_lookup(GSK_PATH(q), texNormalMapOptions));
         } else {
-            material_add_texture(material, _test_texture_normal);
+            gsk_material_add_texture(material, _test_texture_normal);
         }
 
         if (textureContainer->metallic_roughness_texture.texture) {
@@ -519,20 +519,20 @@ _create_material(cgltf_material *gltfMaterial,
             const char *roughnessUri =
               textureContainer->metallic_roughness_texture.texture->image->uri;
             strcat(r, roughnessUri);
-            material_add_texture(material,
+            gsk_material_add_texture(material,
                                  __texture_lookup(GSK_PATH(r), texPbrOptions));
         } else {
-            material_add_texture(material, _test_texture_white);
+            gsk_material_add_texture(material, _test_texture_white);
         }
 
         // Specular & AO -- TODO
-        material_add_texture(material, _test_texture_white);
-        material_add_texture(material, _test_texture_white);
+        gsk_material_add_texture(material, _test_texture_white);
+        gsk_material_add_texture(material, _test_texture_white);
         return material;
     }
 
     // Failed
-    return material_create(NULL, GSK_PATH("gsk://shaders/white.shader"), 0);
+    return gsk_material_create(NULL, GSK_PATH("gsk://shaders/white.shader"), 0);
 }
 
 // Loader entry //
@@ -593,7 +593,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
 
     // Create texture/material pools
     ui32 materialsCount      = data->materials_count;
-    Material **materialsPool = malloc(sizeof(Material *) * materialsCount);
+    gsk_Material **materialsPool = malloc(sizeof(gsk_Material *) * materialsCount);
     if (importMaterials) {
         _test_texture_white =
           texture_create(GSK_PATH("gsk://textures/defaults/white.png"),
@@ -604,7 +604,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
                          NULL,
                          (TextureOptions) {0, GL_RGB, false, false});
         s_pbrShader =
-          shader_create_program(GSK_PATH("gsk://shaders/pbr.shader"));
+          gsk_shader_program_create(GSK_PATH("gsk://shaders/pbr.shader"));
         s_loaded_textures_count = 0;
     }
 
@@ -629,7 +629,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
                     cgltf_material *gltfMaterial =
                       data->nodes[i].mesh->primitives[j].material;
                     if (gltfMaterial != NULL || gltfMaterial != 0x00) {
-                        Material *mat = _create_material(
+                        gsk_Material *mat = _create_material(
                           gltfMaterial, materialsPool, materialsCount);
 
                         ret->meshes[cntMesh]->materialImported      = mat;

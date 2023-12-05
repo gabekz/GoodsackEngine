@@ -15,20 +15,20 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
-Material *
-material_create(ShaderProgram *shader,
+gsk_Material *
+gsk_material_create(gsk_ShaderProgram *shader,
                 const char *shaderPath,
                 ui32 textureCount,
                 ...)
 {
 
-    Material *ret = malloc(sizeof(Material));
+    gsk_Material *ret = malloc(sizeof(gsk_Material));
     if (shader) {
         ret->shaderProgram = shader;
     } else if (shaderPath != "" || shaderPath != NULL) {
-        ret->shaderProgram = shader_create_program(shaderPath);
+        ret->shaderProgram = gsk_shader_program_create(shaderPath);
     } else {
-        LOG_ERROR("You need to pass either a ShaderProgram or a valid path");
+        LOG_ERROR("You need to pass either a gsk_ShaderProgram or a valid path");
         return NULL;
     }
 
@@ -42,9 +42,9 @@ material_create(ShaderProgram *shader,
 
     va_list ap;
     va_start(ap, textureCount);
-    Texture **textures = malloc(textureCount * sizeof(Texture *));
+    gsk_Texture **textures = malloc(textureCount * sizeof(gsk_Texture *));
     for (int i = 0; i < textureCount; i++) {
-        *(textures + i) = va_arg(ap, Texture *);
+        *(textures + i) = va_arg(ap, gsk_Texture *);
     }
     ret->textures      = textures;
     ret->texturesCount = textureCount;
@@ -55,7 +55,7 @@ material_create(ShaderProgram *shader,
 }
 
 void
-material_use(Material *self)
+gsk_material_use(gsk_Material *self)
 {
     if (DEVICE_API_OPENGL) {
         if (self->texturesCount > 0) {
@@ -63,7 +63,7 @@ material_use(Material *self)
                 texture_bind(self->textures[i], i);
             }
         }
-        shader_use(self->shaderProgram);
+        gsk_shader_use(self->shaderProgram);
     } else if (DEVICE_API_VULKAN) {
         LOG_DEBUG("Material not implemented for Vulkan");
 
@@ -73,16 +73,16 @@ material_use(Material *self)
 }
 
 void
-material_add_texture(Material *self, Texture *texture)
+gsk_material_add_texture(gsk_Material *self, gsk_Texture *texture)
 {
     if (self->texturesCount == 0) {
-        self->textures      = malloc(sizeof(Texture *));
+        self->textures      = malloc(sizeof(gsk_Texture *));
         self->textures[0]   = texture;
         self->texturesCount = 1;
         return;
     }
     self->texturesCount = self->texturesCount += 1;
     self->textures =
-      realloc(self->textures, self->texturesCount * sizeof(Texture *));
+      realloc(self->textures, self->texturesCount * sizeof(gsk_Texture *));
     self->textures[self->texturesCount - 1] = texture;
 }

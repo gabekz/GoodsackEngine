@@ -44,10 +44,10 @@ __fill_font_data(char *self_widths, const char *path_font_data)
 #endif
 }
 
-GuiText *
-gui_text_create(const char *text_string)
+gsk_GuiText *
+gsk_gui_text_create(const char *text_string)
 {
-    GuiText *ret = malloc(sizeof(GuiText));
+    gsk_GuiText *ret = malloc(sizeof(gsk_GuiText));
 
     const char *font_bmp_path = GSK_PATH("gsk://fonts/font.bmp");
     const char *font_dat_path = GSK_PATH("gsk://fonts/font-bfd.dat");
@@ -62,7 +62,7 @@ gui_text_create(const char *text_string)
     // Create elements for each character in the string
     ui32 char_count      = strlen(text_string);
     ret->character_count = char_count;
-    ret->elements        = malloc(sizeof(GuiElement *) * char_count);
+    ret->elements        = malloc(sizeof(gsk_GuiElement *) * char_count);
 
     // sprite sheet info
     vec2 sprite_sheet_size = {256.0f, 256.0f};
@@ -124,7 +124,7 @@ gui_text_create(const char *text_string)
         // LOG_INFO("new last effective: %d", last_effective_spacing);
 
         // CREATE NEW ELEMENTS
-        ret->elements[i] = gui_element_create(
+        ret->elements[i] = gsk_gui_element_create(
           (vec2) {50 + (16.5f * i) - last_effective_spacing, 25},
           (vec2) {50, 50},
           ret->font_atlas,
@@ -135,9 +135,9 @@ gui_text_create(const char *text_string)
 }
 
 void
-gui_text_draw(GuiText *self)
+gsk_gui_text_draw(gsk_GuiText *self)
 {
     for (int i = 0; i < self->character_count; i++) {
-        gui_element_draw(self->elements[i]);
+        gsk_gui_element_draw(self->elements[i]);
     }
 }

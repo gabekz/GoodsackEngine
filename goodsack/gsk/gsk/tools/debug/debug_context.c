@@ -34,7 +34,7 @@ debug_context_init()
         ibo_bind(ibo);
 
         ret->material =
-          material_create(NULL, GSK_PATH("gsk://shaders/white.shader"), 0);
+          gsk_material_create(NULL, GSK_PATH("gsk://shaders/white.shader"), 0);
 
         // Bounding box
         ret->vaoBoundingBox = vao_create();

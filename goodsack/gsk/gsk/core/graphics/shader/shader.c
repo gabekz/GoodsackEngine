@@ -110,7 +110,7 @@ CompileSingleShader(unsigned int type, const char *path)
  * and fragment shaders in one file.
  * Returns the source object containing id's and compiled sources.
  */
-static ShaderSource *
+static gsk_ShaderSource *
 ParseShader(const char *path)
 {
     // File in
@@ -192,7 +192,7 @@ ParseShader(const char *path)
 
     /* TODO: Report 'NULL' declaration bug */
 
-    ShaderSource *ss = malloc(sizeof(ShaderSource));
+    gsk_ShaderSource *ss = malloc(sizeof(gsk_ShaderSource));
 
     // TODO: Is this malloc'd?
     if (vertLen > 0) { ss->shaderVertex = strdup(vertOut); }
@@ -202,11 +202,11 @@ ParseShader(const char *path)
     return ss;
 }
 
-ShaderProgram *
-shader_create_program(const char *path)
+gsk_ShaderProgram *
+gsk_shader_program_create(const char *path)
 {
     if (DEVICE_API_OPENGL) {
-        ShaderSource *ss = ParseShader(path);
+        gsk_ShaderSource *ss = ParseShader(path);
 
         ui32 program = glCreateProgram();
         ui32 vs      = CompileSingleShader(GL_VERTEX_SHADER, ss->shaderVertex);
@@ -221,7 +221,7 @@ shader_create_program(const char *path)
         glDeleteShader(vs);
         glDeleteShader(fs);
 
-        ShaderProgram *ret = malloc(sizeof(ShaderProgram));
+        gsk_ShaderProgram *ret = malloc(sizeof(gsk_ShaderProgram));
         ret->id            = program;
         ret->shaderSource  = ss;
         return ret;
@@ -233,10 +233,10 @@ shader_create_program(const char *path)
     return NULL;
 }
 
-ShaderProgram *
-shader_create_compute_program(const char *path)
+gsk_ShaderProgram *
+gsk_shader_compute_program_create(const char *path)
 {
-    ShaderSource *ss = ParseShader(path);
+    gsk_ShaderSource *ss = ParseShader(path);
     ui32 program     = glCreateProgram();
     ui32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss->shaderCompute);
 
@@ -246,20 +246,21 @@ shader_create_compute_program(const char *path)
 
     glDeleteShader(csSingle);
 
-    ShaderProgram *ret = malloc(sizeof(ShaderProgram));
+    gsk_ShaderProgram *ret = malloc(sizeof(gsk_ShaderProgram));
     ret->id            = program;
     ret->shaderSource  = ss;
     return ret;
 }
 
 void
-shader_use(ShaderProgram *shader)
+gsk_shader_use(gsk_ShaderProgram *shader)
 {
     glUseProgram(shader->id);
 }
 
+#if _GSK_SHADER_EASY_UNIFORMS
 void
-shader_uniform(ShaderProgram *shader,
+gsk_shader_uniform(gsk_ShaderProgram *shader,
                const char *uniform,
                ui32 type,
                void *data)
@@ -280,3 +281,4 @@ shader_uniform(ShaderProgram *shader,
     }
     */
 }
+#endif // _GSK_SHADER_EASY_UNIFORMS

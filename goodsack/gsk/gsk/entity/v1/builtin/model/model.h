@@ -23,7 +23,7 @@
 #if !(USING_GENERATED_COMPONENTS)
 struct ComponentModel
 {
-    Material *material;
+    gsk_Material *material;
     const char *modelPath;
     gsk_Mesh *mesh;
     gsk_Model *pModel;

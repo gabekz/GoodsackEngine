@@ -17,7 +17,7 @@ prepass_bindTextures(ui32 startingSlot);
 void
 prepass_bind();
 
-Material *
+gsk_Material *
 prepass_getMaterial();
 
 ui32

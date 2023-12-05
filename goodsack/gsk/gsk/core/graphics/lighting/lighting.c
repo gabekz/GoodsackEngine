@@ -8,10 +8,10 @@
 #include "util/sysdefs.h"
 #include "core/device/device.h"
 
-Light *
-lighting_initialize(vec3 lightPos, vec4 lightColor)
+gsk_Light *
+gsk_lighting_initialize(vec3 lightPos, vec4 lightColor)
 {
-    Light *ret = malloc(sizeof(Light));
+    gsk_Light *ret = malloc(sizeof(gsk_Light));
     glm_vec3_copy(lightPos, ret->position);
     glm_vec4_copy(lightColor, ret->color);
 
@@ -38,7 +38,7 @@ lighting_initialize(vec3 lightPos, vec4 lightColor)
 }
 
 void
-lighting_update(Light *light, vec3 lightPos, vec4 lightColor)
+gsk_lighting_update(gsk_Light *light, vec3 lightPos, vec4 lightColor)
 {
     ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
     if (DEVICE_API_OPENGL) {

@@ -22,7 +22,7 @@ static ui32 msFBO, sbFBO;
 static ui32 msRBO, sbRBO;
 static ui32 msTexture, sbTexture;
 
-static ShaderProgram *shader;
+static gsk_ShaderProgram *shader;
 static VAO *vaoRect;
 
 static ui32 frameWidth, frameHeight;
@@ -134,8 +134,8 @@ postbuffer_init(ui32 width, ui32 height, RendererProps *properties)
     frameHeight = height;
 
     // Shader
-    shader = shader_create_program(GSK_PATH("gsk://shaders/framebuffer.shader"));
-    shader_use(shader);
+    shader = gsk_shader_program_create(GSK_PATH("gsk://shaders/framebuffer.shader"));
+    gsk_shader_use(shader);
     glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
 
     // Create Rectangle
@@ -198,7 +198,7 @@ postbuffer_draw(RendererProps *properties)
     glViewport(0, 0, frameWidth, frameHeight);
 
     vao_bind(vaoRect);
-    shader_use(shader);
+    gsk_shader_use(shader);
     glUniform1i(glGetUniformLocation(shader->id, "u_Tonemapper"),
                 properties->tonemapper);
     glUniform1f(glGetUniformLocation(shader->id, "u_Exposure"),
@@ -236,7 +236,7 @@ postbuffer_draw(RendererProps *properties)
                       GL_NEAREST);
 
     vao_bind(vaoRect);
-    shader_use(shader2);
+    gsk_shader_use(shader2);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);

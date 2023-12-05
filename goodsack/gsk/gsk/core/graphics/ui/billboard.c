@@ -13,10 +13,10 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/primitives.h"
 
-Billboard2D *
-billboard_create(const char *texturePath, vec2 size)
+gsk_Billboard2D *
+gsk_billboard_create(const char *texturePath, vec2 size)
 {
-    Billboard2D *ret = malloc(sizeof(Billboard2D));
+    gsk_Billboard2D *ret = malloc(sizeof(gsk_Billboard2D));
 
     ret->vao       = vao_create();
     float *rectPos = prim_vert_rect();
@@ -30,19 +30,19 @@ billboard_create(const char *texturePath, vec2 size)
     ret->texture = texture_create(
       texturePath, NULL, (TextureOptions) {1, GL_RGBA, true, true});
 
-    ret->material = material_create(
+    ret->material = gsk_material_create(
       NULL, GSK_PATH("gsk://shaders/billboard.shader"), 1, ret->texture);
 
     return ret;
 }
 
 void
-billboard_draw(Billboard2D *self, vec3 position)
+gsk_billboard_draw(gsk_Billboard2D *self, vec3 position)
 {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    material_use(self->material);
+    gsk_material_use(self->material);
 
     // send world-translation to shader
     glUniform3fv(

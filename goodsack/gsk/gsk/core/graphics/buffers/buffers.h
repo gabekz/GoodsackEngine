@@ -13,7 +13,7 @@
 
 enum BufferType = {VERTEX = 0, INDEX, UNIFORM};
 
-struct GraphicsBuffer
+struct gsk_GraphicsBuffer
 {
     BufferType type;
     void *data;
@@ -23,7 +23,7 @@ struct GraphicsBuffer
     // ui32 bufferId;
 };
 
-GraphicsBuffer *
-graphics_buffer_create(BufferType type, void *data, ui32 size);
+gsk_GraphicsBuffer *
+gsk_graphics_buffer_create(BufferType type, void *data, ui32 size);
 
 #endif // __BUFFERS_H__

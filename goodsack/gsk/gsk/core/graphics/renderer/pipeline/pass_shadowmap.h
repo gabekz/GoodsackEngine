@@ -43,7 +43,7 @@ shadowmap_update(vec3 lightPosition, ShadowmapOptions options);
 
 void
 shadowmap_bind_texture();
-Material *
+gsk_Material *
 shadowmap_getMaterial();
 ui32
 shadowmap_getTexture();

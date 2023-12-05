@@ -85,7 +85,7 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 #ifdef RENDERER_2
     Renderer renderer = new Renderer();
     // ECSManager ecs = Renderer.
-    Scene scene0 = renderer->SetActiveScene(0);
+    gsk_Scene scene0 = renderer->SetActiveScene(0);
 #else
     s_runtime.renderer = renderer_init();
 
@@ -101,7 +101,7 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 
     // UBO Lighting
     s_runtime.renderer->light =
-      lighting_initialize((float *)lightPos, (float *)lightColor);
+      gsk_lighting_initialize((float *)lightPos, (float *)lightColor);
 
 #if GSK_RUNTIME_USE_DEBUG
     // Create DebugToolbar
@@ -122,11 +122,11 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
     glfwSwapInterval(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    GuiText *loading_text = gui_text_create("Loading");
+    gsk_GuiText *loading_text = gsk_gui_text_create("Loading");
     for (int i = 0; i < 2; i++) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        gui_text_draw(loading_text);
+        gsk_gui_text_draw(loading_text);
         glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
     }
 #endif // RUNTIME_LOADING_SCREEN

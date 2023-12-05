@@ -22,7 +22,7 @@ debug_draw_line(DebugContext *debugContext, vec3 start, vec3 end)
     float vertices[] = {start[0], start[1], start[2], end[0], end[1], end[2]};
 
     // TEST DRAW LINE
-    material_use(debugContext->material);
+    gsk_material_use(debugContext->material);
     mat4 bbMat4 = GLM_MAT4_IDENTITY_INIT;
     glUniformMatrix4fv(glGetUniformLocation(
                          debugContext->material->shaderProgram->id, "u_Model"),

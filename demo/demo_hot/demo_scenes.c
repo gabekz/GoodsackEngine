@@ -17,8 +17,8 @@
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
 
-Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
-Skybox *skyboxMain;
+gsk_Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
+gsk_Skybox *skyboxMain;
 
 static TextureOptions s_texOpsPbr, s_texOpsNrm;
 
@@ -53,9 +53,9 @@ __create_camera_entity(ECS *ecs, vec3 position)
 }
 
 static void
-__set_active_scene_skybox(Renderer *renderer, Skybox *skybox)
+__set_active_scene_skybox(Renderer *renderer, gsk_Skybox *skybox)
 {
-    Scene *scene = renderer->sceneL[renderer->activeScene];
+    gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
 
     scene->skybox     = skybox;
     scene->has_skybox = TRUE;
@@ -66,14 +66,14 @@ _scene0(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 0);
 
-    Texture *texEarthDiff =
+    gsk_Texture *texEarthDiff =
       texture_create_d(GSK_PATH("data://textures/earth/diffuse.png"));
-    Texture *texEarthNorm =
+    gsk_Texture *texEarthNorm =
       texture_create_n(GSK_PATH("data://textures/earth/normal.png"));
     texture_create_n(GSK_PATH("data://textures/earth/normal.png"));
 
-    Material *matSuzanne =
-      material_create(NULL,
+    gsk_Material *matSuzanne =
+      gsk_material_create(NULL,
                       GSK_PATH("gsk://shaders/lit-diffuse.shader"),
                       3,
                       texEarthDiff,
@@ -100,23 +100,23 @@ _scene1(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 1);
 
-    Texture *texContDiff = texture_create_d(
+    gsk_Texture *texContDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/container/diffuse.png");
-    Texture *texContSpec = texture_create_n(
+    gsk_Texture *texContSpec = texture_create_n(
       "../demo/demo_hot/Resources/textures/container/specular.png");
 
-    Texture *texBrickDiff = texture_create_d(
+    gsk_Texture *texBrickDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
-    Texture *texBrickNorm = texture_create_n(
+    gsk_Texture *texBrickNorm = texture_create_n(
       "../demo/demo_hot/Resources/textures/brickwall/normal.png");
 
-    Material *matFloor = material_create(NULL,
+    gsk_Material *matFloor = gsk_material_create(NULL,
                                          "../res/shaders/lit-diffuse.shader",
                                          3,
                                          texBrickDiff,
                                          texBrickNorm,
                                          texDefSpec);
-    Material *matBox   = material_create(NULL,
+    gsk_Material *matBox   = gsk_material_create(NULL,
                                        "../res/shaders/lit-diffuse.shader",
                                        3,
                                        texContDiff,
@@ -165,17 +165,17 @@ _scene2(ECS *ecs, Renderer *renderer)
     ecs = renderer_active_scene(renderer, 2);
     __set_active_scene_skybox(renderer, skyboxMain);
 
-    Texture *texGraniteAlbedo = texture_create_d(
+    gsk_Texture *texGraniteAlbedo = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/granite/albedo.png");
-    Texture *texGraniteNormal = texture_create_n(
+    gsk_Texture *texGraniteNormal = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/granite/normal.png");
-    Texture *texGraniteMetallic = texture_create_n(
+    gsk_Texture *texGraniteMetallic = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/granite/metallic.png");
-    Texture *texGraniteSpecular = texture_create_n(
+    gsk_Texture *texGraniteSpecular = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/granite/roughness.png");
-    Texture *texGraniteAo = texture_create_n(
+    gsk_Texture *texGraniteAo = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/granite/ao.png");
-    Material *matGranite = material_create(NULL,
+    gsk_Material *matGranite = gsk_material_create(NULL,
                                            "../res/shaders/pbr.shader",
                                            5,
                                            texGraniteAlbedo,
@@ -184,15 +184,15 @@ _scene2(ECS *ecs, Renderer *renderer)
                                            texGraniteSpecular,
                                            texGraniteAo);
 
-    Texture *texPbrAlbedo = texture_create_d(
+    gsk_Texture *texPbrAlbedo = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/rust/albedo.png");
-    Texture *texPbrNormal = texture_create_n(
+    gsk_Texture *texPbrNormal = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/rust/normal.png");
-    Texture *texPbrMetallic = texture_create_n(
+    gsk_Texture *texPbrMetallic = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/rust/metallic.png");
-    Texture *texPbrSpecular = texture_create_n(
+    gsk_Texture *texPbrSpecular = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/rust/roughness.png");
-    Material *matRust = material_create(NULL,
+    gsk_Material *matRust = gsk_material_create(NULL,
                                         "../res/shaders/pbr.shader",
                                         5,
                                         texPbrAlbedo,
@@ -201,17 +201,17 @@ _scene2(ECS *ecs, Renderer *renderer)
                                         texPbrSpecular,
                                         texPbrAo);
 
-    Texture *texBrassAlbedo = texture_create_d(
+    gsk_Texture *texBrassAlbedo = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/fancybrass/albedo.png");
-    Texture *texBrassNormal = texture_create_n(
+    gsk_Texture *texBrassNormal = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/fancybrass/normal.png");
-    Texture *texBrassMetallic = texture_create_n(
+    gsk_Texture *texBrassMetallic = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/fancybrass/metallic.png");
-    Texture *texBrassSpecular = texture_create_n(
+    gsk_Texture *texBrassSpecular = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/fancybrass/roughness.png");
-    Texture *texBrassAo = texture_create_n(
+    gsk_Texture *texBrassAo = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/fancybrass/ao.png");
-    Material *matBrass = material_create(NULL,
+    gsk_Material *matBrass = gsk_material_create(NULL,
                                          "../res/shaders/pbr.shader",
                                          5,
                                          texBrassAlbedo,
@@ -220,15 +220,15 @@ _scene2(ECS *ecs, Renderer *renderer)
                                          texBrassSpecular,
                                          texBrassAo);
 
-    Texture *texGoldAlbedo = texture_create_d(
+    gsk_Texture *texGoldAlbedo = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/gold/albedo.png");
-    Texture *texGoldNormal = texture_create_n(
+    gsk_Texture *texGoldNormal = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/gold/normal.png");
-    Texture *texGoldMetallic = texture_create_n(
+    gsk_Texture *texGoldMetallic = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/gold/metallic.png");
-    Texture *texGoldSpecular = texture_create_n(
+    gsk_Texture *texGoldSpecular = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/gold/roughness.png");
-    Material *matGold = material_create(NULL,
+    gsk_Material *matGold = gsk_material_create(NULL,
                                         "../res/shaders/pbr.shader",
                                         5,
                                         texGoldAlbedo,
@@ -326,16 +326,16 @@ _scene3(ECS *ecs, Renderer *renderer)
 
     ecs = renderer_active_scene(renderer, 3);
 
-    Texture *texCerbA = texture_create_d(
+    gsk_Texture *texCerbA = texture_create_d(
       "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
-    Texture *texCerbN = texture_create_n(
+    gsk_Texture *texCerbN = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
-    Texture *texCerbM = texture_create_n(
+    gsk_Texture *texCerbM = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
-    Texture *texCerbS = texture_create_n(
+    gsk_Texture *texCerbS = texture_create_n(
       "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
 
-    Material *matCerb = material_create(NULL,
+    gsk_Material *matCerb = gsk_material_create(NULL,
                                         "../res/shaders/pbr.shader",
                                         5,
                                         texCerbA,
@@ -388,8 +388,8 @@ _scene4(ECS *ecs, Renderer *renderer)
 {
     ecs = renderer_active_scene(renderer, 4);
 
-    Material *matCharacter =
-      material_create(NULL, "../res/shaders/skinning-test.shader", 0);
+    gsk_Material *matCharacter =
+      gsk_material_create(NULL, "../res/shaders/skinning-test.shader", 0);
 
     gsk_Model *modelCharacter = gsk_model_load_from_file(
       "../demo/demo_hot/Resources/models/character-anim.gltf", 1, FALSE);
@@ -421,8 +421,8 @@ _scene5(ECS *ecs, Renderer *renderer)
     ecs = renderer_active_scene(renderer, 5);
     __set_active_scene_skybox(renderer, skyboxMain);
 
-    Material *matWire =
-      material_create(NULL, GSK_PATH("gsk://shaders/wireframe.shader"), 0);
+    gsk_Material *matWire =
+      gsk_material_create(NULL, GSK_PATH("gsk://shaders/wireframe.shader"), 0);
 
     Entity *pCamera = malloc(sizeof(Entity));
     *pCamera        = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
@@ -461,23 +461,23 @@ _scene6(ECS *ecs, Renderer *renderer)
     ecs = renderer_active_scene(renderer, 6);
     __set_active_scene_skybox(renderer, skyboxMain);
 
-    Texture *texContDiff = texture_create_d(
+    gsk_Texture *texContDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/container/diffuse.png");
-    Texture *texContSpec = texture_create_n(
+    gsk_Texture *texContSpec = texture_create_n(
       "../demo/demo_hot/Resources/textures/container/specular.png");
 
-    Texture *texBrickDiff = texture_create_d(
+    gsk_Texture *texBrickDiff = texture_create_d(
       "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
-    Texture *texBrickNorm = texture_create_n(
+    gsk_Texture *texBrickNorm = texture_create_n(
       "../demo/demo_hot/Resources/textures/brickwall/normal.png");
 
-    Material *matFloor = material_create(NULL,
+    gsk_Material *matFloor = gsk_material_create(NULL,
                                          "../res/shaders/lit-diffuse.shader",
                                          3,
                                          texBrickDiff,
                                          texBrickNorm,
                                          texDefSpec);
-    Material *matBox   = material_create(NULL,
+    gsk_Material *matBox   = gsk_material_create(NULL,
                                        "../res/shaders/lit-diffuse.shader",
                                        3,
                                        texContDiff,
@@ -601,18 +601,18 @@ _scene7(ECS *ecs, Renderer *renderer)
      |  Resources
      -----------------------*/
 
-    Texture *texBrickDiff =
+    gsk_Texture *texBrickDiff =
       texture_create_d(GSK_PATH("data://textures/brickwall/diffuse.png"));
     /*
-    Texture *texBrickDiff =
+    gsk_Texture *texBrickDiff =
       texture_create_d("../demo/demo_hot/Resources/textures/prototype.png");
       */
-    Texture *texBrickNorm =
+    gsk_Texture *texBrickNorm =
       texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
 
     char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
 
-    Material *matFloor = material_create(NULL,
+    gsk_Material *matFloor = gsk_material_create(NULL,
                                          pbr_shader_path,
                                          4,
                                          texBrickDiff,
@@ -620,20 +620,20 @@ _scene7(ECS *ecs, Renderer *renderer)
                                          texDefSpec,
                                          texPbrAo);
 
-    Texture *texCerbA =
+    gsk_Texture *texCerbA =
       texture_create_d(GSK_PATH("data://textures/pbr/cerberus/Cerberus_A.tga"));
-    Texture *texCerbN =
+    gsk_Texture *texCerbN =
       texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_N.tga"));
-    Texture *texCerbM =
+    gsk_Texture *texCerbM =
       texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_M.tga"));
-    Texture *texCerbS =
+    gsk_Texture *texCerbS =
       texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_R.tga"));
 
     /*
-    Material *matWeapon =
-      material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
+    gsk_Material *matWeapon =
+      gsk_material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
       */
-    Material *matWeapon = material_create(NULL,
+    gsk_Material *matWeapon = gsk_material_create(NULL,
                                           pbr_shader_path,
                                           5,
                                           texCerbA,
@@ -792,7 +792,7 @@ demo_scenes_create(ECS *ecs, Renderer *renderer)
     texMissing =
       texture_create_n(GSK_PATH("gsk://textures/defaults/missing.jpg"));
 
-    skyboxMain = skybox_hdr_create(
+    skyboxMain = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
 #if LOAD_ALL_SCENES

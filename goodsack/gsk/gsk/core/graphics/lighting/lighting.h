@@ -18,9 +18,9 @@
 extern "C" {
 #endif
 
-typedef enum lightType_t { Directional = 0, Point = 1, Spot = 2 } LightType;
+typedef enum LightType { Directional = 0, Point = 1, Spot = 2 } LightType;
 
-typedef struct light_t
+typedef struct gsk_Light
 {
     vec3 position;
     vec4 color;
@@ -28,12 +28,12 @@ typedef struct light_t
     float strength;
 
     ui32 ubo;
-} Light;
+} gsk_Light;
 
-Light *
-lighting_initialize(vec3 lightPos, vec4 lightColor);
+gsk_Light *
+gsk_lighting_initialize(vec3 lightPos, vec4 lightColor);
 void
-lighting_update(Light *light, vec3 lightPos, vec4 lightColor);
+gsk_lighting_update(gsk_Light *light, vec3 lightPos, vec4 lightColor);
 
 #ifdef __cplusplus
 }

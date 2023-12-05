@@ -13,7 +13,7 @@ void
 debug_draw_skeleton(DebugContext *debugContext, gsk_Skeleton *skeleton)
 {
     vao_bind(debugContext->vaoCube);
-    material_use(debugContext->material);
+    gsk_material_use(debugContext->material);
 
     for (int i = 0; i < skeleton->jointsCount; i++) {
         glUniformMatrix4fv(

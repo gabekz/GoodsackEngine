@@ -17,27 +17,27 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef struct GuiElement
+typedef struct gsk_GuiElement
 {
     VAO *vao;
-    Texture *texture;
-    Material *material;
+    gsk_Texture *texture;
+    gsk_Material *material;
 
     vec2 position; // position in pixel-coordinates
     vec2 size;     // size in pixel-coordinates
 
     ui16 using_texture;
 
-} GuiElement;
+} gsk_GuiElement;
 
-GuiElement *
-gui_element_create(vec2 position,
+gsk_GuiElement *
+gsk_gui_element_create(vec2 position,
                    vec2 size,
-                   Texture *p_texture,
+                   gsk_Texture *p_texture,
                    vec4 tex_coords);
 
 void
-gui_element_draw(GuiElement *element);
+gsk_gui_element_draw(gsk_GuiElement *element);
 
 #ifdef __cplusplus
 }

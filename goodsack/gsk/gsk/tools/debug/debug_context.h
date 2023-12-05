@@ -13,7 +13,7 @@ typedef struct DebugContext
 {
     VAO *vaoCube;
     VAO *vaoBoundingBox;
-    Material *material;
+    gsk_Material *material;
 
     VAO *vaoLine; // VAO for debug draw line
 

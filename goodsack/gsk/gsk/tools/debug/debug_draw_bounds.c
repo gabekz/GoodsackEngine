@@ -28,7 +28,7 @@ _draw_aabb(BoundingBox *box, mat4 *modelMatrix)
     glm_scale(m4Transform, size2);
 
     // glm_mat4_mul(transform->mvp.model, m4Transform, bbMat4);
-    shader_use(bbox_shader_static);
+    gsk_shader_use(bbox_shader_static);
 
     glUniformMatrix4fv(glGetUniformLocation(bbox_shader_static->id, "u_Model"),
                        1,
@@ -52,7 +52,7 @@ void
 debug_draw_bounds(DebugContext *debugContext, vec3 corners[2], mat4 modelMatrix)
 {
     vao_bind(debugContext->vaoBoundingBox);
-    material_use(debugContext->material);
+    gsk_material_use(debugContext->material);
 
     // Draw OBB
 

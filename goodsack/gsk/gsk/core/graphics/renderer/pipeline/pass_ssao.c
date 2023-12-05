@@ -22,11 +22,11 @@ static vec3 s_ssaoSamples[64];
 static ui32 s_ssaoFBO;
 static ui32 s_ssaoNoiseTextureId;
 static ui32 s_ssaoOutTextureId;
-static ShaderProgram *s_ssaoOutShader;
+static gsk_ShaderProgram *s_ssaoOutShader;
 
 static ui32 s_ssaoBlurFBO;
 static ui32 s_ssaoBlurOutTextureId;
-static ShaderProgram *s_ssaoBlurShader;
+static gsk_ShaderProgram *s_ssaoBlurShader;
 
 static VAO *vaoRect;
 
@@ -107,9 +107,9 @@ pass_ssao_init()
     // Create Shaders
     //---------------
     s_ssaoOutShader =
-      shader_create_program(GSK_PATH("gsk://shaders/ssao-color.shader"));
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/ssao-color.shader"));
     s_ssaoBlurShader =
-      shader_create_program(GSK_PATH("gsk://shaders/ssao-blur.shader"));
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/ssao-blur.shader"));
 
     // Sample Kernel
     //--------------
@@ -128,7 +128,7 @@ pass_ssao_init()
         glm_vec3_copy(sample, s_ssaoSamples[i]);
     }
     /*
-    shader_use(s_ssaoOutShader);
+    gsk_shader_use(s_ssaoOutShader);
     glUniform3fv(glGetUniformLocation(s_ssaoOutShader->id, "u_samples"),
                  64,
                  s_ssaoSamples);
@@ -197,7 +197,7 @@ pass_ssao_bind(SsaoOptions options)
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader_use(s_ssaoOutShader);
+    gsk_shader_use(s_ssaoOutShader);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, s_ssaoOutTextureId);
@@ -236,7 +236,7 @@ pass_ssao_bind(SsaoOptions options)
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader_use(s_ssaoBlurShader);
+    gsk_shader_use(s_ssaoBlurShader);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, s_ssaoBlurOutTextureId);

@@ -78,7 +78,7 @@ typedef struct gsk_Mesh
 
     // Imported material data
     ui32 usingImportedMaterial;
-    Material *materialImported;
+    gsk_Material *materialImported;
 } gsk_Mesh;
 
 /**

@@ -11,29 +11,28 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
-typedef struct _material Material;
 
-struct _material
+typedef struct gsk_Material
 {
-    ShaderProgram *shaderProgram;
-    Texture **textures;
+    gsk_ShaderProgram *shaderProgram;
+    gsk_Texture **textures;
     ui32 texturesCount;
 
     struct
     {
         VkPipelineLayout *pipelineLayout;
     } vulkan;
-};
+} gsk_Material;
 
-Material *
-material_create(ShaderProgram *shader,
+gsk_Material *
+gsk_material_create(gsk_ShaderProgram *shader,
                 const char *shaderPath,
                 ui32 textureCount,
                 ...);
 void
-material_use(Material *self);
+gsk_material_use(gsk_Material *self);
 
 void
-material_add_texture(Material *self, Texture *texture);
+gsk_material_add_texture(gsk_Material *self, gsk_Texture *texture);
 
 #endif // __MATERIAL_H__
