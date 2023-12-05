@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef H_DEMO_SCENES
 #define H_DEMO_SCENES
 
-#include <core/graphics/renderer/v1/renderer.h>
-#include <entity/v1/ecs.h>
+#include "core/graphics/renderer/v1/renderer.h"
+#include "entity/v1/ecs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +33,7 @@ enum DEMO_SCENE_NAMES {
 
 // Creates and loads every demo scene in this project.
 void
-demo_scenes_create(ECS *ecs, Renderer *renderer);
+demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer);
 
 #ifdef __cplusplus
 }

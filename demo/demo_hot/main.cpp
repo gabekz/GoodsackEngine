@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifdef _WIN32
 // #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #pragma optimize("", off)
@@ -6,13 +11,14 @@
 #include <iostream>
 #include <string>
 
-#include <util/logger.h>
-#include <util/maths.h>
-#include <util/sysdefs.h>
+#include "util/logger.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
 
 #include "demo_scenes.h"
+#include <GoodsackEngineConfig.h> // TODO: Change this
 
-#include <runtime/gsk_runtime.hpp>
+#include "runtime/gsk_runtime.hpp"
 
 int
 main(int argc, char *argv[])
@@ -26,7 +32,8 @@ main(int argc, char *argv[])
 
     // TODO: This is lazy
 #ifdef SYS_ENV_WIN
-    STATIC_ASSERT((_PROJ_DIR_ROOT), "path-root definition required");
+    STATIC_ASSERT((_PROJ_DIR_ROOT), "project path-root definition required");
+    STATIC_ASSERT((_GOODSACK_FS_DIR_ROOT), "GSK path-root definition required");
 #endif
     gsk_runtime_setup((_PROJ_DIR_DATA "/"), argc, argv);
 
