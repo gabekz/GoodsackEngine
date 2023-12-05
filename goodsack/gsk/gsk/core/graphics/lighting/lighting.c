@@ -18,9 +18,9 @@ gsk_lighting_initialize(vec3 lightPos, vec4 lightColor)
     ret->type     = Directional;
     ret->strength = 4; // TODO: GNK
 
-    ui32 uboLight;
+    u32 uboLight;
     if (DEVICE_API_OPENGL) {
-        ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
+        u32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
         glGenBuffers(1, &uboLight);
         glBindBuffer(GL_UNIFORM_BUFFER, uboLight);
         glBufferData(GL_UNIFORM_BUFFER, uboLightSize, NULL, GL_DYNAMIC_DRAW);
@@ -40,7 +40,7 @@ gsk_lighting_initialize(vec3 lightPos, vec4 lightColor)
 void
 gsk_lighting_update(gsk_Light *light, vec3 lightPos, vec4 lightColor)
 {
-    ui32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
+    u32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
     if (DEVICE_API_OPENGL) {
         glBindBuffer(GL_UNIFORM_BUFFER, light->ubo);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, lightPos);

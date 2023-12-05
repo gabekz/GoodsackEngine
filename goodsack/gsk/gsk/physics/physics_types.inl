@@ -19,7 +19,7 @@ typedef struct gsk_CollisionPoints
     vec3 point_b;       // furthest point of B into A
     vec3 normal;        // point_b - point_a normalized
     float depth;        // Length of point_b - point_a
-    ui16 has_collision; // bool
+    u16 has_collision; // bool
 } gsk_CollisionPoints;
 
 typedef struct gsk_CollisionResult
@@ -32,11 +32,11 @@ typedef struct gsk_CollisionResult
 typedef struct gsk_Collider
 {
     void *collider_data;
-    ui16 collider_data_type;
+    u16 collider_data_type;
 
     vec3 position;
 
-    ui16 is_dynamic, is_trigger;
+    u16 is_dynamic, is_trigger;
 } gsk_Collider;
 
 typedef struct gsk_SphereCollider

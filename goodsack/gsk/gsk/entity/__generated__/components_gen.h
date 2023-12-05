@@ -48,23 +48,23 @@ typedef enum ECSComponentType_t {
 struct ComponentAnimator
 {
     ResRef cntAnimation;
-    si32 cntKeyframeIndex;
-    si32 cntTime;
-    si32 nxtKeyframeIndex;
+    s32 cntKeyframeIndex;
+    s32 cntTime;
+    s32 nxtKeyframeIndex;
     f32 timerNow;
     f32 timerStart;
 };
 
 struct ComponentAudioListener
 {
-    si32 a;
+    s32 a;
 };
 
 struct ComponentAudioSource
 {
-    ui32 bufferId;
+    u32 bufferId;
     char filePath[256];
-    ui32 looping;
+    u32 looping;
 };
 
 struct ComponentCamera
@@ -77,9 +77,9 @@ struct ComponentCamera
     CACHE_ALIGN(mat4 model);
     CACHE_ALIGN(f32 nearZ);
     CACHE_ALIGN(mat4 proj);
-    CACHE_ALIGN(ui32 renderLayer);
-    CACHE_ALIGN(si32 screenHeight);
-    CACHE_ALIGN(si32 screenWidth);
+    CACHE_ALIGN(u32 renderLayer);
+    CACHE_ALIGN(s32 screenHeight);
+    CACHE_ALIGN(s32 screenWidth);
     CACHE_ALIGN(ResRef uniformBuffer);
     CACHE_ALIGN(ResRef uniformBufferMapped);
     CACHE_ALIGN(ResRef uniformBufferMemory);
@@ -88,7 +88,7 @@ struct ComponentCamera
 
 struct ComponentCameraLook
 {
-    CACHE_ALIGN(si32 firstMouse);
+    CACHE_ALIGN(s32 firstMouse);
     CACHE_ALIGN(f32 lastX);
     CACHE_ALIGN(f32 lastY);
     CACHE_ALIGN(f32 pitch);
@@ -104,7 +104,7 @@ struct ComponentCameraMovement
 struct ComponentLight
 {
     vec4 color;
-    ui32 type;
+    u32 type;
 };
 
 struct ComponentModel
@@ -113,19 +113,19 @@ struct ComponentModel
     ResRef mesh;
     char modelPath[256];
     ResRef pModel;
-    ui32 vbo;
+    u32 vbo;
     ResRef vkVBO;
     struct
     {
-        ui16 renderMode : 1;
-        ui16 drawMode : 2;
-        ui16 cullMode : 3;
+        u16 renderMode : 1;
+        u16 drawMode : 2;
+        u16 cullMode : 3;
     } properties;
 };
 
 struct ComponentRenderLayer
 {
-    ui32 renderLayer;
+    u32 renderLayer;
 };
 
 struct ComponentRigidbody
@@ -139,18 +139,18 @@ struct ComponentCollider
 {
     int type;
     void *pCollider;
-    ui32 isColliding;
+    u32 isColliding;
 };
 
 struct ComponentTest
 {
-    si32 movement_increment;
+    s32 movement_increment;
     f32 rotation_speed;
 };
 
 struct ComponentTransform
 {
-    ui16 hasParent;
+    u16 hasParent;
     mat4 model;
     CACHE_ALIGN(vec3 orientation);
     void *parent;

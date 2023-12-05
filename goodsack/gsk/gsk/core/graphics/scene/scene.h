@@ -21,12 +21,12 @@
 
 typedef struct gsk_Scene
 {
-    ui32 id, meshC, lightC;
+    u32 id, meshC, lightC;
 
     struct gsk_ECS *ecs;
 
     gsk_Skybox *skybox;
-    ui16 has_skybox;
+    u16 has_skybox;
 } gsk_Scene;
 
 #endif // __SCENE_H__

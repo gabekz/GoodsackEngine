@@ -20,7 +20,7 @@ typedef struct _vulkanSwapChainDetails VulkanSwapChainDetails;
 struct _vulkanSwapChainDetails
 {
     VkSwapchainKHR swapchain;
-    ui32 swapchainImageCount;
+    u32 swapchainImageCount;
     VkImage *swapchainImages;
     VkFormat swapchainImageFormat;
     VkExtent2D swapchainExtent;

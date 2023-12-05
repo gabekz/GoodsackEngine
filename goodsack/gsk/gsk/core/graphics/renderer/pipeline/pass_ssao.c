@@ -19,13 +19,13 @@
 #include "core/graphics/renderer/pipeline/pass_prepass.h"
 
 static vec3 s_ssaoSamples[64];
-static ui32 s_ssaoFBO;
-static ui32 s_ssaoNoiseTextureId;
-static ui32 s_ssaoOutTextureId;
+static u32 s_ssaoFBO;
+static u32 s_ssaoNoiseTextureId;
+static u32 s_ssaoOutTextureId;
 static gsk_ShaderProgram *s_ssaoOutShader;
 
-static ui32 s_ssaoBlurFBO;
-static ui32 s_ssaoBlurOutTextureId;
+static u32 s_ssaoBlurFBO;
+static u32 s_ssaoBlurOutTextureId;
 static gsk_ShaderProgram *s_ssaoBlurShader;
 
 static VAO *vaoRect;
@@ -268,7 +268,7 @@ pass_ssao_bind(SsaoOptions options)
     */
 }
 
-ui32
+u32
 pass_ssao_getOutputTextureId()
 {
     return s_ssaoBlurOutTextureId;

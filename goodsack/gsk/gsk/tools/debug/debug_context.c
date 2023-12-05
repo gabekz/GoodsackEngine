@@ -30,7 +30,7 @@ gsk_debug_context_init()
         vbo_push(vboCube, 3, GL_FLOAT, GL_FALSE);
         vao_add_buffer(ret->vaoCube, vboCube);
 
-        IBO *ibo = ibo_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(ui32));
+        IBO *ibo = ibo_create(PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(u32));
         ibo_bind(ibo);
 
         ret->material =

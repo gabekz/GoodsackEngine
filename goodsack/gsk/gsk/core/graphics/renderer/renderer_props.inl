@@ -13,7 +13,7 @@
 // Renderer Properties
 typedef struct gsk_RendererProps
 {
-    ui32 tonemapper;
+    u32 tonemapper;
 
     float exposure;
     float maxWhite;
@@ -21,7 +21,7 @@ typedef struct gsk_RendererProps
     float gamma;
     int gammaEnable;
 
-    ui32 msaaSamples;
+    u32 msaaSamples;
     int msaaEnable;
 
     float vignetteAmount;

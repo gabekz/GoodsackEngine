@@ -102,7 +102,7 @@ texture_create(const char *path,
         void *data;
         VK_CHECK(vkMapMemory(
           vkDevice->device, stagingBufferMemory, 0, imageSize, 0, &data));
-        memcpy(data, localBuffer, (ui32)imageSize);
+        memcpy(data, localBuffer, (u32)imageSize);
         vkUnmapMemory(vkDevice->device, stagingBufferMemory);
 
         vulkan_image_create(vkDevice->physicalDevice,
@@ -130,8 +130,8 @@ texture_create(const char *path,
                                       vkDevice->graphicsQueue,
                                       stagingBuffer,
                                       tex->vulkan.textureImage,
-                                      (ui32)tex->width,
-                                      (ui32)tex->height);
+                                      (u32)tex->width,
+                                      (u32)tex->height);
 
         // Final transition for shader access
         vulkan_image_layout_transition(
@@ -166,9 +166,9 @@ texture_create(const char *path,
 }
 
 gsk_Texture *
-texture_create_cubemap(ui32 faceCount, ...)
+texture_create_cubemap(u32 faceCount, ...)
 {
-    ui32 textureId;
+    u32 textureId;
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
 
@@ -220,7 +220,7 @@ texture_create_hdr(const char *path)
 
     assert(data != NULL);
 
-    ui32 textureId;
+    u32 textureId;
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -250,7 +250,7 @@ texture_create_hdr(const char *path)
 }
 
 void
-texture_bind(gsk_Texture *self, ui32 slot)
+texture_bind(gsk_Texture *self, u32 slot)
 {
     self->activeSlot = slot;
     glActiveTexture(GL_TEXTURE0 + slot);

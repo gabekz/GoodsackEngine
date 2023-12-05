@@ -10,9 +10,9 @@
 #include "util/sysdefs.h"
 
 // TODO: Possibly move to vulkan_memory
-ui32
+u32
 vulkan_memory_type(VkPhysicalDevice physicalDevice,
-                   ui32 typeFilter,
+                   u32 typeFilter,
                    VkMemoryPropertyFlags properties);
 
 void

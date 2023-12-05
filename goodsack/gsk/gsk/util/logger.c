@@ -107,7 +107,7 @@ init(void)
 }
 
 static void
-getTimestamp(const struct timeval *time, char *timestamp, ui64 size)
+getTimestamp(const struct timeval *time, char *timestamp, u64 size)
 {
     time_t sec =
       time

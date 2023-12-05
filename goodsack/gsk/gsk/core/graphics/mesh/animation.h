@@ -38,10 +38,10 @@ struct gsk_Pose
 struct gsk_Joint
 {
     char *name;
-    ui16 id;
+    u16 id;
 
     gsk_Joint *parent;
-    ui16 childrenCount;
+    u16 childrenCount;
 
     gsk_Pose pose; // current pose
     mat4 mInvBindPose;
@@ -50,15 +50,15 @@ struct gsk_Joint
 struct gsk_Skeleton
 {
     gsk_Joint **joints;
-    ui16 jointsCount;
+    u16 jointsCount;
 
     // GPU Buffers
     void *bufferJoints, *bufferWeights;
-    ui32 bufferJointsCount, bufferWeightsCount;
-    ui32 bufferJointsSize, bufferWeightsSize;
+    u32 bufferJointsCount, bufferWeightsCount;
+    u32 bufferJointsSize, bufferWeightsSize;
 
     void *skinningBuffer;
-    ui32 skinningBufferSize;
+    u32 skinningBufferSize;
 
     gsk_Animation *animation; // change to list
 
@@ -69,11 +69,11 @@ struct gsk_Skeleton
 
 struct gsk_Keyframe
 {
-    ui32 index;
+    u32 index;
     float frameTime;
 
     gsk_Pose **poses;
-    ui32 posesCount;
+    u32 posesCount;
 };
 
 struct gsk_Animation
@@ -84,18 +84,18 @@ struct gsk_Animation
     gsk_Skeleton *pSkeleton; // reference to associated skeleton
 
     gsk_Keyframe **keyframes;
-    ui32 keyframesCount;
+    u32 keyframesCount;
 };
 
 // void
-// animation_play(Animation *animation, ui32 index);
+// animation_play(Animation *animation, u32 index);
 
 void
-gsk_animation_set_keyframe(gsk_Animation *animation, ui32 keyframe);
+gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe);
 
 void
 gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
-                                ui32 keyframe,
+                                u32 keyframe,
                                 float ratio);
 
 #ifdef __cplusplus

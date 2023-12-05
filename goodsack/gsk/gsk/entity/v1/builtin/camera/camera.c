@@ -53,9 +53,9 @@ _initialize_shader_data(struct ComponentCamera *camera)
 
 // Create UBO for camera data
 #if 0
-    ui32 uboSize = 4 + sizeof(vec3) + (2 * sizeof(mat4));
+    u32 uboSize = 4 + sizeof(vec3) + (2 * sizeof(mat4));
     if (DEVICE_API_OPENGL) {
-        ui32 uboId;
+        u32 uboId;
         glGenBuffers(1, &uboId);
         glBindBuffer(GL_UNIFORM_BUFFER, uboId);
         glBufferData(GL_UNIFORM_BUFFER, uboSize, NULL, GL_DYNAMIC_DRAW);
@@ -94,7 +94,7 @@ _upload_shader_data(gsk_Entity e,
 #else
     if (DEVICE_API_OPENGL) {
         // Get the starting position
-        ui32 ubo_offset = camera->renderLayer * (renderer->camera_data.uboSize);
+        u32 ubo_offset = camera->renderLayer * (renderer->camera_data.uboSize);
 
         glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_data.uboId);
         glBufferSubData(

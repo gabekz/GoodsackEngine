@@ -15,7 +15,7 @@
 struct ComponentLight
 {
     vec4 color;
-    ui32 type;
+    u32 type;
 };
 #endif
 

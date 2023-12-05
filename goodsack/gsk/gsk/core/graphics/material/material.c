@@ -18,7 +18,7 @@
 gsk_Material *
 gsk_material_create(gsk_ShaderProgram *shader,
                 const char *shaderPath,
-                ui32 textureCount,
+                u32 textureCount,
                 ...)
 {
 

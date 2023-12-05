@@ -10,7 +10,7 @@
 #include "util/sysdefs.h"
 
 gsk_Mesh *
-primitive_mesh_create(ui32 shape, float scale)
+primitive_mesh_create(u32 shape, float scale)
 {
 
     gsk_Mesh *ret = malloc(sizeof(gsk_Mesh));

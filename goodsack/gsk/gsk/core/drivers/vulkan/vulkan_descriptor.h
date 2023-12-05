@@ -28,7 +28,7 @@ vulkan_descriptor_sets_create(VkDevice device,
                               VkDescriptorPool descriptorPool,
                               VkDescriptorSetLayout layout,
                               VkBuffer *uniformBuffers,
-                              ui32 structSize,
+                              u32 structSize,
                               VkImageView textureImageView,
                               VkSampler textureSampler);
 

@@ -53,7 +53,7 @@ vulkan_uniform_buffer_create(VkPhysicalDevice physicalDevice,
 }
 
 void
-vulkan_uniform_buffer_update(ui32 currentImage,
+vulkan_uniform_buffer_update(u32 currentImage,
                              void **uniformBuffersMapped,
                              VkExtent2D swapchainExtent)
 {

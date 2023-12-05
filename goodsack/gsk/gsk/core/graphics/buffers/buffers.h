@@ -17,13 +17,13 @@ struct gsk_GraphicsBuffer
 {
     BufferType type;
     void *data;
-    ui32 length;
+    u32 length;
 
     // VkBuffer bufferId;
-    // ui32 bufferId;
+    // u32 bufferId;
 };
 
 gsk_GraphicsBuffer *
-gsk_graphics_buffer_create(BufferType type, void *data, ui32 size);
+gsk_graphics_buffer_create(BufferType type, void *data, u32 size);
 
 #endif // __BUFFERS_H__

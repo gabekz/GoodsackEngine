@@ -16,8 +16,8 @@ vulkan_image_create(VkPhysicalDevice physicalDevice,
                     VkDevice device,
                     VkImage *image,
                     VkDeviceMemory *imageMemory,
-                    ui32 width,
-                    ui32 height,
+                    u32 width,
+                    u32 height,
                     VkFormat format,
                     VkImageTiling tiling,
                     VkImageUsageFlags usage,
@@ -116,8 +116,8 @@ vulkan_image_copy_from_buffer(VkDevice device,
                               VkQueue graphicsQueue,
                               VkBuffer buffer,
                               VkImage image,
-                              ui32 width,
-                              ui32 height)
+                              u32 width,
+                              u32 height)
 {
     VkCommandBuffer commandBuffer =
       vulkan_command_stc_begin(device, commandPool);

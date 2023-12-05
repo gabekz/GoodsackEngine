@@ -26,7 +26,7 @@ typedef struct gsk_GuiElement
     vec2 position; // position in pixel-coordinates
     vec2 size;     // size in pixel-coordinates
 
-    ui16 using_texture;
+    u16 using_texture;
 
 } gsk_GuiElement;
 

@@ -45,7 +45,7 @@
      1.0,  1.0, -1.0}
 
 #define PRIM_SIZ_I_CUBE 14
-#define PRIM_ARR_I_CUBE (ui32[]){ \
+#define PRIM_ARR_I_CUBE (u32[]){ \
     0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1}
 
 #define PRIM_SIZ_V_CUBE2 32
@@ -60,7 +60,7 @@
     -0.5,  0.5,  0.5, 1.0}
 
 #define PRIM_SIZ_I_CUBE2 16
-#define PRIM_ARR_I_CUBE2 (ui32[]){ \
+#define PRIM_ARR_I_CUBE2 (u32[]){ \
     0, 1, 2, 3, \
     4, 5, 6, 7, \
     0, 4, 1, 5, 2, 6, 3, 7 }
@@ -128,7 +128,7 @@
 	    10, 12, 11, \
 	    13, 15, 14}
 
-gsk_Mesh *primitive_mesh_create(ui32 shape, float scale);
+gsk_Mesh *primitive_mesh_create(u32 shape, float scale);
 
 void primitive_pyramid(float* out);
 float* prim_vert_rect();

@@ -20,18 +20,18 @@ extern "C" {
 typedef struct TextureOptions
 {
     float af_range;
-    ui32 internal_format;
-    ui16 gen_mips, flip_vertically; // bool
+    u32 internal_format;
+    u16 gen_mips, flip_vertically; // bool
 } TextureOptions;
 // TextureOptions_default = {0, GL_RGB, false, 1};
 
 typedef struct gsk_Texture
 {
     const char *filePath;
-    si32 bpp;
-    si32 width, height;
-    ui32 id;
-    ui32 activeSlot;
+    s32 bpp;
+    s32 width, height;
+    u32 id;
+    u32 activeSlot;
 
     struct
     {
@@ -49,12 +49,12 @@ texture_create(const char *path,
                TextureOptions options);
 
 gsk_Texture *
-texture_create_cubemap(ui32 faceCount, ...);
+texture_create_cubemap(u32 faceCount, ...);
 gsk_Texture *
 texture_create_hdr(const char *path);
 
 void
-texture_bind(gsk_Texture *self, ui32 slot);
+texture_bind(gsk_Texture *self, u32 slot);
 void
 texture_unbind();
 

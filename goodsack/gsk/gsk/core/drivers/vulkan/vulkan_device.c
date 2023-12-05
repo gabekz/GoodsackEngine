@@ -32,9 +32,9 @@
 /* static */
 
 static int
-_checkValidationLayerSupport(const char *validationLayers[], ui32 count)
+_checkValidationLayerSupport(const char *validationLayers[], u32 count)
 {
-    ui32 layerCount;
+    u32 layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, NULL);
 
     VkLayerProperties *availableLayers =
@@ -78,10 +78,10 @@ _checkValidationLayerSupport(const char *validationLayers[], ui32 count)
 
 static int
 _checkDeviceExtensionSupport(const char *extensions[],
-                             ui32 count,
+                             u32 count,
                              VkPhysicalDevice device)
 {
-    ui32 extensionsCount = 0;
+    u32 extensionsCount = 0;
     VK_CHECK(vkEnumerateDeviceExtensionProperties(
       device, NULL, &extensionsCount, NULL));
 
@@ -97,9 +97,9 @@ _checkDeviceExtensionSupport(const char *extensions[],
     }
 #endif
 
-    for (ui32 i = 0; i < count; i++) {
+    for (u32 i = 0; i < count; i++) {
         int extensionFound = 0;
-        for (ui32 j = 0; j < extensionsCount; j++) {
+        for (u32 j = 0; j < extensionsCount; j++) {
             if (strcmp(extensions[i], availableExtensions[j].extensionName) ==
                 0) {
                 extensionFound = 1;
@@ -128,7 +128,7 @@ _isDeviceSuitable(VkPhysicalDevice physicalDevice)
     // Device extension support
     const char *deviceExtensions[VK_REQ_DEVICE_EXT_COUNT] = VK_REQ_DEVICE_EXT;
 
-    ui32 indices = vulkan_device_find_queue_families(physicalDevice);
+    u32 indices = vulkan_device_find_queue_families(physicalDevice);
     int extensionsSupported =
       _checkDeviceExtensionSupport(deviceExtensions, 1, physicalDevice);
 
@@ -142,11 +142,11 @@ _isDeviceSuitable(VkPhysicalDevice physicalDevice)
 
 /* implement */
 
-ui32
+u32
 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
 {
-    ui32 graphicsFamily   = 0;
-    ui32 queueFamilyCount = 0;
+    u32 graphicsFamily   = 0;
+    u32 queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(
       physicalDevice, &queueFamilyCount, NULL);
 
@@ -155,7 +155,7 @@ vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
     vkGetPhysicalDeviceQueueFamilyProperties(
       physicalDevice, &queueFamilyCount, queueFamilies);
 
-    for (ui32 i = 0; i < queueFamilyCount; i++) {
+    for (u32 i = 0; i < queueFamilyCount; i++) {
         if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             graphicsFamily = i;
         }
@@ -186,7 +186,7 @@ vulkan_device_create()
     // Validation Layer + Extension Handling for Instance
     const unsigned char kEnableValidationLayers = 1;
 
-    ui32 glfwExtensionCount = 0;
+    u32 glfwExtensionCount = 0;
     const char **glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
     LOG_INFO("GLFW Extension count: %d", glfwExtensionCount);
@@ -231,7 +231,7 @@ vulkan_device_create()
 
     // Physical Device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    ui32 deviceCount                = 0;
+    u32 deviceCount                = 0;
     VK_CHECK(
       vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, NULL));
 
@@ -246,7 +246,7 @@ vulkan_device_create()
     VkPhysicalDeviceProperties deviceProperties;
 
     // TODO: This does not list all devices before picking suitable
-    for (ui32 i = 0; i < deviceCount; i++) {
+    for (u32 i = 0; i < deviceCount; i++) {
         vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
         LOG_INFO("Device Found: %s", deviceProperties.deviceName);
 
@@ -264,7 +264,7 @@ vulkan_device_create()
     ret->physicalDeviceProperties = deviceProperties;
 
     // Create Logical Device
-    ui32 graphicsFamily = vulkan_device_find_queue_families(physicalDevice);
+    u32 graphicsFamily = vulkan_device_find_queue_families(physicalDevice);
     float queuePriority = 1.0f;
 
     VkDeviceQueueCreateInfo queueCreateInfo = {

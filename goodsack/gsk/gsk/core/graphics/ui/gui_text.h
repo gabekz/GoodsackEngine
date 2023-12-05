@@ -18,7 +18,7 @@ extern "C" {
 
 typedef struct gsk_GuiText
 {
-    ui32 character_count;
+    u32 character_count;
     const char *text;      // text of the string
     gsk_GuiElement **elements; // individual character GUI elements
     gsk_Texture *font_atlas;   // pointer to the font atlas texture

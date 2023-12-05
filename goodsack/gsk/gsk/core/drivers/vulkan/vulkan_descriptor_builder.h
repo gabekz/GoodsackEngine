@@ -50,13 +50,13 @@ VkDescriptorSet
 vulkan_descriptor_builder_end();
 
 void
-vulkan_descriptor_builder_bind_buffer(ui32 binding,
+vulkan_descriptor_builder_bind_buffer(u32 binding,
                                       VkDescriptorBufferInfo *bufferInfo,
                                       VkDescriptorType descriptorType,
                                       VkShaderStageFlags shaderFlags);
 
 void
-vulkan_descriptor_builder_bind_image(ui32 binding,
+vulkan_descriptor_builder_bind_image(u32 binding,
                                      VkDescriptorImageInfo *imageInfo,
                                      VkDescriptorType descriptorType,
                                      VkShaderStageFlags shaderFlags);

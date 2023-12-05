@@ -37,7 +37,7 @@ typedef struct Analytics
     double delta;
     double lastFrame;
 
-    // ui32 currentDrawCalls;
+    // u32 currentDrawCalls;
 } Analytics;
 
 // typedef enum { CURSOR_LOCK_MODE_NONE, CURSOR_LOCK_MODE_LOCKED }

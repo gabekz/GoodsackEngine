@@ -121,14 +121,14 @@ gsk_renderer_init()
 }
 
 gsk_ECS *
-gsk_renderer_active_scene(gsk_Renderer *self, ui16 sceneIndex)
+gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex)
 {
     LOG_INFO("Loading scene: id %d", sceneIndex);
-    ui32 sceneCount = self->sceneC;
+    u32 sceneCount = self->sceneC;
     if (sceneCount < sceneIndex + 1) {
         LOG_INFO(
           "Scene %d does not exist. Creating Scene %d", sceneIndex, sceneIndex);
-        ui32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
+        u32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
 
         // Create a new, empty scene
         gsk_Scene *newScene      = malloc(sizeof(gsk_Scene));
@@ -204,8 +204,8 @@ gsk_renderer_start(gsk_Renderer *renderer)
         renderer->debugContext = gsk_debug_context_init();
 
         // Create camera Uniform Buffer
-        ui32 camera_uboSize = sizeof(vec4) + (2 * sizeof(mat4));
-        ui32 camera_uboId;
+        u32 camera_uboSize = sizeof(vec4) + (2 * sizeof(mat4));
+        u32 camera_uboId;
         glGenBuffers(1, &camera_uboId);
         glBindBuffer(GL_UNIFORM_BUFFER, camera_uboId);
         glBufferData(GL_UNIFORM_BUFFER,
@@ -224,7 +224,7 @@ gsk_renderer_start(gsk_Renderer *renderer)
 #if 0
         CameraData **camdata = malloc(sizeof(CameraData **) * MAX_CAMERAS);
         renderer->camera_data.cameras = camdata;
-        for (ui32 i = 0; i < MAX_CAMERAS; i++) {
+        for (u32 i = 0; i < MAX_CAMERAS; i++) {
             *(renderer->camera_data.cameras + i) = malloc(sizeof(CameraData *));
             glm_vec4_zero(renderer->camera_data.cameras[i]->position);
             glm_mat4_identity(renderer->camera_data.cameras[i]->projection);

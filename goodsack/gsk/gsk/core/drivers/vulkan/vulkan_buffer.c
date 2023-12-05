@@ -13,16 +13,16 @@
 #include "core/drivers/vulkan/vulkan_command.h"
 #include "core/drivers/vulkan/vulkan_support.h"
 
-ui32
+u32
 vulkan_memory_type(VkPhysicalDevice physicalDevice,
-                   ui32 typeFilter,
+                   u32 typeFilter,
                    VkMemoryPropertyFlags properties)
 {
 
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
-    for (ui32 i = 0; i < memProperties.memoryTypeCount; i++) {
+    for (u32 i = 0; i < memProperties.memoryTypeCount; i++) {
         if ((typeFilter & (1 << i)) &&
             (memProperties.memoryTypes[i].propertyFlags & properties) ==
               properties) {

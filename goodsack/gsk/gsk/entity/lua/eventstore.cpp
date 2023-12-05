@@ -232,7 +232,7 @@ pushEntity(lua_State *L, int entityId)
 {
 
     gsk_Entity entityCompare = {.id    = (gsk_EntityId)entityId,
-                            .index = (ui64)entityId,
+                            .index = (u64)entityId,
                             .ecs   = LuaEventStore::GetInstance().m_ecs};
 
     std::string a = std::to_string(entityId);
@@ -326,7 +326,7 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
         lua_rawgeti(L, -1, store.m_functionList[event]->functions[i]);
         if (lua_isfunction(L, -1)) {
             // send data to function
-            for (ui32 j = 0; j < store.m_ecs->nextIndex; j++) {
+            for (u32 j = 0; j < store.m_ecs->nextIndex; j++) {
                 // Push entity onto stack
                 LUA_DUMP("dump");
                 // lua_pop(L, 1);

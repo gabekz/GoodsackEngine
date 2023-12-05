@@ -50,7 +50,7 @@ struct ComponentCMapTest : testing::Test
 
     typedef struct CmpTransform
     {
-        CACHE_ALIGN(ui16 hasParent);
+        CACHE_ALIGN(u16 hasParent);
         CACHE_ALIGN(mat4 model);
         CACHE_ALIGN(vec3 orientation);
         CACHE_ALIGN(void *parent);
@@ -75,7 +75,7 @@ TEST_F(ComponentCMapTest, Reads_Writes_Stuff)
 
     // Check hasParent
     transform->hasParent = 0;
-    ui16 recHasParent    = -1;
+    u16 recHasParent    = -1;
     cmp->GetVariable("hasParent", &recHasParent);
     EXPECT_EQ(transform->hasParent, recHasParent);
     transform->hasParent = 1;

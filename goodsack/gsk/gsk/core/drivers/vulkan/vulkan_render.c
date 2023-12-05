@@ -54,8 +54,8 @@ vulkan_render_setup(VulkanDeviceContext *context)
 
     #if TEST_RENDER_MODE == 1
 
-        ui16 *indices = PRIM_ARR_I_PYRAMID;
-        ui32 indicesCount = PRIM_SIZ_I_PYRAMID;
+        u16 *indices = PRIM_ARR_I_PYRAMID;
+        u32 indicesCount = PRIM_SIZ_I_PYRAMID;
 
         context->indexBuffer = *vulkan_index_buffer_create(
                 context->physicalDevice,
@@ -105,7 +105,7 @@ vulkan_render_setup(VulkanDeviceContext *context)
 
 static void
 vulkan_render_record_begin(VulkanDeviceContext *context,
-                           ui32 imageIndex,
+                           u32 imageIndex,
                            VkCommandBuffer *commandBuffer)
 {
     // LOG_DEBUG("RECORDING command buffer");

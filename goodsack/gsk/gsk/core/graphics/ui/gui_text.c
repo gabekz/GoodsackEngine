@@ -14,8 +14,8 @@ static void
 __fill_font_data(char *self_widths, const char *path_font_data)
 {
     FILE *p_file;
-    ui32 map_width, map_height;
-    ui32 cell_width, cell_height;
+    u32 map_width, map_height;
+    u32 cell_width, cell_height;
     char start_character;
 
     p_file = fopen(path_font_data, "rb");
@@ -60,7 +60,7 @@ gsk_gui_text_create(const char *text_string)
     __fill_font_data(ret->char_spacing, font_dat_path);
 
     // Create elements for each character in the string
-    ui32 char_count      = strlen(text_string);
+    u32 char_count      = strlen(text_string);
     ret->character_count = char_count;
     ret->elements        = malloc(sizeof(gsk_GuiElement *) * char_count);
 
@@ -69,17 +69,17 @@ gsk_gui_text_create(const char *text_string)
     vec2 sprite_cells_size = {32.0f, 32.0f};
 
     // determine the correct sprite index...
-    ui32 sprite_cells_rows  = 8;
-    ui32 sprite_cells_cols  = 8;
-    ui32 sprite_cells_total = sprite_cells_rows * sprite_cells_cols;
+    u32 sprite_cells_rows  = 8;
+    u32 sprite_cells_cols  = 8;
+    u32 sprite_cells_total = sprite_cells_rows * sprite_cells_cols;
 
     // increments..
-    ui32 sprite_cell_x_incr = 1;  // to advance row, x +1
-    ui32 sprite_cell_y_incr = -1; // to advance col, y -1
+    u32 sprite_cell_x_incr = 1;  // to advance row, x +1
+    u32 sprite_cell_y_incr = -1; // to advance col, y -1
 
-    ui32 atlas_first_char_ascii_num = 32;
+    u32 atlas_first_char_ascii_num = 32;
 
-    // ui32 sprite_alphabet_index_begin =
+    // u32 sprite_alphabet_index_begin =
 
     // store the last spacing (kerning)
     int last_effective_spacing = 10;

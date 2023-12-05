@@ -14,8 +14,8 @@
 typedef struct gsk_PhysicsSolver
 {
     gsk_CollisionResult *solvers;
-    ui64 solvers_count, solver_next;
-    ui16 solver_empty;
+    u64 solvers_count, solver_next;
+    u16 solver_empty;
 } gsk_PhysicsSolver;
 
 gsk_PhysicsSolver

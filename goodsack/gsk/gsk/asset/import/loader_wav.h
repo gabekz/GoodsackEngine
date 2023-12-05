@@ -16,9 +16,9 @@ extern "C" {
 
 typedef struct gsk_AudioData
 {
-    si32 sampleRate;
-    ui32 numChannels, samples, dataSize;
-    ui16 *data;
+    s32 sampleRate;
+    u32 numChannels, samples, dataSize;
+    u16 *data;
 } gsk_AudioData;
 
 // WAV file loader.

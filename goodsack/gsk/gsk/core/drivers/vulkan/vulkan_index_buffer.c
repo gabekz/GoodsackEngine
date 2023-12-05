@@ -17,10 +17,10 @@ vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
                            VkDevice device,
                            VkCommandPool commandPool,
                            VkQueue graphicsQueue,
-                           ui16 *indices,
-                           ui16 indicesCount)
+                           u16 *indices,
+                           u16 indicesCount)
 {
-    VkDeviceSize bufferSize = indicesCount * sizeof(ui16);
+    VkDeviceSize bufferSize = indicesCount * sizeof(u16);
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -55,7 +55,7 @@ vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
                        commandPool,
                        stagingBuffer,
                        ret->buffer,
-                       (ui32)bufferSize);
+                       (u32)bufferSize);
 
     vkDestroyBuffer(device, stagingBuffer, NULL);
     vkFreeMemory(device, stagingBufferMemory, NULL);

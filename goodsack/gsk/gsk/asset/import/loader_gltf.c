@@ -25,15 +25,15 @@
 
 struct AttributeInfo
 {
-    si32 idxPos;
-    si32 idxTex;
-    si32 idxNrm;
-    si32 idxTan;
+    s32 idxPos;
+    s32 idxTex;
+    s32 idxNrm;
+    s32 idxTan;
 
-    si32 idxJnt;
-    si32 idxWht;
+    s32 idxJnt;
+    s32 idxWht;
 
-    si32 attribCount;
+    s32 attribCount;
 
     cgltf_accessor *posData;
     cgltf_accessor *texData;
@@ -89,7 +89,7 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
 static gsk_Animation *
 __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
 {
-    ui32 inputsCount     = gltfAnimation->samplers[0].input->count;
+    u32 inputsCount     = gltfAnimation->samplers[0].input->count;
     gsk_Keyframe **keyframes = malloc(sizeof(gsk_Keyframe *) * inputsCount);
 
     // Get all frame-times
@@ -118,7 +118,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
     // TODO: set correct iterator
     // for (int i = 0; i < gltfAnimation->channels_count; i++) {
     for (int i = 0; i < (skeleton->jointsCount * 3); i++) {
-        ui32 boneIndex = -1;
+        u32 boneIndex = -1;
         // Go through each bone and find ID by target_node of channel
         // TODO: very, very slow. Fix this later.
         for (int j = 0; j < skeleton->jointsCount; j++) {
@@ -194,7 +194,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
 
 static gsk_Joint
 _create_joint_recurse(gsk_Skeleton *skeleton,
-                      ui32 id,
+                      u32 id,
                       gsk_Joint *parent,
                       cgltf_node **jointsNode,
                       cgltf_skin *skinNode)
@@ -260,12 +260,12 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // TODO: Get more than just the first primitive
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
 
-    ui32 vertCount      = attribInfo.posData->count;
+    u32 vertCount      = attribInfo.posData->count;
     ret->vertexCount    = vertCount;
-    ui32 vPosBufferSize = vertCount * sizeof(float) * 3;
-    ui32 vTexBufferSize = vertCount * sizeof(float) * 2;
-    ui32 vNrmBufferSize = vertCount * sizeof(float) * 3;
-    ui32 vTanBufferSize = vertCount * sizeof(float) * 3 * 2;
+    u32 vPosBufferSize = vertCount * sizeof(float) * 3;
+    u32 vTexBufferSize = vertCount * sizeof(float) * 2;
+    u32 vNrmBufferSize = vertCount * sizeof(float) * 3;
+    u32 vTanBufferSize = vertCount * sizeof(float) * 3 * 2;
 
     // Required
     ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
@@ -319,7 +319,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // Indices //
 
     ret->indicesCount               = attribInfo.indicesData->count;
-    ret->buffers.bufferIndices_size = ret->indicesCount * sizeof(ui32);
+    ret->buffers.bufferIndices_size = ret->indicesCount * sizeof(u32);
 
     ret->buffers.bufferIndices = malloc(ret->buffers.bufferIndices_size);
 
@@ -365,10 +365,10 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
         // Skinning information //
 
-        ui32 jointsBufferSize  = vertCount * 4 * sizeof(ui32);
-        ui32 weightsBufferSize = vertCount * 4 * sizeof(float);
+        u32 jointsBufferSize  = vertCount * 4 * sizeof(u32);
+        u32 weightsBufferSize = vertCount * 4 * sizeof(float);
 
-        ui32 *jointsBuffer   = malloc(jointsBufferSize);
+        u32 *jointsBuffer   = malloc(jointsBufferSize);
         float *weightsBuffer = malloc(weightsBufferSize);
 
         // ret->skeleton->skinningBuffer    = skinningBuffer;
@@ -470,7 +470,7 @@ __texture_lookup(const char *path, TextureOptions options)
 static gsk_Material *
 _create_material(cgltf_material *gltfMaterial,
                  gsk_Material **materials,
-                 ui32 materialsCount)
+                 u32 materialsCount)
 {
 
     TextureOptions texNormalMapOptions =
@@ -583,7 +583,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
     // the model matrix parent is the mesh world-space, not model world-space
 
     // Figure out how many total objects (meshes) we have
-    ui32 totalObjects = 0;
+    u32 totalObjects = 0;
     for (int i = 0; i < data->meshes_count; i++) {
         totalObjects += data->meshes[i].primitives_count;
     }
@@ -592,7 +592,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
     ret->meshes = malloc(sizeof(gsk_Mesh *) * totalObjects);
 
     // Create texture/material pools
-    ui32 materialsCount      = data->materials_count;
+    u32 materialsCount      = data->materials_count;
     gsk_Material **materialsPool = malloc(sizeof(gsk_Material *) * materialsCount);
     if (importMaterials) {
         _test_texture_white =
@@ -608,7 +608,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
         s_loaded_textures_count = 0;
     }
 
-    ui32 cntMesh = 0;
+    u32 cntMesh = 0;
     for (int i = 0; i < data->nodes_count; i++) {
         // if this node is a Mesh Node
         if (data->nodes[i].mesh != 0) {

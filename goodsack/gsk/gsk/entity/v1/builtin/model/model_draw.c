@@ -31,8 +31,8 @@ SetCulling(int bitfield)
 static void
 DrawModel(struct ComponentModel *model,
           struct ComponentTransform *transform,
-          ui16 useOverrideMaterial, // Material from renderer
-          ui32 renderLayer,
+          u16 useOverrideMaterial, // Material from renderer
+          u32 renderLayer,
           VkCommandBuffer commandBuffer,
           gsk_Renderer *renderer)
 {
@@ -158,10 +158,10 @@ DrawModel(struct ComponentModel *model,
             vao_bind(mesh->vao);
 
             gsk_MeshData *data = mesh->meshData;
-            ui32 vertices  = data->vertexCount;
-            ui32 indices   = data->indicesCount;
+            u32 vertices  = data->vertexCount;
+            u32 indices   = data->indicesCount;
 
-            ui16 drawMode = model->properties.drawMode;
+            u16 drawMode = model->properties.drawMode;
 
             // glEnable(GL_CULL_FACE);
             // glCullFace(GL_BACK);
@@ -261,10 +261,10 @@ render(gsk_Entity e)
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
     struct ComponentModel *model         = gsk_ecs_get(e, C_MODEL);
 
-    ui32 renderLayer = 0; // DEFAULT RENDER LAYER when not specified.
+    u32 renderLayer = 0; // DEFAULT RENDER LAYER when not specified.
     if (gsk_ecs_has(e, C_RENDERLAYER)) {
         renderLayer =
-          (ui32)((struct ComponentRenderLayer *)gsk_ecs_get(e, C_RENDERLAYER))
+          (u32)((struct ComponentRenderLayer *)gsk_ecs_get(e, C_RENDERLAYER))
             ->renderLayer;
     }
 

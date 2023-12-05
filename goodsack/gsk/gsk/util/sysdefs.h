@@ -112,33 +112,33 @@
 // -- Types //
 
 #if defined(SYS_ENV_64)
-typedef signed long long si64;
-typedef unsigned long long ui64;
+typedef signed long long s64;
+typedef unsigned long long u64;
 #if defined(SYS_ENV_WIN)
 typedef unsigned long long ulong;
 #endif // defined(SYS_ENV_WIN)
 #else
-typedef signed long si64;
-typedef unsigned long ui64;
+typedef signed long s64;
+typedef unsigned long u64;
 #endif // defined(SYS_ENV_64)
 
 typedef double f64;
 
-typedef signed int si32;
-typedef unsigned int ui32;
+typedef signed int s32;
+typedef unsigned int u32;
 
 typedef float f32;
 
-typedef signed short si16;
-typedef unsigned short ui16;
+typedef signed short s16;
+typedef unsigned short u16;
 
-typedef signed char si8;
-typedef unsigned char ui8;
+typedef signed char s8;
+typedef unsigned char u8;
 
 // #ifdef byte_t
 // #undef byte_t
 // #endif
-typedef ui8 byte_t;
+typedef u8 byte_t;
 
 // #ifdef size_t
 // #undef size_t

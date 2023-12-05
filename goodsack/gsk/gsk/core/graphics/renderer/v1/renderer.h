@@ -47,7 +47,7 @@ typedef struct gsk_Renderer
     int renderWidth, renderHeight; // render resolution
 
     gsk_Scene **sceneL;
-    ui16 sceneC, activeScene;
+    u16 sceneC, activeScene;
 
     RenderPass currentPass; // TODO: rename -> RenderStage
     gsk_Material *explicitMaterial;
@@ -62,13 +62,13 @@ typedef struct gsk_Renderer
     // Hacky shit for temporary shadowmap values
     gsk_ShaderProgram *shaderDepthMap;
     gsk_Material *materialDepthMap;
-    ui32 depthMapFBO;
-    ui32 depthMapTexture;
+    u32 depthMapFBO;
+    u32 depthMapTexture;
     mat4 lightSpaceMatrix;
 
-    ui32 drawCalls;
-    ui32 faces;
-    ui32 totalVertices;
+    u32 drawCalls;
+    u32 faces;
+    u32 totalVertices;
 
     // TODO: Fix this shit as well.
     gsk_Light *light;
@@ -83,18 +83,18 @@ typedef struct gsk_Renderer
 
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
-    ui32 hdrTextureId;
+    u32 hdrTextureId;
 
     gsk_DebugContext *debugContext;
 
     // Camera information
     struct
     {
-        ui32 uboId, uboSize;
+        u32 uboId, uboSize;
         // CameraData **cameras; // List of cameras
 
-        ui32 totalCameras; // TODO: find an alternative
-        ui32 activeCamera;
+        u32 totalCameras; // TODO: find an alternative
+        u32 activeCamera;
     } camera_data;
 } gsk_Renderer;
 
@@ -122,7 +122,7 @@ gsk_renderer_tick(gsk_Renderer *renderer);
  * @return Pointer to the gsk_ECS struct owned by the scene
  */
 struct gsk_ECS *
-gsk_renderer_active_scene(gsk_Renderer *self, ui16 sceneIndex);
+gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex);
 //-------------------------------
 
 // #endif // __cplusplus

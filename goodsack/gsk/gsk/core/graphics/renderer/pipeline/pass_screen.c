@@ -18,17 +18,17 @@
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/shader/shader.h"
 
-static ui32 msFBO, sbFBO;
-static ui32 msRBO, sbRBO;
-static ui32 msTexture, sbTexture;
+static u32 msFBO, sbFBO;
+static u32 msRBO, sbRBO;
+static u32 msTexture, sbTexture;
 
 static gsk_ShaderProgram *shader;
 static VAO *vaoRect;
 
-static ui32 frameWidth, frameHeight;
+static u32 frameWidth, frameHeight;
 
 static void
-CreateMultisampleBuffer(ui32 samples, ui32 width, ui32 height)
+CreateMultisampleBuffer(u32 samples, u32 width, u32 height)
 {
     // Create texture
     glGenTextures(1, &msTexture);
@@ -60,7 +60,7 @@ CreateMultisampleBuffer(ui32 samples, ui32 width, ui32 height)
 }
 
 static void
-CreateScreenBuffer(ui32 width, ui32 height)
+CreateScreenBuffer(u32 width, u32 height)
 {
     // Create Texture
     glGenTextures(1, &sbTexture);
@@ -96,7 +96,7 @@ CreateScreenBuffer(ui32 width, ui32 height)
 }
 
 void
-postbuffer_resize(ui32 winWidth, ui32 winHeight)
+postbuffer_resize(u32 winWidth, u32 winHeight)
 {
     LOG_INFO("Resizing window to %d x %d", winWidth, winHeight);
 
@@ -128,7 +128,7 @@ postbuffer_resize(ui32 winWidth, ui32 winHeight)
 }
 
 void
-postbuffer_init(ui32 width, ui32 height, gsk_RendererProps *properties)
+postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties)
 {
     frameWidth  = width;
     frameHeight = height;

@@ -43,7 +43,7 @@ gsk::tools::panels::EntityViewer::draw(void)
 
             // Grab entity by ID
             gsk_Entity e =
-              (gsk_Entity {.id = (gsk_EntityId)i, .index = (ui64)i, .ecs = ecs});
+              (gsk_Entity {.id = (gsk_EntityId)i, .index = (u64)i, .ecs = ecs});
 
             std::string str = std::to_string(e.index) + " | ";
             str += "Entity id: " + std::to_string(e.id);
@@ -124,7 +124,7 @@ gsk::tools::panels::EntityViewer::draw(void)
                 TableNextColumn();
                 if (SmallButton("Inspect")) {
                     gsk_Entity entity = (gsk_Entity {.id    = (gsk_EntityId)row_n + 1,
-                                             .index = (ui64)row_n,
+                                             .index = (u64)row_n,
                                              .ecs   = ecs});
 
                     // display the component viewer panel

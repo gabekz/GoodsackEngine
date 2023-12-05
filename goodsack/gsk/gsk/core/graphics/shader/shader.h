@@ -52,7 +52,7 @@ typedef struct gsk_ShaderSource
 
 typedef struct gsk_ShaderProgram
 {
-    ui32 id;
+    u32 id;
     gsk_ShaderSource *shaderSource;
 } gsk_ShaderProgram;
 
@@ -69,7 +69,7 @@ gsk_shader_use(gsk_ShaderProgram *shader);
 void
 gsk_shader_uniform(gsk_ShaderProgram *shader,
                    const char *uniform,
-                   ui32 type,
+                   u32 type,
                    void *data);
 #endif // _GSK_SHADER_EASY_UNIFORMS
 

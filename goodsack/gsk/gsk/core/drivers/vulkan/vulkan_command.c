@@ -13,7 +13,7 @@
 VkCommandPool
 vulkan_command_pool_create(VkPhysicalDevice physicalDevice, VkDevice device)
 {
-    ui32 indices = vulkan_device_find_queue_families(physicalDevice);
+    u32 indices = vulkan_device_find_queue_families(physicalDevice);
 
     VkCommandPool commandPool;
 

@@ -16,7 +16,7 @@ typedef struct gsk_Material
 {
     gsk_ShaderProgram *shaderProgram;
     gsk_Texture **textures;
-    ui32 texturesCount;
+    u32 texturesCount;
 
     struct
     {
@@ -27,7 +27,7 @@ typedef struct gsk_Material
 gsk_Material *
 gsk_material_create(gsk_ShaderProgram *shader,
                 const char *shaderPath,
-                ui32 textureCount,
+                u32 textureCount,
                 ...);
 void
 gsk_material_use(gsk_Material *self);

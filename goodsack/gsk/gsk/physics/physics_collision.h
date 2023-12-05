@@ -12,7 +12,7 @@
 #include "physics/physics_types.inl"
 
 gsk_Collider
-gsk_physics_collider_new(ui16 type);
+gsk_physics_collider_new(u16 type);
 
 // general?
 gsk_CollisionPoints

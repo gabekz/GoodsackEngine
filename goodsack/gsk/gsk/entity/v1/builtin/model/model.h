@@ -30,12 +30,12 @@ struct ComponentModel
 
     struct
     {
-        ui16 renderMode : 1;
-        ui16 drawMode : 2;
-        ui16 cullMode : 3;
+        u16 renderMode : 1;
+        u16 drawMode : 2;
+        u16 cullMode : 3;
     } properties;
 
-    ui32 vbo;
+    u32 vbo;
 };
 #endif
 

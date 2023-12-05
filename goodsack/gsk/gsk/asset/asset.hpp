@@ -22,7 +22,7 @@ enum class AssetType : int {
 class Asset {
    public:
     bool IsLoaded() { return m_isLoaded; };
-    ui32 GetAssetId() { return m_assetId; };
+    u32 GetAssetId() { return m_assetId; };
 
     virtual void Load()   = 0;
     virtual void Unload() = 0;
@@ -33,7 +33,7 @@ class Asset {
 
    private:
     bool m_isLoaded = false;
-    ui32 m_assetId;
+    u32 m_assetId;
 }; // class
 
 } // namespace asset

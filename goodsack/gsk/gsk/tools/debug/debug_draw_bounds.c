@@ -43,8 +43,8 @@ _draw_aabb(BoundingBox *box, mat4 *modelMatrix)
     vao_bind(bbox_vao_static);
     glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_INT, 0);
     glDrawElements(
-      GL_LINE_LOOP, 4, GL_UNSIGNED_INT, (GLvoid *)(4 * sizeof(ui32)));
-    glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, (GLvoid *)(8 * sizeof(ui32)));
+      GL_LINE_LOOP, 4, GL_UNSIGNED_INT, (GLvoid *)(4 * sizeof(u32)));
+    glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, (GLvoid *)(8 * sizeof(u32)));
 }
 #endif
 
@@ -73,7 +73,7 @@ gsk_debug_draw_bounds(gsk_DebugContext *debugContext, vec3 corners[2], mat4 mode
 
     glm_mat4_mul(modelMatrix, m4Transform, bbMat4);
 
-    ui32 shaderId = debugContext->material->shaderProgram->id;
+    u32 shaderId = debugContext->material->shaderProgram->id;
 
     glUniformMatrix4fv(
       glGetUniformLocation(shaderId, "u_Model"), 1, GL_FALSE, (float *)bbMat4);
@@ -86,7 +86,7 @@ gsk_debug_draw_bounds(gsk_DebugContext *debugContext, vec3 corners[2], mat4 mode
     vao_bind(debugContext->vaoBoundingBox);
     glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_INT, 0);
     glDrawElements(
-      GL_LINE_LOOP, 4, GL_UNSIGNED_INT, (GLvoid *)(4 * sizeof(ui32)));
-    glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, (GLvoid *)(8 * sizeof(ui32)));
+      GL_LINE_LOOP, 4, GL_UNSIGNED_INT, (GLvoid *)(4 * sizeof(u32)));
+    glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, (GLvoid *)(8 * sizeof(u32)));
     // glEnable(GL_DEPTH_TEST);
 }

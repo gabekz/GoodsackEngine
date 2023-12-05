@@ -21,7 +21,7 @@ pass_ssao_init();
 void
 pass_ssao_bind();
 
-ui32
+u32
 pass_ssao_getOutputTextureId();
 
 #endif // __PASS_SSAO_H__

@@ -36,7 +36,7 @@ _FindSupportedFormat(VkPhysicalDevice physicalDevice,
     return failed;
 }
 
-static ui32
+static u32
 _HasStencilComponent(VkFormat format)
 {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT ||

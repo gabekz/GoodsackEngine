@@ -37,7 +37,7 @@ vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface)
     }
 
     // Store Present-Modes
-    ui32 presentModeCount;
+    u32 presentModeCount;
     vkGetPhysicalDeviceSurfacePresentModesKHR(
       device, surface, &presentModeCount, NULL);
 
@@ -82,7 +82,7 @@ vulkan_swapchain_choose_extent(VkSurfaceCapabilitiesKHR capabilities,
     } else {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
-        VkExtent2D actualExtent = {(ui32)width, (ui32)height};
+        VkExtent2D actualExtent = {(u32)width, (u32)height};
 
         actualExtent.width =
           MIN(MAX(actualExtent.width, capabilities.minImageExtent.width),
@@ -116,7 +116,7 @@ vulkan_swapchain_create(VkDevice device,
     VkExtent2D extent =
       vulkan_swapchain_choose_extent(details->capabilities, window);
 
-    ui32 imageCount = details->capabilities.minImageCount + 1;
+    u32 imageCount = details->capabilities.minImageCount + 1;
 
     if (details->capabilities.maxImageCount > 0 &&
         imageCount < details->capabilities.maxImageCount) {
@@ -216,7 +216,7 @@ vulkan_swapchain_recreate(VkPhysicalDevice physicalDevice,
     VulkanDepthResources p     = **ptrDepthResources;
     VkImageView depthImageView = p.depthImageView;
 
-    ui32 framebufferCount = swapChainDetails->swapchainImageCount;
+    u32 framebufferCount = swapChainDetails->swapchainImageCount;
     swapChainDetails->swapchainFramebuffers =
       vulkan_framebuffer_create(device,
                                 framebufferCount,

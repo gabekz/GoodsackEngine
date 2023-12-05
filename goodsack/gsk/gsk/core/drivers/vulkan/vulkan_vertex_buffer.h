@@ -22,7 +22,7 @@ struct VulkanVertexBuffer
     VkDeviceMemory bufferMemory;
 
     void *data;
-    ui32 size;
+    u32 size;
 };
 
 VulkanVertexBuffer *

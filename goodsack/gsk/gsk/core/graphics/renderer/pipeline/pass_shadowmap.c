@@ -20,8 +20,8 @@
 
 static gsk_ShaderProgram *shaderDepthMap;
 static gsk_Material *materialDepthMap;
-static ui32 depthMapFBO;
-static ui32 depthMapTexture;
+static u32 depthMapFBO;
+static u32 depthMapTexture;
 static mat4 lightSpaceMatrix;
 
 void
@@ -137,7 +137,7 @@ shadowmap_getMaterial()
     return materialDepthMap;
 }
 
-ui32
+u32
 shadowmap_getTexture()
 {
     return depthMapTexture;

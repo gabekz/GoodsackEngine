@@ -35,7 +35,7 @@ gsk_ecs_init(gsk_Renderer *renderer)
     gsk_ECS *ecs = malloc(sizeof(gsk_ECS));
 
     // Initialize entity capacity
-    ui32 capacity  = 64;
+    u32 capacity  = 64;
     ecs->ids       = malloc(capacity * sizeof(gsk_EntityId));
     ecs->capacity  = capacity;
     ecs->nextId    = 1;
@@ -71,7 +71,7 @@ gsk_ecs_init(gsk_Renderer *renderer)
 gsk_Entity
 gsk_ecs_new(gsk_ECS *self)
 {
-    ui32 capacity = self->capacity;
+    u32 capacity = self->capacity;
     // check if we have available capcity
     if (capacity < self->nextId) {
         capacity *= 2;
@@ -93,11 +93,11 @@ gsk_ecs_new(gsk_ECS *self)
 }
 
 void
-_gsk_ecs_add_internal(gsk_Entity entity, ui32 component_id, void *value)
+_gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
 {
     gsk_ECS *ecs               = entity.ecs;
     gsk_ECSComponentList *list = &ecs->component_lists[component_id];
-    ui32 size              = (entity.index * ECS_TAG_SIZE) +
+    u32 size              = (entity.index * ECS_TAG_SIZE) +
                 (list->component_size * (entity.index + 1));
     // printf("index of tag for Entity [%d]: %d", entity.index, size);
 
@@ -111,7 +111,7 @@ _gsk_ecs_add_internal(gsk_Entity entity, ui32 component_id, void *value)
     // printf("entity ID is %d", (int)entity.id);
 
     // void *component = list->components+(entity.id-1);
-    ui32 index =
+    u32 index =
       (entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index));
     if (value != NULL) {
         memcpy((char *)((char *)((gsk_ECSComponentList *)list->components) + index),
@@ -126,7 +126,7 @@ gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id)
 {
     gsk_ECSComponentList *list = &entity.ecs->component_lists[component_id];
 
-    ui32 size = (entity.index * ECS_TAG_SIZE) +
+    u32 size = (entity.index * ECS_TAG_SIZE) +
                 (list->component_size * (entity.index + 1));
     // printf("index of tag for Entity [%d]: %d", entity.index, size);
     char *tag = (char *)((void *)list->components) + size;
@@ -145,7 +145,7 @@ gsk_ecs_get(gsk_Entity entity, ECSComponentType component_id)
     assert(gsk_ecs_has(entity, component_id));
     gsk_ECSComponentList *list = &entity.ecs->component_lists[component_id];
 
-    ui32 size =
+    u32 size =
       ((entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index)));
     // size = size - (list->component_size - 1);
     //(list->component_size * (entity.index));
@@ -162,7 +162,7 @@ gsk_ecs_get(gsk_Entity entity, ECSComponentType component_id)
 void
 gsk_ecs_system_register(gsk_ECS *self, gsk_ECSSystem system)
 {
-    ui32 newSize = self->systems_size + 1;
+    u32 newSize = self->systems_size + 1;
 
     gsk_ECSSystem *p  = realloc(self->systems, newSize * sizeof(gsk_ECSSystem));
     self->systems = p;
@@ -172,10 +172,10 @@ gsk_ecs_system_register(gsk_ECS *self, gsk_ECSSystem system)
 }
 
 void
-gsk_ecs_component_register(gsk_ECS *self, ui32 component_id, ui64 size)
+gsk_ecs_component_register(gsk_ECS *self, u32 component_id, u64 size)
 {
     self->component_lists[component_id].component_size = size;
-    ui32 aSize                                         = size + ECS_TAG_SIZE;
+    u32 aSize                                         = size + ECS_TAG_SIZE;
 
     self->component_lists[component_id].components =
       calloc(self->capacity, aSize);

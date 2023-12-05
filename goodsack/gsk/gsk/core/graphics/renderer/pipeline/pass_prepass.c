@@ -16,12 +16,12 @@
 static gsk_ShaderProgram *s_depthPrepassShader;
 static gsk_Material *s_depthPrepassMaterial;
 
-static ui32 s_depthPrepassFBO;
-static ui32 s_depthPrepassTextureId;
+static u32 s_depthPrepassFBO;
+static u32 s_depthPrepassTextureId;
 
 // GBuffer information
-static ui32 s_gPosition;
-static ui32 s_gNormal;
+static u32 s_gPosition;
+static u32 s_gNormal;
 
 static VAO *s_vaoRect;
 
@@ -124,7 +124,7 @@ prepass_init()
 }
 
 void
-prepass_bindTextures(ui32 startingSlot)
+prepass_bindTextures(u32 startingSlot)
 {
     // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glActiveTexture(GL_TEXTURE0 + startingSlot);
@@ -165,12 +165,12 @@ prepass_getMaterial()
     return s_depthPrepassMaterial;
 }
 
-ui32
+u32
 prepass_getPosition()
 {
     return s_gPosition;
 }
-ui32
+u32
 prepass_getNormal()
 {
     return s_gNormal;

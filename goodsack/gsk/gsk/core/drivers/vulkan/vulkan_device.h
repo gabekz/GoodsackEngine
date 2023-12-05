@@ -34,10 +34,10 @@ struct _vulkanDeviceContext
 
     VkQueue graphicsQueue;
     // VkQueue presentQueue;
-    ui32 graphicsFamily;
+    u32 graphicsFamily;
 
     // TEMPORARY FOR RENDERING TESTS
-    ui32 presentImageIndex;
+    u32 presentImageIndex;
 
     VulkanSwapChainDetails *swapChainDetails;
     VulkanPipelineDetails *pipelineDetails;
@@ -57,7 +57,7 @@ struct _vulkanDeviceContext
     VkDescriptorPool descriptorPool;
     VkDescriptorSet *descriptorSets;
 
-    ui32 currentFrame;
+    u32 currentFrame;
     VkSemaphore *imageAvailableSemaphores;
     VkSemaphore *renderFinishedSemaphores;
     VkFence *inFlightFences;
@@ -71,7 +71,7 @@ vulkan_device_create();
 void
 vulkan_device_cleanup(VulkanDeviceContext *context);
 
-ui32
+u32
 vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice);
 
 void

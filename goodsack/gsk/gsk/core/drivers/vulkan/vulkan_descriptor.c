@@ -12,7 +12,7 @@
 VkDescriptorPool
 vulkan_descriptor_pool_create(VkDevice device)
 {
-    ui32 poolSizesCount              = 11;
+    u32 poolSizesCount              = 11;
     VkDescriptorPoolSize poolSizes[] = {
       // Descriptor Type                             Descriptor Count
       {VK_DESCRIPTOR_TYPE_SAMPLER, 10},
@@ -32,7 +32,7 @@ vulkan_descriptor_pool_create(VkDevice device)
       .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
       .poolSizeCount = poolSizesCount,
       .pPoolSizes    = poolSizes,
-      .maxSets       = (ui32)MAX_FRAMES_IN_FLIGHT * 10,
+      .maxSets       = (u32)MAX_FRAMES_IN_FLIGHT * 10,
     };
 
     VkDescriptorPool descriptorPool;
@@ -44,7 +44,7 @@ vulkan_descriptor_pool_create(VkDevice device)
 VkDescriptorSetLayout
 vulkan_descriptor_create_layout(VkDevice device)
 {
-    ui32 bindingCount = 2;
+    u32 bindingCount = 2;
     VkDescriptorSetLayoutBinding bindings[2];
 
     // UBO Layout
@@ -85,7 +85,7 @@ vulkan_descriptor_sets_create(VkDevice device,
                               VkDescriptorPool descriptorPool,
                               VkDescriptorSetLayout layout,
                               VkBuffer *uniformBuffers,
-                              ui32 structSize,
+                              u32 structSize,
                               VkImageView textureImageView,
                               VkSampler textureSampler)
 {
@@ -98,7 +98,7 @@ vulkan_descriptor_sets_create(VkDevice device,
     VkDescriptorSetAllocateInfo allocInfo = {
       .sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
       .descriptorPool     = descriptorPool,
-      .descriptorSetCount = (ui32)MAX_FRAMES_IN_FLIGHT,
+      .descriptorSetCount = (u32)MAX_FRAMES_IN_FLIGHT,
       .pSetLayouts        = layouts,
     };
 
@@ -117,7 +117,7 @@ vulkan_descriptor_sets_create(VkDevice device,
           .imageView   = textureImageView,
           .sampler     = textureSampler};
 
-        ui32 descriptorWritesCount = 2;
+        u32 descriptorWritesCount = 2;
         VkWriteDescriptorSet descriptorWrites[2];
 
         descriptorWrites[0] = (VkWriteDescriptorSet) {

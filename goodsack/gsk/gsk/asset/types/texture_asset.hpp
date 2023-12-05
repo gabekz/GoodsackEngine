@@ -17,8 +17,8 @@ enum class TextureFormat { UNKNOWN = 0, RGBA8, RGB8, SRGBA };
 struct TextureProperties
 {
     const char *filePath;
-    si32 bpp;
-    si32 width, height;
+    s32 bpp;
+    s32 width, height;
     TextureFormat format = TextureFormat::SRGBA;
 };
 

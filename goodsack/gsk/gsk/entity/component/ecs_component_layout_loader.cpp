@@ -30,7 +30,7 @@
 using json = nlohmann::json;
 
 entity::component::ComponentLayoutMap
-entity::component::parse_components_from_json(std::string path, ui32 rawData)
+entity::component::parse_components_from_json(std::string path, u32 rawData)
 {
     json JSON;
 
@@ -47,9 +47,9 @@ entity::component::parse_components_from_json(std::string path, ui32 rawData)
     std::map<std::string, DataTypeContainer> dataTypes = {
       // Numeric
       {"int", (DataTypeContainer {sizeof(int), 1, EcsDataType::INT})},
-      {"uint", (DataTypeContainer {sizeof(ui32), 1, EcsDataType::UINT})},
+      {"uint", (DataTypeContainer {sizeof(u32), 1, EcsDataType::UINT})},
       {"float", (DataTypeContainer {sizeof(float), 1, EcsDataType::FLOAT})},
-      {"bool", (DataTypeContainer {sizeof(ui16), 1, EcsDataType::BOOL})},
+      {"bool", (DataTypeContainer {sizeof(u16), 1, EcsDataType::BOOL})},
       // Vector
       {"vec2", (DataTypeContainer {sizeof(float), 2, EcsDataType::VEC2})},
       {"vec3", (DataTypeContainer {sizeof(float), 3, EcsDataType::VEC3})},
@@ -190,8 +190,8 @@ extern "C" {
             std::cout << "\t";
             // TODO: change to inline converter
             switch (accessor.type /* accessor.type */) {
-            case EcsDataType::INT: std::cout << "si32 "; break;
-            case EcsDataType::UINT: std::cout << "ui32 "; break;
+            case EcsDataType::INT: std::cout << "s32 "; break;
+            case EcsDataType::UINT: std::cout << "u32 "; break;
             case EcsDataType::FLOAT: std::cout << "f32 "; break;
             case EcsDataType::BOOL: std::cout << "ui16 "; break;
             case EcsDataType::VEC2: std::cout << "vec2 "; break;

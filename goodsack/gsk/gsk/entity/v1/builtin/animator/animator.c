@@ -81,10 +81,10 @@ update(gsk_Entity e)
 
     // LOG_INFO("Timer: %.2f", animator->timerNow);
 
-    ui32 cntKeyframeIndex = animator->cntKeyframeIndex;
+    u32 cntKeyframeIndex = animator->cntKeyframeIndex;
     gsk_Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
 
-    ui32 nxtKeyframeIndex = cntKeyframeIndex + 1;
+    u32 nxtKeyframeIndex = cntKeyframeIndex + 1;
     gsk_Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];
 
     float ratio = (animator->timerNow - cntKeyframe->frameTime) /

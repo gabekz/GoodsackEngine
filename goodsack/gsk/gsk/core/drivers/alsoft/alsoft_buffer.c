@@ -11,7 +11,7 @@
 /* static */
 
 static ALenum
-FileToEnum(ui16 channels, ui16 samples)
+FileToEnum(u16 channels, u16 samples)
 {
     int stereo = (channels > 1);
 

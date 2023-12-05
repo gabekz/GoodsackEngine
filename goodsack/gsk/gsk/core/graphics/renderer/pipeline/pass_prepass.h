@@ -12,7 +12,7 @@ void
 prepass_init();
 
 void
-prepass_bindTextures(ui32 startingSlot);
+prepass_bindTextures(u32 startingSlot);
 
 void
 prepass_bind();
@@ -20,9 +20,9 @@ prepass_bind();
 gsk_Material *
 prepass_getMaterial();
 
-ui32
+u32
 prepass_getPosition();
-ui32
+u32
 prepass_getNormal();
 
 #endif // __PASS_PREPASS_H__

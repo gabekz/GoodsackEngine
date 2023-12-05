@@ -19,7 +19,7 @@ typedef enum ModelFileType { OBJ = 0, GLTF } ModelFileType;
 typedef struct ModelOptions
 {
     float scale;
-    ui16 import_materials;
+    u16 import_materials;
 } TextureOptions;
 #endif
 
@@ -29,14 +29,14 @@ typedef struct gsk_Model
     const char *modelPath;
 
     gsk_Mesh **meshes;
-    ui32 meshesCount;
+    u32 meshesCount;
 
     ModelFileType fileType;
 
 } gsk_Model;
 
 gsk_Model *
-gsk_model_load_from_file(const char *path, f32 scale, ui16 importMaterials);
+gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials);
 
 #ifdef __cplusplus
 }

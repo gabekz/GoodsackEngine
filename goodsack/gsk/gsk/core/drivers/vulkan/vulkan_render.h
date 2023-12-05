@@ -15,7 +15,7 @@ extern "C" {
 void
 vulkan_render_setup(VulkanDeviceContext *context);
 
-// void vulkan_render_record(VulkanDeviceContext *context, ui32 imageIndex,
+// void vulkan_render_record(VulkanDeviceContext *context, u32 imageIndex,
 //         VkCommandBuffer *commandBuffer);
 
 // void vulkan_render_draw(VulkanDeviceContext *context, GLFWwindow *window);

@@ -208,9 +208,9 @@ gsk_shader_program_create(const char *path)
     if (DEVICE_API_OPENGL) {
         gsk_ShaderSource *ss = ParseShader(path);
 
-        ui32 program = glCreateProgram();
-        ui32 vs      = CompileSingleShader(GL_VERTEX_SHADER, ss->shaderVertex);
-        ui32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss->shaderFragment);
+        u32 program = glCreateProgram();
+        u32 vs      = CompileSingleShader(GL_VERTEX_SHADER, ss->shaderVertex);
+        u32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss->shaderFragment);
 
         // TODO: Read documentation on these functions
         glAttachShader(program, vs);
@@ -237,8 +237,8 @@ gsk_ShaderProgram *
 gsk_shader_compute_program_create(const char *path)
 {
     gsk_ShaderSource *ss = ParseShader(path);
-    ui32 program     = glCreateProgram();
-    ui32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss->shaderCompute);
+    u32 program     = glCreateProgram();
+    u32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss->shaderCompute);
 
     glAttachShader(program, csSingle);
     glLinkProgram(program);
@@ -262,10 +262,10 @@ gsk_shader_use(gsk_ShaderProgram *shader)
 void
 gsk_shader_uniform(gsk_ShaderProgram *shader,
                const char *uniform,
-               ui32 type,
+               u32 type,
                void *data)
 {
-    ui32 location = glGetUniformLocation(shader->id, uniform);
+    u32 location = glGetUniformLocation(shader->id, uniform);
 
     /*
     switch(type) {

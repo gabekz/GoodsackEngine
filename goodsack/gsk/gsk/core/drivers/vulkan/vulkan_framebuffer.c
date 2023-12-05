@@ -14,7 +14,7 @@
 
 VkFramebuffer *
 vulkan_framebuffer_create(VkDevice device,
-                          ui32 framebufferCount,
+                          u32 framebufferCount,
                           VkImageView *swapchainImageViews,
                           VkImageView depthImageView,
                           VkExtent2D swapchainExtent,

@@ -16,7 +16,7 @@ static volatile int s_initialized = 0; // false
 
 static struct
 {
-    ui32 counter;
+    u32 counter;
     double prevTime, timeDiff;
     Analytics analytics;
 } s_ald; // Analytic Data

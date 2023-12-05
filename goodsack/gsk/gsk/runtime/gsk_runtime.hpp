@@ -24,7 +24,7 @@
 
 #define GSK_RUNTIME_USE_DEBUG 1
 
-ui32
+u32
 gsk_runtime_setup(const char *project_root, int argc, char *argv[]);
 
 void
@@ -36,6 +36,6 @@ gsk_Renderer *
 gsk_runtime_get_renderer();
 
 void
-gsk_runtime_set_scene(ui16 sceneIndex);
+gsk_runtime_set_scene(u16 sceneIndex);
 
 #endif // __GSK_RUNTIME_HPP__

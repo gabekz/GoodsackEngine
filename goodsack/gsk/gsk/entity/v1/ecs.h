@@ -40,7 +40,7 @@ typedef union gsk_ECSSystem gsk_ECSSystem;
 typedef struct gsk_ECSComponentList gsk_ECSComponentList;
 
 typedef void (*gsk_ECSSubscriber)(gsk_Entity);
-typedef ui64 gsk_EntityId;
+typedef u64 gsk_EntityId;
 
 typedef struct gsk_ECS gsk_ECS;
 
@@ -83,7 +83,7 @@ inline void _ecs_init_internal(ECS *ecs) {
 struct gsk_Entity
 {
     gsk_EntityId id;
-    ui64 index;
+    u64 index;
     gsk_ECS *ecs;
 };
 
@@ -92,22 +92,22 @@ struct gsk_Entity
 struct gsk_ECSComponentList
 {
     void *components;
-    ui64 component_size;
-    // ui64 components_size;
-    ui64 *entity_index_list;
+    u64 component_size;
+    // u64 components_size;
+    u64 *entity_index_list;
 };
 
 struct gsk_ECS
 {
     gsk_EntityId *ids, nextId;
-    ui32 nextIndex;
-    ui32 capacity;
+    u32 nextIndex;
+    u32 capacity;
 
     gsk_Renderer *renderer;
 
     gsk_ECSComponentList component_lists[ECSCOMPONENT_LAST + 1];
     gsk_ECSSystem *systems;
-    ui32 systems_size;
+    u32 systems_size;
 };
 
 /*-------------------------------------------*/
@@ -122,7 +122,7 @@ union gsk_ECSSystem {
 };
 
 void
-_gsk_ecs_add_internal(gsk_Entity entity, ui32 component_id, void *value);
+_gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value);
 
 /*-------------------------------------------*/
 
@@ -139,7 +139,7 @@ gsk_ecs_get(gsk_Entity entity, ECSComponentType component_id);
 void
 gsk_ecs_system_register(gsk_ECS *self, gsk_ECSSystem system);
 void
-gsk_ecs_component_register(gsk_ECS *self, ui32 component_id, ui64 size);
+gsk_ecs_component_register(gsk_ECS *self, u32 component_id, u64 size);
 
 void
 gsk_ecs_event(gsk_ECS *self, enum ECSEvent event);

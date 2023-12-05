@@ -59,7 +59,7 @@ _gsk_check_args(int argc, char *argv[])
     }
 }
 
-ui32
+u32
 gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 {
     // Setup logger
@@ -253,7 +253,7 @@ gsk_runtime_get_renderer()
 }
 
 void
-gsk_runtime_set_scene(ui16 sceneIndex)
+gsk_runtime_set_scene(u16 sceneIndex)
 {
     s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, sceneIndex);
 }

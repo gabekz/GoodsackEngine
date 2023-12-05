@@ -27,7 +27,7 @@ typedef struct gsk_Light
     LightType type;
     float strength;
 
-    ui32 ubo;
+    u32 ubo;
 } gsk_Light;
 
 gsk_Light *

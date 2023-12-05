@@ -12,8 +12,8 @@
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/shader/shader.h"
 
-static ui32 cubemapProjectionFBO;
-static ui32 cubemapProjectionRBO;
+static u32 cubemapProjectionFBO;
+static u32 cubemapProjectionRBO;
 static VAO *cubemapProjectionVAO;
 static gsk_ShaderProgram *cubemapProjectionShader;
 static gsk_ShaderProgram *cubemapShaderConvolute;
@@ -77,7 +77,7 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     // texture_create_hdr("../res/textures/hdr/city_night.hdr");
 
     // Framebuffer setup
-    ui32 captureFBO, captureRBO;
+    u32 captureFBO, captureRBO;
     glGenFramebuffers(1, &captureFBO);
     glGenRenderbuffers(1, &captureRBO);
 
@@ -88,7 +88,7 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
       GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
 
     // Create cubemap
-    ui32 skyboxCubemap;
+    u32 skyboxCubemap;
     glGenTextures(1, &skyboxCubemap);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap);
@@ -110,7 +110,7 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Create irradiance map
-    ui32 irradianceMap;
+    u32 irradianceMap;
     glGenTextures(1, &irradianceMap);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
@@ -132,7 +132,7 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Create pre-filter cubemap, re-scale capture FBO tp pre-filter scale
-    ui32 prefilterMap;
+    u32 prefilterMap;
     glGenTextures(1, &prefilterMap);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
@@ -157,7 +157,7 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
     // generate BRDF texture
-    ui32 brdfLUTTexture;
+    u32 brdfLUTTexture;
     glGenTextures(1, &brdfLUTTexture);
     // pre-allocate memory for LUT texture.
     glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
@@ -228,8 +228,8 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
 gsk_Texture *
 gsk_skybox_hdr_projection(gsk_Skybox *skybox)
 {
-    ui32 captureFBO                = cubemapProjectionFBO;
-    ui32 captureRBO                = cubemapProjectionRBO;
+    u32 captureFBO                = cubemapProjectionFBO;
+    u32 captureRBO                = cubemapProjectionRBO;
     VAO *vao                       = cubemapProjectionVAO;
     gsk_ShaderProgram *shaderP         = cubemapProjectionShader;
     gsk_ShaderProgram *shaderConvolute = cubemapShaderConvolute;
@@ -339,11 +339,11 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
     // prefilter map
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture->id);
-    ui32 maxMipLevels = 5;
-    for (ui32 mip = 0; mip < maxMipLevels; ++mip) {
+    u32 maxMipLevels = 5;
+    for (u32 mip = 0; mip < maxMipLevels; ++mip) {
         // resize Framebuffer according to mip-level size
-        ui32 mipWidth  = 128 * pow(0.5, mip);
-        ui32 mipHeight = 128 * pow(0.5, mip);
+        u32 mipWidth  = 128 * pow(0.5, mip);
+        u32 mipHeight = 128 * pow(0.5, mip);
         glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
         glRenderbufferStorage(
           GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);

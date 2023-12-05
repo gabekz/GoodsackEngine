@@ -23,10 +23,10 @@ struct ComponentCamera
     float lastX, lastY;
     float yaw, pitch;
 
-    si16 firstMouse; // bool
+    s16 firstMouse; // bool
 
     // OpenGL
-    ui32 uboId;
+    u32 uboId;
     //
 
     // Vulkan

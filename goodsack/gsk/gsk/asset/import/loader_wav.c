@@ -20,15 +20,15 @@ gsk_load_wav(const char *filepath)
 
     FILE *filePtr;
     char magic[4];
-    si32 fileSize;
-    si32 formatLength;
-    si16 formatType;
-    si16 numChannels;
-    si32 sampleRate;
-    si32 bytesPerSecond; // sampleRate * numChannels * bitsPerSample
-    si16 blockAlign;     // numChannels * bitsPerSample
-    si16 bitsPerSample;  // 16
-    si32 dataSize;
+    s32 fileSize;
+    s32 formatLength;
+    s16 formatType;
+    s16 numChannels;
+    s32 sampleRate;
+    s32 bytesPerSecond; // sampleRate * numChannels * bitsPerSample
+    s16 blockAlign;     // numChannels * bitsPerSample
+    s16 bitsPerSample;  // 16
+    s32 dataSize;
 
     filePtr = fopen(filepath, "rb");
     if (filePtr == NULL) { LOG_ERROR("Failed to open file: %s", filepath); }
@@ -76,8 +76,8 @@ gsk_load_wav(const char *filepath)
     fread(magic, 1, 4, filePtr);
     if (!strcmp(magic, "LIST")) {
         // WAV metadata
-        ui32 listSize;
-        ui16 listType;
+        u32 listSize;
+        u16 listType;
         void *listData;
 
         fread(&listSize, 1, 4, filePtr);

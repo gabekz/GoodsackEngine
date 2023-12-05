@@ -207,15 +207,15 @@ gsk_load_obj(const char *path, float scale)
     ret->vertexCount = outI;
 
 #if 1 // Calcuate TBN for each triangle/vertex
-    ui32 totalTriangles = fL * 3;
+    u32 totalTriangles = fL * 3;
     // float* outTBN = malloc(2 * 3 * totalTriangles * sizeof(float));
     float *outTBN    = malloc(totalTriangles * 3 * 2 * sizeof(GLfloat));
-    ui32 cntTriangle = 0;
+    u32 cntTriangle = 0;
     for (int i = 0; i < totalTriangles; i += 3) {
 
         // if(i != 2684) continue;
 
-        // ui32 inc = i + (3 * i);
+        // u32 inc = i + (3 * i);
 
         vec3 edge1 = GLM_VEC3_ZERO_INIT;
         vec3 edge2 = GLM_VEC3_ZERO_INIT;

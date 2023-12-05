@@ -36,19 +36,19 @@ entity::ECSComponentLayout::ECSComponentLayout(const char *name)
 void
 entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
 {
-    si32 sizeReq      = 0;
-    si32 lastPadding  = 0; // Going to assume padding is 8
-    si32 totalPadding = 0;
+    s32 sizeReq      = 0;
+    s32 lastPadding  = 0; // Going to assume padding is 8
+    s32 totalPadding = 0;
 
     for (auto &var : data) {
 
         var.second.position = sizeReq;
 
         // last padding is stored, i.e,
-        // should be 6 for ui16.
+        // should be 6 for u16.
         totalPadding += lastPadding;
 
-        si32 varMemSize = var.second.size * var.second.stride;
+        s32 varMemSize = var.second.size * var.second.stride;
 
         lastPadding = (varMemSize < ECS_COMPONENTS_ALIGN_BYTES)
                         ? ECS_COMPONENTS_ALIGN_BYTES
@@ -68,7 +68,7 @@ entity::ECSComponentList::ECSComponentList(ECSComponentType componentTypeIndex,
     : m_componentLayout(layout)
 {
     gsk_ECS *ecs      = entity::LuaEventStore::GetInstance().m_ecs;
-    ui32 capacity = ecs->capacity;
+    u32 capacity = ecs->capacity;
 
     // m_componentsList = malloc(sizeof(ECSComponent **) * ECSCom)
 

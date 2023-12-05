@@ -33,25 +33,25 @@ extern "C" {
 // gsk_MeshData - API-agonstic buffer information
 typedef struct gsk_MeshData
 {
-    ui32 vertexCount;
-    ui32 indicesCount;
-    ui32 trianglesCount;
+    u32 vertexCount;
+    u32 indicesCount;
+    u32 trianglesCount;
 
-    ui32 drawType;
+    u32 drawType;
 
     struct
     {
         // attribute buffers
         float *v, *vt, *vn; // position, texCoord, normal
-        ui32 vL, vtL, vnL;  // lengths
+        u32 vL, vtL, vnL;  // lengths
 
         float *out;
-        ui32 outI;
+        u32 outI;
 
         float *outTBN;
 
-        ui32 *bufferIndices;
-        ui32 bufferIndices_size;
+        u32 *bufferIndices;
+        u32 bufferIndices_size;
 
     } buffers;
 
@@ -77,7 +77,7 @@ typedef struct gsk_Mesh
     VulkanVertexBuffer *vkVBO;
 
     // Imported material data
-    ui32 usingImportedMaterial;
+    u32 usingImportedMaterial;
     gsk_Material *materialImported;
 } gsk_Mesh;
 

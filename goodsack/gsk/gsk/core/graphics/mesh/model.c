@@ -17,7 +17,7 @@
 #include "asset/import/loader_obj.h"
 
 gsk_Model *
-gsk_model_load_from_file(const char *path, f32 scale, ui16 importMaterials)
+gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials)
 {
     char *ext = strrchr(path, '.');
     if (!ext) {

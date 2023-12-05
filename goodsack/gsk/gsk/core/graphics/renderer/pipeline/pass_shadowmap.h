@@ -19,7 +19,7 @@ typedef struct ShadowmapOptions
     float camSize;
 
     float normalBiasMin, normalBiasMax;
-    si32 pcfSamples;
+    s32 pcfSamples;
 } ShadowmapOptions;
 
 /**
@@ -45,7 +45,7 @@ void
 shadowmap_bind_texture();
 gsk_Material *
 shadowmap_getMaterial();
-ui32
+u32
 shadowmap_getTexture();
 vec4 *
 shadowmap_getMatrix();

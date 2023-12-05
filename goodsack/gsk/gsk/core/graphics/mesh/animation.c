@@ -11,7 +11,7 @@
 #include "core/graphics/mesh/mesh_helpers.inl"
 
 void
-gsk_animation_set_keyframe(gsk_Animation *animation, ui32 keyframe)
+gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe)
 {
     gsk_Skeleton *skeleton = animation->pSkeleton;
     for (int i = 0; i < skeleton->jointsCount; i++) {
@@ -36,12 +36,12 @@ gsk_animation_set_keyframe(gsk_Animation *animation, ui32 keyframe)
 }
 
 void
-gsk_animation_set_keyframe_lerp(gsk_Animation *animation, ui32 keyframe, float ratio)
+gsk_animation_set_keyframe_lerp(gsk_Animation *animation, u32 keyframe, float ratio)
 {
     gsk_Skeleton *skeleton = animation->pSkeleton;
     for (int i = 0; i < skeleton->jointsCount; i++) {
 
-        ui32 keyframeActual = keyframe;
+        u32 keyframeActual = keyframe;
         gsk_Pose currentPose    = *animation->keyframes[keyframe - 1]->poses[i];
         gsk_Pose nextPose       = *animation->keyframes[keyframe]->poses[i];
 
