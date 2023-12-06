@@ -12,7 +12,7 @@
 #include "core/graphics/mesh/mesh.h"
 #include "core/graphics/mesh/model.h"
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #define CULL_DISABLED 0x10
 #define CULL_CW       0x00

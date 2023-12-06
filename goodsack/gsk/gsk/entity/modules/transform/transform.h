@@ -6,7 +6,7 @@
 #ifndef __TRANSFORM_H__
 #define __TRANSFORM_H__
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 #include "util/maths.h"
 
 #if !(USING_GENERATED_COMPONENTS)

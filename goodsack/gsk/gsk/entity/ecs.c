@@ -12,17 +12,17 @@
 
 #include "util/sysdefs.h"
 
-#include "entity/v1/builtin/animator/animator.h"
-#include "entity/v1/builtin/audio/audio_listener.h"
-#include "entity/v1/builtin/audio/audio_source.h"
-#include "entity/v1/builtin/camera/camera.h"
-#include "entity/v1/builtin/component_test.h"
-#include "entity/v1/builtin/model/model_draw.h"
-#include "entity/v1/builtin/transform/transform.h"
+#include "entity/modules/animator/animator.h"
+#include "entity/modules/audio/audio_listener.h"
+#include "entity/modules/audio/audio_source.h"
+#include "entity/modules/camera/camera.h"
+#include "entity/modules/component_test.h"
+#include "entity/modules/model/model_draw.h"
+#include "entity/modules/transform/transform.h"
 
 // Physics
-#include "entity/v1/builtin/physics/collider_setup-system.h"
-#include "entity/v1/builtin/physics/rigidbody-system.h"
+#include "entity/modules/physics/collider_setup-system.h"
+#include "entity/modules/physics/rigidbody-system.h"
 
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION

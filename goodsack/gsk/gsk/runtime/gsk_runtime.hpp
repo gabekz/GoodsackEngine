@@ -11,7 +11,7 @@
 #include "util/sysdefs.h"
 
 #include "core/graphics/renderer/v1/renderer.h"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 // #define RENDERER_2
 #define USING_LUA                    1

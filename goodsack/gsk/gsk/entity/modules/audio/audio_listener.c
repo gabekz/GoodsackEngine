@@ -8,7 +8,7 @@
 #include "core/drivers/alsoft/alsoft.h"
 #include "core/drivers/alsoft/alsoft_debug.h"
 
-#include "entity/v1/builtin/transform/transform.h"
+#include "entity/modules/transform/transform.h"
 
 // TODO: Move to thirdparty directive - gabekz/GoodsackEngine#19
 #include <AL/al.h>

@@ -2,7 +2,7 @@
 #define H_COMPONENTS_GEN_REGISTER
 
 #include <entity/__generated__/components_gen.h>
-#include <entity/v1/ecs.h>
+#include <entity/ecs.h>
 
 static inline void
 _ecs_init_internal_gen(gsk_ECS *ecs)

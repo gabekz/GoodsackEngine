@@ -21,7 +21,7 @@
 #include "core/graphics/ui/gui_element.h"
 #include "core/graphics/ui/gui_text.h"
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #include "core/device/device.h"
 #include "core/device/device_context.h"

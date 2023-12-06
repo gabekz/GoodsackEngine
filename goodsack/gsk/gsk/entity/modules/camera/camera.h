@@ -10,7 +10,7 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
-#include <entity/v1/ecs.h>
+#include <entity/ecs.h>
 
 #if !(USING_GENERATED_COMPONENTS)
 struct ComponentCamera

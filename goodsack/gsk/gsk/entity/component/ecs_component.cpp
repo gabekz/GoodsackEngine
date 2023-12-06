@@ -62,7 +62,7 @@ entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
     m_SizeReq   = sizeReq;
 }
 
-#include <entity/v1/ecs.h>
+#include <entity/ecs.h>
 entity::ECSComponentList::ECSComponentList(ECSComponentType componentTypeIndex,
                                            ECSComponentLayout &layout)
     : m_componentLayout(layout)

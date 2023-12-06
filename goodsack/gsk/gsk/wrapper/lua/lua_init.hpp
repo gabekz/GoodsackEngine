@@ -6,7 +6,7 @@
 #ifndef __LUA_INIT_H__
 #define __LUA_INIT_H__
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 #include "util/sysdefs.h"
 
 // TODO: replace hardcoded path

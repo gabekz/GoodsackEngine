@@ -7,7 +7,7 @@
 #define H_DEMO_SCENES
 
 #include "core/graphics/renderer/v1/renderer.h"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +26,7 @@ enum DEMO_SCENE_NAMES {
 #define DEMO_SCENES_TOTAL 7
 
 #define LOAD_ALL_SCENES 0
-#define INITIAL_SCENE   7
+#define INITIAL_SCENE   6
 
 #define DEMO_USING_AUDIO            0
 #define DEMO_USING_MULTIPLE_CAMERAS 0

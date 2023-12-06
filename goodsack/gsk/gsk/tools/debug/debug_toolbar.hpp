@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "core/graphics/renderer/v1/renderer.h"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #define DEBUG_MENUS_COUNT 3
 

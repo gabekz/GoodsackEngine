@@ -15,7 +15,7 @@
 #include <map>
 #include <string>
 
-#include <entity/v1/ecs.h>
+#include <entity/ecs.h>
 
 namespace entity {
 

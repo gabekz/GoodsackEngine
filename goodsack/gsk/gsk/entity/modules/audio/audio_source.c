@@ -8,8 +8,8 @@
 #include "core/drivers/alsoft/alsoft.h"
 #include "core/drivers/alsoft/alsoft_debug.h"
 
-#include "entity/v1/builtin/camera/camera.h"
-#include "entity/v1/builtin/transform/transform.h"
+#include "entity/modules/camera/camera.h"
+#include "entity/modules/transform/transform.h"
 
 static void
 init(gsk_Entity e)

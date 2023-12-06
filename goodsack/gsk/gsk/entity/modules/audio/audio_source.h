@@ -7,7 +7,7 @@
 #define __AUDIO_SOURCE_H__
 
 #include "core/drivers/alsoft/alsoft.h"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #if !(USING_GENERATED_COMPONENTS)
 typedef struct ComponentAudioSource

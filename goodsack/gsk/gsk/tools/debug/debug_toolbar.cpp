@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #include "core/graphics/renderer/v1/renderer.h"
 

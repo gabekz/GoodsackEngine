@@ -12,14 +12,14 @@
 #include "core/device/device.h"
 #include "core/graphics/lighting/lighting.h"
 #include "entity/lua/eventstore.hpp"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 #include "wrapper/lua/lua_init.hpp"
 
 #if GSK_RUNTIME_USE_DEBUG
 #include "tools/debug/debug_toolbar.hpp"
 #endif // GSK_RUNTIME_USE_DEBUG
 
-#include "entity/v1/builtin/component_test.h"
+#include "entity/modules/component_test.h"
 
 #ifdef RENDERER_2
 #include "core/graphics/renderer/renderer.hpp"

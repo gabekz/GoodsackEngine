@@ -8,7 +8,7 @@
 #include "util/logger.h"
 
 #include "core/device/device.h"
-#include "entity/v1/builtin/transform/transform.h"
+#include "entity/modules/transform/transform.h"
 
 void
 camera_input(gsk_Entity cameraEntity, GLFWwindow *window)

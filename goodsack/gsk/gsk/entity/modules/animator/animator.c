@@ -6,7 +6,7 @@
 #include "animator.h"
 
 #include "core/graphics/mesh/animation.h"
-#include "entity/v1/builtin/components.h"
+#include "entity/modules/components.h"
 
 #include "core/device/device.h"
 

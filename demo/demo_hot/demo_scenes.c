@@ -7,9 +7,9 @@
 
 #include "util/filesystem.h"
 
-#include "entity/v1/builtin/component_test.h"
-#include "entity/v1/builtin/components.h"
-#include "entity/v1/ecs.h"
+#include "entity/modules/component_test.h"
+#include "entity/modules/components.h"
+#include "entity/ecs.h"
 
 #define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
 
@@ -464,26 +464,32 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     ecs = gsk_renderer_active_scene(renderer, 6);
     __set_active_scene_skybox(renderer, skyboxMain);
 
-    gsk_Texture *texContDiff = texture_create_d(
-      "../demo/demo_hot/Resources/textures/container/diffuse.png");
-    gsk_Texture *texContSpec = texture_create_n(
-      "../demo/demo_hot/Resources/textures/container/specular.png");
+    gsk_Texture *texContDiff =
+      texture_create_d(GSK_PATH("data://textures/container/diffuse.png"));
+    gsk_Texture *texContSpec =
+      texture_create_n(GSK_PATH("data://textures/container/specular.png"));
 
-    gsk_Texture *texBrickDiff = texture_create_d(
-      "../demo/demo_hot/Resources/textures/brickwall/diffuse.png");
-    gsk_Texture *texBrickNorm = texture_create_n(
-      "../demo/demo_hot/Resources/textures/brickwall/normal.png");
+    gsk_Texture *texBrickDiff =
+      texture_create_d(GSK_PATH("data://textures/brickwall/diffuse.png"));
+    gsk_Texture *texBrickNorm =
+      texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
+
+    gsk_Model *model_plane =
+      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
+
+    gsk_Model *model_sphere =
+      gsk_model_load_from_file(GSK_PATH("gsk://models/sphere.obj"), 1, FALSE);
 
     gsk_Material *matFloor =
       gsk_material_create(NULL,
-                          "../res/shaders/lit-diffuse.shader",
+                          GSK_PATH("gsk://shaders/lit-diffuse.shader"),
                           3,
                           texBrickDiff,
                           texBrickNorm,
                           texDefSpec);
     gsk_Material *matBox =
       gsk_material_create(NULL,
-                          "../res/shaders/lit-diffuse.shader",
+                          GSK_PATH("gsk://shaders/lit-diffuse.shader"),
                           3,
                           texContDiff,
                           texDefNorm,
@@ -513,8 +519,8 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(
       floorEntity,
       C_MODEL,
-      (void *)(&(struct ComponentModel) {.material  = matFloor,
-                                         .modelPath = "../res/models/plane.obj",
+      (void *)(&(struct ComponentModel) {.material   = matFloor,
+                                         .pModel     = model_plane,
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
@@ -544,15 +550,15 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .type = 1,
                           }));
 
-    _gsk_ecs_add_internal(sphereEntity,
-                          C_MODEL,
-                          (void *)(&(struct ComponentModel) {
-                            .material   = matBox,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+    _gsk_ecs_add_internal(
+      sphereEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material   = matBox,
+                                         .pModel     = model_sphere,
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
     // Second sphere
 #if 1
 
@@ -580,15 +586,15 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .type = 1,
                           }));
 
-    _gsk_ecs_add_internal(sphereEntity2,
-                          C_MODEL,
-                          (void *)(&(struct ComponentModel) {
-                            .material   = matBox,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+    _gsk_ecs_add_internal(
+      sphereEntity2,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material   = matBox,
+                                         .pModel     = model_sphere,
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
 #endif
 }
 

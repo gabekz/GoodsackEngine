@@ -19,7 +19,7 @@
 
 #include "entity/component/ecs_component.hpp"
 #include "entity/component/ecs_component_layout_loader.hpp"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #define EVENTSTORE_LUA_VEC3_CLASS 1
 

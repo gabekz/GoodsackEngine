@@ -6,7 +6,7 @@
 #ifndef __COLLIDER_SETUP_SYSTEM_H__
 #define __COLLIDER_SETUP_SYSTEM_H__
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 void
 s_collider_setup_system_init(gsk_ECS *ecs);

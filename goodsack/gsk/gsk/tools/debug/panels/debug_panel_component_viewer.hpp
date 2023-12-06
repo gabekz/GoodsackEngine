@@ -6,7 +6,7 @@
 #ifndef __DEBUG_PANEL_COMPONENT_VIEWER_HPP__
 #define __DEBUG_PANEL_COMPONENT_VIEWER_HPP__
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 #include "tools/debug/debug_panel.hpp"
 
 namespace gsk {

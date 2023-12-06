@@ -7,7 +7,7 @@
 #define __ANIMATOR_H__
 
 #include "core/graphics/mesh/animation.h"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #if !(USING_GENERATED_COMPONENTS)
 struct ComponentAnimator

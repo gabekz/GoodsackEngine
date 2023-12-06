@@ -5,7 +5,7 @@
 
 #include "debug_panel_component_viewer.hpp"
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #include "core/device/device.h"
 #include "core/drivers/alsoft/alsoft.h"

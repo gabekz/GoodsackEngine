@@ -14,7 +14,7 @@
 
 #include "entity/lua/eventstore.hpp"
 #include "entity/lua/reg_system.hpp"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #include "wrapper/lua/lua_debug.h"
 #include "wrapper/lua/lua_reg_print.h"

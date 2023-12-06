@@ -6,7 +6,7 @@
 #ifndef __AUDIO_LISTENER_H__
 #define __AUDIO_LISTENER_H__
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #if !(USING_GENERATED_COMPONENTS)
 struct ComponentAudioListener
