@@ -258,6 +258,13 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     device_updateCursorState(renderer->window);
     glfwPollEvents();
 
+    // Check fixed_update interval
+    double current_time = glfwGetTime();
+    if (_gsk_device_check_fixed_update(current_time)) {
+        gsk_ecs_event(ecs, ECS_FIXED_UPDATE);
+        _gsk_device_reset_fixed_update(current_time);
+    }
+
     gsk_ecs_event(ecs, ECS_UPDATE);
     gsk_ecs_event(ecs, ECS_LATE_UPDATE);
 

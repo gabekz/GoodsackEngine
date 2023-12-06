@@ -30,7 +30,7 @@ init(gsk_Entity e)
     //(gsk_Collider *)(collider->pCollider).position = transform->position;
 
     // TODO: collider types
-    if (collider->type == 1) {
+    if (collider->type == COLLIDER_SPHERE) {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
         sphereCollider->radius             = .20f;
         // glm_vec3_copy(transform->position, sphereCollider->center);
@@ -39,7 +39,7 @@ init(gsk_Entity e)
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_SphereCollider *)sphereCollider;
 
-    } else if (collider->type == 2) {
+    } else if (collider->type == COLLIDER_PLANE) {
         gsk_PlaneCollider *planeCollider = malloc(sizeof(gsk_PlaneCollider));
         // planeCollider->distance      = 0.0175f;
         planeCollider->distance = 10;
@@ -65,7 +65,7 @@ init(gsk_Entity e)
 }
 
 static void
-update(gsk_Entity e)
+fixed_update(gsk_Entity e)
 {
     // test for collisions
     if (!(gsk_ecs_has(e, C_COLLIDER))) return;
@@ -101,7 +101,8 @@ update(gsk_Entity e)
         // determine which collision-test function to use
         //
         // sphere v. plane
-        if (collider->type == 1 && compareCollider->type == 2) {
+        if (collider->type == COLLIDER_SPHERE &&
+            compareCollider->type == COLLIDER_PLANE) {
             points = gsk_physics_collision_find_sphere_plane(
               ((gsk_Collider *)collider->pCollider)->collider_data,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
@@ -109,9 +110,20 @@ update(gsk_Entity e)
               compareTransform->position);
         }
 
+        // plane v. sphere
+        else if (collider->type == COLLIDER_PLANE &&
+                 compareCollider->type == COLLIDER_SPHERE) {
+            points = gsk_physics_collision_find_plane_sphere(
+              collider->pCollider,
+              compareCollider->pCollider,
+              transform->position,
+              compareTransform->position);
+        }
+
         // sphere v. sphere
 #if 1
-        else if (collider->type == 1 && compareCollider->type == 1) {
+        else if (collider->type == COLLIDER_SPHERE &&
+                 compareCollider->type == COLLIDER_SPHERE) {
             points = gsk_physics_collision_find_sphere_sphere(
               ((gsk_Collider *)collider->pCollider)->collider_data,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
@@ -119,15 +131,6 @@ update(gsk_Entity e)
               compareTransform->position);
         }
 #endif
-
-        // plane v. sphere
-        else if (collider->type == 2 && compareCollider->type == 1) {
-            points = gsk_physics_collision_find_plane_sphere(
-              collider->pCollider,
-              compareCollider->pCollider,
-              transform->position,
-              compareTransform->position);
-        }
 
         // Collision points
         if (points.has_collision) {
@@ -159,10 +162,11 @@ s_collider_setup_system_init(gsk_ECS *ecs)
 {
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
-                              .init        = (gsk_ECSSubscriber)init,
-                              .destroy     = NULL,
-                              .render      = NULL,
-                              .update      = (gsk_ECSSubscriber)update,
-                              .late_update = NULL,
+                              .init         = (gsk_ECSSubscriber)init,
+                              .destroy      = NULL,
+                              .render       = NULL,
+                              .fixed_update = (gsk_ECSSubscriber)fixed_update,
+                              .update       = NULL,
+                              .late_update  = NULL,
                             }));
 }

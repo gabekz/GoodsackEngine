@@ -6,10 +6,11 @@
 #include "device.h"
 
 #include "util/gfx.h"
+#include "util/logger.h"
 #include "util/sysdefs.h"
 
-static volatile gsk_GraphicsAPI s_device = GRAPHICS_API_OPENGL;
-static volatile gsk_GraphicsSettings s_deviceSettings;
+static volatile gsk_GraphicsAPI s_graphics_api = GRAPHICS_API_OPENGL;
+static volatile gsk_GraphicsSettings s_device_settings;
 static volatile gsk_Input s_input;
 ;
 static volatile int s_initialized = 0; // false
@@ -17,22 +18,24 @@ static volatile int s_initialized = 0; // false
 static struct
 {
     u32 counter;
-    double prevTime, timeDiff;
-    gsk_Analytics analytics;
-} s_ald; // Analytic Data
+    f64 prevTime;
+    f64 clock_metrics, clock_fixed_delta;
+    f64 time_elapsed;
+    gsk_Time time;
+} s_device;
 
 // API
 
 gsk_GraphicsAPI
 gsk_device_getGraphics()
 {
-    return s_device;
+    return s_graphics_api;
 }
 
 void
 gsk_device_setGraphics(gsk_GraphicsAPI api)
 {
-    s_device = api;
+    s_graphics_api = api;
 }
 
 // Settings
@@ -40,56 +43,81 @@ gsk_device_setGraphics(gsk_GraphicsAPI api)
 gsk_GraphicsSettings
 gsk_device_getGraphicsSettings()
 {
-    return s_deviceSettings;
+    return s_device_settings;
 }
 
 void
 gsk_device_setGraphicsSettings(gsk_GraphicsSettings settings)
 {
-    s_deviceSettings = settings;
+    s_device_settings = settings;
 }
 
-// Analytics
+// Time
 
-gsk_Analytics
-gsk_device_getAnalytics()
+gsk_Time
+gsk_device_getTime()
 {
-    return s_ald.analytics;
-}
-
-void
-gsk_device_resetAnalytics()
-{
-    s_ald.counter  = 0;
-    s_ald.prevTime = 0;
-    s_ald.timeDiff = 0;
-
-    s_ald.analytics.currentFps = 0;
-    s_ald.analytics.currentMs  = 0;
-    s_ald.analytics.delta      = 0;
-    s_ald.analytics.lastFrame  = 0;
+    return s_device.time;
 }
 
 void
-gsk_device_updateAnalytics(double time)
+gsk_device_resetTime()
 {
+    s_device.counter  = 0;
+    s_device.prevTime = 0;
+
+    s_device.clock_metrics     = 0;
+    s_device.clock_fixed_delta = 0;
+
+    // Track performance metrics
+    s_device.time.metrics.last_fps = 0;
+    s_device.time.metrics.last_ms  = 0;
+
+    // Shared timing
+    s_device.time.delta_time       = 0;
+    s_device.time.fixed_delta_time = GSK_TIME_FIXED_DELTA;
+}
+
+void
+gsk_device_updateTime(double time)
+{
+    const f64 analytics_interval_ms = 1000;
+
     // Delta Time
-    s_ald.analytics.delta     = time - s_ald.analytics.lastFrame;
-    s_ald.analytics.lastFrame = time;
+    s_device.time.delta_time = time - s_device.time_elapsed;
+    s_device.time_elapsed    = time;
 
     // Analytical Time
-    s_ald.timeDiff = time - s_ald.prevTime;
-    s_ald.counter++;
+    s_device.clock_metrics = time - s_device.prevTime;
+    s_device.counter++; // total frames since last interval
 
-    if (s_ald.timeDiff >= 1.0 / 30.0) {
+    // update metrics based on interval
+    if (s_device.clock_metrics >= analytics_interval_ms / 1000) {
 
-        s_ald.analytics.currentFps = (1.0 / s_ald.timeDiff) * s_ald.counter;
-        s_ald.analytics.currentMs  = (s_ald.timeDiff / s_ald.counter) * 1000;
+        s_device.time.metrics.last_fps =
+          (1.0 / s_device.clock_metrics) * s_device.counter;
 
-        // Reset
-        s_ald.prevTime = time;
-        s_ald.counter  = 0;
+        s_device.time.metrics.last_ms =
+          (s_device.clock_metrics / s_device.counter) * 1000;
+
+        // Reset Timer
+        s_device.prevTime = time;
+        s_device.counter  = 0;
     }
+}
+
+u8
+_gsk_device_check_fixed_update(double time)
+{
+    f64 clock_check = time - s_device.clock_fixed_delta;
+    if (clock_check >= s_device.time.fixed_delta_time) { return 1; }
+    return 0;
+}
+
+void
+_gsk_device_reset_fixed_update(double time)
+{
+    s_device.clock_fixed_delta = time;
 }
 
 gsk_Input

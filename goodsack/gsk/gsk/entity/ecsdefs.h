@@ -8,17 +8,14 @@
 
 #include "util/sysdefs.h"
 
-// #ifdef __cplusplus
-// enum ECSEvent { ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE };
-// #else
 enum ECSEvent {
     ECS_INIT = 0,
     ECS_DESTROY,
     ECS_RENDER,
+    ECS_FIXED_UPDATE,
     ECS_UPDATE,
     ECS_LATE_UPDATE
 };
-// #endif // __cplusplus
 
 #define ECSEVENT_FIRST ECS_INIT
 #define ECSEVENT_LAST  ECS_LATE_UPDATE
@@ -52,6 +49,7 @@ _gsk_ecs_EventToString(int event)
     case ECS_INIT: return "start";
     case ECS_DESTROY: return "destroy";
     case ECS_RENDER: return "render";
+    case ECS_FIXED_UPDATE: return "fixed_update";
     case ECS_UPDATE: return "update";
     case ECS_LATE_UPDATE: return "late_update";
     default: return "";

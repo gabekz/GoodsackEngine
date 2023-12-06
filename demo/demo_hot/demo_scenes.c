@@ -10,17 +10,19 @@
 #include "entity/ecs.h"
 #include "entity/modules/components.h"
 
+#include "physics/physics_types.inl"
+
 #define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
 
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
 
+#define GRAVITY_EARTH {0.0f, -9.81f, 0.0f}
+
 gsk_Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
 gsk_Skybox *skyboxMain;
 
 static TextureOptions s_texOpsPbr, s_texOpsNrm;
-
-#define MY_THINGY(x) (void *)(&(__typeof(x)))
 
 static gsk_Entity
 __create_camera_entity(gsk_ECS *ecs, vec3 position)
@@ -499,7 +501,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(floorEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = 2,
+                            .type = COLLIDER_PLANE,
                           }));
     _gsk_ecs_add_internal(
       floorEntity,
@@ -517,22 +519,20 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            //.position = {0.0f, -0.085f, -1.0f},
                             .position = {0.2f, 5.0f, -1.0f},
                           }));
 
     _gsk_ecs_add_internal(sphereEntity,
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
-                            .gravity = {0.0f, -9.81f, 0.0f},
-                            //.gravity = {0.0f, 0.0f, 0.0f},
+                            .gravity = GRAVITY_EARTH,
                             .mass = 10.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = 1,
+                            .type = COLLIDER_SPHERE,
                           }));
 
     _gsk_ecs_add_internal(
@@ -553,22 +553,20 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity2,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            //.position = {0.0f, -0.085f, -1.0f},
                             .position = {0.0f, 15.0f, -1.2f},
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
-                            .gravity = {0.0f, -9.81f, 0.0f},
-                            //.gravity = {0.0f, 0.0f, 0.0f},
+                            .gravity = GRAVITY_EARTH,
                             .mass = 10.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = 1,
+                            .type = COLLIDER_SPHERE,
                           }));
 
     _gsk_ecs_add_internal(
@@ -669,7 +667,7 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(floorEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = 2,
+                            .type = COLLIDER_PLANE,
                           }));
     _gsk_ecs_add_internal(
       floorEntity,

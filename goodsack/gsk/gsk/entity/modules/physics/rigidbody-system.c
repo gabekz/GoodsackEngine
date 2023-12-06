@@ -43,7 +43,7 @@ init(gsk_Entity e)
 }
 
 static void
-update(gsk_Entity e)
+fixed_update(gsk_Entity e)
 {
     if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
     if (!(gsk_ecs_has(e, C_COLLIDER))) return;
@@ -88,24 +88,24 @@ update(gsk_Entity e)
     // --
     // -- Add net force to velocity (mass considered)
 
-    // velocity += force / mass * delta;
+    // velocity += force / mass * delta_time;
     vec3 fDm = GLM_VEC3_ZERO_INIT;
     glm_vec3_divs(rigidbody->force, rigidbody->mass, fDm);
-    glm_vec3_scale(fDm, gsk_device_getAnalytics().delta, fDm);
+    glm_vec3_scale(fDm, gsk_device_getTime().delta_time, fDm);
     glm_vec3_add(rigidbody->velocity, fDm, rigidbody->velocity);
 
     // --
     // -- Add velocity to position
 
-    // position += velocity * delta;
+    // position += velocity * delta_time;
     vec3 vD = GLM_VEC3_ZERO_INIT;
-    glm_vec3_scale(rigidbody->velocity, gsk_device_getAnalytics().delta, vD);
+    glm_vec3_scale(rigidbody->velocity, gsk_device_getTime().delta_time, vD);
     glm_vec3_add(transform->position, vD, transform->position);
 
-    // orientation += angular_velocity * delta;
+    // orientation += angular_velocity * delta_time;
     vec3 aVD = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(
-      rigidbody->angular_velocity, gsk_device_getAnalytics().delta, aVD);
+      rigidbody->angular_velocity, gsk_device_getTime().delta_time, aVD);
     glm_vec3_add(transform->orientation, aVD, transform->orientation);
 
     // --
@@ -146,7 +146,7 @@ _position_solver(struct ComponentRigidbody *rigidbody,
 #if USE_VELOCITY
 #if USE_VELOCITY_DELTA
     glm_vec3_scale(correction,
-                   gsk_device_getAnalytics().delta * rigidbody->mass,
+                   gsk_device_getTime().delta_time * rigidbody->mass,
                    correction);
 #endif // USE_DELTA
     // NOTE: This one is pretty interseting..
@@ -156,7 +156,7 @@ _position_solver(struct ComponentRigidbody *rigidbody,
 #if AFFECT_POS_DIRECT
 #if USE_POS_DELTA
     glm_vec3_scale(correction,
-                   gsk_device_getAnalytics().delta * rigidbody->mass,
+                   gsk_device_getTime().delta_time * rigidbody->mass,
                    correction);
 #endif
     glm_vec3_sub(transform->position, correction, transform->position);
@@ -245,10 +245,11 @@ s_rigidbody_system_init(gsk_ECS *ecs)
 {
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
-                              .init        = (gsk_ECSSubscriber)init,
-                              .destroy     = NULL,
-                              .render      = NULL,
-                              .update      = (gsk_ECSSubscriber)update,
-                              .late_update = NULL,
+                              .init         = (gsk_ECSSubscriber)init,
+                              .destroy      = NULL,
+                              .render       = NULL,
+                              .fixed_update = (gsk_ECSSubscriber)fixed_update,
+                              .update       = NULL,
+                              .late_update  = NULL,
                             }));
 }

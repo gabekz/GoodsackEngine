@@ -108,7 +108,7 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 #endif // GSK_RUNTIME_USE_DEBUG
 
     // FPS Counter
-    gsk_device_resetAnalytics();
+    gsk_device_resetTime();
 
     // Initialize Graphics Settings
     gsk_device_setGraphicsSettings((gsk_GraphicsSettings {.swapInterval = 1}));
@@ -171,7 +171,7 @@ gsk_runtime_loop()
 
     // Main Engine Loop
     while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
-        gsk_device_updateAnalytics(glfwGetTime());
+        gsk_device_updateTime(glfwGetTime());
 
 #if USING_JOYSTICK_CONTROLLER
         int present = glfwJoystickPresent(GLFW_JOYSTICK_1);

@@ -13,12 +13,20 @@
 extern "C" {
 #endif // __cplusplus
 
+typedef enum GskColliderType {
+    COLLIDER_NONE = 0,
+    COLLIDER_SPHERE,
+    COLLIDER_PLANE,
+    COLLIDER_BOX,
+    COLLIDER_RAYCAST
+} GskColliderType;
+
 typedef struct gsk_CollisionPoints
 {
-    vec3 point_a;       // furthest point of A into B
-    vec3 point_b;       // furthest point of B into A
-    vec3 normal;        // point_b - point_a normalized
-    float depth;        // Length of point_b - point_a
+    vec3 point_a;      // furthest point of A into B
+    vec3 point_b;      // furthest point of B into A
+    vec3 normal;       // point_b - point_a normalized
+    float depth;       // Length of point_b - point_a
     u16 has_collision; // bool
 } gsk_CollisionPoints;
 

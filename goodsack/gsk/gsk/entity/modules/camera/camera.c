@@ -19,9 +19,10 @@ TODO:
 #include "util/gfx.h"
 
 #include "core/device/device.h"
+#include "entity/ecs.h"
 #include "entity/modules/camera/camera_input.h"
 #include "entity/modules/transform/transform.h"
-#include "entity/ecs.h"
+
 
 #define CAMERA_SHAKE            1
 #define CAMERA_SENSITIVITY_DIVS 10.0f
@@ -293,7 +294,7 @@ update(gsk_Entity e)
 
 #if CAMERA_SHAKE
     if (s_shake > 0) {
-        s_shake -= 3 * gsk_device_getAnalytics().delta;
+        s_shake -= 3 * gsk_device_getTime().delta_time;
     } else if (s_shake <= 0) {
         s_shake = 0;
     }

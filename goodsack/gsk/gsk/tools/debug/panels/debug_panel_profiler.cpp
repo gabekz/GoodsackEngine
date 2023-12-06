@@ -18,8 +18,8 @@ gsk::tools::panels::Profiler::draw(void)
         Separator();
         Text("Analytics");
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("%f FPS", gsk_device_getAnalytics().currentFps);
-        Text("%f ms", gsk_device_getAnalytics().currentMs);
+        Text("%f FPS", gsk_device_getTime().metrics.last_fps);
+        Text("%f ms", gsk_device_getTime().metrics.last_ms);
         PopStyleColor();
     }
 

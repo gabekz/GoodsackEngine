@@ -30,7 +30,7 @@ camera_input(gsk_Entity cameraEntity, GLFWwindow *window)
     float *p     = GLM_VEC3_ZERO;
     float *cross = GLM_VEC3_ZERO;
 
-    float speed = cameraMovement->speed * gsk_device_getAnalytics().delta;
+    float speed = cameraMovement->speed * gsk_device_getTime().delta_time;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         vec3 p = GLM_VEC3_ZERO_INIT;
