@@ -265,9 +265,6 @@ pushEntity(lua_State *L, int entityId)
         __create_table_for_entity_component(
           L, "Transform", C_TRANSFORM, entityCompare);
     }
-    if (gsk_ecs_has(entityCompare, C_TEST)) {
-        __create_table_for_entity_component(L, "Test", C_TEST, entityCompare);
-    }
     if (gsk_ecs_has(entityCompare, C_WEAPON)) {
         __create_table_for_entity_component(
           L, "Weapon", C_WEAPON, entityCompare);
@@ -294,10 +291,12 @@ pushEntity(lua_State *L, int entityId)
     lua_pop(L, 1);
     LUA_DUMP("After new metatable POP");
 
+#if 0
     lua_pushlightuserdata(L,
                           LuaEventStore::GetInstance()
                             .m_componentsList[C_TEST]
                             ->m_components[entityId]);
+#endif
     LUA_DUMP("After pushlightuserdata");
     luaL_setmetatable(L, tableName2);
     LUA_DUMP("After setmetatable");

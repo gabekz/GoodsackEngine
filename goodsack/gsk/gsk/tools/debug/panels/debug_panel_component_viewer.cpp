@@ -235,22 +235,6 @@ gsk::tools::panels::ComponentViewer::draw(void)
 
         EndChild();
     }
-    if (gsk_ecs_has(e, C_TEST)) {
-        BeginChild("Lua Test Component", ImVec2(0, GetFontSize() * 8.0f), true);
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Lua Test Component");
-        PopStyleColor();
-        Separator();
-        // wow, this is ridiculous..
-        struct ComponentTest &p =
-          *(static_cast<struct ComponentTest *>(gsk_ecs_get(e, C_TEST)));
-        int movement_increment = p.movement_increment;
-        float rotation_speed   = p.rotation_speed;
-        Text("movement_increment: %d", movement_increment);
-        Text("rotation_speed: %f", rotation_speed);
-
-        EndChild();
-    }
 
     if (gsk_ecs_has(e, C_WEAPON)) {
         BeginChild("Weapon Component", ImVec2(0, GetFontSize() * 8.0f), true);

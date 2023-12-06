@@ -16,7 +16,6 @@
 #include "entity/modules/audio/audio_listener.h"
 #include "entity/modules/audio/audio_source.h"
 #include "entity/modules/camera/camera.h"
-#include "entity/modules/component_test.h"
 #include "entity/modules/model/model_draw.h"
 #include "entity/modules/transform/transform.h"
 
@@ -61,8 +60,6 @@ gsk_ecs_init(gsk_Renderer *renderer)
 
 #if USING_GENERATED_COMPONENTS
     _ecs_init_internal_gen(ecs);
-#else
-    _ECS_DECL_COMPONENT(ecs, C_TEST, sizeof(struct ComponentTest));
 #endif
 
     return ecs;

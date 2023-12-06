@@ -19,8 +19,6 @@
 #include "tools/debug/debug_toolbar.hpp"
 #endif // GSK_RUNTIME_USE_DEBUG
 
-#include "entity/modules/component_test.h"
-
 #ifdef RENDERER_2
 #include "core/graphics/renderer/renderer.hpp"
 #else
@@ -150,6 +148,7 @@ gsk_runtime_loop()
 #if USING_LUA
 
     // Register components in Lua ECS
+    // TODO: automate
 
     entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
 
@@ -161,7 +160,6 @@ gsk_runtime_loop()
       C_CAMERAMOVEMENT, "CameraMovement");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
                                                                "Transform");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_TEST, "Test");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
                                                                "Weapon");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPONSWAY,

@@ -7,9 +7,8 @@
 
 #include "util/filesystem.h"
 
-#include "entity/modules/component_test.h"
-#include "entity/modules/components.h"
 #include "entity/ecs.h"
+#include "entity/modules/components.h"
 
 #define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
 
@@ -347,12 +346,6 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
                                                 texPbrAo);
 
     gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
-    _gsk_ecs_add_internal(camera,
-                          C_TEST,
-                          (void *)(&(struct ComponentTest) {
-                            .rotation_speed = 11, .movement_increment = 5,
-                            //.scale = {0.001f, 0.001f, 0.001f},
-                          }));
 
 #if 1
     gsk_Entity entCerb                          = gsk_ecs_new(ecs);
@@ -374,14 +367,6 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
 
     _gsk_ecs_add_internal(
       entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
-#endif
-#if 0
-    _gsk_ecs_add_internal(entCerb,
-                      C_TEST,
-                      (void *)(&(struct ComponentTest) {
-                        .rotation_speed     = 50.0f,
-                        .movement_increment = 10,
-                      }));
 #endif
 }
 

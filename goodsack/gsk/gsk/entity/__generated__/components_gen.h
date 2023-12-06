@@ -31,7 +31,6 @@ typedef enum ECSComponentType_t {
     C_RENDERLAYER,
     C_RIGIDBODY,
     C_COLLIDER,
-    C_TEST,
     C_TRANSFORM,
     C_WEAPON,
     C_WEAPONSWAY,
@@ -142,12 +141,6 @@ struct ComponentCollider
     u32 isColliding;
 };
 
-struct ComponentTest
-{
-    s32 movement_increment;
-    f32 rotation_speed;
-};
-
 struct ComponentTransform
 {
     u16 hasParent;
@@ -209,7 +202,6 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_RIGIDBODY, sizeof(struct ComponentRigidbody));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_COLLIDER, sizeof(struct ComponentCollider));
-    _ECS_DECL_COMPONENT_INTERN(ecs, C_TEST, sizeof(struct ComponentTest));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPON, sizeof(struct ComponentWeapon));
