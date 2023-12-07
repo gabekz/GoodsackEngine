@@ -17,7 +17,10 @@
 #define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
 #define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
 
-#define GRAVITY_EARTH {0.0f, -9.81f, 0.0f}
+#define GRAVITY_EARTH      \
+    {                      \
+        0.0f, -9.81f, 0.0f \
+    }
 
 gsk_Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
 gsk_Skybox *skyboxMain;
@@ -526,7 +529,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass = 10.0f,
+                            .mass    = 10.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity,
@@ -545,7 +548,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
     // Second sphere
-#if 1
+#if 0
 
     gsk_Entity *pSphereEntity2 = malloc(sizeof(gsk_Entity));
     *pSphereEntity2            = gsk_ecs_new(ecs);

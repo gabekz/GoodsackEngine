@@ -10,11 +10,9 @@
 #include "util/sysdefs.h"
 
 #include "core/device/device.h"
-#include "core/grahpics/lighting/lighting.h"
 #include "entity/ecs.h"
 #include "entity/lua/eventstore.hpp"
 #include "wrapper/lua/lua_init.hpp"
-
 
 #if GSK_RUNTIME_USE_DEBUG
 #include "tools/debug/debug_toolbar.hpp"

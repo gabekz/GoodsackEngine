@@ -133,14 +133,14 @@ _position_solver(struct ComponentRigidbody *rigidbody,
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    const float percent = 0.2f;
-    const float slop    = 0.01f;
+    const float percent = 0.8f;
+    const float slop    = 0.005f;
 
     vec3 correction = {0, 0, 0};
-    glm_vec3_scale(collision_normal,
-                   percent *
-                     fmax((collision_result->points.depth - slop), 0.0f),
-                   correction);
+    glm_vec3_scale(
+      collision_normal,
+      fmax((collision_result->points.depth - slop) * percent, 0.0f),
+      correction);
     glm_vec3_negate(correction);
 
     // LOG_INFO("correction: %f\t%f\t%f", correction[0], correction[1],
@@ -175,10 +175,14 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
 #define USE_CUTOFF   0 // a.k.a. FAKE friction
 #define USE_FRICTION 1 // a.k.a. angular velocity
 
+    // Calculate simulation-time
+    const gsk_Time time = gsk_device_getTime();
+    const f64 delta     = time.fixed_delta_time * time.time_scale;
+
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    float restitution = 0.8f; // Bounce factor
+    float restitution = 0.3f; // Bounce factor
 
     float vDotN = glm_vec3_dot(rigidbody->velocity, collision_normal);
     float F     = -(1.0f + restitution) * vDotN;
@@ -195,8 +199,8 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
     float cutoff = 2; // stop velocity and force when F < this
     if (F < cutoff && F > -cutoff) {
         glm_vec3_zero(rigidbody->angular_velocity);
-        glm_vec3_zero(rigidbody->velocity);
-        glm_vec3_zero(rigidbody->force);
+        // glm_vec3_zero(rigidbody->velocity);
+        // glm_vec3_zero(rigidbody->force);
     }
 #endif // USE_CUTOFF
 
@@ -206,6 +210,7 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
     vec3 Ft = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(collision_normal, vDotN, Ft);
     glm_vec3_add(Ft, rigidbody->velocity, Ft);
+
     glm_vec3_negate(Ft);
 
     //) Ft *= A.kineticFriction + B.kineticFriction
@@ -221,21 +226,26 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
     //) Torque = cross(vec2Centre, Ft)
     vec3 torque = GLM_VEC3_ZERO_INIT;
     glm_vec3_cross(friction_contact, Ft, torque);
+    // glm_vec3_negate(torque);
 
     //)
     // Ball.AngularAccelerate(Torque/Ball.getMomentofIntertia(normalize(torque)))
     // inertia is I = 2/5mr^2 for solid sphere
 
-    float I = 0.4f * rigidbody->mass * 0.2f * 0.2f;
+    float I = 0.4f * rigidbody->mass * 0.2f * 0.2f / restitution;
     glm_vec3_divs(torque, I, torque);
     // glm_vec3_normalize(torque);
+
+    f64 drag_coefficient = 0.005 * delta;
+    // glm_vec3_subs(torque, drag_coefficient, torque);
+    // LOG_INFO("%f\t%f\t%f", torque[0], torque[1], torque[2]);
 
     glm_vec3_copy(torque, rigidbody->angular_velocity);
     // LOG_INFO("%f\t%f\t%f", torque[0], torque[1], torque[2]);
 #endif // USE_FRICTION
 
-    // glm_vec3_normalize(Ft);
-    // glm_vec3_mul(reflect, Ft, reflect);
+    glm_vec3_normalize(Ft);
+    glm_vec3_mul(reflect, Ft, reflect);
 
     // glm_vec3_scale(reflect,500, reflect);
     // glm_vec3_add(rigidbody->force, reflect, rigidbody->force);
