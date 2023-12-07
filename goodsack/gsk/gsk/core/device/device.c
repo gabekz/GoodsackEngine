@@ -75,7 +75,8 @@ gsk_device_resetTime()
 
     // Shared timing
     s_device.time.delta_time       = 0;
-    s_device.time.fixed_delta_time = GSK_TIME_FIXED_DELTA;
+    s_device.time.fixed_delta_time = GSK_TIME_FIXED_DELTA_DEFAULT;
+    s_device.time.time_scale       = GSK_TIME_SCALE_DEFAULT;
 }
 
 void

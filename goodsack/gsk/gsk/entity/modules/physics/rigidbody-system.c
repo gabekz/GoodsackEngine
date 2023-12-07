@@ -67,6 +67,10 @@ fixed_update(gsk_Entity e)
     gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
     int total_solvers          = (int)pSolver->solver_next;
 
+    // Calculate simulation-time
+    const gsk_Time time = gsk_device_getTime();
+    const f64 delta     = time.fixed_delta_time * time.time_scale;
+
     for (int i = 0; i < total_solvers; i++) {
         // LOG_INFO("DO SOLVER");
 
@@ -91,7 +95,7 @@ fixed_update(gsk_Entity e)
     // velocity += force / mass * delta_time;
     vec3 fDm = GLM_VEC3_ZERO_INIT;
     glm_vec3_divs(rigidbody->force, rigidbody->mass, fDm);
-    glm_vec3_scale(fDm, gsk_device_getTime().delta_time, fDm);
+    glm_vec3_scale(fDm, delta, fDm);
     glm_vec3_add(rigidbody->velocity, fDm, rigidbody->velocity);
 
     // --
@@ -99,13 +103,12 @@ fixed_update(gsk_Entity e)
 
     // position += velocity * delta_time;
     vec3 vD = GLM_VEC3_ZERO_INIT;
-    glm_vec3_scale(rigidbody->velocity, gsk_device_getTime().delta_time, vD);
+    glm_vec3_scale(rigidbody->velocity, delta, vD);
     glm_vec3_add(transform->position, vD, transform->position);
 
     // orientation += angular_velocity * delta_time;
     vec3 aVD = GLM_VEC3_ZERO_INIT;
-    glm_vec3_scale(
-      rigidbody->angular_velocity, gsk_device_getTime().delta_time, aVD);
+    glm_vec3_scale(rigidbody->angular_velocity, delta, aVD);
     glm_vec3_add(transform->orientation, aVD, transform->orientation);
 
     // --

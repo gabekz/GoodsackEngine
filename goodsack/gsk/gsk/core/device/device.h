@@ -18,8 +18,8 @@ extern "C" {
 #define GSK_DEVICE_API_OPENGL gsk_device_getGraphics() == GRAPHICS_API_OPENGL
 #define GSK_DEVICE_API_VULKAN gsk_device_getGraphics() == GRAPHICS_API_VULKAN
 
-// #define GSK_TIME_FIXED_DELTA 1.0
-#define GSK_TIME_FIXED_DELTA 1.0 / 50.0
+#define GSK_TIME_FIXED_DELTA_DEFAULT 1.0 / 100.0
+#define GSK_TIME_SCALE_DEFAULT       1.0
 
 typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } gsk_GraphicsAPI;
 
@@ -36,6 +36,7 @@ typedef struct gsk_Time
 {
     f64 delta_time;       // variable delta_time time
     f64 fixed_delta_time; // fixed delta_time time interval
+    f64 time_scale;
 
     struct
     {

@@ -7,9 +7,10 @@
 
 #include "util/lua_deps.h"
 
+#include "entity/ecs.h"
 #include "entity/ecsdefs.h"
 #include "entity/lua/eventstore.hpp"
-#include "entity/ecs.h"
+
 
 // TODO: Move to thirdparty directive - gabekz/GoodsackEngine#19
 #include <gtest/gtest.h>

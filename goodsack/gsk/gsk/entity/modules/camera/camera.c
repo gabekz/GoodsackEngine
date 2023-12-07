@@ -23,7 +23,6 @@ TODO:
 #include "entity/modules/camera/camera_input.h"
 #include "entity/modules/transform/transform.h"
 
-
 #define CAMERA_SHAKE            1
 #define CAMERA_SENSITIVITY_DIVS 10.0f
 

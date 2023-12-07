@@ -12,9 +12,10 @@
 #include "util/logger.h"
 #include "util/lua_deps.h"
 
+#include "entity/ecs.h"
 #include "entity/lua/eventstore.hpp"
 #include "entity/lua/reg_system.hpp"
-#include "entity/ecs.h"
+
 
 #include "wrapper/lua/lua_debug.h"
 #include "wrapper/lua/lua_reg_print.h"
