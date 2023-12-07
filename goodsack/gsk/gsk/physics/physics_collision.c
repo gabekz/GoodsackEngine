@@ -52,7 +52,8 @@ gsk_physics_collision_find_sphere_plane(gsk_SphereCollider *a,
     vec3 A = GLM_VEC3_ZERO_INIT;
     glm_vec3_sub(pos_a, pos_b, A);
 
-    vec3 plane_normal     = {0, 1, 0};
+    vec3 plane_normal = GLM_VEC3_ZERO_INIT;
+    glm_vec3_copy(((gsk_PlaneCollider *)b->plane)->normal, plane_normal);
     float nearestDistance = glm_vec3_dot(A, plane_normal);
 
 #if 0

@@ -41,18 +41,24 @@ init(gsk_Entity e)
 
     } else if (collider->type == COLLIDER_PLANE) {
         gsk_PlaneCollider *planeCollider = malloc(sizeof(gsk_PlaneCollider));
+
         // planeCollider->distance      = 0.0175f;
         planeCollider->distance = 10;
         glm_vec3_zero(planeCollider->plane);
-        glm_vec3_zero(planeCollider->normal);
+
+        // TODO: Calculate normal from plane mesh with orientation
+        vec3 planenorm = {0.0f, 1.0f, 0.0f};
+        glm_vec3_copy(planenorm, planeCollider->normal);
+
         glm_vec3_copy(transform->position, planeCollider->plane);
+
         LOG_INFO("%f\t%f\t%f",
                  planeCollider->plane[0],
                  planeCollider->plane[1],
                  planeCollider->plane[2]);
         // planeCollider->plane         = transform->position;
 
-        glm_vec3_normalize_to(planeCollider->plane, planeCollider->normal);
+        // glm_vec3_normalize_to(planeCollider->plane, planeCollider->normal);
 
         LOG_INFO("%f\t%f\t%f",
                  planeCollider->normal[0],

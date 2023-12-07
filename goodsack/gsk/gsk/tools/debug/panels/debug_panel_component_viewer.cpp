@@ -61,10 +61,12 @@ gsk::tools::panels::ComponentViewer::draw(void)
         EndChild();
     }
     if (gsk_ecs_has(e, C_RIGIDBODY)) {
-        BeginChild("Rigidbody", ImVec2(0, GetFontSize() * 12.0f), true);
+        BeginChild("Rigidbody", ImVec2(0, GetFontSize() * 13.0f), true);
+
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Rigidbody Component");
         PopStyleColor();
+
         Separator();
 
         struct ComponentRigidbody &p =
@@ -76,6 +78,11 @@ gsk::tools::panels::ComponentViewer::draw(void)
         DragFloat3("Angular Velocity", p.angular_velocity, 0.1f, -3000, 3000);
         DragFloat3("Force", p.force, 0.1f, -3000, 3000);
         DragFloat("Mass", &p.mass, 0.45f, 0.9f);
+
+        Separator();
+
+        DragFloat("Static Friction", &p.static_friction, 0.1f, 0.0f, 1.0f);
+        DragFloat("Dynamic Friction", &p.dynamic_friction, 0.1f, 0.0f, 1.0f);
 
         EndChild();
     }

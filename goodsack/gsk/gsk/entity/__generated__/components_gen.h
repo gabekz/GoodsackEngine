@@ -130,7 +130,7 @@ struct ComponentRenderLayer
 struct ComponentRigidbody
 {
     vec3 gravity, velocity, force, angular_velocity;
-    float mass;
+    float mass, static_friction, dynamic_friction;
     ResRef solver;
 };
 

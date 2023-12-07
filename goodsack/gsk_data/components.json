@@ -51,7 +51,7 @@
     "Rigidbody": {
         "Resource": [ "solver" ],
         "vec3": [ "gravity", "velocity", "force" ],
-        "float": [ "mass" ]
+        "float": [ "mass", "static_friction", "dynamic_friction" ]
     },
 
     "Transform": {
