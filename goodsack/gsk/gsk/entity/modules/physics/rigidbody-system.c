@@ -188,72 +188,12 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
                 gsk_CollisionResult *collision_result)
 {
 
-#define USE_CUTOFF   0 // a.k.a. FAKE friction
-#define FRICTION_VER 2 // 0 - none | 1 - original impl | 2 - new impl
-
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
-
-    // LOG_INFO("%f", F);
-    //  cutoff for impulse solver. Can potentially fix issues with
-    //  double-precision.
-#if USE_CUTOFF
-    float cutoff = 2; // stop velocity and force when F < this
-    if (F < cutoff && F > -cutoff) {
-        glm_vec3_zero(rigidbody->angular_velocity);
-        // glm_vec3_zero(rigidbody->velocity);
-        // glm_vec3_zero(rigidbody->force);
-    }
-#endif // USE_CUTOFF
-
-    // Angular Velocity / Friction
-#if FRICTION_VER == 1
-    //) Ft = -(velocity + (vDotN*collision_normal));
-    vec3 Ft = GLM_VEC3_ZERO_INIT;
-    glm_vec3_scale(collision_normal, vDotN, Ft);
-    glm_vec3_add(Ft, rigidbody->velocity, Ft);
-
-    glm_vec3_negate(Ft);
-
-    //) Ft *= A.kineticFriction + B.kineticFriction
-    // TODO: for now, kinectic friction is coefficient magic
-    glm_vec3_scale(Ft, 0.57f, Ft); // Steel on Steel?
-    //) Ft *= mass
-    glm_vec3_scale(Ft, rigidbody->mass, Ft);
-
-    //) vec2Centre = pos_a - contactPoint
-    vec3 friction_contact = GLM_VEC3_ZERO_INIT;
-    glm_vec3_sub(transform->position, collision_normal, friction_contact);
-
-    //) Torque = cross(vec2Centre, Ft)
-    vec3 torque = GLM_VEC3_ZERO_INIT;
-    glm_vec3_cross(friction_contact, Ft, torque);
-    // glm_vec3_negate(torque);
-
-    //)
-    // Ball.AngularAccelerate(Torque/Ball.getMomentofIntertia(normalize(torque)))
-    // inertia is I = 2/5mr^2 for solid sphere
-
-    float I = 0.4f * rigidbody->mass * 0.2f * 0.2f / restitution;
-    glm_vec3_divs(torque, I, torque);
-    // glm_vec3_normalize(torque);
-
-    // f64 drag_coefficient = 0.005 * delta;
-    // glm_vec3_subs(torque, drag_coefficient, torque);
-    // vec3 testp = GLM_VEC3_ZERO_INIT;
-    // glm_vec3_normalize_to(torque, testp);
-
-    glm_vec3_copy(torque, rigidbody->angular_velocity);
-    // LOG_INFO("%f\t%f\t%f", torque[0], torque[1], torque[2]);
-
-    glm_vec3_normalize(Ft);
-    LOG_INFO("%f\t%f\t%f", Ft[0], Ft[1], Ft[2]);
-    glm_vec3_mul(reflect, Ft, reflect);
-#elif FRICTION_VER == 2
 
     vec3 tangent = GLM_VEC3_ZERO_INIT;
 
@@ -267,17 +207,14 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
     {
         float zerodist = glm_vec3_distance(tangent, GLM_VEC3_ZERO);
         // LOG_INFO("%f dist: ", zerodist);
-        if (zerodist >= 0.00002f) { glm_vec3_normalize(tangent); }
+        if (zerodist >= 0.001f) { glm_vec3_normalize(tangent); }
     }
 
     // LOG_INFO("%f\t%f\t%f", tangent[0], tangent[1], tangent[2]);
 
     // float jt = -(glm_vec3_dot(rigidbody->velocity, collision_normal));
 
-#endif // USE_FRICTION
-
-    //#if FRICTION_VER != 2
-    float restitution = 0.2f; // Bounce factor
+    float restitution = 0.8f; // Bounce factor
 
     float vDotN = (glm_vec3_dot(rigidbody->velocity, collision_normal));
     float F     = -(1.0f + restitution) * vDotN;
@@ -298,18 +235,12 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
 
     if (abs(vDotN) <= j * sf) {
         // friction_impulse = -j * tangent * df
-        glm_vec3_scale(tangent, vDotN, friction_impulse);
+        glm_vec3_mul(tangent, reflect, friction_impulse);
     } else {
         glm_vec3_scale(tangent, -j * df, friction_impulse);
     }
 
-    LOG_INFO("%f\t%f\t%f",
-             friction_impulse[0],
-             friction_impulse[1],
-             friction_impulse[2]);
-
-    // glm_vec3_scale(reflect,500, reflect);
-    // glm_vec3_add(rigidbody->force, reflect, rigidbody->force);
+    // Apply impulses
 
     glm_vec3_add(rigidbody->velocity, reflect, rigidbody->velocity);
     glm_vec3_sub(rigidbody->velocity, friction_impulse, rigidbody->velocity);

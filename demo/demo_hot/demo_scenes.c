@@ -498,8 +498,9 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(floorEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0.0f, 0.0f, 0.0f},
-                            .scale    = {10.0f, 10.0f, 10.0f},
+                            .position    = {0.0f, 0.0f, 0.0f},
+                            .scale       = {10.0f, 10.0f, 10.0f},
+                            .orientation = {0.0f, 1.0f, 0.0f},
                           }));
     _gsk_ecs_add_internal(floorEntity,
                           C_COLLIDER,
@@ -522,7 +523,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0.2f, 5.0f, -1.0f},
+                            .position = {0.2f, 0.5f, -1.0f},
                           }));
 
     _gsk_ecs_add_internal(sphereEntity,
@@ -548,7 +549,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
     // Second sphere
-#if 0
+#if 1
 
     gsk_Entity *pSphereEntity2 = malloc(sizeof(gsk_Entity));
     *pSphereEntity2            = gsk_ecs_new(ecs);
@@ -556,14 +557,14 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity2,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0.0f, 15.0f, -1.2f},
+                            .position = {0.0f, 3.0f, -1.2f},
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass = 10.0f,
+                            .mass    = 10.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,
