@@ -10,7 +10,6 @@
 #include "entity/modules/model/model.h"
 #include "entity/modules/transform/transform.h"
 
-
 #include "core/device/device.h"
 #include "core/graphics/mesh/mesh.h"
 #include "core/graphics/shader/shader.h"
@@ -19,7 +18,7 @@
 #include "tools/debug/debug_draw_skeleton.h"
 
 #define DEBUG_DRAW_SKELETON  0
-#define DEBUG_DRAW_BOUNDS    0
+#define DEBUG_DRAW_BOUNDS    1
 #define CULLING_FOR_IMPORTED 1
 
 static void
@@ -72,15 +71,18 @@ DrawModel(struct ComponentModel *model,
 
             // TESTING for normal-map in G-Buffer
             // TODO: Breaks when normal-map doesn't exist
+            // TODO: Refactor this block
             if (renderer->currentPass == DEPTH_PREPASS) {
                 if (mesh->usingImportedMaterial &&
                     mesh->materialImported->texturesCount > 1) {
                     glActiveTexture(GL_TEXTURE10);
                     texture_bind(mesh->materialImported->textures[1], 10);
                 } else if (!mesh->usingImportedMaterial) {
-                    glActiveTexture(GL_TEXTURE10);
-                    texture_bind(((gsk_Material *)model->material)->textures[1],
-                                 10);
+                    gsk_Material *mat = model->material;
+                    if (mat->texturesCount >= 2) {
+                        glActiveTexture(GL_TEXTURE10);
+                        texture_bind(mat->textures[1], 10);
+                    }
                 }
             }
 
@@ -297,7 +299,7 @@ render(gsk_Entity e)
 
         gsk_Model *pModel = model->pModel;
         for (int i = 0; i < pModel->meshesCount; i++) {
-            Mesh *mesh = pModel->meshes[i];
+            gsk_Mesh *mesh = pModel->meshes[i];
             gsk_debug_draw_bounds(e.ecs->renderer->debugContext,
                                   mesh->meshData->boundingBox,
                                   transform->model);

@@ -380,11 +380,11 @@ _scene4(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 4);
 
-    gsk_Material *matCharacter =
-      gsk_material_create(NULL, "../res/shaders/skinning-test.shader", 0);
+    gsk_Material *matCharacter = gsk_material_create(
+      NULL, GSK_PATH("gsk://shaders/skinning-test.shader"), 0);
 
     gsk_Model *modelCharacter = gsk_model_load_from_file(
-      "../demo/demo_hot/Resources/models/character-anim.gltf", 1, FALSE);
+      GSK_PATH("data://models/character-anim.gltf"), 1, FALSE);
 
     gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
 
