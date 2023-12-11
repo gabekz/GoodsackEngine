@@ -21,6 +21,7 @@ static void
 _impulse_solver(struct ComponentRigidbody *rigidbody,
                 struct ComponentTransform *transform,
                 gsk_CollisionResult *collision_result);
+
 static void
 init(gsk_Entity e)
 {
@@ -228,8 +229,8 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
     vec3 friction_impulse = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(reflect, friction_impulse);
 
-    float sf = rigidbody->static_friction;
-    float df = rigidbody->dynamic_friction;
+    float sf = rigidbody->static_friction * rigidbody->mass;
+    float df = rigidbody->dynamic_friction * rigidbody->mass;
 
     float j = -(collision_result->points.depth);
 
@@ -240,9 +241,38 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
         glm_vec3_scale(tangent, -j * df, friction_impulse);
     }
 
-    // Apply impulses
+#if 1
+    // angular velocity
+    //) Ft = -(velocity + (vDotN*collision_normal));
+    vec3 Ft = GLM_VEC3_ZERO_INIT;
+    glm_vec3_scale(collision_normal, vDotN, Ft);
+    glm_vec3_add(Ft, rigidbody->velocity, Ft);
+    // glm_vec3_negate(Ft);
 
+    //) Ft *= A.kineticFriction + B.kineticFriction
+    // TODO: for now, kinectic friction is coefficient magic
+    glm_vec3_scale(Ft, 0.57f, Ft); // Steel on Steel?
+    //) Ft *= mass
+    glm_vec3_scale(Ft, rigidbody->mass, Ft);
+
+    //) Torque = cross(vec2Centre, Ft)
+    vec3 torque = GLM_VEC3_ZERO_INIT;
+    glm_vec3_cross(tangent, Ft, torque);
+
+    // inertia is I = 2/5mr^2 for solid sphere
+
+    float I = 0.4f * rigidbody->mass * 0.2f * 0.2f;
+    glm_vec3_divs(torque, I, torque);
+    // glm_vec3_normalize(torque);
+    // glm_vec3_add(torque, rigidbody->angular_velocity);
+
+    // glm_vec3_sub(torque, rigidbody->velocity, rigidbody->angular_velocity);
+
+#endif
+
+    // Apply impulses
     glm_vec3_add(rigidbody->velocity, reflect, rigidbody->velocity);
+    glm_vec3_add(torque, friction_impulse, rigidbody->angular_velocity);
     glm_vec3_sub(rigidbody->velocity, friction_impulse, rigidbody->velocity);
 }
 
