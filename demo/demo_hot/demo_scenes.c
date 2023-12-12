@@ -470,6 +470,9 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     gsk_Model *model_sphere =
       gsk_model_load_from_file(GSK_PATH("gsk://models/sphere.obj"), 1, FALSE);
 
+    gsk_Model *model_cube =
+      gsk_model_load_from_file(GSK_PATH("gsk://models/cube.obj"), 1, FALSE);
+
     gsk_Material *matFloor =
       gsk_material_create(NULL,
                           GSK_PATH("gsk://shaders/lit-diffuse.shader"),
@@ -582,6 +585,42 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
+#endif
+
+// Cube
+#if 1
+    gsk_Entity *pCubeEntity = malloc(sizeof(gsk_Entity));
+    *pCubeEntity            = gsk_ecs_new(ecs);
+    gsk_Entity cubeEntity   = *pCubeEntity;
+    _gsk_ecs_add_internal(cubeEntity,
+                          C_TRANSFORM,
+                          (void *)(&(struct ComponentTransform) {
+                            .position = {-0.2f, 0.1f, 0.1f},
+                          }));
+
+    _gsk_ecs_add_internal(cubeEntity,
+                          C_RIGIDBODY,
+                          (void *)(&(struct ComponentRigidbody) {
+                            .gravity = GRAVITY_EARTH,
+                            .mass    = 10.0f,
+                          }));
+
+    _gsk_ecs_add_internal(cubeEntity,
+                          C_COLLIDER,
+                          (void *)(&(struct ComponentCollider) {
+                            .type = COLLIDER_BOX,
+                          }));
+
+    _gsk_ecs_add_internal(
+      cubeEntity,
+      C_MODEL,
+      (void *)(&(struct ComponentModel) {.material   = matBox,
+                                         .pModel     = model_cube,
+                                         .properties = {
+                                           .drawMode = DRAW_ARRAYS,
+                                           .cullMode = CULL_CW | CULL_FORWARD,
+                                         }}));
+
 #endif
 }
 

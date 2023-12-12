@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef H_DEMO_SCENES
-#define H_DEMO_SCENES
+#ifndef __DEMO_SCENES_H__
+#define __DEMO_SCENES_H__
 
 #include "core/graphics/renderer/v1/renderer.h"
 #include "entity/ecs.h"
@@ -13,20 +13,18 @@
 extern "C" {
 #endif
 
-enum DEMO_SCENE_NAMES {
-    kSceneEarth = 0,
-    kSceneBox,
-    kScenePbrSpheres,
-    kSceneCerberus,
-    kSceneAnimator,
-    kSceneSponza,
-    kScenePhysics,
-    kSceneTransformTest,
-};
-#define DEMO_SCENES_TOTAL 7
+#define SCENE_EARTH          0
+#define SCENE_BOX            1
+#define SCENE_PBR_SPHERES    2
+#define SCENE_CERBERUS       3
+#define SCENE_ANIMATOR       4
+#define SCENE_SPONZA         5
+#define SCENE_PHYSICS        6
+#define SCENE_TRANSFORM_TEST 7
+#define DEMO_SCENES_TOTAL    SCENE_TRANSFORM_TEST
 
 #define LOAD_ALL_SCENES 0
-#define INITIAL_SCENE   6
+#define INITIAL_SCENE   SCENE_PHYSICS
 
 #define DEMO_USING_AUDIO            0
 #define DEMO_USING_MULTIPLE_CAMERAS 0
@@ -39,4 +37,4 @@ demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer);
 }
 #endif
 
-#endif // H_DEMO_SCENES
+#endif // __DEMO_SCENES_H__

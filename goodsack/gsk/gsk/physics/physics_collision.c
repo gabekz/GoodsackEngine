@@ -99,6 +99,51 @@ gsk_physics_collision_find_plane_sphere(gsk_PlaneCollider *a,
     return (gsk_CollisionPoints) {.has_collision = 0};
 }
 
+// Box v. Plane
+gsk_CollisionPoints
+gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
+                                     gsk_PlaneCollider *b,
+                                     vec3 pos_a,
+                                     vec3 pos_b)
+{
+    gsk_CollisionPoints ret = {.has_collision = 0};
+
+    // A = q - plane.p[0]
+    vec3 A = GLM_VEC3_ZERO_INIT;
+    glm_vec3_sub(pos_a, pos_b, A);
+
+    vec3 plane_normal = GLM_VEC3_ZERO_INIT;
+    glm_vec3_copy(((gsk_PlaneCollider *)b->plane)->normal, plane_normal);
+
+    float nearestDistance = glm_vec3_dot(A, plane_normal);
+
+    vec3 bounds[2];
+    mat4 matrix = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(matrix, pos_a);
+    glm_aabb_transform(a->bounds, matrix, bounds);
+
+    float size_old = glm_aabb_size(a->bounds);
+    float size_new = glm_aabb_size(bounds);
+#if 0
+    if (size_old >= size_new + 0.01f || size_old <= size_new + 0.01f) {
+        LOG_ERROR("incorrect calculation of bounding box. %f != %f",
+                  size_old,
+                  size_new);
+    }
+#endif
+
+    if (nearestDistance <= glm_aabb_radius(bounds) / 2) {
+
+        // LOG_INFO("Box colliding");
+
+        ret.has_collision = TRUE;
+        glm_vec3_copy(plane_normal, ret.normal);
+        ret.depth = -(nearestDistance) + (glm_aabb_radius(bounds) / 2);
+    }
+
+    return ret;
+}
+
 // gsk_Raycast v. Sphere
 gsk_CollisionPoints
 gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,

@@ -150,7 +150,7 @@ _position_solver(struct ComponentRigidbody *rigidbody,
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    const float percent = 0.2f;
+    const float percent = 0.8f;
     const float slop    = 0.005f;
 
     vec3 correction = {0, 0, 0};

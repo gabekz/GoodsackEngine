@@ -9,6 +9,7 @@
 #include "util/sysdefs.h"
 
 #include "core/device/device.h"
+#include "core/graphics/mesh/mesh.h"
 
 #include "physics/physics_collision.h"
 #include "physics/physics_solver.h"
@@ -67,6 +68,30 @@ init(gsk_Entity e)
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_PlaneCollider *)planeCollider;
+    } else if (collider->type == COLLIDER_BOX) {
+        gsk_BoxCollider *box_collider = malloc(sizeof(gsk_BoxCollider));
+        glm_vec3_zero(box_collider->bounds[0]);
+        glm_vec3_zero(box_collider->bounds[1]);
+
+        if (gsk_ecs_has(e, C_MODEL)) {
+            struct ComponentModel *cmp_model = gsk_ecs_get(e, C_MODEL);
+            gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
+            glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
+            glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
+#if 1
+            LOG_INFO("Box collider min-bounds: %f\t%f\t%f",
+                     box_collider->bounds[0][0],
+                     box_collider->bounds[0][1],
+                     box_collider->bounds[0][2]);
+            LOG_INFO("Box collider max-bounds: %f\t%f\t%f",
+                     box_collider->bounds[1][0],
+                     box_collider->bounds[1][1],
+                     box_collider->bounds[1][2]);
+#endif
+        }
+
+        ((gsk_Collider *)collider->pCollider)->collider_data =
+          (gsk_BoxCollider *)box_collider;
     }
 }
 
@@ -127,7 +152,6 @@ fixed_update(gsk_Entity e)
         }
 
         // sphere v. sphere
-#if 1
         else if (collider->type == COLLIDER_SPHERE &&
                  compareCollider->type == COLLIDER_SPHERE) {
             points = gsk_physics_collision_find_sphere_sphere(
@@ -136,7 +160,16 @@ fixed_update(gsk_Entity e)
               transform->position,
               compareTransform->position);
         }
-#endif
+
+        // box v. plane
+        else if (collider->type == COLLIDER_BOX &&
+                 compareCollider->type == COLLIDER_PLANE) {
+            points = gsk_physics_collision_find_box_plane(
+              ((gsk_Collider *)collider->pCollider)->collider_data,
+              ((gsk_Collider *)compareCollider->pCollider)->collider_data,
+              transform->position,
+              compareTransform->position);
+        }
 
         // Collision points
         if (points.has_collision) {

@@ -18,7 +18,7 @@
 #include "tools/debug/debug_draw_skeleton.h"
 
 #define DEBUG_DRAW_SKELETON  0
-#define DEBUG_DRAW_BOUNDS    1
+#define DEBUG_DRAW_BOUNDS    0
 #define CULLING_FOR_IMPORTED 1
 
 static void
