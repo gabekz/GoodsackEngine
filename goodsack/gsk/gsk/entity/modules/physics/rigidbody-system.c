@@ -69,7 +69,7 @@ fixed_update(gsk_Entity e)
     // -- Check for solvers/collision results
 
     gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
-    int total_solvers          = (int)pSolver->solver_next;
+    int total_solvers          = (int)pSolver->solvers_list->list_next;
 
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();

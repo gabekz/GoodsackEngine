@@ -68,7 +68,9 @@ init(gsk_Entity e)
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_PlaneCollider *)planeCollider;
-    } else if (collider->type == COLLIDER_BOX) {
+    }
+
+    else if (collider->type == COLLIDER_BOX) {
         gsk_BoxCollider *box_collider = malloc(sizeof(gsk_BoxCollider));
         glm_vec3_zero(box_collider->bounds[0]);
         glm_vec3_zero(box_collider->bounds[1]);
@@ -78,7 +80,7 @@ init(gsk_Entity e)
             gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
             glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
             glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
-#if 1
+#if 0
             LOG_INFO("Box collider min-bounds: %f\t%f\t%f",
                      box_collider->bounds[0][0],
                      box_collider->bounds[0][1],
