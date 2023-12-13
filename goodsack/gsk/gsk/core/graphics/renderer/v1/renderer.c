@@ -389,6 +389,11 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     gsk_debug_draw_line(renderer->debugContext, start, end);
 #endif
 
+// Draw debug markers
+#if 1
+    gsk_debug_markers_render(renderer->debugContext);
+#endif
+
     // computebuffer_draw();
 }
 

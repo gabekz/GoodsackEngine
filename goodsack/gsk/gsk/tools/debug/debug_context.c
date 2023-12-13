@@ -5,6 +5,7 @@
 
 #include "debug_context.h"
 
+#include "util/array_list.h"
 #include "util/filesystem.h"
 
 #include "core/device/device.h"
@@ -17,6 +18,11 @@ gsk_DebugContext *
 gsk_debug_context_init()
 {
     gsk_DebugContext *ret = malloc(sizeof(gsk_DebugContext));
+
+    // Create debug markers list
+    ret->markers_list = malloc(sizeof(ArrayList));
+    *(ArrayList *)ret->markers_list =
+      array_list_init(sizeof(gsk_DebugMarker), 64);
 
     if (GSK_DEVICE_API_OPENGL) {
         ret->vaoCube = gsk_gl_vertex_array_create();
@@ -73,4 +79,50 @@ gsk_debug_context_init()
     }
 
     return ret;
+}
+
+void
+gsk_debug_markers_push(gsk_DebugContext *p_debug_context, u32 id, vec3 position)
+{
+    gsk_DebugMarker marker = {.id = id};
+    glm_vec3_copy(position, marker.position);
+
+    for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++) {
+
+        gsk_DebugMarker *cnt_marker =
+          &((gsk_DebugMarker *)p_debug_context->markers_list->data.buffer)[i];
+
+        if (cnt_marker->id == id) {
+            glm_vec3_copy(position, cnt_marker->position); // HACK
+            return;
+        }
+    }
+
+    array_list_push(p_debug_context->markers_list, &marker);
+}
+
+void
+gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
+{
+    for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++) {
+
+        gsk_DebugMarker *cnt_marker =
+          &((gsk_DebugMarker *)p_debug_context->markers_list->data.buffer)[i];
+
+        gsk_gl_vertex_array_bind(p_debug_context->vaoCube);
+        gsk_material_use(p_debug_context->material);
+
+        mat4 model = GLM_MAT4_IDENTITY_INIT;
+        glm_translate(model, cnt_marker->position);
+
+        glUniformMatrix4fv(
+          glGetUniformLocation(p_debug_context->material->shaderProgram->id,
+                               "u_Model"),
+          1,
+          GL_FALSE,
+          (float *)model);
+
+        glDrawElements(
+          GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
+    }
 }

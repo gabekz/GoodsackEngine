@@ -9,6 +9,8 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#include "tools/debug/debug_context.h"
+
 #include "core/device/device.h"
 #include "physics/physics_solver.h"
 
@@ -76,18 +78,19 @@ fixed_update(gsk_Entity e)
     const f64 delta     = time.fixed_delta_time * time.time_scale;
 
     for (int i = 0; i < total_solvers; i++) {
-        // LOG_INFO("DO SOLVER");
 
         gsk_CollisionResult *pResult = &pSolver->solvers[i];
-
-        vec3 collision_normal = GLM_VEC3_ZERO_INIT;
-        glm_vec3_copy(pResult->points.normal, collision_normal);
 
         // --
         // Run Solvers
 
         _position_solver(rigidbody, transform, pResult);
         _impulse_solver(rigidbody, transform, pResult);
+
+        // --
+        // push debug marker
+        gsk_debug_markers_push(
+          e.ecs->renderer->debugContext, e.id, transform->position);
 
         // Pop our solver
         gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
@@ -263,11 +266,6 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
 
     float I = 0.4f * rigidbody->mass * 0.2f * 0.2f;
     glm_vec3_divs(torque, I, torque);
-    // glm_vec3_normalize(torque);
-    // glm_vec3_add(torque, rigidbody->angular_velocity);
-
-    // glm_vec3_sub(torque, rigidbody->velocity, rigidbody->angular_velocity);
-
 #endif
 
     // Apply impulses

@@ -8,9 +8,9 @@
 #include "util/filesystem.h"
 
 #include "entity/ecs.h"
-#include "entity/modules/components.h"
+#include "entity/modules/modules_systems.h"
 
-#include "physics/physics_types.inl"
+#include "physics/physics_types.h"
 
 #define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
 

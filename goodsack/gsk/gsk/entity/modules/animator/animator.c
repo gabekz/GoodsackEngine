@@ -5,10 +5,9 @@
 
 #include "animator.h"
 
-#include "core/graphics/mesh/animation.h"
-#include "entity/modules/components.h"
-
 #include "core/device/device.h"
+#include "core/graphics/mesh/animation.h"
+#include "core/graphics/mesh/mesh.h"
 
 #include "entity/__generated__/components_gen.h"
 

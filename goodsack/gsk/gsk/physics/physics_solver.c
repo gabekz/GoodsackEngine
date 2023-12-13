@@ -7,10 +7,12 @@
 
 #include <assert.h>
 
-#include "physics/physics_types.inl"
+#include "physics/physics_types.h"
 
 #include "util/array_list.h"
 #include "util/logger.h"
+
+#define LIST_INCREMENT_SIZE 8
 
 gsk_PhysicsSolver
 gsk_physics_solver_init()
@@ -18,7 +20,7 @@ gsk_physics_solver_init()
     gsk_PhysicsSolver ret;
     ret.solvers_list = malloc(sizeof(ArrayList));
     *(ArrayList *)ret.solvers_list =
-      array_list_init(sizeof(gsk_CollisionResult));
+      array_list_init(sizeof(gsk_CollisionResult), LIST_INCREMENT_SIZE);
 
     ret.solvers = ret.solvers_list->data.buffer;
     return ret;

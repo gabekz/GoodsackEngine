@@ -12,16 +12,19 @@
 #include "util/sysdefs.h"
 
 ArrayList
-array_list_init(const u32 data_size)
+array_list_init(const u32 data_size, const u32 list_increment)
 {
-    const u32 starting_count = ARRAY_LIST_SIZE;
-    size_t buffersize        = data_size * starting_count;
+    if (list_increment <= 0) {
+        LOG_CRITICAL("arraylist increment cannot be zero");
+    }
 
-    LOG_INFO("init arraylist");
+    const u32 starting_count = list_increment;
+    size_t buffersize        = data_size * starting_count;
 
     ArrayList ret = {
       .list_count       = starting_count,
       .list_next        = 0,
+      .list_increment   = list_increment,
       .is_list_empty    = TRUE,
       .data.buffer      = malloc(buffersize),
       .data.buffer_size = buffersize,
@@ -35,11 +38,9 @@ void
 array_list_push(ArrayList *self, void *data)
 {
     if (self->list_next >= self->list_count) {
-        // LOG_CRITICAL("Exceeding arraylist capacity!");
-        //((self->list_next + 1) % ARRAY_LIST_SIZE) + ARRAY_LIST_SIZE;
 
-        size_t newsize =
-          self->data.buffer_size + (ARRAY_LIST_SIZE * self->data.buffer_size);
+        size_t newsize = self->data.buffer_size +
+                         (self->list_increment * self->data.buffer_size);
 
         LOG_DEBUG("Resized from %d to %d", self->data.buffer_size, newsize);
 

@@ -10,7 +10,7 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
-#include "physics/physics_types.inl"
+#include "physics/physics_types.h"
 
 typedef struct gsk_PhysicsSolver
 {

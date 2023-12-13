@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef __COMPONENTS_H__
-#define __COMPONENTS_H__
+#ifndef _MODULES_SYSTEMS_H__
+#define _MODULES_SYSTEMS_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,4 +23,4 @@ extern "C" {
 }
 #endif
 
-#endif // __COMPONENTS_H__
+#endif // _MODULES_SYSTEMS_H__

@@ -8,8 +8,6 @@
 
 #include "util/sysdefs.h"
 
-#define ARRAY_LIST_SIZE 8
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -17,6 +15,7 @@ extern "C" {
 typedef struct ArrayList
 {
     u64 list_count, list_next;
+    u32 list_increment; // realloc growth
     byte_t is_list_empty;
     struct
     {
@@ -26,7 +25,7 @@ typedef struct ArrayList
 } ArrayList;
 
 ArrayList
-array_list_init(const u32 data_size);
+array_list_init(const u32 data_size, const u32 list_increment);
 
 void
 array_list_push(ArrayList *self, void *data);
