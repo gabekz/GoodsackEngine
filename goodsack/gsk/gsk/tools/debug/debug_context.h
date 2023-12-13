@@ -17,6 +17,8 @@ typedef struct gsk_DebugMarker
 {
     u32 type, id;
     vec3 position;
+    vec4 color;
+    u8 persist;
 } gsk_DebugMarker;
 
 typedef struct gsk_DebugContext
@@ -37,7 +39,9 @@ gsk_debug_context_init();
 void
 gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
                        u32 id,
-                       vec3 position);
+                       vec3 position,
+                       vec4 color,
+                       u8 persist);
 
 void
 gsk_debug_markers_render(gsk_DebugContext *p_debug_context);

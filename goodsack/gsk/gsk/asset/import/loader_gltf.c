@@ -534,7 +534,8 @@ _create_material(cgltf_material *gltfMaterial,
     }
 
     // Failed
-    return gsk_material_create(NULL, GSK_PATH("gsk://shaders/white.shader"), 0);
+    return gsk_material_create(
+      NULL, GSK_PATH("gsk://shaders/basic_unlit.shader"), 0);
 }
 
 // Loader entry //

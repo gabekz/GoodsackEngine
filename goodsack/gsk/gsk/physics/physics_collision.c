@@ -32,8 +32,16 @@ gsk_physics_collision_find_sphere_sphere(gsk_SphereCollider *a,
         glm_vec3_sub(pos_a, pos_b, normal);
         glm_normalize(normal);
         glm_vec3_copy(normal, ret.normal);
-        ret.depth = (distance);
-        // LOG_INFO("normal: %f\t%f\t%f", normal[0], normal[1], normal[2]);
+
+        // calculate point_a
+        glm_vec3_scale(normal, a->radius, ret.point_a);
+        glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
+
+        // calculate point_b
+        glm_vec3_scale(normal, b->radius, ret.point_b);
+        glm_vec3_add(pos_b, ret.point_b, ret.point_b);
+
+        ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
     }
 
     return ret;
@@ -71,6 +79,18 @@ gsk_physics_collision_find_sphere_plane(gsk_SphereCollider *a,
 
         // LOG_INFO("%f", nearestDistance);
         // LOG_INFO("%f\t%f\t%f", A[0], A[1], A[2]);
+
+        // calculate point_a
+        glm_vec3_scale(plane_normal, a->radius, ret.point_a);
+        glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
+
+        // calculate point_b
+        // glm_vec3_subs(pos_a, nearestDistance, ret.point_b);
+        // glm_vec3_copy(A, ret.point_b);
+
+        // calculate point_b
+        // glm_vec3_scale(plane_normal, a->radius, ret.point_b);
+        // glm_vec3_sub(pos_a, ret.point_b, ret.point_b);
 
         // ret.depth = nearestDistance;
         ret.depth = -(nearestDistance - 0.2f);
@@ -139,6 +159,41 @@ gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
         ret.has_collision = TRUE;
         glm_vec3_copy(plane_normal, ret.normal);
         ret.depth = -(nearestDistance) + (glm_aabb_radius(bounds) / 2);
+    }
+
+    return ret;
+}
+
+// Box v. Sphere
+gsk_CollisionPoints
+gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
+                                      gsk_SphereCollider *b,
+                                      vec3 pos_a,
+                                      vec3 pos_b)
+{
+    gsk_CollisionPoints ret = {.has_collision = 0};
+
+#if 1
+    vec3 bounds[2];
+    mat4 matrix = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(matrix, pos_a);
+    glm_aabb_transform(a->bounds, matrix, bounds);
+#endif
+
+    vec4 sphere = {pos_b[0], pos_b[1], pos_b[2], 0.4f};
+    if (glm_aabb_sphere(bounds, sphere)) {
+        ret.has_collision = TRUE;
+
+        glm_vec3_sub(pos_a, pos_b, ret.normal);
+        glm_normalize(ret.normal);
+
+        glm_vec3_scale(ret.normal, glm_aabb_radius(bounds), ret.point_a);
+        glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
+
+        glm_vec3_scale(ret.normal, b->radius, ret.point_b);
+        glm_vec3_add(pos_b, ret.point_b, ret.point_b);
+
+        ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
     }
 
     return ret;

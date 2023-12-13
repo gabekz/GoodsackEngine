@@ -25,13 +25,17 @@ gsk_debug_context_init()
       array_list_init(sizeof(gsk_DebugMarker), 64);
 
     if (GSK_DEVICE_API_OPENGL) {
-        ret->vaoCube = gsk_gl_vertex_array_create();
 
+        // Materials
+        ret->material = gsk_material_create(
+          NULL, GSK_PATH("gsk://shaders/basic_unlit.shader"), 0);
+
+        // VAO Cube
+        ret->vaoCube    = gsk_gl_vertex_array_create();
         float *vertices = PRIM_ARR_V_CUBE;
         for (int i = 0; i < PRIM_SIZ_V_CUBE; i++) {
             vertices[i] *= 0.02f;
         }
-
         gsk_GlVertexBuffer *vboCube = gsk_gl_vertex_buffer_create(
           vertices, PRIM_SIZ_V_CUBE * sizeof(float));
         gsk_gl_vertex_buffer_push(vboCube, 3, GL_FLOAT, GL_FALSE);
@@ -41,10 +45,7 @@ gsk_debug_context_init()
           PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(u32));
         gsk_gl_index_buffer_bind(ibo);
 
-        ret->material =
-          gsk_material_create(NULL, GSK_PATH("gsk://shaders/white.shader"), 0);
-
-        // Bounding box
+        // VAO Bounding box
         ret->vaoBoundingBox = gsk_gl_vertex_array_create();
         gsk_gl_vertex_array_bind(ret->vaoBoundingBox);
         gsk_GlVertexBuffer *vboBoundingBox = gsk_gl_vertex_buffer_create(
@@ -57,7 +58,7 @@ gsk_debug_context_init()
           PRIM_ARR_I_CUBE2, PRIM_SIZ_I_CUBE2 * sizeof(unsigned int));
         gsk_gl_index_buffer_bind(iboBoundingBox);
 
-        // Line VAO
+        // VAO Line
         vec3 lineStart    = GLM_VEC3_ZERO_INIT;
         vec3 lineEnd      = GLM_VEC3_ZERO_INIT;
         float lineverts[] = {lineStart[0],
@@ -82,10 +83,15 @@ gsk_debug_context_init()
 }
 
 void
-gsk_debug_markers_push(gsk_DebugContext *p_debug_context, u32 id, vec3 position)
+gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
+                       u32 id,
+                       vec3 position,
+                       vec4 color,
+                       u8 persist)
 {
-    gsk_DebugMarker marker = {.id = id};
+    gsk_DebugMarker marker = {.id = id, .persist = persist};
     glm_vec3_copy(position, marker.position);
+    glm_vec4_copy(color, marker.color);
 
     for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++) {
 
@@ -93,7 +99,10 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context, u32 id, vec3 position)
           &((gsk_DebugMarker *)p_debug_context->markers_list->data.buffer)[i];
 
         if (cnt_marker->id == id) {
-            glm_vec3_copy(position, cnt_marker->position); // HACK
+            if (!cnt_marker->persist) {
+                glm_vec3_copy(position, cnt_marker->position); // HACK
+                glm_vec4_copy(color, cnt_marker->color);       // HACK
+            }
             return;
         }
     }
@@ -121,6 +130,13 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
           1,
           GL_FALSE,
           (float *)model);
+
+        vec4 color = {0, 1, 0, 1};
+        glm_vec4_copy(cnt_marker->color, color);
+        glUniform4fv(glGetUniformLocation(
+                       p_debug_context->material->shaderProgram->id, "u_Color"),
+                     1,
+                     color);
 
         glDrawElements(
           GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);

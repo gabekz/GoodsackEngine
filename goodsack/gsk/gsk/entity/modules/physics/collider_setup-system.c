@@ -173,6 +173,16 @@ fixed_update(gsk_Entity e)
               compareTransform->position);
         }
 
+        // box v. sphere
+        else if (collider->type == COLLIDER_BOX &&
+                 compareCollider->type == COLLIDER_SPHERE) {
+            points = gsk_physics_collision_find_box_sphere(
+              ((gsk_Collider *)collider->pCollider)->collider_data,
+              ((gsk_Collider *)compareCollider->pCollider)->collider_data,
+              transform->position,
+              compareTransform->position);
+        }
+
         // Collision points
         if (points.has_collision) {
 

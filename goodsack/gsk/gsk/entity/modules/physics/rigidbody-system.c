@@ -17,7 +17,8 @@
 static void
 _position_solver(struct ComponentRigidbody *rigidbody,
                  struct ComponentTransform *transform,
-                 gsk_CollisionResult *collision_result);
+                 gsk_CollisionResult *collision_result,
+                 gsk_Entity entity);
 
 static void
 _impulse_solver(struct ComponentRigidbody *rigidbody,
@@ -84,13 +85,26 @@ fixed_update(gsk_Entity e)
         // --
         // Run Solvers
 
-        _position_solver(rigidbody, transform, pResult);
+        _position_solver(rigidbody, transform, pResult, e);
         _impulse_solver(rigidbody, transform, pResult);
 
-        // --
-        // push debug marker
-        gsk_debug_markers_push(
-          e.ecs->renderer->debugContext, e.id, transform->position);
+#if 1
+        if (e.id == 3) {
+
+            // --
+            // push debug marker
+            gsk_debug_markers_push(e.ecs->renderer->debugContext,
+                                   e.id + 1,
+                                   pResult->points.point_a,
+                                   (vec4) {0, 1, 0, 0},
+                                   FALSE);
+            gsk_debug_markers_push(e.ecs->renderer->debugContext,
+                                   e.id + 2,
+                                   pResult->points.point_b,
+                                   (vec4) {1, 0, 0, 0},
+                                   FALSE);
+        }
+#endif
 
         // Pop our solver
         gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
@@ -140,7 +154,8 @@ fixed_update(gsk_Entity e)
 static void
 _position_solver(struct ComponentRigidbody *rigidbody,
                  struct ComponentTransform *transform,
-                 gsk_CollisionResult *collision_result)
+                 gsk_CollisionResult *collision_result,
+                 gsk_Entity entity)
 {
 // velocity
 #define USE_VELOCITY       0
@@ -183,6 +198,7 @@ _position_solver(struct ComponentRigidbody *rigidbody,
                    correction);
 #endif
     glm_vec3_sub(transform->position, correction, transform->position);
+
 #endif // AFFECT_POS_DIRECT
 }
 //-----------------------------------------------------------------------------

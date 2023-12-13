@@ -48,6 +48,12 @@ gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
                                      gsk_PlaneCollider *b,
                                      vec3 pos_a,
                                      vec3 pos_b);
+// Box v. Sphere
+gsk_CollisionPoints
+gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
+                                      gsk_SphereCollider *b,
+                                      vec3 pos_a,
+                                      vec3 pos_b);
 
 // gsk_Raycast v. Sphere
 gsk_CollisionPoints
