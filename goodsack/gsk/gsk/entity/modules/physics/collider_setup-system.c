@@ -159,6 +159,8 @@ fixed_update(gsk_Entity e)
                   gsk_physics_collision_find_sphere_plane(__CLSN_PARAMS__);
                 break;
             case COLLIDER_BOX:
+                points = gsk_physics_collision_find_sphere_box(__CLSN_PARAMS__);
+                break;
             default: break;
             };
         } else if (collider->type == COLLIDER_PLANE) { // --- Plane Collider

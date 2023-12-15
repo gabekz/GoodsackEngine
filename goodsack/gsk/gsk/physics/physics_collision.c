@@ -11,6 +11,75 @@
 // [0] Distance should not be sent as the depth. This results in non-predictable
 // physics calculation.
 
+static gsk_CollisionPoints
+__find_box_sphere_inverse(
+  gsk_BoxCollider *a, gsk_SphereCollider *b, vec3 pos_a, vec3 pos_b, u8 inverse)
+{
+    gsk_CollisionPoints ret = {.has_collision = 0};
+
+    vec3 bounds[2];
+    // glm_vec3_add(pos_a, a->bounds[0], bounds[0]);
+    // glm_vec3_add(pos_a, a->bounds[1], bounds[1]);
+
+    mat4 matrix = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(matrix, pos_a);
+    glm_aabb_transform(a->bounds, matrix, bounds);
+
+    // reset
+    glm_mat4_identity(matrix);
+    glm_translate(matrix, pos_b);
+
+    vec3 center;
+    glm_aabb_center(bounds, center);
+    // LOG_INFO("Center:\t%lf\t%lf\t%lf", center[0], center[1], center[2]);
+
+    // calculate nearest point
+
+    vec3 dist_vec;
+    glm_vec3_sub(pos_a, pos_b, ret.normal);
+    glm_vec3_normalize(ret.normal);
+
+    glm_vec3_scale(ret.normal, b->radius, dist_vec);
+    glm_vec3_add(pos_b, dist_vec, dist_vec);
+
+    f32 box_width = (bounds[1][0] - bounds[0][0]);
+
+    if (glm_aabb_point(bounds, dist_vec)) {
+        ret.has_collision = TRUE;
+
+        if (inverse) { LOG_INFO("Collision - Sphere-Box"); }
+
+        // calculate point_a
+
+        f32 halfwidth = box_width / 2;
+        vec3 clamped_pos;
+        clamped_pos[0] = MAX(-halfwidth, MIN(halfwidth, pos_b[0] - pos_a[0]));
+        clamped_pos[1] = MAX(-halfwidth, MIN(halfwidth, pos_b[1] - pos_a[1]));
+        clamped_pos[2] = MAX(-halfwidth, MIN(halfwidth, pos_b[2] - pos_a[2]));
+
+        glm_vec3_add(pos_a, clamped_pos, ret.point_a);
+
+        // calculate point_b
+        glm_vec3_scale(ret.normal, b->radius, ret.point_b);
+        glm_vec3_add(pos_b, ret.point_b, ret.point_b);
+
+        if (inverse) {
+            vec3 hold = GLM_VEC3_ONE_INIT;
+            hold[0]   = ret.point_a[0];
+            hold[1]   = ret.point_a[1];
+            hold[2]   = ret.point_a[2];
+            glm_vec3_copy(ret.point_b, ret.point_a);
+            glm_vec3_copy(hold, ret.point_b);
+        }
+
+        ret.depth = 0;
+        ret.depth =
+          glm_vec3_distance(ret.point_b, ret.point_a) * (inverse) ? -1 : 1;
+    }
+
+    return ret;
+}
+
 // Sphere v. Sphere
 gsk_CollisionPoints
 gsk_physics_collision_find_sphere_sphere(gsk_SphereCollider *a,
@@ -152,13 +221,13 @@ gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
     }
 #endif
 
-    if (nearestDistance <= glm_aabb_radius(bounds) / 2) {
+    f32 box_width = (bounds[1][0] - bounds[0][0]);
 
-        // LOG_INFO("Box colliding");
+    if (nearestDistance <= box_width / 2) {
 
         ret.has_collision = TRUE;
         glm_vec3_copy(plane_normal, ret.normal);
-        ret.depth = -(nearestDistance) + (glm_aabb_radius(bounds) / 2);
+        ret.depth = -(nearestDistance - box_width / 2);
     }
 
     return ret;
@@ -171,53 +240,19 @@ gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
                                       vec3 pos_a,
                                       vec3 pos_b)
 {
-    gsk_CollisionPoints ret = {.has_collision = 0};
 
-    vec3 bounds[2];
-    // glm_vec3_add(pos_a, a->bounds[0], bounds[0]);
-    // glm_vec3_add(pos_a, a->bounds[1], bounds[1]);
+    return __find_box_sphere_inverse(a, b, pos_a, pos_b, FALSE);
+}
 
-    mat4 matrix = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(matrix, pos_a);
-    glm_aabb_transform(a->bounds, matrix, bounds);
+// Sphere v. Sphere
+gsk_CollisionPoints
+gsk_physics_collision_find_sphere_box(gsk_SphereCollider *a,
+                                      gsk_BoxCollider *b,
+                                      vec3 pos_a,
+                                      vec3 pos_b)
+{
 
-    // reset
-    glm_mat4_identity(matrix);
-    glm_translate(matrix, pos_b);
-
-    vec3 center;
-    glm_aabb_center(bounds, center);
-    // LOG_INFO("Center:\t%lf\t%lf\t%lf", center[0], center[1], center[2]);
-
-    vec4 sphere = {pos_b[0], pos_b[1], pos_b[2], b->radius * 2};
-    glm_sphere_transform(sphere, matrix, sphere);
-
-    // calculate nearest point
-
-    vec3 dist_vec;
-    glm_vec3_sub(pos_a, pos_b, ret.normal);
-    glm_vec3_normalize(ret.normal);
-
-    glm_vec3_scale(ret.normal, b->radius, dist_vec);
-    glm_vec3_add(pos_b, dist_vec, dist_vec);
-
-    if (glm_aabb_point(bounds, dist_vec)) {
-        ret.has_collision = TRUE;
-
-        LOG_INFO("%f", glm_aabb_radius(bounds));
-
-        // calculate point_a
-        glm_vec3_scale(ret.normal, -1, ret.point_a);
-        glm_vec3_add(pos_a, ret.point_a, ret.point_a);
-
-        // calculate point_b
-        glm_vec3_scale(ret.normal, b->radius, ret.point_b);
-        glm_vec3_add(pos_b, ret.point_b, ret.point_b);
-
-        ret.depth = -glm_vec3_distance(ret.point_b, ret.point_a);
-    }
-
-    return ret;
+    return __find_box_sphere_inverse(b, a, pos_b, pos_a, TRUE);
 }
 
 // gsk_Raycast v. Sphere
