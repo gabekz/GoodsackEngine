@@ -21,6 +21,10 @@ gsk_physics_test_collision(gsk_Collider *a,
                            vec3 pos_a,
                            vec3 pos_b);
 
+/*************************************************************************
+ * Sphere definitions
+ *************************************************************************/
+
 // Sphere v. Sphere
 gsk_CollisionPoints
 gsk_physics_collision_find_sphere_sphere(gsk_SphereCollider *a,
@@ -42,6 +46,10 @@ gsk_physics_collision_find_sphere_box(gsk_SphereCollider *a,
                                       vec3 pos_a,
                                       vec3 pos_b);
 
+/*************************************************************************
+ * Plane definitions
+ *************************************************************************/
+
 // Plane v. Sphere
 gsk_CollisionPoints
 gsk_physics_collision_find_plane_sphere(gsk_PlaneCollider *a,
@@ -55,12 +63,24 @@ gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
                                      gsk_PlaneCollider *b,
                                      vec3 pos_a,
                                      vec3 pos_b);
+
+/*************************************************************************
+ * Box definitions
+ *************************************************************************/
+
 // Box v. Sphere
 gsk_CollisionPoints
 gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
                                       gsk_SphereCollider *b,
                                       vec3 pos_a,
                                       vec3 pos_b);
+
+// Box v. Box
+gsk_CollisionPoints
+gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
+                                   gsk_BoxCollider *b,
+                                   vec3 pos_a,
+                                   vec3 pos_b);
 
 // gsk_Raycast v. Sphere
 gsk_CollisionPoints

@@ -138,7 +138,7 @@ fixed_update(gsk_Entity e)
 //
 // NOTE: this may be a little hacky, but it makes the collision-comparison
 // a lot more readable.
-#define __CLSN_PARAMS__                                            \
+#define __clsn_prm                                                 \
     ((gsk_Collider *)collider->pCollider)->collider_data,          \
       ((gsk_Collider *)compareCollider->pCollider)->collider_data, \
       transform->position, compareTransform->position
@@ -151,23 +151,20 @@ fixed_update(gsk_Entity e)
         if (collider->type == COLLIDER_SPHERE) { // --- Sphere Collider
             switch (compareCollider->type) {
             case COLLIDER_SPHERE:
-                points =
-                  gsk_physics_collision_find_sphere_sphere(__CLSN_PARAMS__);
+                points = gsk_physics_collision_find_sphere_sphere(__clsn_prm);
                 break;
             case COLLIDER_PLANE:
-                points =
-                  gsk_physics_collision_find_sphere_plane(__CLSN_PARAMS__);
+                points = gsk_physics_collision_find_sphere_plane(__clsn_prm);
                 break;
             case COLLIDER_BOX:
-                points = gsk_physics_collision_find_sphere_box(__CLSN_PARAMS__);
+                points = gsk_physics_collision_find_sphere_box(__clsn_prm);
                 break;
             default: break;
             };
         } else if (collider->type == COLLIDER_PLANE) { // --- Plane Collider
             switch (compareCollider->type) {
             case COLLIDER_SPHERE:
-                points =
-                  gsk_physics_collision_find_plane_sphere(__CLSN_PARAMS__);
+                points = gsk_physics_collision_find_plane_sphere(__clsn_prm);
                 break;
             case COLLIDER_PLANE:
             case COLLIDER_BOX:
@@ -176,12 +173,14 @@ fixed_update(gsk_Entity e)
         } else if (collider->type == COLLIDER_BOX) { // --- Box Collider
             switch (compareCollider->type) {
             case COLLIDER_SPHERE:
-                points = gsk_physics_collision_find_box_sphere(__CLSN_PARAMS__);
+                points = gsk_physics_collision_find_box_sphere(__clsn_prm);
                 break;
             case COLLIDER_PLANE:
-                points = gsk_physics_collision_find_box_plane(__CLSN_PARAMS__);
+                points = gsk_physics_collision_find_box_plane(__clsn_prm);
                 break;
             case COLLIDER_BOX:
+                points = gsk_physics_collision_find_box_box(__clsn_prm);
+                break;
             default: break;
             };
         }

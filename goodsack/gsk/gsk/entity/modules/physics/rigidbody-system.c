@@ -14,6 +14,8 @@
 #include "core/device/device.h"
 #include "physics/physics_solver.h"
 
+#define USING_ANGULAR_VELOCITY 0
+
 static void
 _position_solver(struct ComponentRigidbody *rigidbody,
                  struct ComponentTransform *transform,
@@ -32,7 +34,7 @@ init(gsk_Entity e)
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
 
     struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
-    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
+    // struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
     glm_vec3_zero(rigidbody->force);
     glm_vec3_zero(rigidbody->velocity);
@@ -44,9 +46,6 @@ init(gsk_Entity e)
     // Initialize the physics solver
     rigidbody->solver                       = malloc(sizeof(gsk_PhysicsSolver));
     *(gsk_PhysicsSolver *)rigidbody->solver = gsk_physics_solver_init();
-
-    // LOG_INFO("solvers %u", ((PhysicsSolver
-    // *)rigidbody->solver)->solvers_count);
 }
 
 static void
@@ -168,13 +167,13 @@ _position_solver(struct ComponentRigidbody *rigidbody,
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    const float percent = 0.8f;
+    const float percent = 0.10f;
     const float slop    = 0.005f;
 
     vec3 correction = {0, 0, 0};
     glm_vec3_scale(
       collision_normal,
-      fmax((collision_result->points.depth - slop) * percent, 0.0f),
+      fmax((collision_result->points.depth + slop) * percent, 0.0f),
       correction);
     glm_vec3_negate(correction);
 
@@ -260,7 +259,7 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
         glm_vec3_scale(tangent, -j * df, friction_impulse);
     }
 
-#if 0
+#if USING_ANGULAR_VELOCITY
     // angular velocity
     //) Ft = -(velocity + (vDotN*collision_normal));
     vec3 Ft = GLM_VEC3_ZERO_INIT;
@@ -282,11 +281,13 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
 
     float I = 0.4f * rigidbody->mass * 0.2f * 0.2f;
     glm_vec3_divs(torque, I, torque);
-#endif
+#endif // USING_ANGULAR_VELOCITY
 
     // Apply impulses
     glm_vec3_add(rigidbody->velocity, reflect, rigidbody->velocity);
-    // glm_vec3_add(torque, friction_impulse, rigidbody->angular_velocity);
+#if USING_ANGULAR_VELOCITY
+    glm_vec3_add(torque, Ft, rigidbody->angular_velocity);
+#endif // USING_ANGULAR_VELOCITY
     glm_vec3_sub(rigidbody->velocity, friction_impulse, rigidbody->velocity);
 }
 
