@@ -12,6 +12,7 @@
 
 #include "core/drivers/opengl/opengl.h"
 #include "core/graphics/material/material.h"
+#include "core/graphics/mesh/model.h"
 
 typedef struct gsk_DebugMarker
 {
@@ -26,6 +27,8 @@ typedef struct gsk_DebugContext
     gsk_GlVertexArray *vaoCube;
     gsk_GlVertexArray *vaoBoundingBox;
     gsk_Material *material;
+
+    gsk_Model *model_sphere;
 
     gsk_GlVertexArray *vaoLine; // VAO for debug draw line
 

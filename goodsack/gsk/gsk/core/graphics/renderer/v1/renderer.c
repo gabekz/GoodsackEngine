@@ -384,9 +384,12 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 #endif
 
 #if TESTING_DRAW_LINE
-    vec3 start = {0, 0, 0};
-    vec3 end   = {-20, 20, 0};
-    gsk_debug_draw_line(renderer->debugContext, start, end);
+    gsk_debug_draw_line(renderer->debugContext,
+                        (vec3) {-1.0f, 0, -1.0f},
+                        (vec3) {-1.0f, 0, 1.0f});
+    gsk_debug_draw_line(renderer->debugContext,
+                        (vec3) {-1.0f, 0, -1.0f},
+                        (vec3) {1.0f, 0, -1.0f});
 #endif
 
 // Draw debug markers

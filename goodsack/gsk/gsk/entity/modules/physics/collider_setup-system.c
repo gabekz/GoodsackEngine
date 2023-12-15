@@ -35,7 +35,7 @@ init(gsk_Entity e)
     // TODO: collider types
     if (collider->type == COLLIDER_SPHERE) {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
-        sphereCollider->radius             = .20f;
+        sphereCollider->radius             = 1.0f;
         // glm_vec3_copy(transform->position, sphereCollider->center);
         // sphereCollider.center = transform.position;
 
@@ -74,8 +74,8 @@ init(gsk_Entity e)
 
     else if (collider->type == COLLIDER_BOX) {
         gsk_BoxCollider *box_collider = malloc(sizeof(gsk_BoxCollider));
-        glm_vec3_zero(box_collider->bounds[0]);
-        glm_vec3_zero(box_collider->bounds[1]);
+        // glm_vec3_zero(box_collider->bounds[0]);
+        // glm_vec3_zero(box_collider->bounds[1]);
 
         if (gsk_ecs_has(e, C_MODEL)) {
             struct ComponentModel *cmp_model = gsk_ecs_get(e, C_MODEL);

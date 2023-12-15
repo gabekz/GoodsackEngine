@@ -82,7 +82,7 @@ gsk_load_obj(const char *path, float scale)
         if (strstr(def, "v ") != NULL) {
 
             while (split != NULL) {
-                float saved = atof(split) * 0.2f;
+                float saved = atof(split);
                 v[vL]       = saved * scale;
                 vL++;
 

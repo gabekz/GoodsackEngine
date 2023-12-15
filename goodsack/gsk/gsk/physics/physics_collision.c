@@ -93,7 +93,7 @@ gsk_physics_collision_find_sphere_plane(gsk_SphereCollider *a,
         // glm_vec3_sub(pos_a, ret.point_b, ret.point_b);
 
         // ret.depth = nearestDistance;
-        ret.depth = -(nearestDistance - 0.2f);
+        ret.depth = -(nearestDistance - a->radius);
 
         // attempt to get closest point
 #if 0
@@ -173,27 +173,59 @@ gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
 {
     gsk_CollisionPoints ret = {.has_collision = 0};
 
-#if 1
     vec3 bounds[2];
+    // glm_vec3_add(pos_a, a->bounds[0], bounds[0]);
+    // glm_vec3_add(pos_a, a->bounds[1], bounds[1]);
+
     mat4 matrix = GLM_MAT4_IDENTITY_INIT;
     glm_translate(matrix, pos_a);
     glm_aabb_transform(a->bounds, matrix, bounds);
-#endif
 
-    vec4 sphere = {pos_b[0], pos_b[1], pos_b[2], 0.4f};
-    if (glm_aabb_sphere(bounds, sphere)) {
+    // reset
+    glm_mat4_identity(matrix);
+    glm_translate(matrix, pos_b);
+
+    vec3 center;
+    glm_aabb_center(bounds, center);
+    // LOG_INFO("Center:\t%lf\t%lf\t%lf", center[0], center[1], center[2]);
+
+    vec4 sphere = {pos_b[0], pos_b[1], pos_b[2], b->radius * 2};
+    glm_sphere_transform(sphere, matrix, sphere);
+
+    // calculate nearest point
+
+    vec3 dist_vec;
+    glm_vec3_sub(pos_a, pos_b, dist_vec);
+    glm_vec3_normalize(dist_vec);
+
+    glm_vec3_scale(dist_vec, b->radius, dist_vec);
+    glm_vec3_add(pos_b, dist_vec, dist_vec);
+
+    LOG_INFO(
+      "distance: %f\tb_radius: %f", glm_vec3_distance(pos_a, pos_b), b->radius);
+    if (glm_aabb_point(bounds, dist_vec)) {
         ret.has_collision = TRUE;
 
+        // glm_vec3_zero(ret.normal);
         glm_vec3_sub(pos_a, pos_b, ret.normal);
         glm_normalize(ret.normal);
 
-        glm_vec3_scale(ret.normal, glm_aabb_radius(bounds), ret.point_a);
+#if 0
+        LOG_INFO("Center:\t%lf\t%lf\t%lf",
+                 ret.normal[0],
+                 ret.normal[1],
+                 ret.normal[2]);
+#endif
+
+        // calculate point_a
+        glm_vec3_scale(ret.normal, (glm_aabb_radius(bounds) / 2), ret.point_a);
         glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
 
+        // calculate point_b
         glm_vec3_scale(ret.normal, b->radius, ret.point_b);
         glm_vec3_add(pos_b, ret.point_b, ret.point_b);
 
-        ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
+        ret.depth = -glm_vec3_distance(ret.point_b, ret.point_a);
     }
 
     return ret;

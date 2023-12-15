@@ -46,7 +46,7 @@ __create_camera_entity(gsk_ECS *ecs, vec3 position)
     _gsk_ecs_add_internal(camera,
                           C_CAMERAMOVEMENT,
                           (void *)(&(struct ComponentCameraMovement) {
-                            .speed = 2.5f,
+                            .speed = 5.0f,
                           }));
     _gsk_ecs_add_internal(camera,
                           C_TRANSFORM,
@@ -465,7 +465,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
       texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
 
     gsk_Model *model_plane =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
+      gsk_model_load_from_file(GSK_PATH("gsk://models/plane_2.obj"), 1, FALSE);
 
     gsk_Model *model_sphere =
       gsk_model_load_from_file(GSK_PATH("gsk://models/sphere.obj"), 1, FALSE);
@@ -490,7 +490,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 
     gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
 
-    *pCamera          = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 2.0f});
+    *pCamera          = __create_camera_entity(ecs, (vec3) {-2.0f, 5.0f, 8.0f});
     gsk_Entity camera = *pCamera;
 
     // Testing entity on heap memory
@@ -502,8 +502,8 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
                             .position    = {0.0f, 0.0f, 0.0f},
-                            .scale       = {10.0f, 10.0f, 10.0f},
-                            .orientation = {0.0f, 1.0f, 0.0f},
+                            .scale       = {10.0f, 1.0f, 10.0f},
+                            .orientation = {0.0f, 0.0f, 0.0f},
                           }));
     _gsk_ecs_add_internal(floorEntity,
                           C_COLLIDER,
@@ -519,6 +519,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
+#if 0
 
     gsk_Entity *pSphereEntity = malloc(sizeof(gsk_Entity));
     *pSphereEntity            = gsk_ecs_new(ecs);
@@ -539,19 +540,22 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_SPHERE,
+                            .type = COLLIDER_BOX,
                           }));
 
     _gsk_ecs_add_internal(
       sphereEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_sphere,
+                                         .pModel     = model_cube,
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
-    // Second sphere
+}
+}));
+#endif
+
+// Second sphere
 #if 1
 
     gsk_Entity *pSphereEntity2 = malloc(sizeof(gsk_Entity));

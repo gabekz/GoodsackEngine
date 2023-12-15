@@ -89,7 +89,7 @@ fixed_update(gsk_Entity e)
         _impulse_solver(rigidbody, transform, pResult);
 
 #if 1
-        if (e.id == 3) {
+        if (e.id == 4) {
 
             // --
             // push debug marker
@@ -260,7 +260,7 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
         glm_vec3_scale(tangent, -j * df, friction_impulse);
     }
 
-#if 1
+#if 0
     // angular velocity
     //) Ft = -(velocity + (vDotN*collision_normal));
     vec3 Ft = GLM_VEC3_ZERO_INIT;
@@ -286,7 +286,7 @@ _impulse_solver(struct ComponentRigidbody *rigidbody,
 
     // Apply impulses
     glm_vec3_add(rigidbody->velocity, reflect, rigidbody->velocity);
-    glm_vec3_add(torque, friction_impulse, rigidbody->angular_velocity);
+    // glm_vec3_add(torque, friction_impulse, rigidbody->angular_velocity);
     glm_vec3_sub(rigidbody->velocity, friction_impulse, rigidbody->velocity);
 }
 

@@ -14,6 +14,8 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/primitives.h"
 
+#define DRAW_MESH_ONLY 0
+
 gsk_DebugContext *
 gsk_debug_context_init()
 {
@@ -57,6 +59,10 @@ gsk_debug_context_init()
         gsk_GlIndexBuffer *iboBoundingBox = gsk_gl_index_buffer_create(
           PRIM_ARR_I_CUBE2, PRIM_SIZ_I_CUBE2 * sizeof(unsigned int));
         gsk_gl_index_buffer_bind(iboBoundingBox);
+
+        // Sphere (Model)
+        ret->model_sphere = gsk_model_load_from_file(
+          GSK_PATH("gsk://models/sphere.obj"), 1, FALSE);
 
         // VAO Line
         vec3 lineStart    = GLM_VEC3_ZERO_INIT;
@@ -118,11 +124,18 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
         gsk_DebugMarker *cnt_marker =
           &((gsk_DebugMarker *)p_debug_context->markers_list->data.buffer)[i];
 
+#if DRAW_MESH_ONLY
+        gsk_Mesh *mesh = p_debug_context->model_sphere->meshes[0];
+        gsk_gl_vertex_array_bind(mesh->vao);
+#else
         gsk_gl_vertex_array_bind(p_debug_context->vaoCube);
+#endif // DRAW_MESH_ONLY
+
         gsk_material_use(p_debug_context->material);
 
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         glm_translate(model, cnt_marker->position);
+        glm_scale(model, (vec3) {1.0f, 1.0f, 1.0f});
 
         glUniformMatrix4fv(
           glGetUniformLocation(p_debug_context->material->shaderProgram->id,
@@ -138,7 +151,11 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
                      1,
                      color);
 
+#if DRAW_MESH_ONLY
+        glDrawArrays(GL_TRIANGLES, 0, mesh->meshData->vertexCount);
+#else
         glDrawElements(
           GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
+#endif // DRAW_MESH_ONLY
     }
 }
