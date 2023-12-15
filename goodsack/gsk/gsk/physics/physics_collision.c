@@ -195,31 +195,20 @@ gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
     // calculate nearest point
 
     vec3 dist_vec;
-    glm_vec3_sub(pos_a, pos_b, dist_vec);
-    glm_vec3_normalize(dist_vec);
+    glm_vec3_sub(pos_a, pos_b, ret.normal);
+    glm_vec3_normalize(ret.normal);
 
-    glm_vec3_scale(dist_vec, b->radius, dist_vec);
+    glm_vec3_scale(ret.normal, b->radius, dist_vec);
     glm_vec3_add(pos_b, dist_vec, dist_vec);
 
-    LOG_INFO(
-      "distance: %f\tb_radius: %f", glm_vec3_distance(pos_a, pos_b), b->radius);
     if (glm_aabb_point(bounds, dist_vec)) {
         ret.has_collision = TRUE;
 
-        // glm_vec3_zero(ret.normal);
-        glm_vec3_sub(pos_a, pos_b, ret.normal);
-        glm_normalize(ret.normal);
-
-#if 0
-        LOG_INFO("Center:\t%lf\t%lf\t%lf",
-                 ret.normal[0],
-                 ret.normal[1],
-                 ret.normal[2]);
-#endif
+        LOG_INFO("%f", glm_aabb_radius(bounds));
 
         // calculate point_a
-        glm_vec3_scale(ret.normal, (glm_aabb_radius(bounds) / 2), ret.point_a);
-        glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
+        glm_vec3_scale(ret.normal, -1, ret.point_a);
+        glm_vec3_add(pos_a, ret.point_a, ret.point_a);
 
         // calculate point_b
         glm_vec3_scale(ret.normal, b->radius, ret.point_b);
