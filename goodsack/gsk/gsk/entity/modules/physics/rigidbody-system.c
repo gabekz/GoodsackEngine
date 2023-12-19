@@ -88,7 +88,7 @@ fixed_update(gsk_Entity e)
         _impulse_solver(rigidbody, transform, pResult);
 
 #if 1
-        if (e.id == 4) {
+        if (e.id == 3) {
 
             // --
             // push debug marker
@@ -168,14 +168,13 @@ _position_solver(struct ComponentRigidbody *rigidbody,
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
     const float percent = 0.10f;
-    const float slop    = 0.005f;
+    const float slop    = 0.0005f;
 
     vec3 correction = {0, 0, 0};
     glm_vec3_scale(
       collision_normal,
       fmax((collision_result->points.depth + slop) * percent, 0.0f),
       correction);
-    glm_vec3_negate(correction);
 
     // LOG_INFO("correction: %f\t%f\t%f", correction[0], correction[1],
     // correction[2]);
@@ -196,7 +195,7 @@ _position_solver(struct ComponentRigidbody *rigidbody,
                    gsk_device_getTime().delta_time * rigidbody->mass,
                    correction);
 #endif
-    glm_vec3_sub(transform->position, correction, transform->position);
+    glm_vec3_add(transform->position, correction, transform->position);
 
 #endif // AFFECT_POS_DIRECT
 }

@@ -519,7 +519,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
-#if 0
+#if 1
 
     gsk_Entity *pSphereEntity = malloc(sizeof(gsk_Entity));
     *pSphereEntity            = gsk_ecs_new(ecs);
@@ -540,23 +540,22 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_BOX,
+                            .type = COLLIDER_SPHERE,
                           }));
 
     _gsk_ecs_add_internal(
       sphereEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_cube,
+                                         .pModel     = model_sphere,
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
-}
-}));
+                                         }}));
 #endif
 
 // Second sphere
-#if 1
+#if 0
 
     gsk_Entity *pSphereEntity2 = malloc(sizeof(gsk_Entity));
     *pSphereEntity2            = gsk_ecs_new(ecs);
