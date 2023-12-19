@@ -31,17 +31,44 @@ static void
 init(gsk_Entity e)
 {
     if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
+    if (!(gsk_ecs_has(e, C_COLLIDER))) return;
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
 
     struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
+    struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
     // struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
     glm_vec3_zero(rigidbody->force);
     glm_vec3_zero(rigidbody->velocity);
     glm_vec3_zero(rigidbody->angular_velocity);
 
+    // friction constants
     rigidbody->static_friction  = 0.6f;
     rigidbody->dynamic_friction = 0.3f;
+
+    // calculate rotational inertia
+    f32 inertia = 0;
+    if (collider->type == COLLIDER_SPHERE) {
+
+        // I = 2/5mr^2 -- solid sphere
+        inertia = (2.0f / 5.0f) * rigidbody->mass *
+                  ((gsk_SphereCollider *)collider->pCollider)->radius;
+    }
+
+    else if (collider->type == COLLIDER_BOX) {
+
+        // TODO: get width/height from bounds
+        f32 width  = 2;
+        f32 height = 2;
+
+        // I_d = 1/12m(w^2 + h^2) -- rectangular cuboid depth
+        inertia =
+          (1.0f / 12.0f) * rigidbody->mass * pow(width, 2) + pow(height, 2);
+    }
+
+    // inverse mass and inertia
+    f32 inverse_mass    = 1.0f / rigidbody->mass;
+    f32 inverse_inertia = 1.0f / inertia;
 
     // Initialize the physics solver
     rigidbody->solver                       = malloc(sizeof(gsk_PhysicsSolver));
@@ -156,48 +183,21 @@ _position_solver(struct ComponentRigidbody *rigidbody,
                  gsk_CollisionResult *collision_result,
                  gsk_Entity entity)
 {
-// velocity
-#define USE_VELOCITY       0
-#define USE_VELOCITY_DELTA 0
-
-// raw position
-#define AFFECT_POS_DIRECT 1
-#define USE_POS_DELTA     0
-
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    const float percent = 0.10f;
+    const float percent = 0.5f;
     const float slop    = 0.0005f;
 
-    vec3 correction = {0, 0, 0};
-    glm_vec3_scale(
-      collision_normal,
-      fmax((collision_result->points.depth + slop) * percent, 0.0f),
-      correction);
+    vec3 correction;
+    f32 c_weight = fmax((collision_result->points.depth - slop) * percent, 0);
+    glm_vec3_scale(collision_normal, c_weight, correction);
 
-    // LOG_INFO("correction: %f\t%f\t%f", correction[0], correction[1],
-    // correction[2]);
+    LOG_INFO("%f",
+             (glm_dot(collision_result->points.point_a,
+                      collision_result->points.point_b) >= 0.0f));
 
-#if USE_VELOCITY
-#if USE_VELOCITY_DELTA
-    glm_vec3_scale(correction,
-                   gsk_device_getTime().delta_time * rigidbody->mass,
-                   correction);
-#endif // USE_DELTA
-    // NOTE: This one is pretty interseting..
-    glm_vec3_sub(rigidbody->velocity, correction, rigidbody->velocity);
-#endif // USE_VELOCITY
-
-#if AFFECT_POS_DIRECT
-#if USE_POS_DELTA
-    glm_vec3_scale(correction,
-                   gsk_device_getTime().delta_time * rigidbody->mass,
-                   correction);
-#endif
     glm_vec3_add(transform->position, correction, transform->position);
-
-#endif // AFFECT_POS_DIRECT
 }
 //-----------------------------------------------------------------------------
 static void

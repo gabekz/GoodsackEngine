@@ -146,11 +146,11 @@ gsk_physics_collision_find_sphere_plane(gsk_SphereCollider *a,
 
     // A = q - plane.p[0]
     vec3 A = GLM_VEC3_ZERO_INIT;
-    glm_vec3_sub(pos_a, pos_b, A);
+    glm_vec3_sub(pos_b, pos_a, A);
 
     vec3 plane_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(((gsk_PlaneCollider *)b->plane)->normal, plane_normal);
-    float nearestDistance = glm_vec3_dot(A, plane_normal);
+    float nearestDistance = -glm_vec3_dot(plane_normal, A);
 
     // furthest point_a = pos_a - plane_normal * distance
 
@@ -164,15 +164,15 @@ gsk_physics_collision_find_sphere_plane(gsk_SphereCollider *a,
         glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
 
         // calculate point_b
-        // glm_vec3_subs(pos_a, nearestDistance, ret.point_b);
-        // glm_vec3_copy(A, ret.point_b);
+        // TODO: should be normal of the collision, not plane_normal
+        glm_vec3_scale(plane_normal, nearestDistance, ret.point_b);
+        glm_vec3_sub(pos_a, ret.point_b, ret.point_b);
 
-        // calculate point_b
-        // glm_vec3_scale(plane_normal, a->radius, ret.point_b);
-        // glm_vec3_sub(pos_a, ret.point_b, ret.point_b);
+        // calculate normal of points
+        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
+        glm_vec3_normalize(ret.normal);
 
-        // ret.depth = nearestDistance;
-        ret.depth = -(nearestDistance - a->radius);
+        ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
     }
 
     return ret;
@@ -207,25 +207,45 @@ gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
 
     // A = q - plane.p[0]
     vec3 A = GLM_VEC3_ZERO_INIT;
-    glm_vec3_sub(pos_a, pos_b, A);
+    glm_vec3_sub(pos_b, pos_a, A);
 
     vec3 plane_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(((gsk_PlaneCollider *)b->plane)->normal, plane_normal);
 
-    float nearestDistance = glm_vec3_dot(A, plane_normal);
+    float nearestDistance = -glm_vec3_dot(plane_normal, A);
 
     vec3 bounds[2];
-    mat4 matrix = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(matrix, pos_a);
-    glm_aabb_transform(a->bounds, matrix, bounds);
+    glm_vec3_add(pos_a, a->bounds[0], bounds[0]);
+    glm_vec3_add(pos_a, a->bounds[1], bounds[1]);
 
     f32 box_width = (bounds[1][0] - bounds[0][0]);
 
     if (nearestDistance <= box_width / 2) {
 
         ret.has_collision = TRUE;
-        glm_vec3_copy(plane_normal, ret.normal);
-        ret.depth = -(nearestDistance - box_width / 2);
+
+        // calculate point_a
+        glm_vec3_scale(plane_normal, box_width / 2, ret.point_a);
+        glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
+        _aabb_clamped_point(bounds, pos_a, ret.point_a, ret.point_a);
+
+        // calculate point_b
+        glm_vec3_scale(plane_normal, nearestDistance, ret.point_b);
+        glm_vec3_sub(pos_a, ret.point_b, ret.point_b);
+
+        // calculate normal of points
+        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
+        glm_vec3_normalize(ret.normal);
+
+        ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
+
+#if 0
+        LOG_INFO("test:\t%lf\t%lf\t%lf",
+                 ret.point_a[0],
+                 ret.point_a[1],
+                 ret.point_a[2]);
+#endif
+        LOG_INFO("Depth: %f", ret.depth);
     }
 
     return ret;
