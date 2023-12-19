@@ -465,7 +465,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
       texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
 
     gsk_Model *model_plane =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/plane_2.obj"), 1, FALSE);
+      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
 
     gsk_Model *model_sphere =
       gsk_model_load_from_file(GSK_PATH("gsk://models/sphere.obj"), 1, FALSE);
@@ -540,14 +540,14 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_SPHERE,
+                            .type = COLLIDER_BOX,
                           }));
 
     _gsk_ecs_add_internal(
       sphereEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_sphere,
+                                         .pModel     = model_cube,
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
@@ -555,7 +555,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 #endif
 
 // Second sphere
-#if 0
+#if 1
 
     gsk_Entity *pSphereEntity2 = malloc(sizeof(gsk_Entity));
     *pSphereEntity2            = gsk_ecs_new(ecs);
@@ -591,7 +591,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 #endif
 
 // Cube
-#if 1
+#if 0
     gsk_Entity *pCubeEntity = malloc(sizeof(gsk_Entity));
     *pCubeEntity            = gsk_ecs_new(ecs);
     gsk_Entity cubeEntity   = *pCubeEntity;

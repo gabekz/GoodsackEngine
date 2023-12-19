@@ -15,27 +15,54 @@
 #include "physics/physics_solver.h"
 
 #define USING_ANGULAR_VELOCITY 0
+#define DEBUG_POINTS           1 // 0 -- OFF | value = entity id
 
-static void
-_position_solver(struct ComponentRigidbody *rigidbody,
-                 struct ComponentTransform *transform,
-                 gsk_CollisionResult *collision_result,
-                 gsk_Entity entity);
-
-static void
-_impulse_solver(struct ComponentRigidbody *rigidbody,
-                struct ComponentTransform *transform,
-                gsk_CollisionResult *collision_result);
-
-static void
-init(gsk_Entity e)
+typedef struct _SolverData
 {
-    if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
-    if (!(gsk_ecs_has(e, C_COLLIDER))) return;
-    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
+    struct ComponentRigidbody *p_rigidbody;
+    struct ComponentTransform *p_transform;
+    gsk_CollisionResult *p_collision_result;
+    gsk_Entity entity;
+    f64 delta;
+} _SolverData;
 
-    struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
-    struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
+static void
+_position_solver(_SolverData solver_data);
+
+static void
+_impulse_solver(_SolverData solver_data);
+
+//-----------------------------------------------------------------------------
+static void
+__debug_points(_SolverData solver_data, u32 id)
+{
+    gsk_CollisionResult *collision_result = solver_data.p_collision_result;
+    gsk_Entity entity                     = solver_data.entity;
+
+    if (entity.id == id) {
+        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                               entity.id + 1,
+                               collision_result->points.point_a,
+                               (vec4) {0, 1, 0, 0},
+                               FALSE);
+        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                               entity.id + 2,
+                               collision_result->points.point_b,
+                               (vec4) {1, 0, 0, 0},
+                               FALSE);
+    }
+}
+//-----------------------------------------------------------------------------
+
+static void
+init(gsk_Entity entity)
+{
+    if (!(gsk_ecs_has(entity, C_RIGIDBODY))) return;
+    if (!(gsk_ecs_has(entity, C_COLLIDER))) return;
+    if (!(gsk_ecs_has(entity, C_TRANSFORM))) return;
+
+    struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
+    struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
     // struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
     glm_vec3_zero(rigidbody->force);
@@ -76,15 +103,19 @@ init(gsk_Entity e)
 }
 
 static void
-fixed_update(gsk_Entity e)
+fixed_update(gsk_Entity entity)
 {
-    if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
-    if (!(gsk_ecs_has(e, C_COLLIDER))) return;
-    if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(entity, C_RIGIDBODY))) return;
+    if (!(gsk_ecs_has(entity, C_COLLIDER))) return;
+    if (!(gsk_ecs_has(entity, C_TRANSFORM))) return;
 
-    struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
-    struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
-    struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
+    struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
+    struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
+    struct ComponentTransform *transform = gsk_ecs_get(entity, C_TRANSFORM);
+
+    // Calculate simulation-time
+    const gsk_Time time = gsk_device_getTime();
+    const f64 delta     = time.fixed_delta_time * time.time_scale;
 
     // --
     // -- Add gravity to net force (mass considered)
@@ -100,37 +131,26 @@ fixed_update(gsk_Entity e)
     gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
     int total_solvers          = (int)pSolver->solvers_list->list_next;
 
-    // Calculate simulation-time
-    const gsk_Time time = gsk_device_getTime();
-    const f64 delta     = time.fixed_delta_time * time.time_scale;
-
     for (int i = 0; i < total_solvers; i++) {
-
         gsk_CollisionResult *pResult = &pSolver->solvers[i];
+
+        // --
+        // construct _SolverData used to pass into solver functions
+        _SolverData solver_data = {.p_rigidbody        = rigidbody,
+                                   .p_transform        = transform,
+                                   .p_collision_result = pResult,
+                                   .entity             = entity,
+                                   .delta              = delta};
 
         // --
         // Run Solvers
 
-        _position_solver(rigidbody, transform, pResult, e);
-        _impulse_solver(rigidbody, transform, pResult);
+        _position_solver(solver_data);
+        _impulse_solver(solver_data);
 
-#if 1
-        if (e.id == 3) {
-
-            // --
-            // push debug marker
-            gsk_debug_markers_push(e.ecs->renderer->debugContext,
-                                   e.id + 1,
-                                   pResult->points.point_a,
-                                   (vec4) {0, 1, 0, 0},
-                                   FALSE);
-            gsk_debug_markers_push(e.ecs->renderer->debugContext,
-                                   e.id + 2,
-                                   pResult->points.point_b,
-                                   (vec4) {1, 0, 0, 0},
-                                   FALSE);
-        }
-#endif
+#if DEBUG_POINTS
+        __debug_points(solver_data, DEBUG_POINTS);
+#endif // DEBUG_POINTS
 
         // Pop our solver
         gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
@@ -178,11 +198,11 @@ fixed_update(gsk_Entity e)
 }
 //-----------------------------------------------------------------------------
 static void
-_position_solver(struct ComponentRigidbody *rigidbody,
-                 struct ComponentTransform *transform,
-                 gsk_CollisionResult *collision_result,
-                 gsk_Entity entity)
+_position_solver(_SolverData solver_data)
 {
+    gsk_CollisionResult *collision_result = solver_data.p_collision_result;
+    struct ComponentTransform *transform  = solver_data.p_transform;
+
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
@@ -193,18 +213,16 @@ _position_solver(struct ComponentRigidbody *rigidbody,
     f32 c_weight = fmax((collision_result->points.depth - slop) * percent, 0);
     glm_vec3_scale(collision_normal, c_weight, correction);
 
-    LOG_INFO("%f",
-             (glm_dot(collision_result->points.point_a,
-                      collision_result->points.point_b) >= 0.0f));
-
     glm_vec3_add(transform->position, correction, transform->position);
 }
 //-----------------------------------------------------------------------------
 static void
-_impulse_solver(struct ComponentRigidbody *rigidbody,
-                struct ComponentTransform *transform,
-                gsk_CollisionResult *collision_result)
+_impulse_solver(_SolverData solver_data)
 {
+
+    gsk_CollisionResult *collision_result = solver_data.p_collision_result;
+    struct ComponentTransform *transform  = solver_data.p_transform;
+    struct ComponentRigidbody *rigidbody  = solver_data.p_rigidbody;
 
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();

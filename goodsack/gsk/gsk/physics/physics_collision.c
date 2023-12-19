@@ -238,14 +238,6 @@ gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
         glm_vec3_normalize(ret.normal);
 
         ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
-
-#if 0
-        LOG_INFO("test:\t%lf\t%lf\t%lf",
-                 ret.point_a[0],
-                 ret.point_a[1],
-                 ret.point_a[2]);
-#endif
-        LOG_INFO("Depth: %f", ret.depth);
     }
 
     return ret;
