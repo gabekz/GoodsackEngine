@@ -77,6 +77,11 @@ __find_box_sphere_inverse(
 
         // set depth
         ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
+
+        /*
+        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
+        glm_vec3_normalize(ret.normal);
+        */
     }
 
     return ret;
@@ -258,9 +263,32 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
         glm_normalize(normal);
         glm_vec3_copy(normal, ret.normal);
 
-        // calculate points
+#if 0
+        // calculate nearest point
+        vec3 dist_vec_a, dist_vec_b;
+        // scale normal to radius for collision-test
+        glm_vec3_scale(ret.normal, 1 / 2, dist_vec_a);
+        glm_vec3_add(pos_a, dist_vec_a, dist_vec_a);
+
+        glm_vec3_scale(ret.normal, 1 / 2, dist_vec_b);
+        glm_vec3_add(pos_b, dist_vec_b, dist_vec_b);
+        // glm_vec3_negate(dist_vec_b);
+#endif
+
+        // calculate point a
         _aabb_clamped_point(bounds_a, pos_a, pos_b, ret.point_a);
-        _aabb_clamped_point(bounds_b, pos_b, pos_a, ret.point_b);
+
+        // calculate point b
+        glm_vec3_sub(ret.point_a, pos_b, normal);
+        glm_vec3_normalize(normal);
+
+        float dist = glm_vec3_distance(pos_a, ret.point_a);
+        glm_vec3_scale(normal, dist, ret.point_b);
+        glm_vec3_add(pos_b, ret.point_b, ret.point_b);
+        _aabb_clamped_point(bounds_b, pos_b, ret.point_b, ret.point_b);
+
+        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
+        glm_vec3_normalize(ret.normal);
 
         ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
     }

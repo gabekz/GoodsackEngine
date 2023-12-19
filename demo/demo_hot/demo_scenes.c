@@ -577,14 +577,14 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity2,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_SPHERE,
+                            .type = COLLIDER_BOX,
                           }));
 
     _gsk_ecs_add_internal(
       sphereEntity2,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_sphere,
+                                         .pModel     = model_cube,
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
@@ -599,7 +599,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(cubeEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {-0.2f, 0.1f, 0.1f},
+                            .position = {0.0f, 0.1f, 0.0f},
                           }));
 
     _gsk_ecs_add_internal(cubeEntity,
