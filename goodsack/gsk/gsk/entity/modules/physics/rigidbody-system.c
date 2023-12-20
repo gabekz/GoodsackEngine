@@ -187,7 +187,7 @@ _position_solver(_SolverData solver_data)
     f32 c_weight = fmax((collision_result->points.depth - slop), 0);
     glm_vec3_scale(collision_normal, percent, correction);
     glm_vec3_scale(correction, c_weight, correction);
-    // glm_vec3_divs(correction, inverse_scalar, correction);
+    // glm_vec3_scale(correction, inverse_scalar, correction);
 
     glm_vec3_add(transform->position, correction, transform->position);
 }

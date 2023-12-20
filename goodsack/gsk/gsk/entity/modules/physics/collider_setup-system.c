@@ -236,7 +236,7 @@ fixed_update(gsk_Entity e)
 
                 // calculate relative velocity
                 glm_vec3_sub(
-                  linear_velocity_b, linear_velocity_a, relative_velocity);
+                  linear_velocity_a, linear_velocity_b, relative_velocity);
             } else {
                 glm_vec3_copy(linear_velocity_a, relative_velocity);
             }

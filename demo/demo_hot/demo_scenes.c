@@ -529,7 +529,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0.2f, 2.5f, -1.0f},
+                            .position = {0.0f, 4.5f, -2.2f},
                           }));
 
     _gsk_ecs_add_internal(sphereEntity,
@@ -542,14 +542,14 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_BOX,
+                            .type = COLLIDER_SPHERE,
                           }));
 
     _gsk_ecs_add_internal(
       sphereEntity,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_cube,
+                                         .pModel     = model_sphere,
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
@@ -565,7 +565,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity2,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0.0f, 3.0f, -1.2f},
+                            .position = {0.0f, 3.0f, -2.2f},
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,
@@ -578,14 +578,14 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity2,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_BOX,
+                            .type = COLLIDER_SPHERE,
                           }));
 
     _gsk_ecs_add_internal(
       sphereEntity2,
       C_MODEL,
       (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_cube,
+                                         .pModel     = model_sphere,
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
