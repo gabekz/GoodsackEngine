@@ -498,6 +498,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     *pFloorEntity            = gsk_ecs_new(ecs);
     gsk_Entity floorEntity   = *pFloorEntity;
 
+#if 1
     _gsk_ecs_add_internal(floorEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
@@ -519,6 +520,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                                            .drawMode = DRAW_ARRAYS,
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
+#endif
 #if 1
 
     gsk_Entity *pSphereEntity = malloc(sizeof(gsk_Entity));
@@ -527,14 +529,14 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0.2f, 0.5f, -1.0f},
+                            .position = {0.2f, 2.5f, -1.0f},
                           }));
 
     _gsk_ecs_add_internal(sphereEntity,
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass    = 10.0f,
+                            .mass    = 2.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity,
@@ -570,7 +572,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass    = 10.0f,
+                            .mass    = 2.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,

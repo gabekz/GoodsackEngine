@@ -112,6 +112,7 @@ fixed_update(gsk_Entity e)
     collider->isColliding = 0;
 
     gsk_CollisionPoints points_list[MAX_COLLISION_POINTS];
+    gsk_EntityId id_point_list[MAX_COLLISION_POINTS];
     u32 points_list_next = 0;
 
     for (int i = 0; i < e.ecs->nextIndex; i++) {
@@ -187,33 +188,81 @@ fixed_update(gsk_Entity e)
 
         // Collision points
         if (points.has_collision) {
+            collider->isColliding = TRUE;
 
             points_list[points_list_next] = points;
-            if (points_list_next >= MAX_COLLISION_POINTS) {
-                LOG_CRITICAL("Max collision points exceeded");
-            }
+            id_point_list[points_list_next] =
+              (gsk_EntityId)i; // TODO: Should be ID
             points_list_next++;
         }
     }
 
-    for (u32 i = 0; i < points_list_next; i++) {
-        if (points_list[i].has_collision) {
-            if (gsk_ecs_has(e, C_RIGIDBODY)) {
-                struct ComponentRigidbody *rigidbody =
-                  gsk_ecs_get(e, C_RIGIDBODY);
+    for (int i = 0; i < points_list_next; i++) {
 
-                // Create a new collision result using our points
-                // TODO: Send objects A and B
-                gsk_CollisionResult result = {
-                  .points = points_list[i],
-                };
+        // TODO: AGAIN - fix look-up
+        gsk_Entity e_compare = {
+          .id    = (gsk_EntityId)id_point_list[i] + 1,
+          .index = (gsk_EntityId)id_point_list[i],
+          .ecs   = e.ecs,
+        };
 
-                // Send that over to the rigidbody solver list
-                gsk_physics_solver_push((gsk_PhysicsSolver *)rigidbody->solver,
-                                        result);
+        // push collision to rigidbody solver
+        if (gsk_ecs_has(e, C_RIGIDBODY)) {
+
+            struct ComponentRigidbody *rigidbody_a =
+              gsk_ecs_get(e, C_RIGIDBODY);
+
+            struct ComponentRigidbody *rigidbody_b = NULL;
+
+            if (gsk_ecs_has(e_compare, C_RIGIDBODY)) {
+                rigidbody_b = gsk_ecs_get(e_compare, C_RIGIDBODY);
             }
 
-            collider->isColliding = points_list[i].has_collision;
+            vec3 linear_velocity_a, linear_velocity_b = GLM_VEC3_ZERO_INIT;
+            vec3 relative_velocity = GLM_VEC3_ZERO_INIT;
+            f32 mass_a, mass_b                 = 1.0f; // default to 1
+            f32 inverse_mass_a, inverse_mass_b = 1.0f; // default to 1
+
+            // copy a-values
+            glm_vec3_copy(rigidbody_a->linear_velocity, linear_velocity_a);
+            mass_a         = rigidbody_a->mass;
+            inverse_mass_a = (1.0f / rigidbody_a->mass);
+
+            // copy b-values
+            if (rigidbody_b) {
+                glm_vec3_copy(rigidbody_b->linear_velocity, linear_velocity_b);
+                mass_b         = rigidbody_b->mass;
+                inverse_mass_b = (1.0f / rigidbody_b->mass);
+
+                // calculate relative velocity
+                glm_vec3_sub(
+                  linear_velocity_b, linear_velocity_a, relative_velocity);
+            } else {
+                glm_vec3_copy(linear_velocity_a, relative_velocity);
+            }
+
+            gsk_PhysicsMark mark = {
+              .mass_a = mass_a,
+              .mass_b = mass_b,
+            };
+            glm_vec3_copy(linear_velocity_a, mark.linear_velocity_a);
+            glm_vec3_copy(linear_velocity_b, mark.linear_velocity_b);
+            glm_vec3_copy(relative_velocity, mark.relative_velocity);
+
+            // Create a new collision result using our points
+            gsk_CollisionResult result = {
+              .points       = points_list[i],
+              .object_a     = rigidbody_a,
+              .object_b     = rigidbody_b,
+              .physics_mark = mark,
+            };
+
+            if (points_list_next >= MAX_COLLISION_POINTS) {
+                LOG_CRITICAL("Max collision points exceeded");
+            }
+            // Send that over to the rigidbody solver list
+            gsk_physics_solver_push((gsk_PhysicsSolver *)rigidbody_a->solver,
+                                    result);
         }
     }
 }

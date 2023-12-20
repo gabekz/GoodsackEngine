@@ -34,11 +34,21 @@ typedef struct gsk_CollisionPoints
     u16 has_collision; // bool
 } gsk_CollisionPoints;
 
+typedef struct gsk_PhysicsMark
+{
+    vec3 linear_velocity_a; // linear velocity of a
+    vec3 linear_velocity_b; // linear velocity of b
+    vec3 relative_velocity; // velocity of b - a
+    f32 mass_a;             // mass of a
+    f32 mass_b;             // mass of b
+} gsk_PhysicsMark;
+
 typedef struct gsk_CollisionResult
 {
     void *object_a;
     void *object_b;
     gsk_CollisionPoints points;
+    gsk_PhysicsMark physics_mark;
 } gsk_CollisionResult;
 
 typedef struct gsk_Collider

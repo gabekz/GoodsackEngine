@@ -61,7 +61,7 @@ gsk::tools::panels::ComponentViewer::draw(void)
         EndChild();
     }
     if (gsk_ecs_has(e, C_RIGIDBODY)) {
-        BeginChild("Rigidbody", ImVec2(0, GetFontSize() * 13.0f), true);
+        BeginChild("Rigidbody", ImVec2(0, GetFontSize() * 14.0f), true);
 
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Rigidbody Component");
@@ -74,10 +74,13 @@ gsk::tools::panels::ComponentViewer::draw(void)
             gsk_ecs_get(e, C_RIGIDBODY)));
 
         DragFloat3("Gravity", p.gravity, 0.1f, -3000, 3000);
-        DragFloat3("Velocity", p.velocity, 0.1f, -3000, 3000);
-        DragFloat3("Angular Velocity", p.angular_velocity, 0.1f, -3000, 3000);
         DragFloat3("Force", p.force, 0.1f, -3000, 3000);
-        DragFloat("Mass", &p.mass, 0.45f, 0.9f);
+        DragFloat("Mass", &p.mass, 0.45f, 0.1f, 0.1f);
+
+        Separator();
+
+        DragFloat3("Linear Velocity", p.linear_velocity, 0.1f, -3000, 3000);
+        DragFloat3("Angular Velocity", p.angular_velocity, 0.1f, -3000, 3000);
 
         Separator();
 

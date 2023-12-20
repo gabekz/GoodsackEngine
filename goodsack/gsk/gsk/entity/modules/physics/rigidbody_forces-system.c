@@ -41,7 +41,7 @@ fixed_update(gsk_Entity entity)
     vec3 fDm = GLM_VEC3_ZERO_INIT;
     glm_vec3_divs(rigidbody->force, rigidbody->mass, fDm);
     glm_vec3_scale(fDm, delta, fDm);
-    glm_vec3_add(rigidbody->velocity, fDm, rigidbody->velocity);
+    glm_vec3_add(rigidbody->linear_velocity, fDm, rigidbody->linear_velocity);
 }
 
 void

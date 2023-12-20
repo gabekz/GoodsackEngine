@@ -50,7 +50,7 @@
 
     "Rigidbody": {
         "Resource": [ "solver" ],
-        "vec3": [ "gravity", "velocity", "force" ],
+        "vec3": [ "gravity", "angular_velocity", "linear_velocity", "force" ],
         "float": [ "mass", "static_friction", "dynamic_friction" ]
     },
 
