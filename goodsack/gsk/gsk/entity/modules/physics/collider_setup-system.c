@@ -213,18 +213,32 @@ fixed_update(gsk_Entity e)
               gsk_ecs_get(e, C_RIGIDBODY);
 
             struct ComponentRigidbody *rigidbody_b = NULL;
+            struct ComponentTransform *transform_b = NULL;
 
+            //
+            // TODO: Refactor this section to separate function
+            //
+
+            // Get body_b Rigidbody
             if (gsk_ecs_has(e_compare, C_RIGIDBODY)) {
                 rigidbody_b = gsk_ecs_get(e_compare, C_RIGIDBODY);
             }
 
-            vec3 linear_velocity_a, linear_velocity_b = GLM_VEC3_ZERO_INIT;
+            // Get body_b Transform
+            if (gsk_ecs_has(e_compare, C_TRANSFORM)) {
+                transform_b = gsk_ecs_get(e_compare, C_TRANSFORM);
+            }
+
+            // initialize intermediary variables
+            vec3 linear_velocity_a, linear_velocity_b   = GLM_VEC3_ZERO_INIT;
+            vec3 angular_velocity_a, angular_velocity_b = GLM_VEC3_ZERO_INIT;
             vec3 relative_velocity = GLM_VEC3_ZERO_INIT;
             f32 mass_a, mass_b                 = 1.0f; // default to 1
             f32 inverse_mass_a, inverse_mass_b = 1.0f; // default to 1
 
             // copy a-values
             glm_vec3_copy(rigidbody_a->linear_velocity, linear_velocity_a);
+            glm_vec3_copy(rigidbody_a->angular_velocity, angular_velocity_a);
             mass_a         = rigidbody_a->mass;
             inverse_mass_a = (1.0f / rigidbody_a->mass);
 
@@ -237,25 +251,34 @@ fixed_update(gsk_Entity e)
                 // calculate relative velocity
                 glm_vec3_sub(
                   linear_velocity_a, linear_velocity_b, relative_velocity);
+
             } else {
                 glm_vec3_copy(linear_velocity_a, relative_velocity);
             }
 
             gsk_PhysicsMark mark = {
+
               .body_a =
-                {
+                (gsk_DynamicBody) {
                   .mass         = mass_a,
                   .inverse_mass = inverse_mass_a,
                 },
+
               .body_b =
-                {
+                (gsk_DynamicBody) {
                   .mass         = mass_b,
                   .inverse_mass = inverse_mass_b,
                 },
             };
+
+            // copy vectors
             glm_vec3_copy(linear_velocity_a, mark.body_a.linear_velocity);
             glm_vec3_copy(linear_velocity_b, mark.body_b.linear_velocity);
             glm_vec3_copy(relative_velocity, mark.relative_velocity);
+
+            // copy world-positions
+            glm_vec3_copy(transform->position, mark.body_a.position);
+            glm_vec3_copy(transform_b->position, mark.body_b.position);
 
             // Create a new collision result using our points
             gsk_CollisionResult result = {
