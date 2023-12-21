@@ -15,6 +15,7 @@
 #include "physics/physics_solver.h"
 
 #define USING_ANGULAR_VELOCITY 0
+#define USING_FRICTION         0
 #define DEBUG_POINTS           3 // 0 -- OFF | value = entity id
 
 typedef struct _SolverData
@@ -244,6 +245,10 @@ _impulse_solver(_SolverData solver_data)
     // prevent negative impulse
     if (vDotN >= 0.0f) { return; }
 
+    // scale by inverse mass
+    glm_vec3_scale(reflect, (1.0f / marker.mass_a), reflect);
+
+#if USING_FRICTION
     // --
     // Friction implementation
 
@@ -276,6 +281,7 @@ _impulse_solver(_SolverData solver_data)
     } else {
         glm_vec3_scale(tangent, -j * df, friction_impulse);
     }
+#endif // USING_ANGULAR_VELOCITY
 
 #if USING_ANGULAR_VELOCITY
     // angular velocity
