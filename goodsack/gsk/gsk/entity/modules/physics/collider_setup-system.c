@@ -242,18 +242,24 @@ fixed_update(gsk_Entity e)
             }
 
             gsk_PhysicsMark mark = {
-              .mass_a = mass_a,
-              .mass_b = mass_b,
+              .body_a =
+                {
+                  .mass         = mass_a,
+                  .inverse_mass = inverse_mass_a,
+                },
+              .body_b =
+                {
+                  .mass         = mass_b,
+                  .inverse_mass = inverse_mass_b,
+                },
             };
-            glm_vec3_copy(linear_velocity_a, mark.linear_velocity_a);
-            glm_vec3_copy(linear_velocity_b, mark.linear_velocity_b);
+            glm_vec3_copy(linear_velocity_a, mark.body_a.linear_velocity);
+            glm_vec3_copy(linear_velocity_b, mark.body_b.linear_velocity);
             glm_vec3_copy(relative_velocity, mark.relative_velocity);
 
             // Create a new collision result using our points
             gsk_CollisionResult result = {
               .points       = points_list[i],
-              .object_a     = rigidbody_a,
-              .object_b     = rigidbody_b,
               .physics_mark = mark,
             };
 

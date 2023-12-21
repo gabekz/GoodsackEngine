@@ -11,7 +11,6 @@
 #include "entity/ecsdefs.h"
 #include "entity/lua/eventstore.hpp"
 
-
 // TODO: Move to thirdparty directive - gabekz/GoodsackEngine#19
 #include <gtest/gtest.h>
 

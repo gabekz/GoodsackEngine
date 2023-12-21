@@ -16,7 +16,6 @@
 #include "entity/lua/eventstore.hpp"
 #include "entity/lua/reg_system.hpp"
 
-
 #include "wrapper/lua/lua_debug.h"
 #include "wrapper/lua/lua_reg_print.h"
 

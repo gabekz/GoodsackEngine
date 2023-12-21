@@ -40,6 +40,7 @@ __debug_points(const _SolverData solver_data, u32 id)
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     gsk_Entity entity                     = solver_data.entity;
 
+#if 0
     if (entity.id == id) {
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                entity.id + 1,
@@ -52,6 +53,7 @@ __debug_points(const _SolverData solver_data, u32 id)
                                (vec4) {1, 0, 0, 0},
                                FALSE);
     }
+#endif
 }
 //-----------------------------------------------------------------------------
 
@@ -172,14 +174,15 @@ static void
 _position_solver(_SolverData solver_data)
 {
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
-    gsk_PhysicsMark marker                = collision_result->physics_mark;
     struct ComponentTransform *transform  = solver_data.p_transform;
-    struct ComponentRigidbody *rigidbody  = solver_data.p_rigidbody;
+
+    gsk_DynamicBody body_a = collision_result->physics_mark.body_a;
+    gsk_DynamicBody body_b = collision_result->physics_mark.body_b;
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    f32 inverse_scalar = ((1.0f / marker.mass_a) + (1.0f / marker.mass_b));
+    f32 inverse_scalar = body_a.inverse_mass + body_b.inverse_mass;
 
     const float percent = 0.8f;
     const float slop    = 0.01f;
@@ -190,6 +193,7 @@ _position_solver(_SolverData solver_data)
     glm_vec3_scale(correction, c_weight, correction);
     // glm_vec3_scale(correction, inverse_scalar, correction);
 
+    // integrate new position
     glm_vec3_add(transform->position, correction, transform->position);
 }
 //-----------------------------------------------------------------------------
@@ -197,34 +201,15 @@ static void
 _impulse_solver(_SolverData solver_data)
 {
 
-    gsk_CollisionResult *collision_result  = solver_data.p_collision_result;
+    gsk_CollisionResult *collision_result = solver_data.p_collision_result;
+    gsk_PhysicsMark marker               = collision_result->physics_mark;
+
     struct ComponentTransform *transform   = solver_data.p_transform;
     struct ComponentRigidbody *rigidbody_a = solver_data.p_rigidbody;
     const f64 delta                        = solver_data.delta;
 
-    gsk_PhysicsMark marker = collision_result->physics_mark;
-
-// get dynamic bodies
-#if 0
-    struct ComponentRigidbody *rigidbody_b =
-      (struct ComponentRigidbody *)collision_result->object_b;
-
-    vec3 linear_velocity_a, linear_velocity_b = GLM_VEC3_ZERO_INIT;
-    f32 mass_a, mass_b                        = 1.0f; // default to 1
-    f32 inverse_mass_a, inverse_mass_b        = 1.0f; // default to 1
-
-    // copy a-values
-    glm_vec3_copy(rigidbody_a->linear_velocity, linear_velocity_a);
-    mass_a         = (1.0f);
-    inverse_mass_a = (1.0f / rigidbody_a->mass);
-
-    // copy b-values
-    if (rigidbody_b) {
-        glm_vec3_copy(rigidbody_b->linear_velocity, linear_velocity_b);
-        mass_b         = 1.0f;
-        inverse_mass_b = (1.0f / rigidbody_b->mass);
-    }
-#endif
+    gsk_DynamicBody body_a = marker.body_a;
+    gsk_DynamicBody body_b = marker.body_b;
 
     // --
     // Basic collision reflection
@@ -235,9 +220,10 @@ _impulse_solver(_SolverData solver_data)
     float restitution = 0.8f; // Bounce factor
 
     // calculate relative velocity
-    float vDotN = (glm_vec3_dot(marker.relative_velocity, collision_normal));
+    float vDotN = (glm_vec3_dot(
+      collision_result->physics_mark.relative_velocity, collision_normal));
     float F     = -(1.0f + restitution) * vDotN;
-    F /= ((1.0f / marker.mass_a) + (1.0f / marker.mass_b));
+    F /= body_a.inverse_mass + body_b.inverse_mass;
 
     vec3 reflect = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(collision_normal, F, reflect);
@@ -246,7 +232,28 @@ _impulse_solver(_SolverData solver_data)
     if (vDotN >= 0.0f) { return; }
 
     // scale by inverse mass
-    glm_vec3_scale(reflect, (1.0f / marker.mass_a), reflect);
+    glm_vec3_scale(reflect, body_a.inverse_mass, reflect);
+
+    // get point of contact
+    vec3 ra, ra_perp;
+    glm_vec3_subs(
+      collision_result->points.point_a, collision_result->points.depth, ra);
+    glm_vec3_sub(ra, transform->position, ra);
+
+    // perpendicular
+    glm_vec3_cross(transform->position, ra, ra_perp);
+
+    if (solver_data.entity.id == DEBUG_POINTS) {
+        gsk_debug_markers_push(solver_data.entity.ecs->renderer->debugContext,
+                               solver_data.entity.id + 3,
+                               ra_perp,
+                               (vec4) {0, 1, 1, 1},
+                               FALSE);
+    }
+
+    // angular velocity
+    vec3 angular_linear_velocity_a;
+    glm_vec3_mul(ra_perp, body_a.angular_velocity, angular_linear_velocity_a);
 
 #if USING_FRICTION
     // --
@@ -281,7 +288,7 @@ _impulse_solver(_SolverData solver_data)
     } else {
         glm_vec3_scale(tangent, -j * df, friction_impulse);
     }
-#endif // USING_ANGULAR_VELOCITY
+#endif // USING_FRICTION
 
 #if USING_ANGULAR_VELOCITY
     // angular velocity

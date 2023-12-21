@@ -6,6 +6,8 @@
 #ifndef __ARRAY_LIST_H__
 #define __ARRAY_LIST_H__
 
+#include <stdlib.h>
+
 #include "util/sysdefs.h"
 
 #ifdef __cplusplus
