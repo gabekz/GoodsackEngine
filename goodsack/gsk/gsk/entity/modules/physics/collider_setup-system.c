@@ -229,12 +229,18 @@ fixed_update(gsk_Entity e)
                 transform_b = gsk_ecs_get(e_compare, C_TRANSFORM);
             }
 
+            // calculate inertia
+            // TODO: Improve
+            f32 inertia = (2.0f / 5.0f); /*  X (mass * radius) */
+
             // initialize intermediary variables
             vec3 linear_velocity_a, linear_velocity_b   = GLM_VEC3_ZERO_INIT;
             vec3 angular_velocity_a, angular_velocity_b = GLM_VEC3_ZERO_INIT;
             vec3 relative_velocity = GLM_VEC3_ZERO_INIT;
-            f32 mass_a, mass_b                 = 1.0f; // default to 1
-            f32 inverse_mass_a, inverse_mass_b = 1.0f; // default to 1
+            f32 mass_a, mass_b                       = 0.0f; // default to 1
+            f32 inverse_mass_a, inverse_mass_b       = 0.0f; // default to 1
+            f32 inertia_a, inertia_b                 = 0;
+            f32 inverse_inertia_a, inverse_inertia_b = 0;
 
             // copy a-values
             glm_vec3_copy(rigidbody_a->linear_velocity, linear_velocity_a);
@@ -242,11 +248,19 @@ fixed_update(gsk_Entity e)
             mass_a         = rigidbody_a->mass;
             inverse_mass_a = (1.0f / rigidbody_a->mass);
 
+            // TODO: actually calculate HERE
+            inertia_a         = inertia * mass_a * 1;
+            inverse_inertia_a = (abs(inertia_a > 0)) ? 1.0f / inertia_a : 0;
+
             // copy b-values
             if (rigidbody_b) {
                 glm_vec3_copy(rigidbody_b->linear_velocity, linear_velocity_b);
                 mass_b         = rigidbody_b->mass;
                 inverse_mass_b = (1.0f / rigidbody_b->mass);
+
+                // TODO: Actually calculate HERE
+                inertia_b         = inertia * mass_b * 1;
+                inverse_inertia_b = (abs(inertia_b > 0)) ? 1.0f / inertia_b : 0;
 
                 // calculate relative velocity
                 glm_vec3_sub(
@@ -260,20 +274,28 @@ fixed_update(gsk_Entity e)
 
               .body_a =
                 (gsk_DynamicBody) {
-                  .mass         = mass_a,
-                  .inverse_mass = inverse_mass_a,
+                  .mass            = mass_a,
+                  .inverse_mass    = inverse_mass_a,
+                  .inertia         = inertia_a,
+                  .inverse_inertia = inverse_inertia_a,
                 },
 
               .body_b =
                 (gsk_DynamicBody) {
-                  .mass         = mass_b,
-                  .inverse_mass = inverse_mass_b,
+                  .mass            = mass_b,
+                  .inverse_mass    = inverse_mass_b,
+                  .inertia         = inertia_b,
+                  .inverse_inertia = inverse_inertia_b,
                 },
             };
 
             // copy vectors
             glm_vec3_copy(linear_velocity_a, mark.body_a.linear_velocity);
             glm_vec3_copy(linear_velocity_b, mark.body_b.linear_velocity);
+
+            glm_vec3_copy(angular_velocity_a, mark.body_a.angular_velocity);
+            glm_vec3_copy(angular_velocity_b, mark.body_b.angular_velocity);
+
             glm_vec3_copy(relative_velocity, mark.relative_velocity);
 
             // copy world-positions

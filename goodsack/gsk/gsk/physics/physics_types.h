@@ -40,6 +40,7 @@ typedef struct gsk_DynamicBody
     vec3 linear_velocity;
     vec3 angular_velocity;
     f32 mass, inverse_mass;
+    f32 inertia, inverse_inertia;
 } gsk_DynamicBody;
 
 typedef struct gsk_PhysicsMark
