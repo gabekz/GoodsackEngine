@@ -11,6 +11,8 @@
 #include "core/device/device.h"
 #include "core/drivers/opengl/opengl.h"
 
+#include "tools/debug/debug_draw_line.h"
+
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/primitives.h"
 
@@ -90,13 +92,23 @@ gsk_debug_context_init()
 
 void
 gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
+                       u8 type,
                        u32 id,
                        vec3 position,
+                       vec3 pos_end,
+                       f32 length,
                        vec4 color,
                        u8 persist)
 {
-    gsk_DebugMarker marker = {.id = id, .persist = persist};
+    gsk_DebugMarker marker = {
+      .type        = type,
+      .id          = id,
+      .persist     = persist,
+      .line.length = length,
+    };
+
     glm_vec3_copy(position, marker.position);
+    glm_vec3_copy(pos_end, marker.line.direction);
     glm_vec4_copy(color, marker.color);
 
     for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++) {
@@ -106,8 +118,9 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
 
         if (cnt_marker->id == id) {
             if (!cnt_marker->persist) {
-                glm_vec3_copy(position, cnt_marker->position); // HACK
-                glm_vec4_copy(color, cnt_marker->color);       // HACK
+                glm_vec3_copy(position, cnt_marker->position);      // HACK
+                glm_vec3_copy(pos_end, cnt_marker->line.direction); // HACK
+                glm_vec4_copy(color, cnt_marker->color);            // HACK
             }
             return;
         }
@@ -123,6 +136,17 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
 
         gsk_DebugMarker *cnt_marker =
           &((gsk_DebugMarker *)p_debug_context->markers_list->data.buffer)[i];
+
+        if (cnt_marker->type == MARKER_RAY) {
+            gsk_debug_draw_ray(p_debug_context,
+                               cnt_marker->position,
+                               cnt_marker->line.direction,
+                               6,
+                               cnt_marker->color);
+            return;
+        }
+
+        // TODO: Move to gsk_debug_draw_point()
 
 #if DRAW_MESH_ONLY
         gsk_Mesh *mesh = p_debug_context->model_sphere->meshes[0];

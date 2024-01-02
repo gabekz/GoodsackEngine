@@ -54,15 +54,21 @@ __debug_points(const _SolverData solver_data, u32 id)
 #if 1
     if (entity.id == id) {
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                               MARKER_RAY,
                                entity.id + 1,
                                collision_result->points.point_a,
-                               (vec4) {0, 1, 0, 0},
+                               (vec3) {1, 1, 0},
+                               6,
+                               (vec4) {0, 1, 1, 1},
                                FALSE);
+
+#if 0
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                entity.id + 2,
                                collision_result->points.point_b,
                                (vec4) {1, 0, 0, 0},
                                FALSE);
+#endif
     }
 #endif
 }
@@ -325,7 +331,7 @@ _impulse_solver_with_rotation(_SolverData solver_data)
     glm_vec3_add(
       rigidbody_a->linear_velocity, impulse, rigidbody_a->linear_velocity);
 
-    glm_vec3_sub(
+    glm_vec3_add(
       rigidbody_a->angular_velocity, torque, rigidbody_a->angular_velocity);
 }
 //-----------------------------------------------------------------------------
@@ -384,7 +390,7 @@ _impulse_solver_with_rotation_friction(_SolverData solver_data)
     vec3 cmba, cmbb;
     glm_vec3_add(body_a.linear_velocity, angular_linear_velocity_a, cmba);
     glm_vec3_add(body_b.linear_velocity, angular_linear_velocity_b, cmbb);
-    glm_vec3_sub(cmbb, cmba, relative_velocity);
+    glm_vec3_sub(cmba, cmbb, relative_velocity);
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
