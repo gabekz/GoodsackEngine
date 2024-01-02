@@ -26,7 +26,7 @@ _aabb_clamped_point(vec3 bounds[2], vec3 point_a, vec3 point_b, float *dest)
 }
 
 static void
-_invert_points_norm(float *point_a, float *point_b, float *normal)
+_invert_points(float *point_a, float *point_b)
 {
     vec3 hold = GLM_VEC3_ONE_INIT;
     hold[0]   = point_a[0];
@@ -72,7 +72,7 @@ __find_box_sphere_inverse(
 // possibly invert points
 #if 1
         if (inverse) {
-            _invert_points_norm(ret.point_a, ret.point_b, ret.normal);
+            _invert_points(ret.point_a, ret.point_b);
             // glm_vec3_negate(ret.normal);
         }
 #endif
