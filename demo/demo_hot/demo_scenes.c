@@ -331,26 +331,31 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
 
     ecs = gsk_renderer_active_scene(renderer, 3);
+    __set_active_scene_skybox(renderer, skyboxMain);
 
-    gsk_Texture *texCerbA = texture_create_d(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga");
-    gsk_Texture *texCerbN = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_N.tga");
-    gsk_Texture *texCerbM = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_M.tga");
-    gsk_Texture *texCerbS = texture_create_n(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_R.tga");
+    gsk_Texture *texCerbA =
+      texture_create_d(GSK_PATH("data://textures/pbr/cerberus/Cerberus_A.tga"));
+    gsk_Texture *texCerbN =
+      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_N.tga"));
+    gsk_Texture *texCerbM =
+      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_M.tga"));
+    gsk_Texture *texCerbS =
+      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_R.tga"));
 
-    gsk_Material *matCerb = gsk_material_create(NULL,
-                                                "../res/shaders/pbr.shader",
-                                                5,
-                                                texCerbA,
-                                                texCerbN,
-                                                texCerbM,
-                                                texCerbS,
-                                                texPbrAo);
+    gsk_Material *matCerb =
+      gsk_material_create(NULL,
+                          GSK_PATH("gsk://shaders/pbr.shader"),
+                          5,
+                          texCerbA,
+                          texCerbN,
+                          texCerbM,
+                          texCerbS,
+                          texPbrAo);
 
     gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
+
+    gsk_Model *model_cerb = gsk_model_load_from_file(
+      GSK_PATH("data://models/cerberus-triang.obj"), 1.0f, NULL);
 
 #if 1
     gsk_Entity entCerb                          = gsk_ecs_new(ecs);
@@ -358,13 +363,12 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
       .position = {0.0f, 0.0f, 0.0f},
       .scale    = {4.0f, 4.0f, 4.0f},
     };
-    struct ComponentModel compCerbMesh = {
-      .material   = matCerb,
-      .modelPath  = "../demo/demo_hot/Resources/models/cerberus-triang.obj",
-      .properties = {
-        .drawMode = DRAW_ARRAYS,
-        .cullMode = CULL_CW | CULL_FORWARD,
-      }};
+    struct ComponentModel compCerbMesh = {.material   = matCerb,
+                                          .pModel     = model_cerb,
+                                          .properties = {
+                                            .drawMode = DRAW_ARRAYS,
+                                            .cullMode = CULL_CW | CULL_FORWARD,
+                                          }};
     _gsk_ecs_add_internal(
       entCerb,
       C_TRANSFORM,

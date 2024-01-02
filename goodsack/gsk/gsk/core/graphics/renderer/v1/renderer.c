@@ -34,7 +34,7 @@
 #include "tools/debug/debug_draw_line.h"
 
 #define TESTING_DRAW_UI   1
-#define TESTING_DRAW_LINE 0
+#define TESTING_DRAW_LINE 1
 
 gsk_Renderer *
 gsk_renderer_init()
@@ -384,12 +384,34 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 #endif
 
 #if TESTING_DRAW_LINE
+#if 1
     gsk_debug_draw_line(renderer->debugContext,
                         (vec3) {-1.0f, 0, -1.0f},
-                        (vec3) {-1.0f, 0, 1.0f});
+                        (vec3) {-1.0f, 0, 1.0f},
+                        (vec4) {1, 1, 1, 1});
     gsk_debug_draw_line(renderer->debugContext,
                         (vec3) {-1.0f, 0, -1.0f},
-                        (vec3) {1.0f, 0, -1.0f});
+                        (vec3) {1.0f, 0, -1.0f},
+                        (vec4) {0, 1, 0, 1});
+#endif
+
+    gsk_debug_draw_ray(renderer->debugContext,
+                       (vec3) {0, 0, 0},
+                       (vec3) {1, 1, 0},
+                       5,
+                       (vec4) {0, 1, 1, 1});
+
+    gsk_debug_draw_ray(renderer->debugContext,
+                       (vec3) {0, 0, 0},
+                       (vec3) {-1, 1, 0},
+                       5,
+                       (vec4) {1, 0, 0, 1});
+
+    gsk_debug_draw_ray(renderer->debugContext,
+                       (vec3) {0, 0, 0},
+                       (vec3) {0, 1, 1},
+                       8,
+                       (vec4) {1, 1, 0, 1});
 #endif
 
 // Draw debug markers

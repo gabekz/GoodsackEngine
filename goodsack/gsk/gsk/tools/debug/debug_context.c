@@ -62,7 +62,7 @@ gsk_debug_context_init()
 
         // Sphere (Model)
         ret->model_sphere = gsk_model_load_from_file(
-          GSK_PATH("gsk://models/sphere.obj"), 1, FALSE);
+          GSK_PATH("gsk://models/pyramid.obj"), 0.1f, FALSE);
 
         // VAO Line
         vec3 lineStart    = GLM_VEC3_ZERO_INIT;
@@ -152,7 +152,8 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
                      color);
 
 #if DRAW_MESH_ONLY
-        glDrawArrays(GL_TRIANGLES, 0, mesh->meshData->vertexCount);
+        // glDrawArrays(GL_TRIANGLES, 0, mesh->meshData->vertexCount);
+        glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, mesh->meshData->vertexCount);
 #else
         glDrawElements(
           GL_TRIANGLE_STRIP, PRIM_SIZ_I_CUBE, GL_UNSIGNED_INT, NULL);
