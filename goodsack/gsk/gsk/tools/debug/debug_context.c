@@ -141,9 +141,9 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
             gsk_debug_draw_ray(p_debug_context,
                                cnt_marker->position,
                                cnt_marker->line.direction,
-                               6,
+                               cnt_marker->line.length,
                                cnt_marker->color);
-            return;
+            continue;
         }
 
         // TODO: Move to gsk_debug_draw_point()

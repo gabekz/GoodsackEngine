@@ -74,7 +74,7 @@ gsk_debug_draw_ray(gsk_DebugContext *debugContext,
     glm_normalize_to(direction, newrot);
 
     // setup rotation
-    glm_lookat((vec3) {0, 0, 0}, newrot, (vec3) {0, 1, 0}, matrix_rot);
+    glm_lookat((vec3) {0, 0, 0}, newrot, (vec3) {1, 1, 0}, matrix_rot);
     glm_mat4_inv(matrix_rot, matrix_rot);
     // T * R
     glm_mat4_mul(matrix_pos, matrix_rot, matrix_pos);

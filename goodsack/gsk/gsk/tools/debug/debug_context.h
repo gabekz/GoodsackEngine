@@ -28,7 +28,8 @@ typedef struct gsk_DebugMarker
     u8 persist;
     struct
     {
-        vec3 end_pos, direction, length;
+        vec3 end_pos, direction;
+        f32 length;
     } line;
 
 } gsk_DebugMarker;

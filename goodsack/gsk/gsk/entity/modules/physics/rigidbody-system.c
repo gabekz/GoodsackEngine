@@ -53,13 +53,24 @@ __debug_points(const _SolverData solver_data, u32 id)
 
 #if 1
     if (entity.id == id) {
+        // relative velocity
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                MARKER_RAY,
                                entity.id + 1,
-                               collision_result->points.point_a,
-                               (vec3) {1, 1, 0},
-                               6,
+                               solver_data.p_transform->position,
+                               collision_result->physics_mark.relative_velocity,
+                               1,
                                (vec4) {0, 1, 1, 1},
+                               FALSE);
+
+        // collision normal
+        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                               MARKER_RAY,
+                               entity.id + 2,
+                               solver_data.p_transform->position,
+                               collision_result->points.normal,
+                               5,
+                               (vec4) {0, 1, 0, 1},
                                FALSE);
 
 #if 0

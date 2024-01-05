@@ -34,7 +34,7 @@
 #include "tools/debug/debug_draw_line.h"
 
 #define TESTING_DRAW_UI   1
-#define TESTING_DRAW_LINE 1
+#define TESTING_DRAW_LINE 0
 
 gsk_Renderer *
 gsk_renderer_init()
