@@ -10,6 +10,7 @@
 #include "util/logger.h"
 #include "util/maths.h"
 #include "util/sysdefs.h"
+#include "util/vec_colors.h"
 
 #include "tools/debug/debug_context.h"
 #include "tools/debug/debug_draw_line.h"
@@ -20,6 +21,8 @@
 // Functionality toggles
 #define USING_FRICTION 1
 #define DEBUG_POINTS   3 // 0 -- OFF | value = entity id
+
+#define DEBUG_TRACK 0
 
 // physics default values
 #define DEFAULT_RESTITUION       0.2f
@@ -45,6 +48,33 @@ static void
 _impulse_solver_with_rotation_friction(_SolverData solver_data);
 
 //-----------------------------------------------------------------------------
+#if DEBUG_TRACK
+static u32 s_dbg_instance       = 0xFF;
+static u32 s_dbg_instance_begin = 0xFF;
+
+static void
+__debug_ray(const _SolverData solver_data,
+            vec3 start,
+            vec3 direction,
+            vec4 color)
+{
+    gsk_CollisionResult *collision_result = solver_data.p_collision_result;
+    gsk_Entity entity                     = solver_data.entity;
+    if (DEBUG_POINTS && entity.id == DEBUG_POINTS) {
+        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                               MARKER_RAY,
+                               s_dbg_instance,
+                               start,
+                               direction,
+                               1,
+                               color,
+                               FALSE);
+        s_dbg_instance++;
+    }
+}
+#endif
+
+//-----------------------------------------------------------------------------
 static void
 __debug_points(const _SolverData solver_data, u32 id)
 {
@@ -53,6 +83,7 @@ __debug_points(const _SolverData solver_data, u32 id)
 
 #if 1
     if (entity.id == id) {
+
         // relative velocity
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                MARKER_RAY,
@@ -60,7 +91,7 @@ __debug_points(const _SolverData solver_data, u32 id)
                                solver_data.p_transform->position,
                                collision_result->physics_mark.relative_velocity,
                                1,
-                               (vec4) {0, 1, 1, 1},
+                               VCOL_BLUE,
                                FALSE);
 
         // collision normal
@@ -70,7 +101,7 @@ __debug_points(const _SolverData solver_data, u32 id)
                                solver_data.p_transform->position,
                                collision_result->points.normal,
                                5,
-                               (vec4) {0, 1, 0, 1},
+                               VCOL_GREEN,
                                FALSE);
 
 #if 0
@@ -152,6 +183,10 @@ fixed_update(gsk_Entity entity)
 
     gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
     int total_solvers          = (int)pSolver->solvers_list->list_next;
+
+#if DEBUG_TRACK
+    s_dbg_instance = s_dbg_instance_begin;
+#endif
 
     for (int i = 0; i < total_solvers; i++) {
         gsk_CollisionResult *pResult = &pSolver->solvers[i];
@@ -327,14 +362,14 @@ _impulse_solver_with_rotation(_SolverData solver_data)
     vec3 impulse = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(collision_normal, F, impulse);
 
+    // scale impulse by inverse mass
+    glm_vec3_scale(impulse, body_a.inverse_mass, impulse);
+
     vec3 torque;
     glm_vec3_cross(ra, impulse, torque);
     glm_vec3_negate(torque);
     // scale torque by inverse inertia
     glm_vec3_scale(torque, body_a.inverse_inertia, torque);
-
-    // scale impulse by inverse mass
-    glm_vec3_scale(impulse, body_a.inverse_mass, impulse);
 
     // --
     // Apply impulses
@@ -459,27 +494,61 @@ _impulse_solver_with_rotation_friction(_SolverData solver_data)
     // calculate friction_impulse
     vec3 friction_impulse = GLM_VEC3_ZERO_INIT;
 
-    if (abs(Ft) <= F * sf) {
+    if (fabs(Ft) <= F * sf) {
         glm_vec3_scale(tangent, Ft, friction_impulse);
         // LOG_INFO("STATIC");
     } else {
-        glm_vec3_scale(tangent, F * df, friction_impulse);
+        glm_vec3_scale(tangent, -F * df, friction_impulse);
         // LOG_INFO("DYNAMIC");
     }
 
-    vec3 torque;
-    glm_vec3_cross(ra, friction_impulse, torque);
-    glm_vec3_negate(torque);
-    // scale torque by inverse inertia
-    glm_vec3_scale(torque, body_a.inverse_inertia, torque);
-
+    // NOTE: May need to be done AFTER torque calculation
     // scale impulse by inverse mass
     glm_vec3_scale(friction_impulse, body_a.inverse_mass, friction_impulse);
+
+    vec3 torque;
+    glm_vec3_cross(ra, friction_impulse, torque);
+    // glm_vec3_negate(torque);
+    //  scale torque by inverse inertia
+    glm_vec3_scale(torque, body_a.inverse_inertia, torque);
+
+    if (solver_data.entity.id == DEBUG_POINTS) {
+#if DEBUG_TRACK
+        __debug_ray(solver_data,
+                    solver_data.p_transform->position,
+                    (vec3) {1, 0, 0},
+                    (vec4) {1, 0, 0, 1});
+
+        __debug_ray(solver_data,
+                    solver_data.p_transform->position,
+                    relative_velocity,
+                    (vec4) {1, 0, 1, 1});
+#else
+
+        gsk_debug_markers_push(solver_data.entity.ecs->renderer->debugContext,
+                               MARKER_RAY,
+                               solver_data.entity.id + 8,
+                               solver_data.p_transform->position,
+                               relative_velocity,
+                               1,
+                               VCOL_CYAN,
+                               FALSE);
+
+        gsk_debug_markers_push(solver_data.entity.ecs->renderer->debugContext,
+                               MARKER_RAY,
+                               solver_data.entity.id + 9,
+                               solver_data.p_transform->position,
+                               friction_impulse,
+                               100,
+                               VCOL_RED,
+                               FALSE);
+#endif
+    }
 
     // --
     // Apply impulses
 
-    glm_vec3_sub(rigidbody_a->linear_velocity,
+    glm_vec3_add(rigidbody_a->linear_velocity,
                  friction_impulse,
                  rigidbody_a->linear_velocity);
 

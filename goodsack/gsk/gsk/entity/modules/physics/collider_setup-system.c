@@ -259,8 +259,9 @@ fixed_update(gsk_Entity e)
                 inverse_mass_b = (1.0f / rigidbody_b->mass);
 
                 // TODO: Actually calculate HERE
-                inertia_b         = inertia * mass_b * 1;
-                inverse_inertia_b = (abs(inertia_b > 0)) ? 1.0f / inertia_b : 0;
+                inertia_b = inertia * mass_b * 1;
+                inverse_inertia_b =
+                  (fabs(inertia_b) > 0) ? 1.0f / inertia_b : 0;
 
                 // calculate relative velocity
                 glm_vec3_sub(
