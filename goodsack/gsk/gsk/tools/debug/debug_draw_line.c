@@ -66,29 +66,24 @@ gsk_debug_draw_ray(gsk_DebugContext *debugContext,
     // ------- Draw arrowhead ------- //
 
     // arrow matrix
-    mat4 matrix_arrow = GLM_MAT4_IDENTITY_INIT;
+    mat4 matrix_pos = GLM_MAT4_IDENTITY_INIT;
+    mat4 matrix_rot = GLM_MAT4_IDENTITY_INIT;
     vec3 newrot;
-    glm_vec3_sub(end, start, newrot);
 
-    glm_translate(matrix_arrow, end);
-    mat4 mtest;
-    glm_lookat(start, newrot, (vec3) {0, 1, 0}, mtest);
-    glm_inv_tr(mtest);
-    // glm_mat4_inv(mtest, mtest);
-    glm_mat4_mul(matrix_arrow, mtest, matrix_arrow);
+    glm_translate(matrix_pos, end);
+    glm_normalize_to(direction, newrot);
 
-#if 0
-    glUniform4fv(glGetUniformLocation(debugContext->material->shaderProgram->id,
-                                      "u_Color"),
-                 1,
-                 color);
-#endif
+    // setup rotation
+    glm_lookat((vec3) {0, 0, 0}, newrot, (vec3) {0, 1, 0}, matrix_rot);
+    glm_mat4_inv(matrix_rot, matrix_rot);
+    // T * R
+    glm_mat4_mul(matrix_pos, matrix_rot, matrix_pos);
 
     glUniformMatrix4fv(glGetUniformLocation(
                          debugContext->material->shaderProgram->id, "u_Model"),
                        1,
                        GL_FALSE,
-                       (float *)matrix_arrow);
+                       (float *)matrix_pos);
 
     gsk_Mesh *mesh_arrow = debugContext->model_sphere->meshes[0];
     gsk_gl_vertex_array_bind(mesh_arrow->vao);
