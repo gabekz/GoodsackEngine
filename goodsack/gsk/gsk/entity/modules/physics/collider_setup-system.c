@@ -239,8 +239,8 @@ fixed_update(gsk_Entity e)
             vec3 relative_velocity = GLM_VEC3_ZERO_INIT;
             f32 mass_a, mass_b                       = 0.0f; // default to 1
             f32 inverse_mass_a, inverse_mass_b       = 0.0f; // default to 1
-            f32 inertia_a, inertia_b                 = 0;
-            f32 inverse_inertia_a, inverse_inertia_b = 0;
+            f32 inertia_a, inertia_b                 = 0.0f;
+            f32 inverse_inertia_a, inverse_inertia_b = 0.0f;
 
             // copy a-values
             glm_vec3_copy(rigidbody_a->linear_velocity, linear_velocity_a);
@@ -250,7 +250,7 @@ fixed_update(gsk_Entity e)
 
             // TODO: actually calculate HERE
             inertia_a         = inertia * mass_a * 1;
-            inverse_inertia_a = (abs(inertia_a > 0)) ? 1.0f / inertia_a : 0;
+            inverse_inertia_a = (fabs(inertia_a) > 0.0f) ? 1.0f / inertia_a : 0;
 
             // copy b-values
             if (rigidbody_b) {

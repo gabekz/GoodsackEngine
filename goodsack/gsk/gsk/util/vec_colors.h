@@ -16,4 +16,6 @@
 #define VCOL_YELLOW ((vec4) {1, 1, 0, 1})
 #define VCOL_PURPLE ((vec4) {1, 0, 1, 1})
 
+#define VCOL_ORANGE ((vec4) {1, 0.5f, 0, 1})
+
 #endif // __VEC_COLORS_H__
