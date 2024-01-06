@@ -81,18 +81,7 @@ __debug_points(const _SolverData solver_data, u32 id)
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     gsk_Entity entity                     = solver_data.entity;
 
-#if 1
     if (entity.id == id) {
-
-        // relative velocity
-        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
-                               MARKER_RAY,
-                               entity.id + 1,
-                               solver_data.p_transform->position,
-                               collision_result->physics_mark.relative_velocity,
-                               1,
-                               VCOL_BLUE,
-                               FALSE);
 
         // collision normal
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
@@ -104,15 +93,7 @@ __debug_points(const _SolverData solver_data, u32 id)
                                VCOL_GREEN,
                                FALSE);
 
-#if 0
-        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
-                               entity.id + 2,
-                               collision_result->points.point_b,
-                               (vec4) {1, 0, 0, 0},
-                               FALSE);
-#endif
     }
-#endif
 }
 //-----------------------------------------------------------------------------
 
@@ -334,6 +315,18 @@ _impulse_solver_with_rotation(_SolverData solver_data)
     glm_vec3_add(body_b.linear_velocity, angular_linear_velocity_b, cmbb);
     glm_vec3_sub(cmba, cmbb, relative_velocity);
 
+    // draw relative velocity
+    if (solver_data.entity.id == DEBUG_POINTS) {
+        gsk_debug_markers_push(solver_data.entity.ecs->renderer->debugContext,
+                               MARKER_RAY,
+                               solver_data.entity.id + 6,
+                               solver_data.p_transform->position,
+                               relative_velocity,
+                               1,
+                               VCOL_BLUE,
+                               FALSE);
+    };
+
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
@@ -362,14 +355,15 @@ _impulse_solver_with_rotation(_SolverData solver_data)
     vec3 impulse = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(collision_normal, F, impulse);
 
-    // scale impulse by inverse mass
-    glm_vec3_scale(impulse, body_a.inverse_mass, impulse);
-
     vec3 torque;
     glm_vec3_cross(ra, impulse, torque);
-    glm_vec3_negate(torque);
+    //glm_vec3_negate(torque);
     // scale torque by inverse inertia
     glm_vec3_scale(torque, body_a.inverse_inertia, torque);
+
+    // NOTE: May need to be done AFTER torque calculation
+    // scale impulse by inverse mass
+    glm_vec3_scale(impulse, body_a.inverse_mass, impulse);
 
     // --
     // Apply impulses
@@ -378,7 +372,7 @@ _impulse_solver_with_rotation(_SolverData solver_data)
       rigidbody_a->linear_velocity, impulse, rigidbody_a->linear_velocity);
 
     glm_vec3_add(
-      rigidbody_a->angular_velocity, torque, rigidbody_a->angular_velocity);
+        rigidbody_a->angular_velocity, torque, rigidbody_a->angular_velocity);
 }
 //-----------------------------------------------------------------------------
 static void
@@ -426,7 +420,7 @@ _impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     // angular velocity
     vec3 angular_linear_velocity_a, angular_linear_velocity_b;
-    glm_vec3_mul(ra_perp, body_a.angular_velocity, angular_linear_velocity_a);
+    glm_vec3_mul(ra_perp, rigidbody_a->angular_velocity, angular_linear_velocity_a);
     glm_vec3_mul(rb_perp, body_b.angular_velocity, angular_linear_velocity_b);
 
     // calculate relative velocity
@@ -434,7 +428,7 @@ _impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     vec3 relative_velocity;
     vec3 cmba, cmbb;
-    glm_vec3_add(body_a.linear_velocity, angular_linear_velocity_a, cmba);
+    glm_vec3_add(rigidbody_a->linear_velocity, angular_linear_velocity_a, cmba);
     glm_vec3_add(body_b.linear_velocity, angular_linear_velocity_b, cmbb);
     glm_vec3_sub(cmba, cmbb, relative_velocity);
 
@@ -455,7 +449,6 @@ _impulse_solver_with_rotation_friction(_SolverData solver_data)
     // check tangent for near-zero
     float zerodist = glm_vec3_distance(tangent, GLM_VEC3_ZERO);
     // assert(zerodist >= 0.0f);
-    // LOG_INFO("%f zerodist", zerodist);
     if (zerodist <= 0.002f) { return; } // get out!
 
     glm_vec3_normalize(tangent);
@@ -466,8 +459,8 @@ _impulse_solver_with_rotation_friction(_SolverData solver_data)
     // prevent negative impulse
     float restitution = DEFAULT_RESTITUION; // Bounce factor
     float F           = -(1.0f + restitution) * vDotN;
-    // if (vDotN >= 0.0f) { return; };
-    // if (vDotN >= 0) F = 0;
+    //if (vDotN >= 0.0f) { return; };
+    //if (vDotN >= 0) F = 0;
 
     // dots
     f32 ra_perpDotT = glm_dot(ra_perp, tangent);
@@ -502,15 +495,16 @@ _impulse_solver_with_rotation_friction(_SolverData solver_data)
         // LOG_INFO("DYNAMIC");
     }
 
+    vec3 torque;
+    glm_vec3_cross(ra, friction_impulse, torque);
+    //glm_vec3_negate(torque);
+    //  scale torque by inverse inertia
+    glm_vec3_scale(torque, body_a.inverse_inertia, torque);
+
     // NOTE: May need to be done AFTER torque calculation
     // scale impulse by inverse mass
     glm_vec3_scale(friction_impulse, body_a.inverse_mass, friction_impulse);
 
-    vec3 torque;
-    glm_vec3_cross(ra, friction_impulse, torque);
-    // glm_vec3_negate(torque);
-    //  scale torque by inverse inertia
-    glm_vec3_scale(torque, body_a.inverse_inertia, torque);
 
     if (solver_data.entity.id == DEBUG_POINTS) {
 #if DEBUG_TRACK
@@ -538,8 +532,8 @@ _impulse_solver_with_rotation_friction(_SolverData solver_data)
                                MARKER_RAY,
                                solver_data.entity.id + 9,
                                solver_data.p_transform->position,
-                               friction_impulse,
-                               100,
+                               tangent,
+                               10,
                                VCOL_RED,
                                FALSE);
 #endif
@@ -548,12 +542,12 @@ _impulse_solver_with_rotation_friction(_SolverData solver_data)
     // --
     // Apply impulses
 
-    glm_vec3_add(rigidbody_a->linear_velocity,
+    glm_vec3_sub(rigidbody_a->linear_velocity,
                  friction_impulse,
                  rigidbody_a->linear_velocity);
 
-    glm_vec3_add(
-      rigidbody_a->angular_velocity, torque, rigidbody_a->angular_velocity);
+    //glm_vec3_sub(
+    //  rigidbody_a->angular_velocity, torque, rigidbody_a->angular_velocity);
 }
 
 void
