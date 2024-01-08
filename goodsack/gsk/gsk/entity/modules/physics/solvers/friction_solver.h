@@ -6,8 +6,8 @@
 #ifndef __FRICTION_SOLVER_H__
 #define __FRICTION_SOLVER_H__
 
-#include "physics/physics_solver.h"
 #include "entity/ecs.h"
+#include "physics/physics_solver.h"
 
 typedef struct _SolverData
 {
@@ -18,7 +18,7 @@ typedef struct _SolverData
     const f64 delta;
 } _SolverData;
 
-
-void impulse_solver_with_rotation_friction(_SolverData solver_data);
+void
+impulse_solver_with_rotation_friction(_SolverData solver_data);
 
 #endif // __FRICTION_SOLVER_H__

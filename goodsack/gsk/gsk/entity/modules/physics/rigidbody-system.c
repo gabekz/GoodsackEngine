@@ -21,8 +21,8 @@
 #include "entity/modules/physics/solvers/friction_solver.h"
 
 // Functionality toggles
-#define DEBUG_POINTS   3 // 0 -- OFF | value = entity id
-#define DEBUG_TRACK 0
+#define DEBUG_POINTS 3 // 0 -- OFF | value = entity id
+#define DEBUG_TRACK  0
 
 #define CALC_INERTIA 0
 
