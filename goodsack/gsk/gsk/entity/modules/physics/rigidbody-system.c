@@ -21,8 +21,8 @@
 #include "entity/modules/physics/solvers/friction_solver.h"
 
 // Functionality toggles
-#define DEBUG_POINTS 3 // 0 -- OFF | value = entity id
 #define DEBUG_TRACK  0
+#define DEBUG_POINTS 0 // 0 -- OFF | value = entity id
 
 #define CALC_INERTIA 0
 
@@ -69,21 +69,30 @@ __debug_ray(const _SolverData solver_data,
 
 //-----------------------------------------------------------------------------
 static void
-__debug_points(const _SolverData solver_data, u32 id)
+__debug_points(const _SolverData solver_data)
 {
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     gsk_Entity entity                     = solver_data.entity;
 
-    if (entity.id == id) {
+    if (DEBUG_POINTS && entity.id == DEBUG_POINTS) {
 
         // collision normal
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                MARKER_RAY,
-                               entity.id + 2,
+                               entity.id + 25,
                                solver_data.p_transform->position,
                                collision_result->points.normal,
                                5,
                                VCOL_GREEN,
+                               FALSE);
+
+        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                               MARKER_POINT,
+                               entity.id + 26,
+                               collision_result->points.point_a,
+                               collision_result->points.normal,
+                               5,
+                               VCOL_BLUE,
                                FALSE);
     }
 }
@@ -184,7 +193,7 @@ fixed_update(gsk_Entity entity)
         // Run debug markers
 
 #if DEBUG_POINTS
-        __debug_points(solver_data, DEBUG_POINTS);
+        __debug_points(solver_data);
 #endif // DEBUG_POINTS
 
         // --

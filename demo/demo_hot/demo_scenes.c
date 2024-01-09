@@ -506,7 +506,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(floorEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position    = {0.0f, 0.0f, 0.0f},
+                            .position    = {0.0f, -1.0f, 0.0f},
                             .scale       = {10.0f, 1.0f, 10.0f},
                             .orientation = {0.0f, 0.0f, 0.0f},
                           }));

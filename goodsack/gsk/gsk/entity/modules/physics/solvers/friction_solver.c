@@ -10,9 +10,10 @@
 #include "util/sysdefs.h"
 #include "util/vec_colors.h"
 
-#define DEFAULT_RESTITUION 0.5f
+#define DEFAULT_RESTITUION 0.2f
 
-#define DEBUG_POINTS 3 // 0 -- OFF | value = entity id
+#define DEBUG_POINTS     0 // 0 -- OFF | value = entity id
+#define DISABLE_ROTATION 1
 
 static void
 __calc_relative_velocity(_SolverData solver_data,
@@ -69,14 +70,17 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     // store collision_normal
     glm_vec3_copy(collision_result->points.normal, collision_normal);
+    // glm_vec3_negate(collision_normal);
 
     // calculate r-values + relative velocity
     {
         glm_vec3_sub(collision_result->points.point_a, body_a.position, ra);
-        glm_vec3_cross(ra, body_a.position, ra_perp);
+        glm_vec3_cross(ra, collision_result->points.point_a, ra_perp);
+        // glm_vec3_normalize(ra_perp);
 
         glm_vec3_sub(collision_result->points.point_b, body_b.position, rb);
-        glm_vec3_cross(rb, body_b.position, rb_perp);
+        glm_vec3_cross(collision_result->points.point_b, rb, rb_perp);
+        // glm_vec3_normalize(rb_perp);
 
         // calculate relative velocity
         __calc_relative_velocity(solver_data,
@@ -124,13 +128,14 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     // Debug some data
     {
-        if (solver_data.entity.id == DEBUG_POINTS) {
+        if (DEBUG_POINTS && solver_data.entity.id == DEBUG_POINTS) {
+
             gsk_debug_markers_push(
               solver_data.entity.ecs->renderer->debugContext,
               MARKER_RAY,
               solver_data.entity.id + 6,
               collision_result->points.point_a,
-              relative_velocity,
+              rigidbody_a->linear_velocity,
               1,
               VCOL_BLUE,
               FALSE);
@@ -145,6 +150,38 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
               100,
               VCOL_RED,
               FALSE);
+
+            gsk_debug_markers_push(
+              solver_data.entity.ecs->renderer->debugContext,
+              MARKER_RAY,
+              solver_data.entity.id + 11,
+              // solver_data.p_transform->position,
+              collision_result->points.point_a,
+              ra_perp,
+              1,
+              VCOL_WHITE,
+              FALSE);
+            gsk_debug_markers_push(
+              solver_data.entity.ecs->renderer->debugContext,
+              MARKER_RAY,
+              solver_data.entity.id + 20,
+              solver_data.p_transform->position,
+              ra,
+              1,
+              VCOL_WHITE,
+              FALSE);
+#if 0
+            gsk_debug_markers_push(
+              solver_data.entity.ecs->renderer->debugContext,
+              MARKER_RAY,
+              solver_data.entity.id + 12,
+              // solver_data.p_transform->position,
+              collision_result->points.point_a,
+              ra_perp,
+              10,
+              VCOL_CYAN,
+              FALSE);
+#endif
         };
     }
 
@@ -156,17 +193,14 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
         glm_vec3_add(
           rigidbody_a->linear_velocity, impulse, rigidbody_a->linear_velocity);
 
-        // glm_vec3_add(
-        //   rigidbody_a->angular_velocity, torque,
-        //   rigidbody_a->angular_velocity);
+#if (ENABLE_ROTATION)
+        glm_vec3_add(
+          rigidbody_a->angular_velocity, torque, rigidbody_a->angular_velocity);
 
-        /*
         // TESTING
-        glm_vec3_sub(
-          body_b_lin_vel, impulse, body_b_lin_vel);
-        glm_vec3_sub(
-          body_b_ang_vel, torque, body_b_ang_vel);
-          */
+        glm_vec3_sub(body_b_lin_vel, impulse, body_b_lin_vel);
+        glm_vec3_sub(body_b_ang_vel, torque, body_b_ang_vel);
+#endif // (ENABLE_ROTATION)
     }
 
     // -----------------------------
@@ -248,15 +282,17 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
                      friction_impulse,
                      rigidbody_a->linear_velocity);
 
-        // glm_vec3_add(
-        //   rigidbody_a->angular_velocity, friction_torque,
-        //   rigidbody_a->angular_velocity);
+#if (ENABLE_ROTATION)
+        glm_vec3_add(rigidbody_a->angular_velocity,
+                     friction_torque,
+                     rigidbody_a->angular_velocity);
+#endif // (ENABLE_ROTATION)
     }
 
     // --------------
     // DEBUG SOME LINES
     {
-        if (solver_data.entity.id == DEBUG_POINTS) {
+        if (DEBUG_POINTS && solver_data.entity.id == DEBUG_POINTS) {
             gsk_debug_markers_push(
               solver_data.entity.ecs->renderer->debugContext,
               MARKER_RAY,

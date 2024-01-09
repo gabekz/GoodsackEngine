@@ -18,4 +18,6 @@
 
 #define VCOL_ORANGE ((vec4) {1, 0.5f, 0, 1})
 
+#define VCOL_WHITE ((vec4) {1, 1, 1, 1})
+
 #endif // __VEC_COLORS_H__
