@@ -97,6 +97,22 @@ init(gsk_Entity e)
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_BoxCollider *)box_collider;
     }
+
+    else if (collider->type == COLLIDER_CAPSULE) {
+        gsk_CapsuleCollider *capsule_collider =
+          malloc(sizeof(gsk_CapsuleCollider));
+
+        vec3 base  = {0.0f, 0.0f, 0.0f};
+        vec3 tip   = {0.0f, 1.0f, 0.0f};
+        f32 radius = 1.0f;
+
+        glm_vec3_copy(base, capsule_collider->base);
+        glm_vec3_copy(tip, capsule_collider->tip);
+        capsule_collider->radius = radius;
+
+        ((gsk_Collider *)collider->pCollider)->collider_data =
+          (gsk_CapsuleCollider *)capsule_collider;
+    }
 }
 
 static void
@@ -184,6 +200,13 @@ fixed_update(gsk_Entity e)
                 break;
             default: break;
             };
+        } else if (collider->type == COLLIDER_CAPSULE) { // --- Capsule Collider
+            switch (compareCollider->type) {
+            case COLLIDER_CAPSULE:
+                points = gsk_physics_collision_find_capsule_capsule(__clsn_prm);
+                break;
+            default: break;
+            }
         }
 
         // Collision points

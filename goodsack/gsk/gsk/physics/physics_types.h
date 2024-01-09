@@ -22,6 +22,7 @@ typedef enum GskColliderType {
     COLLIDER_SPHERE,
     COLLIDER_PLANE,
     COLLIDER_BOX,
+    COLLIDER_CAPSULE,
     COLLIDER_RAYCAST
 } GskColliderType;
 
@@ -84,6 +85,12 @@ typedef struct gsk_BoxCollider
 {
     vec3 bounds[2];
 } gsk_BoxCollider;
+
+typedef struct gsk_CapsuleCollider
+{
+    vec3 base, tip;
+    f32 radius;
+} gsk_CapsuleCollider;
 
 typedef struct gsk_Raycast
 {

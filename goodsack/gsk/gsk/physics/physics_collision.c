@@ -36,6 +36,22 @@ _invert_points(float *point_a, float *point_b)
     glm_vec3_copy(hold, point_b);
 }
 
+static void
+_closest_point_line_segment(vec3 a, vec3 b, vec3 point, float *dest)
+{
+    vec3 ab, p_a;
+    glm_vec3_sub(b, a, ab);      // ab = B - A
+    glm_vec3_sub(point, a, p_a); // p_a = Point - A
+
+    f32 t = glm_dot(p_a, ab) / glm_dot(ab, ab);
+
+    f32 offset = MIN(MAX(t, 0), 1); // saturate
+
+    // return A + saturate(t) * AB
+    glm_vec3_scale(ab, offset, dest);
+    glm_vec3_add(a, dest, dest);
+}
+
 /*************************************************************************
  * Static functions - collision-tests with inverse
  *************************************************************************/
@@ -321,6 +337,89 @@ gsk_physics_collision_find_sphere_box(gsk_SphereCollider *a,
 {
 
     return __find_box_sphere_inverse(b, a, pos_b, pos_a, TRUE);
+}
+
+/*------------------------------------------------------------------------
+ * Capsule
+ ------------------------------------------------------------------------*/
+
+// Capsule v. Capsule
+gsk_CollisionPoints
+gsk_physics_collision_find_capsule_capsule(gsk_CapsuleCollider *a,
+                                           gsk_CapsuleCollider *b,
+                                           vec3 pos_a,
+                                           vec3 pos_b)
+{
+    gsk_CollisionPoints ret = {.has_collision = 0};
+
+    vec3 a_norm, a_line_end_offset, a_A, a_B; // capsule A data
+    vec3 b_norm, b_line_end_offset, b_A, b_B; // capsulbe B data
+
+    // base and tip adjusted to position
+    vec3 a_tip, a_base, b_base, b_tip;
+    glm_vec3_add(a->base, pos_a, a_base);
+    glm_vec3_add(a->tip, pos_a, a_tip);
+    glm_vec3_add(b->base, pos_b, b_base);
+    glm_vec3_add(b->tip, pos_b, b_tip);
+
+    // calculate capsule A Data
+    {
+        // a_norm
+        glm_vec3_sub(a_tip, a_base, a_norm);
+        glm_vec3_normalize(a_norm);
+        // a_line_end_offset
+        glm_vec3_scale(a_norm, a->radius, a_line_end_offset);
+        // a_A
+        glm_vec3_add(a_base, a_line_end_offset, a_A);
+        // a_B
+        glm_vec3_sub(a_base, a_line_end_offset, a_B);
+    }
+
+    // calculate capsule B Data
+    {
+        // a_norm
+        glm_vec3_sub(b_tip, b_base, b_norm);
+        glm_vec3_normalize(b_norm);
+        // a_line_end_offset
+        glm_vec3_scale(b_norm, b->radius, b_line_end_offset);
+        // a_A
+        glm_vec3_add(b_base, b_line_end_offset, b_A);
+        // a_B
+        glm_vec3_sub(b_base, b_line_end_offset, b_B);
+    }
+
+    // vectors between end points
+    vec3 v0, v1, v2, v3;
+    glm_vec3_sub(b_A, a_A, v0);
+    glm_vec3_sub(b_B, a_A, v1);
+    glm_vec3_sub(b_A, b_A, v2);
+    glm_vec3_sub(b_B, a_B, v3);
+
+    // squared distances
+    f32 d0 = glm_dot(v0, v0);
+    f32 d1 = glm_dot(v1, v1);
+    f32 d2 = glm_dot(v2, v2);
+    f32 d3 = glm_dot(v3, v3);
+
+    vec3 best_a, best_b;
+    if (d2 < d0 || d2 < d1 || d3 < d0 || d3 < d1) {
+        glm_vec3_copy(a_B, best_a);
+    } else {
+        glm_vec3_copy(a_A, best_a);
+    }
+
+    _closest_point_line_segment(b_A, b_B, best_a, best_b);
+    _closest_point_line_segment(a_A, a_B, best_b, best_a);
+
+    vec3 pen_normal;
+    glm_vec3_sub(best_a, best_b, pen_normal);
+    f32 len = glm_vec3_norm(pen_normal); // get length
+    glm_vec3_normalize(pen_normal);      // normalize
+    f32 pen_depth = a->radius + b->radius - len;
+
+    ret.has_collision = (pen_depth > 0);
+
+    return ret;
 }
 
 /*------------------------------------------------------------------------
