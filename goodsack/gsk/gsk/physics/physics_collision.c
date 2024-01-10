@@ -420,13 +420,12 @@ gsk_physics_collision_find_capsule_capsule(gsk_CapsuleCollider *a,
     ret.has_collision = (pen_depth > 0);
 
     if (ret.has_collision) {
-        glm_vec3_copy(pen_normal, ret.normal);
-        glm_vec3_copy(best_a, ret.point_a);
-        glm_vec3_copy(best_b, ret.point_b);
+        glm_vec3_sub(best_a, pen_normal, ret.point_a);
+        glm_vec3_add(best_b, pen_normal, ret.point_b);
 
-        // glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
-        // glm_vec3_normalize(ret.normal);
-        // ret.depth = glm_vec3_distance(ret.point_a, ret.point_b);
+        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
+        glm_vec3_normalize(ret.normal);
+        ret.depth = glm_vec3_distance(ret.point_a, ret.point_b);
     }
 
     return ret;
