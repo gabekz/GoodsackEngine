@@ -202,6 +202,9 @@ fixed_update(gsk_Entity e)
             };
         } else if (collider->type == COLLIDER_CAPSULE) { // --- Capsule Collider
             switch (compareCollider->type) {
+            case COLLIDER_PLANE:
+                points = gsk_physics_collision_find_capsule_plane(__clsn_prm);
+                break;
             case COLLIDER_CAPSULE:
                 points = gsk_physics_collision_find_capsule_capsule(__clsn_prm);
                 break;

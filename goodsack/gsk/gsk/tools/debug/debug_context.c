@@ -159,7 +159,7 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
 
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         glm_translate(model, cnt_marker->position);
-        glm_scale(model, (vec3) {1.0f, 1.0f, 1.0f});
+        glm_scale(model, (vec3) {5.0f, 5.0f, 5.0f});
 
         glUniformMatrix4fv(
           glGetUniformLocation(p_debug_context->material->shaderProgram->id,

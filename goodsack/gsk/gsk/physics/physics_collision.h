@@ -93,6 +93,13 @@ gsk_physics_collision_find_capsule_capsule(gsk_CapsuleCollider *a,
                                            vec3 pos_a,
                                            vec3 pos_b);
 
+// Capsule v. Plane
+gsk_CollisionPoints
+gsk_physics_collision_find_capsule_plane(gsk_CapsuleCollider *a,
+                                         gsk_PlaneCollider *b,
+                                         vec3 pos_a,
+                                         vec3 pos_b);
+
 /*************************************************************************
  * Raycast definitions
  *************************************************************************/

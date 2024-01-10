@@ -419,6 +419,87 @@ gsk_physics_collision_find_capsule_capsule(gsk_CapsuleCollider *a,
 
     ret.has_collision = (pen_depth > 0);
 
+    if (ret.has_collision) {
+        glm_vec3_copy(pen_normal, ret.normal);
+        glm_vec3_copy(best_a, ret.point_a);
+        glm_vec3_copy(best_b, ret.point_b);
+
+        // glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
+        // glm_vec3_normalize(ret.normal);
+        // ret.depth = glm_vec3_distance(ret.point_a, ret.point_b);
+    }
+
+    return ret;
+}
+
+// Capsule v. Plane
+gsk_CollisionPoints
+gsk_physics_collision_find_capsule_plane(gsk_CapsuleCollider *a,
+                                         gsk_PlaneCollider *b,
+                                         vec3 pos_a,
+                                         vec3 pos_b)
+{
+    gsk_CollisionPoints ret = {.has_collision = 0};
+
+    vec3 a_norm, a_line_end_offset, a_A, a_B; // capsule A data
+    vec3 b_norm, b_line_end_offset, b_A, b_B; // capsulbe B data
+
+    // base and tip adjusted to position
+    vec3 a_tip, a_base;
+    glm_vec3_add(a->base, pos_a, a_base);
+    glm_vec3_add(a->tip, pos_a, a_tip);
+
+    // calculate capsule A Data
+    {
+        // a_norm
+        glm_vec3_sub(a_tip, a_base, a_norm);
+        glm_vec3_normalize(a_norm);
+        // a_line_end_offset
+        glm_vec3_scale(a_norm, a->radius, a_line_end_offset);
+        // a_A
+        glm_vec3_add(a_base, a_line_end_offset, a_A);
+        // a_B
+        glm_vec3_sub(a_base, a_line_end_offset, a_B);
+    }
+
+    // A = q - plane.p[0]
+    vec3 A = GLM_VEC3_ZERO_INIT;
+    glm_vec3_sub(pos_b, pos_a, A);
+
+    vec3 plane_normal = GLM_VEC3_ZERO_INIT;
+    glm_vec3_copy(((gsk_PlaneCollider *)b->plane)->normal, plane_normal);
+    float nearestDistance = -glm_vec3_dot(plane_normal, A);
+
+    glm_vec3_scale(plane_normal, nearestDistance, ret.point_b);
+    glm_vec3_sub(pos_a, ret.point_b, ret.point_b);
+
+    // vectors between end points
+    vec3 v0, v1;
+    glm_vec3_sub(ret.point_b, a_A, v0);
+    glm_vec3_sub(ret.point_b, a_B, v1);
+    f32 d0 = glm_dot(v0, v0);
+    f32 d1 = glm_dot(v1, v1);
+
+    vec3 best_a;
+
+    // get exact point
+    _closest_point_line_segment(a_A, a_B, A, best_a);
+
+    vec3 pen_normal;
+    glm_vec3_sub(best_a, ret.point_b, pen_normal);
+    f32 len = glm_vec3_norm(pen_normal); // get length
+    glm_vec3_normalize(pen_normal);      // normalize
+    f32 pen_depth = a->radius - len;
+
+    ret.has_collision = (pen_depth > 0);
+
+    if (ret.has_collision) {
+        glm_vec3_sub(best_a, pen_normal, ret.point_a);
+        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
+        glm_vec3_normalize(ret.normal);
+        ret.depth = glm_vec3_distance(ret.point_a, ret.point_b);
+    }
+
     return ret;
 }
 

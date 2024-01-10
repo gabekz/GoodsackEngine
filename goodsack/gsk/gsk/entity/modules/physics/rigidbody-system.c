@@ -22,7 +22,7 @@
 
 // Functionality toggles
 #define DEBUG_TRACK  0
-#define DEBUG_POINTS 0 // 0 -- OFF | value = entity id
+#define DEBUG_POINTS 3 // 0 -- OFF | value = entity id
 
 #define CALC_INERTIA 0
 
@@ -92,7 +92,16 @@ __debug_points(const _SolverData solver_data)
                                collision_result->points.point_a,
                                collision_result->points.normal,
                                5,
-                               VCOL_BLUE,
+                               VCOL_GREEN,
+                               FALSE);
+
+        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                               MARKER_POINT,
+                               entity.id + 27,
+                               collision_result->points.point_b,
+                               collision_result->points.normal,
+                               5,
+                               VCOL_RED,
                                FALSE);
     }
 }
