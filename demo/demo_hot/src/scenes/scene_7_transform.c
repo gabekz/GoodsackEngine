@@ -129,6 +129,10 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                           }));
 #endif
 
+    // allocate camera entity to pass into Root as reference
+    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
+    *pCamera            = gsk_ecs_new(ecs);
+
     /*
       (Root) Player Entity
     */
@@ -153,14 +157,20 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .gravity = GRAVITY_EARTH,
                             .mass    = 20.0f,
                           }));
+    _gsk_ecs_add_internal(
+      ent_player,
+      C_PLAYER_CONTROLLER,
+      (void *)(&(struct ComponentPlayerController) {
+        .speed = 10.0f,
+        .entity_camera =
+          (int)pCamera->index, // TODO: should be id, but not supported
+      }));
 
     /*
       Camera Entity
     */
 
-    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
-    *pCamera            = gsk_ecs_new(ecs);
-    gsk_Entity camera   = *pCamera;
+    gsk_Entity camera = *pCamera;
     _gsk_ecs_add_internal(
       camera,
       C_CAMERA,

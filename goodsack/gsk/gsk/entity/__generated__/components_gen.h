@@ -28,6 +28,7 @@ typedef enum ECSComponentType_t {
     C_CAMERAMOVEMENT,
     C_LIGHT,
     C_MODEL,
+    C_PLAYER_CONTROLLER,
     C_RENDERLAYER,
     C_RIGIDBODY,
     C_COLLIDER,
@@ -122,6 +123,12 @@ struct ComponentModel
     } properties;
 };
 
+struct ComponentPlayerController
+{
+    CACHE_ALIGN(f32 speed);
+    CACHE_ALIGN(int entity_camera);
+};
+
 struct ComponentRenderLayer
 {
     u32 renderLayer;
@@ -161,7 +168,7 @@ struct ComponentWeapon
 
 struct ComponentWeaponSway
 {
-    float sway_amount;
+    CACHE_ALIGN(float sway_amount);
 };
 
 #if ECS_COMPONENTS_PACKED
@@ -196,6 +203,8 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_CAMERAMOVEMENT, sizeof(struct ComponentCameraMovement));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_LIGHT, sizeof(struct ComponentLight));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_MODEL, sizeof(struct ComponentModel));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_PLAYER_CONTROLLER, sizeof(struct ComponentPlayerController));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_RENDERLAYER, sizeof(struct ComponentRenderLayer));
     _ECS_DECL_COMPONENT_INTERN(

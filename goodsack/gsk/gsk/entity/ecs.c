@@ -24,6 +24,9 @@
 #include "entity/modules/physics/rigidbody-system.h"
 #include "entity/modules/physics/rigidbody_forces-system.h"
 
+// Player
+#include "entity/modules/player/player_controller-system.h"
+
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION
 #include "entity/__generated__/components_gen.h"
@@ -60,6 +63,9 @@ gsk_ecs_init(gsk_Renderer *renderer)
     s_rigidbody_forces_system_init(ecs); // apply external forces
     s_collider_setup_system_init(ecs);   // check for collisions
     s_rigidbody_system_init(ecs);        // run solvers on collisions. integrate
+
+    // Player Controller
+    s_player_controller_system_init(ecs);
 
 #if USING_GENERATED_COMPONENTS
     _ecs_init_internal_gen(ecs);
