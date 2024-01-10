@@ -17,7 +17,6 @@ camera_input(gsk_Entity cameraEntity, GLFWwindow *window)
     if (!gsk_ecs_has(cameraEntity, C_CAMERA) ||
         !gsk_ecs_has(cameraEntity, C_CAMERAMOVEMENT) ||
         !gsk_ecs_has(cameraEntity, C_TRANSFORM)) {
-        LOG_ERROR("camera_input() has incorrect component dependencies!");
         return;
     }
 

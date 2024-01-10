@@ -168,6 +168,21 @@ update(gsk_Entity e)
     struct ComponentCamera *camera       = gsk_ecs_get(e, C_CAMERA);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
+    if (transform->hasParent) {
+
+        struct ComponentTransform *parent =
+          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
+
+        glm_vec3_copy(parent->position, transform->position);
+        if (gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA)) {
+
+            struct ComponentCamera *parentCam =
+              gsk_ecs_get(*(gsk_Entity *)transform->parent, C_CAMERA);
+
+            glm_mat4_copy(parentCam->view, camera->view);
+        }
+    }
+
     if (gsk_ecs_has(e, C_CAMERALOOK)) {
 
         struct ComponentCameraLook *cameraLook =
@@ -265,18 +280,6 @@ update(gsk_Entity e)
     glm_lookat(transform->position, p, camera->axisUp, camera->view);
     // glm_mat4_inv(camera->view, transform->model);
     // glm_mat4_copy(camera->view, transform->model);
-
-    if (transform->hasParent &&
-        gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA)) {
-
-        struct ComponentTransform *parent =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
-        struct ComponentCamera *parentCam =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_CAMERA);
-
-        glm_vec3_copy(parent->position, transform->position);
-        glm_mat4_copy(parentCam->view, camera->view);
-    }
 
     float aspectRatio =
       (float)camera->screenWidth / (float)camera->screenHeight;

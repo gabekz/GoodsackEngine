@@ -6,8 +6,17 @@ if(MSVC)
     set(APP_ICON_RESOURCE "${DEMO_DIR}/appicon.rc")
 endif(MSVC)
 
-add_executable(${DEMO_EXE_NAME} "${DEMO_DIR}/main.cpp" "${DEMO_DIR}/demo_scenes.c" ${APP_ICON_RESOURCE})
-target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR})
+set(SRC_DIR "${DEMO_DIR}/src")
+
+# All Sources
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
+    "${SRC_DIR}/*.c"
+    "${SRC_DIR}/*.cpp")
+
+add_executable(${DEMO_EXE_NAME} ${SOURCES}
+    ${APP_ICON_RESOURCE})
+
+target_include_directories(${DEMO_EXE_NAME} PRIVATE ${DEMO_EXE_DIR} "${DEMO_DIR}/src")
 
 target_link_libraries(${DEMO_EXE_NAME} GoodsackEngine_runtime GoodsackEngine_api)
 target_compile_options(${DEMO_EXE_NAME} PUBLIC ${PROJECT_EXE_OPTIONS})

@@ -9,7 +9,8 @@ require('goodsack')
 -- require('goodsack.util').GetFullPath([[gsk:api//lua/include]], 'dir')
 
 -- TODO: Move this
-local include_dir = [[E:/Projects/GoodsackEngine/goodsack/gsk/gsk/api/lua/include/]]
+--local include_dir = [[E:/Projects/GoodsackEngine/goodsack/gsk/gsk/api/lua/include/]]
+local include_dir = [[/home/gmk/gksrc/projects/GoodsackEngine/goodsack/gsk/gsk/api/lua/include/]]
 
 -- dofile() alias for specified directory
 --

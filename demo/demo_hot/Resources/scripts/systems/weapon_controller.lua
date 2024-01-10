@@ -40,12 +40,12 @@ local function handle_input(entity, rotation)
         entity.Transform.position = pos_aiming
         entity_camera.Camera.fov = math.Lerp(entity_camera.Camera.fov, fov_aiming, time.DeltaTime() * fov_lerp_speed);
 
-        entity_camera.CameraMovement.speed = 0.5
+        --entity_camera.CameraMovement.speed = 0.5
     else
         entity.Transform.position = pos_standby
         entity_camera.Camera.fov = math.Lerp(entity_camera.Camera.fov, fov_standby, time.DeltaTime() * fov_lerp_speed);
 
-        entity_camera.CameraMovement.speed = 2.5
+        --entity_camera.CameraMovement.speed = 2.5
     end
 
     --

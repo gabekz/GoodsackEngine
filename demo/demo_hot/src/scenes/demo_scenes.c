@@ -14,21 +14,11 @@
 
 #define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
 
-#define texture_create_d(x) texture_create(x, NULL, s_texOpsPbr)
-#define texture_create_n(x) texture_create(x, NULL, s_texOpsNrm)
-
-#define GRAVITY_EARTH      \
-    {                      \
-        0.0f, -9.81f, 0.0f \
-    }
-
 gsk_Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
 gsk_Skybox *skyboxMain;
 
-static TextureOptions s_texOpsPbr, s_texOpsNrm;
-
 static gsk_Entity
-__create_camera_entity(gsk_ECS *ecs, vec3 position)
+__create_camera_entity(gsk_ECS *ecs, vec3 position, void *parent)
 {
     gsk_Entity camera = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(
@@ -52,17 +42,9 @@ __create_camera_entity(gsk_ECS *ecs, vec3 position)
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
                             .position = {position[0], position[1], position[2]},
+                            .parent   = parent,
                           }));
     return camera;
-}
-
-static void
-__set_active_scene_skybox(gsk_Renderer *renderer, gsk_Skybox *skybox)
-{
-    gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
-
-    scene->skybox     = skybox;
-    scene->has_skybox = TRUE;
 }
 
 static void
@@ -84,7 +66,8 @@ _scene0(gsk_ECS *ecs, gsk_Renderer *renderer)
                           texEarthNorm,
                           texDefSpec);
 
-    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    gsk_Entity camera =
+      __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f}, NULL);
 
     gsk_Entity suzanneObject = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(suzanneObject, C_TRANSFORM, NULL);
@@ -129,7 +112,8 @@ _scene1(gsk_ECS *ecs, gsk_Renderer *renderer)
                           texDefNorm,
                           texContSpec);
 
-    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    gsk_Entity camera =
+      __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f}, NULL);
 
     gsk_Entity floorEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(floorEntity,
@@ -243,7 +227,8 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
                                                 texGoldSpecular,
                                                 texPbrAo);
 
-    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
+    gsk_Entity camera =
+      __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f}, NULL);
 
     gsk_Entity sphereEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(sphereEntity,
@@ -352,7 +337,8 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
                           texCerbS,
                           texPbrAo);
 
-    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
+    gsk_Entity camera =
+      __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f}, NULL);
 
     gsk_Model *model_cerb = gsk_model_load_from_file(
       GSK_PATH("data://models/cerberus-triang.obj"), 1.0f, NULL);
@@ -390,7 +376,8 @@ _scene4(gsk_ECS *ecs, gsk_Renderer *renderer)
     gsk_Model *modelCharacter = gsk_model_load_from_file(
       GSK_PATH("data://models/character-anim.gltf"), 1, FALSE);
 
-    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
+    gsk_Entity camera =
+      __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f}, NULL);
 
     gsk_Entity characterEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(characterEntity,
@@ -421,7 +408,7 @@ _scene5(gsk_ECS *ecs, gsk_Renderer *renderer)
       gsk_material_create(NULL, GSK_PATH("gsk://shaders/wireframe.shader"), 0);
 
     gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
-    *pCamera = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
+    *pCamera = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f}, NULL);
     gsk_Entity e_camera = *pCamera;
 
     gsk_Model *modelSponza =
@@ -494,7 +481,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 
     gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
 
-    *pCamera          = __create_camera_entity(ecs, (vec3) {-2.0f, 5.0f, 8.0f});
+    *pCamera = __create_camera_entity(ecs, (vec3) {-2.0f, 5.0f, 8.0f}, NULL);
     gsk_Entity camera = *pCamera;
 
     // Testing entity on heap memory
@@ -633,203 +620,10 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 #endif
 }
 
-/*----------------------
- |  Scene 7
- |  Description: Main transform/weapon test
- -----------------------*/
-static void
-_scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
-{
-    ecs = gsk_renderer_active_scene(renderer, 7);
-    __set_active_scene_skybox(renderer, skyboxMain);
-
-    /*----------------------
-     |  Resources
-     -----------------------*/
-
-    gsk_Texture *texBrickDiff =
-      texture_create_d(GSK_PATH("data://textures/brickwall/diffuse.png"));
-    /*
-    gsk_Texture *texBrickDiff =
-      texture_create_d("../demo/demo_hot/Resources/textures/prototype.png");
-      */
-    gsk_Texture *texBrickNorm =
-      texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
-
-    char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
-
-    gsk_Material *matFloor = gsk_material_create(NULL,
-                                                 pbr_shader_path,
-                                                 4,
-                                                 texBrickDiff,
-                                                 texBrickNorm,
-                                                 texDefSpec,
-                                                 texPbrAo);
-
-    gsk_Texture *texCerbA =
-      texture_create_d(GSK_PATH("data://textures/pbr/cerberus/Cerberus_A.tga"));
-    gsk_Texture *texCerbN =
-      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_N.tga"));
-    gsk_Texture *texCerbM =
-      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_M.tga"));
-    gsk_Texture *texCerbS =
-      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_R.tga"));
-
-    /*
-    gsk_Material *matWeapon =
-      gsk_material_create(NULL, "../res/shaders/pbr.shader", 1, texContDiff);
-      */
-    gsk_Material *matWeapon = gsk_material_create(NULL,
-                                                  pbr_shader_path,
-                                                  5,
-                                                  texCerbA,
-                                                  texCerbN,
-                                                  texCerbM,
-                                                  texCerbS,
-                                                  texPbrAo);
-
-    gsk_Model *modelWeapon =
-      gsk_model_load_from_file(GSK_PATH("data://models/AK2.glb"), 1, FALSE);
-
-    gsk_Model *modelPlane =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
-
-    /*----------------------
-     |  Entities
-     -----------------------*/
-
-    gsk_Entity *pFloorEntity = malloc(sizeof(gsk_Entity));
-    *pFloorEntity            = gsk_ecs_new(ecs);
-    gsk_Entity floorEntity   = *pFloorEntity;
-
-    _gsk_ecs_add_internal(floorEntity,
-                          C_TRANSFORM,
-                          (void *)(&(struct ComponentTransform) {
-                            .position = {0.0f, -0.3f, 0.0f},
-                            .scale    = {10.0f, 10.0f, 10.0f},
-                          }));
-#if DEMO_USING_AUDIO
-    _gsk_ecs_add_internal(floorEntity,
-                          C_AUDIOSOURCE,
-                          (void *)(&(struct ComponentAudioSource) {
-                            .filePath = "../res/audio/test.wav",
-                            .looping  = 0,
-                          }));
-#endif // DEMO_USING_AUDIO
-    _gsk_ecs_add_internal(floorEntity,
-                          C_COLLIDER,
-                          (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_PLANE,
-                          }));
-    _gsk_ecs_add_internal(
-      floorEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matFloor,
-                                         .pModel     = modelPlane,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
-
-    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
-
-    *pCamera          = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 0.0f});
-    gsk_Entity camera = *pCamera;
-#if DEMO_USING_AUDIO
-    _gsk_ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
-#endif // DEMO_USING_AUDIO
-
-    /*
-      Camera 2
-    */
-#if DEMO_USING_MULTIPLE_CAMERAS
-    gsk_Entity camera2 = gsk_ecs_new(ecs);
-    _gsk_ecs_add_internal(camera2,
-                          C_CAMERA,
-                          (void *)(&(struct ComponentCamera) {
-                            .axisUp      = {0.0f, 1.0f, 0.0f},
-                            .fov         = 45,
-                            .renderLayer = 1,
-                          }));
-    _gsk_ecs_add_internal(camera2,
-                          C_TRANSFORM,
-                          (void *)(&(struct ComponentTransform) {
-                            .position    = {0.0f, 0.2f, 0.0f},
-                            .orientation = {0.0f, 0.0f, 0.0f},
-                            .scale       = {1.0f, 1.0f, 1.0f},
-                            .parent      = pCamera,
-                          }));
-#endif
-
-    /*
-      Weapon Parent (weapon-sway)
-    */
-    gsk_Entity *pWeaponParent = malloc(sizeof(gsk_Entity));
-    *pWeaponParent            = gsk_ecs_new(ecs);
-    gsk_Entity weaponParent   = *pWeaponParent;
-
-    _gsk_ecs_add_internal(weaponParent,
-                          C_TRANSFORM,
-                          (void *)(&(struct ComponentTransform) {
-                            .position    = {0.0f, 0.0f, 0.0f},
-                            .orientation = {0.0f, 0.0f, 0.0f},
-                            .scale       = {1.0f, 1.0f, 1.0f},
-                            .parent      = pCamera,
-                          }));
-    _gsk_ecs_add_internal(weaponParent,
-                          C_WEAPONSWAY,
-                          (void *)(&(struct ComponentWeaponSway) {
-                            .sway_amount = 5,
-                          }));
-
-    gsk_Entity attachedEntity = gsk_ecs_new(ecs);
-    _gsk_ecs_add_internal(attachedEntity,
-                          C_TRANSFORM,
-                          (void *)(&(struct ComponentTransform) {
-                            .position    = {-0.1f, -0.22f, -0.4340f},
-                            .orientation = {0.0f, 0.0f, -180.0f},
-                            .scale       = {-0.02f, 0.02f, 0.02f},
-                            .parent      = pWeaponParent,
-                          }));
-
-    _gsk_ecs_add_internal(
-      attachedEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matWeapon,
-                                         .pModel     = modelWeapon,
-                                         .modelPath  = NULL,
-                                         .properties = {
-                                           .drawMode = DRAW_ELEMENTS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
-
-#if DEMO_USING_MULTIPLE_CAMERAS
-    // Render layer (only render on camera with specified layer)
-    _gsk_ecs_add_internal(attachedEntity,
-                          C_RENDERLAYER,
-                          (void *)(&(struct ComponentRenderLayer) {
-                            .renderLayer = 1,
-                          }));
-#endif
-
-    _gsk_ecs_add_internal(
-      attachedEntity,
-      C_WEAPON,
-      (void *)(&(struct ComponentWeapon) {
-        .damage       = 25,
-        .pos_starting = {0, 0, 0},
-        .rot_starting = {0, 0, 0},
-        .entity_camera =
-          (int)pCamera->index, // TODO: should be id, but not supported
-      }));
-};
-
 void
 demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     // Default textures with options
-    s_texOpsNrm = (TextureOptions) {1, GL_RGB, false, true};
-    s_texOpsPbr = (TextureOptions) {8, GL_SRGB_ALPHA, true, true};
     texDefSpec =
       texture_create_n(GSK_PATH("gsk://textures/defaults/black.png"));
     texDefNorm =
