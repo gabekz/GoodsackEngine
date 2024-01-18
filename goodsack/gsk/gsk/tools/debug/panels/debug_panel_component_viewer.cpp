@@ -89,6 +89,20 @@ gsk::tools::panels::ComponentViewer::draw(void)
 
         EndChild();
     }
+    if (gsk_ecs_has(e, C_COLLIDER)) {
+        BeginChild("Collider", ImVec2(0, GetFontSize() * 14.0f), true);
+
+        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+        Text("Collider Component");
+        PopStyleColor();
+
+        Separator();
+
+        struct ComponentCollider &p = *(
+          static_cast<struct ComponentCollider *>(gsk_ecs_get(e, C_COLLIDER)));
+
+        EndChild();
+    }
     if (gsk_ecs_has(e, C_MODEL)) {
         BeginChild("Model", ImVec2(0, GetFontSize() * 25.0f), true);
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));

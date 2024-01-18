@@ -11,6 +11,8 @@ vcpkg_installed/
 .vscode/
 .vs/
 
+imgui.ini
+
 CMakeSettings.json
 compile_commands.json
 

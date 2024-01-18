@@ -28,7 +28,7 @@ extern "C" {
 #define INITIAL_SCENE   SCENE_TRANSFORM_TEST
 
 #define DEMO_USING_AUDIO            0
-#define DEMO_USING_MULTIPLE_CAMERAS 0
+#define DEMO_USING_MULTIPLE_CAMERAS 1
 
 #define TEX_OPS_NRM \
     (TextureOptions) { 1, GL_RGB, FALSE, TRUE }

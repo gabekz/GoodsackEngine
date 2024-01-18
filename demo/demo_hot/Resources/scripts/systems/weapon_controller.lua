@@ -17,8 +17,8 @@ local pos_standby = {
     -0.4340
 }
 
-local fov_aiming = 30
-local fov_standby = 45
+local fov_aiming = 65
+local fov_standby = 90
 local fov_lerp_speed = 10
 
 -------------------------------------
@@ -28,10 +28,11 @@ local fov_lerp_speed = 10
 -------------------------------------
 local function handle_input(entity, rotation)
 
-    local entity_camera = entity.Weapon.entity_camera
     local isAiming = input.GetKeyDown(keycodes.MOUSE1)
-
     local aimRotAmount = (isAiming) and (0.05) or (1)
+
+    local entity_camera = entity.Weapon.entity_camera
+    local newCamSpeed = 2.5
 
     --
     -- Aiming
@@ -40,12 +41,17 @@ local function handle_input(entity, rotation)
         entity.Transform.position = pos_aiming
         entity_camera.Camera.fov = math.Lerp(entity_camera.Camera.fov, fov_aiming, time.DeltaTime() * fov_lerp_speed);
 
-        --entity_camera.CameraMovement.speed = 0.5
+        newCamSpeed = 0.5
     else
         entity.Transform.position = pos_standby
         entity_camera.Camera.fov = math.Lerp(entity_camera.Camera.fov, fov_standby, time.DeltaTime() * fov_lerp_speed);
 
-        --entity_camera.CameraMovement.speed = 2.5
+        newCamSpeed = 2.5
+    end
+
+    -- possibly update Camera move speed
+    if not entity_camera.CameraMovement == nil then
+        entity_camera.CameraMovement.speed = newCamSpeed
     end
 
     --
@@ -71,8 +77,6 @@ function system.update(entity)
     if entity.Weapon == nil or entity.Transform == nil then
         return nil
     end
-
-    --print("From entity: "..entity.id.."... camera fov is "..camera_ent.Camera.fov.."");
 
     local new_rotation = {0, 0, -180}
     local rotate_speed = time.DeltaTime() * 20

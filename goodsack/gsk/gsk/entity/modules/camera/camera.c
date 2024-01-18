@@ -253,19 +253,11 @@ update(gsk_Entity e)
         transform->orientation[0] = glm_deg(camDirection[0]);
         transform->orientation[1] = glm_deg(camDirection[1]);
         transform->orientation[2] = glm_deg(camDirection[2]);
-        // glm_vec3_copy(camDirection, camera->front);
-
-        // LOG_INFO("x: %f\ty:%f\tz:%f", camera->front[0], camera->front[1],
-        // camera->front[2]);
 
         // Process Camera Input as long as the cursor is locked
         if (input.cursor_state.is_locked == TRUE) {
             camera_input(e, e.ecs->renderer->window);
         }
-
-        // glm_vec3_add(transform->position, camDirection, camera->front);
-
-        // TEST
     }
 
     camera->front[0] = glm_rad(transform->orientation[0]);
@@ -278,8 +270,22 @@ update(gsk_Entity e)
 
     // MVP: view
     glm_lookat(transform->position, p, camera->axisUp, camera->view);
-    // glm_mat4_inv(camera->view, transform->model);
-    // glm_mat4_copy(camera->view, transform->model);
+
+    // NOTE: order may be a bit off here, but we need to check if we
+    // have a Parent, and the parent is a Camera. This will allow
+    // child-camera's with separate render-layers to share a view with
+    // the main camera
+    if (transform->hasParent &&
+        gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA)) {
+
+        struct ComponentTransform *parent =
+          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
+        struct ComponentCamera *parentCam =
+          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_CAMERA);
+
+        glm_vec3_copy(parent->position, transform->position);
+        glm_mat4_copy(parentCam->view, camera->view);
+    }
 
     float aspectRatio =
       (float)camera->screenWidth / (float)camera->screenHeight;

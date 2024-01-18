@@ -27,6 +27,10 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     def_skybox = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
+    /*----------------------
+     |  ECS Setup
+     -----------------------*/
+
     ecs = gsk_renderer_active_scene(renderer, 7);
     __set_active_scene_skybox(renderer, def_skybox);
 
@@ -103,6 +107,18 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                                            .cullMode = CULL_CW | CULL_FORWARD,
                                          }}));
 
+    /*
+      (Root) initialization (entity references)
+    */
+
+    // allocate camera entity to pass into Root as reference
+    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
+    *pCamera            = gsk_ecs_new(ecs);
+
+    // allocate p_ent_player
+    gsk_Entity *p_ent_player = malloc(sizeof(gsk_Entity));
+    *p_ent_player            = gsk_ecs_new(ecs);
+
 #if DEMO_USING_AUDIO
     _gsk_ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
 #endif // DEMO_USING_AUDIO
@@ -129,16 +145,9 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                           }));
 #endif
 
-    // allocate camera entity to pass into Root as reference
-    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
-    *pCamera            = gsk_ecs_new(ecs);
-
     /*
       (Root) Player Entity
     */
-
-    gsk_Entity *p_ent_player = malloc(sizeof(gsk_Entity));
-    *p_ent_player            = gsk_ecs_new(ecs);
 
     gsk_Entity ent_player = *p_ent_player;
     _gsk_ecs_add_internal(ent_player,
@@ -154,7 +163,7 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(ent_player,
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
-                            .gravity = GRAVITY_EARTH,
+                            .gravity = {0, -30.0f, 0},
                             .mass    = 20.0f,
                           }));
     _gsk_ecs_add_internal(
@@ -210,6 +219,10 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                           (void *)(&(struct ComponentWeaponSway) {
                             .sway_amount = 5,
                           }));
+
+    /*
+      Weapon Model
+    */
 
     gsk_Entity attachedEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(attachedEntity,
