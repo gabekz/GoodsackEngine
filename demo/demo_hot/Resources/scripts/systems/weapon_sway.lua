@@ -19,7 +19,7 @@ function system.update(entity)
 
     -- target rotation
     
-    local sway_amount = 0.8
+    local sway_amount = -0.8
     local sway_speed = time.DeltaTime() * 3.7
 
     local y_offset = axis[1] * sway_amount

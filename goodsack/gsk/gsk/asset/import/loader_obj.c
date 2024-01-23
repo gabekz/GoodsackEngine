@@ -18,6 +18,10 @@
 
 #define LOGGING_OBJ
 
+// TODO: May want to remove this - we should handle texture scaling directly
+// from textures (or materials) in shader code
+#define USING_TEX_SCALE 1
+
 #ifdef SYS_ENV_UNIX
 #define strtok_s(x, y, z) strtok_r(x, y, z)
 #endif
@@ -92,7 +96,12 @@ gsk_load_obj(const char *path, float scale)
         if (strstr(def, "vt") != NULL) {
             while (split != NULL) {
                 float saved = atof(split);
-                vt[vtL]     = saved;
+#if USING_TEX_SCALE
+                vt[vtL] = saved * scale;
+#else
+                vt[vtL] = saved;
+#endif // USING_TEX_SCALE
+
                 vtL++;
 
                 split = strtok(NULL, delim);

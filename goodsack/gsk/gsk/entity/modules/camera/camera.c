@@ -221,8 +221,18 @@ update(gsk_Entity e)
         xOffset *= sensitivity;
         yOffset *= sensitivity;
 
+#if 0
+        const float track = 0.2f;
+        if (fabs(xOffset) > track || fabs(yOffset) > track) {
+            LOG_INFO("x: %f\ty:%f", xOffset, yOffset);
+
+            cameraLook->yaw += xOffset;
+            cameraLook->pitch += yOffset;
+        }
+#else
         cameraLook->yaw += xOffset;
         cameraLook->pitch += yOffset;
+#endif
 
 #if CAMERA_SHAKE
         // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;

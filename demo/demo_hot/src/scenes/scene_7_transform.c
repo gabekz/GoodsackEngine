@@ -24,8 +24,14 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     def_ao   = texture_create_n(GSK_PATH("gsk://textures/defaults/white.png"));
     def_missing =
       texture_create_n(GSK_PATH("gsk://textures/defaults/missing.jpg"));
+
+#if 0
+    def_skybox = gsk_skybox_hdr_create(texture_create_hdr(
+      GSK_PATH("gsk://textures/hdr/belfast_sunset_puresky_4k.hdr")));
+#else
     def_skybox = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
+#endif
 
     /*----------------------
      |  ECS Setup
@@ -37,20 +43,18 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Resources
      -----------------------*/
+    const char *standard_shader_path =
+      GSK_PATH("gsk://shaders/lit-diffuse.shader");
+    const char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
 
-    gsk_Texture *texBrickDiff =
-      texture_create_d(GSK_PATH("data://textures/brickwall/diffuse.png"));
-    /*
-    gsk_Texture *texBrickDiff =
-      texture_create_d("../demo/demo_hot/Resources/textures/prototype.png");
-      */
-    gsk_Texture *texBrickNorm =
-      texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
-
-    char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
+    gsk_Texture *tex_prototype =
+      texture_create_d(GSK_PATH("gsk://textures/prototype/128_64.png"));
 
     gsk_Material *matFloor = gsk_material_create(
-      NULL, pbr_shader_path, 4, texBrickDiff, texBrickNorm, def_spec, def_ao);
+      NULL, standard_shader_path, 3, tex_prototype, def_norm, def_spec);
+
+    gsk_Model *modelPlane =
+      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 100, FALSE);
 
     gsk_Texture *texCerbA =
       texture_create_d(GSK_PATH("data://textures/pbr/cerberus/Cerberus_A.tga"));
@@ -67,9 +71,6 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     gsk_Model *modelWeapon =
       gsk_model_load_from_file(GSK_PATH("data://models/AK2.glb"), 1, FALSE);
 
-    gsk_Model *modelPlane =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
-
     /*----------------------
      |  Entities
      -----------------------*/
@@ -82,7 +83,7 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
                             .position = {0.0f, -0.3f, 0.0f},
-                            .scale    = {10.0f, 10.0f, 10.0f},
+                            .scale    = {1.0f, 1.0f, 1.0f},
                           }));
 #if DEMO_USING_AUDIO
     _gsk_ecs_add_internal(floorEntity,

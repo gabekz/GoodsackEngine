@@ -22,7 +22,7 @@
 
 // Functionality toggles
 #define DEBUG_TRACK  0
-#define DEBUG_POINTS 3 // 0 -- OFF | value = entity id
+#define DEBUG_POINTS 0 // 0 -- OFF | value = entity id
 
 #define CALC_INERTIA 0
 
@@ -253,8 +253,14 @@ _position_solver(_SolverData solver_data)
 
     f32 inverse_scalar = body_a.inverse_mass + body_b.inverse_mass;
 
+#if 1
+    // I think these are better settings right now..
+    const float percent = 1.0f;
+    const float slop    = 0.005f;
+#else
     const float percent = 0.8f;
-    const float slop    = 0.01f;
+    const float slop    = 0.1f;
+#endif
 
     vec3 correction;
     f32 c_weight = fmax((collision_result->points.depth - slop), 0);
