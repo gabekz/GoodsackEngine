@@ -67,7 +67,7 @@ struct ComponentAudioSource
     u32 looping;
 };
 
-struct ComponentCamera
+typedef struct ComponentCamera
 {
     CACHE_ALIGN(vec3 axisUp);
     CACHE_ALIGN(vec3 center);
@@ -84,7 +84,7 @@ struct ComponentCamera
     CACHE_ALIGN(ResRef uniformBufferMapped);
     CACHE_ALIGN(ResRef uniformBufferMemory);
     CACHE_ALIGN(mat4 view);
-};
+} gsk_C_Camera;
 
 typedef struct ComponentCameraLook
 {

@@ -25,7 +25,10 @@
 #define GSK_RUNTIME_USE_DEBUG 1
 
 u32
-gsk_runtime_setup(const char *project_root, int argc, char *argv[]);
+gsk_runtime_setup(const char *root_dir,
+                  const char *root_scheme,
+                  int argc,
+                  char *argv[]);
 
 void
 gsk_runtime_loop();

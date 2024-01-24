@@ -57,7 +57,10 @@ _gsk_check_args(int argc, char *argv[])
 }
 
 u32
-gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
+gsk_runtime_setup(const char *root_dir,
+                  const char *root_scheme,
+                  int argc,
+                  char *argv[])
 {
     // Setup logger
     int logStat = logger_initConsoleLogger(NULL);
@@ -76,7 +79,7 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
     default: LOG_ERROR("Device API Failed to retreive Graphics Backend"); break;
     }
 
-    gsk_filesystem_initialize(root_dir);
+    gsk_filesystem_initialize(root_dir, root_scheme);
 
     // Initialize Renderer
 #ifdef RENDERER_2
@@ -131,7 +134,10 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 #ifdef USING_LUA
     // Main Lua entry
     // TODO: possibly refactor this path (make mutable)
-    LuaInit(GSK_PATH("data://scripts/main.lua"), s_runtime.ecs);
+    char path[GSK_FS_MAX_PATH];
+    strcpy(path, root_scheme);
+    strcat(path, "://scripts/main.lua");
+    LuaInit(GSK_PATH(path), s_runtime.ecs);
 #endif
 
 #endif

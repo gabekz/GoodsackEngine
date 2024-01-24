@@ -35,7 +35,7 @@ main(int argc, char *argv[])
     STATIC_ASSERT((_PROJ_DIR_ROOT), "project path-root definition required");
     STATIC_ASSERT((_GOODSACK_FS_DIR_ROOT), "GSK path-root definition required");
 #endif
-    gsk_runtime_setup((_PROJ_DIR_DATA "/"), argc, argv);
+    gsk_runtime_setup((_PROJ_DIR_DATA "/"), _PROJ_DIR_SCHEME, argc, argv);
 
     demo_scenes_create(gsk_runtime_get_ecs(), gsk_runtime_get_renderer());
     gsk_runtime_set_scene(INITIAL_SCENE);

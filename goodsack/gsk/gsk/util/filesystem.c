@@ -20,6 +20,7 @@ static struct
 {
     char gsk_root[GSK_FS_MAX_PATH];
     char proj_root[GSK_FS_MAX_PATH];
+    char proj_scheme[GSK_FS_MAX_SCHEME];
 } s_path_roots;
 
 static void
@@ -61,7 +62,7 @@ _get_absolute_path(char *buffer)
     return;
 #endif // SYS_ENV_WIN
 #endif // 0
-       /*-----------------------------------------------------*/
+    /*-----------------------------------------------------*/
 
     char b[GSK_FS_MAX_PATH] = (_GOODSACK_FS_DIR_DATA "/");
     // strcat(b, "/res");
@@ -82,12 +83,13 @@ gsk_filesystem_get_extension(const char *path)
 }
 
 void
-gsk_filesystem_initialize(const char *project_root)
+gsk_filesystem_initialize(const char *project_root, const char *project_scheme)
 {
     if (project_root == NULL) { LOG_ERROR("Failed to initialize filesystem"); }
 
     strcpy(s_path_roots.gsk_root, (_GOODSACK_FS_DIR_DATA "/"));
     strcpy(s_path_roots.proj_root, project_root);
+    strcpy(s_path_roots.proj_scheme, project_scheme);
 }
 
 gsk_URI
@@ -120,7 +122,7 @@ gsk_filesystem_path_from_uri(const char *uri_path)
     char absolute_path[GSK_FS_MAX_PATH] = "";
 
     // Project-specific data directory
-    if (!strcmp(ret.uri.scheme, "data")) {
+    if (!strcmp(ret.uri.scheme, s_path_roots.proj_scheme)) {
         strcat(absolute_path, s_path_roots.proj_root);
     }
     // Engine-specific data directory
