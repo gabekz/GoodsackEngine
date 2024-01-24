@@ -32,8 +32,8 @@ extern "C" {
 #endif
 
 #define RENDER_RESOLUTION_OVERRIDE SYS_DISABLED
-#define PSX_WIDTH                  320
-#define PSX_HEIGHT                 240
+#define PSX_WIDTH                  640
+#define PSX_HEIGHT                 480
 
 #define MAX_CAMERAS 4
 

@@ -16,7 +16,7 @@
 // #define RENDERER_2
 #define USING_LUA                    1
 #define USING_RUNTIME_LOADING_SCREEN 1
-#define USING_JOYSTICK_CONTROLLER    1
+#define USING_JOYSTICK_CONTROLLER    0
 
 // Starting cursor state
 #define INIT_CURSOR_LOCKED  1

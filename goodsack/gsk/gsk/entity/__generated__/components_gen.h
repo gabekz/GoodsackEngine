@@ -86,7 +86,7 @@ struct ComponentCamera
     CACHE_ALIGN(mat4 view);
 };
 
-struct ComponentCameraLook
+typedef struct ComponentCameraLook
 {
     CACHE_ALIGN(s32 firstMouse);
     CACHE_ALIGN(f32 lastX);
@@ -94,12 +94,12 @@ struct ComponentCameraLook
     CACHE_ALIGN(f32 pitch);
     CACHE_ALIGN(f32 sensitivity);
     CACHE_ALIGN(f32 yaw);
-};
+} gsk_C_CameraLook;
 
-struct ComponentCameraMovement
+typedef struct ComponentCameraMovement
 {
     CACHE_ALIGN(f32 speed);
-};
+} gsk_C_CameraMovement;
 
 struct ComponentLight
 {
@@ -148,7 +148,7 @@ struct ComponentCollider
     u32 isColliding;
 };
 
-struct ComponentTransform
+typedef struct ComponentTransform
 {
     u16 hasParent;
     mat4 model;
@@ -156,7 +156,7 @@ struct ComponentTransform
     void *parent;
     CACHE_ALIGN(vec3 position);
     CACHE_ALIGN(vec3 scale);
-};
+} gsk_C_Transform;
 
 struct ComponentWeapon
 {

@@ -48,6 +48,7 @@ void
 gsk_skybox_draw(gsk_Skybox *self)
 {
     // glDepthMask(GL_FALSE);
+    // glDisable(GL_CULL_FACE); -- TODO: Needed for skybox rendering
     gsk_shader_use(self->shader);
     glActiveTexture(GL_TEXTURE0);
 

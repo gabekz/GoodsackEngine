@@ -110,7 +110,7 @@ gsk_renderer_init()
     gsk_Texture *guiTexture =
       texture_create(GSK_PATH("gsk://textures/gizmo/crosshair2.png"),
                      NULL,
-                     (TextureOptions) {1, GL_RGBA, false, true});
+                     (TextureOptions) {0, GL_RGBA, TRUE, TRUE});
     ret->uiImage = gsk_gui_element_create(
       (vec2) {1920 / 2, 1080 / 2}, (vec2) {10, 10}, guiTexture, NULL);
 

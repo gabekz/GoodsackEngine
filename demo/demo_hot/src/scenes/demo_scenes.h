@@ -31,7 +31,7 @@ extern "C" {
 #define DEMO_USING_MULTIPLE_CAMERAS 1
 
 #define TEX_OPS_NRM \
-    (TextureOptions) { 1, GL_RGB, FALSE, TRUE }
+    (TextureOptions) { 1, GL_RGB, TRUE, TRUE }
 #define TEX_OPS_PBR \
     (TextureOptions) { 8, GL_SRGB_ALPHA, TRUE, TRUE }
 
