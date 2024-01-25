@@ -50,50 +50,33 @@ update(gsk_Entity e)
 
     if (!mesh->meshData->isSkinnedMesh) return;
 
-#if 0
-    GLFWwindow *window = e.ecs->renderer->window;
-    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
-
-        if (animator->cntTime < animator->cntAnimation->keyframesCount-1) {
-            animator->cntTime++;
-            gsk_animation_set_keyframe(animator->cntAnimation, animator->cntTime);
-        } else {
-            animator->cntTime = 0;
-            gsk_animation_set_keyframe(animator->cntAnimation, 0);
-        }
-    }
-#else
-
     animator->timerNow += (gsk_device_getTime().delta_time) * 1.0;
 
     gsk_Animation *cntAnimation = animator->cntAnimation;
-    if (animator->timerNow >= cntAnimation->duration) {
+    u32 cntKeyframeIndex        = animator->cntKeyframeIndex;
+    u32 nxtKeyframeIndex        = cntKeyframeIndex + 1;
+
+    // NOTE: At this point, we probably don't need to check the timer.
+    // Just ensure that the keyframe doesn't go out-of-bounds. That is
+    // a lot more practical than a timing check..
+    if (animator->timerNow >= cntAnimation->duration ||
+        nxtKeyframeIndex > cntAnimation->keyframesCount - 1) {
         animator->timerNow         = 0;
         animator->cntKeyframeIndex = 1;
         return;
     }
 
-    // LOG_INFO("Timer: %.2f", animator->timerNow);
-
-    u32 cntKeyframeIndex      = animator->cntKeyframeIndex;
     gsk_Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
-
-    u32 nxtKeyframeIndex      = cntKeyframeIndex + 1;
     gsk_Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];
 
     float ratio = (animator->timerNow - cntKeyframe->frameTime) /
                   (nxtKeyframe->frameTime - cntKeyframe->frameTime);
 
     if (ratio >= nxtKeyframe->frameTime) {
-        // gsk_animation_set_keyframe(animator->cntAnimation, 0);
         gsk_animation_set_keyframe_lerp(
           animator->cntAnimation, nxtKeyframeIndex, ratio);
         animator->cntKeyframeIndex = nxtKeyframeIndex;
     }
-
-    // evaluate whether timerNow is closer to current or next keyframe
-
-#endif
 }
 
 void
