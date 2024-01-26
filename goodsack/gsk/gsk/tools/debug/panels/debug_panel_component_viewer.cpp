@@ -276,7 +276,23 @@ gsk::tools::panels::ComponentViewer::draw(void)
 
         Checkbox("Transition Delay", (bool *)&a.is_transition_delayed);
         Checkbox("Loop", (bool *)&a.is_looping);
+
+        BeginDisabled();
         Checkbox("Is Playing", (bool *)&a.is_playing);
+        EndDisabled();
+
+        BeginDisabled((bool *)a.is_playing);
+        if (Button("Play")) { a.is_playing = 1; }
+        EndDisabled();
+        SameLine();
+        BeginDisabled(!(bool *)a.is_playing && !(bool *)a.is_looping);
+        if (Button("Stop")) { a.is_looping = 0; }
+        SameLine();
+        if (Button("Force Stop")) {
+            a.is_looping = 0;
+            a.is_playing = 0;
+        }
+        EndDisabled();
 
         static int item_current_idx =
           p_skeleton->cnt_animation_index; // selection
