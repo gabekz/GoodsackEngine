@@ -60,6 +60,10 @@ struct gsk_Skeleton
     void *skinningBuffer;
     u32 skinningBufferSize;
 
+    gsk_Animation **p_animations;
+    u32 animations_count;
+    u32 cnt_animation_index;
+
     gsk_Animation *animation; // change to list
 
     mat4 rootMatrix;
@@ -97,6 +101,9 @@ void
 gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
                                 u32 keyframe,
                                 float ratio);
+
+void
+gsk_skeleton_set_animation(gsk_Skeleton *p_skeleton, u32 index);
 
 #ifdef __cplusplus
 }

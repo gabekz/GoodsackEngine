@@ -175,6 +175,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
     animation->keyframes      = keyframes;
     animation->keyframesCount = inputsCount;
     animation->pSkeleton      = skeleton;
+    animation->name           = strdup(gltfAnimation->name);
 
 #if 0
 #define TEST_BONE 2
@@ -407,6 +408,11 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
         LOG_INFO("Animations: %d", animationsCount);
 
+        // Allocate animations
+        skeleton->animations_count = animationsCount;
+        skeleton->p_animations =
+          malloc(sizeof(gsk_Skeleton *) * animationsCount);
+
         for (int i = 0; i < animationsCount; i++) {
             LOG_INFO(
               "Animation: \"%s\"\nSamplers count: %d\nChannels count: %d",
@@ -416,11 +422,12 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
             gsk_Animation *animation =
               __fill_animation_data(&gltfAnimations[i], skeleton);
-            //_skeleton_set_keyframe(
-            //  animation, 0); // sets all the skeleton poses to keyframe 20
-
-            skeleton->animation = animation;
+            skeleton->p_animations[i] = animation;
         }
+        // set current animation to the first one in the list
+        skeleton->cnt_animation_index = 1;
+        skeleton->animation =
+          skeleton->p_animations[skeleton->cnt_animation_index];
     }
     return ret;
 }

@@ -56,6 +56,9 @@ update(gsk_Entity e)
     u32 cntKeyframeIndex        = animator->cntKeyframeIndex;
     u32 nxtKeyframeIndex        = cntKeyframeIndex + 1;
 
+    // gsk_animation_set_keyframe(cntAnimation, 10);
+    // return;
+
     // NOTE: At this point, we probably don't need to check the timer.
     // Just ensure that the keyframe doesn't go out-of-bounds. That is
     // a lot more practical than a timing check..
@@ -63,6 +66,13 @@ update(gsk_Entity e)
         nxtKeyframeIndex > cntAnimation->keyframesCount - 1) {
         animator->timerNow         = 0;
         animator->cntKeyframeIndex = 1;
+
+        // potentially update animation. NOTE: Important to leave this here -
+        // we only want to switch animations if we are done with the current
+        // one.
+        // kind of cursed.
+        animator->cntAnimation = cntAnimation->pSkeleton->animation;
+
         return;
     }
 

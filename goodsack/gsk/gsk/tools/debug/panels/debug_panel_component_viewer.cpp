@@ -104,7 +104,7 @@ gsk::tools::panels::ComponentViewer::draw(void)
         EndChild();
     }
     if (gsk_ecs_has(e, C_MODEL)) {
-        BeginChild("Model", ImVec2(0, GetFontSize() * 25.0f), true);
+        BeginChild("Model", ImVec2(0, GetFontSize() * 15.0f), true);
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Model Component");
         PopStyleColor();
@@ -252,11 +252,48 @@ gsk::tools::panels::ComponentViewer::draw(void)
         EndChild();
     }
     if (gsk_ecs_has(e, C_ANIMATOR)) {
+
+        struct ComponentAnimator &a = *(
+          static_cast<struct ComponentAnimator *>(gsk_ecs_get(e, C_ANIMATOR)));
+
+        gsk_Skeleton *p_skeleton = ((gsk_Animation *)a.cntAnimation)->pSkeleton;
+
         BeginChild("Animator", ImVec2(0, GetFontSize() * 10.0f), true);
+
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Animator Component");
         PopStyleColor();
+
         Separator();
+
+        Text("Total Animations: %d",
+             ((gsk_Animation *)a.cntAnimation)->pSkeleton->animations_count);
+
+        Separator();
+
+        Text("Keyframes: %d",
+             ((gsk_Animation *)a.cntAnimation)->keyframesCount);
+
+        static int item_current_idx =
+          p_skeleton->cnt_animation_index; // selection
+        const char *combo_preview_value =
+          p_skeleton->p_animations[item_current_idx]->name;
+
+        if (ImGui::BeginCombo("Animations", combo_preview_value)) {
+            for (int i = 0; i < p_skeleton->animations_count; i++) {
+                const bool is_selected = (item_current_idx == i);
+                if (ImGui::Selectable(p_skeleton->p_animations[i]->name,
+                                      is_selected)) {
+                    item_current_idx = i;
+                    gsk_skeleton_set_animation(p_skeleton, i);
+                }
+
+                // Set the initial focus when opening the combo (scrolling +
+                // keyboard navigation focus)
+                if (is_selected) ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
 
         EndChild();
     }
