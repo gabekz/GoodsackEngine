@@ -86,6 +86,7 @@ struct gsk_Animation
     float duration; // animation time
 
     gsk_Skeleton *pSkeleton; // reference to associated skeleton
+    u32 index;               // animation-index relative to the parent-skeleton
 
     gsk_Keyframe **keyframes;
     u32 keyframesCount;

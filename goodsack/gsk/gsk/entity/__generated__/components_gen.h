@@ -53,6 +53,10 @@ struct ComponentAnimator
     s32 nxtKeyframeIndex;
     f32 timerNow;
     f32 timerStart;
+
+    u16 is_transition_delayed;
+    u16 is_looping;
+    u16 is_playing;
 };
 
 struct ComponentAudioListener

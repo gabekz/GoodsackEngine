@@ -269,10 +269,14 @@ gsk::tools::panels::ComponentViewer::draw(void)
         Text("Total Animations: %d",
              ((gsk_Animation *)a.cntAnimation)->pSkeleton->animations_count);
 
-        Separator();
-
         Text("Keyframes: %d",
              ((gsk_Animation *)a.cntAnimation)->keyframesCount);
+
+        Separator();
+
+        Checkbox("Transition Delay", (bool *)&a.is_transition_delayed);
+        Checkbox("Loop", (bool *)&a.is_looping);
+        Checkbox("Is Playing", (bool *)&a.is_playing);
 
         static int item_current_idx =
           p_skeleton->cnt_animation_index; // selection

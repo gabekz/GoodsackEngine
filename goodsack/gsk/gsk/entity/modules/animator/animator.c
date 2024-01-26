@@ -36,6 +36,10 @@ init(gsk_Entity e)
 
     animator->cntKeyframeIndex = 0;
     animator->nxtKeyframeIndex = 1;
+
+    animator->is_transition_delayed = TRUE;
+    animator->is_looping            = FALSE;
+    animator->is_playing            = TRUE;
 }
 
 static void
@@ -50,22 +54,43 @@ update(gsk_Entity e)
 
     if (!mesh->meshData->isSkinnedMesh) return;
 
-    animator->timerNow += (gsk_device_getTime().delta_time) * 1.0;
+    if (animator->is_playing) {
+        animator->timerNow += (gsk_device_getTime().delta_time) * 1.0;
+    }
 
     gsk_Animation *cntAnimation = animator->cntAnimation;
     u32 cntKeyframeIndex        = animator->cntKeyframeIndex;
     u32 nxtKeyframeIndex        = cntKeyframeIndex + 1;
 
-    // gsk_animation_set_keyframe(cntAnimation, 10);
-    // return;
+    u32 cnt_anim_index = cntAnimation->index;
+
+    // if (nxtKeyframeIndex >= cntAnimation->keyframesCount &&
+    //    !animator->is_looping) {
+    //    animator->is_playing = FALSE;
+    //}
+
+    // check if we want to have a delay in animation transition
+
+    u16 has_anim_changed =
+      (cnt_anim_index != cntAnimation->pSkeleton->cnt_animation_index);
+
+    // switched + delayed
+    u16 delay_ready = (!animator->is_transition_delayed && has_anim_changed);
+
+    // switched + delayed + (looping + not playing)
+    u16 has_anim_ended = (delay_ready) ||
+                         (animator->is_looping && !animator->is_playing) ||
+                         (has_anim_changed && !animator->is_playing);
 
     // NOTE: At this point, we probably don't need to check the timer.
     // Just ensure that the keyframe doesn't go out-of-bounds. That is
     // a lot more practical than a timing check..
     if (animator->timerNow >= cntAnimation->duration ||
-        nxtKeyframeIndex > cntAnimation->keyframesCount - 1) {
+        nxtKeyframeIndex > cntAnimation->keyframesCount - 1 || has_anim_ended) {
         animator->timerNow         = 0;
         animator->cntKeyframeIndex = 1;
+
+        animator->is_playing = (animator->is_looping || 0);
 
         // potentially update animation. NOTE: Important to leave this here -
         // we only want to switch animations if we are done with the current
@@ -73,8 +98,12 @@ update(gsk_Entity e)
         // kind of cursed.
         animator->cntAnimation = cntAnimation->pSkeleton->animation;
 
+        gsk_animation_set_keyframe(animator->cntAnimation, 1);
+
         return;
     }
+
+    // if (!animator->is_playing) return;
 
     gsk_Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
     gsk_Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];

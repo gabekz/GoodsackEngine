@@ -20,7 +20,8 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
-#define IMPORT_MATERIALS 0
+#define IMPORT_MATERIALS         0
+#define STARTING_ANIMATION_INDEX 0
 
 struct AttributeInfo
 {
@@ -176,6 +177,8 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
     animation->keyframesCount = inputsCount;
     animation->pSkeleton      = skeleton;
     animation->name           = strdup(gltfAnimation->name);
+    animation->index =
+      skeleton->animations_count; // current count as opposed to full count
 
 #if 0
 #define TEST_BONE 2
@@ -412,6 +415,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         skeleton->animations_count = animationsCount;
         skeleton->p_animations =
           malloc(sizeof(gsk_Skeleton *) * animationsCount);
+        skeleton->cnt_animation_index = STARTING_ANIMATION_INDEX;
+        skeleton->animations_count = 0; // NOTE: incremented in loop for reasons
 
         for (int i = 0; i < animationsCount; i++) {
             LOG_INFO(
@@ -423,9 +428,17 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
             gsk_Animation *animation =
               __fill_animation_data(&gltfAnimations[i], skeleton);
             skeleton->p_animations[i] = animation;
+
+            // increment so that we can pass the animation index to the actual
+            // animation data as well.
+            skeleton->animations_count++;
         }
+
+        if (skeleton->animations_count != animationsCount) {
+            LOG_ERROR("uh oh");
+        }
+
         // set current animation to the first one in the list
-        skeleton->cnt_animation_index = 1;
         skeleton->animation =
           skeleton->p_animations[skeleton->cnt_animation_index];
     }
