@@ -18,6 +18,10 @@
 
 /* static */
 
+ALCcontext *g_al_context;
+ALCdevice *g_al_device;
+u16 g_al_initialized = 0;
+
 static void
 ListAudioDevices(const ALCchar *devices)
 {
@@ -51,6 +55,10 @@ openal_get_device()
         ListAudioDevices(alcGetString(NULL, ALC_DEVICE_SPECIFIER));
     }
 
+    // store global variables
+    // TODO: maybe don't do this.
+    g_al_device = device;
+
     return device;
 }
 
@@ -75,7 +83,22 @@ openal_init()
     // setup the distance model
     AL_CHECK(alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED));
 
+    // store global variables
+    // TODO: maybe don't do this.
+    g_al_initialized = 1;
+    g_al_context     = context;
+
     return 1;
+}
+
+void
+openal_cleanup()
+{
+    if (g_al_initialized) {
+        LOG_DEBUG("Destroying AL Context");
+        AL_CHECK(alcCloseDevice(g_al_device));
+        AL_CHECK(alcDestroyContext(g_al_context));
+    }
 }
 
 ALuint

@@ -24,6 +24,8 @@
 #include "core/graphics/renderer/v1/renderer.h"
 #endif
 
+#include "core/drivers/alsoft/alsoft.h"
+
 extern "C" {
 static struct
 {
@@ -232,7 +234,10 @@ gsk_runtime_loop()
 
     LOG_TRACE("Closing Application");
 
+    //
     // Cleanup
+    //
+
     if (GSK_DEVICE_API_VULKAN) {
         vkDeviceWaitIdle(s_runtime.renderer->vulkanDevice->device);
         vulkan_device_cleanup(s_runtime.renderer->vulkanDevice);
@@ -241,6 +246,9 @@ gsk_runtime_loop()
 #if GSK_RUNTIME_USE_DEBUG
     delete (s_runtime.p_debug_toolbar);
 #endif // GSK_RUNTIME_USE_DEBUG
+
+    // cleanup audio driver
+    openal_cleanup();
 
     glfwTerminate();
 }

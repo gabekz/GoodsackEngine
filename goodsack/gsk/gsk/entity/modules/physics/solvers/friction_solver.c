@@ -12,8 +12,8 @@
 
 #define DEFAULT_RESTITUION 0.2f
 
-#define DEBUG_POINTS     0 // 0 -- OFF | value = entity id
-#define DISABLE_ROTATION 1
+#define DEBUG_POINTS    0 // 0 -- OFF | value = entity id
+#define ENABLE_ROTATION 0
 
 static void
 __calc_relative_velocity(_SolverData solver_data,

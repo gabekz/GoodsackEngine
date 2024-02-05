@@ -12,6 +12,9 @@
 #include "core/graphics/mesh/mesh.h"
 #include "core/graphics/mesh/mesh_helpers.inl"
 
+// TODO: Fix lerp
+#define DISABLE_LERP 1
+
 void
 gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe)
 {
@@ -51,9 +54,16 @@ gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
                                 u32 keyframe,
                                 float ratio)
 {
+
+#if DISABLE_LERP
+    gsk_animation_set_keyframe(animation, keyframe - 1);
+    return;
+#endif
+
     gsk_Skeleton *skeleton = animation->pSkeleton;
     for (int i = 0; i < skeleton->jointsCount; i++) {
 
+        // todo: I think we're possibly reading garbage-data
         u32 keyframeActual   = keyframe;
         gsk_Pose currentPose = *animation->keyframes[keyframe - 1]->poses[i];
         gsk_Pose nextPose    = *animation->keyframes[keyframe]->poses[i];

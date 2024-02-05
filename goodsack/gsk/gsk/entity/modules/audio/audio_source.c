@@ -21,7 +21,7 @@ init(gsk_Entity e)
     audioSource->bufferId = openal_generate_source(audioSource->filePath);
 
     // Distance
-    // AL_CHECK(alDistanceModel(AL_EXPONENT_DISTANCE)); iin LISTENER
+    // AL_CHECK(alDistanceModel(AL_EXPONENT_DISTANCE)); in LISTENER
     AL_CHECK(alSourcef(audioSource->bufferId, AL_ROLLOFF_FACTOR, 1));
     AL_CHECK(alSourcef(audioSource->bufferId, AL_REFERENCE_DISTANCE, 6));
     AL_CHECK(alSourcef(audioSource->bufferId, AL_MAX_DISTANCE, 15));
@@ -36,7 +36,8 @@ update(gsk_Entity e)
     if (!(gsk_ecs_has(e, C_AUDIOSOURCE))) return;
     struct ComponentAudioSource *audioSource = gsk_ecs_get(e, C_AUDIOSOURCE);
 
-    // Update position relative to transform
+// Update position relative to transform
+#if 1
     if ((gsk_ecs_has(e, C_TRANSFORM))) {
         struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
         AL_CHECK(alSource3f(audioSource->bufferId,
@@ -45,6 +46,7 @@ update(gsk_Entity e)
                             transform->position[1],
                             transform->position[2]));
     }
+#endif
 
     AL_CHECK(
       alSourcei(audioSource->bufferId, AL_LOOPING, audioSource->looping));

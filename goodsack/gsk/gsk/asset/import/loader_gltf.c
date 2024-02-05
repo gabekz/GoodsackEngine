@@ -362,7 +362,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         // List of all joints in skeleton
         skeleton->joints =
           malloc(sizeof(gsk_Joint *) * data->skins->joints_count);
-
+        
         // Create skeleton recursively
         _create_joint_recurse(
           skeleton, 0, NULL, data->skins->joints, &data->skins[0]);
@@ -496,7 +496,7 @@ _create_material(cgltf_material *gltfMaterial,
 {
 
     TextureOptions texNormalMapOptions =
-      (TextureOptions) {1, GL_RGB, false, false};
+      (TextureOptions) {1, GL_RGB, true, false};
     TextureOptions texPbrOptions =
       (TextureOptions) {16, GL_SRGB_ALPHA, true, false};
 
