@@ -38,7 +38,7 @@ gsk_ecs_init(gsk_Renderer *renderer)
     gsk_ECS *ecs = malloc(sizeof(gsk_ECS));
 
     // Initialize entity capacity
-    u32 capacity   = 64;
+    u32 capacity   = 128;
     ecs->ids       = malloc(capacity * sizeof(gsk_EntityId));
     ecs->capacity  = capacity;
     ecs->nextId    = 1;

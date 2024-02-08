@@ -35,9 +35,10 @@ typedef enum ECSComponentType_t {
     C_TRANSFORM,
     C_WEAPON,
     C_WEAPONSWAY,
+    C_BONE_ATTACHMENT,
 } ECSComponentType;
 
-#define ECSCOMPONENT_LAST 14
+#define ECSCOMPONENT_LAST C_BONE_ATTACHMENT
 
 #if ECS_COMPONENTS_PACKED
 #pragma pack(push, 1)
@@ -70,6 +71,12 @@ struct ComponentAudioSource
     char filePath[256];
     u32 looping;
 };
+
+typedef struct ComponentBoneAttachment
+{
+    CACHE_ALIGN(u32 bone_id);
+    CACHE_ALIGN(int entity_skeleton);
+} gsk_C_BoneAttachment;
 
 typedef struct ComponentCamera
 {
@@ -220,6 +227,10 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPON, sizeof(struct ComponentWeapon));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_WEAPONSWAY, sizeof(struct ComponentWeaponSway));
+#if 1
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_BONE_ATTACHMENT, sizeof(struct ComponentBoneAttachment));
+#endif
 }
 
 #ifdef __cplusplus

@@ -5,8 +5,12 @@
 
 #include "transform.h"
 
+#include "core/graphics/mesh/animation.h"
+#include "core/graphics/mesh/model.h"
 #include "core/graphics/shader/shader.h"
 #include "entity/ecs.h"
+
+#include "util/logger.h"
 
 // #define ECS_SYSTEM
 //  ECS_SYSTEM_DECLARE()
@@ -67,6 +71,46 @@ late_update(gsk_Entity e)
 
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
 
+#if 1
+    mat4 skinned = GLM_MAT4_IDENTITY_INIT;
+    if (gsk_ecs_has(e, C_BONE_ATTACHMENT)) {
+
+        gsk_C_BoneAttachment *c_bone_attachment =
+          gsk_ecs_get(e, C_BONE_ATTACHMENT);
+
+        gsk_Entity ent_skeleton = (gsk_Entity) {
+          .index = c_bone_attachment->entity_skeleton, .ecs = e.ecs};
+
+        // Get joint from skeleton
+        if (!gsk_ecs_has(ent_skeleton, C_MODEL)) {
+            LOG_WARN("ent_skeleton does not have a Mesh component!");
+        }
+        gsk_Model *pmdl =
+          ((struct ComponentModel *)gsk_ecs_get(ent_skeleton, C_MODEL))->pModel;
+        gsk_Mesh *pmsh = pmdl->meshes[0];
+
+        if (!pmsh->meshData->isSkinnedMesh) {
+            LOG_ERROR("Attempting to attach to non skinned-mesh!");
+        }
+
+        gsk_Joint *joint =
+          pmsh->meshData->skeleton->joints[c_bone_attachment->bone_id];
+
+        LOG_INFO("joint: %f, %f, %f",
+                 joint->pose.translation[0],
+                 joint->pose.translation[1],
+                 joint->pose.translation[2]);
+
+        mat4 matrix = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_copy(joint->pose.mTransform, skinned);
+
+        // Copy model matrix too
+        gsk_C_Transform *skel_transform =
+          gsk_ecs_get(ent_skeleton, C_TRANSFORM);
+        glm_mat4_copy(skel_transform->model, m4i);
+    }
+#endif
+
     if (gsk_ecs_has(e, C_CAMERA)) {
         struct ComponentCamera *camera = gsk_ecs_get(e, C_CAMERA);
         glm_mat4_inv(camera->view, transform->model);
@@ -79,6 +123,7 @@ late_update(gsk_Entity e)
         glm_mat4_copy(parent->model, m4i);
     }
 
+    glm_mat4_mul(m4i, skinned, m4i);
     glm_translate(m4i, transform->position);
 
     glm_rotate_x(m4i, glm_rad(transform->orientation[0]), m4i);

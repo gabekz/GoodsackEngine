@@ -13,6 +13,8 @@ vcpkg_installed/
 
 imgui.ini
 
+*.blend1
+
 CMakeSettings.json
 compile_commands.json
 
