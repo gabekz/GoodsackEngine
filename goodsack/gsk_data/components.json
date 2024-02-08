@@ -15,6 +15,11 @@
         "bool": ["looping"]
     },
 
+    "BoneAttachment": {
+        "uint": ["bone_id"],
+        "entity": ["entity_skeleton"]
+    },
+
     "Camera": {
         "int": ["screenWidth", "screenHeight"],
         "uint": ["renderLayer"],

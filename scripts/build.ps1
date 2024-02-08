@@ -28,7 +28,7 @@ try {
 # run cmake with vcpkg
 & 'cmake.exe' -S . -B build/ `
     -G "Visual Studio 17 2022" `
-    -DCMAKE_TOOLCHAIN_FILE=D:/Projects/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake
+    -DCMAKE_TOOLCHAIN_FILE="D:/Projects/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake"
 
 # msbuild
 & 'MSBuild.exe' .\build\GoodsackEngine.sln
