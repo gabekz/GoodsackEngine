@@ -5,6 +5,8 @@
 
 #include "gsk_runtime.hpp"
 
+#include <cstring>
+
 #include "util/filesystem.h"
 #include "util/logger.h"
 #include "util/sysdefs.h"

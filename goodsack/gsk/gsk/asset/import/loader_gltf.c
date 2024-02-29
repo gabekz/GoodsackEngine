@@ -362,7 +362,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         // List of all joints in skeleton
         skeleton->joints =
           malloc(sizeof(gsk_Joint *) * data->skins->joints_count);
-        
+
         // Create skeleton recursively
         _create_joint_recurse(
           skeleton, 0, NULL, data->skins->joints, &data->skins[0]);
