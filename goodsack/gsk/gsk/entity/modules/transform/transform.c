@@ -96,11 +96,6 @@ late_update(gsk_Entity e)
         gsk_Joint *joint =
           pmsh->meshData->skeleton->joints[c_bone_attachment->bone_id];
 
-        LOG_INFO("joint: %f, %f, %f",
-                 joint->pose.translation[0],
-                 joint->pose.translation[1],
-                 joint->pose.translation[2]);
-
         mat4 matrix = GLM_MAT4_IDENTITY_INIT;
         glm_mat4_copy(joint->pose.mTransform, skinned);
 

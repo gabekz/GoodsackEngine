@@ -63,9 +63,7 @@ gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
     gsk_Skeleton *skeleton = animation->pSkeleton;
     for (int i = 0; i < skeleton->jointsCount; i++) {
 
-        // todo: I think we're possibly reading garbage-data
-        u32 keyframeActual   = keyframe;
-        gsk_Pose currentPose = *animation->keyframes[keyframe - 1]->poses[i];
+        gsk_Pose currentPose = skeleton->joints[i]->pose;
         gsk_Pose nextPose    = *animation->keyframes[keyframe]->poses[i];
 
         gsk_Pose newPose;
