@@ -20,6 +20,11 @@
 #define DRAW_ELEMENTS           0x01
 #define DRAW_ELEMENTS_WIREFRAME 0x02
 
+// TODO: Rework
+#define MESH_TBN_MODE_NONE 0
+#define MESH_TBN_MODE_OBJ  1
+#define MESH_TBN_MODE_GLTF 2
+
 #ifdef __cplusplus
 extern "C" {
 #endif

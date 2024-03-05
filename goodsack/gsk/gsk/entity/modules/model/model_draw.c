@@ -17,9 +17,9 @@
 #include "tools/debug/debug_draw_bounds.h"
 #include "tools/debug/debug_draw_skeleton.h"
 
-#define DEBUG_DRAW_SKELETON  0
+#define DEBUG_DRAW_SKELETON  0 // TODO: Does not draw with u_Model
 #define DEBUG_DRAW_BOUNDS    0
-#define CULLING_FOR_IMPORTED 1
+#define CULLING_FOR_IMPORTED 0
 
 static void
 SetCulling(int bitfield)
@@ -289,9 +289,10 @@ render(gsk_Entity e)
     if (pass == REGULAR) {
 #if DEBUG_DRAW_SKELETON
         // draw skeleton
-        if (model->mesh->meshData->isSkinnedMesh) {
-            gsk_debug_draw_skeleton(e.ecs->renderer->debugContext,
-                                    model->mesh->meshData->skeleton);
+        if (((gsk_Mesh *)model->mesh)->meshData->isSkinnedMesh) {
+            gsk_debug_draw_skeleton(
+              e.ecs->renderer->debugContext,
+              ((gsk_Mesh *)model->mesh)->meshData->skeleton);
         }
 #endif
 

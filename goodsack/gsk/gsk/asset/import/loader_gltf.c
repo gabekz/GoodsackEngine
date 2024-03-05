@@ -116,9 +116,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
              frameTimes[inputsCount - 1],
              inputsCount);
 
-    // TODO: set correct iterator
-    // for (int i = 0; i < gltfAnimation->channels_count; i++) {
-    for (int i = 0; i < (skeleton->jointsCount * 3); i++) {
+    for (int i = 0; i < gltfAnimation->channels_count; i++) {
         u32 boneIndex = -1;
         // Go through each bone and find ID by target_node of channel
         // TODO: very, very slow. Fix this later.
@@ -273,13 +271,14 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
     // Required
     ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
-
+    ret->buffers.outI += vTanBufferSize;
     // Add space for tangent data
     if (attribInfo.idxTan > -1) {
-        ret->buffers.outI += vTanBufferSize;
-        ret->hasTBN = 2; // TODO
+
+        ret->hasTBN = MESH_TBN_MODE_GLTF;
     } else {
-        ret->hasTBN = 0;
+        ret->hasTBN = MESH_TBN_MODE_NONE;
+        LOG_WARN("Mesh does not contain tangent data");
     }
 
     // Set min-max bounds
@@ -305,14 +304,19 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
           attribInfo.nrmData, i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
         // Fill Tangent
-        if (attribInfo.idxTan > -1) {
+        if (ret->hasTBN) {
             cgltf_accessor_read_float(
               attribInfo.tanData, i, ret->buffers.out + offsetA, 100);
             offsetA += 3;
+        } else {
+            // TODO: calculate TBN
+            vec3 vec = GLM_VEC3_ONE_INIT;
+            memcpy(ret->buffers.out + offsetA, vec, sizeof(vec3));
+            offsetA += 3;
         }
     }
-
-    // Tangent
+    // TODO: this is kind of goofy.
+    ret->hasTBN = MESH_TBN_MODE_GLTF;
 
     // set this so we push the position to buffer
     ret->buffers.vL  = vertCount;

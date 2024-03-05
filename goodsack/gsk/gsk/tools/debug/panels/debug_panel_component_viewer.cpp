@@ -294,8 +294,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
         }
         EndDisabled();
 
-        static int item_current_idx =
-          p_skeleton->cnt_animation_index; // selection
+        int item_current_idx =
+          (int)p_skeleton->cnt_animation_index; // selection
         const char *combo_preview_value =
           p_skeleton->p_animations[item_current_idx]->name;
 
