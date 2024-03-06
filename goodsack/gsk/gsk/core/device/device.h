@@ -36,7 +36,7 @@ typedef struct gsk_Time
 {
     f64 delta_time;       // variable delta_time time
     f64 fixed_delta_time; // fixed delta_time time interval
-    f64 time_scale;
+    f64 next_time_scale, time_scale;
 
     struct
     {
@@ -81,6 +81,9 @@ gsk_device_getTime();
 
 void
 gsk_device_resetTime();
+
+void
+gsk_device_setTimescale(f32 timescale);
 
 void
 gsk_device_updateTime(double time);

@@ -77,11 +77,26 @@ gsk_device_resetTime()
     s_device.time.delta_time       = 0;
     s_device.time.fixed_delta_time = GSK_TIME_FIXED_DELTA_DEFAULT;
     s_device.time.time_scale       = GSK_TIME_SCALE_DEFAULT;
+    s_device.time.next_time_scale  = GSK_TIME_SCALE_DEFAULT;
+}
+
+void
+gsk_device_setTimescale(f32 timescale)
+{
+    if (timescale < 0) {
+        LOG_ERROR("Cannot set timescale lower than 0. Requsted: %f", timescale);
+    }
+    LOG_DEBUG("Time scale set to %f", timescale);
+    s_device.time.next_time_scale = timescale;
 }
 
 void
 gsk_device_updateTime(double time)
 {
+    // update timescale
+    s_device.time.time_scale = s_device.time.next_time_scale;
+
+    // time *= s_device.time.time_scale;
     const f64 analytics_interval_ms = 1000;
 
     // Delta Time

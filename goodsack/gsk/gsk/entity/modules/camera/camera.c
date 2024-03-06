@@ -27,7 +27,7 @@ TODO:
 #define CAMERA_SENSITIVITY_DIVS 10.0f
 
 #if CAMERA_SHAKE
-static float s_shake = 0.00f;
+// static float s_shake = 0.00f;
 
 static float
 _noise(int x, int y)
@@ -140,6 +140,11 @@ init(gsk_Entity e)
     if (camera->nearZ <= 0) { camera->nearZ = 0.005f; }
     if (camera->farZ <= 0) { camera->farZ = 1200.0f; }
 
+#if CAMERA_SHAKE
+    // Reset camera shake
+    camera->shake_amount = 0;
+#endif // CAMERA_SHAKE
+
     // Create camera UBO
     _initialize_shader_data(camera);
 
@@ -236,8 +241,9 @@ update(gsk_Entity e)
 
 #if CAMERA_SHAKE
         // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
-        float seed    = 255.0f;
-        float shakeCO = 0.5f * s_shake * _noise(seed, glfwGetTime() * 50.0f);
+        float seed = 255.0f;
+        float shakeCO =
+          0.5f * camera->shake_amount * _noise(seed, glfwGetTime() * 50.0f);
 #endif // CAMERA_SHAKE
 
         // Clamp pitch
@@ -311,18 +317,20 @@ update(gsk_Entity e)
     _upload_shader_data(e, camera, transform);
 
 #if CAMERA_SHAKE
-    if (s_shake > 0) {
-        s_shake -= 3 * gsk_device_getTime().delta_time;
-    } else if (s_shake <= 0) {
-        s_shake = 0;
+    if (camera->shake_amount > 0) {
+        camera->shake_amount -= 3 * gsk_device_getTime().delta_time;
+    } else if (camera->shake_amount <= 0) {
+        camera->shake_amount = 0;
     }
 
+#if 0 // manual camera shake test-controls 
     if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_P) == GLFW_PRESS) {
-        s_shake += 0.165f;
+        camera->shake_amount += 0.165f;
     }
     if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_O) == GLFW_PRESS) {
-        s_shake = 2;
+        camera->shake_amount = 2;
     }
+#endif
 #endif // CAMERA_SHAKE
 }
 

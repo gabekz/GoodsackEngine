@@ -95,6 +95,7 @@ typedef struct ComponentCamera
     CACHE_ALIGN(u32 renderLayer);
     CACHE_ALIGN(s32 screenHeight);
     CACHE_ALIGN(s32 screenWidth);
+    CACHE_ALIGN(f32 shake_amount);
     CACHE_ALIGN(ResRef uniformBuffer);
     CACHE_ALIGN(ResRef uniformBufferMapped);
     CACHE_ALIGN(ResRef uniformBufferMemory);

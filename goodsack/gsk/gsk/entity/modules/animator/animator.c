@@ -57,7 +57,8 @@ update(gsk_Entity e)
     if (!mesh->meshData->isSkinnedMesh) return;
 
     if (animator->is_playing) {
-        animator->timerNow += (gsk_device_getTime().delta_time) * 1.0f;
+        animator->timerNow +=
+          (gsk_device_getTime().delta_time) * gsk_device_getTime().time_scale;
     }
 
     gsk_Animation *cntAnimation = animator->cntAnimation;

@@ -23,7 +23,7 @@
     "Camera": {
         "int": ["screenWidth", "screenHeight"],
         "uint": ["renderLayer"],
-        "float": ["fov", "nearZ", "farZ"],
+        "float": ["fov", "nearZ", "farZ", "shake_amount"],
         "vec3": ["axisUp", "center", "front"],
         "mat4": ["model", "view", "proj"],
         "Resource": ["uniformBuffer", "uniformBufferMemory", "uniformBufferMapped"]
