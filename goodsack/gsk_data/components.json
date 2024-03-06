@@ -81,6 +81,7 @@
     },
 
     "SwordController": {
-        "int": ["last_direction"]
+        "int": ["last_direction"],
+        "entity": [ "entity_camera" ]
     }
 }

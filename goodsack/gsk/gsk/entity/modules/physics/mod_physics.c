@@ -42,8 +42,6 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller, gsk_Raycast *raycast)
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
               compareTransform->position);
 
-            LOG_INFO("%d", points.has_collision);
-
             return (gsk_mod_RaycastResult) {
               .entity        = e_compare,
               .has_collision = points.has_collision,

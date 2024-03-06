@@ -155,7 +155,8 @@ struct ComponentRigidbody
 
 struct ComponentSwordController
 {
-    int last_direction;
+    CACHE_ALIGN(int entity_camera);
+    CACHE_ALIGN(int last_direction);
 };
 
 struct ComponentCollider
