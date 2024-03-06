@@ -14,7 +14,9 @@
 // todo: gsk_ECSCaller (includes entity info)
 
 gsk_mod_RaycastResult
-gsk_mod_physics_raycast(gsk_Entity entity_caller, gsk_Raycast *raycast)
+gsk_mod_physics_raycast(gsk_Entity entity_caller,
+                        gsk_Raycast *raycast,
+                        float range)
 {
     for (int i = 0; i < entity_caller.ecs->nextIndex; i++) {
         if (entity_caller.index == (gsk_EntityId)i)
@@ -42,10 +44,28 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller, gsk_Raycast *raycast)
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
               compareTransform->position);
 
-            return (gsk_mod_RaycastResult) {
-              .entity        = e_compare,
-              .has_collision = points.has_collision,
-            };
+            if (points.has_collision) {
+
+                return (gsk_mod_RaycastResult) {
+                  .entity        = e_compare,
+                  .has_collision = points.has_collision,
+                };
+            }
+        } else if (compareCollider->type == COLLIDER_BOX) {
+            gsk_CollisionPoints points = gsk_physics_collision_find_ray_box(
+              raycast,
+              ((gsk_Collider *)compareCollider->pCollider)->collider_data,
+              compareTransform->position);
+
+            if (points.has_collision) {
+
+                if (range && glm_vec3_distance(raycast->origin, points.point_a) <= range)
+
+                    return (gsk_mod_RaycastResult) {
+                      .entity        = e_compare,
+                      .has_collision = points.has_collision,
+                    };
+            }
         }
     };
 

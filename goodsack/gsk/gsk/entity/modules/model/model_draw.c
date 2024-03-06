@@ -233,7 +233,10 @@ init(gsk_Entity e)
             model->pModel = gsk_model_load_from_file(
               model->modelPath, transform->scale[0], FALSE);
         }
+
+        // TODO: Duplicate model here (for skinned-mesh / animator)
         model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
+
         // send lightspace matrix from renderer to entity shader
         gsk_ShaderProgram *shader =
           ((gsk_Material *)model->material)->shaderProgram;

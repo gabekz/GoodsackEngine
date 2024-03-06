@@ -537,3 +537,69 @@ gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,
     ret.has_collision = (discriminant > 0);
     return ret;
 }
+
+// gsk_Raycast v. Box
+// TODO: change return type to gsk_RaycastResult
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
+                                   gsk_BoxCollider *box,
+                                   vec3 pos_box)
+{
+    // algorithm mostly taken from: https://gamedev.stackexchange.com/a/18459
+
+    gsk_CollisionPoints ret = {.has_collision = 0};
+
+    // r.dir is unit direction vector of ray
+    vec3 dirfrac = GLM_VEC3_ZERO_INIT;
+    dirfrac[0]   = 1.0f / ray->direction[0];
+    dirfrac[1]   = 1.0f / ray->direction[1];
+    dirfrac[2]   = 1.0f / ray->direction[2];
+
+    vec3 bounds_world[2];
+    glm_vec3_add(pos_box, box->bounds[0], bounds_world[0]);
+    glm_vec3_add(pos_box, box->bounds[1], bounds_world[1]);
+    // lb is the corner of AABB with minimal coordinates - left bottom, rt is
+    // maximal corner r.org is origin of ray
+    float t1 = (bounds_world[0][0] - ray->origin[0]) * dirfrac[0];
+    float t2 = (bounds_world[1][0] - ray->origin[0]) * dirfrac[0];
+    float t3 = (bounds_world[0][1] - ray->origin[1]) * dirfrac[1];
+    float t4 = (bounds_world[1][1] - ray->origin[1]) * dirfrac[1];
+    float t5 = (bounds_world[0][2] - ray->origin[2]) * dirfrac[2];
+    float t6 = (bounds_world[1][2] - ray->origin[2]) * dirfrac[2];
+
+    float t    = 0; // ray length
+    float tmin = MAX(MAX(MIN(t1, t2), MIN(t3, t4)), MIN(t5, t6));
+    float tmax = MIN(MIN(MAX(t1, t2), MAX(t3, t4)), MAX(t5, t6));
+
+    // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is
+    // behind us
+    if (tmax < 0) {
+        t = tmax;
+        return ret;
+    }
+
+    // if tmin > tmax, ray doesn't intersect AABB
+    if (tmin > tmax) {
+        t = tmax;
+        return ret;
+    }
+
+    t                 = tmin;
+    ret.has_collision = TRUE;
+
+    // get contact point
+    glm_vec3_scale(ray->direction, t, ret.point_a);
+    glm_vec3_add(ray->origin, ret.point_a, ret.point_a);
+
+    return ret;
+
+#if 0
+    LOG_INFO("Hit Position:\t%lf\t%lf\t%lf",
+             hitPosition[0],
+             hitPosition[1],
+             hitPosition[2]);
+    LOG_INFO("discriminant %f", discriminant);
+#endif
+
+    return ret;
+}

@@ -81,7 +81,12 @@
     },
 
     "SwordController": {
-        "int": ["last_direction"],
+        "int": ["last_direction", "weapon_state"],
+        "float": ["state_timer", "charge_time"],
         "entity": [ "entity_camera" ]
+    },
+
+    "Enemy": {
+        "int": ["a"]
     }
 }

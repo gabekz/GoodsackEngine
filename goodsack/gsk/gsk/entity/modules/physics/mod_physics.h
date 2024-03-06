@@ -23,7 +23,9 @@ typedef struct gsk_mod_RaycastResult
 } gsk_mod_RaycastResult;
 
 gsk_mod_RaycastResult
-gsk_mod_physics_raycast(gsk_Entity entity_caller, gsk_Raycast *raycast);
+gsk_mod_physics_raycast(gsk_Entity entity_caller,
+                        gsk_Raycast *raycast,
+                        float range);
 
 #ifdef __cplusplus
 }

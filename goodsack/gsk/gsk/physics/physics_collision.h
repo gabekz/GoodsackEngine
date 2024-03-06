@@ -110,6 +110,12 @@ gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,
                                       gsk_SphereCollider *sphere,
                                       vec3 pos_sphere);
 
+// gsk_Raycast v. Box
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
+                                   gsk_BoxCollider *box,
+                                   vec3 pos_box);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

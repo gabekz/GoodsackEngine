@@ -32,6 +32,7 @@ typedef enum ECSComponentType_t {
     C_RENDERLAYER,
     C_RIGIDBODY,
     C_SWORD_CONTROLLER, // TODO: Remove (testing)
+    C_ENEMY,            // TODO: Remove (testing)
     C_COLLIDER,
     C_TRANSFORM,
     C_WEAPON,
@@ -156,7 +157,15 @@ struct ComponentRigidbody
 struct ComponentSwordController
 {
     CACHE_ALIGN(int entity_camera);
+    CACHE_ALIGN(int weapon_state);
     CACHE_ALIGN(int last_direction);
+    CACHE_ALIGN(float state_timer);
+    CACHE_ALIGN(float charge_time);
+};
+
+struct ComponentEnemy
+{
+    int a;
 };
 
 struct ComponentCollider
@@ -229,6 +238,7 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_RIGIDBODY, sizeof(struct ComponentRigidbody));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_SWORD_CONTROLLER, sizeof(struct ComponentSwordController));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_ENEMY, sizeof(struct ComponentEnemy));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_COLLIDER, sizeof(struct ComponentCollider));
     _ECS_DECL_COMPONENT_INTERN(
