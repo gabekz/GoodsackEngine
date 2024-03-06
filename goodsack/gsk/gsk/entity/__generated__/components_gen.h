@@ -31,6 +31,7 @@ typedef enum ECSComponentType_t {
     C_PLAYER_CONTROLLER,
     C_RENDERLAYER,
     C_RIGIDBODY,
+    C_SWORD_CONTROLLER, // TODO: Remove (testing)
     C_COLLIDER,
     C_TRANSFORM,
     C_WEAPON,
@@ -152,6 +153,11 @@ struct ComponentRigidbody
     ResRef solver;
 };
 
+struct ComponentSwordController
+{
+    int last_direction;
+};
+
 struct ComponentCollider
 {
     int type;
@@ -220,6 +226,8 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_RENDERLAYER, sizeof(struct ComponentRenderLayer));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_RIGIDBODY, sizeof(struct ComponentRigidbody));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_SWORD_CONTROLLER, sizeof(struct ComponentSwordController));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_COLLIDER, sizeof(struct ComponentCollider));
     _ECS_DECL_COMPONENT_INTERN(

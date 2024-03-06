@@ -78,5 +78,9 @@
 
     "WeaponSway": {
         "float": ["sway_amount"]
+    },
+
+    "SwordController": {
+        "int": ["last_direction"]
     }
 }
