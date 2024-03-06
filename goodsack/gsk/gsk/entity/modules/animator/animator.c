@@ -40,6 +40,8 @@ init(gsk_Entity e)
     animator->is_transition_delayed = TRUE;
     animator->is_looping            = FALSE;
     animator->is_playing            = TRUE;
+
+    animator->force_replay = FALSE;
 }
 
 static void
@@ -86,11 +88,14 @@ update(gsk_Entity e)
     // Just ensure that the keyframe doesn't go out-of-bounds. That is
     // a lot more practical than a timing check..
     if (animator->timerNow >= cntAnimation->duration ||
-        nxtKeyframeIndex > cntAnimation->keyframesCount - 1 || has_anim_ended) {
+        nxtKeyframeIndex > cntAnimation->keyframesCount - 1 || has_anim_ended ||
+        animator->force_replay) {
         animator->timerNow         = 0;
         animator->cntKeyframeIndex = 1;
 
-        animator->is_playing = (animator->is_looping || 0);
+        animator->is_playing =
+          (animator->force_replay) || (animator->is_looping || 0);
+        animator->force_replay = FALSE;
 
         // potentially update animation. NOTE: Important to leave this here -
         // we only want to switch animations if we are done with the current

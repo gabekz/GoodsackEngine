@@ -60,6 +60,8 @@ struct ComponentAnimator
     u16 is_transition_delayed;
     u16 is_looping;
     u16 is_playing;
+
+    u16 force_replay;
 };
 
 struct ComponentAudioListener
