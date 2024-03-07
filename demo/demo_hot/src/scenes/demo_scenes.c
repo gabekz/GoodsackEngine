@@ -548,7 +548,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 #endif
 
 // Second sphere
-#if 1
+#if 0
 
     gsk_Entity *pSphereEntity2 = malloc(sizeof(gsk_Entity));
     *pSphereEntity2            = gsk_ecs_new(ecs);

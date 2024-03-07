@@ -21,8 +21,8 @@
 #include "entity/modules/physics/solvers/friction_solver.h"
 
 // Functionality toggles
-#define DEBUG_TRACK  0
-#define DEBUG_POINTS 0 // 0 -- OFF | value = entity id
+#define DEBUG_TRACK  1
+#define DEBUG_POINTS 3 // 0 -- OFF | value = entity id
 
 #define CALC_INERTIA 0
 
@@ -30,6 +30,9 @@
 #define DEFAULT_RESTITUION       0.5f
 #define DEFAULT_STATIC_FRICTION  0.6f
 #define DEFAULT_DYNAMIC_FRICTION 0.4f
+
+// constant for putting dynamic objects to sleep
+#define SLEEP_EPSILON 0.001f
 
 static void
 _position_solver(_SolverData solver_data);
@@ -214,24 +217,26 @@ fixed_update(gsk_Entity entity)
     // --
     // -- Integrate velocities
 
-    // position += velocity * delta_time;
+    // calculate : position += velocity * delta_time;
     vec3 vD = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(rigidbody->linear_velocity, delta, vD);
-    glm_vec3_add(transform->position, vD, transform->position);
 
 #if 1
-    // orientation += angular_velocity * delta_time;
+    // calculate : orientation += angular_velocity * delta_time;
     vec3 aVD = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(rigidbody->angular_velocity, delta, aVD);
 
-#if 1
     aVD[0] = glm_deg(aVD[0]);
     aVD[1] = glm_deg(aVD[1]);
     aVD[2] = glm_deg(aVD[2]);
-#endif
+#endif // orientation
 
-    glm_vec3_add(transform->orientation, aVD, transform->orientation);
-#endif
+    // TODO: Optimization - Put object to sleep
+    // TODO: check aVD with epsilon
+    if (glm_vec3_norm(vD) > 0.001) {
+        glm_vec3_add(transform->position, vD, transform->position);
+        glm_vec3_add(transform->orientation, aVD, transform->orientation);
+    }
 
     // --
     // -- Reset net force

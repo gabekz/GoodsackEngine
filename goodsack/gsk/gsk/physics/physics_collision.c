@@ -372,7 +372,7 @@ gsk_physics_collision_find_capsule_capsule(gsk_CapsuleCollider *a,
         // a_A
         glm_vec3_add(a_base, a_line_end_offset, a_A);
         // a_B
-        glm_vec3_sub(a_base, a_line_end_offset, a_B);
+        glm_vec3_sub(a_tip, a_line_end_offset, a_B);
     }
 
     // calculate capsule B Data
@@ -385,7 +385,7 @@ gsk_physics_collision_find_capsule_capsule(gsk_CapsuleCollider *a,
         // a_A
         glm_vec3_add(b_base, b_line_end_offset, b_A);
         // a_B
-        glm_vec3_sub(b_base, b_line_end_offset, b_B);
+        glm_vec3_sub(b_tip, b_line_end_offset, b_B);
     }
 
     // vectors between end points
@@ -441,7 +441,6 @@ gsk_physics_collision_find_capsule_plane(gsk_CapsuleCollider *a,
     gsk_CollisionPoints ret = {.has_collision = 0};
 
     vec3 a_norm, a_line_end_offset, a_A, a_B; // capsule A data
-    vec3 b_norm, b_line_end_offset, b_A, b_B; // capsulbe B data
 
     // base and tip adjusted to position
     vec3 a_tip, a_base;
@@ -458,7 +457,7 @@ gsk_physics_collision_find_capsule_plane(gsk_CapsuleCollider *a,
         // a_A
         glm_vec3_add(a_base, a_line_end_offset, a_A);
         // a_B
-        glm_vec3_sub(a_base, a_line_end_offset, a_B);
+        glm_vec3_sub(a_tip, a_line_end_offset, a_B);
     }
 
     // A = q - plane.p[0]
@@ -482,20 +481,25 @@ gsk_physics_collision_find_capsule_plane(gsk_CapsuleCollider *a,
     vec3 best_a;
 
     // get exact point
-    _closest_point_line_segment(a_A, a_B, A, best_a);
+    _closest_point_line_segment(a_A, a_B, ret.point_b, best_a);
 
     vec3 pen_normal;
     glm_vec3_sub(best_a, ret.point_b, pen_normal);
     f32 len = glm_vec3_norm(pen_normal); // get length
     glm_vec3_normalize(pen_normal);      // normalize
+
     f32 pen_depth = a->radius - len;
+    // glm_vec3_scale(ret.normal, pen_depth, ret.normal);
 
     ret.has_collision = (pen_depth > 0);
 
     if (ret.has_collision) {
         glm_vec3_sub(best_a, pen_normal, ret.point_a);
+
         glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
         glm_vec3_normalize(ret.normal);
+
+        // ret.depth = pen_depth;
         ret.depth = glm_vec3_distance(ret.point_a, ret.point_b);
     }
 

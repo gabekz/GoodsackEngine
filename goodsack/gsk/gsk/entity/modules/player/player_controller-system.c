@@ -3,12 +3,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-// TODO: Move solvers to separate file
+// TODO: Move input checks to update()
 
 #include "player_controller-system.h"
 
 #include "util/logger.h"
 #include "util/sysdefs.h"
+
+#define JUMP_FORCE 8000
 
 static void
 init(gsk_Entity entity)
@@ -22,7 +24,7 @@ init(gsk_Entity entity)
 }
 
 static void
-update(gsk_Entity entity)
+fixed_update(gsk_Entity entity)
 {
     if (!gsk_ecs_has(entity, C_PLAYER_CONTROLLER)) { return; }
     struct ComponentPlayerController *cmp_controller =
@@ -75,9 +77,14 @@ update(gsk_Entity entity)
         glm_vec3_add(newvel, cross, newvel);
     }
 
-    // TODO: Move to fixed_update
+    // TODO: needs to be fixed by single-input check. Currently being called
+    // several times.
     if (is_grounded && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        cmp_rigidbody->linear_velocity[1] = newvel[1] + 5;
+        is_grounded = FALSE;
+        // cmp_rigidbody->linear_velocity[1] = newvel[1] + 5;
+
+        // TODO: Better way to add forces
+        cmp_rigidbody->force[1] = cmp_rigidbody->force[1] + JUMP_FORCE;
     }
 
     is_moving = (glm_vec3_norm(newvel) > 0);
@@ -96,7 +103,7 @@ s_player_controller_system_init(gsk_ECS *ecs)
 {
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
-                              .init   = (gsk_ECSSubscriber)init,
-                              .update = (gsk_ECSSubscriber)update,
+                              .init         = (gsk_ECSSubscriber)init,
+                              .fixed_update = (gsk_ECSSubscriber)fixed_update,
                             }));
 }
