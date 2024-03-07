@@ -11,6 +11,8 @@
 
 #include "entity/__generated__/components_gen.h"
 
+#define ANIMATOR_REWIND 0 // TODO: Move to component as a setting
+
 static void
 init(gsk_Entity e)
 {
@@ -104,7 +106,9 @@ update(gsk_Entity e)
         // kind of cursed.
         animator->cntAnimation = cntAnimation->pSkeleton->animation;
 
+#if ANIMATOR_REWIND
         gsk_animation_set_keyframe(animator->cntAnimation, 1);
+#endif // ANIMATOR_REWIND
 
         return;
     }

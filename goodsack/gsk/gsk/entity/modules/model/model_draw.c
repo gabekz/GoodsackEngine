@@ -62,7 +62,12 @@ DrawModel(struct ComponentModel *model,
 #endif
 
             } else if (useOverrideMaterial) {
-                material = renderer->explicitMaterial;
+                if (renderer->currentPass == SHADOW &&
+                    mesh->meshData->isSkinnedMesh) {
+                    material = shadowmap_getMaterialSkinned();
+                } else {
+                    material = renderer->explicitMaterial;
+                }
             } else {
                 material = model->material;
             }
