@@ -51,7 +51,8 @@
 
     "PlayerController": {
         "float": ["speed"],
-        "int": ["walk_direction"]
+        "int": ["walk_direction"],
+        "bool": ["is_grounded", "is_jumping"]
     },
 
     "RenderLayer": {

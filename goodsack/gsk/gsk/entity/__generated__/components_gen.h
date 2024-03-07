@@ -145,6 +145,8 @@ struct ComponentPlayerController
     CACHE_ALIGN(f32 speed);
     CACHE_ALIGN(int entity_camera);
     CACHE_ALIGN(int walk_direction);
+    CACHE_ALIGN(u8 is_grounded);
+    CACHE_ALIGN(u8 is_jumping);
 };
 
 struct ComponentRenderLayer

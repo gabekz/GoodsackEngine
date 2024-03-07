@@ -11,7 +11,7 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
-#define JUMP_FORCE 8000
+#define JUMP_FORCE 16000
 
 static void
 init(gsk_Entity entity)
@@ -22,6 +22,51 @@ init(gsk_Entity entity)
         LOG_ERROR("Player Controller is kind of useless without a rigidbody..");
         return;
     }
+
+    struct ComponentPlayerController *cmp_controller =
+      gsk_ecs_get(entity, C_PLAYER_CONTROLLER);
+
+    cmp_controller->is_grounded = FALSE;
+    cmp_controller->is_jumping  = FALSE;
+}
+
+static void
+update(gsk_Entity entity)
+{
+    if (!gsk_ecs_has(entity, C_PLAYER_CONTROLLER)) { return; }
+
+    struct ComponentPlayerController *cmp_controller =
+      gsk_ecs_get(entity, C_PLAYER_CONTROLLER);
+
+    // store *window for input
+    GLFWwindow *window = entity.ecs->renderer->window;
+
+    // 1. zero-out walk direction, 2. check for input
+    cmp_controller->walk_direction = 0;
+
+    int input_up    = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS;
+    int input_down  = glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS;
+    int input_left  = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
+    int input_right = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
+
+    int input_jump = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
+
+    if (!(input_up && input_down)) {
+        if (input_up) {
+            cmp_controller->walk_direction |= WALK_FORWARD;
+        } else if (input_down) {
+            cmp_controller->walk_direction |= WALK_BACKWARD;
+        }
+    }
+    if (!(input_left && input_right)) {
+        if (input_left) {
+            cmp_controller->walk_direction |= WALK_LEFT;
+        } else if (input_right) {
+            cmp_controller->walk_direction |= WALK_RIGHT;
+        }
+    }
+
+    cmp_controller->is_jumping = (cmp_controller->is_grounded && input_jump);
 }
 
 static void
@@ -45,9 +90,9 @@ fixed_update(gsk_Entity entity)
 
     // --------- logic ---------
 
-    u8 is_moving, is_grounded = FALSE;
+    u8 is_moving = FALSE;
 
-    is_grounded = (cmp_collider->isColliding);
+    cmp_controller->is_grounded = (cmp_collider->isColliding);
 
     vec3 direction, cross, newvel = GLM_VEC3_ZERO_INIT;
     direction[0] = cmp_camera->front[0]; // copy x-axis
@@ -58,41 +103,36 @@ fixed_update(gsk_Entity entity)
     direction[1] = cmp_rigidbody->linear_velocity[1]; // keep y-axis
 
     // no mid-air movement
-    if (!is_grounded) return;
+    if (!cmp_controller->is_grounded) return;
 
-    cmp_controller->walk_direction = 0; // reset walk direction
-
-    GLFWwindow *window = entity.ecs->renderer->window;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        cmp_controller->walk_direction |= WALK_FORWARD;
+    if (cmp_controller->walk_direction & WALK_FORWARD) {
         glm_vec3_add(newvel, direction, newvel);
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        cmp_controller->walk_direction |= WALK_BACKWARD;
+    if (cmp_controller->walk_direction & WALK_BACKWARD) {
         glm_vec3_sub(newvel, direction, newvel);
     }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        cmp_controller->walk_direction |= WALK_LEFT;
+    if (cmp_controller->walk_direction & WALK_LEFT) {
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
         glm_vec3_scale(cross, cmp_controller->speed, cross);
         glm_vec3_sub(newvel, cross, newvel);
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        cmp_controller->walk_direction |= WALK_RIGHT;
+    if (cmp_controller->walk_direction & WALK_RIGHT) {
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
         glm_vec3_scale(cross, cmp_controller->speed, cross);
         glm_vec3_add(newvel, cross, newvel);
     }
 
+#if 1
     // TODO: needs to be fixed by single-input check. Currently being called
     // several times.
-    if (is_grounded && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        is_grounded = FALSE;
+    if (cmp_controller->is_grounded && cmp_controller->is_jumping) {
+        cmp_controller->is_grounded = FALSE;
         // cmp_rigidbody->linear_velocity[1] = newvel[1] + 5;
 
         // TODO: Better way to add forces
         cmp_rigidbody->force[1] = cmp_rigidbody->force[1] + JUMP_FORCE;
     }
+#endif
 
     is_moving = (glm_vec3_norm(newvel) > 0);
 
@@ -111,6 +151,7 @@ s_player_controller_system_init(gsk_ECS *ecs)
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
                               .init         = (gsk_ECSSubscriber)init,
+                              .update       = (gsk_ECSSubscriber)update,
                               .fixed_update = (gsk_ECSSubscriber)fixed_update,
                             }));
 }
