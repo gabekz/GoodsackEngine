@@ -7,6 +7,7 @@
 #define __PLAYER_CONTROLLER_SYSTEM_H__
 
 #include "entity/ecs.h"
+#include "player.h"
 
 void
 s_player_controller_system_init(gsk_ECS *ecs);

@@ -35,6 +35,7 @@ typedef enum ECSComponentType_t {
     C_ENEMY,            // TODO: Remove (testing)
     C_COLLIDER,
     C_TRANSFORM,
+    C_ENTITY_REFERENCE,
     C_WEAPON,
     C_WEAPONSWAY,
     C_BONE_ATTACHMENT,
@@ -143,6 +144,7 @@ struct ComponentPlayerController
 {
     CACHE_ALIGN(f32 speed);
     CACHE_ALIGN(int entity_camera);
+    CACHE_ALIGN(int walk_direction);
 };
 
 struct ComponentRenderLayer
@@ -187,6 +189,11 @@ typedef struct ComponentTransform
     CACHE_ALIGN(vec3 position);
     CACHE_ALIGN(vec3 scale);
 } gsk_C_Transform;
+
+typedef struct ComponentEntityReference
+{
+    CACHE_ALIGN(int entity_ref_id);
+} gsk_C_EntityReference;
 
 struct ComponentWeapon
 {
@@ -246,6 +253,8 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_COLLIDER, sizeof(struct ComponentCollider));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_ENTITY_REFERENCE, sizeof(struct ComponentEntityReference));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPON, sizeof(struct ComponentWeapon));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_WEAPONSWAY, sizeof(struct ComponentWeaponSway));

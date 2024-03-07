@@ -50,7 +50,8 @@
     },
 
     "PlayerController": {
-        "float": ["speed"]
+        "float": ["speed"],
+        "int": ["walk_direction"]
     },
 
     "RenderLayer": {
@@ -68,6 +69,10 @@
         "mat4": [ "model" ],
         "bool": [ "hasParent" ],
         "Resource": [ "parent" ]
+    },
+
+    "EntityReference": {
+        "entity": ["entity_ref_id"]
     },
 
     "Weapon": {

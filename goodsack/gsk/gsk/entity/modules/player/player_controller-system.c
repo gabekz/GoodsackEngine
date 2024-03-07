@@ -6,6 +6,7 @@
 // TODO: Move input checks to update()
 
 #include "player_controller-system.h"
+#include "player.h"
 
 #include "util/logger.h"
 #include "util/sysdefs.h"
@@ -59,19 +60,25 @@ fixed_update(gsk_Entity entity)
     // no mid-air movement
     if (!is_grounded) return;
 
+    cmp_controller->walk_direction = 0; // reset walk direction
+
     GLFWwindow *window = entity.ecs->renderer->window;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        cmp_controller->walk_direction |= WALK_FORWARD;
         glm_vec3_add(newvel, direction, newvel);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        cmp_controller->walk_direction |= WALK_BACKWARD;
         glm_vec3_sub(newvel, direction, newvel);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        cmp_controller->walk_direction |= WALK_LEFT;
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
         glm_vec3_scale(cross, cmp_controller->speed, cross);
         glm_vec3_sub(newvel, cross, newvel);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        cmp_controller->walk_direction |= WALK_RIGHT;
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
         glm_vec3_scale(cross, cmp_controller->speed, cross);
         glm_vec3_add(newvel, cross, newvel);
