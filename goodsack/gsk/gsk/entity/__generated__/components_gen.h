@@ -138,6 +138,8 @@ struct ComponentModel
         u16 drawMode : 2;
         u16 cullMode : 3;
     } properties;
+
+    u8 cast_shadows; // TODO:
 };
 
 struct ComponentPlayerController

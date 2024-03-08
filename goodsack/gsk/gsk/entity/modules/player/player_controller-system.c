@@ -51,6 +51,10 @@ update(gsk_Entity entity)
 
     int input_jump = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
 
+    cmp_controller->is_jumping = (cmp_controller->is_grounded && input_jump);
+
+    if (cmp_controller->is_jumping) { return; }
+
     if (!(input_up && input_down)) {
         if (input_up) {
             cmp_controller->walk_direction |= WALK_FORWARD;
@@ -65,8 +69,6 @@ update(gsk_Entity entity)
             cmp_controller->walk_direction |= WALK_RIGHT;
         }
     }
-
-    cmp_controller->is_jumping = (cmp_controller->is_grounded && input_jump);
 }
 
 static void
@@ -98,12 +100,22 @@ fixed_update(gsk_Entity entity)
     direction[0] = cmp_camera->front[0]; // copy x-axis
     direction[2] = cmp_camera->front[2]; // copy z-axis
 
-    glm_vec3_scale(direction, cmp_controller->speed, direction);
-
-    direction[1] = cmp_rigidbody->linear_velocity[1]; // keep y-axis
-
     // no mid-air movement
     if (!cmp_controller->is_grounded) return;
+
+    f32 speed = cmp_controller->speed;
+#if 0
+    if (cmp_controller->walk_direction & (WALK_FORWARD | WALK_BACKWARD)) {
+        if (cmp_controller->walk_direction & (WALK_LEFT | WALK_RIGHT)) {
+            speed = speed / 2;
+        }
+    }
+    LOG_INFO("%f speed: ", speed);
+#endif
+
+    // scale speed based on direction
+    glm_vec3_scale(direction, speed, direction);
+    direction[1] = cmp_rigidbody->linear_velocity[1]; // keep y-axis
 
     if (cmp_controller->walk_direction & WALK_FORWARD) {
         glm_vec3_add(newvel, direction, newvel);
@@ -111,14 +123,33 @@ fixed_update(gsk_Entity entity)
     if (cmp_controller->walk_direction & WALK_BACKWARD) {
         glm_vec3_sub(newvel, direction, newvel);
     }
+
     if (cmp_controller->walk_direction & WALK_LEFT) {
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
-        glm_vec3_scale(cross, cmp_controller->speed, cross);
+
+#if 0
+        // diagonal-check
+        speed =
+          (cmp_controller->walk_direction & (WALK_FORWARD | WALK_BACKWARD))
+            ? speed / 2
+            : speed;
+#endif
+
+        glm_vec3_scale(cross, speed, cross);
         glm_vec3_sub(newvel, cross, newvel);
     }
     if (cmp_controller->walk_direction & WALK_RIGHT) {
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
-        glm_vec3_scale(cross, cmp_controller->speed, cross);
+
+#if 0
+        // diagonal-check
+        speed =
+          (cmp_controller->walk_direction & (WALK_FORWARD | WALK_BACKWARD))
+            ? speed / 2
+            : speed;
+#endif
+
+        glm_vec3_scale(cross, speed, cross);
         glm_vec3_add(newvel, cross, newvel);
     }
 
@@ -127,6 +158,7 @@ fixed_update(gsk_Entity entity)
     // several times.
     if (cmp_controller->is_grounded && cmp_controller->is_jumping) {
         cmp_controller->is_grounded = FALSE;
+        cmp_controller->is_jumping  = FALSE;
         // cmp_rigidbody->linear_velocity[1] = newvel[1] + 5;
 
         // TODO: Better way to add forces

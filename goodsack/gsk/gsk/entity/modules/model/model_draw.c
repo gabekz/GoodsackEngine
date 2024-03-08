@@ -62,9 +62,13 @@ DrawModel(struct ComponentModel *model,
 #endif
 
             } else if (useOverrideMaterial) {
-                if (renderer->currentPass == SHADOW &&
-                    mesh->meshData->isSkinnedMesh) {
-                    material = shadowmap_getMaterialSkinned();
+                if (renderer->currentPass == SHADOW) {
+                    if (model->cast_shadows == FALSE) return;
+                    if (mesh->meshData->isSkinnedMesh) {
+                        material = shadowmap_getMaterialSkinned();
+                    } else {
+                        material = shadowmap_getMaterial();
+                    }
                 } else {
                     material = renderer->explicitMaterial;
                 }
@@ -241,6 +245,9 @@ init(gsk_Entity e)
 
         // TODO: Duplicate model here (for skinned-mesh / animator)
         model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
+
+        // TODO: add option
+        model->cast_shadows = TRUE;
 
         // send lightspace matrix from renderer to entity shader
         gsk_ShaderProgram *shader =

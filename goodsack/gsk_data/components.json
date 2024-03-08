@@ -46,7 +46,8 @@
     "Model": {
         "Resource": [ "material", "mesh", "pModel", "vkVBO"],
         "string": ["modelPath"],
-        "uint": ["vbo"]
+        "uint": ["vbo"],
+        "bool": ["cast_shadows"]
     },
 
     "PlayerController": {

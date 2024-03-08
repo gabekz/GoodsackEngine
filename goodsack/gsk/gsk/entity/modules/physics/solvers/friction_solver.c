@@ -76,11 +76,11 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
     {
         glm_vec3_sub(collision_result->points.point_a, body_a.position, ra);
         glm_vec3_cross(ra, collision_result->points.point_a, ra_perp);
-        // glm_vec3_normalize(ra_perp);
+        glm_vec3_normalize(ra_perp);
 
         glm_vec3_sub(collision_result->points.point_b, body_b.position, rb);
         glm_vec3_cross(collision_result->points.point_b, rb, rb_perp);
-        // glm_vec3_normalize(rb_perp);
+        glm_vec3_normalize(rb_perp);
 
         // calculate relative velocity
         __calc_relative_velocity(solver_data,
@@ -168,7 +168,7 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
               solver_data.p_transform->position,
               ra,
               1,
-              VCOL_WHITE,
+              VCOL_GREEN,
               FALSE);
 #if 0
             gsk_debug_markers_push(

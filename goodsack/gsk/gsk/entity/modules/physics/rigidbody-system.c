@@ -22,7 +22,7 @@
 
 // Functionality toggles
 #define DEBUG_TRACK  1
-#define DEBUG_POINTS 3 // 0 -- OFF | value = entity id
+#define DEBUG_POINTS 0 // 0 -- OFF | value = entity id
 
 #define CALC_INERTIA 0
 
