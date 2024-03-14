@@ -44,6 +44,14 @@ gsk_ecs_init(gsk_Renderer *renderer)
     ecs->nextId    = 1;
     ecs->nextIndex = 0;
 
+    // Create Entity names cache
+    const s32 def_name_size = 16;
+    ecs->entity_names       = malloc(sizeof(char *) * capacity);
+    for (int i = 0; i < capacity; i++) {
+        ecs->entity_names[i] = malloc(sizeof(char) * ECS_NAME_LEN_MAX);
+        snprintf(ecs->entity_names[i], def_name_size, "Entity_%d", i);
+    }
+
     ecs->renderer = renderer;
 
     // Initialize systems and components
@@ -75,7 +83,7 @@ gsk_ecs_init(gsk_Renderer *renderer)
 }
 
 gsk_Entity
-gsk_ecs_new(gsk_ECS *self)
+_gsk_ecs_new_internal(gsk_ECS *self, char *name)
 {
     u32 capacity = self->capacity;
     // check if we have available capcity
@@ -94,6 +102,14 @@ gsk_ecs_new(gsk_ECS *self)
     self->ids[self->nextId - 1] = entity.id;
     self->nextId++;
     self->nextIndex++;
+
+    // Assign name if passed in
+    if (name != NULL) {
+        strcpy(self->entity_names[entity.index], name);
+        LOG_DEBUG("Assigned name \"%s\" to entity index %d",
+                  self->entity_names[entity.index],
+                  entity.index);
+    }
 
     return entity;
 }

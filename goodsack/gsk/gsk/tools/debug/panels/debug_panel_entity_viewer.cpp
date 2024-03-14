@@ -120,7 +120,7 @@ gsk::tools::panels::EntityViewer::draw(void)
                 TableNextColumn();
                 Text("%04d", row_n);
                 TableNextColumn();
-                TextUnformatted("Entity");
+                TextUnformatted(ecs->entity_names[(int)row_n]);
                 TableNextColumn();
                 if (SmallButton("Inspect")) {
                     gsk_Entity entity =

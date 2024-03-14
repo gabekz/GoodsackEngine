@@ -31,6 +31,12 @@
 #define ecs_add(...) \
     _ecs_add_overload(__VA_ARGS__, _ecs_add3, _ecs_add2)(__VA_ARGS__)
 
+#define _ecs_new_2(e, n)                     _gsk_ecs_new_internal(e, n)
+#define _ecs_new_1(e)                        _gsk_ecs_new_internal(e, NULL)
+#define _ecs_new_overload(_1, _2, NAME, ...) NAME
+#define gsk_ecs_new(...) \
+    _ecs_new_overload(__VA_ARGS__, _ecs_new2, _ecs_new_1)(__VA_ARGS__)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -102,6 +108,8 @@ struct gsk_ECS
     u32 nextIndex;
     u32 capacity;
 
+    char **entity_names;
+
     gsk_Renderer *renderer;
 
     gsk_ECSComponentList component_lists[ECSCOMPONENT_LAST + 1];
@@ -132,7 +140,7 @@ _gsk_ecs_set_internal(gsk_Entity entity, u32 component_id, u8 is_active);
 gsk_ECS *
 gsk_ecs_init(gsk_Renderer *renderer);
 gsk_Entity
-gsk_ecs_new(gsk_ECS *self);
+_gsk_ecs_new_internal(gsk_ECS *self, char *name);
 
 int
 gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id);
