@@ -47,7 +47,10 @@
         "Resource": [ "material", "mesh", "pModel", "vkVBO"],
         "string": ["modelPath"],
         "uint": ["vbo"],
-        "bool": ["cast_shadows"]
+
+        "settings": {
+            "bool": ["cast_shadows", "receive_shadows"]
+        }
     },
 
     "PlayerController": {
@@ -90,7 +93,7 @@
     "SwordController": {
         "int": ["last_direction", "weapon_state"],
         "float": ["state_timer", "charge_time"],
-        "entity": [ "entity_camera" ]
+        "entity": [ "entity_camera", "entity_flock" ]
     },
 
     "Enemy": {

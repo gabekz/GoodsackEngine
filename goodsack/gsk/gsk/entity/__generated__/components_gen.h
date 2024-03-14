@@ -166,6 +166,7 @@ struct ComponentRigidbody
 struct ComponentSwordController
 {
     CACHE_ALIGN(int entity_camera);
+    CACHE_ALIGN(int entity_flock);
     CACHE_ALIGN(int weapon_state);
     CACHE_ALIGN(int last_direction);
     CACHE_ALIGN(float state_timer);

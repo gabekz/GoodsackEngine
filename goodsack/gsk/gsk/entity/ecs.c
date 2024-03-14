@@ -105,18 +105,10 @@ _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
     gsk_ECSComponentList *list = &ecs->component_lists[component_id];
     u32 size                   = (entity.index * ECS_TAG_SIZE) +
                (list->component_size * (entity.index + 1));
-    // printf("index of tag for Entity [%d]: %d", entity.index, size);
 
     char *tag = (char *)((void *)list->components) + size;
     *tag |= ECS_TAG_USED;
-    // printf("old tag: %x", *tag & 0xff);
-    // assert(! (*tag & ECS_TAG_USED));
-    //*tag |= ECS_TAG_USED;
-    // printf("new tag: %x", *tag & 0xff);
 
-    // printf("entity ID is %d", (int)entity.id);
-
-    // void *component = list->components+(entity.id-1);
     u32 index =
       (entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index));
     if (value != NULL) {
@@ -126,6 +118,19 @@ _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
           list->component_size);
         // list = realloc(list, list.components_size+1 * sizeof());
     }
+}
+
+s32
+_gsk_ecs_set_internal(gsk_Entity entity, u32 component_id, u8 is_active)
+{
+    gsk_ECS *ecs               = entity.ecs;
+    gsk_ECSComponentList *list = &ecs->component_lists[component_id];
+    u32 size                   = (entity.index * ECS_TAG_SIZE) +
+               (list->component_size * (entity.index + 1));
+
+    char *tag = (char *)((void *)list->components) + size;
+    *tag      = (is_active) ? ECS_TAG_USED : ECS_TAG_UNUSED;
+    int value = *tag;
 }
 
 int
@@ -143,7 +148,7 @@ gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id)
     // component_id, size, entity.index);
     // return value;
 
-    return (value > 0) ? 1 : 0;
+    return (*tag == ECS_TAG_USED) ? 1 : 0;
 }
 
 void *

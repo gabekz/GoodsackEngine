@@ -124,6 +124,9 @@ union gsk_ECSSystem {
 void
 _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value);
 
+s32
+_gsk_ecs_set_internal(gsk_Entity entity, u32 component_id, u8 is_active);
+
 /*-------------------------------------------*/
 
 gsk_ECS *

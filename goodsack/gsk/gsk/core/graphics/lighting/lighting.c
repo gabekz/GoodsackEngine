@@ -16,7 +16,7 @@ gsk_lighting_initialize(vec3 lightPos, vec4 lightColor)
     glm_vec4_copy(lightColor, ret->color);
 
     ret->type     = Directional;
-    ret->strength = 4; // TODO: GNK
+    ret->strength = 1; // TODO: GNK
 
     u32 uboLight;
     if (GSK_DEVICE_API_OPENGL) {

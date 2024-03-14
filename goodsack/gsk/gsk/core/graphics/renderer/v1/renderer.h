@@ -51,6 +51,8 @@ typedef struct gsk_Renderer
 
     RenderPass currentPass; // TODO: rename -> RenderStage
     gsk_Material *explicitMaterial;
+    gsk_Material
+      *explicitMaterial_skinned; // skinned version of explicit material
 
     gsk_Billboard2D *billboard; // Billboard testing
     gsk_GuiElement *uiImage;    // GuiElement test

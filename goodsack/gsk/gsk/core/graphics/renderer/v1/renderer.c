@@ -277,8 +277,9 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Pass: Depth Prepass");
 
     prepass_bind();
-    renderer->currentPass      = DEPTH_PREPASS;
-    renderer->explicitMaterial = prepass_getMaterial();
+    renderer->currentPass              = DEPTH_PREPASS;
+    renderer->explicitMaterial         = prepass_getMaterial();
+    renderer->explicitMaterial_skinned = prepass_getMaterialSkinned();
     gsk_ecs_event(ecs, ECS_RENDER);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -301,8 +302,9 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     // bind the shadowmap textures & framebuffers
     shadowmap_bind();
 
-    renderer->currentPass      = SHADOW;
-    renderer->explicitMaterial = shadowmap_getMaterial();
+    renderer->currentPass              = SHADOW;
+    renderer->explicitMaterial         = shadowmap_getMaterial();
+    renderer->explicitMaterial_skinned = shadowmap_getMaterialSkinned();
     // TODO: Clean this up...
     gsk_ecs_event(ecs, ECS_RENDER);
 
