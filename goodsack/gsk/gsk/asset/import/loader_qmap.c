@@ -35,28 +35,35 @@ __next_mode(int mode, int add)
 #define MODE_DOWN(x) x = __next_mode(x, QM_M_SUB);
 
 static void
-__read_point(char *line)
+__read_plane(char *line)
 {
     LOG_INFO("Reading point..");
 
-    int cnt_char = 0; // cnt reading character of the line
-
-    int cnt_coord = 0, cnt_num = 0; // cnt coords and numbers
-
-    // index for parenthesis-split
-    int start_index = 0, end_index = 0;
+    int cnt_char  = 0;                  // cnt reading character of the line
+    int cnt_coord = 0, cnt_num = 0;     // cnt coords and numbers
+    int start_index = 0, end_index = 0; // index for parenthesis-split
 
     // points
     vec3 points[3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
-    // vec3 point_1, point_2, point_3 = GLM_VEC3_ZERO_INIT;
 
+    // Loop through line
     while (cnt_char != strlen(line)) {
-        // LOG_INFO("Char is %c", line[cnt_char]);
 
-        if (line[cnt_char] == '(') { start_index = cnt_char; }
+        //
+        // --- READ COORDINATES
+        //
+
+        // start of coordinate
+        if (line[cnt_char] == '(') {
+            start_index = cnt_char;
+            cnt_num     = 0;
+        }
+
+        // end of coordinate
         if (line[cnt_char] == ')') {
             end_index = cnt_char + 1;
 
+            // get coordiante substring
             char substring[256];
             strncpy(substring, line + (start_index), (end_index - start_index));
             substring[end_index - start_index] = '\0';
@@ -64,28 +71,27 @@ __read_point(char *line)
             start_index = cnt_char;
             end_index   = cnt_char;
 
-            //LOG_INFO("%s", substring);
+            // LOG_INFO("%s", substring);
 
-            // read the numbers now, separated by spaces
+            // separate coordinate by spaces
             char delim[] = " ";
             char *str    = substring;
 
             char *split = strtok(str, delim); // line, split by spaces
             split = strtok(NULL, delim); // split is now ignoring first value
 
+            // read each number in the coordinate
             while (split != NULL && cnt_num <= 2) {
                 float saved = atof(split);
                 split       = strtok(NULL, delim);
 
-                //LOG_INFO("saved: %f", saved);
+                // LOG_INFO("saved: %f", saved);
 
                 points[cnt_coord][cnt_num] = saved;
 
                 cnt_num++;
             }
-
-            // reset current number, add coordinate
-            cnt_num = 0;
+            cnt_num = 0; // reset number
             cnt_coord++;
         }
 
@@ -95,6 +101,14 @@ __read_point(char *line)
     for (int i = 0; i < 3; i++) {
         LOG_INFO("x: %f y: %f z: %f", points[i][0], points[i][1], points[i][2]);
     }
+
+    //
+    // --- READ TEXTURE
+    //
+
+    //
+    // --- READ TEXTURE COORDS
+    //
 }
 
 gsk_QMapContainer
@@ -114,7 +128,7 @@ gsk_load_qmap(const char *map_path)
         switch (line[0]) {
         case '{': MODE_UP(current_mode); break;
         case '}': MODE_DOWN(current_mode); break;
-        case '(': __read_point(line); break;
+        case '(': __read_plane(line); break;
         default: break;
         }
     }
