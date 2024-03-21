@@ -37,7 +37,7 @@ __next_mode(int mode, int add)
 static void
 __read_plane(char *line)
 {
-    LOG_INFO("Reading point..");
+    LOG_INFO("Reading plane..");
 
     int cnt_char  = 0;                  // cnt reading character of the line
     int cnt_coord = 0, cnt_num = 0;     // cnt coords and numbers
@@ -46,12 +46,15 @@ __read_plane(char *line)
     // points
     vec3 points[3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 
+    char *texture_name;
+    f32 texture_properties[5] = {0, 0, 0, 0, 0};
+
+    //
+    // --- READ VERT COORDINATES
+    //
+
     // Loop through line
     while (cnt_char != strlen(line)) {
-
-        //
-        // --- READ COORDINATES
-        //
 
         // start of coordinate
         if (line[cnt_char] == '(') {
@@ -95,20 +98,54 @@ __read_plane(char *line)
             cnt_coord++;
         }
 
+        // break out if we are at the final coordinate. Move on to the next
+        // stage of extraction
+        if (cnt_coord >= 3) { break; }
+
         cnt_char++;
     }
 
+    //
+    // --- READ TEXTURE DATA
+    //
+
+    // grab substring from here on out - separate by whitespace
+    char substring[256];
+    strncpy(substring, line + (cnt_char + 1), (strlen(line) - (cnt_char + 1)));
+    // LOG_INFO("Length: %d", strlen(line) - (cnt_char + 1));
+    substring[strlen(line) - (cnt_char + 1)] = '\0';
+    // LOG_INFO("rest of string:");
+    // LOG_INFO("%s", substring);
+
+    // separate coordinate by spaces
+    char delim[] = " ";
+    char *str    = substring;
+
+    char *split = strtok(str, delim); // line, split by spaces
+
+    int i = -1; // -1 start for the texture name. Following this are the texture
+                // coordinate properties.
+
+    while (split != NULL) {
+        if (i == -1) {
+            texture_name = strdup(split);
+        } else {
+            texture_properties[i] = atof(split);
+        }
+        split = strtok(NULL, delim);
+        i++;
+    }
+
+#if 1 // LOG_PLANE
     for (int i = 0; i < 3; i++) {
         LOG_INFO("x: %f y: %f z: %f", points[i][0], points[i][1], points[i][2]);
     }
 
-    //
-    // --- READ TEXTURE
-    //
-
-    //
-    // --- READ TEXTURE COORDS
-    //
+    LOG_INFO("TEXTURE NAME IS: %s", texture_name);
+    for (int i = 0; i < 5; i++) {
+        LOG_INFO("TEXTURE prop: %f", texture_properties[i]);
+    }
+#endif
 }
 
 gsk_QMapContainer
