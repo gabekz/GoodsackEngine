@@ -83,7 +83,7 @@ fixed_update(gsk_Entity entity)
 
     // camera-child
     gsk_Entity ent_camera =
-      (gsk_Entity) {.index = cmp_controller->entity_camera, .ecs = entity.ecs};
+      gsk_ecs_ent(entity.ecs, cmp_controller->entity_camera);
 
     if (!gsk_ecs_has(ent_camera, C_CAMERA)) {
         LOG_WARN("camera-child does not have camera a Camera component!");

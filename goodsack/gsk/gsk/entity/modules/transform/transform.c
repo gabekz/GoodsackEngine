@@ -7,7 +7,6 @@
 
 #include "core/graphics/mesh/animation.h"
 #include "core/graphics/mesh/model.h"
-#include "core/graphics/shader/shader.h"
 #include "entity/ecs.h"
 
 #include "util/logger.h"
@@ -78,8 +77,8 @@ late_update(gsk_Entity e)
         gsk_C_BoneAttachment *c_bone_attachment =
           gsk_ecs_get(e, C_BONE_ATTACHMENT);
 
-        gsk_Entity ent_skeleton = (gsk_Entity) {
-          .index = c_bone_attachment->entity_skeleton, .ecs = e.ecs};
+        gsk_Entity ent_skeleton =
+          gsk_ecs_ent(e.ecs, c_bone_attachment->entity_skeleton);
 
         // Get joint from skeleton
         if (!gsk_ecs_has(ent_skeleton, C_MODEL)) {

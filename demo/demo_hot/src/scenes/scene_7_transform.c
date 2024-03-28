@@ -172,8 +172,7 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
       C_PLAYER_CONTROLLER,
       (void *)(&(struct ComponentPlayerController) {
         .speed = 10.0f,
-        .entity_camera =
-          (int)pCamera->index, // TODO: should be id, but not supported
+        .entity_camera = pCamera->id,
       }));
 
     /*
@@ -262,7 +261,6 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
         .damage       = 25,
         .pos_starting = {0, 0, 0},
         .rot_starting = {0, 0, 0},
-        .entity_camera =
-          (int)pCamera->index, // TODO: should be id, but not supported
+        .entity_camera = pCamera->id,
       }));
 };
