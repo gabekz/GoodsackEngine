@@ -123,8 +123,7 @@ struct gsk_ECS
 union gsk_ECSSystem {
     struct
     {
-        gsk_ECSSubscriber init, destroy, render, fixed_update, update,
-          late_update;
+        gsk_ECSSubscriber ECSEVENT_CFN_NAMES;
     };
 
     gsk_ECSSubscriber subscribers[ECSEVENT_LAST + 1];

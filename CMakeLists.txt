@@ -5,9 +5,24 @@
 cmake_minimum_required(VERSION 3.20)
 project(
     GoodsackEngine
-    VERSION 0.1.0.0
+    #VERSION 0.1.0.0
     DESCRIPTION "Realtime 3D Rendering Engine"
     HOMEPAGE_URL "github.com/gabekz/GoodsackEngine")
+
+file(READ "version.txt" ver)
+
+string(REGEX MATCH "VERSION_MAJOR ([0-9]*)" _ ${ver})
+set(GoodsackEngine_VERSION_MAJOR ${CMAKE_MATCH_1})
+
+string(REGEX MATCH "VERSION_MINOR ([0-9]*)" _ ${ver})
+set(GoodsackEngine_VERSION_MINOR ${CMAKE_MATCH_1})
+
+string(REGEX MATCH "VERSION_PATCH ([0-9]*)" _ ${ver})
+set(GoodsackEngine_VERSION_PATCH ${CMAKE_MATCH_1})
+
+string(REGEX MATCH "VERSION_TWEAK ([0-9]*)" _ ${ver})
+set(GoodsackEngine_VERSION_TWEAK ${CMAKE_MATCH_1})
+
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

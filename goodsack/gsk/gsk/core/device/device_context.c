@@ -31,7 +31,6 @@ _error_callback(int error, const char *description)
 static void
 _resize_callback(GLFWwindow *window, int widthRe, int heightRe)
 {
-    printf("window resize: %d and %d\n", widthRe, heightRe);
     glViewport(0, 0, widthRe, heightRe);
     postbuffer_resize((u32)widthRe, (u32)heightRe);
 }

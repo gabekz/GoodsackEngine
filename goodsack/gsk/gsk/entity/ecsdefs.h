@@ -6,8 +6,6 @@
 #ifndef __ECSDEFS_H__
 #define __ECSDEFS_H__
 
-#include "util/sysdefs.h"
-
 enum ECSEvent {
     ECS_INIT = 0,
     ECS_DESTROY,
@@ -21,6 +19,9 @@ enum ECSEvent {
 #define ECSEVENT_LAST  ECS_LATE_UPDATE
 
 #define ECSEVENT_STRING(x) (_gsk_ecs_EventToString(x))
+
+#define ECSEVENT_CFN_NAMES \
+    init, destroy, render, fixed_update, update, late_update
 
 #define ECS_TAG_SIZE   1 // Tag size as bytes
 #define ECS_TAG_UNUSED 0b00000000

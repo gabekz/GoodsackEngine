@@ -106,9 +106,11 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
     // Assign name if passed in
     if (name != NULL) {
         strcpy(self->entity_names[entity.index], name);
+#if 0
         LOG_DEBUG("Assigned name \"%s\" to entity index %d",
                   self->entity_names[entity.index],
                   entity.index);
+#endif
     }
 
     return entity;
@@ -237,7 +239,6 @@ gsk_ecs_ent(gsk_ECS *self, gsk_EntityId id)
 void
 gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
 {
-
     // Loop through each system, fire the appropriate event
     for (int i = 0; i < self->systems_size; i++) {
         gsk_ECSSubscriber func = self->systems[i].subscribers[event];
