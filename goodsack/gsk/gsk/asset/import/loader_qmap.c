@@ -17,6 +17,10 @@
 #define QM_MODE_FILL_ENT 1
 #define QM_MODE_FILL_BSH 2
 
+#define OP_NONE        0
+#define OP_BUILD_ENT   1
+#define OP_BUILD_BRUSH 2
+
 #define QM_M_SUB 0
 #define QM_M_ADD 1
 
@@ -136,7 +140,7 @@ __read_plane(char *line)
         i++;
     }
 
-#if 1 // LOG_PLANE
+#if 0 // LOG_PLANE
     for (int i = 0; i < 3; i++) {
         LOG_INFO("x: %f y: %f z: %f", points[i][0], points[i][1], points[i][2]);
     }
@@ -159,7 +163,8 @@ gsk_load_qmap(const char *map_path)
         exit(1);
     }
 
-    int current_mode = QM_MODE_NONE;
+    int current_mode   = QM_MODE_NONE;
+    int last_operation = OP_NONE;
 
     while (fgets(line, sizeof(line), stream)) {
         switch (line[0]) {
@@ -168,5 +173,24 @@ gsk_load_qmap(const char *map_path)
         case '(': __read_plane(line); break;
         default: break;
         }
+
+#if 0
+        if (last_operation == OP_NONE) {
+            switch (current_mode) {
+            case QM_MODE_FILL_ENT:
+                // build entity
+                last_operation = OP_BUILD_ENT;
+                LOG_INFO("BUILD AN ENTITY");
+
+            case QM_MODE_FILL_BSH:
+                // build brush
+                last_operation = OP_BUILD_BRUSH;
+                LOG_INFO("BUILD A BRUSH");
+
+            case QM_MODE_NONE:
+            default: break;
+            }
+        }
+#endif
     }
 }
