@@ -106,9 +106,11 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
     // Assign name if passed in
     if (name != NULL) {
         strcpy(self->entity_names[entity.index], name);
+#if 0
         LOG_DEBUG("Assigned name \"%s\" to entity index %d",
                   self->entity_names[entity.index],
                   entity.index);
+#endif
     }
 
     return entity;
@@ -146,23 +148,23 @@ _gsk_ecs_set_internal(gsk_Entity entity, u32 component_id, u8 is_active)
 
     char *tag = (char *)((void *)list->components) + size;
     *tag      = (is_active) ? ECS_TAG_USED : ECS_TAG_UNUSED;
-    int value = *tag;
+    s32 value = *tag;
+
+    return value;
 }
 
 int
 gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id)
 {
+    if (entity.ecs == NULL) { return 0; }
+
     gsk_ECSComponentList *list = &entity.ecs->component_lists[component_id];
 
     u32 size = (entity.index * ECS_TAG_SIZE) +
                (list->component_size * (entity.index + 1));
-    // printf("index of tag for Entity [%d]: %d", entity.index, size);
+
     char *tag = (char *)((void *)list->components) + size;
     int value = *tag;
-    // if(value > 0 && entity.index == 1)
-    // printf("\necs_has - component: %d, index %d, entity index: %d\n",
-    // component_id, size, entity.index);
-    // return value;
 
     return (*tag == ECS_TAG_USED) ? 1 : 0;
 }
@@ -175,28 +177,24 @@ gsk_ecs_get(gsk_Entity entity, ECSComponentType component_id)
 
     u32 size =
       ((entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index)));
-    // size = size - (list->component_size - 1);
-    //(list->component_size * (entity.index));
-    // printf("\necs_get - id: %d, index %d, id: %d", component_id, size,
-    // entity.id);
+
     return (
       char *)((char *)(gsk_ECSComponentList *)(entity.ecs
                                                  ->component_lists[component_id]
                                                  .components) +
               size);
-    // return ECSCL_GET(&entity.ecs->component_lists[component_id], entity.id);
 }
 
 void
 gsk_ecs_system_register(gsk_ECS *self, gsk_ECSSystem system)
 {
-    u32 newSize = self->systems_size + 1;
+    u32 newsize = self->systems_size + 1;
 
-    gsk_ECSSystem *p = realloc(self->systems, newSize * sizeof(gsk_ECSSystem));
+    gsk_ECSSystem *p = realloc(self->systems, newsize * sizeof(gsk_ECSSystem));
     self->systems    = p;
 
-    self->systems[newSize - 1] = system;
-    self->systems_size         = newSize;
+    self->systems[newsize - 1] = system;
+    self->systems_size         = newsize;
 }
 
 void
@@ -215,17 +213,38 @@ gsk_ecs_component_register(gsk_ECS *self, u32 component_id, u64 size)
     // ECS_TAG_UNUSED;
 }
 
+gsk_Entity
+gsk_ecs_ent(gsk_ECS *self, gsk_EntityId id)
+{
+    for (int i = 0; i < self->nextIndex; i++) {
+        if (self->ids[i] == id) {
+            // LOG_INFO("got\t id: %d\t index: %d", self->ids[i], i);
+
+            return (gsk_Entity) {
+              .id    = self->ids[i],
+              .index = i,
+              .ecs   = self,
+            };
+        }
+    }
+
+    LOG_ERROR("Not found by id %d.", id);
+    return (gsk_Entity) {
+      .id    = 0,
+      .index = 0,
+      .ecs   = NULL,
+    };
+}
+
 void
 gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
 {
-
     // Loop through each system, fire the appropriate event
     for (int i = 0; i < self->systems_size; i++) {
         gsk_ECSSubscriber func = self->systems[i].subscribers[event];
-        if (func == NULL) {
-            // func();
-            continue;
-        }
+
+        if (func == NULL) { continue; }
+
         // Call the function per-entity
         for (int j = 0; j < self->nextIndex; j++) {
             gsk_Entity e =

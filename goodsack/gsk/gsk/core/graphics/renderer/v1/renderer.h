@@ -15,6 +15,7 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/scene/scene.h"
 #include "core/graphics/ui/billboard.h"
+#include "core/graphics/ui/gui_canvas.h"
 #include "core/graphics/ui/gui_element.h"
 #include "core/graphics/ui/gui_text.h"
 
@@ -55,8 +56,8 @@ typedef struct gsk_Renderer
       *explicitMaterial_skinned; // skinned version of explicit material
 
     gsk_Billboard2D *billboard; // Billboard testing
-    gsk_GuiElement *uiImage;    // GuiElement test
-    gsk_GuiText *uiText;        // GuiText test
+
+    gsk_GuiCanvas canvas; // Canvas test
 
     gsk_Skybox *activeSkybox;  // Active skybox that is being rendered
     gsk_Skybox *defaultSkybox; // Default skybox set for each scene on creation

@@ -17,7 +17,9 @@
 
 #include "core/graphics/lighting/lighting.h"
 #include "core/graphics/lighting/skybox.h"
+
 #include "core/graphics/ui/billboard.h"
+#include "core/graphics/ui/gui_canvas.h"
 #include "core/graphics/ui/gui_element.h"
 #include "core/graphics/ui/gui_text.h"
 
@@ -111,11 +113,17 @@ gsk_renderer_init()
       texture_create(GSK_PATH("gsk://textures/gizmo/crosshair2.png"),
                      NULL,
                      (TextureOptions) {0, GL_RGBA, TRUE, TRUE});
-    ret->uiImage = gsk_gui_element_create(
+
+    ret->canvas = gsk_gui_canvas_create();
+
+    gsk_GuiElement *element = gsk_gui_element_create(
       (vec2) {1920 / 2, 1080 / 2}, (vec2) {10, 10}, guiTexture, NULL);
 
     // Test GUI Text
-    ret->uiText = gsk_gui_text_create("Goodsack Engine");
+    gsk_GuiText *text = gsk_gui_text_create("Goodsack Engine");
+
+    gsk_gui_canvas_add_element(&ret->canvas, element);
+    gsk_gui_canvas_add_text(&ret->canvas, text);
 
     return ret;
 }
@@ -381,8 +389,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     // vec3 pos = GLM_VEC3_ZERO_INIT;
     // gsk_billboard_draw(renderer->billboard, pos);
 
-    gsk_gui_element_draw(renderer->uiImage);
-    gsk_gui_text_draw(renderer->uiText);
+    gsk_gui_canvas_draw(&renderer->canvas);
 #endif
 
 #if TESTING_DRAW_LINE

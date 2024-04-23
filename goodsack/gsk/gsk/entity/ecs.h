@@ -35,7 +35,7 @@
 #define _ecs_new_1(e)                        _gsk_ecs_new_internal(e, NULL)
 #define _ecs_new_overload(_1, _2, NAME, ...) NAME
 #define gsk_ecs_new(...) \
-    _ecs_new_overload(__VA_ARGS__, _ecs_new2, _ecs_new_1)(__VA_ARGS__)
+    _ecs_new_overload(__VA_ARGS__, _ecs_new_2, _ecs_new_1)(__VA_ARGS__)
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,9 +98,10 @@ struct gsk_ECSComponentList
 {
     void *components;
     u64 component_size;
-    // u64 components_size;
     u64 *entity_index_list;
 };
+
+/*-------------------------------------------*/
 
 struct gsk_ECS
 {
@@ -122,12 +123,13 @@ struct gsk_ECS
 union gsk_ECSSystem {
     struct
     {
-        gsk_ECSSubscriber init, destroy, render, fixed_update, update,
-          late_update;
+        gsk_ECSSubscriber ECSEVENT_CFN_NAMES;
     };
 
     gsk_ECSSubscriber subscribers[ECSEVENT_LAST + 1];
 };
+
+/*-------------------------------------------*/
 
 void
 _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value);
@@ -137,18 +139,24 @@ _gsk_ecs_set_internal(gsk_Entity entity, u32 component_id, u8 is_active);
 
 /*-------------------------------------------*/
 
+gsk_Entity
+gsk_ecs_ent(gsk_ECS *self, gsk_EntityId id);
+
 gsk_ECS *
 gsk_ecs_init(gsk_Renderer *renderer);
+
 gsk_Entity
 _gsk_ecs_new_internal(gsk_ECS *self, char *name);
 
 int
 gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id);
+
 void *
 gsk_ecs_get(gsk_Entity entity, ECSComponentType component_id);
 
 void
 gsk_ecs_system_register(gsk_ECS *self, gsk_ECSSystem system);
+
 void
 gsk_ecs_component_register(gsk_ECS *self, u32 component_id, u64 size);
 
