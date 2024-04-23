@@ -7,7 +7,9 @@
 #define __LOADER_QMAP_H__
 
 #include "util/array_list.h"
+#include "util/maths.h"
 #include "util/sysdefs.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,21 +17,22 @@ extern "C" {
 
 typedef struct gsk_QMapPlane
 {
-    int a;
+    vec3 points[3];
+    vec3 normal;
 
 } gsk_QMapPlane;
 
 typedef struct gsk_QMapBrush
 {
-    gsk_QMapPlane planes[20];
-    s32 plane_count;
+    s32 brush_index;
+    ArrayList list_planes;
 
 } gsk_QMapBrush;
 
 typedef struct gsk_QMapEntity
 {
+    s32 ent_index;
     ArrayList list_brushes;
-    int ent_index;
 } gsk_QMapEntity;
 
 typedef struct gsk_QMapContainer

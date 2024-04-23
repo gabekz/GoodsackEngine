@@ -19,9 +19,10 @@
 #define QM_MODE_FILL_BSH 2
 
 // Operation (allocation ops)
-#define QM_OP_NONE 0
-#define QM_OP_NEW  1
-#define QM_OP_END  2
+#define QM_OP_NONE       0
+#define QM_OP_NEW_GROUP  1 // entities, brushes
+#define QM_OP_NEW_MEMBER 2 // entity fields, planes
+#define QM_OP_END        3
 
 //-----------------------------------------------------------------------------
 // Helper functions
@@ -45,10 +46,12 @@ __next_mode(int mode, u8 add)
 // Parsing functions
 //-----------------------------------------------------------------------------
 
-static void
-__read_plane(char *line)
+static gsk_QMapPlane
+__parse_plane_from_line(char *line)
 {
-    LOG_DEBUG("Reading plane..");
+    LOG_DEBUG("Parsing plane..");
+
+    gsk_QMapPlane ret;
 
     int cnt_char  = 0;                  // cnt reading character of the line
     int cnt_coord = 0, cnt_num = 0;     // cnt coords and numbers
@@ -172,6 +175,20 @@ __read_plane(char *line)
         LOG_TRACE("TEXTURE prop: %f", texture_properties[i]);
     }
 #endif
+
+    //
+    // --- RETURN
+    //
+
+    // copy points
+    glm_vec3_copy(points[0], ret.points[0]);
+    glm_vec3_copy(points[1], ret.points[1]);
+    glm_vec3_copy(points[2], ret.points[2]);
+
+    // copy normal
+    glm_vec3_copy(normal, ret.normal);
+
+    return ret;
 }
 
 static void
@@ -179,7 +196,7 @@ __qmap_container_add_entity(gsk_QMapContainer *p_container)
 {
     gsk_QMapEntity ent;
     ent.list_brushes = array_list_init(sizeof(gsk_QMapBrush), 1);
-    ent.ent_index    = p_container->list_entities.list_next;
+    ent.ent_index    = p_container->total_entities;
 
     // push to Container
     array_list_push(&p_container->list_entities, (void *)&ent);
@@ -201,6 +218,8 @@ static void
 __qmap_container_add_brush(gsk_QMapContainer *p_container)
 {
     gsk_QMapBrush brush;
+    brush.list_planes = array_list_init(sizeof(gsk_QMapPlane), 3);
+    brush.brush_index = p_container->total_brushes;
 
     // push Brush to Container
     array_list_push(&p_container->p_cnt_entity->list_brushes, (void *)&brush);
@@ -217,6 +236,13 @@ __qmap_container_add_brush(gsk_QMapContainer *p_container)
       &((gsk_QMapBrush *)
           data)[p_container->p_cnt_entity->list_brushes.list_next - 1];
 }
+
+#if 0
+static void
+__qmap_brush_add_plane(gsk_QMapBrush *p_brush, gsk_QMapPlane *p_plane)
+{
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Main Operation
@@ -247,25 +273,40 @@ gsk_load_qmap(const char *map_path)
         switch (line[0]) {
         case '{':
             MODE_UP(current_mode);
-            next_operation = QM_OP_NEW;
+            next_operation = QM_OP_NEW_GROUP;
             break;
         case '}':
             MODE_DOWN(current_mode);
             next_operation = QM_OP_END;
             break;
-        case '(': __read_plane(line); break;
+        case '(':
+            next_operation = QM_OP_NEW_MEMBER;
+            //__read_plane(line);
+            break;
         default: break;
         }
 
-        if (next_operation == QM_OP_NEW) {
+        // Groups (entities, brushes)
+        if (next_operation == QM_OP_NEW_GROUP) {
             next_operation = QM_OP_NONE;
 
             if (current_mode == QM_MODE_FILL_ENT) {
-                LOG_INFO("Creating new entity");
+                LOG_DEBUG("Creating new entity");
                 __qmap_container_add_entity(&ret);
             } else if (current_mode == QM_MODE_FILL_BSH) {
-                LOG_INFO("Creating new brush");
+                LOG_DEBUG("Creating new brush");
                 __qmap_container_add_brush(&ret);
+            }
+        }
+        // Members/fields (entity field, plane)
+        else if (next_operation == QM_OP_NEW_MEMBER) {
+            next_operation = QM_OP_NONE;
+            if (current_mode == QM_MODE_FILL_ENT) {
+                // TODO:
+                LOG_DEBUG("Fill entity member");
+            } else if (current_mode == QM_MODE_FILL_BSH) {
+                gsk_QMapPlane plane = __parse_plane_from_line(line);
+                array_list_push(&ret.p_cnt_brush->list_planes, &plane);
             }
         }
     }
