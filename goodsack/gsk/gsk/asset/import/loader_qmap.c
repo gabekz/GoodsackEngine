@@ -175,26 +175,48 @@ __read_plane(char *line)
 }
 
 static void
-__qmap_container_add_entity(const gsk_QMapContainer *self)
+__qmap_container_add_entity(gsk_QMapContainer *p_container)
 {
     gsk_QMapEntity ent;
     ent.list_brushes = array_list_init(sizeof(gsk_QMapBrush), 1);
+    ent.ent_index    = p_container->list_entities.list_next;
 
     // push to Container
-    array_list_push(&self->p_entity_list, (void *)&ent);
+    array_list_push(&p_container->list_entities, (void *)&ent);
+    p_container->total_entities++; // increment total
+
+    if ((int)p_container->total_entities !=
+        (int)p_container->list_entities.list_next) {
+        LOG_ERROR("Failed to allocate correct number of entities");
+    }
+
+    // set the current buffer view in Container to entity
+    void *data = p_container->list_entities.data.buffer;
+    p_container->p_cnt_entity =
+      &((gsk_QMapEntity *)data)[p_container->list_entities.list_next - 1];
 }
 
-#if 0
+// Add a brush to the currently pointed-at entity
 static void
-__qmap_entity_add_brush(const gsk_QMapContainer *self)
+__qmap_container_add_brush(gsk_QMapContainer *p_container)
 {
-    gsk_QMapEntity ent;
-    ent.list_brushes = array_list_init(sizeof(gsk_QMapBrush), 1);
+    gsk_QMapBrush brush;
 
-    // push to Container
-    array_list_push(self->p_entity_list, ent);
+    // push Brush to Container
+    array_list_push(&p_container->p_cnt_entity->list_brushes, (void *)&brush);
+    p_container->total_brushes++; // increment total
+
+    if ((int)p_container->total_brushes !=
+        (int)p_container->p_cnt_entity->list_brushes.list_next) {
+        LOG_ERROR("Failed to allocate correct number of brushes");
+    }
+
+    // set the current buffer view in Container to entity's Brush
+    void *data = p_container->p_cnt_entity->list_brushes.data.buffer;
+    p_container->p_cnt_brush =
+      &((gsk_QMapBrush *)
+          data)[p_container->p_cnt_entity->list_brushes.list_next - 1];
 }
-#endif
 
 //-----------------------------------------------------------------------------
 // Main Operation
@@ -205,9 +227,10 @@ gsk_load_qmap(const char *map_path)
 {
     // initialize QMapContainer
     gsk_QMapContainer ret;
-
-    ret.p_entity_list = array_list_init(sizeof(gsk_QMapEntity), 12);
-    __qmap_container_add_entity(&ret);
+    ret.total_entities = 0;
+    ret.total_brushes  = 0;
+    ret.total_planes   = 0;
+    ret.list_entities  = array_list_init(sizeof(gsk_QMapEntity), 12);
 
     FILE *stream = NULL;
     char line[256]; // 256 = MAX line_length
@@ -217,8 +240,8 @@ gsk_load_qmap(const char *map_path)
         exit(1);
     }
 
-    int current_mode   = QM_MODE_NONE;
-    int next_operation = QM_OP_NONE;
+    int current_mode   = QM_MODE_NONE; // reading operation
+    int next_operation = QM_OP_NONE;   // memory operation
 
     while (fgets(line, sizeof(line), stream)) {
         switch (line[0]) {
@@ -242,27 +265,9 @@ gsk_load_qmap(const char *map_path)
                 __qmap_container_add_entity(&ret);
             } else if (current_mode == QM_MODE_FILL_BSH) {
                 LOG_INFO("Creating new brush");
+                __qmap_container_add_brush(&ret);
             }
         }
-
-#if 0
-        if (last_operation == OP_NONE) {
-            switch (current_mode) {
-            case QM_MODE_FILL_ENT:
-                // build entity
-                last_operation = OP_BUILD_ENT;
-                LOG_INFO("BUILD AN ENTITY");
-
-            case QM_MODE_FILL_BSH:
-                // build brush
-                last_operation = OP_BUILD_BRUSH;
-                LOG_INFO("BUILD A BRUSH");
-
-            case QM_MODE_NONE:
-            default: break;
-            }
-        }
-#endif
     }
 
     return ret;

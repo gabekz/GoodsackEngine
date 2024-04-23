@@ -29,11 +29,20 @@ typedef struct gsk_QMapBrush
 typedef struct gsk_QMapEntity
 {
     ArrayList list_brushes;
+    int ent_index;
 } gsk_QMapEntity;
 
 typedef struct gsk_QMapContainer
 {
-    ArrayList p_entity_list;
+    ArrayList list_entities;
+
+    gsk_QMapEntity *p_cnt_entity;
+    gsk_QMapBrush *p_cnt_brush;
+
+    s32 total_entities;
+    s32 total_brushes;
+    s32 total_planes;
+
 } gsk_QMapContainer;
 
 gsk_QMapContainer
