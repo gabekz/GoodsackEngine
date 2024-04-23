@@ -36,7 +36,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Import QMap
      -----------------------*/
-    gsk_load_qmap(GSK_PATH("gsk://map/gabes_map.map"));
+    gsk_QMapContainer qmap = gsk_load_qmap(GSK_PATH("gsk://map/gabes_map.map"));
 
     /*----------------------
      |  ECS Setup

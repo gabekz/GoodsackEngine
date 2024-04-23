@@ -13,30 +13,37 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+// Mode (ensure file is not currupted when reading)
 #define QM_MODE_NONE     0
 #define QM_MODE_FILL_ENT 1
 #define QM_MODE_FILL_BSH 2
 
-#define OP_NONE        0
-#define OP_BUILD_ENT   1
-#define OP_BUILD_BRUSH 2
+// Operation (allocation ops)
+#define QM_OP_NONE 0
+#define QM_OP_NEW  1
+#define QM_OP_END  2
 
-#define QM_M_SUB 0
-#define QM_M_ADD 1
+//-----------------------------------------------------------------------------
+// Helper functions
+//-----------------------------------------------------------------------------
 
 static int
-__next_mode(int mode, int add)
+__next_mode(int mode, u8 add)
 {
-    if ((mode >= QM_MODE_FILL_BSH && add == QM_M_ADD) ||
-        (mode <= QM_MODE_NONE && add == QM_M_SUB)) {
+    if ((mode >= QM_MODE_FILL_BSH && add == TRUE) ||
+        (mode <= QM_MODE_NONE && add == FALSE)) {
         LOG_CRITICAL("Corrupt file. %d ", mode);
     }
 
     return (add) ? mode + 1 : mode - 1;
 }
 
-#define MODE_UP(x)   x = __next_mode(x, QM_M_ADD);
-#define MODE_DOWN(x) x = __next_mode(x, QM_M_SUB);
+#define MODE_UP(x)   x = __next_mode(x, TRUE);
+#define MODE_DOWN(x) x = __next_mode(x, FALSE);
+
+//-----------------------------------------------------------------------------
+// Parsing functions
+//-----------------------------------------------------------------------------
 
 static void
 __read_plane(char *line)
@@ -167,9 +174,41 @@ __read_plane(char *line)
 #endif
 }
 
+static void
+__qmap_container_add_entity(const gsk_QMapContainer *self)
+{
+    gsk_QMapEntity ent;
+    ent.list_brushes = array_list_init(sizeof(gsk_QMapBrush), 1);
+
+    // push to Container
+    array_list_push(&self->p_entity_list, (void *)&ent);
+}
+
+#if 0
+static void
+__qmap_entity_add_brush(const gsk_QMapContainer *self)
+{
+    gsk_QMapEntity ent;
+    ent.list_brushes = array_list_init(sizeof(gsk_QMapBrush), 1);
+
+    // push to Container
+    array_list_push(self->p_entity_list, ent);
+}
+#endif
+
+//-----------------------------------------------------------------------------
+// Main Operation
+//-----------------------------------------------------------------------------
+
 gsk_QMapContainer
 gsk_load_qmap(const char *map_path)
 {
+    // initialize QMapContainer
+    gsk_QMapContainer ret;
+
+    ret.p_entity_list = array_list_init(sizeof(gsk_QMapEntity), 12);
+    __qmap_container_add_entity(&ret);
+
     FILE *stream = NULL;
     char line[256]; // 256 = MAX line_length
 
@@ -179,14 +218,31 @@ gsk_load_qmap(const char *map_path)
     }
 
     int current_mode   = QM_MODE_NONE;
-    int last_operation = OP_NONE;
+    int next_operation = QM_OP_NONE;
 
     while (fgets(line, sizeof(line), stream)) {
         switch (line[0]) {
-        case '{': MODE_UP(current_mode); break;
-        case '}': MODE_DOWN(current_mode); break;
+        case '{':
+            MODE_UP(current_mode);
+            next_operation = QM_OP_NEW;
+            break;
+        case '}':
+            MODE_DOWN(current_mode);
+            next_operation = QM_OP_END;
+            break;
         case '(': __read_plane(line); break;
         default: break;
+        }
+
+        if (next_operation == QM_OP_NEW) {
+            next_operation = QM_OP_NONE;
+
+            if (current_mode == QM_MODE_FILL_ENT) {
+                LOG_INFO("Creating new entity");
+                __qmap_container_add_entity(&ret);
+            } else if (current_mode == QM_MODE_FILL_BSH) {
+                LOG_INFO("Creating new brush");
+            }
         }
 
 #if 0
@@ -208,4 +264,6 @@ gsk_load_qmap(const char *map_path)
         }
 #endif
     }
+
+    return ret;
 }
