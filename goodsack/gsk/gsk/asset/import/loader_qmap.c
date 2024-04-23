@@ -41,7 +41,7 @@ __next_mode(int mode, int add)
 static void
 __read_plane(char *line)
 {
-    LOG_INFO("Reading plane..");
+    LOG_DEBUG("Reading plane..");
 
     int cnt_char  = 0;                  // cnt reading character of the line
     int cnt_coord = 0, cnt_num = 0;     // cnt coords and numbers
@@ -49,6 +49,7 @@ __read_plane(char *line)
 
     // points
     vec3 points[3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+    vec3 normal    = {0, 0, 0};
 
     char *texture_name;
     f32 texture_properties[5] = {0, 0, 0, 0, 0};
@@ -110,6 +111,16 @@ __read_plane(char *line)
     }
 
     //
+    // --- PLANE NORMAL
+    //
+    {
+        vec3 pq, pr;
+        glm_vec3_sub(points[1], points[0], pq);
+        glm_vec3_sub(points[2], points[0], pr);
+        glm_vec3_cross(pq, pr, normal);
+    }
+
+    //
     // --- READ TEXTURE DATA
     //
 
@@ -140,14 +151,18 @@ __read_plane(char *line)
         i++;
     }
 
-#if 0 // LOG_PLANE
+#if 1 // LOG_PLANE
     for (int i = 0; i < 3; i++) {
-        LOG_INFO("x: %f y: %f z: %f", points[i][0], points[i][1], points[i][2]);
+
+        LOG_TRACE(
+          "x: %f y: %f z: %f", points[i][0], points[i][1], points[i][2]);
     }
 
-    LOG_INFO("TEXTURE NAME IS: %s", texture_name);
+    LOG_TRACE("Normal is: (%f, %f, %f)", normal[0], normal[1], normal[2]);
+
+    LOG_TRACE("TEXTURE NAME IS: %s", texture_name);
     for (int i = 0; i < 5; i++) {
-        LOG_INFO("TEXTURE prop: %f", texture_properties[i]);
+        LOG_TRACE("TEXTURE prop: %f", texture_properties[i]);
     }
 #endif
 }
