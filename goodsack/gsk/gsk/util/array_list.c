@@ -40,12 +40,19 @@ array_list_push(ArrayList *self, void *data)
     if (self->list_next >= self->list_count) {
 
         size_t newsize = self->data.buffer_size +
-                         (self->list_increment * self->data.buffer_size);
+                         (self->list_increment * self->data.data_size);
 
-        LOG_DEBUG("Resized from %d to %d", self->data.buffer_size, newsize);
+        size_t newcount = self->list_count + self->list_increment;
+
+        LOG_TRACE("Resized list from %d to %d. Buffer went from %d to %d",
+                  self->list_count,
+                  newcount,
+                  self->data.buffer_size,
+                  newsize);
 
         self->data.buffer_size = newsize;
         self->data.buffer      = realloc(self->data.buffer, newsize);
+        self->list_count       = newcount;
     }
 
     memcpy((char *)self->data.buffer + (self->list_next * self->data.data_size),
