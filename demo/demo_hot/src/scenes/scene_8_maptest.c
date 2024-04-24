@@ -36,7 +36,8 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Import QMap
      -----------------------*/
-    gsk_QMapContainer qmap = gsk_load_qmap(GSK_PATH("gsk://map/gabes_map.map"));
+    gsk_QMapContainer qmap =
+      gsk_load_qmap(GSK_PATH("gsk://map/gabes_map2.map"));
 
     gsk_Model *qmap_model = malloc(sizeof(gsk_Model));
     qmap_model->meshes    = malloc(sizeof(gsk_Mesh *) * 1);

@@ -131,12 +131,12 @@ __parse_plane_from_line(char *line)
         vec3 pq, pr;
         glm_vec3_sub(points[1], points[0], pq);
         glm_vec3_sub(points[2], points[0], pr);
-        glm_vec3_crossn(pq, pr, normal);
+        glm_vec3_cross(pq, pr, normal);
         // glm_vec3_negate(normal);
 
         // determinant
-        determinant = -(normal[0] * points[0][0] + normal[1] * points[0][1] +
-                        normal[2] * points[0][2]);
+        determinant = (normal[0] * points[0][0] + normal[1] * points[0][1] +
+                       normal[2] * points[0][2]);
     }
 
     //
@@ -260,6 +260,7 @@ __qmap_polygon_from_brush(gsk_QMapContainer *p_container,
 
                 // do not check same
                 if (i == j || i == k || j == k) { continue; }
+                // if (i == j == k) continue;
 
                 vec3 vertex; // filled by __get_intersection()
                 u8 is_illegal   = FALSE;
@@ -277,10 +278,10 @@ __qmap_polygon_from_brush(gsk_QMapContainer *p_container,
 #if 1
                 // check for illegal point
                 for (int m = 0; m < planes_count; m++) {
-                    f32 term = glm_vec3_dot(p_planes[m].normal, vertex);
-                    if ((term + p_planes[m].determinant) > 0) {
+                    f32 term1  = glm_vec3_dot(p_planes[m].normal, vertex);
+                    f32 check1 = term1 + p_planes[m].determinant;
+                    if (check1 > 0) {
                         is_illegal = TRUE;
-                        LOG_INFO("Failed at %d", m);
                         break;
                     }
                 }
@@ -314,7 +315,7 @@ __qmap_polygon_from_brush(gsk_QMapContainer *p_container,
     meshdata->buffers.vL   = p_container->vertices.list_next;
     meshdata->buffers.outI = p_container->vertices.list_next * sizeof(float);
 
-    meshdata->vertexCount = vL;
+    meshdata->vertexCount = vL / 3;
 
     meshdata->buffers.vtL = 0;
     meshdata->buffers.vnL = 0;
