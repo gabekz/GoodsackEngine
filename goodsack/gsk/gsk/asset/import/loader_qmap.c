@@ -44,6 +44,35 @@ __next_mode(int mode, u8 add)
 #define MODE_UP(x)   x = __next_mode(x, TRUE);
 #define MODE_DOWN(x) x = __next_mode(x, FALSE);
 
+static u8
+__get_intersection(
+  f32 *n1, f32 *n2, f32 *n3, f32 d1, f32 d2, f32 d3, f32 *output)
+{
+    vec3 cross1, cross2, cross3;
+    glm_vec3_cross(n2, n3, cross1);
+    glm_vec3_cross(n3, n1, cross2);
+    glm_vec3_cross(n1, n2, cross3);
+
+    f32 denom = glm_vec3_dot(n1, cross1);
+
+    if (denom == 0) {
+        return FALSE; // No intersection, the planes are parallel or coincident
+    }
+
+    vec3 term1, term2, term3;
+    glm_vec3_scale(cross1, -d1, term1);
+    glm_vec3_scale(cross2, -d2, term2);
+    glm_vec3_scale(cross3, -d3, term3);
+
+    vec3 sum, result;
+    glm_vec3_add(term1, term2, sum);
+    glm_vec3_add(sum, term3, result);
+
+    glm_vec3_scale(result, 1.0f / denom, output);
+
+    return TRUE;
+}
+
 //-----------------------------------------------------------------------------
 // Parsing functions
 //-----------------------------------------------------------------------------
@@ -132,7 +161,6 @@ __parse_plane_from_line(char *line)
         glm_vec3_sub(points[1], points[0], pq);
         glm_vec3_sub(points[2], points[0], pr);
         glm_vec3_cross(pq, pr, normal);
-        // glm_vec3_negate(normal);
 
         // determinant
         determinant = (normal[0] * points[0][0] + normal[1] * points[0][1] +
@@ -213,54 +241,36 @@ __parse_plane_from_line(char *line)
 // Build functions
 //-----------------------------------------------------------------------------
 
-static u8
-__get_intersection(
-  f32 *n1, f32 *n2, f32 *n3, f32 d1, f32 d2, f32 d3, f32 *output)
-{
-    vec3 cross1, cross2, cross3;
-    glm_vec3_cross(n2, n3, cross1);
-    glm_vec3_cross(n3, n1, cross2);
-    glm_vec3_cross(n1, n2, cross3);
-
-    f32 denom = glm_vec3_dot(n1, cross1);
-
-    if (denom == 0) {
-        return FALSE; // No intersection, the planes are parallel or coincident
-    }
-
-    vec3 term1, term2, term3;
-    glm_vec3_scale(cross1, -d1, term1);
-    glm_vec3_scale(cross2, -d2, term2);
-    glm_vec3_scale(cross3, -d3, term3);
-
-    vec3 sum, result;
-    glm_vec3_add(term1, term2, sum);
-    glm_vec3_add(sum, term3, result);
-
-    glm_vec3_scale(result, 1.0f / denom, output);
-
-    return TRUE;
-}
-
 static void
 __qmap_polygon_from_brush(gsk_QMapContainer *p_container,
                           gsk_QMapBrush *p_brush)
 {
-    s32 planes_count        = p_brush->list_planes.list_next;
-    void *data              = p_brush->list_planes.data.buffer;
+    f32 vL           = 0;
+    s32 planes_count = p_brush->list_planes.list_next;
+    void *data       = p_brush->list_planes.data.buffer;
+
     gsk_QMapPlane *p_planes = data;
 
-    float vL = 0;
+#if 0
+    // Create polygon for each face
+    for(int i = 0)
+#endif
 
-    // int iterations = 0;
+    // ----------------------------------------------
+    // Polygon generation from intersecting planes
+    // ----------------------------------------------
+
+    LOG_DEBUG("Assembling polygon from brush (brush_index: %d)",
+              p_brush->brush_index);
+
+    u32 iterations = 0; // for debugging purposes
     for (int i = 0; i < planes_count; i++) {
         for (int j = 0; j < planes_count; j++) {
             for (int k = 0; k < planes_count; k++) {
-                // iterations++;
+                iterations++;
 
                 // do not check same
                 if (i == j || i == k || j == k) { continue; }
-                // if (i == j == k) continue;
 
                 vec3 vertex; // filled by __get_intersection()
                 u8 is_illegal   = FALSE;
@@ -302,6 +312,12 @@ __qmap_polygon_from_brush(gsk_QMapContainer *p_container,
             }
         }
     }
+
+    LOG_DEBUG("Assembled polygon with %d iterations", iterations);
+
+    // ---------------------
+    // Assemble MeshData
+    // ---------------------
 
     // Buffers for storing input
     float *v = malloc(vL * sizeof(float) * 3);
@@ -469,9 +485,9 @@ gsk_load_qmap(const char *map_path)
 
 #if 1
 
-    // Build a polygon from the last brush
     ret.vertices = array_list_init(sizeof(float), 600);
 
+    // Build a polygon from the last brush
     __qmap_polygon_from_brush(&ret, ret.p_cnt_brush);
 
 #endif
