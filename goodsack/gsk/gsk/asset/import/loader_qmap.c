@@ -60,6 +60,7 @@ __parse_plane_from_line(char *line)
     // points
     vec3 points[3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
     vec3 normal    = {0, 0, 0};
+    f32 determinant;
 
     char *texture_name;
     f32 texture_properties[5] = {0, 0, 0, 0, 0};
@@ -121,13 +122,18 @@ __parse_plane_from_line(char *line)
     }
 
     //
-    // --- PLANE NORMAL
+    // --- plane normal and determinant
     //
     {
+        // normal
         vec3 pq, pr;
         glm_vec3_sub(points[1], points[0], pq);
         glm_vec3_sub(points[2], points[0], pr);
         glm_vec3_cross(pq, pr, normal);
+
+        // determinant
+        determinant = -(normal[0] * points[0][0] + normal[1] * points[0][1] +
+                        normal[2] * points[0][2]);
     }
 
     //
@@ -188,8 +194,105 @@ __parse_plane_from_line(char *line)
     // copy normal
     glm_vec3_copy(normal, ret.normal);
 
+    ret.determinant = determinant;
+
+    // copy texture offsets
+    ret.tex_offset[0] = texture_properties[0];
+    ret.tex_offset[1] = texture_properties[1];
+    ret.tex_rotation  = texture_properties[2];
+    ret.tex_scale[0]  = texture_properties[3];
+    ret.tex_scale[1]  = texture_properties[4];
+
     return ret;
 }
+
+//-----------------------------------------------------------------------------
+// Build functions
+//-----------------------------------------------------------------------------
+
+static u8
+__get_intersection(
+  f32 *n1, f32 *n2, f32 *n3, f32 d1, f32 d2, f32 d3, f32 *output)
+{
+#if 0
+    double denom;
+    vec3 cross;
+    glm_vec3_cross(n2, n3, cross);
+    denom = glm_vec3_dot(n1, cross);
+
+    if (denom == 0) { return FALSE; }
+
+    vec3 p;
+
+    vec3 n2cn3, n3cn1, n1cn2;
+    glm_vec3_cross(n2, n3, n2cn3);
+    glm_vec3_cross(n3, n1, n3cn1);
+    glm_vec3_cross(n1, n2, n1cn2);
+#endif
+
+    vec3 cross1, cross2, cross3;
+    glm_vec3_cross(n2, n3, cross1);
+    glm_vec3_cross(n3, n1, cross2);
+    glm_vec3_cross(n1, n2, cross3);
+
+    f32 denom = glm_vec3_dot(n1, cross1);
+
+    if (denom == 0) {
+        return FALSE; // No intersection, the planes are parallel or coincident
+    }
+
+    vec3 term1, term2, term3;
+    glm_vec3_scale(cross1, -d1, term1);
+    glm_vec3_scale(cross2, -d2, term2);
+    glm_vec3_scale(cross3, -d3, term3);
+
+    vec3 sum, result;
+    glm_vec3_add(term1, term2, sum);
+    glm_vec3_add(sum, term3, result);
+
+    glm_vec3_scale(result, 1 / denom, output);
+
+    return TRUE;
+}
+
+static void
+__qmap_polygon_from_brush(gsk_QMapBrush *p_brush)
+{
+    s32 planes_count = p_brush->list_planes.list_next;
+    // gsk_QMapPlane planes =
+    //  (gsk_QMapPlane *)&p_brush->list_planes.data.buffer[0];
+
+    void *data              = p_brush->list_planes.data.buffer;
+    gsk_QMapPlane *p_planes = data;
+
+    // LOG_INFO("%f", p_planes[1].normal[1]);
+
+    for (int i = 0; i < planes_count; i++) {
+        for (int j = 0; j < planes_count; j++) {
+            for (int k = 0; k < planes_count; k++) {
+                if (i != j != k) {
+                    vec3 vertex;
+                    if (__get_intersection(p_planes[i].normal,
+                                           p_planes[j].normal,
+                                           p_planes[k].normal,
+                                           p_planes[i].determinant,
+                                           p_planes[j].determinant,
+                                           p_planes[k].determinant,
+                                           vertex)) {
+                        LOG_INFO("VERTEX at (%f, %f, %f)",
+                                 vertex[0],
+                                 vertex[1],
+                                 vertex[2]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Memory functions
+//-----------------------------------------------------------------------------
 
 static void
 __qmap_container_add_entity(gsk_QMapContainer *p_container)
@@ -310,6 +413,16 @@ gsk_load_qmap(const char *map_path)
             }
         }
     }
+
+    fclose(stream);
+
+#if 1
+
+    // Build a polygon from the last brush
+
+    __qmap_polygon_from_brush(ret.p_cnt_brush);
+
+#endif
 
     return ret;
 }

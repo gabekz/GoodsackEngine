@@ -10,7 +10,6 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -19,6 +18,11 @@ typedef struct gsk_QMapPlane
 {
     vec3 points[3];
     vec3 normal;
+    f32 determinant;
+
+    vec2 tex_offset;
+    vec2 tex_scale;
+    f32 tex_rotation;
 
 } gsk_QMapPlane;
 
