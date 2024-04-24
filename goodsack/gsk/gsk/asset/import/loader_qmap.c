@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/graphics/mesh/mesh.h"
+
 #include "util/logger.h"
 #include "util/maths.h"
 #include "util/sysdefs.h"
@@ -129,7 +131,8 @@ __parse_plane_from_line(char *line)
         vec3 pq, pr;
         glm_vec3_sub(points[1], points[0], pq);
         glm_vec3_sub(points[2], points[0], pr);
-        glm_vec3_cross(pq, pr, normal);
+        glm_vec3_crossn(pq, pr, normal);
+        // glm_vec3_negate(normal);
 
         // determinant
         determinant = -(normal[0] * points[0][0] + normal[1] * points[0][1] +
@@ -214,22 +217,6 @@ static u8
 __get_intersection(
   f32 *n1, f32 *n2, f32 *n3, f32 d1, f32 d2, f32 d3, f32 *output)
 {
-#if 0
-    double denom;
-    vec3 cross;
-    glm_vec3_cross(n2, n3, cross);
-    denom = glm_vec3_dot(n1, cross);
-
-    if (denom == 0) { return FALSE; }
-
-    vec3 p;
-
-    vec3 n2cn3, n3cn1, n1cn2;
-    glm_vec3_cross(n2, n3, n2cn3);
-    glm_vec3_cross(n3, n1, n3cn1);
-    glm_vec3_cross(n1, n2, n1cn2);
-#endif
-
     vec3 cross1, cross2, cross3;
     glm_vec3_cross(n2, n3, cross1);
     glm_vec3_cross(n3, n1, cross2);
@@ -250,44 +237,107 @@ __get_intersection(
     glm_vec3_add(term1, term2, sum);
     glm_vec3_add(sum, term3, result);
 
-    glm_vec3_scale(result, 1 / denom, output);
+    glm_vec3_scale(result, 1.0f / denom, output);
 
     return TRUE;
 }
 
 static void
-__qmap_polygon_from_brush(gsk_QMapBrush *p_brush)
+__qmap_polygon_from_brush(gsk_QMapContainer *p_container,
+                          gsk_QMapBrush *p_brush)
 {
-    s32 planes_count = p_brush->list_planes.list_next;
-    // gsk_QMapPlane planes =
-    //  (gsk_QMapPlane *)&p_brush->list_planes.data.buffer[0];
-
+    s32 planes_count        = p_brush->list_planes.list_next;
     void *data              = p_brush->list_planes.data.buffer;
     gsk_QMapPlane *p_planes = data;
 
-    // LOG_INFO("%f", p_planes[1].normal[1]);
+    float vL = 0;
 
+    // int iterations = 0;
     for (int i = 0; i < planes_count; i++) {
         for (int j = 0; j < planes_count; j++) {
             for (int k = 0; k < planes_count; k++) {
-                if (i != j != k) {
-                    vec3 vertex;
-                    if (__get_intersection(p_planes[i].normal,
-                                           p_planes[j].normal,
-                                           p_planes[k].normal,
-                                           p_planes[i].determinant,
-                                           p_planes[j].determinant,
-                                           p_planes[k].determinant,
-                                           vertex)) {
-                        LOG_INFO("VERTEX at (%f, %f, %f)",
-                                 vertex[0],
-                                 vertex[1],
-                                 vertex[2]);
+                // iterations++;
+
+                // do not check same
+                if (i == j || i == k || j == k) { continue; }
+
+                vec3 vertex; // filled by __get_intersection()
+                u8 is_illegal   = FALSE;
+                u8 is_intersect = __get_intersection(p_planes[i].normal,
+                                                     p_planes[j].normal,
+                                                     p_planes[k].normal,
+                                                     p_planes[i].determinant,
+                                                     p_planes[j].determinant,
+                                                     p_planes[k].determinant,
+                                                     vertex);
+
+                // continue without intersection
+                if (is_intersect == FALSE) { continue; }
+
+#if 1
+                // check for illegal point
+                for (int m = 0; m < planes_count; m++) {
+                    f32 term = glm_vec3_dot(p_planes[m].normal, vertex);
+                    if ((term + p_planes[m].determinant) > 0) {
+                        is_illegal = TRUE;
+                        LOG_INFO("Failed at %d", m);
+                        break;
                     }
                 }
+#endif
+
+                if (is_illegal == TRUE) { continue; }
+
+                // Fill vertex
+                vL += 3;
+
+                array_list_push(&p_container->vertices, &vertex[0]);
+                array_list_push(&p_container->vertices, &vertex[1]);
+                array_list_push(&p_container->vertices, &vertex[2]);
+#if 1
+                LOG_TRACE(
+                  "Vertex at (%f, %f, %f)", vertex[0], vertex[1], vertex[2]);
+#endif
             }
         }
     }
+
+    // Buffers for storing input
+    float *v = malloc(vL * sizeof(float) * 3);
+
+    gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
+    v                      = p_container->vertices.data.buffer;
+
+    meshdata->buffers.out = v;
+    meshdata->buffers.v   = v;
+
+    meshdata->buffers.vL   = p_container->vertices.list_next;
+    meshdata->buffers.outI = p_container->vertices.list_next * sizeof(float);
+
+    meshdata->vertexCount = vL;
+
+    meshdata->buffers.vtL = 0;
+    meshdata->buffers.vnL = 0;
+
+    meshdata->buffers.bufferIndices_size = 0;
+    meshdata->isSkinnedMesh              = 0;
+    meshdata->hasTBN                     = 0;
+    meshdata->has_indices                = FALSE;
+    meshdata->primitive_type             = GSK_PRIMITIVE_TYPE_TRIANGLE;
+
+    glm_vec3_zero(meshdata->boundingBox[0]);
+    glm_vec3_zero(meshdata->boundingBox[1]);
+
+    p_container->mesh_data = meshdata;
+
+    /*
+    for (int i = 0; i < p_container->vertices.list_next; i++) {
+        // meshdata->buffers.out[i] = *(float
+        // *)p_container->vertices.data.buffer+i;
+    }
+    */
+
+    // LOG_INFO("iterations: %d", iterations);
 }
 
 //-----------------------------------------------------------------------------
@@ -419,8 +469,9 @@ gsk_load_qmap(const char *map_path)
 #if 1
 
     // Build a polygon from the last brush
+    ret.vertices = array_list_init(sizeof(float), 600);
 
-    __qmap_polygon_from_brush(ret.p_cnt_brush);
+    __qmap_polygon_from_brush(&ret, ret.p_cnt_brush);
 
 #endif
 

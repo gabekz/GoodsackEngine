@@ -29,6 +29,12 @@
 extern "C" {
 #endif
 
+typedef enum gsk_PrimitiveTypeEnum {
+    GSK_PRIMITIVE_TYPE_TRIANGLE,
+    GSK_PRIMITIVE_TYPE_QUAD,
+    GSK_PRIMITIVE_TYPE_POLY,
+} gsk_PrimitiveTypeEnum;
+
 // type of BUFFER
 // BUFFER_VERT (bitshift means this comes first)
 //
@@ -42,7 +48,9 @@ typedef struct gsk_MeshData
     u32 indicesCount;
     u32 trianglesCount;
 
-    u32 drawType;
+    gsk_PrimitiveTypeEnum primitive_type;
+    u8 has_indices;
+    u8 hasTBN; // TODO: 2 == ONLY TANGENT
 
     struct
     {
@@ -63,9 +71,6 @@ typedef struct gsk_MeshData
     // TODO: Move to model
     gsk_Skeleton *skeleton;
     int isSkinnedMesh;
-
-    // TODO: Move
-    int hasTBN; // TODO: 2 == ONLY TANGENT
 
     vec3 boundingBox[2];
 

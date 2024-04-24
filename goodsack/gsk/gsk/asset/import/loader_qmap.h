@@ -6,6 +6,8 @@
 #ifndef __LOADER_QMAP_H__
 #define __LOADER_QMAP_H__
 
+#include "core/graphics/mesh/mesh.h"
+
 #include "util/array_list.h"
 #include "util/maths.h"
 #include "util/sysdefs.h"
@@ -49,6 +51,10 @@ typedef struct gsk_QMapContainer
     s32 total_entities;
     s32 total_brushes;
     s32 total_planes;
+
+    ArrayList vertices;
+
+    gsk_MeshData *mesh_data;
 
 } gsk_QMapContainer;
 

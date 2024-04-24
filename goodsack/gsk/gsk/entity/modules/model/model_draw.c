@@ -173,12 +173,30 @@ DrawModel(struct ComponentModel *model,
             u32 vertices       = data->vertexCount;
             u32 indices        = data->indicesCount;
 
-            u16 drawMode = model->properties.drawMode;
+            // u16 drawMode = model->properties.drawMode;
+
+            gsk_PrimitiveTypeEnum primitive = mesh->meshData->primitive_type;
+            GLenum gl_prim                  = GL_TRIANGLES;
+
+            switch (primitive) {
+            case GSK_PRIMITIVE_TYPE_TRIANGLE: gl_prim = GL_TRIANGLES; break;
+            case GSK_PRIMITIVE_TYPE_QUAD: gl_prim = GL_QUADS; break;
+            case GSK_PRIMITIVE_TYPE_POLY: gl_prim = GL_POLYGON; break;
+            default: break;
+            }
 
             // glEnable(GL_CULL_FACE);
             // glCullFace(GL_BACK);
             // glFrontFace(GL_CW);
 
+            if (data->has_indices) {
+                glDrawElements(gl_prim, indices, GL_UNSIGNED_INT, NULL);
+            } else {
+                glDrawArrays(gl_prim, 0, vertices);
+            }
+
+// TODO: Add wireframe options
+#if 0
             switch (drawMode) {
             case DRAW_ARRAYS: glDrawArrays(GL_TRIANGLES, 0, vertices); break;
             case DRAW_ELEMENTS:
@@ -187,7 +205,9 @@ DrawModel(struct ComponentModel *model,
             case DRAW_ELEMENTS_WIREFRAME:
                 glDrawElements(GL_LINES, indices, GL_UNSIGNED_INT, NULL);
             }
+#endif
         }
+
         glDisable(GL_CULL_FACE);
 
     } else if (GSK_DEVICE_API_VULKAN) {

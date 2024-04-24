@@ -38,6 +38,16 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      -----------------------*/
     gsk_QMapContainer qmap = gsk_load_qmap(GSK_PATH("gsk://map/gabes_map.map"));
 
+    gsk_Model *qmap_model = malloc(sizeof(gsk_Model));
+    qmap_model->meshes    = malloc(sizeof(gsk_Mesh *) * 1);
+    qmap_model->meshes[0] = gsk_mesh_assemble(qmap.mesh_data);
+    qmap_model->meshes[0]->usingImportedMaterial = FALSE;
+    qmap_model->meshesCount                      = 1;
+    qmap_model->modelPath                        = "none";
+
+    mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_copy(localMatrix, qmap_model->meshes[0]->localMatrix);
+
     /*----------------------
      |  ECS Setup
      -----------------------*/
@@ -50,10 +60,14 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      -----------------------*/
     const char *standard_shader_path =
       GSK_PATH("gsk://shaders/lit-diffuse.shader");
-    const char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
+    const char *test_shader_path = GSK_PATH("gsk://shaders/white.glsl");
+    const char *pbr_shader_path  = GSK_PATH("gsk://shaders/pbr.shader");
 
     gsk_Texture *tex_prototype =
       texture_create_d(GSK_PATH("gsk://textures/prototype/128_64.png"));
+
+    gsk_Material *mat_missing = gsk_material_create(
+      NULL, test_shader_path, 3, def_missing, def_norm, def_spec);
 
     /*
       (Root) initialization (entity references)
@@ -89,5 +103,23 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
                             .position = {0, 0, 0},
+                          }));
+
+    /*
+      Map Entity
+    */
+
+    gsk_Entity ent_map = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(ent_map,
+                          C_TRANSFORM,
+                          (void *)(&(struct ComponentTransform) {
+                            .position = {0, 0, 0},
+                          }));
+    _gsk_ecs_add_internal(ent_map,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material  = mat_missing,
+                            .pModel    = qmap_model,
+                            .modelPath = NULL,
                           }));
 };

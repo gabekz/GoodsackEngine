@@ -285,6 +285,9 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     glm_vec3_copy(attribInfo.posData->min, ret->boundingBox[0]);
     glm_vec3_copy(attribInfo.posData->max, ret->boundingBox[1]);
 
+    // Set primitive type
+    ret->primitive_type = GSK_PRIMITIVE_TYPE_TRIANGLE; // TODO: Get from file
+
     ret->buffers.out = malloc(ret->buffers.outI);
 
     // Position, TextureCoord, Normal
@@ -340,6 +343,9 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
             LOG_ERROR("Failed to read uint! %d", i);
         }
     }
+
+    // set has_indices
+    ret->has_indices = (attribInfo.indicesData->count > 0) ? TRUE : FALSE;
 
     // Skinned mesh
 

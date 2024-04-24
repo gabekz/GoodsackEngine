@@ -320,8 +320,10 @@ gsk_load_obj(const char *path, float scale)
 
     ret->buffers.bufferIndices_size = 0;
 
-    ret->isSkinnedMesh = 0;
-    ret->hasTBN        = 1;
+    ret->isSkinnedMesh  = 0;
+    ret->hasTBN         = 1;
+    ret->has_indices    = FALSE;
+    ret->primitive_type = GSK_PRIMITIVE_TYPE_TRIANGLE;
 
     glm_vec3_copy(minBounds, ret->boundingBox[0]);
     glm_vec3_copy(maxBounds, ret->boundingBox[1]);
