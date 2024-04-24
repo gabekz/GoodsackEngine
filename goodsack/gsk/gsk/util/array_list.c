@@ -77,3 +77,16 @@ array_list_pop(ArrayList *self)
     }
     self->list_next--;
 }
+
+void *
+array_list_get_at_index(ArrayList *self, u64 index)
+{
+    // assert(self->list_count <= index);
+
+    void *data = self->data.buffer;
+
+    u32 size = self->data.data_size * index;
+    return (char *)data + size;
+
+    // return (char *)self->data.buffer + size;
+}

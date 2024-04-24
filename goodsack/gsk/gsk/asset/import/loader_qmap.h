@@ -37,6 +37,7 @@ typedef struct gsk_QMapBrush
 {
     s32 brush_index;
     ArrayList list_planes;
+    ArrayList list_polygons;
 
 } gsk_QMapBrush;
 

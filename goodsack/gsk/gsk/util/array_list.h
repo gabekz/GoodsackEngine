@@ -35,6 +35,9 @@ array_list_push(ArrayList *self, void *data);
 void
 array_list_pop(ArrayList *self);
 
+void *
+array_list_get_at_index(ArrayList *self, u64 index);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
