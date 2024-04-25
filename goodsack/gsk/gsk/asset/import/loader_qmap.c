@@ -247,10 +247,11 @@ __parse_plane_from_line(char *line)
 //-----------------------------------------------------------------------------
 
 static void
-__qmap_polygon_from_brush(gsk_QMapContainer *p_container,
-                          gsk_QMapBrush *p_brush)
+__qmap_polygons_from_brush(gsk_QMapContainer *p_container,
+                           gsk_QMapBrush *p_brush)
 {
     f32 vL           = 0;
+    f32 vtL          = 0;
     s32 planes_count = p_brush->list_planes.list_next;
     void *data       = p_brush->list_planes.data.buffer;
 
@@ -264,7 +265,8 @@ __qmap_polygon_from_brush(gsk_QMapContainer *p_container,
 
     for (int i = 0; i < planes_count; i++) {
         gsk_QMapPolygon poly;
-        poly.list_vertices = array_list_init(sizeof(vec3), 3);
+        poly.list_vertices =
+          array_list_init(sizeof(gsk_QMapPolygonVertex), QM_ALLOC_ITER);
 
         // push this polygon to the list on the brush
         array_list_push(&p_brush->list_polygons, &poly);
@@ -312,19 +314,28 @@ __qmap_polygon_from_brush(gsk_QMapContainer *p_container,
 
                 if (is_illegal == TRUE) { continue; }
 
-                vL += 3; // increment vertexList track | TODO: Remove
+                // increment vertexList track | TODO: Remove
+                vL += 3;
+                vtL += 2;
 #if POLY_PER_FACE
                 gsk_QMapPolygon *poly =
                   array_list_get_at_index(&p_brush->list_polygons, i);
 
-                array_list_push(&poly->list_vertices, &vertex);
+                // polygon vertex
+                gsk_QMapPolygonVertex vert;
+                vec3 tex = {-1, 1};
+                glm_vec3_copy(vertex, vert.position);
+                glm_vec2_copy(tex, vert.texture);
+
+                // array_list_push(&poly->list_vertices, &vertex);
+                array_list_push(&poly->list_vertices, &vert);
 
                 array_list_push(&p_container->vertices,
-                                &vertex); // TODO: Remove once we construct the
-                                          // meshdata from polygons
+                                &vert); // TODO: Remove once we construct the
+                                        // meshdata from polygons
 #else
                 array_list_push(&p_container->vertices, &vertex);
-#endif
+#endif // POLY_PER_FACE
 
 #if 1
                 LOG_TRACE(
@@ -341,7 +352,7 @@ __qmap_polygon_from_brush(gsk_QMapContainer *p_container,
     // ---------------------
 
     // Buffers for storing input
-    float *v = malloc(vL * sizeof(float) * 3);
+    float *v = malloc((vL + vtL) * sizeof(float) * 3);
 
     gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
     v                      = p_container->vertices.data.buffer;
@@ -349,12 +360,12 @@ __qmap_polygon_from_brush(gsk_QMapContainer *p_container,
     meshdata->buffers.out = v;
     meshdata->buffers.v   = v;
 
-    meshdata->buffers.vL   = vL;
-    meshdata->buffers.outI = vL * sizeof(float);
+    meshdata->buffers.outI = (vL + vtL) * sizeof(float);
 
     meshdata->vertexCount = vL / 3;
 
-    meshdata->buffers.vtL = 0;
+    meshdata->buffers.vL  = vL;
+    meshdata->buffers.vtL = vtL;
     meshdata->buffers.vnL = 0;
 
     meshdata->buffers.bufferIndices_size = 0;
@@ -505,9 +516,9 @@ gsk_load_qmap(const char *map_path)
     fclose(stream);
 
     // Build a polygon from the last brush
-    ret.vertices = array_list_init(sizeof(vec3), 20);
+    ret.vertices = array_list_init(sizeof(gsk_QMapPolygonVertex), 20);
 
-    __qmap_polygon_from_brush(&ret, ret.p_cnt_brush);
+    __qmap_polygons_from_brush(&ret, ret.p_cnt_brush);
 
     return ret;
 }

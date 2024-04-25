@@ -16,6 +16,12 @@
 extern "C" {
 #endif // __cplusplus
 
+typedef struct gsk_QMapPolygonVertex
+{
+    vec3 position;
+    vec2 texture;
+} gsk_QMapPolygonVertex;
+
 typedef struct gsk_QMapPolygon
 {
     ArrayList list_vertices;

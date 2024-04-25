@@ -61,8 +61,9 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      -----------------------*/
     const char *standard_shader_path =
       GSK_PATH("gsk://shaders/lit-diffuse.shader");
-    const char *test_shader_path = GSK_PATH("gsk://shaders/white.glsl");
-    const char *pbr_shader_path  = GSK_PATH("gsk://shaders/pbr.shader");
+    const char *test_shader_path =
+      GSK_PATH("gsk://shaders/unlit-textured.shader");
+    const char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
 
     gsk_Texture *tex_prototype =
       texture_create_d(GSK_PATH("gsk://textures/prototype/128_64.png"));
