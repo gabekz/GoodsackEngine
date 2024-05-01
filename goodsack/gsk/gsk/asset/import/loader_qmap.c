@@ -31,10 +31,11 @@
 // Options
 #define POLY_PER_FACE TRUE // generate a polygon for each face
 
-//-----------------------------------------------------------------------------
-// Helper functions
-//-----------------------------------------------------------------------------
+/**********************************************************************/
+/*   Helper Functions                                                 */
+/**********************************************************************/
 
+/*--------------------------------------------------------------------*/
 static int
 __next_mode(int mode, u8 add)
 {
@@ -45,10 +46,9 @@ __next_mode(int mode, u8 add)
 
     return (add) ? mode + 1 : mode - 1;
 }
+/*--------------------------------------------------------------------*/
 
-#define MODE_UP(x)   x = __next_mode(x, TRUE);
-#define MODE_DOWN(x) x = __next_mode(x, FALSE);
-
+/*--------------------------------------------------------------------*/
 static u8
 __get_intersection(
   f32 *n1, f32 *n2, f32 *n3, f32 d1, f32 d2, f32 d3, f32 *output)
@@ -77,11 +77,37 @@ __get_intersection(
 
     return TRUE;
 }
+/*--------------------------------------------------------------------*/
 
-//-----------------------------------------------------------------------------
-// Parsing functions
-//-----------------------------------------------------------------------------
+/*--------------------------------------------------------------------*/
+static void
+__calculate_uv_coords(vec3 vertex,
+                      vec3 p0,
+                      vec3 u_axis,
+                      vec3 v_axis,
+                      f32 s,
+                      f32 t,
+                      f32 scale_x,
+                      f32 scale_y,
+                      f32 *output)
+{
+    vec3 adjusted_vertex = {0, 0, 0};
+    glm_vec3_sub(p0, vertex, adjusted_vertex);
 
+    // TODO: ensure uv-axes are normalized
+
+    output[0] = glm_vec3_dot(adjusted_vertex, u_axis) / scale_x + s; // u
+    output[1] = glm_vec3_dot(adjusted_vertex, v_axis) / scale_y + t; // v
+
+    glm_vec2_normalize(output);
+}
+/*--------------------------------------------------------------------*/
+
+/**********************************************************************/
+/*   Parsing Functions                                                */
+/**********************************************************************/
+
+/*--------------------------------------------------------------------*/
 static gsk_QMapPlane
 __parse_plane_from_line(char *line)
 {
@@ -100,10 +126,9 @@ __parse_plane_from_line(char *line)
 
     char *texture_name;
     f32 texture_properties[5] = {0, 0, 0, 0, 0};
+    vec3 u_axis = {0, 0, 0}, v_axis = {0, 0, 0};
 
-    //
-    // --- READ VERT COORDINATES
-    //
+    /*==== Read vert coordinates =====================================*/
 
     // Loop through line
     while (cnt_char != strlen(line)) {
@@ -157,9 +182,7 @@ __parse_plane_from_line(char *line)
         cnt_char++;
     }
 
-    //
-    // --- plane normal and determinant
-    //
+    /*==== Plane normal and determinant ==============================*/
     {
         // normal
         vec3 pq, pr;
@@ -172,9 +195,7 @@ __parse_plane_from_line(char *line)
                        normal[2] * points[0][2]);
     }
 
-    //
-    // --- READ TEXTURE DATA
-    //
+    /*==== Read texture data =========================================*/
 
     // grab substring from here on out - separate by whitespace
     char substring[256];
@@ -203,6 +224,20 @@ __parse_plane_from_line(char *line)
         i++;
     }
 
+    /*==== Calculate uv axes =========================================*/
+    /*   TODO: Find out if uv axes come from .map file format         */
+    {
+        vec3 axisref = {0.0f, 0.0f, 1.0f}; // z-axis reference
+
+        if (fabs(glm_vec3_dot(normal, axisref)) > 0.999f) {
+            axisref[0] = 1.0f; // use x-axis if normal is close to z-axis
+            axisref[2] = 0.0f;
+        }
+
+        glm_vec3_crossn(normal, axisref, u_axis);
+        glm_vec3_crossn(normal, u_axis, v_axis);
+    }
+
 #if 1 // LOG_PLANE
     for (int i = 0; i < 3; i++) {
 
@@ -218,34 +253,38 @@ __parse_plane_from_line(char *line)
     }
 #endif
 
-    //
-    // --- RETURN
-    //
+    /*==== Return ====================================================*/
 
-    // copy points
+    /*---- Copy points -----------------------------------------------*/
     glm_vec3_copy(points[0], ret.points[0]);
     glm_vec3_copy(points[1], ret.points[1]);
     glm_vec3_copy(points[2], ret.points[2]);
 
-    // copy normal
-    glm_vec3_copy(normal, ret.normal);
+    /*---- Copy uv axes ----------------------------------------------*/
+    glm_vec3_copy(u_axis, ret.uv_axes[0]);
+    glm_vec3_copy(v_axis, ret.uv_axes[1]);
 
+    /*---- Copy normal and determinant -------------------------------*/
+    glm_vec3_copy(normal, ret.normal);
     ret.determinant = determinant;
 
-    // copy texture offsets
+    /*---- Copy texture data -----------------------------------------*/
     ret.tex_offset[0] = texture_properties[0];
     ret.tex_offset[1] = texture_properties[1];
     ret.tex_rotation  = texture_properties[2];
     ret.tex_scale[0]  = texture_properties[3];
     ret.tex_scale[1]  = texture_properties[4];
 
+    /*---- Return QMapPlane ------------------------------------------*/
     return ret;
 }
+/*--------------------------------------------------------------------*/
 
-//-----------------------------------------------------------------------------
-// Build functions
-//-----------------------------------------------------------------------------
+/**********************************************************************/
+/*   Build Functions                                                  */
+/**********************************************************************/
 
+/*--------------------------------------------------------------------*/
 static void
 __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                            gsk_QMapBrush *p_brush)
@@ -321,11 +360,31 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                 gsk_QMapPolygon *poly =
                   array_list_get_at_index(&p_brush->list_polygons, i);
 
+                vec3 p0 = {0, 0, 0};
+
+                // Get p0
+                if (&poly->list_vertices.list_next <= 0) {
+                    glm_vec3_copy(vertex, p0);
+                } else {
+                    gsk_QMapPolygonVertex *first =
+                      array_list_get_at_index(&poly->list_vertices, 0);
+                    glm_vec3_copy(first->position, p0);
+                }
+
                 // polygon vertex
                 gsk_QMapPolygonVertex vert;
-                vec3 tex = {-1, 1};
                 glm_vec3_copy(vertex, vert.position);
-                glm_vec2_copy(tex, vert.texture);
+
+                // calculate UV coords
+                __calculate_uv_coords(vertex,
+                                      p0,
+                                      p_planes[i].uv_axes[0],
+                                      p_planes[i].uv_axes[1],
+                                      p_planes->tex_offset[0],
+                                      p_planes->tex_offset[1],
+                                      p_planes->tex_scale[0] / 200,
+                                      p_planes->tex_scale[1] / 200,
+                                      vert.texture);
 
                 // array_list_push(&poly->list_vertices, &vertex);
                 array_list_push(&poly->list_vertices, &vert);
@@ -388,11 +447,13 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
     // LOG_INFO("iterations: %d", iterations);
 }
+/*--------------------------------------------------------------------*/
 
-//-----------------------------------------------------------------------------
-// Memory functions
-//-----------------------------------------------------------------------------
+/**********************************************************************/
+/*   Memory Functions                                                 */
+/**********************************************************************/
 
+/*--------------------------------------------------------------------*/
 static void
 __qmap_container_add_entity(gsk_QMapContainer *p_container)
 {
@@ -414,7 +475,9 @@ __qmap_container_add_entity(gsk_QMapContainer *p_container)
     p_container->p_cnt_entity =
       &((gsk_QMapEntity *)data)[p_container->list_entities.list_next - 1];
 }
+/*--------------------------------------------------------------------*/
 
+/*--------------------------------------------------------------------*/
 // Add a brush to the currently pointed-at entity
 static void
 __qmap_container_add_brush(gsk_QMapContainer *p_container)
@@ -438,18 +501,16 @@ __qmap_container_add_brush(gsk_QMapContainer *p_container)
       &((gsk_QMapBrush *)
           data)[p_container->p_cnt_entity->list_brushes.list_next - 1];
 }
+/*--------------------------------------------------------------------*/
 
-#if 0
-static void
-__qmap_brush_add_plane(gsk_QMapBrush *p_brush, gsk_QMapPlane *p_plane)
-{
-}
-#endif
+/**********************************************************************/
+/*   Main Operation                                                   */
+/**********************************************************************/
 
-//-----------------------------------------------------------------------------
-// Main Operation
-//-----------------------------------------------------------------------------
+#define MODE_UP(x)   x = __next_mode(x, TRUE);
+#define MODE_DOWN(x) x = __next_mode(x, FALSE);
 
+/*--------------------------------------------------------------------*/
 gsk_QMapContainer
 gsk_load_qmap(const char *map_path)
 {
@@ -522,3 +583,4 @@ gsk_load_qmap(const char *map_path)
 
     return ret;
 }
+/*--------------------------------------------------------------------*/

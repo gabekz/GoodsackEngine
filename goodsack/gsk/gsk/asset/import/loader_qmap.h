@@ -30,6 +30,7 @@ typedef struct gsk_QMapPolygon
 typedef struct gsk_QMapPlane
 {
     vec3 points[3];
+    vec3 uv_axes[2];
     vec3 normal;
     f32 determinant;
 
