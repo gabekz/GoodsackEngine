@@ -40,7 +40,8 @@ static int
 __next_mode(int mode, u8 add)
 {
     if ((mode >= QM_MODE_FILL_BSH && add == TRUE) ||
-        (mode <= QM_MODE_NONE && add == FALSE)) {
+        (mode <= QM_MODE_NONE && add == FALSE))
+    {
         LOG_CRITICAL("Corrupt file. %d ", mode);
     }
 
@@ -60,7 +61,8 @@ __get_intersection(
 
     f32 denom = glm_vec3_dot(n1, cross1);
 
-    if (denom == 0) {
+    if (denom == 0)
+    {
         return FALSE; // No intersection, the planes are parallel or coincident
     }
 
@@ -103,6 +105,61 @@ __calculate_uv_coords(vec3 vertex,
 }
 /*--------------------------------------------------------------------*/
 
+/*--------------------------------------------------------------------*/
+static void
+__calculate_plane_from_points(
+  vec3 p1, vec3 p2, vec3 p3, f32 *norm_out, f32 *deter_out)
+{
+    // normal
+    vec3 pq, pr, normal;
+    glm_vec3_sub(p2, p1, pq);
+    glm_vec3_sub(p3, p1, pr);
+    glm_vec3_cross(pq, pr, norm_out);
+
+    // determinant
+    *deter_out =
+      (norm_out[0] * p1[0] + norm_out[1] * p1[1] + norm_out[2] * p1[2]);
+}
+/*--------------------------------------------------------------------*/
+
+#define BACK     0
+#define FRONT    1
+#define ON_PLANE 3
+
+static s32
+__classify_point(vec3 point, vec3 plane_norm, f32 plane_deter)
+{
+#if 0
+
+    vec3 check1 = {0}, check2 = {0};
+
+    glm_vec3_scale(plane_norm, -plane_deter, check1);
+    glm_vec3_sub(check1, point, check2);
+
+    f32 dist = glm_vec3_dot(check2, plane_norm);
+
+    if (dist < 0.0f)
+        return BACK;
+    else
+        return FRONT;
+#else
+
+    f32 result = plane_norm[0] * point[0] + plane_norm[1] * point[1] +
+                 plane_norm[2] * point[2] + plane_deter;
+
+    if (result > 0.0f)
+    {
+        return FRONT;
+    } else if (result < 0.0f)
+    {
+        return BACK;
+    }
+
+    return ON_PLANE;
+
+#endif
+}
+
 /**********************************************************************/
 /*   Parsing Functions                                                */
 /**********************************************************************/
@@ -131,16 +188,19 @@ __parse_plane_from_line(char *line)
     /*==== Read vert coordinates =====================================*/
 
     // Loop through line
-    while (cnt_char != strlen(line)) {
+    while (cnt_char != strlen(line))
+    {
 
         // start of coordinate
-        if (line[cnt_char] == '(') {
+        if (line[cnt_char] == '(')
+        {
             start_index = cnt_char;
             cnt_num     = 0;
         }
 
         // end of coordinate
-        if (line[cnt_char] == ')') {
+        if (line[cnt_char] == ')')
+        {
             end_index = cnt_char + 1;
 
             // get coordiante substring
@@ -161,7 +221,8 @@ __parse_plane_from_line(char *line)
             split = strtok(NULL, delim); // split is now ignoring first value
 
             // read each number in the coordinate
-            while (split != NULL && cnt_num <= 2) {
+            while (split != NULL && cnt_num <= 2)
+            {
                 float saved = atof(split);
                 split       = strtok(NULL, delim);
 
@@ -214,10 +275,13 @@ __parse_plane_from_line(char *line)
     int i = -1; // -1 start for the texture name. Following this are the texture
                 // coordinate properties.
 
-    while (split != NULL) {
-        if (i == -1) {
+    while (split != NULL)
+    {
+        if (i == -1)
+        {
             texture_name = strdup(split);
-        } else {
+        } else
+        {
             texture_properties[i] = atof(split);
         }
         split = strtok(NULL, delim);
@@ -229,7 +293,8 @@ __parse_plane_from_line(char *line)
     {
         vec3 axisref = {0.0f, 0.0f, 1.0f}; // z-axis reference
 
-        if (fabs(glm_vec3_dot(normal, axisref)) > 0.999f) {
+        if (fabs(glm_vec3_dot(normal, axisref)) > 0.999f)
+        {
             axisref[0] = 1.0f; // use x-axis if normal is close to z-axis
             axisref[2] = 0.0f;
         }
@@ -239,7 +304,8 @@ __parse_plane_from_line(char *line)
     }
 
 #if 1 // LOG_PLANE
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++)
+    {
 
         LOG_TRACE(
           "x: %f y: %f z: %f", points[i][0], points[i][1], points[i][2]);
@@ -248,7 +314,8 @@ __parse_plane_from_line(char *line)
     LOG_TRACE("Normal is: (%f, %f, %f)", normal[0], normal[1], normal[2]);
 
     LOG_TRACE("TEXTURE NAME IS: %s", texture_name);
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++)
+    {
         LOG_TRACE("TEXTURE prop: %f", texture_properties[i]);
     }
 #endif
@@ -302,8 +369,9 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
     p_brush->list_polygons = array_list_init(
       sizeof(gsk_QMapPolygon), planes_count); // iterate at planes_count
 
-    for (int i = 0; i < planes_count; i++) {
-        gsk_QMapPolygon poly;
+    for (int i = 0; i < planes_count; i++)
+    {
+        gsk_QMapPolygon poly = {0};
         poly.list_vertices =
           array_list_init(sizeof(gsk_QMapPolygonVertex), QM_ALLOC_ITER);
 
@@ -320,9 +388,12 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
               p_brush->brush_index);
 
     u32 iterations = 0; // for debugging purposes
-    for (int i = 0; i < planes_count; i++) {
-        for (int j = 0; j < planes_count; j++) {
-            for (int k = 0; k < planes_count; k++) {
+    for (int i = 0; i < planes_count; i++)
+    {
+        for (int j = 0; j < planes_count; j++)
+        {
+            for (int k = 0; k < planes_count; k++)
+            {
                 iterations++;
 
                 // do not check same
@@ -342,10 +413,12 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                 if (is_intersect == FALSE) { continue; }
 
                 // check for illegal point
-                for (int m = 0; m < planes_count; m++) {
+                for (int m = 0; m < planes_count; m++)
+                {
                     f32 term1  = glm_vec3_dot(p_planes[m].normal, vertex);
                     f32 check1 = term1 + p_planes[m].determinant;
-                    if (check1 > 0) {
+                    if (check1 > 0)
+                    {
                         is_illegal = TRUE;
                         break;
                     }
@@ -363,9 +436,11 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                 vec3 p0 = {0, 0, 0};
 
                 // Get p0
-                if (&poly->list_vertices.list_next <= 0) {
+                if (&poly->list_vertices.list_next <= 0)
+                {
                     glm_vec3_copy(vertex, p0);
-                } else {
+                } else
+                {
                     gsk_QMapPolygonVertex *first =
                       array_list_get_at_index(&poly->list_vertices, 0);
                     glm_vec3_copy(first->position, p0);
@@ -382,16 +457,19 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                                       p_planes[i].uv_axes[1],
                                       p_planes->tex_offset[0],
                                       p_planes->tex_offset[1],
-                                      p_planes->tex_scale[0] / 200,
-                                      p_planes->tex_scale[1] / 200,
+                                      p_planes->tex_scale[0],
+                                      p_planes->tex_scale[1],
                                       vert.texture);
 
                 // array_list_push(&poly->list_vertices, &vertex);
                 array_list_push(&poly->list_vertices, &vert);
 
+#if 0
                 array_list_push(&p_container->vertices,
                                 &vert); // TODO: Remove once we construct the
                                         // meshdata from polygons
+#endif
+
 #else
                 array_list_push(&p_container->vertices, &vertex);
 #endif // POLY_PER_FACE
@@ -405,6 +483,137 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
     }
 
     LOG_DEBUG("Assembled polygon with %d iterations", iterations);
+
+    // ----------------------------------------------
+    // Sort polygon vertices
+    // ----------------------------------------------
+
+    int num_poly = p_brush->list_polygons.list_next;
+
+    for (int i = 0; i < num_poly; i++)
+    {
+        // get polygon center
+        vec3 center = {0, 0, 0};
+
+        gsk_QMapPolygon *poly =
+          array_list_get_at_index(&p_brush->list_polygons, i);
+
+        int num_vert = poly->list_vertices.list_next;
+
+        for (int j = 0; j < num_vert; j++)
+        {
+
+            gsk_QMapPolygonVertex *vert =
+              array_list_get_at_index(&poly->list_vertices, j);
+
+            glm_vec3_add(center, vert->position, center);
+        }
+
+        glm_vec3_divs(center, num_vert, center);
+
+        for (int n = 0; n < num_vert - 2; n++)
+        {
+
+            // get current vert
+            gsk_QMapPolygonVertex *vert =
+              array_list_get_at_index(&poly->list_vertices, n);
+
+// I don't know if I need this here......
+#if 0
+            array_list_push(&p_container->vertices,
+                            vert); // TODO: Remove once we construct the
+                                   // meshdata from polygons
+#endif
+
+            // get A and P
+            vec3 a = {0, 0, 0};
+
+            vec3 plane_norm = {0, 0, 0};
+            f32 plane_deter = 0.0f;
+
+            f64 smallest_angle = -1;
+            s32 smallest       = -1;
+
+            // calculate A (perpendicular)
+            {
+                // glm_vec3_sub(vert->position, center, a);
+                glm_vec3_sub(center, vert->position, a);
+                glm_vec3_normalize(a);
+            }
+
+            // calculate plane from points
+            {
+                vec3 p1 = {0}, p2 = {0}, p3 = {0};
+                vec3 normal = {0};
+
+                glm_vec3_copy(p_planes[i].normal, normal);
+
+                glm_vec3_copy(vert->position, p1);
+                glm_vec3_copy(center, p2);
+                glm_vec3_add(center, normal, p3);
+
+                __calculate_plane_from_points(
+                  p1, p2, p3, plane_norm, &plane_deter);
+            }
+
+            for (int m = n + 1; m < num_vert; m++)
+            {
+                gsk_QMapPolygonVertex *vert_m =
+                  array_list_get_at_index(&poly->list_vertices, m);
+                s32 facing =
+                  __classify_point(vert_m->position, plane_norm, plane_deter);
+                if (facing != BACK)
+                {
+                    vec3 b    = {0};
+                    f32 angle = 0;
+
+                    // get B and Angle
+                    // glm_vec3_sub(vert_m->position, center, b);
+                    glm_vec3_sub(center, vert_m->position, b);
+                    glm_vec3_normalize(b);
+                    angle = glm_vec3_dot(a, b);
+
+                    if (angle > smallest_angle)
+                    {
+                        smallest_angle = angle;
+                        smallest       = m;
+                    }
+                }
+            }
+
+#if 1
+            if (smallest <= -1)
+            {
+                LOG_WARN("Maybe not right");
+                continue;
+                // smallest = 0;
+            }
+#endif
+
+            gsk_QMapPolygonVertex *vert2 =
+              array_list_get_at_index(&poly->list_vertices, n + 1);
+
+            gsk_QMapPolygonVertex *vert3 =
+              array_list_get_at_index(&poly->list_vertices, smallest);
+
+            gsk_QMapPolygonVertex swap_copy = *vert2;
+            *vert2                          = *vert3;
+            *vert3                          = swap_copy;
+        }
+
+        // push vertex to buffer
+        for (int j = 0; j < num_vert; j++)
+        {
+            // if (i != 0) continue;
+
+            gsk_QMapPolygonVertex *vert =
+              array_list_get_at_index(&poly->list_vertices, j);
+
+            array_list_push(&p_container->vertices,
+                            vert); // TODO: Remove once we construct the
+                                   // meshdata from polygons
+        }
+    }
 
     // ---------------------
     // Assemble MeshData
@@ -466,7 +675,8 @@ __qmap_container_add_entity(gsk_QMapContainer *p_container)
     p_container->total_entities++; // increment total
 
     if ((int)p_container->total_entities !=
-        (int)p_container->list_entities.list_next) {
+        (int)p_container->list_entities.list_next)
+    {
         LOG_ERROR("Failed to allocate correct number of entities");
     }
 
@@ -491,7 +701,8 @@ __qmap_container_add_brush(gsk_QMapContainer *p_container)
     p_container->total_brushes++; // increment total
 
     if ((int)p_container->total_brushes !=
-        (int)p_container->p_cnt_entity->list_brushes.list_next) {
+        (int)p_container->p_cnt_entity->list_brushes.list_next)
+    {
         LOG_ERROR("Failed to allocate correct number of brushes");
     }
 
@@ -524,7 +735,8 @@ gsk_load_qmap(const char *map_path)
     FILE *stream = NULL;
     char line[256]; // 256 = MAX line_length
 
-    if ((stream = fopen(map_path, "rb")) == NULL) {
+    if ((stream = fopen(map_path, "rb")) == NULL)
+    {
         LOG_CRITICAL("Error opening %s\n", map_path);
         exit(1);
     }
@@ -532,8 +744,10 @@ gsk_load_qmap(const char *map_path)
     int current_mode   = QM_MODE_NONE; // reading operation
     int next_operation = QM_OP_NONE;   // memory operation
 
-    while (fgets(line, sizeof(line), stream)) {
-        switch (line[0]) {
+    while (fgets(line, sizeof(line), stream))
+    {
+        switch (line[0])
+        {
         case '{':
             MODE_UP(current_mode);
             next_operation = QM_OP_NEW_GROUP;
@@ -550,24 +764,30 @@ gsk_load_qmap(const char *map_path)
         }
 
         // Groups (entities, brushes)
-        if (next_operation == QM_OP_NEW_GROUP) {
+        if (next_operation == QM_OP_NEW_GROUP)
+        {
             next_operation = QM_OP_NONE;
 
-            if (current_mode == QM_MODE_FILL_ENT) {
+            if (current_mode == QM_MODE_FILL_ENT)
+            {
                 LOG_DEBUG("Creating new entity");
                 __qmap_container_add_entity(&ret);
-            } else if (current_mode == QM_MODE_FILL_BSH) {
+            } else if (current_mode == QM_MODE_FILL_BSH)
+            {
                 LOG_DEBUG("Creating new brush");
                 __qmap_container_add_brush(&ret);
             }
         }
         // Members/fields (entity field, plane)
-        else if (next_operation == QM_OP_NEW_MEMBER) {
+        else if (next_operation == QM_OP_NEW_MEMBER)
+        {
             next_operation = QM_OP_NONE;
-            if (current_mode == QM_MODE_FILL_ENT) {
+            if (current_mode == QM_MODE_FILL_ENT)
+            {
                 // TODO:
                 LOG_DEBUG("Fill entity member");
-            } else if (current_mode == QM_MODE_FILL_BSH) {
+            } else if (current_mode == QM_MODE_FILL_BSH)
+            {
                 gsk_QMapPlane plane = __parse_plane_from_line(line);
                 array_list_push(&ret.p_cnt_brush->list_planes, &plane);
             }

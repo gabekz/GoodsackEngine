@@ -11,6 +11,8 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#define LOG_ENABLE FALSE
+
 ArrayList
 array_list_init(const u32 data_size, const u32 list_increment)
 {
@@ -44,11 +46,13 @@ array_list_push(ArrayList *self, void *data)
 
         size_t newcount = self->list_count + self->list_increment;
 
+#if LOG_ENABLE
         LOG_TRACE("Resized list from %d to %d. Buffer went from %d to %d",
                   self->list_count,
                   newcount,
                   self->data.buffer_size,
                   newsize);
+#endif
 
         self->data.buffer_size = newsize;
         self->data.buffer      = realloc(self->data.buffer, newsize);
