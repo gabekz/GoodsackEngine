@@ -111,7 +111,7 @@ __calculate_plane_from_points(
   vec3 p1, vec3 p2, vec3 p3, f32 *norm_out, f32 *deter_out)
 {
     // normal
-    vec3 pq, pr, normal;
+    vec3 pq, pr;
     glm_vec3_sub(p2, p1, pq);
     glm_vec3_sub(p3, p1, pr);
     glm_vec3_cross(pq, pr, norm_out);
@@ -126,6 +126,7 @@ __calculate_plane_from_points(
 #define FRONT    1
 #define ON_PLANE 3
 
+/*--------------------------------------------------------------------*/
 static s32
 __classify_point(vec3 point, vec3 plane_norm, f32 plane_deter)
 {
@@ -136,16 +137,15 @@ __classify_point(vec3 point, vec3 plane_norm, f32 plane_deter)
     glm_vec3_scale(plane_norm, -plane_deter, check1);
     glm_vec3_sub(check1, point, check2);
 
-    f32 dist = glm_vec3_dot(check2, plane_norm);
+    f32 result = glm_vec3_dot(check2, plane_norm);
 
-    if (dist < 0.0f)
-        return BACK;
-    else
-        return FRONT;
-#else
+#elif 0
 
     f32 result = plane_norm[0] * point[0] + plane_norm[1] * point[1] +
                  plane_norm[2] * point[2] + plane_deter;
+#else
+    f32 result = glm_vec3_dot(plane_norm, point) + plane_deter;
+#endif
 
     if (result > 0.0f)
     {
@@ -156,9 +156,8 @@ __classify_point(vec3 point, vec3 plane_norm, f32 plane_deter)
     }
 
     return ON_PLANE;
-
-#endif
 }
+/*--------------------------------------------------------------------*/
 
 /**********************************************************************/
 /*   Parsing Functions                                                */
@@ -338,9 +337,11 @@ __parse_plane_from_line(char *line)
     /*---- Copy texture data -----------------------------------------*/
     ret.tex_offset[0] = texture_properties[0];
     ret.tex_offset[1] = texture_properties[1];
-    ret.tex_rotation  = texture_properties[2];
-    ret.tex_scale[0]  = texture_properties[3];
-    ret.tex_scale[1]  = texture_properties[4];
+
+    ret.tex_rotation = texture_properties[2];
+
+    ret.tex_scale[0] = texture_properties[3];
+    ret.tex_scale[1] = texture_properties[4];
 
     /*---- Return QMapPlane ------------------------------------------*/
     return ret;
@@ -500,6 +501,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
         int num_vert = poly->list_vertices.list_next;
 
+        // calculate center
         for (int j = 0; j < num_vert; j++)
         {
 
@@ -509,11 +511,13 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             glm_vec3_add(center, vert->position, center);
         }
 
-        glm_vec3_divs(center, num_vert, center);
+        // glm_vec3_divs(center, num_vert, center);
+        glm_vec3_divs(center, num_vert + 1, center);
+
+        // start sorting
 
         for (int n = 0; n < num_vert - 2; n++)
         {
-
             // get current vert
             gsk_QMapPolygonVertex *vert =
               array_list_get_at_index(&poly->list_vertices, n);
@@ -528,16 +532,18 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             // get A and P
             vec3 a = {0, 0, 0};
 
+            // perpendicular plane
             vec3 plane_norm = {0, 0, 0};
             f32 plane_deter = 0.0f;
 
+            // angle check
             f64 smallest_angle = -1;
             s32 smallest       = -1;
 
             // calculate A (perpendicular)
             {
-                // glm_vec3_sub(vert->position, center, a);
-                glm_vec3_sub(center, vert->position, a);
+                glm_vec3_sub(vert->position, center, a);
+                // glm_vec3_sub(center, vert->position, a);
                 glm_vec3_normalize(a);
             }
 
@@ -548,29 +554,37 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
                 glm_vec3_copy(p_planes[i].normal, normal);
 
-                glm_vec3_copy(vert->position, p1);
-                glm_vec3_copy(center, p2);
-                glm_vec3_add(center, normal, p3);
+                glm_vec3_copy(vert->position, p1); /* p1 = vertices[n]     */
+                glm_vec3_copy(center, p2);         /* p2 = center          */
+                glm_vec3_add(center, normal, p3);  /* p3 = center + normal */
 
                 __calculate_plane_from_points(
                   p1, p2, p3, plane_norm, &plane_deter);
+
+                // glm_vec3_normalize(plane_norm);
             }
 
             for (int m = n + 1; m < num_vert; m++)
             {
+                // if (m == n + 1) { smallest = m + 1; }
+
                 gsk_QMapPolygonVertex *vert_m =
                   array_list_get_at_index(&poly->list_vertices, m);
+
                 s32 facing =
                   __classify_point(vert_m->position, plane_norm, plane_deter);
+
                 if (facing != BACK)
                 {
-                    vec3 b    = {0};
+                    vec3 b    = {0, 0, 0};
                     f32 angle = 0;
 
-                    // get B and Angle
-                    // glm_vec3_sub(vert_m->position, center, b);
-                    glm_vec3_sub(center, vert_m->position, b);
+                    // calculate B
+                    glm_vec3_sub(vert_m->position, center, b);
+                    // glm_vec3_sub(center, vert_m->position, b);
                     glm_vec3_normalize(b);
+
+                    // calculate angle
                     angle = glm_vec3_dot(a, b);
 
                     if (angle > smallest_angle)
@@ -578,15 +592,18 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                         smallest_angle = angle;
                         smallest       = m;
                     }
+                } else
+                {
+                    LOG_WARN("Poly %d, vert %d, m %d is: %d", i, n, m, facing);
                 }
             }
 
 #if 1
             if (smallest <= -1)
             {
-                LOG_WARN("Maybe not right");
+                LOG_ERROR(
+                  "Failed to find closest vertex for: poly %d, vert %d", i, n);
                 continue;
-                // smallest = 0;
             }
 #endif
 
