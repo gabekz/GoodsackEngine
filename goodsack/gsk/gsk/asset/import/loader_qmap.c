@@ -61,9 +61,11 @@ __get_intersection(
 
     f32 denom = glm_vec3_dot(n1, cross1);
 
-    if (denom == 0)
+    if (denom <= 0.05f)
     {
-        return FALSE; // No intersection, the planes are parallel or coincident
+        LOG_INFO("bad denom %f", denom);
+        return FALSE; // No intersection, the planes are parallel or
+        // coincident
     }
 
     vec3 term1, term2, term3;
@@ -77,6 +79,7 @@ __get_intersection(
 
     glm_vec3_scale(result, 1.0f / denom, output);
 
+    LOG_INFO("good denom %f", denom);
     return TRUE;
 }
 /*--------------------------------------------------------------------*/
@@ -144,7 +147,7 @@ __classify_point(vec3 point, vec3 plane_norm, f32 plane_deter)
     f32 result = plane_norm[0] * point[0] + plane_norm[1] * point[1] +
                  plane_norm[2] * point[2] + plane_deter;
 #else
-    f32 result = glm_vec3_dot(plane_norm, point) + plane_deter;
+    f32 result = glm_vec3_dot(plane_norm, point) - plane_deter;
 #endif
 
     if (result > 0.0f)
@@ -227,7 +230,8 @@ __parse_plane_from_line(char *line)
 
                 // LOG_INFO("saved: %f", saved);
 
-                points[cnt_coord][cnt_num] = saved;
+                // TODO: Scale is broken? Need epsilon somewhere
+                points[cnt_coord][cnt_num] = saved; // * 0.02f;
 
                 cnt_num++;
             }
@@ -253,6 +257,11 @@ __parse_plane_from_line(char *line)
         // determinant
         determinant = (normal[0] * points[0][0] + normal[1] * points[0][1] +
                        normal[2] * points[0][2]);
+
+        if (determinant != glm_vec3_dot(normal, points[0]))
+        {
+            LOG_ERROR("Failed calculation");
+        }
     }
 
     /*==== Read texture data =========================================*/
@@ -421,6 +430,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                     if (check1 > 0)
                     {
                         is_illegal = TRUE;
+                        LOG_INFO("Illegal point");
                         break;
                     }
                 }
@@ -428,8 +438,8 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                 if (is_illegal == TRUE) { continue; }
 
                 // increment vertexList track | TODO: Remove
-                vL += 3;
-                vtL += 2;
+                // vL += 3;
+                // vtL += 2;
 #if POLY_PER_FACE
                 gsk_QMapPolygon *poly =
                   array_list_get_at_index(&p_brush->list_polygons, i);
@@ -493,6 +503,9 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
     for (int i = 0; i < num_poly; i++)
     {
+
+        // if (i != 2) continue;
+
         // get polygon center
         vec3 center = {0, 0, 0};
 
@@ -629,6 +642,10 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             array_list_push(&p_container->vertices,
                             vert); // TODO: Remove once we construct the
                                    // meshdata from polygons
+
+            // increment vertex buffer lengths
+            vL += 3;
+            vtL += 2;
         }
     }
 
