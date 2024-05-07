@@ -30,6 +30,7 @@
 
 // Options
 #define POLY_PER_FACE TRUE // generate a polygon for each face
+#define IMPORT_SCALE  1.0f
 
 /**********************************************************************/
 /*   Helper Functions                                                 */
@@ -61,9 +62,9 @@ __get_intersection(
 
     f32 denom = glm_vec3_dot(n1, cross1);
 
-    if (denom <= 0.05f)
+    if (denom >= -0.1f && denom <= 0.1f)
     {
-        LOG_INFO("bad denom %f", denom);
+        LOG_TRACE("NO intersection: denom %f", denom);
         return FALSE; // No intersection, the planes are parallel or
         // coincident
     }
@@ -77,10 +78,23 @@ __get_intersection(
     glm_vec3_add(term1, term2, sum);
     glm_vec3_add(sum, term3, result);
 
-    glm_vec3_scale(result, 1.0f / denom, output);
+    glm_vec3_divs(result, denom, output);
 
-    LOG_INFO("good denom %f", denom);
+    LOG_TRACE("HAS intersection: denom %f", denom);
     return TRUE;
+}
+/*--------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------*/
+static u8
+__compare_vertices(const f32 *v1, const f32 *v2, const f32 epsilon)
+{
+    if (fabs(v1[0] - v2[0]) < epsilon && fabs(v1[1] - v2[1]) < epsilon &&
+        fabs(v1[2] - v2[2]) < epsilon)
+    {
+        return 1; // Vertices are the same
+    }
+    return 0; // Vertices are different
 }
 /*--------------------------------------------------------------------*/
 
@@ -117,7 +131,7 @@ __calculate_plane_from_points(
     vec3 pq, pr;
     glm_vec3_sub(p2, p1, pq);
     glm_vec3_sub(p3, p1, pr);
-    glm_vec3_cross(pq, pr, norm_out);
+    glm_vec3_crossn(pq, pr, norm_out);
 
     // determinant
     *deter_out =
@@ -231,7 +245,7 @@ __parse_plane_from_line(char *line)
                 // LOG_INFO("saved: %f", saved);
 
                 // TODO: Scale is broken? Need epsilon somewhere
-                points[cnt_coord][cnt_num] = saved; // * 0.02f;
+                points[cnt_coord][cnt_num] = saved * IMPORT_SCALE;
 
                 cnt_num++;
             }
@@ -252,7 +266,8 @@ __parse_plane_from_line(char *line)
         vec3 pq, pr;
         glm_vec3_sub(points[1], points[0], pq);
         glm_vec3_sub(points[2], points[0], pr);
-        glm_vec3_cross(pq, pr, normal);
+        glm_vec3_crossn(pq, pr, normal);
+        // glm_vec3_cross(pq, pr, normal);
 
         // determinant
         determinant = (normal[0] * points[0][0] + normal[1] * points[0][1] +
@@ -400,6 +415,8 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
     u32 iterations = 0; // for debugging purposes
     for (int i = 0; i < planes_count; i++)
     {
+        LOG_INFO("Checking intersections for poly %d", i);
+
         for (int j = 0; j < planes_count; j++)
         {
             for (int k = 0; k < planes_count; k++)
@@ -411,6 +428,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
                 vec3 vertex; // filled by __get_intersection()
                 u8 is_illegal   = FALSE;
+                u8 is_duplicate = FALSE;
                 u8 is_intersect = __get_intersection(p_planes[i].normal,
                                                      p_planes[j].normal,
                                                      p_planes[k].normal,
@@ -427,10 +445,11 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                 {
                     f32 term1  = glm_vec3_dot(p_planes[m].normal, vertex);
                     f32 check1 = term1 + p_planes[m].determinant;
-                    if (check1 > 0)
+                    if (check1 > 0.1f)
                     {
                         is_illegal = TRUE;
-                        LOG_INFO("Illegal point");
+                        LOG_TRACE(
+                          "Illegal point - vertex: %d (term: %f)", m, check1);
                         break;
                     }
                 }
@@ -472,6 +491,22 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                                       p_planes->tex_scale[1],
                                       vert.texture);
 
+                // check for duplicates
+                for (int n = 0; n < poly->list_vertices.list_next; n++)
+                {
+                    gsk_QMapPolygonVertex *compare =
+                      array_list_get_at_index(&poly->list_vertices, n);
+
+                    if (__compare_vertices(
+                          vert.position, compare->position, 0.001f))
+                    {
+                        is_duplicate = TRUE;
+                        LOG_TRACE("vertex is duplicate..");
+                    }
+                }
+
+                if (is_duplicate == TRUE) { continue; }
+
                 // array_list_push(&poly->list_vertices, &vertex);
                 array_list_push(&poly->list_vertices, &vert);
 
@@ -503,6 +538,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
     for (int i = 0; i < num_poly; i++)
     {
+        LOG_DEBUG("Sorting polygon %d", i);
 
         // if (i != 2) continue;
 
@@ -607,7 +643,13 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                     }
                 } else
                 {
-                    LOG_WARN("Poly %d, vert %d, m %d is: %d", i, n, m, facing);
+                    LOG_TRACE("Poly %d, vert %d, m %d facing is: %s",
+                              i,
+                              n,
+                              m,
+                              (facing == BACK)
+                                ? "BACK"
+                                : (facing == FRONT ? "FRONT" : "ON_PLANE"));
                 }
             }
 
