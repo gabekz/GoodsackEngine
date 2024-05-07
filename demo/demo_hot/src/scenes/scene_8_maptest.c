@@ -39,8 +39,25 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     gsk_QMapContainer qmap =
       gsk_load_qmap(GSK_PATH("gsk://map/gabes_map2.map"));
 
-    gsk_Model *qmap_model = malloc(sizeof(gsk_Model));
-    qmap_model->meshes    = malloc(sizeof(gsk_Mesh *) * 1);
+    gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
+    qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * qmap.total_planes);
+    qmap_model->meshesCount = qmap.total_planes;
+    qmap_model->modelPath   = "none";
+
+    for (int i = 0; i < qmap.total_planes; i++)
+    {
+        gsk_QMapPolygon *poly =
+          array_list_get_at_index(&qmap.p_cnt_brush->list_polygons, i);
+
+        qmap_model->meshes[i] =
+          gsk_mesh_assemble((gsk_MeshData *)poly->p_mesh_data);
+        qmap_model->meshes[i]->usingImportedMaterial = FALSE;
+
+        mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_copy(localMatrix, qmap_model->meshes[i]->localMatrix);
+    }
+
+#if 0
     qmap_model->meshes[0] = gsk_mesh_assemble(qmap.mesh_data);
     qmap_model->meshes[0]->usingImportedMaterial = FALSE;
     qmap_model->meshesCount                      = 1;
@@ -48,6 +65,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
 
     mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_copy(localMatrix, qmap_model->meshes[0]->localMatrix);
+#endif
 
     /*----------------------
      |  ECS Setup

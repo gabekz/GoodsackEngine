@@ -25,6 +25,7 @@ typedef struct gsk_QMapPolygonVertex
 typedef struct gsk_QMapPolygon
 {
     ArrayList list_vertices;
+    void *p_mesh_data;
 } gsk_QMapPolygon;
 
 typedef struct gsk_QMapPlane

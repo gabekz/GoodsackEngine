@@ -33,6 +33,7 @@ typedef enum gsk_PrimitiveTypeEnum {
     GSK_PRIMITIVE_TYPE_TRIANGLE,
     GSK_PRIMITIVE_TYPE_QUAD,
     GSK_PRIMITIVE_TYPE_POLY,
+    GSK_PRIMITIVE_TYPE_FAN,
 } gsk_PrimitiveTypeEnum;
 
 // type of BUFFER

@@ -381,12 +381,13 @@ static void
 __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                            gsk_QMapBrush *p_brush)
 {
-    f32 vL           = 0;
-    f32 vtL          = 0;
+    // f32 vL           = 0;
+    // f32 vtL          = 0;
     s32 planes_count = p_brush->list_planes.list_next;
     void *data       = p_brush->list_planes.data.buffer;
 
-    gsk_QMapPlane *p_planes = data;
+    gsk_QMapPlane *p_planes   = data;
+    p_container->total_planes = planes_count;
 
 #if POLY_PER_FACE
     // Create polygon for each face
@@ -543,7 +544,9 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         // if (i != 2) continue;
 
         // get polygon center
-        vec3 center = {0, 0, 0};
+        vec3 center = {0, 0.1f, 0};
+        // NOTE: Perfect squares won't work unless we offset the center by a
+        // small amount
 
         gsk_QMapPolygon *poly =
           array_list_get_at_index(&p_brush->list_polygons, i);
@@ -672,6 +675,22 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             *vert2                          = *vert3;
             *vert3                          = swap_copy;
         }
+    }
+
+    // ---------------------
+    // Assemble MeshData
+    // ---------------------
+
+    // loop through all polys
+    for (int i = 0; i < num_poly; i++)
+    {
+        s32 vL  = 0;
+        s32 vtL = 0;
+
+        gsk_QMapPolygon *poly =
+          array_list_get_at_index(&p_brush->list_polygons, i);
+
+        s32 num_vert = poly->list_vertices.list_next;
 
         // push vertex to buffer
         for (int j = 0; j < num_vert; j++)
@@ -688,40 +707,54 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             // increment vertex buffer lengths
             vL += 3;
             vtL += 2;
+
+            // poly fixation
+#if 0
+            if (j == num_vert - 1)
+            {
+                gsk_QMapPolygonVertex *vert_first =
+                  array_list_get_at_index(&poly->list_vertices, 0);
+
+                array_list_push(&p_container->vertices,
+                                vert_first); // TODO: Remove once we construct
+                                             // the meshdata from polygons
+
+                // increment vertex buffer lengths
+                vL += 3;
+                vtL += 2;
+            }
+#endif
         }
+
+        // Buffers for storing input
+        float *v = malloc((vL + vtL) * sizeof(float) * 3);
+        v        = poly->list_vertices.data.buffer;
+
+        gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
+        poly->p_mesh_data      = meshdata;
+
+        meshdata->buffers.out = v;
+        meshdata->buffers.v   = v;
+
+        meshdata->buffers.outI = (vL + vtL) * sizeof(float);
+
+        meshdata->vertexCount = vL / 3;
+
+        meshdata->buffers.vL  = vL;
+        meshdata->buffers.vtL = vtL;
+        meshdata->buffers.vnL = 0;
+
+        meshdata->buffers.bufferIndices_size = 0;
+        meshdata->isSkinnedMesh              = 0;
+        meshdata->hasTBN                     = 0;
+        meshdata->has_indices                = FALSE;
+        meshdata->primitive_type             = GSK_PRIMITIVE_TYPE_FAN;
+
+        glm_vec3_zero(meshdata->boundingBox[0]);
+        glm_vec3_zero(meshdata->boundingBox[1]);
+
+        // p_container->mesh_data = meshdata;
     }
-
-    // ---------------------
-    // Assemble MeshData
-    // ---------------------
-
-    // Buffers for storing input
-    float *v = malloc((vL + vtL) * sizeof(float) * 3);
-
-    gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
-    v                      = p_container->vertices.data.buffer;
-
-    meshdata->buffers.out = v;
-    meshdata->buffers.v   = v;
-
-    meshdata->buffers.outI = (vL + vtL) * sizeof(float);
-
-    meshdata->vertexCount = vL / 3;
-
-    meshdata->buffers.vL  = vL;
-    meshdata->buffers.vtL = vtL;
-    meshdata->buffers.vnL = 0;
-
-    meshdata->buffers.bufferIndices_size = 0;
-    meshdata->isSkinnedMesh              = 0;
-    meshdata->hasTBN                     = 0;
-    meshdata->has_indices                = FALSE;
-    meshdata->primitive_type             = GSK_PRIMITIVE_TYPE_TRIANGLE;
-
-    glm_vec3_zero(meshdata->boundingBox[0]);
-    glm_vec3_zero(meshdata->boundingBox[1]);
-
-    p_container->mesh_data = meshdata;
 
     /*
     for (int i = 0; i < p_container->vertices.list_next; i++) {

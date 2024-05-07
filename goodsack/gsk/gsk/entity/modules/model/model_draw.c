@@ -36,7 +36,8 @@ DrawModel(struct ComponentModel *model,
           VkCommandBuffer commandBuffer,
           gsk_Renderer *renderer)
 {
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
 
 // Handle culling
 #if 0
@@ -45,12 +46,14 @@ DrawModel(struct ComponentModel *model,
         }
 #endif
         gsk_Model *pModel = model->pModel;
-        for (int i = 0; i < pModel->meshesCount; i++) {
+        for (int i = 0; i < pModel->meshesCount; i++)
+        {
             gsk_Mesh *mesh = pModel->meshes[i];
             gsk_Material *material;
 
             // Select Material
-            if (mesh->usingImportedMaterial && !useOverrideMaterial) {
+            if (mesh->usingImportedMaterial && !useOverrideMaterial)
+            {
                 material = mesh->materialImported;
 
 #if CULLING_FOR_IMPORTED
@@ -61,18 +64,23 @@ DrawModel(struct ComponentModel *model,
                 glFrontFace(GL_CW);
 #endif
 
-            } else if (useOverrideMaterial) {
-                if (renderer->currentPass == SHADOW) {
+            } else if (useOverrideMaterial)
+            {
+                if (renderer->currentPass == SHADOW)
+                {
                     if (model->cast_shadows == ECS_VAL_DISABLED) return;
                 }
-                if (mesh->meshData->isSkinnedMesh) {
+                if (mesh->meshData->isSkinnedMesh)
+                {
                     material = renderer->explicitMaterial_skinned;
-                } else {
+                } else
+                {
                     material = renderer->explicitMaterial;
                 }
             }
 
-            else {
+            else
+            {
                 material = model->material;
             }
 
@@ -81,14 +89,18 @@ DrawModel(struct ComponentModel *model,
             // TESTING for normal-map in G-Buffer
             // TODO: Breaks when normal-map doesn't exist
             // TODO: Refactor this block
-            if (renderer->currentPass == DEPTH_PREPASS) {
+            if (renderer->currentPass == DEPTH_PREPASS)
+            {
                 if (mesh->usingImportedMaterial &&
-                    mesh->materialImported->texturesCount > 1) {
+                    mesh->materialImported->texturesCount > 1)
+                {
                     glActiveTexture(GL_TEXTURE10);
                     texture_bind(mesh->materialImported->textures[1], 10);
-                } else if (!mesh->usingImportedMaterial) {
+                } else if (!mesh->usingImportedMaterial)
+                {
                     gsk_Material *mat = model->material;
-                    if (mat->texturesCount >= 2) {
+                    if (mat->texturesCount >= 2)
+                    {
                         glActiveTexture(GL_TEXTURE10);
                         texture_bind(mat->textures[1], 10);
                     }
@@ -96,10 +108,12 @@ DrawModel(struct ComponentModel *model,
             }
 
             // Skinned Matrix array buffer
-            if (mesh->meshData->isSkinnedMesh) {
+            if (mesh->meshData->isSkinnedMesh)
+            {
                 mat4 skinnedMatrices[MAX_BONES];
                 gsk_Skeleton *pSkeleton = mesh->meshData->skeleton;
-                for (int i = 0; i < pSkeleton->jointsCount; i++) {
+                for (int i = 0; i < pSkeleton->jointsCount; i++)
+                {
                     glm_mat4_copy(pSkeleton->joints[i]->pose.mSkinningMatrix,
                                   skinnedMatrices[i]);
                 }
@@ -178,20 +192,25 @@ DrawModel(struct ComponentModel *model,
             gsk_PrimitiveTypeEnum primitive = mesh->meshData->primitive_type;
             GLenum gl_prim                  = GL_TRIANGLES;
 
-            switch (primitive) {
+            switch (primitive)
+            {
             case GSK_PRIMITIVE_TYPE_TRIANGLE: gl_prim = GL_TRIANGLES; break;
             case GSK_PRIMITIVE_TYPE_QUAD: gl_prim = GL_QUADS; break;
             case GSK_PRIMITIVE_TYPE_POLY: gl_prim = GL_POLYGON; break;
+            case GSK_PRIMITIVE_TYPE_FAN: gl_prim = GL_TRIANGLE_FAN; break;
             default: break;
             }
 
             // glEnable(GL_CULL_FACE);
             // glCullFace(GL_BACK);
             // glFrontFace(GL_CW);
+            // glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
-            if (data->has_indices) {
+            if (data->has_indices)
+            {
                 glDrawElements(gl_prim, indices, GL_UNSIGNED_INT, NULL);
-            } else {
+            } else
+            {
                 glDrawArrays(gl_prim, 0, vertices);
             }
 
@@ -210,7 +229,8 @@ DrawModel(struct ComponentModel *model,
 
         glDisable(GL_CULL_FACE);
 
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
 
 #if 0
         // Bind transform Model (MVP) and Position (vec3) descriptor set
@@ -257,8 +277,10 @@ init(gsk_Entity e)
     // TODO: stupid hack grabbing only scale.x...
     // mesh->model = gsk_load_obj(mesh->modelPath, transform->scale[0]);
 
-    if (GSK_DEVICE_API_OPENGL) {
-        if (!(gsk_Model *)model->pModel) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
+        if (!(gsk_Model *)model->pModel)
+        {
             model->pModel = gsk_model_load_from_file(
               model->modelPath, transform->scale[0], FALSE);
         }
@@ -267,7 +289,8 @@ init(gsk_Entity e)
         model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
 
         // TODO: rework defaults
-        if (model->cast_shadows && model->cast_shadows != 2) {
+        if (model->cast_shadows && model->cast_shadows != 2)
+        {
             model->cast_shadows = 1;
         }
 
@@ -281,7 +304,8 @@ init(gsk_Entity e)
           GL_FALSE,
           (float *)e.ecs->renderer->lightSpaceMatrix);
         // TODO: send model matrix to shader
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
         model->mesh = malloc(sizeof(gsk_Mesh));
         ((gsk_Mesh *)(model->mesh))->meshData =
           gsk_load_obj(model->modelPath, transform->scale[0]);
@@ -307,7 +331,8 @@ render(gsk_Entity e)
     struct ComponentModel *model         = gsk_ecs_get(e, C_MODEL);
 
     u32 renderLayer = 0; // DEFAULT RENDER LAYER when not specified.
-    if (gsk_ecs_has(e, C_RENDERLAYER)) {
+    if (gsk_ecs_has(e, C_RENDERLAYER))
+    {
         renderLayer =
           (u32)((struct ComponentRenderLayer *)gsk_ecs_get(e, C_RENDERLAYER))
             ->renderLayer;
@@ -318,15 +343,18 @@ render(gsk_Entity e)
     // TODO: get lightspace matrix
 
     VkCommandBuffer cb;
-    if (GSK_DEVICE_API_VULKAN) {
+    if (GSK_DEVICE_API_VULKAN)
+    {
         cb = e.ecs->renderer->vulkanDevice
                ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame];
     }
 
-    if (pass == REGULAR) {
+    if (pass == REGULAR)
+    {
 #if DEBUG_DRAW_SKELETON
         // draw skeleton
-        if (((gsk_Mesh *)model->mesh)->meshData->isSkinnedMesh) {
+        if (((gsk_Mesh *)model->mesh)->meshData->isSkinnedMesh)
+        {
             gsk_debug_draw_skeleton(
               e.ecs->renderer->debugContext,
               ((gsk_Mesh *)model->mesh)->meshData->skeleton);
@@ -336,7 +364,8 @@ render(gsk_Entity e)
 #if DEBUG_DRAW_BOUNDS
 
         gsk_Model *pModel = model->pModel;
-        for (int i = 0; i < pModel->meshesCount; i++) {
+        for (int i = 0; i < pModel->meshesCount; i++)
+        {
             gsk_Mesh *mesh = pModel->meshes[i];
             gsk_debug_draw_bounds(e.ecs->renderer->debugContext,
                                   mesh->meshData->boundingBox,
@@ -351,7 +380,8 @@ render(gsk_Entity e)
           : DrawModel(
               model, transform, FALSE, renderLayer, cb, e.ecs->renderer);
 
-    } else {
+    } else
+    {
         (GSK_DEVICE_API_OPENGL)
           ? DrawModel(
               model, transform, TRUE, renderLayer, NULL, e.ecs->renderer)
