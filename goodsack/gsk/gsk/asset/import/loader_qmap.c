@@ -30,7 +30,7 @@
 
 // Options
 #define POLY_PER_FACE TRUE // generate a polygon for each face
-#define IMPORT_SCALE  1.0f
+#define IMPORT_SCALE  0.02f
 
 /**********************************************************************/
 /*   Helper Functions                                                 */
@@ -322,8 +322,8 @@ __parse_plane_from_line(char *line)
             axisref[2] = 0.0f;
         }
 
-        glm_vec3_crossn(normal, axisref, u_axis);
-        glm_vec3_crossn(normal, u_axis, v_axis);
+        glm_vec3_cross(normal, axisref, u_axis);
+        glm_vec3_cross(normal, u_axis, v_axis);
     }
 
 #if 1 // LOG_PLANE
@@ -908,7 +908,19 @@ gsk_load_qmap(const char *map_path)
     // Build a polygon from the last brush
     ret.vertices = array_list_init(sizeof(gsk_QMapPolygonVertex), 20);
 
-    __qmap_polygons_from_brush(&ret, ret.p_cnt_brush);
+    for (int i = 0; i < ret.list_entities.list_next; i++)
+    {
+        gsk_QMapEntity *ent = array_list_get_at_index(&ret.list_entities, i);
+        for (int j = 0; j < ent->list_brushes.list_next; j++)
+        {
+            gsk_QMapBrush *brush =
+              array_list_get_at_index(&ent->list_brushes, j);
+
+            __qmap_polygons_from_brush(&ret, brush);
+        }
+    }
+
+    //__qmap_polygons_from_brush(&ret, ret.p_cnt_brush);
 
     return ret;
 }

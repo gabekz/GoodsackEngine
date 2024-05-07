@@ -36,25 +36,41 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Import QMap
      -----------------------*/
-    gsk_QMapContainer qmap =
-      gsk_load_qmap(GSK_PATH("gsk://map/gabes_map2.map"));
+    gsk_QMapContainer qmap = gsk_load_qmap(GSK_PATH("gsk://map/gabes_map.map"));
 
     gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
-    qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * qmap.total_planes);
-    qmap_model->meshesCount = qmap.total_planes;
+    qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * 600);
+    qmap_model->meshesCount = 0;
     qmap_model->modelPath   = "none";
 
-    for (int i = 0; i < qmap.total_planes; i++)
+    int cnt_poly = 0;
+    for (int i = 0; i < qmap.list_entities.list_next; i++)
     {
-        gsk_QMapPolygon *poly =
-          array_list_get_at_index(&qmap.p_cnt_brush->list_polygons, i);
+        gsk_QMapEntity *ent = array_list_get_at_index(&qmap.list_entities, i);
 
-        qmap_model->meshes[i] =
-          gsk_mesh_assemble((gsk_MeshData *)poly->p_mesh_data);
-        qmap_model->meshes[i]->usingImportedMaterial = FALSE;
+        for (int j = 0; j < ent->list_brushes.list_next; j++)
+        {
+            gsk_QMapBrush *brush =
+              array_list_get_at_index(&ent->list_brushes, j);
 
-        mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
-        glm_mat4_copy(localMatrix, qmap_model->meshes[i]->localMatrix);
+            for (int k = 0; k < brush->list_planes.list_next; k++)
+            {
+                gsk_QMapPolygon *poly =
+                  array_list_get_at_index(&brush->list_polygons, k);
+
+                qmap_model->meshesCount++;
+
+                qmap_model->meshes[cnt_poly] =
+                  gsk_mesh_assemble((gsk_MeshData *)poly->p_mesh_data);
+                qmap_model->meshes[cnt_poly]->usingImportedMaterial = FALSE;
+
+                mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+                glm_mat4_copy(localMatrix,
+                              qmap_model->meshes[cnt_poly]->localMatrix);
+
+                cnt_poly++;
+            }
+        }
     }
 
 #if 0
