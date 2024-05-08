@@ -102,7 +102,7 @@ init(void)
     InitializeCriticalSection(&s_mutex);
 #else
     pthread_mutex_init(&s_mutex, NULL);
-#endif                 /* defined(_WIN32) || defined(_WIN64) */
+#endif /* defined(_WIN32) || defined(_WIN64) */
     s_initialized = 1; /* true */
 }
 
@@ -140,7 +140,8 @@ hasFlag(int flags, int flag)
 static char
 getLevelChar(LogLevel level)
 {
-    switch (level) {
+    switch (level)
+    {
     case LogLevel_TRACE: return 'T';
     case LogLevel_DEBUG: return 'D';
     case LogLevel_INFO: return 'I';
@@ -156,14 +157,15 @@ setLevelStr(LogLevel level, int colored, char *dest)
     char *levelStr;
     char *levelCol;
 
-    switch (level) {
+    switch (level)
+    {
     case LogLevel_TRACE:
         levelStr = "Trace";
-        levelCol = BLU;
+        levelCol = CYN;
         break;
     case LogLevel_DEBUG:
         levelStr = "Debug";
-        levelCol = YEL;
+        levelCol = BLU;
         break;
     case LogLevel_INFO:
         levelStr = "Info";
@@ -184,7 +186,8 @@ setLevelStr(LogLevel level, int colored, char *dest)
     default: return;
     }
 
-    if (colored) {
+    if (colored)
+    {
         dest[0] = '\0';
         strncpy(dest, levelCol, 32);
         strncat(dest, levelStr, 32);
@@ -237,7 +240,8 @@ getBackupFileName(const char *basename,
     assert(size >= strlen(basename) + sizeof(indexname));
 
     strncpy(backupname, basename, size);
-    if (index > 0) {
+    if (index > 0)
+    {
         sprintf(indexname, ".%d", index);
         strncat(backupname, indexname, strlen(indexname));
     }
@@ -248,9 +252,11 @@ isFileExist(const char *filename)
 {
     FILE *fp;
 
-    if ((fp = fopen(filename, "r")) == NULL) {
+    if ((fp = fopen(filename, "r")) == NULL)
+    {
         return 0;
-    } else {
+    } else
+    {
         fclose(fp);
         return 1;
     }
@@ -269,6 +275,17 @@ getFileSize(const char *filename)
     return size;
 }
 
+static const char *
+getFileName(const char *path)
+{
+    const char *filename = path;
+    for (const char *p = path; *p; p++)
+    {
+        if (*p == '/' || *p == '\\') { filename = p + 1; }
+    }
+    return filename;
+}
+
 static long
 vflog(FILE *fp,
       const char *levelStr,
@@ -284,12 +301,20 @@ vflog(FILE *fp,
     int size       = 0;
     long totalsize = 0;
 
-    if (s_logDetail == LogDetail_SIMPLE) {
+    if (s_logDetail == LogDetail_SIMPLE)
+    {
         size = fprintf(fp, "%s [%s] ", timestamp, levelStr);
-    } else if (s_logDetail == LogDetail_EXTENDED) {
-        size = fprintf(
-          fp, "%s [%s] %ld %s:%d: ", timestamp, levelStr, threadID, file, line);
-    } else if (s_logDetail == LogDetail_MSG) {
+    } else if (s_logDetail == LogDetail_EXTENDED)
+    {
+        size = fprintf(fp,
+                       "%s [%s] %ld %s:%d: ",
+                       timestamp,
+                       levelStr,
+                       threadID,
+                       getFileName(file),
+                       line);
+    } else if (s_logDetail == LogDetail_MSG)
+    {
         size = 0;
     }
 
@@ -297,8 +322,10 @@ vflog(FILE *fp,
 
     if ((size = vfprintf(fp, fmt, arg)) > 0) { totalsize += size; }
     if ((size = fprintf(fp, "\n")) > 0) { totalsize += size; }
-    if (s_flushInterval > 0) {
-        if (currentTime - *flushedTime > s_flushInterval) {
+    if (s_flushInterval > 0)
+    {
+        if (currentTime - *flushedTime > s_flushInterval)
+        {
             fflush(fp);
             *flushedTime = currentTime;
         }
@@ -314,21 +341,27 @@ rotateLogFiles(void)
     char src[kMaxFileNameLen + 5],
       dst[kMaxFileNameLen + 5]; /* with null character */
 
-    if (s_flog.currentFileSize < s_flog.maxFileSize) {
+    if (s_flog.currentFileSize < s_flog.maxFileSize)
+    {
         return s_flog.output != NULL;
     }
     fclose(s_flog.output);
-    for (i = (int)s_flog.maxBackupFiles; i > 0; i--) {
+    for (i = (int)s_flog.maxBackupFiles; i > 0; i--)
+    {
         getBackupFileName(s_flog.filename, i - 1, src, sizeof(src));
         getBackupFileName(s_flog.filename, i, dst, sizeof(dst));
-        if (isFileExist(dst)) {
-            if (remove(dst) != 0) {
+        if (isFileExist(dst))
+        {
+            if (remove(dst) != 0)
+            {
                 fprintf(
                   stderr, "ERROR: logger: Failed to remove file: `%s`\n", dst);
             }
         }
-        if (isFileExist(src)) {
-            if (rename(src, dst) != 0) {
+        if (isFileExist(src))
+        {
+            if (rename(src, dst) != 0)
+            {
                 fprintf(stderr,
                         "ERROR: logger: Failed to rename file: `%s` -> `%s`\n",
                         src,
@@ -337,7 +370,8 @@ rotateLogFiles(void)
         }
     }
     s_flog.output = fopen(s_flog.filename, "a");
-    if (s_flog.output == NULL) {
+    if (s_flog.output == NULL)
+    {
         fprintf(stderr,
                 "ERROR: logger: Failed to open file: `%s`\n",
                 s_flog.filename);
@@ -355,7 +389,8 @@ logger_isEnabled(LogLevel level)
 void
 logger_flush()
 {
-    if (s_logger == 0 || !s_initialized) {
+    if (s_logger == 0 || !s_initialized)
+    {
         assert(0 && "logger is not initialized");
         return;
     }
@@ -375,14 +410,16 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
     long threadID;
     va_list carg, farg;
 
-    if (s_logger == 0 || !s_initialized) {
+    if (s_logger == 0 || !s_initialized)
+    {
         assert(0 && "logger is not initialized");
         return;
     }
 
     if (!logger_isEnabled(level)) { return; }
 
-    switch (level) {
+    switch (level)
+    {
     case LogLevel_INFO: logger_setDetail(LogDetail_SIMPLE); break;
     case LogLevel_NONE: logger_setDetail(LogDetail_MSG); break;
     default: logger_setDetail(LogDetail_EXTENDED); break;
@@ -399,7 +436,8 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
 
     lock();
 
-    if (hasFlag(s_logger, kConsoleLogger)) {
+    if (hasFlag(s_logger, kConsoleLogger))
+    {
         va_start(carg, fmt);
         vflog(s_clog.output,
               levelStr,
@@ -413,8 +451,10 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
               &s_clog.flushedTime);
         va_end(carg);
     }
-    if (hasFlag(s_logger, kFileLogger)) {
-        if (rotateLogFiles()) {
+    if (hasFlag(s_logger, kFileLogger))
+    {
+        if (rotateLogFiles())
+        {
             va_start(farg, fmt);
             s_flog.currentFileSize += vflog(s_flog.output,
                                             levelStr,
@@ -436,7 +476,8 @@ int
 logger_initConsoleLogger(FILE *output)
 {
     output = (output != NULL) ? output : stdout;
-    if (output != stdout && output != stderr) {
+    if (output != stdout && output != stderr)
+    {
         assert(0 && "output must be stdout or stderr");
         return 0;
     }
@@ -480,22 +521,26 @@ logger_initFileLogger(const char *filename,
 {
     int ok = 0; /* false */
 
-    if (filename == NULL) {
+    if (filename == NULL)
+    {
         assert(0 && "filename must not be NULL");
         return 0;
     }
-    if (strlen(filename) > kMaxFileNameLen) {
+    if (strlen(filename) > kMaxFileNameLen)
+    {
         assert(0 && "filename exceeds the maximum number of characters");
         return 0;
     }
 
     init();
     lock();
-    if (s_flog.output != NULL) { /* reinit */
+    if (s_flog.output != NULL)
+    { /* reinit */
         fclose(s_flog.output);
     }
     s_flog.output = fopen(filename, "a");
-    if (s_flog.output == NULL) {
+    if (s_flog.output == NULL)
+    {
         fprintf(stderr, "ERROR: logger: Failed to open file: `%s`\n", filename);
         goto cleanup;
     }

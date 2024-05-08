@@ -36,10 +36,10 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Import QMap
      -----------------------*/
-    gsk_QMapContainer qmap = gsk_load_qmap(GSK_PATH("gsk://map/gabes_map.map"));
+    gsk_QMapContainer qmap = gsk_load_qmap(GSK_PATH("gsk://map/octagon.map"));
 
     gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
-    qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * 600);
+    qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * 40000);
     qmap_model->meshesCount = 0;
     qmap_model->modelPath   = "none";
 
@@ -88,7 +88,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      -----------------------*/
 
     ecs = gsk_renderer_active_scene(renderer, 8);
-    __set_active_scene_skybox(renderer, def_skybox);
+    //__set_active_scene_skybox(renderer, def_skybox);
 
     /*----------------------
      |  Resources

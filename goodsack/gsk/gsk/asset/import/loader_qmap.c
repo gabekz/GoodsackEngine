@@ -30,7 +30,11 @@
 
 // Options
 #define POLY_PER_FACE TRUE // generate a polygon for each face
-#define IMPORT_SCALE  0.02f
+#define IMPORT_SCALE  1.0f
+
+// Stuff that breaks
+#define _NORMALIZE_UV  TRUE
+#define _USE_CENTER_UV FALSE
 
 /**********************************************************************/
 /*   Helper Functions                                                 */
@@ -117,8 +121,10 @@ __calculate_uv_coords(vec3 vertex,
 
     output[0] = glm_vec3_dot(adjusted_vertex, u_axis) / scale_x + s; // u
     output[1] = glm_vec3_dot(adjusted_vertex, v_axis) / scale_y + t; // v
+    // glm_vec2_normalize(output);
 
-    glm_vec2_normalize(output);
+    output[0] = (output[0] + 1.0f) / 2.0f;
+    output[1] = (output[1] + 1.0f) / 2.0f;
 }
 /*--------------------------------------------------------------------*/
 
@@ -260,6 +266,15 @@ __parse_plane_from_line(char *line)
         cnt_char++;
     }
 
+    /*==== Flip y-z to match left-handed coordinate system ===========*/
+    for (int i = 0; i < 3; i++)
+    {
+        f32 saved    = points[i][2];
+        points[i][2] = points[i][1];
+        points[i][1] = saved;
+        points[i][2] = -points[i][2];
+    }
+
     /*==== Plane normal and determinant ==============================*/
     {
         // normal
@@ -315,15 +330,16 @@ __parse_plane_from_line(char *line)
     /*   TODO: Find out if uv axes come from .map file format         */
     {
         vec3 axisref = {0.0f, 0.0f, 1.0f}; // z-axis reference
+        f32 check    = glm_vec3_dot(normal, axisref);
 
-        if (fabs(glm_vec3_dot(normal, axisref)) > 0.999f)
+        if (fabs(check) > 0.999f)
         {
             axisref[0] = 1.0f; // use x-axis if normal is close to z-axis
             axisref[2] = 0.0f;
         }
 
-        glm_vec3_cross(normal, axisref, u_axis);
-        glm_vec3_cross(normal, u_axis, v_axis);
+        glm_vec3_crossn(normal, axisref, u_axis);
+        glm_vec3_crossn(normal, u_axis, v_axis);
     }
 
 #if 1 // LOG_PLANE
@@ -467,7 +483,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                 vec3 p0 = {0, 0, 0};
 
                 // Get p0
-                if (&poly->list_vertices.list_next <= 0)
+                if (poly->list_vertices.is_list_empty == TRUE)
                 {
                     glm_vec3_copy(vertex, p0);
                 } else
@@ -565,6 +581,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
         // glm_vec3_divs(center, num_vert, center);
         glm_vec3_divs(center, num_vert + 1, center);
+        glm_vec3_copy(center, poly->center);
 
         // start sorting
 
@@ -573,13 +590,6 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             // get current vert
             gsk_QMapPolygonVertex *vert =
               array_list_get_at_index(&poly->list_vertices, n);
-
-// I don't know if I need this here......
-#if 0
-            array_list_push(&p_container->vertices,
-                            vert); // TODO: Remove once we construct the
-                                   // meshdata from polygons
-#endif
 
             // get A and P
             vec3 a = {0, 0, 0};
@@ -677,6 +687,57 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         }
     }
 
+// ---------------------
+// Fix UV coordinates
+// ---------------------
+#if _NORMALIZE_UV
+    for (int i = 0; i < num_poly; i++)
+    {
+        gsk_QMapPolygon *poly =
+          array_list_get_at_index(&p_brush->list_polygons, i);
+
+        s32 num_vert = poly->list_vertices.list_next;
+
+        gsk_QMapPolygonVertex *vert_first =
+          array_list_get_at_index(&poly->list_vertices, 0);
+
+        f32 nearest[2] = {vert_first->texture[0], vert_first->texture[1]};
+        s32 nearest_indices[2] = {0, 0};
+
+        // loop through each vertex
+        for (int j = 0; j < num_vert; j++)
+        {
+            gsk_QMapPolygonVertex *vert =
+              array_list_get_at_index(&poly->list_vertices, j);
+
+            for (int k = 0; k < 2; k++)
+            {
+                if (fabs(vert->texture[k]) > 1)
+                {
+                    if (fabs(vert->texture[k]) < fabs(nearest[k]))
+                    {
+                        nearest_indices[k] = j;
+                        nearest[k]         = vert->texture[k];
+                    }
+                } else
+                {
+                    // coordinates are already normalized
+                    continue;
+                }
+            }
+        }
+
+        for (int j = 0; j < num_vert; j++)
+        {
+
+            gsk_QMapPolygonVertex *vert =
+              array_list_get_at_index(&poly->list_vertices, j);
+            vert->texture[0] = vert->texture[0] - nearest[0];
+            vert->texture[1] = vert->texture[1] - nearest[1];
+        }
+    }
+#endif
+
     // ---------------------
     // Assemble MeshData
     // ---------------------
@@ -690,7 +751,28 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         gsk_QMapPolygon *poly =
           array_list_get_at_index(&p_brush->list_polygons, i);
 
+#if _USE_CENTER_UV
+        gsk_QMapPolygonVertex center_vert = {.texture  = {0.0f, 0.0f},
+                                             .position = {0.0f, 0.0f, 0.0f}};
+        glm_vec3_copy(poly->center, center_vert.position);
+
+        // push the center vertex
+        array_list_insert(&poly->list_vertices, &center_vert, 0);
+        vL += 3;
+        vtL += 2;
+
+#if 0
+        gsk_QMapPolygonVertex *second_vert =
+          array_list_get_at_index(&poly->list_vertices, 1);
+        array_list_push(&poly->list_vertices, &second_vert);
+        vL += 3;
+        vtL += 2;
+#endif
+#endif
+
         s32 num_vert = poly->list_vertices.list_next;
+
+        // push the center vertex FIRST (Triangle-Fan rendering)
 
         // push vertex to buffer
         for (int j = 0; j < num_vert; j++)
@@ -699,10 +781,6 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
             gsk_QMapPolygonVertex *vert =
               array_list_get_at_index(&poly->list_vertices, j);
-
-            array_list_push(&p_container->vertices,
-                            vert); // TODO: Remove once we construct the
-                                   // meshdata from polygons
 
             // increment vertex buffer lengths
             vL += 3;

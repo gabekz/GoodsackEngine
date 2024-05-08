@@ -26,6 +26,7 @@ typedef struct gsk_QMapPolygon
 {
     ArrayList list_vertices;
     void *p_mesh_data;
+    vec3 center;
 } gsk_QMapPolygon;
 
 typedef struct gsk_QMapPlane
