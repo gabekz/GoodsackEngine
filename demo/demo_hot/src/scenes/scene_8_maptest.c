@@ -42,22 +42,47 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     const char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
 
     /*----------------------
-     |  Create a texture set
+     |  Create some textures
+     -----------------------*/
+    gsk_Texture *tex_uv_check =
+      texture_create_n(GSK_PATH("gsk://textures/prototype/uv_checker.png"));
+
+    gsk_Texture *tex_prototype =
+      texture_create_n(GSK_PATH("gsk://textures/prototype/128_64.png"));
+
+    /*----------------------
+     |  Create a texture set (from the textures above)
      -----------------------*/
     gsk_TextureSet texture_set = gsk_texture_set_init();
 
     gsk_texture_set_add(&texture_set, def_spec, "SPEC");
-    gsk_texture_set_add(&texture_set, def_norm, "NORM");
+    gsk_texture_set_add(&texture_set, def_spec, "textures/defaults/black");
 
-    gsk_texture_set_add(&texture_set, def_missing, "__TB_empty");
+    gsk_texture_set_add(&texture_set, def_norm, "NORM");
+    gsk_texture_set_add(&texture_set, def_norm, "textures/defaults/normal");
+
+    gsk_texture_set_add(&texture_set, tex_prototype, "__TB_empty");
+
+    gsk_texture_set_add(&texture_set, tex_uv_check, "textures/uv_checker");
+
+    gsk_texture_set_add(
+      &texture_set, tex_prototype, "textures/prototype/128_64");
+
+    gsk_texture_set_add(&texture_set, tex_uv_check, "terrain/terrain");
 
     gsk_Texture *lookup_texture =
       gsk_texture_set_get_by_name(&texture_set, "NORM");
 
     /*----------------------
+     |  Default MISSING Material
+     -----------------------*/
+    gsk_Material *material_missing = gsk_material_create(
+      NULL, test_shader_path, 3, def_missing, def_norm, def_spec);
+
+    /*----------------------
      |  Import QMap
      -----------------------*/
-    gsk_QMapContainer qmap = gsk_qmap_load(GSK_PATH("gsk://map/octagon.map"));
+    gsk_QMapContainer qmap = gsk_qmap_load(GSK_PATH("gsk://map/octagon2.map"));
 
     gsk_qmap_attach_textures(&qmap, &texture_set);
 
@@ -92,19 +117,26 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
                 glm_mat4_copy(localMatrix,
                               qmap_model->meshes[cnt_poly]->localMatrix);
 
+                qmap_model->meshes[cnt_poly]->usingImportedMaterial = TRUE;
+                (gsk_Mesh *)qmap_model->meshes[cnt_poly]->materialImported =
+                  material_missing;
                 //----------------------------------------------------------
                 // create material for poly
                 // TODO: Change this (we don't want duplicated materials)
-                gsk_Material *material = gsk_material_create(NULL,
-                                                             test_shader_path,
-                                                             3,
-                                                             poly->p_texture,
-                                                             def_norm,
-                                                             def_spec);
+                if (poly->p_texture != NULL)
+                {
 
-                qmap_model->meshes[cnt_poly]->usingImportedMaterial = TRUE;
-                (gsk_Mesh *)qmap_model->meshes[cnt_poly]->materialImported =
-                  material;
+                    gsk_Material *material =
+                      gsk_material_create(NULL,
+                                          test_shader_path,
+                                          3,
+                                          poly->p_texture,
+                                          def_norm,
+                                          def_spec);
+
+                    (gsk_Mesh *)qmap_model->meshes[cnt_poly]->materialImported =
+                      material;
+                }
 
                 //----------------------------------------------------------
 
@@ -133,9 +165,6 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Resources
      -----------------------*/
-    gsk_Texture *tex_prototype =
-      texture_create_d(GSK_PATH("gsk://textures/prototype/128_64.png"));
-
     gsk_Material *mat_missing = gsk_material_create(
       NULL, test_shader_path, 3, def_missing, def_norm, def_spec);
 

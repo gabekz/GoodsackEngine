@@ -31,7 +31,7 @@
 
 // Options
 #define POLY_PER_FACE TRUE // generate a polygon for each face
-#define IMPORT_SCALE  1.0f
+#define IMPORT_SCALE  0.02f
 
 // Stuff that breaks
 #define _NORMALIZE_UV  TRUE
@@ -273,7 +273,9 @@ __parse_plane_from_line(char *line)
         f32 saved    = points[i][2];
         points[i][2] = points[i][1];
         points[i][1] = saved;
-        points[i][2] = -points[i][2];
+        points[i][2] = points[i][2];
+
+        points[i][1] = -points[i][1];
     }
 
     /*==== Plane normal and determinant ==============================*/
@@ -1029,18 +1031,17 @@ gsk_qmap_attach_textures(gsk_QMapContainer *p_container, void *p_texture_set)
                 void *p_tex =
                   gsk_texture_set_get_by_name(p_texture_set, plane->tex_name);
 
+                gsk_QMapPolygon *poly =
+                  array_list_get_at_index(&brush->list_polygons, k);
+                poly->p_texture = p_tex;
+
                 if (p_tex != NULL)
                 {
                     LOG_DEBUG("Successful loaded texture %s", plane->tex_name);
-
-                    gsk_QMapPolygon *poly =
-                      array_list_get_at_index(&brush->list_polygons, k);
-
-                    poly->p_texture = p_tex;
-                } else
-                {
-                    LOG_WARN("Failed to find texture %s", plane->tex_name);
+                    continue;
                 }
+
+                LOG_WARN("Failed to find texture %s", plane->tex_name);
             }
         }
     }
