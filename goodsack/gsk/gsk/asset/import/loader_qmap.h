@@ -25,8 +25,10 @@ typedef struct gsk_QMapPolygonVertex
 typedef struct gsk_QMapPolygon
 {
     ArrayList list_vertices;
-    void *p_mesh_data;
     vec3 center;
+
+    void *p_mesh_data;
+    void *p_texture;
 } gsk_QMapPolygon;
 
 typedef struct gsk_QMapPlane
@@ -39,6 +41,7 @@ typedef struct gsk_QMapPlane
     vec2 tex_offset;
     vec2 tex_scale;
     f32 tex_rotation;
+    char tex_name[256];
 
 } gsk_QMapPlane;
 
@@ -67,14 +70,19 @@ typedef struct gsk_QMapContainer
     s32 total_brushes;
     s32 total_planes;
 
-    ArrayList vertices;
-
     gsk_MeshData *mesh_data;
+
+    void *p_texture_set;
 
 } gsk_QMapContainer;
 
 gsk_QMapContainer
-gsk_load_qmap(const char *map_path);
+gsk_qmap_load(const char *map_path);
+
+void *
+gsk_qmap_attach_texture(gsk_QMapContainer *p_container,
+                        void *p_texture,
+                        const char *ref_name);
 
 #ifdef __cplusplus
 }

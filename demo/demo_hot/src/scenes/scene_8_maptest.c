@@ -5,6 +5,8 @@
 #include "entity/ecs.h"
 #include "entity/modules/modules_systems.h"
 
+#include "core/graphics/texture/texture_set.h"
+
 #include "asset/import/loader_qmap.h"
 
 /*----------------------
@@ -33,10 +35,33 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 #endif
 
+    const char *standard_shader_path =
+      GSK_PATH("gsk://shaders/lit-diffuse.shader");
+    const char *test_shader_path =
+      GSK_PATH("gsk://shaders/unlit-textured.shader");
+    const char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
+
+    /*----------------------
+     |  Create a texture set
+     -----------------------*/
+    gsk_TextureSet texture_set = gsk_texture_set_init();
+
+    gsk_texture_set_add(&texture_set, def_spec, "SPEC");
+    gsk_texture_set_add(&texture_set, def_norm, "NORM");
+
+    gsk_texture_set_add(&texture_set, def_missing, "__TB_empty");
+
+    gsk_Texture *lookup_texture =
+      gsk_texture_set_get_by_name(&texture_set, "NORM");
+
     /*----------------------
      |  Import QMap
      -----------------------*/
-    gsk_QMapContainer qmap = gsk_load_qmap(GSK_PATH("gsk://map/octagon.map"));
+    gsk_QMapContainer qmap = gsk_qmap_load(GSK_PATH("gsk://map/octagon.map"));
+
+    gsk_qmap_attach_textures(&qmap, &texture_set);
+
+    // gsk_qmap_attach_texture(&qmap, texture, "textures/uv_checker");
 
     gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
     qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * 40000);
@@ -62,11 +87,26 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
 
                 qmap_model->meshes[cnt_poly] =
                   gsk_mesh_assemble((gsk_MeshData *)poly->p_mesh_data);
-                qmap_model->meshes[cnt_poly]->usingImportedMaterial = FALSE;
 
                 mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
                 glm_mat4_copy(localMatrix,
                               qmap_model->meshes[cnt_poly]->localMatrix);
+
+                //----------------------------------------------------------
+                // create material for poly
+                // TODO: Change this (we don't want duplicated materials)
+                gsk_Material *material = gsk_material_create(NULL,
+                                                             test_shader_path,
+                                                             3,
+                                                             poly->p_texture,
+                                                             def_norm,
+                                                             def_spec);
+
+                qmap_model->meshes[cnt_poly]->usingImportedMaterial = TRUE;
+                (gsk_Mesh *)qmap_model->meshes[cnt_poly]->materialImported =
+                  material;
+
+                //----------------------------------------------------------
 
                 cnt_poly++;
             }
@@ -93,12 +133,6 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Resources
      -----------------------*/
-    const char *standard_shader_path =
-      GSK_PATH("gsk://shaders/lit-diffuse.shader");
-    const char *test_shader_path =
-      GSK_PATH("gsk://shaders/unlit-textured.shader");
-    const char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
-
     gsk_Texture *tex_prototype =
       texture_create_d(GSK_PATH("gsk://textures/prototype/128_64.png"));
 

@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "core/graphics/mesh/mesh.h"
+#include "core/graphics/texture/texture_set.h"
 
 #include "util/logger.h"
 #include "util/maths.h"
@@ -382,6 +383,7 @@ __parse_plane_from_line(char *line)
 
     ret.tex_scale[0] = texture_properties[3];
     ret.tex_scale[1] = texture_properties[4];
+    strcpy(ret.tex_name, texture_name);
 
     /*---- Return QMapPlane ------------------------------------------*/
     return ret;
@@ -910,7 +912,7 @@ __qmap_container_add_brush(gsk_QMapContainer *p_container)
 
 /*--------------------------------------------------------------------*/
 gsk_QMapContainer
-gsk_load_qmap(const char *map_path)
+gsk_qmap_load(const char *map_path)
 {
     // initialize QMapContainer
     gsk_QMapContainer ret;
@@ -983,9 +985,6 @@ gsk_load_qmap(const char *map_path)
 
     fclose(stream);
 
-    // Build a polygon from the last brush
-    ret.vertices = array_list_init(sizeof(gsk_QMapPolygonVertex), 20);
-
     for (int i = 0; i < ret.list_entities.list_next; i++)
     {
         gsk_QMapEntity *ent = array_list_get_at_index(&ret.list_entities, i);
@@ -1001,5 +1000,49 @@ gsk_load_qmap(const char *map_path)
     //__qmap_polygons_from_brush(&ret, ret.p_cnt_brush);
 
     return ret;
+}
+/*--------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------*/
+void *
+gsk_qmap_attach_textures(gsk_QMapContainer *p_container, void *p_texture_set)
+{
+    p_container->p_texture_set = p_texture_set;
+
+    // go through each plane and give it the texture address
+    for (int i = 0; i < p_container->list_entities.list_next; i++)
+    {
+        gsk_QMapEntity *ent =
+          array_list_get_at_index(&p_container->list_entities, i);
+
+        for (int j = 0; j < ent->list_brushes.list_next; j++)
+        {
+            gsk_QMapBrush *brush =
+              array_list_get_at_index(&ent->list_brushes, j);
+
+            // loop through planes and add texture
+            for (int k = 0; k < brush->list_planes.list_next; k++)
+            {
+                gsk_QMapPlane *plane =
+                  array_list_get_at_index(&brush->list_planes, k);
+
+                void *p_tex =
+                  gsk_texture_set_get_by_name(p_texture_set, plane->tex_name);
+
+                if (p_tex != NULL)
+                {
+                    LOG_DEBUG("Successful loaded texture %s", plane->tex_name);
+
+                    gsk_QMapPolygon *poly =
+                      array_list_get_at_index(&brush->list_polygons, k);
+
+                    poly->p_texture = p_tex;
+                } else
+                {
+                    LOG_WARN("Failed to find texture %s", plane->tex_name);
+                }
+            }
+        }
+    }
 }
 /*--------------------------------------------------------------------*/
