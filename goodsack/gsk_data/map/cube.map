@@ -1,0 +1,15 @@
+// Game: ZWEIHANDER
+// Format: Standard
+// entity 0
+{
+"classname" "worldspawn"
+// brush 0
+{
+( 0 -32 96 ) ( 0 -32 97 ) ( 0 -33 96 ) textures/prototype/uv_checker 0 0 0 1 1
+( 0 -128 96 ) ( -1 -128 96 ) ( 0 -128 97 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 0 -32 ) ( 127 0 -32 ) ( 128 -1 -32 ) textures/prototype/uv_checker 0 0 0 1 1
+( 0 -32 96 ) ( 0 -33 96 ) ( -1 -32 96 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 0 -32 ) ( 128 0 -31 ) ( 127 0 -32 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 0 -32 ) ( 128 -1 -32 ) ( 128 0 -31 ) textures/prototype/uv_checker 0 0 0 1 1
+}
+}

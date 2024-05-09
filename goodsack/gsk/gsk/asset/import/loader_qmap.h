@@ -16,6 +16,8 @@
 extern "C" {
 #endif // __cplusplus
 
+//#define QMAP_TYPE 0
+
 typedef struct gsk_QMapPolygonVertex
 {
     vec3 position;

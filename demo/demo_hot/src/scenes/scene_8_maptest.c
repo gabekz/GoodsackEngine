@@ -83,7 +83,8 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Import QMap
      -----------------------*/
-    gsk_QMapContainer qmap = gsk_qmap_load(GSK_PATH("gsk://map/cube.map"));
+    gsk_QMapContainer qmap =
+      gsk_qmap_load(GSK_PATH("gsk://map/cube_valve.map"));
 
     gsk_qmap_attach_textures(&qmap, &texture_set);
 

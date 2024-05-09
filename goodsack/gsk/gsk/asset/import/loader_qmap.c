@@ -126,40 +126,6 @@ __calculate_uv_coords(vec3 vertex,
     output[1] =
       (glm_vec3_dot(vertex, v_axis) / 1024.0f) / (scale_y + (t / 1024.0f));
 
-#if 0
-    output[0] =
-      (glm_vec3_dot(adjusted_vertex, u_axis)) / (1024 * scale_x + (s));
-
-    output[1] =
-      (glm_vec3_dot(adjusted_vertex, v_axis)) / (1024 * scale_y + (t));
-
-    // output[0] = output[0] / (1024);
-    // output[1] = output[1] / (1024);
-
-    output[0] = output[0] + ((128.0f / 1024.0f) / 2.0f);
-    output[1] = output[1] + ((128.0f / 1024.0f) / 2.0f);
-#endif
-
-#if 0
-    output[0] =
-      (glm_vec3_dot(adjusted_vertex, u_axis) / (IMPORT_SCALE * 1024)) /
-        scale_x +
-      s;
-
-    output[1] =
-      (glm_vec3_dot(adjusted_vertex, v_axis) / (IMPORT_SCALE * 1024)) /
-        scale_y +
-      t;
-#endif
-
-#if 0
-
-    f32 scale  = (IMPORT_SCALE * 1) / 1024;
-    f32 scale2 = (IMPORT_SCALE * 0.25f) / 1024;
-    output[0]  = output[0] * scale;
-    output[1]  = output[1] * scale2;
-#endif
-
     // output[0] = (output[0] + 1.0f) / 2.0f;
     // output[1] = (output[1] + 1.0f) / 2.0f;
 }
@@ -241,8 +207,16 @@ __parse_plane_from_line(char *line)
     f32 determinant;
 
     char *texture_name;
-    f32 texture_properties[5] = {0, 0, 0, 0, 0};
+    f32 texture_properties[5]    = {0, 0, 0, 0, 0};
+    int total_texture_properties = 0;
     vec3 u_axis = {0, 0, 0}, v_axis = {0, 0, 0};
+    u8 is_uv_axes_found = FALSE;
+
+    /*---- determine map type from line -------------------------------------*/
+    for (int i = 0; i < strlen(line); i++)
+    {
+        if (line[i] == '[') { LOG_INFO("MAP IS VALVE"); }
+    }
 
     /*==== Read vert coordinates =====================================*/
 
@@ -306,12 +280,13 @@ __parse_plane_from_line(char *line)
     /*==== Flip y-z to match left-handed coordinate system ===========*/
     for (int i = 0; i < 3; i++)
     {
-        f32 saved    = points[i][2];
-        points[i][2] = points[i][1];
-        points[i][1] = saved;
-        points[i][2] = points[i][2];
+        f32 saved = points[i][2];
+        // points[i][2] = points[i][1];
+        // points[i][1] = saved;
 
-        points[i][1] = -points[i][1];
+        // points[i][0] = -points[i][0];
+        // points[i][1] = -points[i][1];
+        // points[i][2] = -points[i][2];
     }
 
     /*==== Plane normal and determinant ==============================*/
@@ -350,23 +325,80 @@ __parse_plane_from_line(char *line)
     char *split = strtok(str, delim); // line, split by spaces
 
     int i = -1; // -1 start for the texture name. Following this are the texture
-                // coordinate properties.
+    // coordinate properties.
+
+    u8 _collect_uv        = FALSE; // collect [n, n, n, _]
+    u8 _collect_uv_offset = FALSE; // collect [_, _, _, n]
+    int uv_idx            = 0;
+    int uv_idx_offset     = 0;
+    // f32 uvax[6]       = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+
+    vec3 uvs[2]    = {{0, 0, 0}, {0, 0, 0}};
+    f32 offsets[2] = {0.0f, 0.0f};
+
+    int uv_ax_idx = -1; /* [n][?] */
+    int uv_ax_num = -1; /* [?][n] */
 
     while (split != NULL)
     {
-        if (i == -1)
+        // determine if we are reading the uv-axis
+
+        if (i == -1) /* begin texture name */
         {
             texture_name = strdup(split);
-        } else
+
+        } else if (split[0] == '[') /* begin check UV's */
         {
-            texture_properties[i] = atof(split);
+            is_uv_axes_found   = TRUE;
+            _collect_uv        = TRUE;
+            _collect_uv_offset = FALSE;
+
+            uv_ax_idx++;
+            uv_ax_num = 0;
+
+        } else if (split[0] == ']')
+        {
+            /* stop collecting uv from bracket pack */
+            _collect_uv = FALSE;
+
+            i = 1; // TODO: Rename variable
+            // 2 is the index at which the offsets are not included
+
+        } else /* begin grabbing data */
+        {
+            if (_collect_uv == TRUE && _collect_uv_offset == FALSE)
+            {
+                uvs[uv_ax_idx][uv_ax_num] = atof(split);
+                uv_ax_num++;
+
+                if (uv_ax_num >= 3)
+                {
+                    // uv_ax_idx++;
+                    uv_ax_num          = 0;
+                    _collect_uv_offset = TRUE;
+                }
+
+            } else if (_collect_uv_offset == TRUE)
+            {
+                // grab offset
+                texture_properties[uv_ax_idx] = atof(split);
+                _collect_uv_offset            = FALSE;
+
+            } else // don't collect UV
+            {
+                texture_properties[i] = atof(split);
+                total_texture_properties++;
+            }
         }
+
+        // move to next delim
         split = strtok(NULL, delim);
         i++;
     }
 
     /*==== Calculate uv axes =========================================*/
     /*   TODO: Find out if uv axes come from .map file format         */
+    if (is_uv_axes_found == FALSE)
     {
         vec3 axisref = {0.0f, 0.0f, 1.0f}; // z-axis reference
         f32 check    = glm_vec3_dot(normal, axisref);
@@ -379,6 +411,10 @@ __parse_plane_from_line(char *line)
 
         glm_vec3_crossn(normal, axisref, u_axis);
         glm_vec3_crossn(normal, u_axis, v_axis);
+    } else
+    {
+        glm_vec3_copy(uvs[0], u_axis);
+        glm_vec3_copy(uvs[1], v_axis);
     }
 
 #if 1 // LOG_PLANE
