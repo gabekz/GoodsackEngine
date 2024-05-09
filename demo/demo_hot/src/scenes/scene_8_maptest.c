@@ -25,7 +25,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     def_norm = texture_create_n(GSK_PATH("gsk://textures/defaults/normal.png"));
     def_ao   = texture_create_n(GSK_PATH("gsk://textures/defaults/white.png"));
     def_missing =
-      texture_create_n(GSK_PATH("gsk://textures/defaults/missing.jpg"));
+      texture_create_d(GSK_PATH("gsk://textures/defaults/missing.jpg"));
 
 #if 0
     def_skybox = gsk_skybox_hdr_create(texture_create_hdr(
@@ -45,10 +45,10 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      |  Create some textures
      -----------------------*/
     gsk_Texture *tex_uv_check =
-      texture_create_n(GSK_PATH("gsk://textures/prototype/uv_checker.png"));
+      texture_create_d(GSK_PATH("gsk://textures/prototype/uv_checker.png"));
 
     gsk_Texture *tex_prototype =
-      texture_create_n(GSK_PATH("gsk://textures/prototype/128_64.png"));
+      texture_create_d(GSK_PATH("gsk://textures/prototype/128_64.png"));
 
     /*----------------------
      |  Create a texture set (from the textures above)
@@ -63,7 +63,8 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
 
     gsk_texture_set_add(&texture_set, tex_prototype, "__TB_empty");
 
-    gsk_texture_set_add(&texture_set, tex_uv_check, "textures/uv_checker");
+    gsk_texture_set_add(
+      &texture_set, tex_uv_check, "textures/prototype/uv_checker");
 
     gsk_texture_set_add(
       &texture_set, tex_prototype, "textures/prototype/128_64");
@@ -82,7 +83,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Import QMap
      -----------------------*/
-    gsk_QMapContainer qmap = gsk_qmap_load(GSK_PATH("gsk://map/octagon2.map"));
+    gsk_QMapContainer qmap = gsk_qmap_load(GSK_PATH("gsk://map/cube.map"));
 
     gsk_qmap_attach_textures(&qmap, &texture_set);
 
@@ -196,7 +197,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(camera,
                           C_CAMERAMOVEMENT,
                           (void *)(&(struct ComponentCameraMovement) {
-                            .speed = 5.0f,
+                            .speed = 200.0f,
                           }));
     _gsk_ecs_add_internal(camera,
                           C_TRANSFORM,

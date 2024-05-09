@@ -31,10 +31,11 @@
 
 // Options
 #define POLY_PER_FACE TRUE // generate a polygon for each face
-#define IMPORT_SCALE  0.02f
+//#define IMPORT_SCALE  0.02f
+#define IMPORT_SCALE 1.0f
 
 // Stuff that breaks
-#define _NORMALIZE_UV  TRUE
+#define _NORMALIZE_UV  FALSE
 #define _USE_CENTER_UV FALSE
 
 /**********************************************************************/
@@ -115,17 +116,52 @@ __calculate_uv_coords(vec3 vertex,
                       f32 scale_y,
                       f32 *output)
 {
-    vec3 adjusted_vertex = {0, 0, 0};
-    glm_vec3_sub(p0, vertex, adjusted_vertex);
+    // vec3 adjusted_vertex = {0, 0, 0};
+    // glm_vec3_sub(p0, vertex, adjusted_vertex);
 
     // TODO: ensure uv-axes are normalized
 
-    output[0] = glm_vec3_dot(adjusted_vertex, u_axis) / scale_x + s; // u
-    output[1] = glm_vec3_dot(adjusted_vertex, v_axis) / scale_y + t; // v
-    // glm_vec2_normalize(output);
+    output[0] =
+      (glm_vec3_dot(vertex, u_axis) / 1024.0f) / (scale_x + (s / 1024.0f));
+    output[1] =
+      (glm_vec3_dot(vertex, v_axis) / 1024.0f) / (scale_y + (t / 1024.0f));
 
-    output[0] = (output[0] + 1.0f) / 2.0f;
-    output[1] = (output[1] + 1.0f) / 2.0f;
+#if 0
+    output[0] =
+      (glm_vec3_dot(adjusted_vertex, u_axis)) / (1024 * scale_x + (s));
+
+    output[1] =
+      (glm_vec3_dot(adjusted_vertex, v_axis)) / (1024 * scale_y + (t));
+
+    // output[0] = output[0] / (1024);
+    // output[1] = output[1] / (1024);
+
+    output[0] = output[0] + ((128.0f / 1024.0f) / 2.0f);
+    output[1] = output[1] + ((128.0f / 1024.0f) / 2.0f);
+#endif
+
+#if 0
+    output[0] =
+      (glm_vec3_dot(adjusted_vertex, u_axis) / (IMPORT_SCALE * 1024)) /
+        scale_x +
+      s;
+
+    output[1] =
+      (glm_vec3_dot(adjusted_vertex, v_axis) / (IMPORT_SCALE * 1024)) /
+        scale_y +
+      t;
+#endif
+
+#if 0
+
+    f32 scale  = (IMPORT_SCALE * 1) / 1024;
+    f32 scale2 = (IMPORT_SCALE * 0.25f) / 1024;
+    output[0]  = output[0] * scale;
+    output[1]  = output[1] * scale2;
+#endif
+
+    // output[0] = (output[0] + 1.0f) / 2.0f;
+    // output[1] = (output[1] + 1.0f) / 2.0f;
 }
 /*--------------------------------------------------------------------*/
 
@@ -512,6 +548,8 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                                       p_planes->tex_scale[1],
                                       vert.texture);
 
+                glm_vec3_copy(p_planes[i].normal, vert.normal);
+
                 // check for duplicates
                 for (int n = 0; n < poly->list_vertices.list_next; n++)
                 {
@@ -749,8 +787,9 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
     // loop through all polys
     for (int i = 0; i < num_poly; i++)
     {
-        s32 vL  = 0;
-        s32 vtL = 0;
+        s32 vL  = 0; /* vertex positions count */
+        s32 vtL = 0; /* vertex textures count  */
+        s32 vnL = 0; /* vertex normals count   */
 
         gsk_QMapPolygon *poly =
           array_list_get_at_index(&p_brush->list_polygons, i);
@@ -789,6 +828,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             // increment vertex buffer lengths
             vL += 3;
             vtL += 2;
+            vnL += 3;
 
             // poly fixation
 #if 0
@@ -809,7 +849,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         }
 
         // Buffers for storing input
-        float *v = malloc((vL + vtL) * sizeof(float) * 3);
+        float *v = malloc((vL + vtL + vnL) * sizeof(float) * 3);
         v        = poly->list_vertices.data.buffer;
 
         gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
@@ -818,13 +858,13 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         meshdata->buffers.out = v;
         meshdata->buffers.v   = v;
 
-        meshdata->buffers.outI = (vL + vtL) * sizeof(float);
+        meshdata->buffers.outI = (vL + vtL + vnL) * sizeof(float);
 
         meshdata->vertexCount = vL / 3;
 
         meshdata->buffers.vL  = vL;
         meshdata->buffers.vtL = vtL;
-        meshdata->buffers.vnL = 0;
+        meshdata->buffers.vnL = vnL;
 
         meshdata->buffers.bufferIndices_size = 0;
         meshdata->isSkinnedMesh              = 0;

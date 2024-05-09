@@ -5,15 +5,15 @@
 "classname" "worldspawn"
 // brush 0
 {
-( -32 -16 16 ) ( -32 16 0 ) ( -32 16 16 ) terrain/terrain 0 0 0 1 1
-( -16 -32 16 ) ( -32 -16 0 ) ( -32 -16 16 ) terrain/terrain 0 0 0 1 1
-( -16 32 16 ) ( -32 16 0 ) ( -16 32 0 ) terrain/terrain 0 0 0 1 1
-( 16 -32 16 ) ( -16 -32 0 ) ( -16 -32 16 ) terrain/terrain 0 0 0 1 1
-( 32 16 0 ) ( 16 -32 0 ) ( 32 -16 0 ) terrain/terrain 0 0 0 1 1
-( 32 16 16 ) ( -16 32 16 ) ( 16 32 16 ) textures/prototype/128_64 0 0 0 1 1
-( 16 32 16 ) ( -16 32 0 ) ( 16 32 0 ) textures/defaults/black 0 0 0 1 1
-( 32 -16 16 ) ( 16 -32 0 ) ( 16 -32 16 ) textures/defaults/normal 0 0 0 1 1
-( 32 16 16 ) ( 16 32 0 ) ( 32 16 0 ) terrain/terrain 0 0 0 1 1
-( 32 16 16 ) ( 32 -16 0 ) ( 32 -16 16 ) textures/defaults/missing 0 0 0 1 1
+( -32 -16 16 ) ( -32 16 0 ) ( -32 16 16 ) textures/prototype/uv_checker 0 0 0 1 1
+( -16 -32 16 ) ( -32 -16 0 ) ( -32 -16 16 ) textures/prototype/uv_checker 0 0 0 1 1
+( -16 32 16 ) ( -32 16 0 ) ( -16 32 0 ) textures/prototype/uv_checker 0 0 0 1 1
+( 16 -32 16 ) ( -16 -32 0 ) ( -16 -32 16 ) textures/prototype/uv_checker 0 0 0 1 1
+( 32 16 0 ) ( 16 -32 0 ) ( 32 -16 0 ) textures/prototype/uv_checker 0 0 0 1 1
+( 32 16 16 ) ( -16 32 16 ) ( 16 32 16 ) textures/prototype/uv_checker 0 0 0 1 1
+( 16 32 16 ) ( -16 32 0 ) ( 16 32 0 ) textures/prototype/uv_checker 0 0 0 1 1
+( 32 -16 16 ) ( 16 -32 0 ) ( 16 -32 16 ) textures/prototype/uv_checker 0 0 0 1 1
+( 32 16 16 ) ( 16 32 0 ) ( 32 16 0 ) textures/prototype/uv_checker 0 0 0 1 1
+( 32 16 16 ) ( 32 -16 0 ) ( 32 -16 16 ) textures/prototype/uv_checker 0 0 0 1 1
 }
 }
