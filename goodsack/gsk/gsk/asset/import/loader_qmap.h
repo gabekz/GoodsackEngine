@@ -22,7 +22,7 @@ typedef struct gsk_QMapPolygonVertex
 {
     vec3 position;
     vec2 texture;
-    vec3 normal;
+    // vec3 normal;
 } gsk_QMapPolygonVertex;
 
 typedef struct gsk_QMapPolygon

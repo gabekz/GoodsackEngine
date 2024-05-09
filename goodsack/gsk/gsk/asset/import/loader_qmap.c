@@ -584,7 +584,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                                       p_planes->tex_scale[1],
                                       vert.texture);
 
-                glm_vec3_copy(p_planes[i].normal, vert.normal);
+                // glm_vec3_copy(p_planes[i].normal, vert.normal);
 
                 // check for duplicates
                 for (int n = 0; n < poly->list_vertices.list_next; n++)
@@ -864,7 +864,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             // increment vertex buffer lengths
             vL += 3;
             vtL += 2;
-            vnL += 3;
+            // vnL += 3;
 
             // poly fixation
 #if 0
@@ -885,7 +885,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         }
 
         // Buffers for storing input
-        float *v = malloc((vL + vtL + vnL) * sizeof(float) * 3);
+        float *v = malloc((vL + vtL) * sizeof(float) * 3);
         v        = poly->list_vertices.data.buffer;
 
         gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
@@ -894,13 +894,13 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         meshdata->buffers.out = v;
         meshdata->buffers.v   = v;
 
-        meshdata->buffers.outI = (vL + vtL + vnL) * sizeof(float);
+        meshdata->buffers.outI = (vL + vtL) * sizeof(float);
 
         meshdata->vertexCount = vL / 3;
 
         meshdata->buffers.vL  = vL;
         meshdata->buffers.vtL = vtL;
-        meshdata->buffers.vnL = vnL;
+        meshdata->buffers.vnL = 0;
 
         meshdata->buffers.bufferIndices_size = 0;
         meshdata->isSkinnedMesh              = 0;
