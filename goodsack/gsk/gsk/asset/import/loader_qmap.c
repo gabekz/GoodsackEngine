@@ -126,6 +126,9 @@ __calculate_uv_coords(vec3 vertex,
     output[1] =
       (glm_vec3_dot(vertex, v_axis) / 1024.0f) / (scale_y + (t / 1024.0f));
 
+    // output[0] = -output[0];
+    // output[1] = -output[1];
+
     // output[0] = (output[0] + 1.0f) / 2.0f;
     // output[1] = (output[1] + 1.0f) / 2.0f;
 }
@@ -280,12 +283,12 @@ __parse_plane_from_line(char *line)
     /*==== Flip y-z to match left-handed coordinate system ===========*/
     for (int i = 0; i < 3; i++)
     {
-        f32 saved = points[i][2];
-        // points[i][2] = points[i][1];
-        // points[i][1] = saved;
+        f32 saved    = points[i][2];
+        points[i][2] = points[i][1];
+        points[i][1] = saved;
 
         // points[i][0] = -points[i][0];
-        // points[i][1] = -points[i][1];
+        points[i][1] = -points[i][1];
         // points[i][2] = -points[i][2];
     }
 
@@ -413,6 +416,23 @@ __parse_plane_from_line(char *line)
         glm_vec3_crossn(normal, u_axis, v_axis);
     } else
     {
+
+#if 1
+        f32 saved0 = uvs[0][2];
+        uvs[0][2]  = uvs[0][1];
+        uvs[0][1]  = saved0;
+
+        //// uvs[0][0] = -uvs[0][0];
+        uvs[0][1] = -uvs[0][1];
+
+        f32 saved1 = uvs[1][2];
+        uvs[1][2]  = uvs[1][1];
+        uvs[1][1]  = saved1;
+
+        //// uvs[1][0] = -uvs[1][0];
+        uvs[1][1] = -uvs[1][1];
+#endif
+
         glm_vec3_copy(uvs[0], u_axis);
         glm_vec3_copy(uvs[1], v_axis);
     }
@@ -578,10 +598,10 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                                       p0,
                                       p_planes[i].uv_axes[0],
                                       p_planes[i].uv_axes[1],
-                                      p_planes->tex_offset[0],
-                                      p_planes->tex_offset[1],
-                                      p_planes->tex_scale[0],
-                                      p_planes->tex_scale[1],
+                                      p_planes[i].tex_offset[0],
+                                      p_planes[i].tex_offset[1],
+                                      p_planes[i].tex_scale[0],
+                                      p_planes[i].tex_scale[1],
                                       vert.texture);
 
                 // glm_vec3_copy(p_planes[i].normal, vert.normal);
@@ -638,7 +658,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         // if (i != 2) continue;
 
         // get polygon center
-        vec3 center = {0, 0.1f, 0};
+        vec3 center = {1.0f, 1.0f, 1.0f};
         // NOTE: Perfect squares won't work unless we offset the center by a
         // small amount
 
@@ -658,7 +678,8 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         }
 
         // glm_vec3_divs(center, num_vert, center);
-        glm_vec3_divs(center, num_vert + 1, center);
+        // glm_vec3_divs(center, num_vert + 1, center);
+        glm_vec3_divs(center, num_vert, center);
         glm_vec3_copy(center, poly->center);
 
         // start sorting
