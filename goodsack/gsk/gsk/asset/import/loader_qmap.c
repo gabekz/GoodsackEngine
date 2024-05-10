@@ -121,7 +121,7 @@ __calculate_uv_coords(vec3 vertex,
 
     // TODO: ensure uv-axes are normalized
 
-    const f32 tex_dim = 1024.0f;
+    const f32 tex_dim = 64.0f;
 
     output[0] =
       ((glm_vec3_dot(vertex, u_axis) / tex_dim) / scale_x) + (s / tex_dim);
@@ -283,7 +283,7 @@ __parse_plane_from_line(char *line)
     }
 
     /*==== Flip y-z to match left-handed coordinate system ===========*/
-#if 0
+#if 1
     for (int i = 0; i < 3; i++)
     {
         f32 saved    = points[i][2];
@@ -428,19 +428,22 @@ __parse_plane_from_line(char *line)
     } else
     {
 
-#if 0
+#if 1
         f32 saved0 = uvs[0][2];
         uvs[0][2]  = uvs[0][1];
         uvs[0][1]  = saved0;
 
-        uvs[0][0] = -uvs[0][0];
-        uvs[0][2] = -uvs[0][2];
+        uvs[0][1] = -uvs[0][1];
 
         f32 saved1 = uvs[1][2];
         uvs[1][2]  = uvs[1][1];
         uvs[1][1]  = saved1;
 
         uvs[1][1] = -uvs[1][1];
+
+        // TEST
+        // uvs[0][0] = -uvs[0][0];
+        // uvs[1][0] = -uvs[1][0];
 
         // vs[1][2] = -uvs[1][0];
 #endif
