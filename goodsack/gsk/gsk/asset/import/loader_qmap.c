@@ -121,10 +121,12 @@ __calculate_uv_coords(vec3 vertex,
 
     // TODO: ensure uv-axes are normalized
 
+    const f32 tex_dim = 1024.0f;
+
     output[0] =
-      (glm_vec3_dot(vertex, u_axis) / 1024.0f) / (scale_x + (s / 1024.0f));
+      ((glm_vec3_dot(vertex, u_axis) / tex_dim) / scale_x) + (s / tex_dim);
     output[1] =
-      (glm_vec3_dot(vertex, v_axis) / 1024.0f) / (scale_y + (t / 1024.0f));
+      ((glm_vec3_dot(vertex, v_axis) / tex_dim) / scale_y) + (t / tex_dim);
 
     // output[0] = -output[0];
     // output[1] = -output[1];
@@ -281,6 +283,7 @@ __parse_plane_from_line(char *line)
     }
 
     /*==== Flip y-z to match left-handed coordinate system ===========*/
+#if 0
     for (int i = 0; i < 3; i++)
     {
         f32 saved    = points[i][2];
@@ -290,7 +293,15 @@ __parse_plane_from_line(char *line)
         // points[i][0] = -points[i][0];
         points[i][1] = -points[i][1];
         // points[i][2] = -points[i][2];
+
+#if 0
+        saved        = points[i][2];
+        points[i][2] = points[i][0];
+        points[i][0] = saved;
+        points[i][0] = -points[i][0];
+#endif
     }
+#endif // flipping
 
     /*==== Plane normal and determinant ==============================*/
     {
@@ -417,20 +428,21 @@ __parse_plane_from_line(char *line)
     } else
     {
 
-#if 1
+#if 0
         f32 saved0 = uvs[0][2];
         uvs[0][2]  = uvs[0][1];
         uvs[0][1]  = saved0;
 
-        //// uvs[0][0] = -uvs[0][0];
-        uvs[0][1] = -uvs[0][1];
+        uvs[0][0] = -uvs[0][0];
+        uvs[0][2] = -uvs[0][2];
 
         f32 saved1 = uvs[1][2];
         uvs[1][2]  = uvs[1][1];
         uvs[1][1]  = saved1;
 
-        //// uvs[1][0] = -uvs[1][0];
         uvs[1][1] = -uvs[1][1];
+
+        // vs[1][2] = -uvs[1][0];
 #endif
 
         glm_vec3_copy(uvs[0], u_axis);

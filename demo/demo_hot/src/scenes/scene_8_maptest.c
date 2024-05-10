@@ -50,6 +50,9 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     gsk_Texture *tex_prototype =
       texture_create_d(GSK_PATH("gsk://textures/prototype/128_64.png"));
 
+    gsk_Texture *tex_uv_test_top =
+      texture_create_d(GSK_PATH("gsk://textures/prototype/uv_test_top.png"));
+
     /*----------------------
      |  Create a texture set (from the textures above)
      -----------------------*/
@@ -65,6 +68,9 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
 
     gsk_texture_set_add(
       &texture_set, tex_uv_check, "textures/prototype/uv_checker");
+
+    gsk_texture_set_add(
+      &texture_set, tex_uv_test_top, "textures/prototype/uv_test_top");
 
     gsk_texture_set_add(
       &texture_set, tex_prototype, "textures/prototype/128_64");
@@ -203,7 +209,8 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(camera,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0, 0, 0},
+                            .position    = {-265.89f, 40.55f, -117.927f},
+                            .orientation = {32.584f, -23.304f, 40.963f},
                           }));
 
     /*
