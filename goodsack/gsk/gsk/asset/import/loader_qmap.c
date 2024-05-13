@@ -31,8 +31,8 @@
 
 // Options
 #define POLY_PER_FACE TRUE // generate a polygon for each face
-//#define IMPORT_SCALE  0.02f
-#define IMPORT_SCALE 1.0f
+#define IMPORT_SCALE  0.02f
+//#define IMPORT_SCALE 1.0f
 
 // Stuff that breaks
 #define _NORMALIZE_UV  FALSE
@@ -124,24 +124,13 @@ __calculate_uv_coords(vec3 vertex,
                       f32 tex_height,
                       f32 *output)
 {
-    // vec3 adjusted_vertex = {0, 0, 0};
-    // glm_vec3_sub(p0, vertex, adjusted_vertex);
-
     // TODO: ensure uv-axes are normalized
-
-    // const f32 tex_dim = 64.0f;
 
     output[0] =
       ((glm_vec3_dot(vertex, u_axis) / tex_width) / scale_x) + (s / tex_width);
 
     output[1] = ((glm_vec3_dot(vertex, v_axis) / tex_height) / scale_y) +
                 (t / tex_height);
-
-    // output[0] = -output[0];
-    // output[1] = -output[1];
-
-    // output[0] = (output[0] + 1.0f) / 2.0f;
-    // output[1] = (output[1] + 1.0f) / 2.0f;
 }
 /*--------------------------------------------------------------------*/
 
@@ -423,6 +412,10 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
         glm_vec3_copy(uvs[0], u_axis);
         glm_vec3_copy(uvs[1], v_axis);
     }
+
+    /*---- Scale uv axes ---------------------------------------------*/
+    glm_vec3_divs(u_axis, IMPORT_SCALE, u_axis);
+    glm_vec3_divs(v_axis, IMPORT_SCALE, v_axis);
 
     /*---- Fix UV facing ---------------------------------------------*/
 #if _FIX_UV_FACING
