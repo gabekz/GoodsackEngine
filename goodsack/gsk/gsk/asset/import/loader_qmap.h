@@ -6,7 +6,9 @@
 #ifndef __LOADER_QMAP_H__
 #define __LOADER_QMAP_H__
 
+#include "core/graphics/material/material.h"
 #include "core/graphics/mesh/mesh.h"
+#include "core/graphics/mesh/model.h"
 #include "core/graphics/texture/texture_set.h"
 
 #include "util/array_list.h"
@@ -75,17 +77,23 @@ typedef struct gsk_QMapContainer
     s32 total_brushes;
     s32 total_planes;
 
-    gsk_MeshData *mesh_data;
+    u8 is_map_compiled, is_model_loaded;
 
-    void *p_texture_set;
+    gsk_Model *p_model;
+    gsk_TextureSet *p_texture_set;
 
 } gsk_QMapContainer;
 
 gsk_QMapContainer
 gsk_qmap_load(const char *map_path, gsk_TextureSet *p_texture_set);
 
+gsk_Model *
+gsk_qmap_load_model(gsk_QMapContainer *p_container);
+
+#if 0
 void *
 gsk_qmap_attach_textures(gsk_QMapContainer *p_container, void *p_texture_set);
+#endif
 
 #ifdef __cplusplus
 }

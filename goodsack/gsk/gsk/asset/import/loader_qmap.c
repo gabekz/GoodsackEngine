@@ -9,9 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/graphics/material/material.h"
 #include "core/graphics/mesh/mesh.h"
+#include "core/graphics/mesh/model.h"
+#include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture_set.h"
 
+#include "util/filesystem.h"
 #include "util/logger.h"
 #include "util/maths.h"
 #include "util/sysdefs.h"
@@ -1039,6 +1043,12 @@ gsk_qmap_load(const char *map_path, gsk_TextureSet *p_textureset)
     ret.total_planes   = 0;
     ret.list_entities  = array_list_init(sizeof(gsk_QMapEntity), 12);
 
+    ret.is_map_compiled = FALSE;
+    ret.is_model_loaded = FALSE;
+
+    // attach textureset
+    ret.p_texture_set = p_textureset;
+
     FILE *stream = NULL;
     char line[256]; // 256 = MAX line_length
 
@@ -1102,8 +1112,11 @@ gsk_qmap_load(const char *map_path, gsk_TextureSet *p_textureset)
         }
     }
 
+    // close stream - tick compiled check
     fclose(stream);
+    ret.is_map_compiled = TRUE;
 
+    // build polygons for each brush
     for (int i = 0; i < ret.list_entities.list_next; i++)
     {
         gsk_QMapEntity *ent = array_list_get_at_index(&ret.list_entities, i);
@@ -1116,19 +1129,51 @@ gsk_qmap_load(const char *map_path, gsk_TextureSet *p_textureset)
         }
     }
 
-    //__qmap_polygons_from_brush(&ret, ret.p_cnt_brush);
-
     return ret;
 }
 /*--------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------*/
-void *
-gsk_qmap_attach_textures(gsk_QMapContainer *p_container, void *p_texture_set)
+gsk_Model *
+gsk_qmap_load_model(gsk_QMapContainer *p_container)
 {
-    p_container->p_texture_set = p_texture_set;
+    if (p_container->is_map_compiled == FALSE)
+    {
+        LOG_CRITICAL("Cannot load Model-data for an uncompiled map.");
+        return NULL;
+    }
 
-    // go through each plane and give it the texture address
+    if (p_container->is_model_loaded == TRUE)
+    {
+        LOG_ERROR("Attempting to load Model-data for a map while it is already "
+                  "loaded.");
+        return NULL;
+    }
+
+    /* load shader */
+
+    gsk_ShaderProgram *qmap_shader = gsk_shader_program_create(
+      GSK_PATH("gsk://shaders/unlit-textured.shader"));
+
+    /* default material */
+    gsk_Material *p_material_err = gsk_material_create(
+      qmap_shader,
+      NULL,
+      3,
+      gsk_texture_set_get_by_name(p_container->p_texture_set, "MISSING"),
+      gsk_texture_set_get_by_name(p_container->p_texture_set, "NORM"),
+      gsk_texture_set_get_by_name(p_container->p_texture_set, "SPEC"));
+
+    /* data for qmap */
+
+    gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
+    qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * 40000);
+    qmap_model->meshesCount = 0;
+    qmap_model->modelPath   = "NONE";
+
+    /* loop */
+
+    int cnt_poly = 0;
     for (int i = 0; i < p_container->list_entities.list_next; i++)
     {
         gsk_QMapEntity *ent =
@@ -1139,28 +1184,59 @@ gsk_qmap_attach_textures(gsk_QMapContainer *p_container, void *p_texture_set)
             gsk_QMapBrush *brush =
               array_list_get_at_index(&ent->list_brushes, j);
 
-            // loop through planes and add texture
             for (int k = 0; k < brush->list_planes.list_next; k++)
             {
-                gsk_QMapPlane *plane =
-                  array_list_get_at_index(&brush->list_planes, k);
-
-                void *p_tex =
-                  gsk_texture_set_get_by_name(p_texture_set, plane->tex_name);
+                qmap_model->meshesCount++; /* increment mesh count */
 
                 gsk_QMapPolygon *poly =
                   array_list_get_at_index(&brush->list_polygons, k);
-                poly->p_texture = p_tex;
+                gsk_QMapPlane *plane =
+                  array_list_get_at_index(&brush->list_planes, k);
 
-                if (p_tex != NULL)
+                qmap_model->meshes[cnt_poly] =
+                  gsk_mesh_assemble((gsk_MeshData *)poly->p_mesh_data);
+
+                mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+                glm_mat4_copy(localMatrix,
+                              qmap_model->meshes[cnt_poly]->localMatrix);
+
+                qmap_model->meshes[cnt_poly]->usingImportedMaterial = TRUE;
+                qmap_model->meshes[cnt_poly]->materialImported = p_material_err;
+
+                poly->p_texture = gsk_texture_set_get_by_name(
+                  p_container->p_texture_set, plane->tex_name);
+
+                //----------------------------------------------------------
+                // create material for poly
+                // TODO: Change this (we don't want duplicated materials)
+                if (poly->p_texture != NULL)
                 {
                     LOG_DEBUG("Successful loaded texture %s", plane->tex_name);
-                    continue;
+
+                    gsk_Material *material = gsk_material_create(
+                      qmap_shader,
+                      NULL,
+                      3,
+                      poly->p_texture,
+                      gsk_texture_set_get_by_name(p_container->p_texture_set,
+                                                  "NORM"),
+                      gsk_texture_set_get_by_name(p_container->p_texture_set,
+                                                  "SPEC"));
+
+                    qmap_model->meshes[cnt_poly]->materialImported = material;
+                } else
+                {
+                    LOG_WARN("Failed to find texture %s", plane->tex_name);
                 }
 
-                LOG_WARN("Failed to find texture %s", plane->tex_name);
+                //----------------------------------------------------------
+
+                cnt_poly++;
             }
         }
     }
+
+    p_container->is_model_loaded = TRUE;
+    return qmap_model;
 }
 /*--------------------------------------------------------------------*/

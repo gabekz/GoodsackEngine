@@ -58,6 +58,8 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      -----------------------*/
     gsk_TextureSet texture_set = gsk_texture_set_init();
 
+    gsk_texture_set_add(&texture_set, def_missing, "MISSING");
+
     gsk_texture_set_add(&texture_set, def_spec, "SPEC");
     gsk_texture_set_add(&texture_set, def_spec, "textures/defaults/black");
 
@@ -83,7 +85,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     /*----------------------
      |  Default MISSING Material
      -----------------------*/
-    gsk_Material *material_missing = gsk_material_create(
+    gsk_Material *mat_missing = gsk_material_create(
       NULL, test_shader_path, 3, def_missing, def_norm, def_spec);
 
     /*----------------------
@@ -92,89 +94,17 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     gsk_QMapContainer qmap =
       gsk_qmap_load(GSK_PATH("gsk://map/cube_valve.map"), &texture_set);
 
-    gsk_qmap_attach_textures(&qmap, &texture_set);
-
-    // gsk_qmap_attach_texture(&qmap, texture, "textures/uv_checker");
-
-    gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
-    qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * 40000);
-    qmap_model->meshesCount = 0;
-    qmap_model->modelPath   = "none";
-
-    int cnt_poly = 0;
-    for (int i = 0; i < qmap.list_entities.list_next; i++)
-    {
-        gsk_QMapEntity *ent = array_list_get_at_index(&qmap.list_entities, i);
-
-        for (int j = 0; j < ent->list_brushes.list_next; j++)
-        {
-            gsk_QMapBrush *brush =
-              array_list_get_at_index(&ent->list_brushes, j);
-
-            for (int k = 0; k < brush->list_planes.list_next; k++)
-            {
-                gsk_QMapPolygon *poly =
-                  array_list_get_at_index(&brush->list_polygons, k);
-
-                qmap_model->meshesCount++;
-
-                qmap_model->meshes[cnt_poly] =
-                  gsk_mesh_assemble((gsk_MeshData *)poly->p_mesh_data);
-
-                mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
-                glm_mat4_copy(localMatrix,
-                              qmap_model->meshes[cnt_poly]->localMatrix);
-
-                qmap_model->meshes[cnt_poly]->usingImportedMaterial = TRUE;
-                (gsk_Mesh *)qmap_model->meshes[cnt_poly]->materialImported =
-                  material_missing;
-                //----------------------------------------------------------
-                // create material for poly
-                // TODO: Change this (we don't want duplicated materials)
-                if (poly->p_texture != NULL)
-                {
-
-                    gsk_Material *material =
-                      gsk_material_create(NULL,
-                                          test_shader_path,
-                                          3,
-                                          poly->p_texture,
-                                          def_norm,
-                                          def_spec);
-
-                    (gsk_Mesh *)qmap_model->meshes[cnt_poly]->materialImported =
-                      material;
-                }
-
-                //----------------------------------------------------------
-
-                cnt_poly++;
-            }
-        }
-    }
-
-#if 0
-    qmap_model->meshes[0] = gsk_mesh_assemble(qmap.mesh_data);
-    qmap_model->meshes[0]->usingImportedMaterial = FALSE;
-    qmap_model->meshesCount                      = 1;
-    qmap_model->modelPath                        = "none";
-
-    mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
-    glm_mat4_copy(localMatrix, qmap_model->meshes[0]->localMatrix);
-#endif
-
+    gsk_Model *qmap_model = gsk_qmap_load_model(&qmap);
     /*----------------------
      |  ECS Setup
      -----------------------*/
 
     ecs = gsk_renderer_active_scene(renderer, 8);
-    //__set_active_scene_skybox(renderer, def_skybox);
+    __set_active_scene_skybox(renderer, def_skybox);
 
     /*----------------------
-     |  Resources
+     |  Entities
      -----------------------*/
-    gsk_Material *mat_missing = gsk_material_create(
-      NULL, test_shader_path, 3, def_missing, def_norm, def_spec);
 
     /*
       (Root) initialization (entity references)
@@ -204,13 +134,12 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(camera,
                           C_CAMERAMOVEMENT,
                           (void *)(&(struct ComponentCameraMovement) {
-                            .speed = 200.0f,
+                            .speed = 5.0f,
                           }));
     _gsk_ecs_add_internal(camera,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position    = {-265.89f, 40.55f, -117.927f},
-                            .orientation = {32.584f, -23.304f, 40.963f},
+                            .position = {0.0f, 0.0f, 0.0f},
                           }));
 
     /*
