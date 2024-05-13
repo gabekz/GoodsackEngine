@@ -38,7 +38,7 @@
 #define _NORMALIZE_UV  FALSE
 #define _USE_CENTER_UV FALSE
 
-#define DEFAULT_TEXTURE_SIZE 64.0f
+#define DEFAULT_TEXTURE_SIZE 512.0f
 
 /**********************************************************************/
 /*   Helper Functions                                                 */
@@ -442,8 +442,6 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
         uvs[0][2]  = uvs[0][1];
         uvs[0][1]  = saved0;
 
-        // uvs[0][0] = -uvs[0][0];
-        uvs[0][1] = -uvs[0][1];
         uvs[0][2] = -uvs[0][2];
 
         f32 saved1 = uvs[1][2];
@@ -452,13 +450,6 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
 
         uvs[1][0] = -uvs[1][0];
         uvs[1][1] = -uvs[1][1];
-        uvs[1][2] = -uvs[1][2];
-
-        // TEST
-        // uvs[0][0] = -uvs[0][0];
-        // uvs[1][0] = -uvs[1][0];
-
-        // vs[1][2] = -uvs[1][0];
 #endif
 
         glm_vec3_copy(uvs[0], u_axis);

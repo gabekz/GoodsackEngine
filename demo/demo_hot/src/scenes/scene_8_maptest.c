@@ -84,7 +84,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      |  Default MISSING Material
      -----------------------*/
     gsk_Material *material_missing = gsk_material_create(
-      NULL, test_shader_path, 3, tex_prototype, def_norm, def_spec);
+      NULL, test_shader_path, 3, def_missing, def_norm, def_spec);
 
     /*----------------------
      |  Import QMap
