@@ -38,7 +38,12 @@
 #define _NORMALIZE_UV  FALSE
 #define _USE_CENTER_UV FALSE
 
+#define _FIX_POINT_FACING TRUE
+#define _FIX_UV_FACING    TRUE
+
 #define DEFAULT_TEXTURE_SIZE 512.0f
+
+#define _DEBUG_LOG_POINTS FALSE
 
 /**********************************************************************/
 /*   Helper Functions                                                 */
@@ -165,22 +170,7 @@ __calculate_plane_from_points(
 static s32
 __classify_point(vec3 point, vec3 plane_norm, f32 plane_deter)
 {
-#if 0
-
-    vec3 check1 = {0}, check2 = {0};
-
-    glm_vec3_scale(plane_norm, -plane_deter, check1);
-    glm_vec3_sub(check1, point, check2);
-
-    f32 result = glm_vec3_dot(check2, plane_norm);
-
-#elif 0
-
-    f32 result = plane_norm[0] * point[0] + plane_norm[1] * point[1] +
-                 plane_norm[2] * point[2] + plane_deter;
-#else
     f32 result = glm_vec3_dot(plane_norm, point) - plane_deter;
-#endif
 
     if (result > 0.0f)
     {
@@ -290,7 +280,7 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
     }
 
     /*==== Flip y-z to match left-handed coordinate system ===========*/
-#if 1
+#if _FIX_POINT_FACING
     for (int i = 0; i < 3; i++)
     {
         f32 saved    = points[i][2];
@@ -299,16 +289,8 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
 
         points[i][0] = -points[i][0];
         points[i][1] = -points[i][1];
-        // points[i][2] = -points[i][2];
-
-#if 0
-        saved        = points[i][2];
-        points[i][2] = points[i][0];
-        points[i][0] = saved;
-        points[i][0] = -points[i][0];
-#endif
     }
-#endif // flipping
+#endif /* _FIX_POINT_FACING */
 
     /*==== Plane normal and determinant ==============================*/
     {
@@ -318,8 +300,9 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
         glm_vec3_sub(points[2], points[0], pr);
         glm_vec3_crossn(pq, pr, normal);
 
+#if _FIX_POINT_FACING
         glm_vec3_negate(normal);
-        // glm_vec3_cross(pq, pr, normal);
+#endif /* _FIX_POINT_FACING */
 
         // determinant
         determinant = (normal[0] * points[0][0] + normal[1] * points[0][1] +
@@ -420,8 +403,8 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
     }
 
     /*==== Calculate uv axes =========================================*/
-    /*   TODO: Find out if uv axes come from .map file format         */
-    if (is_uv_axes_found == FALSE)
+
+    if (is_uv_axes_found == FALSE) /* format 0 (standard) */
     {
         vec3 axisref = {0.0f, 0.0f, 1.0f}; // z-axis reference
         f32 check    = glm_vec3_dot(normal, axisref);
@@ -434,27 +417,36 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
 
         glm_vec3_crossn(normal, axisref, u_axis);
         glm_vec3_crossn(normal, u_axis, v_axis);
-    } else
+
+    } else /* format 1 (valve) */
     {
-
-#if 1
-        f32 saved0 = uvs[0][2];
-        uvs[0][2]  = uvs[0][1];
-        uvs[0][1]  = saved0;
-
-        uvs[0][2] = -uvs[0][2];
-
-        f32 saved1 = uvs[1][2];
-        uvs[1][2]  = uvs[1][1];
-        uvs[1][1]  = saved1;
-
-        uvs[1][0] = -uvs[1][0];
-        uvs[1][1] = -uvs[1][1];
-#endif
-
         glm_vec3_copy(uvs[0], u_axis);
         glm_vec3_copy(uvs[1], v_axis);
     }
+
+    /*---- Fix UV facing ---------------------------------------------*/
+#if _FIX_UV_FACING
+    {
+        /* TODO: Seems to be broken for standard format */
+
+        /* U - flip y-z axis */
+        f32 saved = u_axis[2];
+        u_axis[2] = u_axis[1];
+        u_axis[1] = saved;
+
+        /* U - negate Z */
+        u_axis[2] = -u_axis[2];
+
+        /* V - flip y-z axis */
+        saved     = v_axis[2];
+        v_axis[2] = v_axis[1];
+        v_axis[1] = saved;
+
+        /* V - negate X, negate Y */
+        v_axis[0] = -v_axis[0];
+        v_axis[1] = -v_axis[1];
+    }
+#endif /* _FIX_UV_FACING */
 
     /*==== Calculate texture width/height ============================*/
     gsk_Texture *p_tex =
@@ -468,7 +460,7 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
 
     /*==== Logging (debugging) =======================================*/
 
-#if 1 // LOG_PLANE
+#if _DEBUG_LOG_POINTS
     for (int i = 0; i < 3; i++)
     {
 
@@ -483,7 +475,7 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
     {
         LOG_TRACE("TEXTURE prop: %f", texture_properties[i]);
     }
-#endif
+#endif /* _DEBUG_LOG_POINTS */
 
     /*==== Return ====================================================*/
 
