@@ -38,6 +38,8 @@
 #define _NORMALIZE_UV  FALSE
 #define _USE_CENTER_UV FALSE
 
+#define DEFAULT_TEXTURE_SIZE 64.0f
+
 /**********************************************************************/
 /*   Helper Functions                                                 */
 /**********************************************************************/
@@ -107,13 +109,14 @@ __compare_vertices(const f32 *v1, const f32 *v2, const f32 epsilon)
 /*--------------------------------------------------------------------*/
 static void
 __calculate_uv_coords(vec3 vertex,
-                      vec3 p0,
                       vec3 u_axis,
                       vec3 v_axis,
                       f32 s,
                       f32 t,
                       f32 scale_x,
                       f32 scale_y,
+                      f32 tex_width,
+                      f32 tex_height,
                       f32 *output)
 {
     // vec3 adjusted_vertex = {0, 0, 0};
@@ -121,12 +124,13 @@ __calculate_uv_coords(vec3 vertex,
 
     // TODO: ensure uv-axes are normalized
 
-    const f32 tex_dim = 64.0f;
+    // const f32 tex_dim = 64.0f;
 
     output[0] =
-      ((glm_vec3_dot(vertex, u_axis) / tex_dim) / scale_x) + (s / tex_dim);
-    output[1] =
-      ((glm_vec3_dot(vertex, v_axis) / tex_dim) / scale_y) + (t / tex_dim);
+      ((glm_vec3_dot(vertex, u_axis) / tex_width) / scale_x) + (s / tex_width);
+
+    output[1] = ((glm_vec3_dot(vertex, v_axis) / tex_height) / scale_y) +
+                (t / tex_height);
 
     // output[0] = -output[0];
     // output[1] = -output[1];
@@ -196,7 +200,7 @@ __classify_point(vec3 point, vec3 plane_norm, f32 plane_deter)
 
 /*--------------------------------------------------------------------*/
 static gsk_QMapPlane
-__parse_plane_from_line(char *line)
+__parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
 {
     LOG_DEBUG("Parsing plane..");
 
@@ -216,6 +220,9 @@ __parse_plane_from_line(char *line)
     int total_texture_properties = 0;
     vec3 u_axis = {0, 0, 0}, v_axis = {0, 0, 0};
     u8 is_uv_axes_found = FALSE;
+
+    const f32 tex_default_size = DEFAULT_TEXTURE_SIZE;
+    vec2 tex_dimensions        = {tex_default_size, tex_default_size};
 
     /*---- determine map type from line -------------------------------------*/
     for (int i = 0; i < strlen(line); i++)
@@ -452,6 +459,18 @@ __parse_plane_from_line(char *line)
         glm_vec3_copy(uvs[1], v_axis);
     }
 
+    /*==== Calculate texture width/height ============================*/
+    gsk_Texture *p_tex =
+      (gsk_Texture *)gsk_texture_set_get_by_name(p_texture_set, texture_name);
+
+    if (p_tex != NULL)
+    {
+        tex_dimensions[0] = p_tex->width;
+        tex_dimensions[1] = p_tex->height;
+    }
+
+    /*==== Logging (debugging) =======================================*/
+
 #if 1 // LOG_PLANE
     for (int i = 0; i < 3; i++)
     {
@@ -493,6 +512,8 @@ __parse_plane_from_line(char *line)
     ret.tex_scale[0] = texture_properties[3];
     ret.tex_scale[1] = texture_properties[4];
     strcpy(ret.tex_name, texture_name);
+
+    glm_vec2_copy(tex_dimensions, ret.tex_dimensions);
 
     /*---- Return QMapPlane ------------------------------------------*/
     return ret;
@@ -610,13 +631,14 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
                 // calculate UV coords
                 __calculate_uv_coords(vertex,
-                                      p0,
                                       p_planes[i].uv_axes[0],
                                       p_planes[i].uv_axes[1],
                                       p_planes[i].tex_offset[0],
                                       p_planes[i].tex_offset[1],
                                       p_planes[i].tex_scale[0],
                                       p_planes[i].tex_scale[1],
+                                      p_planes[i].tex_dimensions[0],
+                                      p_planes[i].tex_dimensions[1],
                                       vert.texture);
 
                 // glm_vec3_copy(p_planes[i].normal, vert.normal);
@@ -1026,7 +1048,7 @@ __qmap_container_add_brush(gsk_QMapContainer *p_container)
 
 /*--------------------------------------------------------------------*/
 gsk_QMapContainer
-gsk_qmap_load(const char *map_path)
+gsk_qmap_load(const char *map_path, gsk_TextureSet *p_textureset)
 {
     // initialize QMapContainer
     gsk_QMapContainer ret;
@@ -1091,7 +1113,8 @@ gsk_qmap_load(const char *map_path)
                 LOG_DEBUG("Fill entity member");
             } else if (current_mode == QM_MODE_FILL_BSH)
             {
-                gsk_QMapPlane plane = __parse_plane_from_line(line);
+                gsk_QMapPlane plane =
+                  __parse_plane_from_line(line, p_textureset);
                 array_list_push(&ret.p_cnt_brush->list_planes, &plane);
             }
         }

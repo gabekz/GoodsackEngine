@@ -84,13 +84,13 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      |  Default MISSING Material
      -----------------------*/
     gsk_Material *material_missing = gsk_material_create(
-      NULL, test_shader_path, 3, def_missing, def_norm, def_spec);
+      NULL, test_shader_path, 3, tex_prototype, def_norm, def_spec);
 
     /*----------------------
      |  Import QMap
      -----------------------*/
     gsk_QMapContainer qmap =
-      gsk_qmap_load(GSK_PATH("gsk://map/cube_valve.map"));
+      gsk_qmap_load(GSK_PATH("gsk://map/cube_valve.map"), &texture_set);
 
     gsk_qmap_attach_textures(&qmap, &texture_set);
 

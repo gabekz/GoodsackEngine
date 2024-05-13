@@ -7,6 +7,7 @@
 #define __LOADER_QMAP_H__
 
 #include "core/graphics/mesh/mesh.h"
+#include "core/graphics/texture/texture_set.h"
 
 #include "util/array_list.h"
 #include "util/maths.h"
@@ -43,6 +44,7 @@ typedef struct gsk_QMapPlane
 
     vec2 tex_offset;
     vec2 tex_scale;
+    vec2 tex_dimensions; /* grabbed from gsk_Texture data */
     f32 tex_rotation;
     char tex_name[256];
 
@@ -80,12 +82,10 @@ typedef struct gsk_QMapContainer
 } gsk_QMapContainer;
 
 gsk_QMapContainer
-gsk_qmap_load(const char *map_path);
+gsk_qmap_load(const char *map_path, gsk_TextureSet *p_texture_set);
 
 void *
-gsk_qmap_attach_texture(gsk_QMapContainer *p_container,
-                        void *p_texture,
-                        const char *ref_name);
+gsk_qmap_attach_textures(gsk_QMapContainer *p_container, void *p_texture_set);
 
 #ifdef __cplusplus
 }
