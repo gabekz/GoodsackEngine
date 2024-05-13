@@ -41,6 +41,7 @@
 // Stuff that breaks
 #define _NORMALIZE_UV  FALSE
 #define _USE_CENTER_UV FALSE
+#define _CALCULATE_TBN TRUE
 
 #define _FIX_POINT_FACING TRUE
 #define _FIX_UV_FACING    TRUE
@@ -681,7 +682,8 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         // if (i != 2) continue;
 
         // get polygon center
-        vec3 center = {1.0f, 1.0f, 1.0f};
+        vec3 center = {1.1f, 1.0f, 0.9f};
+        glm_vec3_scale(center, IMPORT_SCALE, center);
         // NOTE: Perfect squares won't work unless we offset the center by a
         // small amount
 
@@ -808,10 +810,69 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             *vert3                          = swap_copy;
         }
     }
+// ----------------------------------------------
+// Calculate Tangent and Bitangent
+// ----------------------------------------------
+#if _CALCULATE_TBN
+    for (int i = 0; i < num_poly; i++)
+    {
+        // poly
 
-// ---------------------
-// Fix UV coordinates
-// ---------------------
+        gsk_QMapPolygon *poly =
+          array_list_get_at_index(&p_brush->list_polygons, i);
+
+        // vertices
+
+        gsk_QMapPolygonVertex *vert_0 =
+          array_list_get_at_index(&poly->list_vertices, 0);
+
+        gsk_QMapPolygonVertex *vert_1 =
+          array_list_get_at_index(&poly->list_vertices, 1);
+
+        gsk_QMapPolygonVertex *vert_2 =
+          array_list_get_at_index(&poly->list_vertices, 2);
+
+        // data
+
+        vec3 edge1 = {0.0f}, edge2 = {0.0f};
+        vec2 delta1 = {0.0f}, delta2 = {0.0f};
+        vec3 tangent = {0.0f}, bitangent = {0.0f};
+
+        // get edges
+        glm_vec3_sub(vert_1->position, vert_0->position, edge1);
+        glm_vec3_sub(vert_2->position, vert_0->position, edge2);
+
+        // delta 1
+        delta1[0] = (vert_1->texture[0] - vert_0->texture[0]);
+        delta1[1] = (vert_1->texture[1] - vert_0->texture[1]);
+
+        // delta 2
+        delta2[0] = (vert_2->texture[0] - vert_0->texture[1]);
+        delta2[1] = (vert_2->texture[1] - vert_0->texture[1]);
+
+        f32 f = 1.0f / (delta1[0] * delta2[1] - delta2[0] * delta1[1]);
+
+        // tangent
+        tangent[0] = f * (delta2[1] * edge1[0] - delta1[1] * edge2[0]);
+        tangent[1] = f * (delta2[1] * edge1[1] - delta1[1] * edge2[1]);
+        tangent[2] = f * (delta2[1] * edge1[2] - delta1[1] * edge2[2]);
+
+        // bi-tangent
+        bitangent[0] = f * (-delta2[0] * edge1[0] + delta1[0] * edge2[0]);
+        bitangent[1] = f * (-delta2[0] * edge1[1] + delta1[0] * edge2[1]);
+        bitangent[2] = f * (-delta2[0] * edge1[2] + delta1[0] * edge2[2]);
+
+        glm_vec3_normalize(tangent);
+        glm_vec3_normalize(bitangent);
+
+        // copy data
+        s32 num_vert = poly->list_vertices.list_next;
+    }
+#if _CALCULATE_TBN
+
+    // ---------------------
+    // Fix UV coordinates
+    // ---------------------
 #if _NORMALIZE_UV
     for (int i = 0; i < num_poly; i++)
     {
