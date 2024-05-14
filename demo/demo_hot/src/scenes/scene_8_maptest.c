@@ -92,7 +92,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      |  Import QMap
      -----------------------*/
     gsk_QMapContainer qmap =
-      gsk_qmap_load(GSK_PATH("gsk://map/cube_valve.map"), &texture_set);
+      gsk_qmap_load(GSK_PATH("gsk://map/weird.map"), &texture_set);
 
     gsk_Model *qmap_model = gsk_qmap_load_model(&qmap);
     /*----------------------

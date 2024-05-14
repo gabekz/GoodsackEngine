@@ -616,6 +616,9 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
                 gsk_QMapPolygonVertex vert;
                 glm_vec3_copy(vertex, vert.position);
 
+                glm_vec3_copy(p_planes[i].normal, vert.normal);
+                glm_vec3_zero(vert.tangent);
+
                 // calculate UV coords
                 __calculate_uv_coords(vertex,
                                       p_planes[i].uv_axes[0],
@@ -867,8 +870,17 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
 
         // copy data
         s32 num_vert = poly->list_vertices.list_next;
+
+        for (int j = 0; j < num_vert; j++)
+        {
+            gsk_QMapPolygonVertex *vert =
+              array_list_get_at_index(&poly->list_vertices, j);
+
+            glm_vec3_copy(tangent, vert->tangent);
+            // glm_vec3_copy(bitangent, vert->bitangent);
+        }
     }
-#if _CALCULATE_TBN
+#endif _CALCULATE_TBN
 
     // ---------------------
     // Fix UV coordinates
@@ -969,7 +981,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
             // increment vertex buffer lengths
             vL += 3;
             vtL += 2;
-            // vnL += 3;
+            vnL += 3;
 
             // poly fixation
 #if 0
@@ -990,26 +1002,58 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
         }
 
         // Buffers for storing input
-        float *v = malloc((vL + vtL) * sizeof(float) * 3);
-        v        = poly->list_vertices.data.buffer;
+        // pos + tex + norm + tan
+        s32 buff_count = vL + vnL + vtL + vnL;
+        float *v       = malloc(buff_count * (sizeof(float) * 3));
+        // v        = poly->list_vertices.data.buffer;
+
+        // fill V
+        s32 iter = 0;
+        for (int m = 0; m < poly->list_vertices.list_next; m++)
+        {
+            gsk_QMapPolygonVertex *vert =
+              array_list_get_at_index(&poly->list_vertices, m);
+
+            v[iter + 0] = vert->position[0];
+            v[iter + 1] = vert->position[1];
+            v[iter + 2] = vert->position[2];
+            iter += 3;
+
+            v[iter + 0] = vert->texture[0];
+            v[iter + 1] = vert->texture[1];
+            iter += 2;
+
+            v[iter + 0] = vert->normal[0];
+            v[iter + 1] = vert->normal[1];
+            v[iter + 2] = vert->normal[2];
+            iter += 3;
+
+            v[iter + 0] = vert->tangent[0];
+            v[iter + 1] = vert->tangent[1];
+            v[iter + 2] = vert->tangent[2];
+            iter += 3;
+
+            // glm_vec3_copy(vert->position, v + 0);
+            // glm_vec2_copy(vert->texture, v[3]);
+            // glm_vec3_copy(vert->normal, v + 5);
+        }
 
         gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
         poly->p_mesh_data      = meshdata;
 
         meshdata->buffers.out = v;
-        meshdata->buffers.v   = v;
 
-        meshdata->buffers.outI = (vL + vtL) * sizeof(float);
+        meshdata->buffers.outI = (buff_count) * sizeof(float);
 
         meshdata->vertexCount = vL / 3;
 
         meshdata->buffers.vL  = vL;
         meshdata->buffers.vtL = vtL;
-        meshdata->buffers.vnL = 0;
+        meshdata->buffers.vnL = vnL;
+        meshdata->hasTBN      = MESH_TBN_MODE_GLTF;
 
         meshdata->buffers.bufferIndices_size = 0;
         meshdata->isSkinnedMesh              = 0;
-        meshdata->hasTBN                     = 0;
         meshdata->has_indices                = FALSE;
         meshdata->primitive_type             = GSK_PRIMITIVE_TYPE_FAN;
 
@@ -1213,8 +1257,8 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container)
 
     /* load shader */
 
-    gsk_ShaderProgram *qmap_shader = gsk_shader_program_create(
-      GSK_PATH("gsk://shaders/unlit-textured.shader"));
+    gsk_ShaderProgram *qmap_shader =
+      gsk_shader_program_create(GSK_PATH("gsk://shaders/lit-diffuse.shader"));
 
     /* default material */
     gsk_Material *p_material_err = gsk_material_create(
