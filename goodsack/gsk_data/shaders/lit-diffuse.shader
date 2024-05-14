@@ -158,7 +158,7 @@ vec4
 light(int type)
 {
     // Light attenuation
-    vec3 lightVec = vec3(1.0f, 1.0f, 1.0f); // default (for directional)
+    vec3 lightVec = vec3(s_Light.position);
     float inten   = 1.9f;
     if (type > 0) {
         lightVec = (s_Light.position - fs_in.crntPos);

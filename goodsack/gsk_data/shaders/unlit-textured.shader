@@ -2,8 +2,10 @@
 #version 420 core
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 texCoords;
+layout(location = 2) in vec3 a_Normal;
 
 out vec2 v_TexCoords;
+out vec3 v_norm;
 
 struct CameraData
 {
@@ -28,6 +30,7 @@ void main()
     gl_Position = camera.projection * camera.view * u_Model * vec4(position, 1);
 
    v_TexCoords = texCoords;
+   v_norm = normalize(a_Normal);
 }
 
 #shader fragment
@@ -35,6 +38,7 @@ void main()
 
 layout(location = 0) out vec4 color;
 in vec2 v_TexCoords;
+in vec3 v_norm;
 
 uniform vec4 u_Color;
 uniform sampler2D u_Texture;

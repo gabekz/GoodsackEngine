@@ -44,14 +44,14 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
         if (data->buffers.vnL > 0)
             gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
 
-        if (data->hasTBN == 2) { // TODO: REWORK PLEASE
+        if (data->hasTBN == MESH_TBN_MODE_GLTF) { // TODO: REWORK PLEASE
             gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
         }
 
         gsk_gl_vertex_array_add_buffer(vao, vbo); // VBO push -> VAO
 
         // TBN Buffer
-        if (data->hasTBN == 1) {
+        if (data->hasTBN == MESH_TBN_MODE_OBJ) {
             // TBN vertex buffer
             gsk_GlVertexBuffer *vboTBN = gsk_gl_vertex_buffer_create(
               data->buffers.outTBN,

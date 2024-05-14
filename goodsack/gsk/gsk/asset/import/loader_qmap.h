@@ -9,7 +9,9 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/mesh.h"
 #include "core/graphics/mesh/model.h"
+#include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture_set.h"
+
 
 #include "util/array_list.h"
 #include "util/maths.h"
@@ -89,7 +91,8 @@ gsk_QMapContainer
 gsk_qmap_load(const char *map_path, gsk_TextureSet *p_texture_set);
 
 gsk_Model *
-gsk_qmap_load_model(gsk_QMapContainer *p_container);
+gsk_qmap_load_model(gsk_QMapContainer *p_container,
+                    gsk_ShaderProgram *p_shader);
 
 #if 0
 void *

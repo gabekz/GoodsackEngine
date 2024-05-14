@@ -490,6 +490,15 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
     glm_vec3_copy(normal, ret.normal);
     ret.determinant = determinant;
 
+    /*---- check for minimums ----------------------------------------*/
+    for (int i = 0; i < 5; i++)
+    {
+        if (fabs(texture_properties[i]) < 0.5f)
+        {
+            texture_properties[i] = 0.0f;
+        }
+    }
+
     /*---- Copy texture data -----------------------------------------*/
     ret.tex_offset[0] = texture_properties[0];
     ret.tex_offset[1] = texture_properties[1];
@@ -1240,7 +1249,7 @@ gsk_qmap_load(const char *map_path, gsk_TextureSet *p_textureset)
 
 /*--------------------------------------------------------------------*/
 gsk_Model *
-gsk_qmap_load_model(gsk_QMapContainer *p_container)
+gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 {
     if (p_container->is_map_compiled == FALSE)
     {
@@ -1255,14 +1264,9 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container)
         return NULL;
     }
 
-    /* load shader */
-
-    gsk_ShaderProgram *qmap_shader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/lit-diffuse.shader"));
-
     /* default material */
     gsk_Material *p_material_err = gsk_material_create(
-      qmap_shader,
+      p_shader,
       NULL,
       3,
       gsk_texture_set_get_by_name(p_container->p_texture_set, "MISSING"),
@@ -1319,7 +1323,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container)
                     LOG_DEBUG("Successful loaded texture %s", plane->tex_name);
 
                     gsk_Material *material = gsk_material_create(
-                      qmap_shader,
+                      p_shader,
                       NULL,
                       3,
                       poly->p_texture,
