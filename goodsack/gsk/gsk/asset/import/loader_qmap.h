@@ -12,7 +12,6 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture_set.h"
 
-
 #include "util/array_list.h"
 #include "util/maths.h"
 #include "util/sysdefs.h"
@@ -20,6 +19,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+
+#define QMAP_MAX_FIELD_MEMBERS 12
 
 //#define QMAP_TYPE 0
 
@@ -63,10 +64,19 @@ typedef struct gsk_QMapBrush
 
 } gsk_QMapBrush;
 
+typedef struct gsk_QMapEntityField
+{
+    f32 members[QMAP_MAX_FIELD_MEMBERS];
+    s32 field_type;
+    char key[256];
+    char value[256];
+} gsk_QMapEntityField;
+
 typedef struct gsk_QMapEntity
 {
     s32 ent_index;
     ArrayList list_brushes;
+    ArrayList list_fields;
 } gsk_QMapEntity;
 
 typedef struct gsk_QMapContainer
@@ -93,6 +103,9 @@ gsk_qmap_load(const char *map_path, gsk_TextureSet *p_texture_set);
 gsk_Model *
 gsk_qmap_load_model(gsk_QMapContainer *p_container,
                     gsk_ShaderProgram *p_shader);
+
+gsk_QMapEntityField *
+gsk_qmap_get_field(gsk_QMapEntity *p_entity, const char *key_string);
 
 #if 0
 void *

@@ -509,10 +509,13 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
     /*---- Return QMapPlane ------------------------------------------*/
     return ret;
 }
+
 /*--------------------------------------------------------------------*/
-static void
+static gsk_QMapEntityField
 __parse_field_from_line(char *line)
 {
+
+    gsk_QMapEntityField ret;
 
     int cnt_char    = 0;                // cnt reading character of the line
     int start_index = 0, end_index = 0; // index for parenthesis-split
@@ -563,7 +566,7 @@ __parse_field_from_line(char *line)
     s32 total_values = 0;
     s32 value_type   = 0; // 0 - num | 1 - str
 
-    f32 val_numbers[5] = {0}; // buffer for numeric data
+    f32 val_numbers[QMAP_MAX_FIELD_MEMBERS] = {0}; // buffer for numeric data
 
     {
         char delim[] = " ";
@@ -583,7 +586,11 @@ __parse_field_from_line(char *line)
             }
 
             // start filling numbers
-            if (value_type == 0) { val_numbers[total_values] = atof(split); }
+            // TODO: Error handling
+            if (value_type == 0 && total_values <= QMAP_MAX_FIELD_MEMBERS)
+            {
+                val_numbers[total_values] = atof(split);
+            }
 
             // LOG_INFO("\tspaced out: %s", split);
             split = strtok(NULL, delim);
@@ -593,6 +600,23 @@ __parse_field_from_line(char *line)
     LOG_INFO("Total values in key-value pair: %d. Type is: %d",
              total_values,
              value_type);
+
+    // copy data
+    ret.field_type = value_type;
+    strcpy(ret.key, key_str);
+
+    if (value_type == 1)
+    {
+        strcpy(ret.value, val_str);
+    } else
+    {
+        for (int i = 0; i < QMAP_MAX_FIELD_MEMBERS; i++)
+        {
+            ret.members[i] = val_numbers[i];
+        }
+    }
+
+    return ret;
 }
 /*--------------------------------------------------------------------*/
 
@@ -1173,6 +1197,7 @@ __qmap_container_add_entity(gsk_QMapContainer *p_container)
 {
     gsk_QMapEntity ent;
     ent.list_brushes = array_list_init(sizeof(gsk_QMapBrush), 1);
+    ent.list_fields  = array_list_init(sizeof(gsk_QMapEntityField), 1);
     ent.ent_index    = p_container->total_entities;
 
     // push to Container
@@ -1295,7 +1320,8 @@ gsk_qmap_load(const char *map_path, gsk_TextureSet *p_textureset)
             if (current_mode == QM_MODE_FILL_ENT)
             {
                 LOG_DEBUG("Fill entity member");
-                __parse_field_from_line(line);
+                gsk_QMapEntityField field = __parse_field_from_line(line);
+                array_list_push(&ret.p_cnt_entity->list_fields, &field);
             }
             // plane
             else if (current_mode == QM_MODE_FILL_BSH)
@@ -1428,5 +1454,20 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 
     p_container->is_model_loaded = TRUE;
     return qmap_model;
+}
+/*--------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------*/
+gsk_QMapEntityField *
+gsk_qmap_get_field(gsk_QMapEntity *p_entity, const char *key_string)
+{
+    for (int i = 0; i < p_entity->list_fields.list_next; i++)
+    {
+        gsk_QMapEntityField *field =
+          array_list_get_at_index(&p_entity->list_fields, i);
+        if (!strcmp(field->key, key_string)) { return field; }
+    }
+
+    return NULL;
 }
 /*--------------------------------------------------------------------*/
