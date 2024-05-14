@@ -5,6 +5,7 @@
 
 #include "loader_qmap.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -207,12 +208,6 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
 
     const f32 tex_default_size = DEFAULT_TEXTURE_SIZE;
     vec2 tex_dimensions        = {tex_default_size, tex_default_size};
-
-    /*---- determine map type from line -------------------------------------*/
-    for (int i = 0; i < strlen(line); i++)
-    {
-        if (line[i] == '[') { LOG_INFO("MAP IS VALVE"); }
-    }
 
     /*==== Read vert coordinates =====================================*/
 
@@ -515,6 +510,91 @@ __parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
     return ret;
 }
 /*--------------------------------------------------------------------*/
+static void
+__parse_field_from_line(char *line)
+{
+
+    int cnt_char    = 0;                // cnt reading character of the line
+    int start_index = 0, end_index = 0; // index for parenthesis-split
+
+    char key_str[256] = "";
+    char val_str[256] = "";
+
+    u8 key_found = FALSE;
+    u8 val_found = FALSE;
+
+    {
+        char delim[] = "\"";
+        char *str    = line;
+
+        char *split = strtok(str, delim); // line, split by '"'
+        int iter    = 0;
+
+        while (split != NULL)
+        {
+            u8 is_valid_token = FALSE;
+
+            if (strlen(split) > 1 && iter <= 2) { is_valid_token = TRUE; }
+
+            // map - key
+            if (is_valid_token && key_found == FALSE)
+            {
+                strcpy(key_str, split);
+                LOG_INFO("Key is %s", key_str);
+                key_found = TRUE;
+
+            }
+            // map - value
+            else if (is_valid_token && val_found == FALSE)
+            {
+                strcpy(val_str, split);
+                LOG_INFO("Value is %s", val_str);
+                val_found = TRUE;
+            }
+
+            // move to next delim AND increase iteration
+            split = strtok(NULL, delim);
+            iter++;
+        }
+    }
+
+    // check the value type
+
+    s32 total_values = 0;
+    s32 value_type   = 0; // 0 - num | 1 - str
+
+    f32 val_numbers[5] = {0}; // buffer for numeric data
+
+    {
+        char delim[] = " ";
+        char *str    = val_str;
+
+        char *split = strtok(str, delim); // line, split by ' '
+
+        while (split != NULL)
+        {
+            for (int i = 0; i < strlen(split); i++)
+            {
+                if (isalpha(split[i]))
+                {
+                    value_type = 1;
+                    break;
+                }
+            }
+
+            // start filling numbers
+            if (value_type == 0) { val_numbers[total_values] = atof(split); }
+
+            // LOG_INFO("\tspaced out: %s", split);
+            split = strtok(NULL, delim);
+            total_values++;
+        }
+    }
+    LOG_INFO("Total values in key-value pair: %d. Type is: %d",
+             total_values,
+             value_type);
+}
+/*--------------------------------------------------------------------*/
 
 /**********************************************************************/
 /*   Build Functions                                                  */
@@ -560,7 +640,7 @@ __qmap_polygons_from_brush(gsk_QMapContainer *p_container,
     u32 iterations = 0; // for debugging purposes
     for (int i = 0; i < planes_count; i++)
     {
-        LOG_INFO("Checking intersections for poly %d", i);
+        LOG_DEBUG("Checking intersections for poly %d", i);
 
         for (int j = 0; j < planes_count; j++)
         {
@@ -1187,10 +1267,8 @@ gsk_qmap_load(const char *map_path, gsk_TextureSet *p_textureset)
             MODE_DOWN(current_mode);
             next_operation = QM_OP_END;
             break;
-        case '(':
-            next_operation = QM_OP_NEW_MEMBER;
-            //__read_plane(line);
-            break;
+        case '(': next_operation = QM_OP_NEW_MEMBER; break;
+        case '"': next_operation = QM_OP_NEW_MEMBER; break;
         default: break;
         }
 
@@ -1213,11 +1291,14 @@ gsk_qmap_load(const char *map_path, gsk_TextureSet *p_textureset)
         else if (next_operation == QM_OP_NEW_MEMBER)
         {
             next_operation = QM_OP_NONE;
+            // entity field
             if (current_mode == QM_MODE_FILL_ENT)
             {
-                // TODO:
                 LOG_DEBUG("Fill entity member");
-            } else if (current_mode == QM_MODE_FILL_BSH)
+                __parse_field_from_line(line);
+            }
+            // plane
+            else if (current_mode == QM_MODE_FILL_BSH)
             {
                 gsk_QMapPlane plane =
                   __parse_plane_from_line(line, p_textureset);
