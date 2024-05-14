@@ -20,7 +20,7 @@
 extern "C" {
 #endif // __cplusplus
 
-#define QMAP_MAX_FIELD_MEMBERS 12
+#define QMAP_MAX_FIELD_MEMBERS 20
 
 //#define QMAP_TYPE 0
 

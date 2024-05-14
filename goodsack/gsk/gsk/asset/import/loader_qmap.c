@@ -543,7 +543,7 @@ __parse_field_from_line(char *line)
             if (is_valid_token && key_found == FALSE)
             {
                 strcpy(key_str, split);
-                LOG_INFO("Key is %s", key_str);
+                LOG_TRACE("Key is %s", key_str);
                 key_found = TRUE;
 
             }
@@ -551,7 +551,7 @@ __parse_field_from_line(char *line)
             else if (is_valid_token && val_found == FALSE)
             {
                 strcpy(val_str, split);
-                LOG_INFO("Value is %s", val_str);
+                LOG_TRACE("Value is %s", val_str);
                 val_found = TRUE;
             }
 
@@ -597,9 +597,9 @@ __parse_field_from_line(char *line)
             total_values++;
         }
     }
-    LOG_INFO("Total values in key-value pair: %d. Type is: %d",
-             total_values,
-             value_type);
+    LOG_DEBUG("Total values in key-value pair: %d. Type is: %d",
+              total_values,
+              value_type);
 
     // copy data
     ret.field_type = value_type;
