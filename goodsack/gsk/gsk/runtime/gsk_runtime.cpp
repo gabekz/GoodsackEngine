@@ -44,17 +44,22 @@ static struct
 static void
 _gsk_check_args(int argc, char *argv[])
 {
-    if (argc <= 1) {
+    if (argc <= 1)
+    {
         gsk_device_setGraphics(GRAPHICS_API_OPENGL);
         return;
     }
 
-    for (int i = 0; i < argc; i++) {
-        if (std::string(argv[i]) == "--vulkan") {
+    for (int i = 0; i < argc; i++)
+    {
+        if (std::string(argv[i]) == "--vulkan")
+        {
             gsk_device_setGraphics(GRAPHICS_API_VULKAN);
-        } else if (std::string(argv[i]) == "--opengl") {
+        } else if (std::string(argv[i]) == "--opengl")
+        {
             gsk_device_setGraphics(GRAPHICS_API_OPENGL);
-        } else if (std::string(argv[i]) == "--errlevel") {
+        } else if (std::string(argv[i]) == "--errlevel")
+        {
             logger_setLevel(LogLevel_ERROR);
         }
     }
@@ -70,14 +75,15 @@ gsk_runtime_setup(const char *root_dir,
     int logStat = logger_initConsoleLogger(NULL);
     // logger_initFileLogger("logs/logs.txt", 0, 0);
 
-    logger_setLevel(LogLevel_NONE);
+    logger_setLevel(LogLevel_DEBUG);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
 
     _gsk_check_args(argc, argv);
 
-    switch (gsk_device_getGraphics()) {
+    switch (gsk_device_getGraphics())
+    {
     case GRAPHICS_API_OPENGL: LOG_INFO("Device API is OpenGL"); break;
     case GRAPHICS_API_VULKAN: LOG_INFO("Device API is Vulkan"); break;
     default: LOG_ERROR("Device API Failed to retreive Graphics Backend"); break;
@@ -99,13 +105,16 @@ gsk_runtime_setup(const char *root_dir,
     // Initialize ECS
     s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, 0);
 
+#if 0
     // Lighting information
     vec3 lightPos   = {-3.4f, 2.4f, 1.4f};
     vec4 lightColor = {0.73f, 0.87f, 0.91f, 1.0f};
 
-    // UBO Lighting
-    s_runtime.renderer->light =
-      gsk_lighting_initialize((float *)lightPos, (float *)lightColor);
+    // create directional light
+    gsk_lighting_add_light(&s_runtime.renderer->lighting_data,
+                           (float *)lightPos,
+                           (float *)lightColor);
+#endif
 
 #if GSK_RUNTIME_USE_DEBUG
     // Create DebugToolbar
@@ -127,7 +136,8 @@ gsk_runtime_setup(const char *root_dir,
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     gsk_GuiText *loading_text = gsk_gui_text_create("Loading");
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++)
+    {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         gsk_gui_text_draw(loading_text);
@@ -179,12 +189,14 @@ gsk_runtime_loop()
 #endif
 
     // Main Engine Loop
-    while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
+    while (!glfwWindowShouldClose(s_runtime.renderer->window))
+    {
         gsk_device_updateTime(glfwGetTime());
 
 #if USING_JOYSTICK_CONTROLLER
         int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
-        if (present) {
+        if (present)
+        {
             {
                 int count;
                 const float *axes =
@@ -203,7 +215,8 @@ gsk_runtime_loop()
         }
 #endif
 
-        if (GSK_DEVICE_API_OPENGL) {
+        if (GSK_DEVICE_API_OPENGL)
+        {
 
 #if USING_LUA
             entity::LuaEventStore::ECSEvent(ECS_UPDATE);
@@ -216,7 +229,8 @@ gsk_runtime_loop()
 #endif // GSK_RUNTIME_USE_DEBUG
 
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
-        } else if (GSK_DEVICE_API_VULKAN) {
+        } else if (GSK_DEVICE_API_VULKAN)
+        {
             glfwPollEvents();
             // debugGui->Update();
             gsk_ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
@@ -240,7 +254,8 @@ gsk_runtime_loop()
     // Cleanup
     //
 
-    if (GSK_DEVICE_API_VULKAN) {
+    if (GSK_DEVICE_API_VULKAN)
+    {
         vkDeviceWaitIdle(s_runtime.renderer->vulkanDevice->device);
         vulkan_device_cleanup(s_runtime.renderer->vulkanDevice);
     }

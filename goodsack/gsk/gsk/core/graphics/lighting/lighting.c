@@ -5,47 +5,103 @@
 
 #include "lighting.h"
 
-#include "core/device/device.h"
+#include "util/logger.h"
 #include "util/sysdefs.h"
 
-gsk_Light *
-gsk_lighting_initialize(vec3 lightPos, vec4 lightColor)
+#include "core/device/device.h"
+
+gsk_LightingData
+gsk_lighting_initialize(u32 ubo_binding)
 {
-    gsk_Light *ret = malloc(sizeof(gsk_Light));
-    glm_vec3_copy(lightPos, ret->position);
-    glm_vec4_copy(lightColor, ret->color);
+    gsk_LightingData ret;
 
-    ret->type     = Directional;
-    ret->strength = 1; // TODO: GNK
+    u32 light_ubo_id;
+    if (GSK_DEVICE_API_OPENGL)
+    {
+        // Create lighting Uniform Buffer
+        u32 light_ubo_id;
+        u32 light_ubo_size = sizeof(vec3) + 4 + sizeof(vec4);
+        glGenBuffers(1, &light_ubo_id);
+        glBindBuffer(GL_UNIFORM_BUFFER, light_ubo_id);
+        glBufferData(GL_UNIFORM_BUFFER,
+                     light_ubo_size * MAX_LIGHTS,
+                     NULL,
+                     GL_DYNAMIC_DRAW);
+        glBindBufferRange(GL_UNIFORM_BUFFER,
+                          ubo_binding,
+                          light_ubo_id,
+                          0,
+                          light_ubo_size * MAX_LIGHTS);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    u32 uboLight;
-    if (GSK_DEVICE_API_OPENGL) {
-        u32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
-        glGenBuffers(1, &uboLight);
-        glBindBuffer(GL_UNIFORM_BUFFER, uboLight);
-        glBufferData(GL_UNIFORM_BUFFER, uboLightSize, NULL, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        glBindBufferRange(GL_UNIFORM_BUFFER, 1, uboLight, 0, uboLightSize);
-        // Send lighting data to UBO
-        glBindBuffer(GL_UNIFORM_BUFFER, uboLight);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, lightPos);
-        glBufferSubData(
-          GL_UNIFORM_BUFFER, sizeof(vec3) + 4, sizeof(vec4), lightColor);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        ret->ubo = uboLight;
+        ret.ubo_id       = light_ubo_id;
+        ret.ubo_size     = light_ubo_size;
+        ret.total_lights = 0;
     }
     return ret;
 }
 
 void
-gsk_lighting_update(gsk_Light *light, vec3 lightPos, vec4 lightColor)
+gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
+                       vec3 light_position,
+                       vec4 light_color)
 {
-    u32 uboLightSize = sizeof(vec3) + 4 + sizeof(vec4);
-    if (GSK_DEVICE_API_OPENGL) {
-        glBindBuffer(GL_UNIFORM_BUFFER, light->ubo);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3) + 4, lightPos);
+    if (p_lighting_data->total_lights > MAX_LIGHTS)
+    {
+        LOG_ERROR("Cannot add more lights. Light limit exceeded: %d",
+                  MAX_LIGHTS);
+        return;
+    }
+
+    gsk_Light *p_light =
+      &p_lighting_data->lights[p_lighting_data->total_lights];
+
+    glm_vec3_copy(light_position, p_light->position);
+    glm_vec4_copy(light_color, p_light->color);
+    p_light->strength = 1;
+
+    if (GSK_DEVICE_API_OPENGL)
+    {
+        // Get the starting position
+        u32 ubo_offset =
+          p_lighting_data->total_lights * (p_lighting_data->ubo_size);
+
+        glBindBuffer(GL_UNIFORM_BUFFER, p_lighting_data->ubo_id);
         glBufferSubData(
-          GL_UNIFORM_BUFFER, sizeof(vec3) + 4, sizeof(vec4), lightColor);
+          GL_UNIFORM_BUFFER, ubo_offset, sizeof(vec3) + 4, light_position);
+        glBufferSubData(GL_UNIFORM_BUFFER,
+                        ubo_offset + sizeof(vec3) + 4,
+                        sizeof(vec4),
+                        light_color);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
+
+    p_lighting_data->total_lights++;
 }
+
+#if 1
+void
+gsk_lighting_update(gsk_LightingData *p_lighting_data)
+{
+    for (int i = 0; i < p_lighting_data->total_lights; i++)
+    {
+        if (GSK_DEVICE_API_OPENGL)
+        {
+            // Get the starting position
+            u32 ubo_offset =
+              p_lighting_data->total_lights * (p_lighting_data->ubo_size);
+
+            glBindBuffer(GL_UNIFORM_BUFFER, p_lighting_data->ubo_id);
+            glBufferSubData(GL_UNIFORM_BUFFER,
+                            ubo_offset,
+                            sizeof(vec3) + 4,
+                            p_lighting_data->lights[i].position);
+            glBufferSubData(GL_UNIFORM_BUFFER,
+                            ubo_offset + sizeof(vec3) + 4,
+                            sizeof(vec4),
+                            p_lighting_data->lights[i].color);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        }
+    }
+}
+#endif

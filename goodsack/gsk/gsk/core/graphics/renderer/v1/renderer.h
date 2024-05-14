@@ -37,6 +37,7 @@ extern "C" {
 #define PSX_HEIGHT                 480
 
 #define MAX_CAMERAS 4
+//#define MAX_LIGHTS  64
 
 typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
 
@@ -74,7 +75,9 @@ typedef struct gsk_Renderer
     u32 totalVertices;
 
     // TODO: Fix this shit as well.
-    gsk_Light *light;
+
+    gsk_LightingData lighting_data;
+
     ShadowmapOptions shadowmapOptions;
     SsaoOptions ssaoOptions;
 
@@ -99,6 +102,7 @@ typedef struct gsk_Renderer
         u32 totalCameras; // TODO: find an alternative
         u32 activeCamera;
     } camera_data;
+
 } gsk_Renderer;
 
 /**

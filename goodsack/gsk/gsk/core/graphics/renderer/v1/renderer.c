@@ -82,12 +82,12 @@ gsk_renderer_init()
                                            .vignetteFalloff = 0.5f};
 
     ret->shadowmapOptions = (ShadowmapOptions) {
-      .nearPlane = 0.02f,
+      .nearPlane = 0.00f,
       .farPlane  = 20.0f,
-      .camSize   = 2.0f,
+      .camSize   = 20.0f,
 
       .normalBiasMin = 0.0004f,
-      .normalBiasMax = 0.0006f,
+      .normalBiasMax = 0.0028f,
       .pcfSamples    = 4,
     };
 
@@ -133,7 +133,8 @@ gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex)
 {
     LOG_INFO("Loading scene: id %d", sceneIndex);
     u32 sceneCount = self->sceneC;
-    if (sceneCount < sceneIndex + 1) {
+    if (sceneCount < sceneIndex + 1)
+    {
         LOG_INFO(
           "Scene %d does not exist. Creating Scene %d", sceneIndex, sceneIndex);
         u32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
@@ -165,7 +166,8 @@ gsk_renderer_start(gsk_Renderer *renderer)
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
     gsk_ECS *ecs     = scene->ecs;
 
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
 
 // Create the default skybox
 #if 0
@@ -212,35 +214,41 @@ gsk_renderer_start(gsk_Renderer *renderer)
         renderer->debugContext = gsk_debug_context_init();
 
         // Create camera Uniform Buffer
-        u32 camera_uboSize = sizeof(vec4) + (2 * sizeof(mat4));
         u32 camera_uboId;
+        u32 camera_uboSize     = sizeof(vec4) + (2 * sizeof(mat4));
+        u32 camera_ubo_binding = 0;
         glGenBuffers(1, &camera_uboId);
         glBindBuffer(GL_UNIFORM_BUFFER, camera_uboId);
         glBufferData(GL_UNIFORM_BUFFER,
                      camera_uboSize * MAX_CAMERAS,
                      NULL,
                      GL_DYNAMIC_DRAW);
+        glBindBufferRange(GL_UNIFORM_BUFFER,
+                          camera_ubo_binding,
+                          camera_uboId,
+                          0,
+                          camera_uboSize * MAX_CAMERAS);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        glBindBufferRange(
-          GL_UNIFORM_BUFFER, 0, camera_uboId, 0, camera_uboSize * MAX_CAMERAS);
 
         renderer->camera_data.uboId        = camera_uboId;
         renderer->camera_data.uboSize      = camera_uboSize;
         renderer->camera_data.totalCameras = 2; // TODO: find an alternative
         renderer->camera_data.activeCamera = 0;
 
-#if 0
-        CameraData **camdata = malloc(sizeof(CameraData **) * MAX_CAMERAS);
-        renderer->camera_data.cameras = camdata;
-        for (u32 i = 0; i < MAX_CAMERAS; i++) {
-            *(renderer->camera_data.cameras + i) = malloc(sizeof(CameraData *));
-            glm_vec4_zero(renderer->camera_data.cameras[i]->position);
-            glm_mat4_identity(renderer->camera_data.cameras[i]->projection);
-            glm_mat4_identity(renderer->camera_data.cameras[i]->view);
-        }
-#endif
+        // Lighting information
+        vec3 lightPos   = {-3.4f, 2.4f, 1.4f};
+        vec4 lightColor = {0.73f, 0.87f, 0.91f, 1.0f};
 
-    } else if (GSK_DEVICE_API_VULKAN) {
+        // Create lighting Uniform Buffer
+        u32 lighting_ubo_binding = 1;
+        renderer->lighting_data  = gsk_lighting_initialize(1);
+
+        // create directional light
+        gsk_lighting_add_light(
+          &renderer->lighting_data, (float *)lightPos, (float *)lightColor);
+
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
         gsk_ecs_event(ecs, ECS_INIT);
         // LOG_DEBUG("gsk_Renderer Start-Phase is not implemented in Vulkan");
     }
@@ -268,7 +276,8 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     // Check fixed_update interval
     double current_time = glfwGetTime();
-    if (_gsk_device_check_fixed_update(current_time)) {
+    if (_gsk_device_check_fixed_update(current_time))
+    {
         gsk_ecs_event(ecs, ECS_FIXED_UPDATE);
         _gsk_device_reset_fixed_update(current_time);
     }
@@ -299,10 +308,17 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
       GL_DEBUG_SOURCE_APPLICATION, 1, -1, "Pass: Shadowmap Depth");
 
     // update lighting information
+    gsk_Light directional_light = renderer->lighting_data.lights[0];
+
+#if 0
     gsk_lighting_update(
-      renderer->light, renderer->light->position, renderer->light->color);
+      &directional_light, directional_light.position, directional_light.color);
+#else
+    gsk_lighting_update(&renderer->lighting_data);
+#endif
+
     // update shadowmap position
-    shadowmap_update(renderer->light->position, renderer->shadowmapOptions);
+    shadowmap_update(directional_light.position, renderer->shadowmapOptions);
     // TODO: Move matrix storage out of renderer
     glm_mat4_zero(renderer->lightSpaceMatrix);
     glm_mat4_copy(shadowmap_getMatrix(), renderer->lightSpaceMatrix);
@@ -343,7 +359,8 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     shadowmap_bind_texture();
 
     // Bind skybox textures
-    if (scene->has_skybox) {
+    if (scene->has_skybox)
+    {
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_CUBE_MAP,
                       renderer->activeSkybox->irradianceMap->id);
@@ -366,7 +383,8 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
-    if (scene->has_skybox) {
+    if (scene->has_skybox)
+    {
         glDepthFunc(GL_LEQUAL);
         gsk_skybox_draw(renderer->activeSkybox);
         glDepthFunc(GL_LESS);
@@ -452,9 +470,11 @@ gsk_renderer_tick(gsk_Renderer *renderer)
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
     gsk_ECS *ecs     = scene->ecs;
 
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
         renderer_tick_OPENGL(renderer, scene, ecs);
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
         // renderer_tick_VULKAN(renderer, ecs);
     }
 }

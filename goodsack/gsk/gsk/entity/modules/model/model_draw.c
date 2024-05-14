@@ -160,7 +160,7 @@ DrawModel(struct ComponentModel *model,
             // Light strength
             glUniform1f(glGetUniformLocation(material->shaderProgram->id,
                                              "u_light_strength"),
-                        renderer->light->strength);
+                        renderer->lighting_data.lights[0].strength);
 
             // Ambient options
             glUniform3fv(

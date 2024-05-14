@@ -14,9 +14,9 @@ gsk::tools::panels::Lighting::draw(void)
 
     Separator();
     Text("Directional Light");
-    DragFloat3("Position", p_renderer->light->position, 0.1f, -3000, 3000);
-    ColorEdit3("Color", p_renderer->light->color);
-    DragFloat("Light Strength", &p_renderer->light->strength, 1, 0, 100);
+    DragFloat3("Position", p_renderer->lighting_data.lights[0].position, 0.1f, -3000, 3000);
+    ColorEdit3("Color", p_renderer->lighting_data.lights[0].color);
+    DragFloat("Light Strength", &p_renderer->lighting_data.lights[0].strength, 1, 0, 100);
 
     Separator();
     Text("Ambient Light");
