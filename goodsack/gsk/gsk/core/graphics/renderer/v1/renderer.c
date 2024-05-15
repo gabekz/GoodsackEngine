@@ -247,7 +247,7 @@ gsk_renderer_start(gsk_Renderer *renderer)
         gsk_lighting_add_light(
           &renderer->lighting_data, (float *)lightPos, (float *)lightColor);
 
-        vec3 lightPos2   = {0.0f, 2.0f, 1.0f};
+        vec3 lightPos2   = {7.0f, 6.5f, 1.0f};
         vec4 lightColor2 = {1.0f, 0.0f, 0.0f, 1.0f};
         gsk_lighting_add_light(
           &renderer->lighting_data, (float *)lightPos2, (float *)lightColor2);
@@ -319,7 +319,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     gsk_lighting_update(
       &directional_light, directional_light.position, directional_light.color);
 #else
-    // gsk_lighting_update(&renderer->lighting_data);
+    gsk_lighting_update(&renderer->lighting_data);
 #endif
 
     // update shadowmap position

@@ -81,7 +81,7 @@ gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
     p_lighting_data->total_lights++; // update total
 }
 
-#if 0
+#if 1
 void
 gsk_lighting_update(gsk_LightingData *p_lighting_data)
 {
