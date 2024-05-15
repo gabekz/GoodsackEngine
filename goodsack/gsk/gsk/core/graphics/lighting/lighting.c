@@ -60,6 +60,7 @@ gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
     glm_vec4_copy(light_color, p_light->color);
     p_light->strength = 1;
 
+#if 1 // send call to update UBO
     if (GSK_DEVICE_API_OPENGL)
     {
         // Get the starting position
@@ -75,11 +76,12 @@ gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
                         light_color);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
+#endif
 
-    p_lighting_data->total_lights++;
+    p_lighting_data->total_lights++; // update total
 }
 
-#if 1
+#if 0
 void
 gsk_lighting_update(gsk_LightingData *p_lighting_data)
 {
@@ -88,8 +90,7 @@ gsk_lighting_update(gsk_LightingData *p_lighting_data)
         if (GSK_DEVICE_API_OPENGL)
         {
             // Get the starting position
-            u32 ubo_offset =
-              p_lighting_data->total_lights * (p_lighting_data->ubo_size);
+            u32 ubo_offset = i * (p_lighting_data->ubo_size);
 
             glBindBuffer(GL_UNIFORM_BUFFER, p_lighting_data->ubo_id);
             glBufferSubData(GL_UNIFORM_BUFFER,

@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-#define MAX_LIGHTS 4
+#define MAX_LIGHTS 64
 
 typedef enum LightType { Directional = 0, Point = 1, Spot = 2 } LightType;
 
