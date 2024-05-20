@@ -206,9 +206,9 @@ DrawModel(struct ComponentModel *model,
             default: break;
             }
 
-            // glEnable(GL_CULL_FACE);
-            // glCullFace(GL_BACK);
-            // glFrontFace(GL_CW);
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            glFrontFace(GL_CCW);
             // glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
             if (data->has_indices)

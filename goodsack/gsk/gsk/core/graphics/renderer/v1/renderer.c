@@ -125,6 +125,26 @@ gsk_renderer_init()
     gsk_gui_canvas_add_element(&ret->canvas, element);
     gsk_gui_canvas_add_text(&ret->canvas, text);
 
+    // Lighting information
+    vec3 lightPos   = {-3.4f, 2.4f, 1.4f};
+    vec4 lightColor = {0.73f, 0.87f, 0.91f, 1.0f};
+
+    // Create lighting Uniform Buffer
+    u32 lighting_ubo_binding = 1;
+    ret->lighting_data       = gsk_lighting_initialize(lighting_ubo_binding);
+
+    // create directional light
+    gsk_lighting_add_light(
+      &ret->lighting_data, (float *)lightPos, (float *)lightColor);
+
+#if 0
+    // test light
+    vec3 lightPos2   = {7.0f, 6.5f, 1.0f};
+    vec4 lightColor2 = {1.0f, 0.0f, 0.0f, 1.0f};
+    gsk_lighting_add_light(
+      &renderer->lighting_data, (float *)lightPos2, (float *)lightColor2);
+#endif
+
     return ret;
 }
 
@@ -234,23 +254,6 @@ gsk_renderer_start(gsk_Renderer *renderer)
         renderer->camera_data.uboSize      = camera_uboSize;
         renderer->camera_data.totalCameras = 2; // TODO: find an alternative
         renderer->camera_data.activeCamera = 0;
-
-        // Lighting information
-        vec3 lightPos   = {-3.4f, 2.4f, 1.4f};
-        vec4 lightColor = {0.73f, 0.87f, 0.91f, 1.0f};
-
-        // Create lighting Uniform Buffer
-        u32 lighting_ubo_binding = 1;
-        renderer->lighting_data  = gsk_lighting_initialize(1);
-
-        // create directional light
-        gsk_lighting_add_light(
-          &renderer->lighting_data, (float *)lightPos, (float *)lightColor);
-
-        vec3 lightPos2   = {7.0f, 6.5f, 1.0f};
-        vec4 lightColor2 = {1.0f, 0.0f, 0.0f, 1.0f};
-        gsk_lighting_add_light(
-          &renderer->lighting_data, (float *)lightPos2, (float *)lightColor2);
 
     } else if (GSK_DEVICE_API_VULKAN)
     {
