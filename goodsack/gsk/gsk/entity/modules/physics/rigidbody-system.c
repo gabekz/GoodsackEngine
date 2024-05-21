@@ -56,7 +56,8 @@ __debug_ray(const _SolverData solver_data,
 {
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     gsk_Entity entity                     = solver_data.entity;
-    if (DEBUG_POINTS && entity.id == DEBUG_POINTS) {
+    if (DEBUG_POINTS && entity.id == DEBUG_POINTS)
+    {
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                MARKER_RAY,
                                s_dbg_instance,
@@ -77,7 +78,8 @@ __debug_points(const _SolverData solver_data)
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     gsk_Entity entity                     = solver_data.entity;
 
-    if (DEBUG_POINTS && entity.id == DEBUG_POINTS) {
+    if (DEBUG_POINTS && entity.id == DEBUG_POINTS)
+    {
 
         // collision normal
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
@@ -132,14 +134,16 @@ init(gsk_Entity entity)
     // calculate rotational inertia
     // TODO: Defaults
     f32 inertia = 0;
-    if (collider->type == COLLIDER_SPHERE) {
+    if (collider->type == COLLIDER_SPHERE)
+    {
 
         // I = 2/5mr^2 -- solid sphere
         inertia = (2.0f / 5.0f) * rigidbody->mass *
                   ((gsk_SphereCollider *)collider->pCollider)->radius;
     }
 
-    else if (collider->type == COLLIDER_BOX) {
+    else if (collider->type == COLLIDER_BOX)
+    {
 
         // TODO: get width/height from bounds
         f32 width  = 2;
@@ -185,7 +189,8 @@ fixed_update(gsk_Entity entity)
     s_dbg_instance = s_dbg_instance_begin;
 #endif
 
-    for (int i = 0; i < total_solvers; i++) {
+    for (int i = 0; i < total_solvers; i++)
+    {
         gsk_CollisionResult *pResult = &pSolver->solvers[i];
 
         // --
@@ -233,7 +238,8 @@ fixed_update(gsk_Entity entity)
 
     // TODO: Optimization - Put object to sleep
     // TODO: check aVD with epsilon
-    if (glm_vec3_norm(vD) > 0.001) {
+    if (glm_vec3_norm(vD) > 0.001)
+    {
         glm_vec3_add(transform->position, vD, transform->position);
         glm_vec3_add(transform->orientation, aVD, transform->orientation);
     }

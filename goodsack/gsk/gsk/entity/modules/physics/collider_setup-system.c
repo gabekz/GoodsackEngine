@@ -33,7 +33,8 @@ init(gsk_Entity e)
     //(gsk_Collider *)(collider->pCollider).position = transform->position;
 
     // TODO: collider types
-    if (collider->type == COLLIDER_SPHERE) {
+    if (collider->type == COLLIDER_SPHERE)
+    {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
         sphereCollider->radius             = 1.0f;
         // glm_vec3_copy(transform->position, sphereCollider->center);
@@ -42,7 +43,8 @@ init(gsk_Entity e)
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_SphereCollider *)sphereCollider;
 
-    } else if (collider->type == COLLIDER_PLANE) {
+    } else if (collider->type == COLLIDER_PLANE)
+    {
         gsk_PlaneCollider *planeCollider = malloc(sizeof(gsk_PlaneCollider));
 
         // planeCollider->distance      = 0.0175f;
@@ -72,12 +74,14 @@ init(gsk_Entity e)
           (gsk_PlaneCollider *)planeCollider;
     }
 
-    else if (collider->type == COLLIDER_BOX) {
+    else if (collider->type == COLLIDER_BOX)
+    {
         gsk_BoxCollider *box_collider = malloc(sizeof(gsk_BoxCollider));
         // glm_vec3_zero(box_collider->bounds[0]);
         // glm_vec3_zero(box_collider->bounds[1]);
 
-        if (gsk_ecs_has(e, C_MODEL)) {
+        if (gsk_ecs_has(e, C_MODEL))
+        {
             struct ComponentModel *cmp_model = gsk_ecs_get(e, C_MODEL);
             gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
             glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
@@ -98,11 +102,12 @@ init(gsk_Entity e)
           (gsk_BoxCollider *)box_collider;
     }
 
-    else if (collider->type == COLLIDER_CAPSULE) {
+    else if (collider->type == COLLIDER_CAPSULE)
+    {
         gsk_CapsuleCollider *capsule_collider =
           malloc(sizeof(gsk_CapsuleCollider));
 
-        vec3 base  = {0.0f, 0.0f, 0.0f};
+        vec3 base  = {0.0f, 1.255f, 0.0f};
         vec3 tip   = {0.0f, 1.0f, 0.0f};
         f32 radius = 1.0f;
 
@@ -131,7 +136,8 @@ fixed_update(gsk_Entity e)
     gsk_EntityId id_point_list[MAX_COLLISION_POINTS];
     u32 points_list_next = 0;
 
-    for (int i = 0; i < e.ecs->nextIndex; i++) {
+    for (int i = 0; i < e.ecs->nextIndex; i++)
+    {
         if (e.index == (gsk_EntityId)i) continue; // do not check self
 
         // TODO: fix look-up
@@ -165,8 +171,10 @@ fixed_update(gsk_Entity e)
         //
         gsk_CollisionPoints points = {.has_collision = 0};
 
-        if (collider->type == COLLIDER_SPHERE) { // --- Sphere Collider
-            switch (compareCollider->type) {
+        if (collider->type == COLLIDER_SPHERE)
+        { // --- Sphere Collider
+            switch (compareCollider->type)
+            {
             case COLLIDER_SPHERE:
                 points = gsk_physics_collision_find_sphere_sphere(__clsn_prm);
                 break;
@@ -178,8 +186,10 @@ fixed_update(gsk_Entity e)
                 break;
             default: break;
             };
-        } else if (collider->type == COLLIDER_PLANE) { // --- Plane Collider
-            switch (compareCollider->type) {
+        } else if (collider->type == COLLIDER_PLANE)
+        { // --- Plane Collider
+            switch (compareCollider->type)
+            {
             case COLLIDER_SPHERE:
                 points = gsk_physics_collision_find_plane_sphere(__clsn_prm);
                 break;
@@ -187,8 +197,10 @@ fixed_update(gsk_Entity e)
             case COLLIDER_BOX:
             default: break;
             };
-        } else if (collider->type == COLLIDER_BOX) { // --- Box Collider
-            switch (compareCollider->type) {
+        } else if (collider->type == COLLIDER_BOX)
+        { // --- Box Collider
+            switch (compareCollider->type)
+            {
             case COLLIDER_SPHERE:
                 points = gsk_physics_collision_find_box_sphere(__clsn_prm);
                 break;
@@ -200,8 +212,10 @@ fixed_update(gsk_Entity e)
                 break;
             default: break;
             };
-        } else if (collider->type == COLLIDER_CAPSULE) { // --- Capsule Collider
-            switch (compareCollider->type) {
+        } else if (collider->type == COLLIDER_CAPSULE)
+        { // --- Capsule Collider
+            switch (compareCollider->type)
+            {
             case COLLIDER_PLANE:
                 points = gsk_physics_collision_find_capsule_plane(__clsn_prm);
                 break;
@@ -213,7 +227,8 @@ fixed_update(gsk_Entity e)
         }
 
         // Collision points
-        if (points.has_collision) {
+        if (points.has_collision)
+        {
             collider->isColliding = TRUE;
 
             points_list[points_list_next] = points;
@@ -223,7 +238,8 @@ fixed_update(gsk_Entity e)
         }
     }
 
-    for (int i = 0; i < points_list_next; i++) {
+    for (int i = 0; i < points_list_next; i++)
+    {
 
         // TODO: AGAIN - fix look-up
         gsk_Entity e_compare = {
@@ -233,7 +249,8 @@ fixed_update(gsk_Entity e)
         };
 
         // push collision to rigidbody solver
-        if (gsk_ecs_has(e, C_RIGIDBODY)) {
+        if (gsk_ecs_has(e, C_RIGIDBODY))
+        {
 
             struct ComponentRigidbody *rigidbody_a =
               gsk_ecs_get(e, C_RIGIDBODY);
@@ -246,12 +263,14 @@ fixed_update(gsk_Entity e)
             //
 
             // Get body_b Rigidbody
-            if (gsk_ecs_has(e_compare, C_RIGIDBODY)) {
+            if (gsk_ecs_has(e_compare, C_RIGIDBODY))
+            {
                 rigidbody_b = gsk_ecs_get(e_compare, C_RIGIDBODY);
             }
 
             // Get body_b Transform
-            if (gsk_ecs_has(e_compare, C_TRANSFORM)) {
+            if (gsk_ecs_has(e_compare, C_TRANSFORM))
+            {
                 transform_b = gsk_ecs_get(e_compare, C_TRANSFORM);
             }
 
@@ -279,7 +298,8 @@ fixed_update(gsk_Entity e)
             inverse_inertia_a = (fabs(inertia_a) > 0.0f) ? 1.0f / inertia_a : 0;
 
             // copy b-values
-            if (rigidbody_b) {
+            if (rigidbody_b)
+            {
                 glm_vec3_copy(rigidbody_b->linear_velocity, linear_velocity_b);
                 mass_b         = rigidbody_b->mass;
                 inverse_mass_b = (1.0f / rigidbody_b->mass);
@@ -293,7 +313,8 @@ fixed_update(gsk_Entity e)
                 glm_vec3_sub(
                   linear_velocity_a, linear_velocity_b, relative_velocity);
 
-            } else {
+            } else
+            {
                 glm_vec3_copy(linear_velocity_a, relative_velocity);
             }
 
@@ -335,7 +356,8 @@ fixed_update(gsk_Entity e)
               .physics_mark = mark,
             };
 
-            if (points_list_next >= MAX_COLLISION_POINTS) {
+            if (points_list_next >= MAX_COLLISION_POINTS)
+            {
                 LOG_CRITICAL("Max collision points exceeded");
             }
             // Send that over to the rigidbody solver list

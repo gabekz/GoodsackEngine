@@ -533,7 +533,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_SPHERE,
+                            .type = COLLIDER_CAPSULE,
                           }));
 
     _gsk_ecs_add_internal(

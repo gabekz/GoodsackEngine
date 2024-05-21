@@ -23,25 +23,26 @@ typedef enum ECSComponentType_t {
     C_ANIMATOR,
     C_AUDIOLISTENER,
     C_AUDIOSOURCE,
+    C_BONE_ATTACHMENT,
     C_CAMERA,
-    C_CAMERALOOK,
-    C_CAMERAMOVEMENT,
+    C_CAMERALOOK,     // TODO: Remove (new package)
+    C_CAMERAMOVEMENT, // TODO: Remove (new package)
+    C_COLLIDER,
+    C_ENEMY, // TODO: Remove (testing)
+    C_ENTITY_REFERENCE,
+    C_HEALTH, // TODO: Remove (new package)
     C_LIGHT,
     C_MODEL,
-    C_PLAYER_CONTROLLER,
+    C_PLAYER_CONTROLLER, // TODO: Remove (new package)
     C_RENDERLAYER,
     C_RIGIDBODY,
     C_SWORD_CONTROLLER, // TODO: Remove (testing)
-    C_ENEMY,            // TODO: Remove (testing)
-    C_COLLIDER,
     C_TRANSFORM,
-    C_ENTITY_REFERENCE,
-    C_WEAPON,
-    C_WEAPONSWAY,
-    C_BONE_ATTACHMENT,
+    C_WEAPON,     // TODO: Remove (new package)
+    C_WEAPONSWAY, // TODO: Remove (new package)
 } ECSComponentType;
 
-#define ECSCOMPONENT_LAST C_BONE_ATTACHMENT
+#define ECSCOMPONENT_LAST C_WEAPONSWAY
 
 #if ECS_COMPONENTS_PACKED
 #pragma pack(push, 1)
@@ -118,6 +119,30 @@ typedef struct ComponentCameraMovement
     CACHE_ALIGN(f32 speed);
 } gsk_C_CameraMovement;
 
+struct ComponentCollider
+{
+    int type;
+    void *pCollider;
+    u32 isColliding;
+};
+
+struct ComponentEnemy
+{
+    int enemy_type;
+};
+
+typedef struct ComponentEntityReference
+{
+    CACHE_ALIGN(int entity_ref_id);
+} gsk_C_EntityReference;
+
+struct ComponentHealth
+{
+    CACHE_ALIGN(int current_health);
+    CACHE_ALIGN(int max_health);
+    CACHE_ALIGN(u32 is_alive);
+};
+
 struct ComponentLight
 {
     vec4 color;
@@ -173,18 +198,6 @@ struct ComponentSwordController
     CACHE_ALIGN(float charge_time);
 };
 
-struct ComponentEnemy
-{
-    int a;
-};
-
-struct ComponentCollider
-{
-    int type;
-    void *pCollider;
-    u32 isColliding;
-};
-
 typedef struct ComponentTransform
 {
     u16 hasParent;
@@ -194,11 +207,6 @@ typedef struct ComponentTransform
     CACHE_ALIGN(vec3 position);
     CACHE_ALIGN(vec3 scale);
 } gsk_C_Transform;
-
-typedef struct ComponentEntityReference
-{
-    CACHE_ALIGN(int entity_ref_id);
-} gsk_C_EntityReference;
 
 struct ComponentWeapon
 {
@@ -238,11 +246,19 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_AUDIOLISTENER, sizeof(struct ComponentAudioListener));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_AUDIOSOURCE, sizeof(struct ComponentAudioSource));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_BONE_ATTACHMENT, sizeof(struct ComponentBoneAttachment));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_CAMERA, sizeof(struct ComponentCamera));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_CAMERALOOK, sizeof(struct ComponentCameraLook));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_CAMERAMOVEMENT, sizeof(struct ComponentCameraMovement));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_COLLIDER, sizeof(struct ComponentCollider));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_ENEMY, sizeof(struct ComponentEnemy));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_ENTITY_REFERENCE, sizeof(struct ComponentEntityReference));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_HEALTH, sizeof(struct ComponentHealth));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_LIGHT, sizeof(struct ComponentLight));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_MODEL, sizeof(struct ComponentModel));
     _ECS_DECL_COMPONENT_INTERN(
@@ -253,20 +269,11 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_RIGIDBODY, sizeof(struct ComponentRigidbody));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_SWORD_CONTROLLER, sizeof(struct ComponentSwordController));
-    _ECS_DECL_COMPONENT_INTERN(ecs, C_ENEMY, sizeof(struct ComponentEnemy));
-    _ECS_DECL_COMPONENT_INTERN(
-      ecs, C_COLLIDER, sizeof(struct ComponentCollider));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
-    _ECS_DECL_COMPONENT_INTERN(
-      ecs, C_ENTITY_REFERENCE, sizeof(struct ComponentEntityReference));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPON, sizeof(struct ComponentWeapon));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_WEAPONSWAY, sizeof(struct ComponentWeaponSway));
-#if 1
-    _ECS_DECL_COMPONENT_INTERN(
-      ecs, C_BONE_ATTACHMENT, sizeof(struct ComponentBoneAttachment));
-#endif
 }
 
 #ifdef __cplusplus

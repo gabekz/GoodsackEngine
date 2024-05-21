@@ -37,6 +37,24 @@
     "CameraMovement": {
         "float": ["speed"]
     },
+    "Collider": {
+        "int": ["type"],
+        "Resource": ["p_collider"],
+        "bool": ["is_colliding"]
+    },
+
+    "Enemy": {
+        "int": ["enemy_type"]
+    },
+
+    "EntityReference": {
+        "entity": ["entity_ref_id"]
+    },
+
+    "Health": {
+        "int": ["current_health", "max_health"],
+        "bool": ["is_alive"]
+    },
 
     "Light": {
         "vec4": ["color"],
@@ -69,15 +87,17 @@
         "float": [ "mass", "static_friction", "dynamic_friction" ]
     },
 
+    "SwordController": {
+        "int": ["last_direction", "weapon_state"],
+        "float": ["state_timer", "charge_time"],
+        "entity": [ "entity_camera", "entity_flock" ]
+    },
+
     "Transform": {
         "vec3": [ "position", "orientation", "scale" ],
         "mat4": [ "model" ],
         "bool": [ "hasParent" ],
         "Resource": [ "parent" ]
-    },
-
-    "EntityReference": {
-        "entity": ["entity_ref_id"]
     },
 
     "Weapon": {
@@ -88,15 +108,6 @@
 
     "WeaponSway": {
         "float": ["sway_amount"]
-    },
-
-    "SwordController": {
-        "int": ["last_direction", "weapon_state"],
-        "float": ["state_timer", "charge_time"],
-        "entity": [ "entity_camera", "entity_flock" ]
-    },
-
-    "Enemy": {
-        "int": ["a"]
     }
+
 }
