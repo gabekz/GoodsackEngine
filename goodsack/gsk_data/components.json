@@ -15,6 +15,10 @@
         "bool": ["looping"]
     },
 
+    "Bane": {
+        "int": ["damage"]
+    },
+
     "BoneAttachment": {
         "uint": ["bone_id"],
         "entity": ["entity_skeleton"]

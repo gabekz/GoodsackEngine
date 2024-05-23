@@ -206,6 +206,7 @@ fixed_update(gsk_Entity entity)
 
         _position_solver(solver_data);
         impulse_solver_with_rotation_friction(solver_data);
+
         // --
         // Run debug markers
 
@@ -289,10 +290,6 @@ s_rigidbody_system_init(gsk_ECS *ecs)
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
                               .init         = (gsk_ECSSubscriber)init,
-                              .destroy      = NULL,
-                              .render       = NULL,
                               .fixed_update = (gsk_ECSSubscriber)fixed_update,
-                              .update       = NULL,
-                              .late_update  = NULL,
                             }));
 }

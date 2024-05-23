@@ -53,10 +53,9 @@ typedef struct gsk_PhysicsMark
 
 typedef struct gsk_CollisionResult
 {
-    // void *object_a;
-    // void *object_b;
     gsk_CollisionPoints points;
     gsk_PhysicsMark physics_mark;
+    u64 ent_a_id, ent_b_id;
 } gsk_CollisionResult;
 
 typedef struct gsk_Collider

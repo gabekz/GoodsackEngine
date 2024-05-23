@@ -120,7 +120,7 @@ init(gsk_Entity e)
 }
 
 static void
-fixed_update(gsk_Entity e)
+on_collide(gsk_Entity e)
 {
     // test for collisions
     if (!(gsk_ecs_has(e, C_COLLIDER))) return;
@@ -358,6 +358,8 @@ fixed_update(gsk_Entity e)
             gsk_CollisionResult result = {
               .points       = points_list[i],
               .physics_mark = mark,
+              .ent_a_id     = e.id,
+              .ent_b_id     = e_compare.id,
             };
 
             if (points_list_next >= MAX_COLLISION_POINTS)
@@ -376,11 +378,7 @@ s_collider_setup_system_init(gsk_ECS *ecs)
 {
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
-                              .init         = (gsk_ECSSubscriber)init,
-                              .destroy      = NULL,
-                              .render       = NULL,
-                              .fixed_update = (gsk_ECSSubscriber)fixed_update,
-                              .update       = NULL,
-                              .late_update  = NULL,
+                              .init       = (gsk_ECSSubscriber)init,
+                              .on_collide = (gsk_ECSSubscriber)on_collide,
                             }));
 }

@@ -39,39 +39,33 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
         struct ComponentTransform *compareTransform =
           gsk_ecs_get(e_compare, C_TRANSFORM);
 
+        gsk_CollisionPoints points;
+        points.has_collision = FALSE;
+
         if (compareCollider->type == COLLIDER_SPHERE)
         {
-            gsk_CollisionPoints points = gsk_physics_collision_find_ray_sphere(
+            points = gsk_physics_collision_find_ray_sphere(
               raycast,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
               compareTransform->position);
 
-            if (points.has_collision)
-            {
+        } else if (compareCollider->type == COLLIDER_BOX)
+        {
+            points = gsk_physics_collision_find_ray_box(
+              raycast,
+              ((gsk_Collider *)compareCollider->pCollider)->collider_data,
+              compareTransform->position);
+        }
+
+        if (points.has_collision)
+        {
+            if (range &&
+                glm_vec3_distance(raycast->origin, points.point_a) <= range)
 
                 return (gsk_mod_RaycastResult) {
                   .entity        = e_compare,
-                  .has_collision = points.has_collision,
+                  .has_collision = TRUE,
                 };
-            }
-        } else if (compareCollider->type == COLLIDER_BOX)
-        {
-            gsk_CollisionPoints points = gsk_physics_collision_find_ray_box(
-              raycast,
-              ((gsk_Collider *)compareCollider->pCollider)->collider_data,
-              compareTransform->position);
-
-            if (points.has_collision)
-            {
-
-                if (range &&
-                    glm_vec3_distance(raycast->origin, points.point_a) <= range)
-
-                    return (gsk_mod_RaycastResult) {
-                      .entity        = e_compare,
-                      .has_collision = points.has_collision,
-                    };
-            }
         }
     };
 

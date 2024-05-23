@@ -10,6 +10,7 @@ enum ECSEvent {
     ECS_INIT = 0,
     ECS_DESTROY,
     ECS_RENDER,
+    ECS_ON_COLLIDE,
     ECS_FIXED_UPDATE,
     ECS_UPDATE,
     ECS_LATE_UPDATE
@@ -21,7 +22,7 @@ enum ECSEvent {
 #define ECSEVENT_STRING(x) (_gsk_ecs_EventToString(x))
 
 #define ECSEVENT_CFN_NAMES \
-    init, destroy, render, fixed_update, update, late_update
+    init, destroy, render, on_collide, fixed_update, update, late_update
 
 #define ECS_TAG_SIZE   1 // Tag size as bytes
 #define ECS_TAG_UNUSED 0b00000000
@@ -63,6 +64,7 @@ _gsk_ecs_EventToString(int event)
     case ECS_INIT: return "start";
     case ECS_DESTROY: return "destroy";
     case ECS_RENDER: return "render";
+    case ECS_ON_COLLIDE: return "on_collide";
     case ECS_FIXED_UPDATE: return "fixed_update";
     case ECS_UPDATE: return "update";
     case ECS_LATE_UPDATE: return "late_update";

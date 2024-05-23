@@ -23,6 +23,7 @@ typedef enum ECSComponentType_t {
     C_ANIMATOR,
     C_AUDIOLISTENER,
     C_AUDIOSOURCE,
+    C_BANE,
     C_BONE_ATTACHMENT,
     C_CAMERA,
     C_CAMERALOOK,     // TODO: Remove (new package)
@@ -78,6 +79,11 @@ struct ComponentAudioSource
     u32 looping;
 };
 
+typedef struct ComponentBane
+{
+    CACHE_ALIGN(s32 damage);
+} gsk_C_Bane;
+
 typedef struct ComponentBoneAttachment
 {
     CACHE_ALIGN(u32 bone_id);
@@ -121,9 +127,9 @@ typedef struct ComponentCameraMovement
 
 struct ComponentCollider
 {
-    int type;
-    void *pCollider;
-    u32 isColliding;
+    CACHE_ALIGN(s32 type);
+    CACHE_ALIGN(void *pCollider);
+    CACHE_ALIGN(u32 isColliding);
 };
 
 struct ComponentEnemy
@@ -249,6 +255,7 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_AUDIOLISTENER, sizeof(struct ComponentAudioListener));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_AUDIOSOURCE, sizeof(struct ComponentAudioSource));
+    _ECS_DECL_COMPONENT_INTERN(ecs, C_BANE, sizeof(struct ComponentBane));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_BONE_ATTACHMENT, sizeof(struct ComponentBoneAttachment));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_CAMERA, sizeof(struct ComponentCamera));

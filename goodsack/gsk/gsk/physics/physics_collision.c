@@ -363,9 +363,11 @@ gsk_physics_collision_find_capsule_capsule(gsk_CapsuleCollider *a,
 
     // base and tip adjusted to position
     vec3 a_tip, a_base, b_base, b_tip;
-    glm_vec3_add(a->base, pos_a, a_base);
+
+    glm_vec3_sub(pos_a, a->base, a_base);
     glm_vec3_add(a->tip, pos_a, a_tip);
-    glm_vec3_add(b->base, pos_b, b_base);
+
+    glm_vec3_sub(pos_b, b->base, b_base);
     glm_vec3_add(b->tip, pos_b, b_tip);
 
     // calculate capsule A Data
