@@ -18,13 +18,14 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
                         gsk_Raycast *raycast,
                         float range)
 {
-    for (int i = 0; i < entity_caller.ecs->nextIndex; i++) {
+    for (int i = 0; i < entity_caller.ecs->nextIndex; i++)
+    {
         if (entity_caller.index == (gsk_EntityId)i)
             continue; // do not check self
 
         // TODO: fix look-up
         gsk_Entity e_compare = {
-          .id    = (gsk_EntityId)i + 1,
+          .id    = entity_caller.ecs->ids[i],
           .index = (gsk_EntityId)i,
           .ecs   = entity_caller.ecs,
         };
@@ -38,26 +39,30 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
         struct ComponentTransform *compareTransform =
           gsk_ecs_get(e_compare, C_TRANSFORM);
 
-        if (compareCollider->type == COLLIDER_SPHERE) {
+        if (compareCollider->type == COLLIDER_SPHERE)
+        {
             gsk_CollisionPoints points = gsk_physics_collision_find_ray_sphere(
               raycast,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
               compareTransform->position);
 
-            if (points.has_collision) {
+            if (points.has_collision)
+            {
 
                 return (gsk_mod_RaycastResult) {
                   .entity        = e_compare,
                   .has_collision = points.has_collision,
                 };
             }
-        } else if (compareCollider->type == COLLIDER_BOX) {
+        } else if (compareCollider->type == COLLIDER_BOX)
+        {
             gsk_CollisionPoints points = gsk_physics_collision_find_ray_box(
               raycast,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
               compareTransform->position);
 
-            if (points.has_collision) {
+            if (points.has_collision)
+            {
 
                 if (range &&
                     glm_vec3_distance(raycast->origin, points.point_a) <= range)

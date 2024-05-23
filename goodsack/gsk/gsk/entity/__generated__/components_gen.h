@@ -128,7 +128,9 @@ struct ComponentCollider
 
 struct ComponentEnemy
 {
-    int enemy_type;
+    CACHE_ALIGN(int enemy_type);
+    CACHE_ALIGN(ResRef projectile_material);
+    CACHE_ALIGN(ResRef projectile_model);
 };
 
 typedef struct ComponentEntityReference

@@ -76,16 +76,6 @@ update(gsk_Entity entity)
             cmp_controller->walk_direction |= WALK_RIGHT;
         }
     }
-
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-    {
-        gsk_Entity ent_test = gsk_ecs_new(entity.ecs);
-        _gsk_ecs_add_internal(ent_test,
-                              C_TRANSFORM,
-                              (void *)(&(struct ComponentTransform) {
-                                .position = {0, 3, 0},
-                              }));
-    }
 }
 
 static void

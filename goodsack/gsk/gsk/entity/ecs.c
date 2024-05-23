@@ -53,7 +53,7 @@ gsk_ecs_init(gsk_Renderer *renderer)
     for (int i = 0; i < capacity; i++)
     {
         // default entity flags
-        ecs->ids_init[i] = 0;
+        ecs->ids_init[i] = ECS_ENT_FLAG_PENDING;
     }
 
     // Create Entity names cache
@@ -116,7 +116,7 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
                     .ecs   = self};
 
     // set initialization flag
-    self->ids_init[entity.index] = 0;
+    self->ids_init[entity.index] = ECS_ENT_FLAG_PENDING;
 
     // TODO: Fill next available slot (if deletion)
 
@@ -133,7 +133,16 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
 void
 _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
 {
-    gsk_ECS *ecs               = entity.ecs;
+    gsk_ECS *ecs = entity.ecs;
+
+    if (ecs->ids_init[entity.index] == 1)
+    {
+        LOG_WARN("Cannot add components (yet) to an already initialized entity "
+                 "(id: %d).",
+                 entity.id);
+        return;
+    }
+
     gsk_ECSComponentList *list = &ecs->component_lists[component_id];
     u32 size                   = (entity.index * ECS_TAG_SIZE) +
                (list->component_size * (entity.index + 1));
@@ -256,58 +265,36 @@ gsk_ecs_ent(gsk_ECS *self, gsk_EntityId id)
 void
 gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
 {
-
-#if 0
-    // Loop through each system, fire the appropriate event
-    for (int i = 0; i < self->systems_size; i++)
-    {
-        gsk_ECSSubscriber func = self->systems[i].subscribers[event];
-
-        if (func == NULL) { continue; }
-
-        // Call the function per-entity
-        for (int j = 0; j < self->nextIndex; j++)
-        {
-            if (event == ECS_INIT)
-            {
-                if (self->ids_init[j] == 1)
-                {
-                    LOG_INFO("Entity already initialized");
-                    return;
-                }
-            }
-
-            gsk_Entity e =
-              (gsk_Entity) {.id = self->ids[j], .index = j, .ecs = self};
-            func(e);
-        }
-    }
-#else
-
     // loop through each entity
-    // Call the function per-entity
-    for (int j = 0; j < self->nextIndex; j++)
+    for (int i = 0; i < self->nextIndex; i++)
     {
-        // Loop through each system, fire the appropriate event
-        for (int i = 0; i < self->systems_size; i++)
-        {
-            gsk_ECSSubscriber func = self->systems[i].subscribers[event];
+        gsk_Entity ent =
+          (gsk_Entity) {.id = self->ids[i], .index = i, .ecs = self};
 
+        if (event != ECS_INIT && self->ids_init[i] == ECS_ENT_FLAG_PENDING)
+        {
+            continue;
+        }
+
+        // Loop through each system, fire the appropriate event
+        for (int j = 0; j < self->systems_size; j++)
+        {
+            gsk_ECSSubscriber func = self->systems[j].subscribers[event];
             if (func == NULL) { continue; }
 
-            if (event == ECS_INIT)
+            // ignore ECS_INIT for initialized entities
+            if (event == ECS_INIT &&
+                self->ids_init[i] == ECS_ENT_FLAG_INITIALIZED)
             {
-                if (self->ids_init[j] == 1) { return; }
+                continue;
             }
 
-            gsk_Entity e =
-              (gsk_Entity) {.id = self->ids[j], .index = j, .ecs = self};
-            func(e);
+            func(ent);
         }
-        self->ids_init[j] = 1;
-    }
 
-#endif
+        // set the initialization flag
+        self->ids_init[i] = ECS_ENT_FLAG_INITIALIZED;
+    }
 
     // TODO: determine whether or not there is a required component.
     // Go through that list instead of every entity.

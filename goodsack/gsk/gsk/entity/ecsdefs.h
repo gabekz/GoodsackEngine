@@ -27,6 +27,9 @@ enum ECSEvent {
 #define ECS_TAG_UNUSED 0b00000000
 #define ECS_TAG_USED   0b00110000
 
+#define ECS_ENT_FLAG_INITIALIZED 0x01
+#define ECS_ENT_FLAG_PENDING     0x00
+
 #define ECS_VAL_NAN      0 // TODO: could be disabled
 #define ECS_VAL_ENABLED  1
 #define ECS_VAL_DISABLED 2

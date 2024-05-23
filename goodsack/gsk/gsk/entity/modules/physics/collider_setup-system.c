@@ -37,8 +37,6 @@ init(gsk_Entity e)
     {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
         sphereCollider->radius             = 1.0f;
-        // glm_vec3_copy(transform->position, sphereCollider->center);
-        // sphereCollider.center = transform.position;
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_SphereCollider *)sphereCollider;
@@ -97,6 +95,7 @@ init(gsk_Entity e)
                      box_collider->bounds[1][2]);
 #endif
         }
+        // TODO: Add default BOX bounds
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_BoxCollider *)box_collider;
@@ -142,13 +141,18 @@ fixed_update(gsk_Entity e)
 
         // TODO: fix look-up
         gsk_Entity e_compare = {
-          .id    = (gsk_EntityId)i + 1,
+          .id    = e.ecs->ids[i],
           .index = (gsk_EntityId)i,
           .ecs   = e.ecs,
         };
 
         if (!gsk_ecs_has(e_compare, C_COLLIDER)) continue;
-        if (!gsk_ecs_has(e_compare, C_TRANSFORM)) continue;
+        if (!gsk_ecs_has(e_compare, C_TRANSFORM))
+        {
+            LOG_WARN("Collider does not have transform (entity %d)",
+                     e_compare.id);
+            continue;
+        }
 
         struct ComponentCollider *compareCollider =
           gsk_ecs_get(e_compare, C_COLLIDER);
@@ -243,7 +247,7 @@ fixed_update(gsk_Entity e)
 
         // TODO: AGAIN - fix look-up
         gsk_Entity e_compare = {
-          .id    = (gsk_EntityId)id_point_list[i] + 1,
+          .id    = e.ecs->ids[id_point_list[i]],
           .index = (gsk_EntityId)id_point_list[i],
           .ecs   = e.ecs,
         };

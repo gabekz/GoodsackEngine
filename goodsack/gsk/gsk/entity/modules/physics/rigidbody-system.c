@@ -121,7 +121,7 @@ init(gsk_Entity entity)
     struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
     struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
 
-    glm_vec3_zero(rigidbody->force);
+    // glm_vec3_zero(rigidbody->force);
     glm_vec3_zero(rigidbody->linear_velocity);
     glm_vec3_zero(rigidbody->angular_velocity);
 
