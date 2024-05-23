@@ -34,7 +34,7 @@ gsk::tools::panels::EntityViewer::draw(void)
         static int node_clicked =
           -1; // must be static for persistence (TODO: Fix)
         // Go through each entity
-        for (int i = 0; i < ecs->nextId - 1; i++) {
+        for (int i = 0; i < ecs->nextIndex; i++) {
             ImGuiTreeNodeFlags node_flags =
               ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
               base_flags;
@@ -67,34 +67,36 @@ gsk::tools::panels::EntityViewer::draw(void)
 
     int TEXT_BASE_HEIGHT = GetTextLineHeightWithSpacing();
 
-    enum MyItemColumnID { MyItemColumnID_Index, MyItemColumnID_Name };
+    enum MyItemColumnID {
+        MyItemColumnID_EntIndex,
+        MyItemColumnID_EntID,
+        MyItemColumnID_Name
+    };
 
-    if (BeginTable("table_sorting",
-                   4,
-                   flags,
-                   ImVec2(0.0f, TEXT_BASE_HEIGHT * 15),
-                   0.0f)) {
+    if (BeginTable(
+          "table_sorting", 4, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 15), 0.0f))
+    {
 
         TableSetupColumn("index",
                          ImGuiTableColumnFlags_DefaultSort |
                            ImGuiTableColumnFlags_WidthFixed,
                          0.0f,
-                         MyItemColumnID_Index);
+                         MyItemColumnID_EntIndex);
+
+        TableSetupColumn(
+          "ID", ImGuiTableColumnFlags_WidthFixed, 0.0f, MyItemColumnID_EntID);
+
         TableSetupColumn(
           "Name", ImGuiTableColumnFlags_WidthFixed, 0.0f, MyItemColumnID_Name);
-        // TableSetupColumn("Action",   ImGuiTableColumnFlags_NoSort
-        // | ImGuiTableColumnFlags_WidthFixed,   0.0f,
-        // MyItemColumnID_Action); TableSetupColumn("Quantity",
-        // ImGuiTableColumnFlags_PreferSortDescending |
-        // ImGuiTableColumnFlags_WidthStretch, 0.0f,
-        // MyItemColumnID_Quantity);
+
         TableSetupScrollFreeze(0, 1); // Make row always visible
         TableHeadersRow();
 
 // Sort our data if sort specs have been changed!
 #if DEBUG_UI_USING_SORTING
         if (ImGuiTableSortSpecs *sorts_specs = TableGetSortSpecs())
-            if (sorts_specs->SpecsDirty) {
+            if (sorts_specs->SpecsDirty)
+            {
                 MyItem::s_current_sort_specs =
                   sorts_specs; // Store in variable accessible by the sort
                                // function.
@@ -109,24 +111,26 @@ gsk::tools::panels::EntityViewer::draw(void)
 #endif // DEBUG_UI_USING_SORTING
 
         ImGuiListClipper clipper;
-        clipper.Begin(ecs->nextId - 1);
+        clipper.Begin(ecs->nextIndex);
         while (clipper.Step())
             for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd;
-                 row_n++) {
+                 row_n++)
+            {
                 // Display a data item
                 // MyItem* item = &items[row_n];
                 PushID(row_n);
-                TableNextRow();
+                // TableNextRow();
                 TableNextColumn();
                 Text("%04d", row_n);
                 TableNextColumn();
+                Text("%04d", (int)ecs->ids[(int)row_n]);
+                TableNextColumn();
                 TextUnformatted(ecs->entity_names[(int)row_n]);
                 TableNextColumn();
-                if (SmallButton("Inspect")) {
-                    gsk_Entity entity =
-                      (gsk_Entity {.id    = (gsk_EntityId)row_n + 1,
-                                   .index = (u64)row_n,
-                                   .ecs   = ecs});
+                if (SmallButton("Inspect"))
+                {
+                    gsk_Entity entity = (gsk_Entity {
+                      .id = ecs->ids[row_n], .index = (u64)row_n, .ecs = ecs});
 
                     // display the component viewer panel
                     p_component_viewer->show_for_entity(entity);

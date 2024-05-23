@@ -38,25 +38,30 @@ gsk_ecs_init(gsk_Renderer *renderer)
     gsk_ECS *ecs = malloc(sizeof(gsk_ECS));
 
     // Initialize entity capacity
-    u32 capacity   = 128;
+    u32 capacity  = ECS_ENT_CAPACITY;
+    ecs->capacity = capacity;
+
+    // initialize id list
     ecs->ids       = malloc(capacity * sizeof(gsk_EntityId));
-    ecs->capacity  = capacity;
-    ecs->nextId    = 1;
+    ecs->nextId    = ECS_FIRST_ID;
     ecs->nextIndex = 0;
 
     // Create Entity names cache
     const s32 def_name_size = 16;
     ecs->entity_names       = malloc(sizeof(char *) * capacity);
-    for (int i = 0; i < capacity; i++) {
+
+    for (int i = 0; i < capacity; i++)
+    {
         ecs->entity_names[i] = malloc(sizeof(char) * ECS_NAME_LEN_MAX);
         snprintf(ecs->entity_names[i], def_name_size, "Entity_%d", i);
     }
 
+    // point to renderer
     ecs->renderer = renderer;
 
     // Initialize systems and components
     ecs->systems_size = 0;
-    ecs->systems      = malloc(1 * sizeof(gsk_ECSSystem));
+    ecs->systems      = malloc(sizeof(gsk_ECSSystem));
 
     s_transform_init(ecs);
 
@@ -87,9 +92,12 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
 {
     u32 capacity = self->capacity;
     // check if we have available capcity
-    if (capacity < self->nextId) {
+    if (capacity < self->nextIndex)
+    {
         capacity *= 2;
         // TODO: Reallocate component lists
+        // TODO: Realloc names list
+        // TODO?: Realloc init_list
     }
 
     gsk_Entity entity =
@@ -99,19 +107,12 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
 
     // TODO: Fill next available slot (if deletion)
 
-    self->ids[self->nextId - 1] = entity.id;
+    self->ids[self->nextIndex] = entity.id;
     self->nextId++;
     self->nextIndex++;
 
     // Assign name if passed in
-    if (name != NULL) {
-        strcpy(self->entity_names[entity.index], name);
-#if 0
-        LOG_DEBUG("Assigned name \"%s\" to entity index %d",
-                  self->entity_names[entity.index],
-                  entity.index);
-#endif
-    }
+    if (name != NULL) { strcpy(self->entity_names[entity.index], name); }
 
     return entity;
 }
@@ -129,7 +130,8 @@ _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
 
     u32 index =
       (entity.index * ECS_TAG_SIZE) + (list->component_size * (entity.index));
-    if (value != NULL) {
+    if (value != NULL)
+    {
         memcpy(
           (char *)((char *)((gsk_ECSComponentList *)list->components) + index),
           value,
@@ -216,8 +218,10 @@ gsk_ecs_component_register(gsk_ECS *self, u32 component_id, u64 size)
 gsk_Entity
 gsk_ecs_ent(gsk_ECS *self, gsk_EntityId id)
 {
-    for (int i = 0; i < self->nextIndex; i++) {
-        if (self->ids[i] == id) {
+    for (int i = 0; i < self->nextIndex; i++)
+    {
+        if (self->ids[i] == id)
+        {
             // LOG_INFO("got\t id: %d\t index: %d", self->ids[i], i);
 
             return (gsk_Entity) {
@@ -240,13 +244,17 @@ void
 gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
 {
     // Loop through each system, fire the appropriate event
-    for (int i = 0; i < self->systems_size; i++) {
+    for (int i = 0; i < self->systems_size; i++)
+    {
         gsk_ECSSubscriber func = self->systems[i].subscribers[event];
 
         if (func == NULL) { continue; }
 
         // Call the function per-entity
-        for (int j = 0; j < self->nextIndex; j++) {
+        for (int j = 0; j < self->nextIndex; j++)
+        {
+            // if(event == ECS_INIT)
+
             gsk_Entity e =
               (gsk_Entity) {.id = self->ids[j], .index = j, .ecs = self};
             func(e);

@@ -31,6 +31,9 @@ enum ECSEvent {
 #define ECS_VAL_ENABLED  1
 #define ECS_VAL_DISABLED 2
 
+#define ECS_FIRST_ID 300
+
+#define ECS_ENT_CAPACITY 128
 #define ECS_NAME_LEN_MAX 128
 
 // Should always be True
@@ -52,7 +55,8 @@ extern "C" {
 inline const char *
 _gsk_ecs_EventToString(int event)
 {
-    switch (event) {
+    switch (event)
+    {
     case ECS_INIT: return "start";
     case ECS_DESTROY: return "destroy";
     case ECS_RENDER: return "render";
