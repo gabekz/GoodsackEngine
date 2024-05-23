@@ -18,7 +18,8 @@ init(gsk_Entity entity)
 {
     if (!gsk_ecs_has(entity, C_PLAYER_CONTROLLER)) { return; }
 
-    if (!gsk_ecs_has(entity, C_RIGIDBODY)) {
+    if (!gsk_ecs_has(entity, C_RIGIDBODY))
+    {
         LOG_ERROR("Player Controller is kind of useless without a rigidbody..");
         return;
     }
@@ -55,19 +56,35 @@ update(gsk_Entity entity)
 
     if (cmp_controller->is_jumping) { return; }
 
-    if (!(input_up && input_down)) {
-        if (input_up) {
+    if (!(input_up && input_down))
+    {
+        if (input_up)
+        {
             cmp_controller->walk_direction |= WALK_FORWARD;
-        } else if (input_down) {
+        } else if (input_down)
+        {
             cmp_controller->walk_direction |= WALK_BACKWARD;
         }
     }
-    if (!(input_left && input_right)) {
-        if (input_left) {
+    if (!(input_left && input_right))
+    {
+        if (input_left)
+        {
             cmp_controller->walk_direction |= WALK_LEFT;
-        } else if (input_right) {
+        } else if (input_right)
+        {
             cmp_controller->walk_direction |= WALK_RIGHT;
         }
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        gsk_Entity ent_test = gsk_ecs_new(entity.ecs);
+        _gsk_ecs_add_internal(ent_test,
+                              C_TRANSFORM,
+                              (void *)(&(struct ComponentTransform) {
+                                .position = {0, 3, 0},
+                              }));
     }
 }
 
@@ -85,7 +102,8 @@ fixed_update(gsk_Entity entity)
     gsk_Entity ent_camera =
       gsk_ecs_ent(entity.ecs, cmp_controller->entity_camera);
 
-    if (!gsk_ecs_has(ent_camera, C_CAMERA)) {
+    if (!gsk_ecs_has(ent_camera, C_CAMERA))
+    {
         LOG_WARN("camera-child does not have camera a Camera component!");
     }
     struct ComponentCamera *cmp_camera = gsk_ecs_get(ent_camera, C_CAMERA);
@@ -117,14 +135,17 @@ fixed_update(gsk_Entity entity)
     glm_vec3_scale(direction, speed, direction);
     direction[1] = cmp_rigidbody->linear_velocity[1]; // keep y-axis
 
-    if (cmp_controller->walk_direction & WALK_FORWARD) {
+    if (cmp_controller->walk_direction & WALK_FORWARD)
+    {
         glm_vec3_add(newvel, direction, newvel);
     }
-    if (cmp_controller->walk_direction & WALK_BACKWARD) {
+    if (cmp_controller->walk_direction & WALK_BACKWARD)
+    {
         glm_vec3_sub(newvel, direction, newvel);
     }
 
-    if (cmp_controller->walk_direction & WALK_LEFT) {
+    if (cmp_controller->walk_direction & WALK_LEFT)
+    {
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
 
 #if 0
@@ -138,7 +159,8 @@ fixed_update(gsk_Entity entity)
         glm_vec3_scale(cross, speed, cross);
         glm_vec3_sub(newvel, cross, newvel);
     }
-    if (cmp_controller->walk_direction & WALK_RIGHT) {
+    if (cmp_controller->walk_direction & WALK_RIGHT)
+    {
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
 
 #if 0
@@ -156,7 +178,8 @@ fixed_update(gsk_Entity entity)
 #if 1
     // TODO: needs to be fixed by single-input check. Currently being called
     // several times.
-    if (cmp_controller->is_grounded && cmp_controller->is_jumping) {
+    if (cmp_controller->is_grounded && cmp_controller->is_jumping)
+    {
         cmp_controller->is_grounded = FALSE;
         cmp_controller->is_jumping  = FALSE;
         // cmp_rigidbody->linear_velocity[1] = newvel[1] + 5;
@@ -169,7 +192,8 @@ fixed_update(gsk_Entity entity)
     is_moving = (glm_vec3_norm(newvel) > 0);
 
     // directly modify velocity
-    if (is_moving) {
+    if (is_moving)
+    {
         cmp_rigidbody->linear_velocity[0] = newvel[0];
         cmp_rigidbody->linear_velocity[2] = newvel[2];
         // glm_vec3_copy(newvel, cmp_rigidbody->linear_velocity);

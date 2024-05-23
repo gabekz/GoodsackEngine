@@ -109,6 +109,8 @@ struct gsk_ECS
     u32 nextIndex;
     u32 capacity;
 
+    gsk_EntityId *ids_init;
+
     char **entity_names;
 
     gsk_Renderer *renderer;
