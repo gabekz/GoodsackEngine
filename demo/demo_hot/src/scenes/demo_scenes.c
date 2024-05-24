@@ -533,7 +533,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type   = COLLIDER_SPHERE,
+                            .type = COLLIDER_SPHERE,
                           }));
 
     _gsk_ecs_add_internal(
@@ -584,7 +584,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 #endif
 
 // Cube
-#if 0
+#if 1
     gsk_Entity *pCubeEntity = malloc(sizeof(gsk_Entity));
     *pCubeEntity            = gsk_ecs_new(ecs);
     gsk_Entity cubeEntity   = *pCubeEntity;

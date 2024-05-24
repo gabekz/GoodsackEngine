@@ -62,45 +62,42 @@ __find_box_sphere_inverse(
 {
     gsk_CollisionPoints ret = {.has_collision = 0};
 
+    // Calculate AABB bounds in world space
     vec3 bounds[2];
     glm_vec3_add(pos_a, a->bounds[0], bounds[0]);
     glm_vec3_add(pos_a, a->bounds[1], bounds[1]);
 
-    // calculate nearest point
-    vec3 dist_vec;
-    glm_vec3_sub(pos_b, pos_a, ret.normal);
-    glm_vec3_normalize(ret.normal);
+    // Find the closest point on AABB to sphere center
+    vec3 closest_point;
+    _aabb_clamped_point(bounds, pos_a, pos_b, closest_point);
 
-    // scale normal to radius for collision-test
-    glm_vec3_scale(ret.normal, b->radius, dist_vec);
-    glm_vec3_sub(pos_b, dist_vec, dist_vec);
+    // Calculate the vector from the sphere center to this closest point
+    vec3 to_closest;
+    glm_vec3_sub(closest_point, pos_b, to_closest);
+    float distance_to_closest = glm_vec3_norm(to_closest);
 
-    if (glm_aabb_point(bounds, dist_vec))
+    // Check for collision
+    if (distance_to_closest < b->radius)
     {
         ret.has_collision = TRUE;
 
-        // calculate point_a
-        _aabb_clamped_point(bounds, pos_a, pos_b, ret.point_a);
+        // Calculate the normal (from sphere to box)
+        glm_vec3_normalize_to(to_closest, ret.normal);
 
-        // calculate point_b
+        // Calculate collision points
         glm_vec3_scale(ret.normal, b->radius, ret.point_b);
-        glm_vec3_sub(pos_b, ret.point_b, ret.point_b);
+        glm_vec3_add(pos_b, ret.point_b, ret.point_b); // Point on sphere
 
-// possibly invert points
-#if 1
+        glm_vec3_copy(closest_point, ret.point_a); // Point on box
+
         if (inverse)
         {
             _invert_points(ret.point_a, ret.point_b);
-            // glm_vec3_negate(ret.normal);
+            glm_vec3_negate(ret.normal);
         }
-#endif
 
-        // get new normal
-        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
-        glm_vec3_normalize(ret.normal);
-
-        // set depth
-        ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
+        // Set depth
+        ret.depth = b->radius - distance_to_closest;
     }
 
     return ret;
@@ -226,37 +223,27 @@ gsk_physics_collision_find_sphere_plane(gsk_SphereCollider *a,
                                         vec3 pos_b)
 {
     gsk_CollisionPoints ret = {.has_collision = 0};
-
-    // A = q - plane.p[0]
-    vec3 A = GLM_VEC3_ZERO_INIT;
-    glm_vec3_sub(pos_b, pos_a, A);
-
-    vec3 plane_normal = GLM_VEC3_ZERO_INIT;
+    vec3 plane_normal       = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(((gsk_PlaneCollider *)b->plane)->normal, plane_normal);
-    float nearestDistance = -glm_vec3_dot(plane_normal, A);
 
-    // furthest point_a = pos_a - plane_normal * distance
+    vec3 A = GLM_VEC3_ZERO_INIT;
+    glm_vec3_sub(pos_a, pos_b, A);
+    float distance_to_plane = glm_vec3_dot(A, plane_normal);
 
-    // NOTE: may need to use an offset for the radius (i.e, 0.02f)
-    if (nearestDistance <= (a->radius))
+    if (distance_to_plane <= a->radius)
     {
         ret.has_collision = TRUE;
         glm_vec3_copy(plane_normal, ret.normal);
 
-        // calculate point_a
-        glm_vec3_scale(plane_normal, a->radius, ret.point_a);
-        glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
+        // point_a on the sphere that touches the plane
+        glm_vec3_scale(plane_normal, -a->radius, ret.point_a);
+        glm_vec3_add(pos_a, ret.point_a, ret.point_a);
 
-        // calculate point_b
-        // TODO: should be normal of the collision, not plane_normal
-        glm_vec3_scale(plane_normal, nearestDistance, ret.point_b);
-        glm_vec3_sub(pos_a, ret.point_b, ret.point_b);
+        // point_b on the plane
+        glm_vec3_scale(plane_normal, distance_to_plane, ret.point_b);
+        glm_vec3_add(pos_b, ret.point_b, ret.point_b);
 
-        // calculate normal of points
-        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
-        glm_vec3_normalize(ret.normal);
-
-        ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
+        ret.depth = a->radius - distance_to_plane;
     }
 
     return ret;
@@ -299,41 +286,41 @@ gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
                                      vec3 pos_b)
 {
     gsk_CollisionPoints ret = {.has_collision = 0};
-
-    // A = q - plane.p[0]
-    vec3 A = GLM_VEC3_ZERO_INIT;
-    glm_vec3_sub(pos_b, pos_a, A);
-
-    vec3 plane_normal = GLM_VEC3_ZERO_INIT;
+    vec3 plane_normal;
     glm_vec3_copy(((gsk_PlaneCollider *)b->plane)->normal, plane_normal);
 
-    float nearestDistance = -glm_vec3_dot(plane_normal, A);
+    // Determine the effective radius of the box in the direction of the plane
+    // normal
+    vec3 half_sizes;
+    glm_vec3_sub(a->bounds[1], a->bounds[0], half_sizes);
+    glm_vec3_scale(half_sizes, 0.5f, half_sizes);
+    float effective_radius = glm_vec3_dot(half_sizes, plane_normal);
 
-    vec3 bounds[2];
-    glm_vec3_add(pos_a, a->bounds[0], bounds[0]);
-    glm_vec3_add(pos_a, a->bounds[1], bounds[1]);
+    // Calculate the signed distance from the box center to the plane
+    vec3 center_to_plane_vec;
+    glm_vec3_sub(pos_b, pos_a, center_to_plane_vec);
+    float distance = glm_vec3_dot(center_to_plane_vec, plane_normal);
 
-    f32 box_width = (bounds[1][0] - bounds[0][0]);
-
-    if (nearestDistance <= box_width / 2)
+    // Check for collision
+    if (fabs(distance) <= effective_radius)
     {
-
         ret.has_collision = TRUE;
+        ret.depth         = effective_radius - fabs(distance);
 
-        // calculate point_a
-        glm_vec3_scale(plane_normal, box_width / 2, ret.point_a);
-        glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
-        _aabb_clamped_point(bounds, pos_a, ret.point_a, ret.point_a);
+        // Calculate points of contact
+        glm_vec3_scale(plane_normal, effective_radius, ret.point_a);
+        if (distance < 0)
+        {
+            glm_vec3_add(pos_a, ret.point_a, ret.point_a);
+            glm_vec3_scale(plane_normal, 1, ret.normal);
+        } else
+        {
+            glm_vec3_sub(pos_a, ret.point_a, ret.point_a);
+            glm_vec3_copy(plane_normal, ret.normal);
+        }
 
-        // calculate point_b
-        glm_vec3_scale(plane_normal, nearestDistance, ret.point_b);
-        glm_vec3_sub(pos_a, ret.point_b, ret.point_b);
-
-        // calculate normal of points
-        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
-        glm_vec3_normalize(ret.normal);
-
-        ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
+        glm_vec3_scale(plane_normal, distance, ret.point_b);
+        glm_vec3_add(pos_b, ret.point_b, ret.point_b);
     }
 
     return ret;
