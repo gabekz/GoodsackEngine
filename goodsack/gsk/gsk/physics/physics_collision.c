@@ -106,6 +106,70 @@ __find_box_sphere_inverse(
     return ret;
 }
 
+static gsk_CollisionPoints
+__find_capsule_sphere_inverse(gsk_CapsuleCollider *a,
+                              gsk_SphereCollider *b,
+                              vec3 pos_a,
+                              vec3 pos_b,
+                              u8 inverse)
+{
+    gsk_CollisionPoints ret = {.has_collision = 0};
+
+    vec3 capsule_base, capsule_tip, capsule_line_end_offset, closest_point;
+    vec3 sub_result, sphere_to_closest;
+
+    // Adjust base and tip of the capsule to its position
+    glm_vec3_sub(pos_a, a->base, capsule_base);
+    glm_vec3_add(a->tip, pos_a, capsule_tip);
+
+    // Calculate the capsule line segment direction and scale by radius
+    vec3 capsule_direction;
+    glm_vec3_sub(capsule_tip, capsule_base, capsule_direction);
+    glm_vec3_normalize(capsule_direction);
+    glm_vec3_scale(capsule_direction, a->radius, capsule_line_end_offset);
+
+    // Adjust capsule segment to account for radius
+    vec3 capsule_A, capsule_B;
+    glm_vec3_sub(capsule_base, capsule_line_end_offset, capsule_A);
+    glm_vec3_add(capsule_tip, capsule_line_end_offset, capsule_B);
+
+    // Find closest point on the capsule segment to the sphere's center
+    _closest_point_line_segment(capsule_A, capsule_B, pos_b, closest_point);
+
+    // Calculate the vector from the sphere's center to the closest point
+    glm_vec3_sub(closest_point, pos_b, sphere_to_closest);
+    float distance_to_sphere = glm_vec3_norm(sphere_to_closest);
+
+    // Check for collision
+    float collision_distance = a->radius + b->radius;
+    if (distance_to_sphere < collision_distance)
+    {
+        ret.has_collision = 1;
+
+        // Calculate penetration depth and normal
+        float penetration_depth = collision_distance - distance_to_sphere;
+        vec3 collision_normal;
+        glm_vec3_normalize_to(sphere_to_closest, collision_normal);
+
+        // Calculate collision points and store them
+        glm_vec3_scale(collision_normal, b->radius, ret.point_b);
+        glm_vec3_add(pos_b, ret.point_b, ret.point_b);
+
+        glm_vec3_scale(collision_normal, -a->radius, ret.point_a);
+        glm_vec3_add(closest_point, ret.point_a, ret.point_a);
+
+        ret.depth = penetration_depth;
+        glm_vec3_copy(collision_normal, ret.normal);
+
+        if (inverse)
+        {
+            _invert_points(ret.point_a, ret.point_b);
+            glm_vec3_negate(ret.normal);
+        }
+    }
+    return ret;
+}
+
 /*************************************************************************
  * implementation from physics_collision.h
  *************************************************************************/
@@ -196,6 +260,17 @@ gsk_physics_collision_find_sphere_plane(gsk_SphereCollider *a,
     }
 
     return ret;
+}
+
+// Sphere v. Capsule
+gsk_CollisionPoints
+gsk_physics_collision_find_sphere_capsule(gsk_SphereCollider *a,
+                                          gsk_CapsuleCollider *b,
+                                          vec3 pos_a,
+                                          vec3 pos_b)
+{
+
+    return __find_capsule_sphere_inverse(b, a, pos_b, pos_a, TRUE);
 }
 
 /*------------------------------------------------------------------------
@@ -516,6 +591,16 @@ gsk_physics_collision_find_capsule_plane(gsk_CapsuleCollider *a,
     }
 
     return ret;
+}
+
+// Capsule v. Sphere
+gsk_CollisionPoints
+gsk_physics_collision_find_capsule_sphere(gsk_CapsuleCollider *a,
+                                          gsk_SphereCollider *b,
+                                          vec3 pos_a,
+                                          vec3 pos_b)
+{
+    return __find_capsule_sphere_inverse(a, b, pos_a, pos_b, FALSE);
 }
 
 /*------------------------------------------------------------------------

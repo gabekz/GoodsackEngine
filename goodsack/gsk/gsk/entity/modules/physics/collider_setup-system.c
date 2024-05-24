@@ -36,7 +36,7 @@ init(gsk_Entity e)
     if (collider->type == COLLIDER_SPHERE)
     {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
-        sphereCollider->radius             = 1.0f;
+        sphereCollider->radius             = 0.1f;
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_SphereCollider *)sphereCollider;
@@ -188,6 +188,11 @@ on_collide(gsk_Entity e)
             case COLLIDER_BOX:
                 points = gsk_physics_collision_find_sphere_box(__clsn_prm);
                 break;
+#if 1
+            case COLLIDER_CAPSULE:
+                points = gsk_physics_collision_find_sphere_capsule(__clsn_prm);
+                break;
+#endif
             default: break;
             };
         } else if (collider->type == COLLIDER_PLANE)
@@ -225,6 +230,9 @@ on_collide(gsk_Entity e)
                 break;
             case COLLIDER_CAPSULE:
                 points = gsk_physics_collision_find_capsule_capsule(__clsn_prm);
+                break;
+            case COLLIDER_SPHERE:
+                points = gsk_physics_collision_find_capsule_sphere(__clsn_prm);
                 break;
             default: break;
             }

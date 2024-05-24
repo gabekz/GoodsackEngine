@@ -46,6 +46,13 @@ gsk_physics_collision_find_sphere_box(gsk_SphereCollider *a,
                                       vec3 pos_a,
                                       vec3 pos_b);
 
+// Sphere v. Capsule
+gsk_CollisionPoints
+gsk_physics_collision_find_sphere_capsule(gsk_SphereCollider *a,
+                                          gsk_CapsuleCollider *b,
+                                          vec3 pos_a,
+                                          vec3 pos_b);
+
 /*************************************************************************
  * Plane definitions
  *************************************************************************/
@@ -99,6 +106,13 @@ gsk_physics_collision_find_capsule_plane(gsk_CapsuleCollider *a,
                                          gsk_PlaneCollider *b,
                                          vec3 pos_a,
                                          vec3 pos_b);
+
+// Capsule v. Sphere
+gsk_CollisionPoints
+gsk_physics_collision_find_capsule_sphere(gsk_CapsuleCollider *a,
+                                          gsk_SphereCollider *b,
+                                          vec3 pos_a,
+                                          vec3 pos_b);
 
 /*************************************************************************
  * Raycast definitions
