@@ -6,6 +6,7 @@
 #ifndef __ALSOFT_BUFFER_H__
 #define __ALSOFT_BUFFER_H__
 
+#include "core/audio/audio_clip.h"
 #include "util/sysdefs.h"
 
 // TODO: Move to thirdparty directive - gkutuzov/GoodsackEngine#19
@@ -19,11 +20,11 @@ extern "C" {
  * Creates an OpenAL audio buffer and fills the data immediately
  * by loading the specified .wav file.
  *
- * @param[in] filepath to the specified .wav file
+ * @param[in] p_audio_clip - pointer to already loaded audio clip
  * @return buffer ID (ALuint)
  */
 ALuint
-openal_buffer_create(const char *filePath);
+openal_buffer_create(gsk_AudioClip *p_audio_clip);
 
 /**
  * Deletes the specified OpenAL audio buffer

@@ -24,7 +24,7 @@ void
 openal_cleanup();
 
 ALuint
-openal_generate_source(const char *filepath);
+openal_generate_source();
 
 #ifdef __cplusplus
 }

@@ -10,9 +10,10 @@
     },
 
     "AudioSource": {
-        "uint": ["bufferId"],
+        "uint": ["buffer_audio", "buffer_source"],
         "string": ["filePath"],
-        "bool": ["looping"]
+        "bool": ["is_looping", "is_playing", "play_on_start"],
+        "Resource": ["audio_clip"]
     },
 
     "Bane": {
@@ -49,6 +50,7 @@
 
     "Enemy": {
         "int": ["enemy_type"],
+        "bool": ["is_wep_loaded"],
         "Resource": ["projectile_model", "projectile_material"]
     },
 

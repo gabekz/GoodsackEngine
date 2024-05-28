@@ -74,9 +74,13 @@ struct ComponentAudioListener
 
 struct ComponentAudioSource
 {
-    u32 bufferId;
-    char filePath[256];
-    u32 looping;
+    CACHE_ALIGN(ResRef audio_clip);
+    CACHE_ALIGN(u32 buffer_audio);
+    CACHE_ALIGN(u32 buffer_source);
+    CACHE_ALIGN(char filePath[256]);
+    CACHE_ALIGN(u8 is_looping);
+    CACHE_ALIGN(u8 is_playing);
+    CACHE_ALIGN(u8 play_on_start);
 };
 
 typedef struct ComponentBane
@@ -135,6 +139,7 @@ struct ComponentCollider
 struct ComponentEnemy
 {
     CACHE_ALIGN(int enemy_type);
+    CACHE_ALIGN(u8 is_wep_loaded);
     CACHE_ALIGN(ResRef projectile_material);
     CACHE_ALIGN(ResRef projectile_model);
 };

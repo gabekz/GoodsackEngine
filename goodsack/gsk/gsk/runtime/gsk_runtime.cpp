@@ -12,9 +12,11 @@
 #include "util/sysdefs.h"
 
 #include "core/device/device.h"
+#include "core/drivers/alsoft/alsoft.h"
 #include "entity/ecs.h"
 #include "entity/lua/eventstore.hpp"
 #include "wrapper/lua/lua_init.hpp"
+
 
 #if GSK_RUNTIME_USE_DEBUG
 #include "tools/debug/debug_toolbar.hpp"
@@ -130,6 +132,9 @@ gsk_runtime_setup(const char *root_dir,
     // Initialize gsk_Input
     gsk_device_setInput((gsk_Input {.cursor_position = {0, 0}}));
     device_setCursorState(INIT_CURSOR_LOCKED, INIT_CURSOR_VISIBLE);
+
+    // Initialize audio interface
+    openal_init();
 
 #if USING_RUNTIME_LOADING_SCREEN
     glfwSwapInterval(0);
