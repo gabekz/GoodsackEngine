@@ -27,8 +27,12 @@ init(gsk_Entity e)
 
     cmp_audio_source->buffer_source = openal_generate_source();
 
-    gsk_mod_audio_set_clip(cmp_audio_source,
-                           (gsk_AudioClip *)cmp_audio_source->audio_clip);
+    if (cmp_audio_source->audio_clip)
+    {
+
+        gsk_mod_audio_set_clip(cmp_audio_source,
+                               (gsk_AudioClip *)cmp_audio_source->audio_clip);
+    }
 
     // Distance
     // AL_CHECK(alDistanceModel(AL_EXPONENT_DISTANCE)); in LISTENER
@@ -67,6 +71,14 @@ update(gsk_Entity e)
     AL_CHECK(alSourcei(cmp_audio_source->buffer_source,
                        AL_LOOPING,
                        cmp_audio_source->is_looping));
+
+    // get the Audio Source state
+    ALint source_state;
+    AL_CHECK(alGetSourcei(
+      cmp_audio_source->buffer_source, AL_SOURCE_STATE, &source_state));
+
+    // set is_playing by state
+    cmp_audio_source->is_playing = (source_state == AL_PLAYING) ? TRUE : FALSE;
 }
 
 void
