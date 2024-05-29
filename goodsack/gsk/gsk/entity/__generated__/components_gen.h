@@ -80,6 +80,8 @@ struct ComponentAudioSource
     CACHE_ALIGN(char filePath[256]);
     CACHE_ALIGN(u8 is_looping);
     CACHE_ALIGN(u8 is_playing);
+    CACHE_ALIGN(f32 max_distance);
+    CACHE_ALIGN(f32 min_distance);
     CACHE_ALIGN(u8 play_on_start);
 };
 

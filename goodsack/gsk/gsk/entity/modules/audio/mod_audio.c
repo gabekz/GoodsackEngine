@@ -34,11 +34,16 @@ gsk_mod_audio_set_clip(struct ComponentAudioSource *p_audio_source,
     AL_CHECK(alSourcei(
       p_audio_source->buffer_source, AL_BUFFER, p_audio_source->buffer_audio));
 
-    // setup rolloff
+// setup rolloff
+#if 0
     AL_CHECK(alSourcef(p_audio_source->buffer_source, AL_ROLLOFF_FACTOR, 1));
-    AL_CHECK(
-      alSourcef(p_audio_source->buffer_source, AL_REFERENCE_DISTANCE, 6));
-    AL_CHECK(alSourcef(p_audio_source->buffer_source, AL_MAX_DISTANCE, 15));
+    AL_CHECK(alSourcef(p_audio_source->buffer_source,
+                       AL_REFERENCE_DISTANCE,
+                       p_audio_source->min_distance));
+    AL_CHECK(alSourcef(p_audio_source->buffer_source,
+                       AL_MAX_DISTANCE,
+                       p_audio_source->max_distance));
+#endif
 
     // reset is_playing state
     p_audio_source->is_playing = FALSE;

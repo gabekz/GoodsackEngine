@@ -17,6 +17,12 @@
 
 #include "util/filesystem.h"
 
+#define DEFAULT_MIN 8
+#define DEFAULT_MAX 15
+
+#define USING_RIGIDBODY_VELOCITY 1
+#define VELOCITY_SCALE           1
+
 static void
 init(gsk_Entity e)
 {
@@ -37,9 +43,22 @@ init(gsk_Entity e)
     // Distance
     // AL_CHECK(alDistanceModel(AL_EXPONENT_DISTANCE)); in LISTENER
     AL_CHECK(alSourcef(cmp_audio_source->buffer_source, AL_ROLLOFF_FACTOR, 1));
-    AL_CHECK(
-      alSourcef(cmp_audio_source->buffer_source, AL_REFERENCE_DISTANCE, 6));
-    AL_CHECK(alSourcef(cmp_audio_source->buffer_source, AL_MAX_DISTANCE, 15));
+
+    if (!cmp_audio_source->min_distance)
+    {
+        cmp_audio_source->min_distance = DEFAULT_MIN;
+    }
+    if (!cmp_audio_source->max_distance)
+    {
+        cmp_audio_source->max_distance = DEFAULT_MAX;
+    }
+
+    AL_CHECK(alSourcef(cmp_audio_source->buffer_source,
+                       AL_REFERENCE_DISTANCE,
+                       cmp_audio_source->min_distance));
+    AL_CHECK(alSourcef(cmp_audio_source->buffer_source,
+                       AL_MAX_DISTANCE,
+                       cmp_audio_source->max_distance));
 
     // Play on initialization
     if (cmp_audio_source->play_on_start == TRUE)
@@ -68,9 +87,32 @@ update(gsk_Entity e)
     }
 #endif
 
+#if USING_RIGIDBODY_VELOCITY
+    if (gsk_ecs_has(e, C_RIGIDBODY))
+    {
+        struct ComponentRigidbody *cmp_rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
+        ALfloat sourceVelocity[]                 = {
+          cmp_rigidbody->linear_velocity[0] * VELOCITY_SCALE,
+          cmp_rigidbody->linear_velocity[1] * VELOCITY_SCALE,
+          cmp_rigidbody->linear_velocity[2] * VELOCITY_SCALE,
+        };
+        AL_CHECK(alSourcefv(
+          cmp_audio_source->buffer_source, AL_VELOCITY, sourceVelocity));
+    }
+#endif // USING_RIGIDBODY_VELOCITY
+
+    // update looping
     AL_CHECK(alSourcei(cmp_audio_source->buffer_source,
                        AL_LOOPING,
                        cmp_audio_source->is_looping));
+
+    // update distances
+    AL_CHECK(alSourcef(cmp_audio_source->buffer_source,
+                       AL_REFERENCE_DISTANCE,
+                       cmp_audio_source->min_distance));
+    AL_CHECK(alSourcef(cmp_audio_source->buffer_source,
+                       AL_MAX_DISTANCE,
+                       cmp_audio_source->max_distance));
 
     // get the Audio Source state
     ALint source_state;
