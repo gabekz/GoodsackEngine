@@ -7,9 +7,6 @@
 #define __LOADER_QMAP_H__
 
 #include "asset/qmap/qmapdefs.h"
-#include "core/graphics/material/material.h"
-#include "core/graphics/mesh/mesh.h"
-#include "core/graphics/mesh/model.h"
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture_set.h"
 
@@ -21,15 +18,10 @@
 extern "C" {
 #endif // __cplusplus
 
-//#define QMAP_TYPE 0
-
 gsk_QMapContainer
-gsk_qmap_load(const char *map_path, gsk_TextureSet *p_texture_set);
-
-#if 0
-void *
-gsk_qmap_attach_textures(gsk_QMapContainer *p_container, void *p_texture_set);
-#endif
+gsk_qmap_load(const char *map_path,
+              gsk_TextureSet *p_texture_set,
+              gsk_ShaderProgram *p_shader_program);
 
 #ifdef __cplusplus
 }

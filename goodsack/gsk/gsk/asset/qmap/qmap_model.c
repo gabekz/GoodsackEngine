@@ -112,5 +112,6 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
     }
 
     p_container->is_model_loaded = TRUE;
+    p_container->p_model         = qmap_model;
     return qmap_model;
 }

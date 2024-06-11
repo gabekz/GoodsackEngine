@@ -17,6 +17,7 @@
 #include "asset/qmap/qmapdefs.h"
 
 #include "core/graphics/mesh/model.h"
+#include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture_set.h"
 
 #include "util/filesystem.h"
@@ -31,7 +32,9 @@
 /**********************************************************************/
 
 gsk_QMapContainer
-gsk_qmap_load(const char *map_path, gsk_TextureSet *p_texture_set)
+gsk_qmap_load(const char *map_path,
+              gsk_TextureSet *p_texture_set,
+              gsk_ShaderProgram *p_shader_program)
 {
     // Parse map container
     gsk_QMapContainer ret = gsk_qmap_parse_map_file(map_path, p_texture_set);
@@ -48,5 +51,9 @@ gsk_qmap_load(const char *map_path, gsk_TextureSet *p_texture_set)
             gsk_qmap_build_polys_from_brush(&ret, brush);
         }
     }
+
+    // build model
+    gsk_qmap_load_model(&ret, p_shader_program);
+
     return ret;
 }
