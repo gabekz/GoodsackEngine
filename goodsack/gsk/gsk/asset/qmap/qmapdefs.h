@@ -6,10 +6,7 @@
 #ifndef __QMAPDEFS_H__
 #define __QMAPDEFS_H__
 
-#include "core/graphics/material/material.h"
-#include "core/graphics/mesh/mesh.h"
 #include "core/graphics/mesh/model.h"
-#include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture_set.h"
 
 #include "util/array_list.h"
@@ -27,9 +24,9 @@ extern "C" {
 #define QMAP_MAX_FIELD_MEMBERS 20
 
 // classification
-#define BACK     0
-#define FRONT    1
-#define ON_PLANE 3
+#define QMAP_CLASS_BACK     0
+#define QMAP_CLASS_FRONT    1
+#define QMAP_CLASS_ON_PLANE 3
 
 #define QMAP_IMPORT_SCALE 0.02f
 //#define QMAP_IMPORT_SCALE 1.0f

@@ -314,7 +314,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                 s32 facing = gsk_qmap_util_classify_point(
                   vert_m->position, plane_norm, plane_deter);
 
-                if (facing != BACK)
+                if (facing != QMAP_CLASS_BACK)
                 {
                     vec3 b    = {0, 0, 0};
                     f32 angle = 0;
@@ -338,9 +338,11 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                               i,
                               n,
                               m,
-                              (facing == BACK)
-                                ? "BACK"
-                                : (facing == FRONT ? "FRONT" : "ON_PLANE"));
+                              (facing == QMAP_CLASS_BACK)
+                                ? "QMAP_CLASS_BACK"
+                                : (facing == QMAP_CLASS_FRONT
+                                     ? "QMAP_CLASS_FRONT"
+                                     : "QMAP_CLASS_ON_PLANE"));
                 }
             }
 

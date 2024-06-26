@@ -84,13 +84,13 @@ gsk_qmap_util_classify_point(vec3 point, vec3 plane_norm, f32 plane_deter)
 
     if (result > 0.0f)
     {
-        return FRONT;
+        return QMAP_CLASS_FRONT;
     } else if (result < 0.0f)
     {
-        return BACK;
+        return QMAP_CLASS_BACK;
     }
 
-    return ON_PLANE;
+    return QMAP_CLASS_ON_PLANE;
 }
 /*--------------------------------------------------------------------*/
 

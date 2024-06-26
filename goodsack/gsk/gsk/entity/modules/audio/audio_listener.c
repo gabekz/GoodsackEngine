@@ -36,7 +36,7 @@ update(gsk_Entity e)
             ALfloat listenerOrientation[]  = {
               // View
               camera->front[0],
-              camera->front[1],
+              0.0f,
               camera->front[2],
               // Axis-Up
               camera->axisUp[0],
