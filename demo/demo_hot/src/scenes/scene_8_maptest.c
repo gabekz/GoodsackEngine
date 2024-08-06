@@ -94,10 +94,10 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     gsk_ShaderProgram *p_shader_qmap =
       gsk_shader_program_create(GSK_PATH("gsk://shaders/lit-diffuse.shader"));
 
-    gsk_QMapContainer qmap =
-      gsk_qmap_load(GSK_PATH("gsk://map/cube_valve.map"), &texture_set);
+    gsk_QMapContainer qmap = gsk_qmap_load(
+      GSK_PATH("gsk://map/cube_valve.map"), &texture_set, p_shader_qmap);
 
-    gsk_Model *qmap_model = gsk_qmap_load_model(&qmap, p_shader_qmap);
+    gsk_Model *qmap_model = qmap.p_model;
     /*----------------------
      |  ECS Setup
      -----------------------*/

@@ -14,6 +14,8 @@
 extern "C" {
 #endif // __cplusplus
 
+#define ARRAY_LIST_RESIZE_EMPTY FALSE
+
 typedef struct ArrayList
 {
     u64 list_count, list_next;

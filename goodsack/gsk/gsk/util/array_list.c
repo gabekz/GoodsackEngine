@@ -13,11 +13,13 @@
 
 #define LOG_ENABLE FALSE
 
-ArrayList
-array_list_init(const u32 data_size, const u32 list_increment)
+static ArrayList
+__array_list_new_internal(const u32 data_size, const u32 list_increment)
 {
-    if (list_increment <= 0) {
-        LOG_CRITICAL("arraylist increment cannot be zero");
+    if (list_increment <= 0)
+    {
+        LOG_CRITICAL("array_list increment cannot be zero (is %d)",
+                     list_increment);
     }
 
     const u32 starting_count = list_increment;
@@ -36,10 +38,27 @@ array_list_init(const u32 data_size, const u32 list_increment)
     return ret;
 }
 
+static ArrayList
+__array_list_reset_internal(ArrayList *p_self)
+{
+    u32 data_size       = p_self->data.data_size;
+    u32 list_incremenet = p_self->list_increment;
+
+    free(p_self->data.buffer);
+    *p_self = __array_list_new_internal(data_size, list_incremenet);
+}
+
+ArrayList
+array_list_init(const u32 data_size, const u32 list_increment)
+{
+    return __array_list_new_internal(data_size, list_increment);
+}
+
 void
 array_list_push(ArrayList *self, void *data)
 {
-    if (self->list_next >= self->list_count) {
+    if (self->list_next >= self->list_count)
+    {
 
         size_t newsize = self->data.buffer_size +
                          (self->list_increment * self->data.data_size);
@@ -54,8 +73,13 @@ array_list_push(ArrayList *self, void *data)
                   newsize);
 #endif
 
+        void *p = realloc(self->data.buffer, newsize);
+        if (p == NULL)
+        {
+            LOG_CRITICAL("Failed to reallocate array_list %p", (void *)self);
+        }
+        self->data.buffer      = p;
         self->data.buffer_size = newsize;
-        self->data.buffer      = realloc(self->data.buffer, newsize);
         self->list_count       = newcount;
     }
 
@@ -69,17 +93,20 @@ array_list_push(ArrayList *self, void *data)
 void
 array_list_pop(ArrayList *self)
 {
-    if (self->is_list_empty) {
+    if (self->is_list_empty)
+    {
         LOG_WARN("Trying to pop empty arraylist");
         return; // nothing to pop.
     }
 
-    if (((int)self->list_next - 1) < 0) {
-        self->is_list_empty = TRUE;
-        self->list_next     = 0;
-        return;
-    }
     self->list_next--;
+    if (((int)self->list_next) <= 0)
+    {
+        self->is_list_empty = TRUE;
+#if ARRAY_LIST_RESIZE_EMPTY
+        __array_list_reset_internal(self);
+#endif
+    }
 }
 
 void *

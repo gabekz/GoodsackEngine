@@ -28,8 +28,10 @@ extern "C" {
     logger_log(LogLevel_WARN, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define LOG_ERROR(fmt, ...) \
     logger_log(LogLevel_ERROR, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
-#define LOG_CRITICAL(fmt, ...) \
-    logger_log(LogLevel_CRITICAL, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_CRITICAL(fmt, ...)                                         \
+    logger_log(                                                        \
+      LogLevel_CRITICAL, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__); \
+    exit(-1)
 
 typedef enum {
     LogLevel_NONE,
