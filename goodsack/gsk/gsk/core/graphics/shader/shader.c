@@ -60,7 +60,7 @@ open_memstream(char **buffer, int bufferLen)
                 strerror(GetLastError()));
         exit(GetLastError());
     }
-#else // WIN32
+#else
     bp =
       mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
     if (bp == MAP_FAILED)
@@ -71,13 +71,13 @@ open_memstream(char **buffer, int bufferLen)
                 strerror(errno));
         exit(errno);
     }
-#endif // WIN32
+#endif
 
     /* return stream that is now buffer-mapped */
     return stream;
 }
 
-#endif // SYS_ENV_WIN {TODO}
+#endif
 
 /* Compile single shader type (vertex, fragment, etc.) and return
  * the id from OpenGL.

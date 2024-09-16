@@ -112,7 +112,8 @@ int
 entity::ECSComponent::GetVariable(std::string var, T *destination)
 {
     Accessor acr = m_componentLayout.getAccessor(var);
-    if (acr.size) {
+    if (acr.size)
+    {
         // printf("TEST T: %f", *(T *)((char *)m_Data.mem+acr.position));
         *destination = *(T *)((char *)m_Data.mem + (acr.position));
         return 1;
@@ -127,7 +128,8 @@ inline // vec3 specialization
                                               float (*destination)[3])
 {
     Accessor acr = m_componentLayout.getAccessor(var);
-    if (acr.size) {
+    if (acr.size)
+    {
         glm_vec3_copy((float *)((char *)m_Data.mem + acr.position),
                       *destination);
         return 1;
@@ -142,7 +144,8 @@ inline // mat3 specialization
                                                  float (*destination)[3][3])
 {
     Accessor acr = m_componentLayout.getAccessor(var);
-    if (acr.size) {
+    if (acr.size)
+    {
         glm_mat3_copy((vec3 *)((char *)m_Data.mem + acr.position),
                       *destination);
         return 1;
@@ -157,7 +160,8 @@ inline // mat4 specialization
                                                  float (*destination)[4][4])
 {
     Accessor acr = m_componentLayout.getAccessor(var);
-    if (acr.size) {
+    if (acr.size)
+    {
         glm_mat4_copy((vec4 *)((char *)m_Data.mem + acr.position),
                       *destination);
         return 1;
