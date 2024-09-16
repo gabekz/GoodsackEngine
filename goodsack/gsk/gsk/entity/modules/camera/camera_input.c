@@ -16,7 +16,8 @@ camera_input(gsk_Entity cameraEntity, GLFWwindow *window)
 
     if (!gsk_ecs_has(cameraEntity, C_CAMERA) ||
         !gsk_ecs_has(cameraEntity, C_CAMERAMOVEMENT) ||
-        !gsk_ecs_has(cameraEntity, C_TRANSFORM)) {
+        !gsk_ecs_has(cameraEntity, C_TRANSFORM))
+    {
         return;
     }
 
@@ -31,22 +32,26 @@ camera_input(gsk_Entity cameraEntity, GLFWwindow *window)
 
     float speed = cameraMovement->speed * gsk_device_getTime().delta_time;
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
         vec3 p = GLM_VEC3_ZERO_INIT;
         glm_vec3_scale(camera->front, speed, p);
         glm_vec3_add(transform->position, p, transform->position);
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
         vec3 p = GLM_VEC3_ZERO_INIT;
         glm_vec3_scale(camera->front, speed, p);
         glm_vec3_sub(transform->position, p, transform->position);
     }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
         glm_vec3_crossn(camera->front, camera->axisUp, cross);
         glm_vec3_scale(cross, speed, p);
         glm_vec3_sub(transform->position, p, transform->position);
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
         glm_vec3_crossn(camera->front, camera->axisUp, cross);
         glm_vec3_scale(cross, speed, p);
         glm_vec3_add(transform->position, p, transform->position);

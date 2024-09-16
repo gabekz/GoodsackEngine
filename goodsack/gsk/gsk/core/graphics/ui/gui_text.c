@@ -20,7 +20,8 @@ __fill_font_data(char *self_widths, const char *path_font_data)
     char start_character;
 
     p_file = fopen(path_font_data, "rb");
-    if (p_file == NULL) {
+    if (p_file == NULL)
+    {
         LOG_CRITICAL("Failed to openl file: %s", path_font_data);
     }
     fread(&map_width, 4, 1, p_file);
@@ -86,7 +87,8 @@ gsk_gui_text_create(const char *text_string)
     int last_effective_spacing = 10;
 
     // Loop through each character
-    for (int i = 0; i < char_count; i++) {
+    for (int i = 0; i < char_count; i++)
+    {
         char c = toupper(text_string[i]);
 
         int target = (int)c - atlas_first_char_ascii_num;
@@ -138,7 +140,8 @@ gsk_gui_text_create(const char *text_string)
 void
 gsk_gui_text_draw(gsk_GuiText *self)
 {
-    for (int i = 0; i < self->character_count; i++) {
+    for (int i = 0; i < self->character_count; i++)
+    {
         gsk_gui_element_draw(self->elements[i]);
     }
 }

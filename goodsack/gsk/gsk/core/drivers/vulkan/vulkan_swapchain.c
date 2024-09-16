@@ -29,7 +29,8 @@ vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface)
     VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(
       device, surface, &formatCount, NULL));
 
-    if (formatCount != 0) {
+    if (formatCount != 0)
+    {
         details->formats = malloc(sizeof(VkSurfaceFormatKHR) * formatCount);
 
         vkGetPhysicalDeviceSurfaceFormatsKHR(
@@ -41,7 +42,8 @@ vulkan_swapchain_query_details(VkPhysicalDevice device, VkSurfaceKHR surface)
     vkGetPhysicalDeviceSurfacePresentModesKHR(
       device, surface, &presentModeCount, NULL);
 
-    if (presentModeCount != 0) {
+    if (presentModeCount != 0)
+    {
         details->presentModes =
           malloc(sizeof(VkPresentModeKHR) * presentModeCount);
 
@@ -55,9 +57,11 @@ VkSurfaceFormatKHR
 vulkan_swapchain_choose_format(VkSurfaceFormatKHR *formats, int count)
 {
     // Find preferred format
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++)
+    {
         if (formats[i].format == VK_FORMAT_B8G8R8A8_SRGB &&
-            formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        {
             return formats[i];
         }
     }
@@ -67,7 +71,8 @@ vulkan_swapchain_choose_format(VkSurfaceFormatKHR *formats, int count)
 VkPresentModeKHR
 vulkan_swapchain_choose_present_mode(VkPresentModeKHR *modes, int count)
 {
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++)
+    {
         if (modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) { return modes[i]; }
     }
     return VK_PRESENT_MODE_FIFO_KHR;
@@ -77,9 +82,11 @@ VkExtent2D
 vulkan_swapchain_choose_extent(VkSurfaceCapabilitiesKHR capabilities,
                                GLFWwindow *window)
 {
-    if (capabilities.currentExtent.width != UINT32_MAX) {
+    if (capabilities.currentExtent.width != UINT32_MAX)
+    {
         return capabilities.currentExtent;
-    } else {
+    } else
+    {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         VkExtent2D actualExtent = {(u32)width, (u32)height};
@@ -119,7 +126,8 @@ vulkan_swapchain_create(VkDevice device,
     u32 imageCount = details->capabilities.minImageCount + 1;
 
     if (details->capabilities.maxImageCount > 0 &&
-        imageCount < details->capabilities.maxImageCount) {
+        imageCount < details->capabilities.maxImageCount)
+    {
         imageCount = details->capabilities.maxImageCount;
     }
 
@@ -146,7 +154,8 @@ vulkan_swapchain_create(VkDevice device,
       .oldSwapchain = VK_NULL_HANDLE};
 
     if (vkCreateSwapchainKHR(device, &createInfo, NULL, &details->swapchain) !=
-        VK_SUCCESS) {
+        VK_SUCCESS)
+    {
         LOG_ERROR("failed to create swap chain!");
     }
 
@@ -162,7 +171,8 @@ vulkan_swapchain_create(VkDevice device,
     details->swapchainImageViews = malloc(sizeof(VkImageView) * imageCount);
     details->swapchainImageCount = imageCount;
 
-    for (int i = 0; i < imageCount; i++) {
+    for (int i = 0; i < imageCount; i++)
+    {
         VkImageViewCreateInfo createInfo = {
           .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
           .image    = details->swapchainImages[i],
@@ -182,7 +192,8 @@ vulkan_swapchain_create(VkDevice device,
 
         if (vkCreateImageView(
               device, &createInfo, NULL, &details->swapchainImageViews[i]) !=
-            VK_SUCCESS) {
+            VK_SUCCESS)
+        {
             LOG_ERROR("Failed to create image views!");
         }
     }
@@ -233,7 +244,8 @@ vulkan_swapchain_cleanup(VkDevice device,
                          VulkanSwapChainDetails *swapchainDetails)
 {
     // TODO: may be incorrect sizes. i.e. framebuffer is not same count
-    for (int i = 0; i < swapchainDetails->swapchainImageCount; i++) {
+    for (int i = 0; i < swapchainDetails->swapchainImageCount; i++)
+    {
         vkDestroyFramebuffer(
           device, swapchainDetails->swapchainFramebuffers[i], NULL);
         vkDestroyImageView(

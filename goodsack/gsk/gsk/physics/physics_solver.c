@@ -42,7 +42,8 @@ gsk_physics_solver_pop(gsk_PhysicsSolver *solver)
 void
 gsk_physics_solver_step(gsk_PhysicsSolver *solver)
 {
-    if (solver->solvers_list->is_list_empty) {
+    if (solver->solvers_list->is_list_empty)
+    {
         assert(solver->solvers_list->list_next == 0);
         return;
     }

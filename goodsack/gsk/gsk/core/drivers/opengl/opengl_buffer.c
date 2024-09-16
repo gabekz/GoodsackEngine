@@ -32,7 +32,8 @@ gsk_gl_vertex_array_add_buffer(gsk_GlVertexArray *self, gsk_GlVertexBuffer *vbo)
 
     unsigned int offset      = 0;
     unsigned int newElements = 0;
-    for (int i = 0; i < vbo->elementsSize; i++) {
+    for (int i = 0; i < vbo->elementsSize; i++)
+    {
 
         // The offset for any existing VBO's inside this VAO
         unsigned int j = i + self->elementsCount;
@@ -64,7 +65,8 @@ gsk_gl_vertex_array_add_buffer(gsk_GlVertexArray *self, gsk_GlVertexBuffer *vbo)
 int
 gsk_gl_get_element_type_size(GLuint type)
 {
-    switch (type) {
+    switch (type)
+    {
     case GL_FLOAT: return sizeof(GLfloat);
     case GL_UNSIGNED_INT: return sizeof(GLuint);
     default: break;

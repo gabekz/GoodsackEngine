@@ -17,7 +17,6 @@
 #include "entity/lua/eventstore.hpp"
 #include "wrapper/lua/lua_init.hpp"
 
-
 #if GSK_RUNTIME_USE_DEBUG
 #include "tools/debug/debug_toolbar.hpp"
 #endif // GSK_RUNTIME_USE_DEBUG

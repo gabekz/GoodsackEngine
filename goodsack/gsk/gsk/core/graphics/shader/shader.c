@@ -45,23 +45,26 @@ open_memstream(char **buffer, int bufferLen)
 
     fm =
       CreateFileMapping(h, NULL, PAGE_READWRITE | SEC_RESERVE, 0, 16384, NULL);
-    if (fm == NULL) {
+    if (fm == NULL)
+    {
         fprintf(stderr,
                 "%s: Couldn't access memory space!\n",
                 strerror(GetLastError()));
         exit(GetLastError());
     }
     *buffer = (char *)MapViewOfFile(fm, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-    if (*buffer == NULL) {
+    if (*buffer == NULL)
+    {
         fprintf(stderr,
                 "%s: Couldn't fill memory space!\n",
                 strerror(GetLastError()));
         exit(GetLastError());
     }
-#else  // WIN32
+#else // WIN32
     bp =
       mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
-    if (bp == MAP_FAILED) {
+    if (bp == MAP_FAILED)
+    {
         fprintf(stderr,
                 "%s: Couldn't access memory space!\n",
                 FileName,
@@ -91,7 +94,8 @@ CompileSingleShader(unsigned int type, const char *path)
     int result;
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
     const char *typeStr = (type == GL_VERTEX_SHADER) ? "Vertex" : "Fragment";
-    if (result == GL_FALSE) {
+    if (result == GL_FALSE)
+    {
         int length;
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         char *message = (char *)alloca(length * sizeof(char));
@@ -124,22 +128,27 @@ ParseShader(const char *path)
 
     short mode = -1; /* -1: NONE | 0: Vert | 1: Frag */
 
-    if ((fptr = fopen(path, "rb")) == NULL) {
+    if ((fptr = fopen(path, "rb")) == NULL)
+    {
         LOG_ERROR("Error opening %s\n", path);
         exit(1);
     }
 
-    while (fgets(line, sizeof(line), fptr)) {
+    while (fgets(line, sizeof(line), fptr))
+    {
         // Line defines shader type
-        if (strstr(line, "#shader") != NULL) {
-            if (stream != NULL) {
+        if (strstr(line, "#shader") != NULL)
+        {
+            if (stream != NULL)
+            {
                 // Close stream for restart
                 //
 #ifdef WIN32
                 fflush(stream);
                 rewind(stream);
 #else
-                if (fclose(stream)) {
+                if (fclose(stream))
+                {
                     LOG_ERROR("Failed to close stream.");
                     exit(1);
                 }
@@ -147,7 +156,8 @@ ParseShader(const char *path)
             }
 
             // Begin vertex
-            if (strstr(line, "vertex") != NULL) {
+            if (strstr(line, "vertex") != NULL)
+            {
                 mode = 0;
 #ifdef WIN32
                 stream  = open_memstream(&vertOut, vertLen);
@@ -157,7 +167,8 @@ ParseShader(const char *path)
 #endif
             }
             // Begin fragment
-            else if (strstr(line, "fragment") != NULL) {
+            else if (strstr(line, "fragment") != NULL)
+            {
                 mode = 1;
 #ifdef WIN32
                 stream  = open_memstream(&fragOut, fragLen);
@@ -167,7 +178,8 @@ ParseShader(const char *path)
 #endif
             }
             // Begin Compute
-            else if (strstr(line, "compute") != NULL) {
+            else if (strstr(line, "compute") != NULL)
+            {
                 mode = 2;
 #ifdef WIN32
                 stream  = open_memstream(&compOut, compLen);
@@ -176,11 +188,14 @@ ParseShader(const char *path)
                 stream = open_memstream(&compOut, &compLen);
 #endif
                 // compLen = 1;
-            } else {
+            } else
+            {
                 mode = -1;
             } // Currently no other modes
-        } else {
-            if (mode > -1) {
+        } else
+        {
+            if (mode > -1)
+            {
                 // fread(vertOut, ftell(fptr), 1, fptr);
                 fprintf(stream, line);
             }
@@ -205,7 +220,8 @@ ParseShader(const char *path)
 gsk_ShaderProgram *
 gsk_shader_program_create(const char *path)
 {
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
         gsk_ShaderSource *ss = ParseShader(path);
 
         u32 program = glCreateProgram();
@@ -226,7 +242,8 @@ gsk_shader_program_create(const char *path)
         ret->shaderSource      = ss;
         return ret;
 
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
         LOG_DEBUG("Shader not implemented for Vulkan");
         return NULL;
     }

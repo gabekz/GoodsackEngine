@@ -58,7 +58,8 @@ update(gsk_Entity e)
 
     if (!mesh->meshData->isSkinnedMesh) return;
 
-    if (animator->is_playing) {
+    if (animator->is_playing)
+    {
         animator->timerNow +=
           (gsk_device_getTime().delta_time) * gsk_device_getTime().time_scale;
     }
@@ -92,7 +93,8 @@ update(gsk_Entity e)
     // a lot more practical than a timing check..
     if (animator->timerNow >= cntAnimation->duration ||
         nxtKeyframeIndex > cntAnimation->keyframesCount - 1 || has_anim_ended ||
-        animator->force_replay) {
+        animator->force_replay)
+    {
         animator->timerNow         = 0;
         animator->cntKeyframeIndex = 1;
 
@@ -121,7 +123,8 @@ update(gsk_Entity e)
     float ratio = (animator->timerNow - cntKeyframe->frameTime) /
                   (nxtKeyframe->frameTime - cntKeyframe->frameTime);
 
-    if (ratio >= nxtKeyframe->frameTime) {
+    if (ratio >= nxtKeyframe->frameTime)
+    {
         gsk_animation_set_keyframe_lerp(
           animator->cntAnimation, nxtKeyframeIndex, ratio);
         animator->cntKeyframeIndex = nxtKeyframeIndex;

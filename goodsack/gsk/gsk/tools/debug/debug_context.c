@@ -28,7 +28,8 @@ gsk_debug_context_init()
     *(ArrayList *)ret->markers_list =
       array_list_init(sizeof(gsk_DebugMarker), 64);
 
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
 
         // Materials
         ret->material = gsk_material_create(
@@ -37,7 +38,8 @@ gsk_debug_context_init()
         // VAO Cube
         ret->vaoCube    = gsk_gl_vertex_array_create();
         float *vertices = PRIM_ARR_V_CUBE;
-        for (int i = 0; i < PRIM_SIZ_V_CUBE; i++) {
+        for (int i = 0; i < PRIM_SIZ_V_CUBE; i++)
+        {
             vertices[i] *= 0.02f;
         }
         gsk_GlVertexBuffer *vboCube = gsk_gl_vertex_buffer_create(
@@ -111,13 +113,16 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
     glm_vec3_copy(pos_end, marker.line.direction);
     glm_vec4_copy(color, marker.color);
 
-    for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++) {
+    for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++)
+    {
 
         gsk_DebugMarker *cnt_marker =
           &((gsk_DebugMarker *)p_debug_context->markers_list->data.buffer)[i];
 
-        if (cnt_marker->id == id) {
-            if (!cnt_marker->persist) {
+        if (cnt_marker->id == id)
+        {
+            if (!cnt_marker->persist)
+            {
                 glm_vec3_copy(position, cnt_marker->position);      // HACK
                 glm_vec3_copy(pos_end, cnt_marker->line.direction); // HACK
                 glm_vec4_copy(color, cnt_marker->color);            // HACK
@@ -132,12 +137,14 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
 void
 gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
 {
-    for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++) {
+    for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++)
+    {
 
         gsk_DebugMarker *cnt_marker =
           &((gsk_DebugMarker *)p_debug_context->markers_list->data.buffer)[i];
 
-        if (cnt_marker->type == MARKER_RAY) {
+        if (cnt_marker->type == MARKER_RAY)
+        {
             gsk_debug_draw_ray(p_debug_context,
                                cnt_marker->position,
                                cnt_marker->line.direction,

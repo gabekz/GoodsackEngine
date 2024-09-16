@@ -97,7 +97,8 @@ CreateScreenBuffer(u32 width, u32 height)
 
     // Error checking
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
         printf("\nFramebuffer ERROR: %u\n", status);
     }
 }
@@ -173,10 +174,12 @@ postbuffer_bind(int enableMSAA)
 {
     // glDebugMessageInsert(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_MARKER, 0,
     //     GL_DEBUG_SEVERITY_NOTIFICATION, -1, "Post Processing buffer init");
-    if (enableMSAA) {
+    if (enableMSAA)
+    {
         glEnable(GL_MULTISAMPLE);
         glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
-    } else {
+    } else
+    {
         glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
     }
 
@@ -192,7 +195,8 @@ void
 postbuffer_draw(gsk_RendererProps *properties)
 {
 
-    if (properties->msaaEnable) {
+    if (properties->msaaEnable)
+    {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sbFBO);
         glBlitFramebuffer(0,

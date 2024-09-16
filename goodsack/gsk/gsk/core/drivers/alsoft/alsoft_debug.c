@@ -19,8 +19,10 @@ int
 openal_debug_callback()
 {
     ALenum error = alGetError();
-    if (error != AL_NO_ERROR) {
-        switch (error) {
+    if (error != AL_NO_ERROR)
+    {
+        switch (error)
+        {
         case AL_INVALID_NAME:
             LOG_ERROR("[OpenAL] AL_INVALID_NAME: a bad name (ID) was given.");
             break;

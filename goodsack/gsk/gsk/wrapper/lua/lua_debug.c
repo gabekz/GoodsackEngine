@@ -10,7 +10,8 @@
 int
 CheckLua(lua_State *L, int r)
 {
-    if (r != LUA_OK) {
+    if (r != LUA_OK)
+    {
         const char *err = lua_tostring(L, -1);
         LOG_ERROR("[Lua] %s", err);
         return 0;
@@ -25,9 +26,11 @@ dumpstack(lua_State *L, const char *message)
     printf("[Lua] Stack Dump Begin (%s)\n", message);
     int top = lua_gettop(L);
     int s   = -1;
-    for (int i = top; i >= 1; i--) {
+    for (int i = top; i >= 1; i--)
+    {
         printf("%d\t%s\t", s, luaL_typename(L, i));
-        switch (lua_type(L, i)) {
+        switch (lua_type(L, i))
+        {
         case LUA_TNUMBER: printf("%g\n", lua_tonumber(L, i)); break;
         case LUA_TSTRING: printf("%s\n", lua_tostring(L, i)); break;
         case LUA_TBOOLEAN:

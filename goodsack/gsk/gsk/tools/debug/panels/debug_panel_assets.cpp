@@ -11,7 +11,8 @@ gsk::tools::panels::Assets::draw(void)
 {
     using namespace ImGui;
 
-    if (CollapsingHeader("Scripts")) {
+    if (CollapsingHeader("Scripts"))
+    {
 
         Text("Lua status: ");
         BeginDisabled();
@@ -24,7 +25,8 @@ gsk::tools::panels::Assets::draw(void)
         if (Button("Force Reload")) { LOG_DEBUG("Force Reload"); }
     }
 
-    if (CollapsingHeader("Shaders")) {
+    if (CollapsingHeader("Shaders"))
+    {
 
         bool shaderReload = false;
         BeginDisabled();

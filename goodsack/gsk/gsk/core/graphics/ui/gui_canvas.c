@@ -23,7 +23,8 @@ gsk_gui_canvas_add_element(gsk_GuiCanvas *p_self, gsk_GuiElement *p_element)
 void
 gsk_gui_canvas_add_text(gsk_GuiCanvas *p_self, gsk_GuiText *p_text)
 {
-    for (int i = 0; i < p_text->character_count; i++) {
+    for (int i = 0; i < p_text->character_count; i++)
+    {
         p_self->elements[p_self->elements_count] = p_text->elements[i];
         p_self->elements_count++;
     }
@@ -32,7 +33,8 @@ gsk_gui_canvas_add_text(gsk_GuiCanvas *p_self, gsk_GuiText *p_text)
 void
 gsk_gui_canvas_draw(gsk_GuiCanvas *p_self)
 {
-    for (int i = 0; i < p_self->elements_count; i++) {
+    for (int i = 0; i < p_self->elements_count; i++)
+    {
         gsk_gui_element_draw(p_self->elements[i]);
     }
 }

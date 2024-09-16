@@ -94,7 +94,8 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     glGenTextures(1, &skyboxCubemap);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap);
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                      0,
                      GL_SRGB8,
@@ -116,7 +117,8 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     glGenTextures(1, &irradianceMap);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                      0,
                      GL_RGB16F,
@@ -138,7 +140,8 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     glGenTextures(1, &prefilterMap);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                      0,
                      GL_RGB16F,
@@ -249,7 +252,8 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
 
     // mat4 *captureViews = malloc(sizeof(mat4) * 6);
     mat4 captureViews[6];
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         glm_mat4_identity(captureViews[i]);
     }
     glm_lookat((vec3) {0, 0, 0},
@@ -289,7 +293,8 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
 
     glViewport(0, 0, 512, 512);
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         glUniformMatrix4fv(glGetUniformLocation(shaderP->id, "view"),
                            1,
                            GL_FALSE,
@@ -319,7 +324,8 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
 
     glViewport(0, 0, 32, 32);
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         glUniformMatrix4fv(glGetUniformLocation(shaderConvolute->id, "view"),
                            1,
                            GL_FALSE,
@@ -343,7 +349,8 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture->id);
     u32 maxMipLevels = 5;
-    for (u32 mip = 0; mip < maxMipLevels; ++mip) {
+    for (u32 mip = 0; mip < maxMipLevels; ++mip)
+    {
         // resize Framebuffer according to mip-level size
         u32 mipWidth  = 128 * pow(0.5, mip);
         u32 mipHeight = 128 * pow(0.5, mip);
@@ -361,7 +368,8 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
           1,
           GL_FALSE,
           (float *)captureProjection);
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 6; i++)
+        {
             glUniformMatrix4fv(
               glGetUniformLocation(shaderPrefilter->id, "view"),
               1,

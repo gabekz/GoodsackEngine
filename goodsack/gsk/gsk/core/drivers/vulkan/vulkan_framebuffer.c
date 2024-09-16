@@ -24,7 +24,8 @@ vulkan_framebuffer_create(VkDevice device,
       malloc(sizeof(VkFramebuffer) *
              framebufferCount /* previously swapChainImageCount */);
 
-    for (int i = 0; i < framebufferCount; i++) {
+    for (int i = 0; i < framebufferCount; i++)
+    {
         VkImageView attachments[] = {swapchainImageViews[i], depthImageView};
 
         VkFramebufferCreateInfo framebufferInfo = {

@@ -39,12 +39,14 @@ static void
 _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     // Quit the application
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
     // Toggle cursor state
-    if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
+    {
         gsk_Input deviceInput = gsk_device_getInput();
         device_setCursorState(!deviceInput.cursor_state.is_locked,
                               !deviceInput.cursor_state.is_visible);
@@ -78,12 +80,14 @@ gsk_window_create(int winWidth, int winHeight, VulkanDeviceContext **vkd)
 
     glfwSetErrorCallback(_error_callback);
 
-    if (!glfwInit()) { // Initialization failed
+    if (!glfwInit())
+    { // Initialization failed
         printf("Failed to initialize glfw");
     }
 
     // OpenGL
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -134,7 +138,8 @@ gsk_window_create(int winWidth, int winHeight, VulkanDeviceContext **vkd)
     }
 
     // Vulkan
-    else if (GSK_DEVICE_API_VULKAN) {
+    else if (GSK_DEVICE_API_VULKAN)
+    {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
@@ -149,7 +154,8 @@ gsk_window_create(int winWidth, int winHeight, VulkanDeviceContext **vkd)
         if (glfwCreateWindowSurface(vulkanDevice->vulkanInstance,
                                     window,
                                     NULL,
-                                    &vulkanDevice->surface) != VK_SUCCESS) {
+                                    &vulkanDevice->surface) != VK_SUCCESS)
+        {
             LOG_ERROR("failed to create window surface!");
         }
 

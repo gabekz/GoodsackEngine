@@ -19,7 +19,8 @@ void
 gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe)
 {
     gsk_Skeleton *skeleton = animation->pSkeleton;
-    for (int i = 0; i < skeleton->jointsCount; i++) {
+    for (int i = 0; i < skeleton->jointsCount; i++)
+    {
 
         gsk_Pose cnt_pose = skeleton->joints[i]->pose;
         gsk_Pose nxt_pose = *animation->keyframes[keyframe]->poses[i];
@@ -42,7 +43,8 @@ gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe)
     }
 
     // calculate skinning matrix
-    for (int i = 0; i < skeleton->jointsCount; i++) {
+    for (int i = 0; i < skeleton->jointsCount; i++)
+    {
         glm_mat4_mul(skeleton->joints[i]->pose.mTransform,
                      skeleton->joints[i]->mInvBindPose,
                      skeleton->joints[i]->pose.mSkinningMatrix);
@@ -61,7 +63,8 @@ gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
 #endif
 
     gsk_Skeleton *skeleton = animation->pSkeleton;
-    for (int i = 0; i < skeleton->jointsCount; i++) {
+    for (int i = 0; i < skeleton->jointsCount; i++)
+    {
 
         gsk_Pose currentPose = skeleton->joints[i]->pose;
         gsk_Pose nextPose    = *animation->keyframes[keyframe]->poses[i];
@@ -93,7 +96,8 @@ gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
     }
 
     // calculate skinning matrix
-    for (int i = 0; i < skeleton->jointsCount; i++) {
+    for (int i = 0; i < skeleton->jointsCount; i++)
+    {
         glm_mat4_mul(skeleton->joints[i]->pose.mTransform,
                      skeleton->joints[i]->mInvBindPose,
                      skeleton->joints[i]->pose.mSkinningMatrix);
@@ -103,7 +107,8 @@ gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
 void
 gsk_skeleton_set_animation(gsk_Skeleton *p_skeleton, u32 index)
 {
-    if (index > p_skeleton->animations_count - 1) {
+    if (index > p_skeleton->animations_count - 1)
+    {
         LOG_ERROR(
           "Failed to set animation on skeleton %s. Index %d is out of range.",
           p_skeleton->name,

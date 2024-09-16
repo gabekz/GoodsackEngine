@@ -26,12 +26,14 @@ entity::Lua_ECSRegisterSystem(lua_State *L)
     dumpstack(L, "dump from register2");
 
     int requiredCount = 0;
-    if (!lua_isnil(L, -1)) {
+    if (!lua_isnil(L, -1))
+    {
         requiredCount = lua_rawlen(L, -1);
         LOG_INFO("Required components! Obj len: %d", requiredCount);
     }
 
-    for (int i = 0; i < requiredCount; i++) {
+    for (int i = 0; i < requiredCount; i++)
+    {
         lua_getfield(L, -1, "Camera");
         LOG_INFO("%s", lua_tostring(L, -1));
         lua_pop(L, 1);
@@ -54,7 +56,8 @@ entity::Lua_ECSRegisterSystem(lua_State *L)
     // retrieve table for functions
     store.RetrieveLuaTable();
 
-    for (int i = 0; i < ECSEVENT_LAST + 1; i++) {
+    for (int i = 0; i < ECSEVENT_LAST + 1; i++)
+    {
         const char *fName = ECSEVENT_STRING(i);
         lua_getfield(L, -1, fName);
         // <args>, register-table, table
@@ -62,7 +65,8 @@ entity::Lua_ECSRegisterSystem(lua_State *L)
         // <args>, register-table, table, function
 
         // TODO: check args from lua
-        if (lua_isfunction(L, -1)) {
+        if (lua_isfunction(L, -1))
+        {
             int f = luaL_ref(L, -2); // register to table "start"
             LuaEventStore::Lua_Functions **fList = store.getFunctionList();
 
@@ -74,7 +78,8 @@ entity::Lua_ECSRegisterSystem(lua_State *L)
             LOG_INFO("function list: %s\tnewSize %i",
                      _gsk_ecs_EventToString(i),
                      fList[i]->size);
-        } else {
+        } else
+        {
             // we want to pop this if not a function. Registering as
             // reference will pop this already.
             lua_pop(L, 1);

@@ -15,7 +15,8 @@ gsk_debug_draw_skeleton(gsk_DebugContext *debugContext, gsk_Skeleton *skeleton)
     gsk_gl_vertex_array_bind(debugContext->vaoCube);
     gsk_material_use(debugContext->material);
 
-    for (int i = 0; i < skeleton->jointsCount; i++) {
+    for (int i = 0; i < skeleton->jointsCount; i++)
+    {
         glUniformMatrix4fv(
           glGetUniformLocation(debugContext->material->shaderProgram->id,
                                "u_Model"),

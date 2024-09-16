@@ -52,10 +52,12 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
     struct AttributeInfo attribInfo = {-1};
     attribInfo.idxTan               = -1;
 
-    for (int i = 0; i < attribCount; i++) {
+    for (int i = 0; i < attribCount; i++)
+    {
         const cgltf_attribute *attrib = &gltfPrimitive->attributes[i];
 
-        switch (attrib->type) {
+        switch (attrib->type)
+        {
         case cgltf_attribute_type_position:
             attribInfo.idxPos  = i;
             attribInfo.posData = attrib->data;
@@ -94,7 +96,8 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
 
     // Get all frame-times
     float *frameTimes = malloc(inputsCount * sizeof(float));
-    for (int i = 0; i < inputsCount; i++) {
+    for (int i = 0; i < inputsCount; i++)
+    {
         cgltf_bool frameTimesSuccess = cgltf_accessor_read_float(
           gltfAnimation->samplers[0].input, i, frameTimes + i, 8);
 
@@ -106,7 +109,8 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
         keyframes[i]->poses =
           malloc(skeleton->jointsCount * sizeof(gsk_Pose *));
 
-        for (int j = 0; j < skeleton->jointsCount; j++) {
+        for (int j = 0; j < skeleton->jointsCount; j++)
+        {
             keyframes[i]->poses[j]            = malloc(sizeof(gsk_Pose));
             keyframes[i]->poses[j]->hasMatrix = 0;
         }
@@ -116,14 +120,17 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
              frameTimes[inputsCount - 1],
              inputsCount);
 
-    for (int i = 0; i < gltfAnimation->channels_count; i++) {
+    for (int i = 0; i < gltfAnimation->channels_count; i++)
+    {
         u32 boneIndex = -1;
         // Go through each bone and find ID by target_node of channel
         // TODO: very, very slow. Fix this later.
-        for (int j = 0; j < skeleton->jointsCount; j++) {
+        for (int j = 0; j < skeleton->jointsCount; j++)
+        {
             if (!strncmp(skeleton->joints[j]->name,
                          gltfAnimation->channels[i].target_node->name,
-                         MAX_BONE_NAME_LEN)) {
+                         MAX_BONE_NAME_LEN))
+            {
                 boneIndex = skeleton->joints[j]->id;
                 // TODO: Get parent index by boneIndex
                 break;
@@ -132,10 +139,12 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
         if (boneIndex == -1) LOG_ERROR("Failed to find bone index");
 
         // Set parameters
-        switch (gltfAnimation->channels[i].target_path) {
+        switch (gltfAnimation->channels[i].target_path)
+        {
         case cgltf_animation_path_type_translation:
 
-            for (int j = 0; j < inputsCount; j++) {
+            for (int j = 0; j < inputsCount; j++)
+            {
                 vec3 output            = GLM_VEC3_ZERO_INIT;
                 cgltf_bool testSuccess = cgltf_accessor_read_float(
                   gltfAnimation->channels[i].sampler->output, j, output, 8);
@@ -147,7 +156,8 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
             break;
 
         case cgltf_animation_path_type_rotation:
-            for (int j = 0; j < inputsCount; j++) {
+            for (int j = 0; j < inputsCount; j++)
+            {
                 float *output          = GLM_VEC4_ZERO;
                 cgltf_bool testSuccess = cgltf_accessor_read_float(
                   gltfAnimation->channels[i].sampler->output, j, output, 8);
@@ -156,7 +166,8 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
             }
             break;
         case cgltf_animation_path_type_scale:
-            for (int j = 0; j < inputsCount; j++) {
+            for (int j = 0; j < inputsCount; j++)
+            {
                 float *output          = GLM_VEC3_ZERO;
                 cgltf_bool testSuccess = cgltf_accessor_read_float(
                   gltfAnimation->channels[i].sampler->output, j, output, 8);
@@ -241,7 +252,8 @@ _create_joint_recurse(gsk_Skeleton *skeleton,
     skeleton->jointsCount = id + 1;
 
     // Recursive-descent
-    for (int i = 0; i < joint.childrenCount; i++) {
+    for (int i = 0; i < joint.childrenCount; i++)
+    {
         _create_joint_recurse(skeleton,
                               skeleton->jointsCount,
                               skeleton->joints[id],
@@ -273,10 +285,12 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
     ret->buffers.outI += vTanBufferSize;
     // Add space for tangent data
-    if (attribInfo.idxTan > -1) {
+    if (attribInfo.idxTan > -1)
+    {
 
         ret->hasTBN = MESH_TBN_MODE_GLTF;
-    } else {
+    } else
+    {
         ret->hasTBN = MESH_TBN_MODE_NONE;
         LOG_WARN("Mesh does not contain tangent data");
     }
@@ -293,7 +307,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // Position, TextureCoord, Normal
 
     int offsetA = 0;
-    for (int i = 0; i < vertCount; i++) {
+    for (int i = 0; i < vertCount; i++)
+    {
         // Fill Positions
         cgltf_accessor_read_float(
           attribInfo.posData, i, ret->buffers.out + offsetA, 100);
@@ -307,11 +322,13 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
           attribInfo.nrmData, i, ret->buffers.out + offsetA, 100);
         offsetA += 3;
         // Fill Tangent
-        if (ret->hasTBN) {
+        if (ret->hasTBN)
+        {
             cgltf_accessor_read_float(
               attribInfo.tanData, i, ret->buffers.out + offsetA, 100);
             offsetA += 3;
-        } else {
+        } else
+        {
             // TODO: calculate TBN
             vec3 vec = GLM_VEC3_ONE_INIT;
             memcpy(ret->buffers.out + offsetA, vec, sizeof(vec3));
@@ -335,11 +352,13 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     ret->buffers.bufferIndices = malloc(ret->buffers.bufferIndices_size);
 
     // store all indices
-    for (int i = 0; i < ret->indicesCount; i++) {
+    for (int i = 0; i < ret->indicesCount; i++)
+    {
         if (!cgltf_accessor_read_uint(attribInfo.indicesData,
                                       i,
                                       ret->buffers.bufferIndices + i,
-                                      ret->indicesCount)) {
+                                      ret->indicesCount))
+        {
             LOG_ERROR("Failed to read uint! %d", i);
         }
     }
@@ -352,7 +371,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     ret->isSkinnedMesh = data->skins_count;
 
     // If we have a skinned mesh
-    if (ret->isSkinnedMesh >= 1) {
+    if (ret->isSkinnedMesh >= 1)
+    {
 
         gsk_Skeleton *skeleton = malloc(sizeof(gsk_Skeleton));
         ret->skeleton          = skeleton;
@@ -392,7 +412,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
         // fill joint and weight buffers
         int offset = 0;
-        for (int i = 0; i < vertCount; i++) {
+        for (int i = 0; i < vertCount; i++)
+        {
             cgltf_bool jointsBufferResult = cgltf_accessor_read_uint(
               &data->accessors[attribInfo.idxJnt], i, jointsBuffer + offset, 4);
 
@@ -402,7 +423,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
                                         weightsBuffer + offset,
                                         8);
 
-            if (!jointsBufferResult || !weightsBufferResult) {
+            if (!jointsBufferResult || !weightsBufferResult)
+            {
                 LOG_ERROR("Failed to read skinning data!");
             }
             // step for the next buffer position
@@ -428,7 +450,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         skeleton->cnt_animation_index = STARTING_ANIMATION_INDEX;
         skeleton->animations_count = 0; // NOTE: incremented in loop for reasons
 
-        for (int i = 0; i < animationsCount; i++) {
+        for (int i = 0; i < animationsCount; i++)
+        {
             LOG_INFO(
               "Animation: \"%s\"\nSamplers count: %d\nChannels count: %d",
               gltfAnimations[i].name,
@@ -444,7 +467,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
             skeleton->animations_count++;
         }
 
-        if (skeleton->animations_count != animationsCount) {
+        if (skeleton->animations_count != animationsCount)
+        {
             LOG_ERROR("uh oh");
         }
 
@@ -471,7 +495,8 @@ gsk_Texture *
 __texture_lookup(const char *path, TextureOptions options)
 {
 
-    if (s_loaded_textures_count == 0) {
+    if (s_loaded_textures_count == 0)
+    {
         s_loaded_textures = malloc(sizeof(gsk_Texture *) * TEXTURE_POOL_COUNT);
         s_loaded_textures_count = 1;
 
@@ -479,14 +504,17 @@ __texture_lookup(const char *path, TextureOptions options)
         return s_loaded_textures[0];
     }
 
-    for (int i = 0; i < s_loaded_textures_count; i++) {
-        if (!strcmp(s_loaded_textures[i]->filePath, path)) {
+    for (int i = 0; i < s_loaded_textures_count; i++)
+    {
+        if (!strcmp(s_loaded_textures[i]->filePath, path))
+        {
             return s_loaded_textures[i];
         }
     }
 
     // Resize pool if needed
-    if (s_loaded_textures_count >= TEXTURE_POOL_COUNT) {
+    if (s_loaded_textures_count >= TEXTURE_POOL_COUNT)
+    {
         s_loaded_textures =
           realloc(s_loaded_textures,
                   sizeof(gsk_Texture *) *
@@ -513,7 +541,8 @@ _create_material(cgltf_material *gltfMaterial,
     // TODO: check if material already exists
 
     // PBR textures
-    if (gltfMaterial->has_pbr_metallic_roughness) {
+    if (gltfMaterial->has_pbr_metallic_roughness)
+    {
 
         gsk_Material *material = gsk_material_create(s_pbrShader, NULL, 0);
 
@@ -521,18 +550,21 @@ _create_material(cgltf_material *gltfMaterial,
           &gltfMaterial->pbr_metallic_roughness;
 
         // Base texture
-        if (textureContainer->base_color_texture.texture) {
+        if (textureContainer->base_color_texture.texture)
+        {
             char p[256] = TEST_PATH_URI;
             const char *diffuseUri =
               textureContainer->base_color_texture.texture->image->uri;
             strcat(p, diffuseUri);
             gsk_material_add_texture(
               material, __texture_lookup(GSK_PATH(p), texPbrOptions));
-        } else {
+        } else
+        {
             gsk_material_add_texture(material, _test_texture_white);
         }
 
-        if (gltfMaterial->normal_texture.texture) {
+        if (gltfMaterial->normal_texture.texture)
+        {
 
             // Normal texture
             char q[256] = TEST_PATH_URI;
@@ -541,11 +573,13 @@ _create_material(cgltf_material *gltfMaterial,
             strcat(q, nrmUri);
             gsk_material_add_texture(
               material, __texture_lookup(GSK_PATH(q), texNormalMapOptions));
-        } else {
+        } else
+        {
             gsk_material_add_texture(material, _test_texture_normal);
         }
 
-        if (textureContainer->metallic_roughness_texture.texture) {
+        if (textureContainer->metallic_roughness_texture.texture)
+        {
             // Roughness
             char r[256] = TEST_PATH_URI;
             const char *roughnessUri =
@@ -553,7 +587,8 @@ _create_material(cgltf_material *gltfMaterial,
             strcat(r, roughnessUri);
             gsk_material_add_texture(
               material, __texture_lookup(GSK_PATH(r), texPbrOptions));
-        } else {
+        } else
+        {
             gsk_material_add_texture(material, _test_texture_white);
         }
 
@@ -578,20 +613,23 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
 
     cgltf_result result = cgltf_parse_file(&options, path, &data);
     result              = cgltf_load_buffers(&options, data, path);
-    if (result != cgltf_result_success) {
+    if (result != cgltf_result_success)
+    {
         LOG_ERROR("Failed to load GLTF file");
     }
 
     int indicesBufferViewIndex = 0;
     LOG_INFO("Meshes Count: %d", data->meshes_count);
 
-    for (int i = 0; i < data->meshes_count; i++) {
+    for (int i = 0; i < data->meshes_count; i++)
+    {
         LOG_INFO("Mesh name: %s", data->meshes[i].name);
 
         int attributesCount = data->meshes[i].primitives->attributes_count;
         LOG_INFO("Total attributes: %d", attributesCount);
 
-        for (int j = 0; j < attributesCount; j++) {
+        for (int j = 0; j < attributesCount; j++)
+        {
             cgltf_attribute attribute =
               data->meshes[i].primitives->attributes[j];
             LOG_INFO("%d\tAttribute: %s - buffer index: %d",
@@ -617,7 +655,8 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
 
     // Figure out how many total objects (meshes) we have
     u32 totalObjects = 0;
-    for (int i = 0; i < data->meshes_count; i++) {
+    for (int i = 0; i < data->meshes_count; i++)
+    {
         totalObjects += data->meshes[i].primitives_count;
     }
 
@@ -628,7 +667,8 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
     u32 materialsCount = data->materials_count;
     gsk_Material **materialsPool =
       malloc(sizeof(gsk_Material *) * materialsCount);
-    if (importMaterials) {
+    if (importMaterials)
+    {
         _test_texture_white =
           texture_create(GSK_PATH("gsk://textures/defaults/white.png"),
                          NULL,
@@ -643,11 +683,14 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
     }
 
     u32 cntMesh = 0;
-    for (int i = 0; i < data->nodes_count; i++) {
+    for (int i = 0; i < data->nodes_count; i++)
+    {
         // if this node is a Mesh Node
-        if (data->nodes[i].mesh != 0) {
+        if (data->nodes[i].mesh != 0)
+        {
             // Each primitive in the mesh
-            for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++) {
+            for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++)
+            {
                 gsk_MeshData *meshData = _load_mesh_vertex_data(
                   &data->nodes[i].mesh->primitives[j], data);
                 ret->meshes[cntMesh] = gsk_mesh_assemble(meshData);
@@ -657,19 +700,22 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
                 glm_mat4_copy(localMatrix, ret->meshes[cntMesh]->localMatrix);
 
                 // Add textures to material pools
-                if (importMaterials) {
+                if (importMaterials)
+                {
 
                     // Check for material
                     cgltf_material *gltfMaterial =
                       data->nodes[i].mesh->primitives[j].material;
-                    if (gltfMaterial != NULL || gltfMaterial != 0x00) {
+                    if (gltfMaterial != NULL || gltfMaterial != 0x00)
+                    {
                         gsk_Material *mat = _create_material(
                           gltfMaterial, materialsPool, materialsCount);
 
                         ret->meshes[cntMesh]->materialImported      = mat;
                         ret->meshes[cntMesh]->usingImportedMaterial = TRUE;
                     }
-                } else {
+                } else
+                {
                     ret->meshes[cntMesh]->usingImportedMaterial = FALSE;
                 }
 

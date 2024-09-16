@@ -22,10 +22,12 @@ vulkan_memory_type(VkPhysicalDevice physicalDevice,
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
-    for (u32 i = 0; i < memProperties.memoryTypeCount; i++) {
+    for (u32 i = 0; i < memProperties.memoryTypeCount; i++)
+    {
         if ((typeFilter & (1 << i)) &&
             (memProperties.memoryTypes[i].propertyFlags & properties) ==
-              properties) {
+              properties)
+        {
             return i;
         }
     }

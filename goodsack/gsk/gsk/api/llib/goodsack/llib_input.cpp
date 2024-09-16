@@ -23,7 +23,8 @@ _GetKeyDown(lua_State *L)
     GLFWwindow *p_window = gsk_runtime_get_renderer()->window;
 
     // Handle Mouse Events
-    if (keycode >= MOUSE_BUTTON_INDEX_BEGIN) {
+    if (keycode >= MOUSE_BUTTON_INDEX_BEGIN)
+    {
         lua_pushboolean(
           L,
           glfwGetMouseButton(p_window, keycode - MOUSE_BUTTON_INDEX_BEGIN) ==

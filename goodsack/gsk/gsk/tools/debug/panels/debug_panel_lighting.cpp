@@ -14,9 +14,17 @@ gsk::tools::panels::Lighting::draw(void)
 
     Separator();
     Text("Directional Light");
-    DragFloat3("Position", p_renderer->lighting_data.lights[0].position, 0.1f, -3000, 3000);
+    DragFloat3("Position",
+               p_renderer->lighting_data.lights[0].position,
+               0.1f,
+               -3000,
+               3000);
     ColorEdit3("Color", p_renderer->lighting_data.lights[0].color);
-    DragFloat("Light Strength", &p_renderer->lighting_data.lights[0].strength, 1, 0, 100);
+    DragFloat("Light Strength",
+              &p_renderer->lighting_data.lights[0].strength,
+              1,
+              0,
+              100);
 
     Separator();
     Text("Ambient Light");
@@ -51,7 +59,8 @@ gsk::tools::panels::Lighting::draw(void)
               2,
               "%.5f");
 
-    if (CollapsingHeader("[Texture] Shadowmap")) {
+    if (CollapsingHeader("[Texture] Shadowmap"))
+    {
         Image((void *)(intptr_t)shadowmap_getTexture(),
               ImVec2(200, 200),
               ImVec2(0, 1),

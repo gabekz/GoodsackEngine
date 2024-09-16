@@ -40,10 +40,12 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
     ImGuiIO &io = ImGui::GetIO();
 
     // Setup Platform/Renderer bindings
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
         ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
         ImGui_ImplGlfw_InitForVulkan(renderer->window, true);
 
         VulkanDeviceContext *vkDevice  = renderer->vulkanDevice;
@@ -112,9 +114,11 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
 
 gsk::tools::DebugToolbar::~DebugToolbar()
 {
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
         ImGui_ImplOpenGL3_Shutdown();
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
         ImGui_ImplVulkan_Shutdown();
     }
     ImGui_ImplGlfw_Shutdown();
@@ -135,7 +139,8 @@ gsk::tools::DebugToolbar::toggle_visibility(void)
 void
 gsk::tools::DebugToolbar::update(void)
 {
-    if (glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS) {
+    if (glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS)
+    {
         toggle_visibility();
     }
 }
@@ -159,39 +164,49 @@ gsk::tools::DebugToolbar::render(void)
     if (!m_debugEnabled) return;
 
     // Create new frame
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
     // Draw Toolbelt
-    if (ImGui::BeginMainMenuBar()) {
+    if (ImGui::BeginMainMenuBar())
+    {
 
-        for (int i = 0; i < DEBUG_MENUS_COUNT; i++) {
-            if (ImGui::BeginMenu(p_menu_names[i])) {
+        for (int i = 0; i < DEBUG_MENUS_COUNT; i++)
+        {
+            if (ImGui::BeginMenu(p_menu_names[i]))
+            {
 
                 // for each panel
                 for (auto it = debug_panels.begin(); it != debug_panels.end();
-                     ++it) {
+                     ++it)
+                {
 
                     if ((*it)->menu_index != i) { continue; }
 
                     // selected, set visibility
-                    if (ImGui::MenuItem((*it)->title.c_str())) {
+                    if (ImGui::MenuItem((*it)->title.c_str()))
+                    {
                         (*it)->visible = true;
                     }
                 }
 
-                if (i == (int)Menus::File) {
-                    if (ImGui::MenuItem("ImGui Demo")) {
+                if (i == (int)Menus::File)
+                {
+                    if (ImGui::MenuItem("ImGui Demo"))
+                    {
                         show_example_panel = true;
                     }
-                    if (ImGui::MenuItem("Exit")) {
+                    if (ImGui::MenuItem("Exit"))
+                    {
                         glfwSetWindowShouldClose(m_renderer->window, GLFW_TRUE);
                     }
                 }
@@ -204,9 +219,11 @@ gsk::tools::DebugToolbar::render(void)
     }
 
     // Draw panels
-    for (auto it = debug_panels.begin(); it != debug_panels.end(); ++it) {
+    for (auto it = debug_panels.begin(); it != debug_panels.end(); ++it)
+    {
         DebugPanel *panel = (*it);
-        if (panel->visible) {
+        if (panel->visible)
+        {
             ImGui::BeginGroup();
             ImGui::Begin(panel->title.c_str(), &(panel->visible));
 
@@ -223,9 +240,11 @@ gsk::tools::DebugToolbar::render(void)
     // Render
     ImGui::Render();
 
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
 #if 1
         VulkanDeviceContext *vkDevice = m_renderer->vulkanDevice;
         ImGui_ImplVulkan_RenderDrawData(

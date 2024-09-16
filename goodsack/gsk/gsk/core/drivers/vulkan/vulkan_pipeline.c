@@ -58,7 +58,8 @@ _createShaderModule(VkDevice device, const char *path)
     };
 
     VkShaderModule ret;
-    if (vkCreateShaderModule(device, &createInfo, NULL, &ret) != VK_SUCCESS) {
+    if (vkCreateShaderModule(device, &createInfo, NULL, &ret) != VK_SUCCESS)
+    {
         LOG_ERROR("Failed to create shader module!");
         return NULL;
     }
@@ -235,7 +236,8 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
 
     if (vkCreatePipelineLayout(
           device, &pipelineLayoutInfo, NULL, &details->pipelineLayout) !=
-        VK_SUCCESS) {
+        VK_SUCCESS)
+    {
         LOG_ERROR("Failed to create pipeline layout!");
     }
 
@@ -310,7 +312,8 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .pDependencies   = &dependency};
 
     if (vkCreateRenderPass(
-          device, &renderPassInfo, NULL, &details->renderPass) != VK_SUCCESS) {
+          device, &renderPassInfo, NULL, &details->renderPass) != VK_SUCCESS)
+    {
         LOG_ERROR("Failed to create render pass!");
     }
 
@@ -342,7 +345,8 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
                                   1,
                                   &pipelineInfo,
                                   NULL,
-                                  &details->graphicsPipeline) != VK_SUCCESS) {
+                                  &details->graphicsPipeline) != VK_SUCCESS)
+    {
         LOG_ERROR("Failed to create graphics pipeline!");
     }
 

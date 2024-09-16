@@ -128,7 +128,8 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     // Debug some data
     {
-        if (DEBUG_POINTS && solver_data.entity.id == DEBUG_POINTS) {
+        if (DEBUG_POINTS && solver_data.entity.id == DEBUG_POINTS)
+        {
 
             gsk_debug_markers_push(
               solver_data.entity.ecs->renderer->debugContext,
@@ -260,9 +261,11 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
           (rigidbody_a->dynamic_friction + rigidbody_a->dynamic_friction) *
           0.5f;
 
-        if (fabs(Ft) <= F * sf) {
+        if (fabs(Ft) <= F * sf)
+        {
             glm_vec3_scale(tangent, Ft, friction_impulse);
-        } else {
+        } else
+        {
             glm_vec3_scale(tangent, -F * df, friction_impulse);
         }
 
@@ -292,7 +295,8 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
     // --------------
     // DEBUG SOME LINES
     {
-        if (DEBUG_POINTS && solver_data.entity.id == DEBUG_POINTS) {
+        if (DEBUG_POINTS && solver_data.entity.id == DEBUG_POINTS)
+        {
             gsk_debug_markers_push(
               solver_data.entity.ecs->renderer->debugContext,
               MARKER_RAY,

@@ -20,15 +20,18 @@ gsk_Model *
 gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials)
 {
     char *ext = strrchr(path, '.');
-    if (!ext) {
+    if (!ext)
+    {
         LOG_CRITICAL("Failed to find file extension for %s\n", path);
-    } else {
+    } else
+    {
         LOG_INFO("extension is %s\n", ext);
     }
 
     gsk_Model *model;
     // Check file extension
-    if (!strcmp(ext, ".obj")) {
+    if (!strcmp(ext, ".obj"))
+    {
         model               = malloc(sizeof(gsk_Model));
         gsk_MeshData *mesh0 = gsk_load_obj(path, scale); // always importing
                                                          // with scale 1.0 here
@@ -43,7 +46,8 @@ gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials)
         model->meshes[0]->usingImportedMaterial = FALSE;
 
         // model->fileType = OBJ;
-    } else if (!strcmp(ext, ".gltf") || !strcmp(ext, ".glb")) {
+    } else if (!strcmp(ext, ".gltf") || !strcmp(ext, ".glb"))
+    {
         model = gsk_load_gltf(path, scale, importMaterials);
         // model->fileType = GLTF;
     }

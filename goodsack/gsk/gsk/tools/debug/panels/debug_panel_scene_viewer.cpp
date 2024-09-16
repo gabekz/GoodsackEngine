@@ -24,10 +24,13 @@ gsk::tools::panels::SceneViewer::draw(void)
     Text("index %d", scene_queued);
 
     SameLine();
-    if (Button("Load Scene")) {
-        if (scene_queued > p_renderer->sceneC || scene_queued < 0) {
+    if (Button("Load Scene"))
+    {
+        if (scene_queued > p_renderer->sceneC || scene_queued < 0)
+        {
             scene_queued = 0;
-        } else {
+        } else
+        {
             gsk_renderer_active_scene(p_renderer, scene_queued);
             gsk_renderer_start(p_renderer);
             scene_queued = p_renderer->activeScene;

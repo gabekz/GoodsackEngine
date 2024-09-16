@@ -40,7 +40,8 @@ entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
     s32 lastPadding  = 0; // Going to assume padding is 8
     s32 totalPadding = 0;
 
-    for (auto &var : data) {
+    for (auto &var : data)
+    {
 
         var.second.position = sizeReq;
 
@@ -73,19 +74,22 @@ entity::ECSComponentList::ECSComponentList(ECSComponentType componentTypeIndex,
     // m_componentsList = malloc(sizeof(ECSComponent **) * ECSCom)
 
     m_components = (ECSComponent **)malloc(sizeof(ECSComponent *) * capacity);
-    for (int i = 0; i < capacity; i++) {
+    for (int i = 0; i < capacity; i++)
+    {
         //
         if (gsk_ecs_has(gsk_Entity {.id    = (gsk_EntityId)i,
                                     .index = (gsk_EntityId)i,
                                     .ecs   = ecs},
-                        componentTypeIndex)) {
+                        componentTypeIndex))
+        {
             m_components[i] = new ECSComponent(
               (void *)gsk_ecs_get(gsk_Entity {.id    = (gsk_EntityId)i,
                                               .index = (gsk_EntityId)i,
                                               .ecs   = ecs},
                                   componentTypeIndex),
               layout);
-        } else {
+        } else
+        {
             m_components[i] = new ECSComponent(layout);
         }
     }
@@ -111,7 +115,8 @@ int
 entity::ECSComponent::SetVariable(std::string var, void *value)
 {
     Accessor acr = m_componentLayout.getAccessor(var);
-    if (acr.size) {
+    if (acr.size)
+    {
         memcpy((char *)m_Data.mem + acr.position, value, acr.size * acr.stride);
         return 1;
     }

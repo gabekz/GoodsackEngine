@@ -92,7 +92,8 @@ _upload_shader_data(gsk_Entity e,
     glm_mat4_copy(camera->view,
                   p_renderer->camera_data.cameras[camera->renderLayer]->view);
 #else
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
         // Get the starting position
         u32 ubo_offset = camera->renderLayer * (renderer->camera_data.uboSize);
 
@@ -108,7 +109,8 @@ _upload_shader_data(gsk_Entity e,
                         sizeof(mat4),
                         camera->view);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
         // TEST (while we don't have direct descriptor sets for objects)
         mat4 p = GLM_MAT4_IDENTITY_INIT;
         // glm_mat4_copy(p, camera->uniform.model);
@@ -173,13 +175,15 @@ update(gsk_Entity e)
     struct ComponentCamera *camera       = gsk_ecs_get(e, C_CAMERA);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
-    if (transform->hasParent) {
+    if (transform->hasParent)
+    {
 
         struct ComponentTransform *parent =
           gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
 
         glm_vec3_copy(parent->position, transform->position);
-        if (gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA)) {
+        if (gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA))
+        {
 
             struct ComponentCamera *parentCam =
               gsk_ecs_get(*(gsk_Entity *)transform->parent, C_CAMERA);
@@ -188,7 +192,8 @@ update(gsk_Entity e)
         }
     }
 
-    if (gsk_ecs_has(e, C_CAMERALOOK)) {
+    if (gsk_ecs_has(e, C_CAMERALOOK))
+    {
 
         struct ComponentCameraLook *cameraLook =
           gsk_ecs_get(e, C_CAMERALOOK); // TODO: Move away
@@ -196,19 +201,22 @@ update(gsk_Entity e)
         gsk_Input input = gsk_device_getInput();
         double cntX, cntY;
 
-        if (input.cursor_state.is_locked == TRUE) {
+        if (input.cursor_state.is_locked == TRUE)
+        {
 
             cntX = input.cursor_position[0];
             cntY = input.cursor_position[1];
 
-            if (cameraLook->firstMouse) {
+            if (cameraLook->firstMouse)
+            {
                 cameraLook->lastX = cntX;
                 cameraLook->lastY = cntY;
 
                 cameraLook->firstMouse = FALSE;
             }
 
-        } else {
+        } else
+        {
             cntX                   = cameraLook->lastX;
             cntY                   = cameraLook->lastY;
             cameraLook->firstMouse = TRUE;
@@ -271,7 +279,8 @@ update(gsk_Entity e)
         transform->orientation[2] = glm_deg(camDirection[2]);
 
         // Process Camera Input as long as the cursor is locked
-        if (input.cursor_state.is_locked == TRUE) {
+        if (input.cursor_state.is_locked == TRUE)
+        {
             camera_input(e, e.ecs->renderer->window);
         }
     }
@@ -292,7 +301,8 @@ update(gsk_Entity e)
     // child-camera's with separate render-layers to share a view with
     // the main camera
     if (transform->hasParent &&
-        gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA)) {
+        gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA))
+    {
 
         struct ComponentTransform *parent =
           gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
@@ -317,9 +327,11 @@ update(gsk_Entity e)
     _upload_shader_data(e, camera, transform);
 
 #if CAMERA_SHAKE
-    if (camera->shake_amount > 0) {
+    if (camera->shake_amount > 0)
+    {
         camera->shake_amount -= 3 * gsk_device_getTime().delta_time;
-    } else if (camera->shake_amount <= 0) {
+    } else if (camera->shake_amount <= 0)
+    {
         camera->shake_amount = 0;
     }
 

@@ -124,7 +124,8 @@ prepass_init()
     free(rectPositions);
 
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
         LOG_ERROR("Framebuffer Error %u", status);
     }
 

@@ -32,12 +32,14 @@ LuaInit(const char *file, gsk_ECS *ecs)
     // add the global C function (register system) to lua
     lua_register(L, "_ECS_RegisterSystem", entity::Lua_ECSRegisterSystem);
 
-    if (!CheckLua(L, luaL_dofile(L, GSK_PATH(LUA_INIT_FILE_PATH)))) {
+    if (!CheckLua(L, luaL_dofile(L, GSK_PATH(LUA_INIT_FILE_PATH))))
+    {
         LOG_CRITICAL("Failed to read engine lua entry: %s",
                      GSK_PATH(LUA_INIT_FILE_PATH));
     }
 
-    if (!CheckLua(L, luaL_dofile(L, file))) {
+    if (!CheckLua(L, luaL_dofile(L, file)))
+    {
         LOG_CRITICAL("Failed to read lua entry: %s", file);
     }
 

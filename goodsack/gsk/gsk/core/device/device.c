@@ -83,7 +83,8 @@ gsk_device_resetTime()
 void
 gsk_device_setTimescale(f32 timescale)
 {
-    if (timescale < 0) {
+    if (timescale < 0)
+    {
         LOG_ERROR("Cannot set timescale lower than 0. Requsted: %f", timescale);
     }
     LOG_DEBUG("Time scale set to %f", timescale);
@@ -108,7 +109,8 @@ gsk_device_updateTime(double time)
     s_device.counter++; // total frames since last interval
 
     // update metrics based on interval
-    if (s_device.clock_metrics >= analytics_interval_ms / 1000) {
+    if (s_device.clock_metrics >= analytics_interval_ms / 1000)
+    {
 
         s_device.time.metrics.last_fps =
           (1.0 / s_device.clock_metrics) * s_device.counter;
