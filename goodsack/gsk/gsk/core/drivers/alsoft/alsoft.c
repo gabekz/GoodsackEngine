@@ -18,6 +18,10 @@
 
 /* static */
 
+ALCcontext *g_al_context;
+ALCdevice *g_al_device;
+u16 g_al_initialized = 0;
+
 static void
 ListAudioDevices(const ALCchar *devices)
 {
@@ -25,7 +29,8 @@ ListAudioDevices(const ALCchar *devices)
     size_t len = 0;
 
     LOG_INFO("Audio Devices List:");
-    while (devices && *device != '\0' && next && *next != '\0') {
+    while (devices && *device != '\0' && next && *next != '\0')
+    {
         LOG_INFO("Device: %s", device);
         len = strlen(device);
         device += (len + 1);
@@ -45,11 +50,17 @@ openal_get_device()
 
     ALboolean enumeration;
     enumeration = alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT");
-    if (!enumeration) {
+    if (!enumeration)
+    {
 
-    } else {
+    } else
+    {
         ListAudioDevices(alcGetString(NULL, ALC_DEVICE_SPECIFIER));
     }
+
+    // store global variables
+    // TODO: maybe don't do this.
+    g_al_device = device;
 
     return device;
 }
@@ -60,7 +71,8 @@ openal_init()
     ALCdevice *device   = openal_get_device();
     ALCcontext *context = alcCreateContext(device, NULL);
 
-    if (!alcMakeContextCurrent(context)) {
+    if (!alcMakeContextCurrent(context))
+    {
         LOG_CRITICAL("[OpenAL] Failed to make context current");
         return 0;
     }
@@ -75,11 +87,27 @@ openal_init()
     // setup the distance model
     AL_CHECK(alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED));
 
+    // store global variables
+    // TODO: maybe don't do this.
+    g_al_initialized = 1;
+    g_al_context     = context;
+
     return 1;
 }
 
+void
+openal_cleanup()
+{
+    if (g_al_initialized)
+    {
+        LOG_DEBUG("Destroying AL Context");
+        AL_CHECK(alcCloseDevice(g_al_device));
+        AL_CHECK(alcDestroyContext(g_al_context));
+    }
+}
+
 ALuint
-openal_generate_source(const char *filepath)
+openal_generate_source()
 {
     ALuint source;
     AL_CHECK(alGenSources((ALuint)1, &source));
@@ -92,10 +120,12 @@ openal_generate_source(const char *filepath)
 
     AL_CHECK(alSourcei(source, AL_LOOPING, AL_FALSE));
 
+#if 0
     // Create buffer and load audio
     ALuint buffer = openal_buffer_create(filepath);
     // Bind buffer
     AL_CHECK(alSourcei(source, AL_BUFFER, buffer));
+#endif
 
     // cleanup
 

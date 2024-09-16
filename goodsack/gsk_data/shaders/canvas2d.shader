@@ -16,7 +16,7 @@ void
 main()
 {
     gl_Position = vec4(
-      u_scale * 2 * (a_Position.xy + u_position.xy) / u_viewport.xy - 1, 0, 1);
+      u_scale * 2 * (a_Position.xy + u_position.xy) / u_viewport.xy - u_scale, 0, 1);
     vs_out.texCoords = a_TexCoords;
 }
 

@@ -1,0 +1,42 @@
+// Game: ZWEIHANDER
+// Format: Standard
+// entity 0
+{
+"classname" "worldspawn"
+// brush 0
+{
+( 0 -32 96 ) ( 0 -32 97 ) ( 0 -33 96 ) textures/prototype/uv_checker 0 0 0 1 1
+( 0 -128 96 ) ( -1 -128 96 ) ( 0 -128 97 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 0 -32 ) ( 127 0 -32 ) ( 128 -1 -32 ) textures/prototype/uv_checker 0 0 0 1 1
+( 0 -32 96 ) ( 0 -33 96 ) ( -1 -32 96 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 0 -32 ) ( 128 0 -31 ) ( 127 0 -32 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 0 -32 ) ( 128 -1 -32 ) ( 128 0 -31 ) textures/prototype/uv_checker 0 0 0 1 1
+}
+// brush 1
+{
+( 128 -128 0 ) ( 128 0 -32 ) ( 128 0 0 ) textures/prototype/uv_checker 0 0 0 1 1
+( 192 -128 0 ) ( 128 -128 -32 ) ( 128 -128 0 ) textures/prototype/uv_checker 0 0 0 1 1
+( 192 0 -32 ) ( 128 -128 -32 ) ( 192 -128 -32 ) textures/prototype/uv_checker 0 0 0 1 1
+( 192 0 0 ) ( 128 -128 0 ) ( 128 0 0 ) textures/prototype/uv_checker 0 0 0 1 1
+( 192 0 0 ) ( 128 0 -32 ) ( 192 0 -32 ) textures/prototype/uv_checker 0 0 0 1 1
+( 192 0 0 ) ( 192 -128 -32 ) ( 192 -128 0 ) textures/prototype/uv_checker 0 0 0 1 1
+}
+// brush 2
+{
+( 0 0 64 ) ( 0 128 32 ) ( 0 128 64 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 0 64 ) ( 0 0 32 ) ( 0 0 64 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 128 32 ) ( 0 0 32 ) ( 128 0 32 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 128 64 ) ( 0 0 64 ) ( 0 128 64 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 128 64 ) ( 0 128 32 ) ( 128 128 32 ) textures/prototype/uv_checker 0 0 0 1 1
+( 128 128 64 ) ( 128 0 32 ) ( 128 0 64 ) textures/prototype/uv_checker 0 0 0 1 1
+}
+// brush 3
+{
+( 32 96 128 ) ( 32 128 64 ) ( 32 128 128 ) textures/prototype/uv_checker 0 0 0 1 1
+( 96 96 128 ) ( 32 96 64 ) ( 32 96 128 ) textures/prototype/uv_checker 0 0 0 1 1
+( 96 128 64 ) ( 32 96 64 ) ( 96 96 64 ) textures/prototype/uv_checker 0 0 0 1 1
+( 96 128 128 ) ( 32 96 128 ) ( 32 128 128 ) textures/prototype/uv_checker 0 0 0 1 1
+( 96 128 128 ) ( 32 128 64 ) ( 96 128 64 ) textures/prototype/uv_checker 0 0 0 1 1
+( 96 128 128 ) ( 96 96 64 ) ( 96 96 128 ) textures/prototype/uv_checker 0 0 0 1 1
+}
+}

@@ -5,7 +5,7 @@
 
 #include "debug_panel_component_viewer.hpp"
 
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #include "core/device/device.h"
 #include "core/drivers/alsoft/alsoft.h"
@@ -32,7 +32,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
     Text("entity %d", e.id);
     PopStyleColor();
 
-    if (gsk_ecs_has(e, C_TRANSFORM)) {
+    if (gsk_ecs_has(e, C_TRANSFORM))
+    {
         BeginChild("Transform", ImVec2(0, GetFontSize() * 12.0f), true);
 
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
@@ -51,20 +52,25 @@ gsk::tools::panels::ComponentViewer::draw(void)
         DragFloat3("Scale", p.scale, -1, 1);
         Separator();
         Text("Parent Entity");
-        if (p.hasParent) {
+        if (p.hasParent)
+        {
             Text("index: %i", ((gsk_Entity *)p.parent)->index);
             Text("id: %i", ((gsk_Entity *)p.parent)->id);
-        } else {
+        } else
+        {
             Text("None");
         }
 
         EndChild();
     }
-    if (gsk_ecs_has(e, C_RIGIDBODY)) {
-        BeginChild("Rigidbody", ImVec2(0, GetFontSize() * 10.0f), true);
+    if (gsk_ecs_has(e, C_RIGIDBODY))
+    {
+        BeginChild("Rigidbody", ImVec2(0, GetFontSize() * 14.0f), true);
+
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Rigidbody Component");
         PopStyleColor();
+
         Separator();
 
         struct ComponentRigidbody &p =
@@ -72,14 +78,39 @@ gsk::tools::panels::ComponentViewer::draw(void)
             gsk_ecs_get(e, C_RIGIDBODY)));
 
         DragFloat3("Gravity", p.gravity, 0.1f, -3000, 3000);
-        DragFloat3("Velocity", p.velocity, 0.1f, -3000, 3000);
         DragFloat3("Force", p.force, 0.1f, -3000, 3000);
-        DragFloat("Mass", &p.mass, 0.45f, 0.9f);
+        DragFloat("Mass", &p.mass, 0.45f, 0.1f, 0.1f);
+
+        Separator();
+
+        DragFloat3("Linear Velocity", p.linear_velocity, 0.1f, -3000, 3000);
+        DragFloat3("Angular Velocity", p.angular_velocity, 0.1f, -3000, 3000);
+
+        Separator();
+
+        DragFloat("Static Friction", &p.static_friction, 0.1f, 0.0f, 1.0f);
+        DragFloat("Dynamic Friction", &p.dynamic_friction, 0.1f, 0.0f, 1.0f);
 
         EndChild();
     }
-    if (gsk_ecs_has(e, C_MODEL)) {
-        BeginChild("Model", ImVec2(0, GetFontSize() * 25.0f), true);
+    if (gsk_ecs_has(e, C_COLLIDER))
+    {
+        BeginChild("Collider", ImVec2(0, GetFontSize() * 14.0f), true);
+
+        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+        Text("Collider Component");
+        PopStyleColor();
+
+        Separator();
+
+        struct ComponentCollider &p = *(
+          static_cast<struct ComponentCollider *>(gsk_ecs_get(e, C_COLLIDER)));
+
+        EndChild();
+    }
+    if (gsk_ecs_has(e, C_MODEL))
+    {
+        BeginChild("Model", ImVec2(0, GetFontSize() * 15.0f), true);
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Model Component");
         PopStyleColor();
@@ -125,11 +156,14 @@ gsk::tools::panels::ComponentViewer::draw(void)
         // *)p.material->shaderProgram->shaderSource->shaderFragment,
         // 128);
 
-        if (CollapsingHeader("Textures")) {
-            if (GSK_DEVICE_API_OPENGL) {
+        if (CollapsingHeader("Textures"))
+        {
+            if (GSK_DEVICE_API_OPENGL)
+            {
                 int textureCount = ((gsk_Material *)p.material)->texturesCount;
                 // Display textures
-                for (int i = 0; i < textureCount; i++) {
+                for (int i = 0; i < textureCount; i++)
+                {
                     Separator();
                     Image((void *)(intptr_t)((gsk_Material *)p.material)
                             ->textures[i]
@@ -148,7 +182,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
         }     // Textures collapsing header
         EndChild();
     }
-    if (gsk_ecs_has(e, C_CAMERA)) {
+    if (gsk_ecs_has(e, C_CAMERA))
+    {
         BeginChild("Camera", ImVec2(0, GetFontSize() * 10.0f), true);
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Camera Component");
@@ -165,7 +200,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
         DragFloat("Far", &p.farZ, 1, 0, 1000);
         EndChild();
     }
-    if (gsk_ecs_has(e, C_CAMERALOOK)) {
+    if (gsk_ecs_has(e, C_CAMERALOOK))
+    {
         BeginChild("Camera Look", ImVec2(0, GetFontSize() * 6.0f), true);
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("CameraLook Component");
@@ -178,7 +214,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
         EndChild();
     }
 
-    if (gsk_ecs_has(e, C_CAMERAMOVEMENT)) {
+    if (gsk_ecs_has(e, C_CAMERAMOVEMENT))
+    {
         BeginChild("Camera Movement", ImVec2(0, GetFontSize() * 6.0f), true);
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("CameraMovement Component");
@@ -191,7 +228,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
         EndChild();
     }
 
-    if (gsk_ecs_has(e, C_AUDIOLISTENER)) {
+    if (gsk_ecs_has(e, C_AUDIOLISTENER))
+    {
         BeginChild("Audio Listener");
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Audio Listener Component");
@@ -200,7 +238,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
 
         EndChild();
     }
-    if (gsk_ecs_has(e, C_AUDIOSOURCE)) {
+    if (gsk_ecs_has(e, C_AUDIOSOURCE))
+    {
         BeginChild("Audio Source", ImVec2(0, GetFontSize() * 10.0f), true);
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Audio Source Component");
@@ -217,42 +256,89 @@ gsk::tools::panels::ComponentViewer::draw(void)
         // InputText("Audio File Path", (char *)a.filePath, 128);
         EndDisabled();
 
-        if (Button("Play")) { AL_CHECK(alSourcePlay(a.bufferId)); }
+        if (Button("Play")) { AL_CHECK(alSourcePlay(a.buffer_source)); }
         SameLine();
-        if (Button("Stop")) { AL_CHECK(alSourceStop(a.bufferId)); }
-        if (Checkbox("Looping", (bool *)&a.looping)) {
-            ;
-            AL_CHECK(alSourcei(a.bufferId, AL_LOOPING, a.looping));
+        if (Button("Stop")) { AL_CHECK(alSourceStop(a.buffer_source)); }
+        if (Checkbox("Looping", (bool *)&a.is_looping))
+        {
+            AL_CHECK(alSourcei(a.buffer_source, AL_LOOPING, a.is_looping));
         }
         EndChild();
     }
-    if (gsk_ecs_has(e, C_ANIMATOR)) {
+    if (gsk_ecs_has(e, C_ANIMATOR))
+    {
+
+        struct ComponentAnimator &a = *(
+          static_cast<struct ComponentAnimator *>(gsk_ecs_get(e, C_ANIMATOR)));
+
+        gsk_Skeleton *p_skeleton = ((gsk_Animation *)a.cntAnimation)->pSkeleton;
+
         BeginChild("Animator", ImVec2(0, GetFontSize() * 10.0f), true);
+
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Animator Component");
         PopStyleColor();
+
         Separator();
+
+        Text("Total Animations: %d",
+             ((gsk_Animation *)a.cntAnimation)->pSkeleton->animations_count);
+
+        Text("Keyframes: %d",
+             ((gsk_Animation *)a.cntAnimation)->keyframesCount);
+
+        Separator();
+
+        Checkbox("Transition Delay", (bool *)&a.is_transition_delayed);
+        Checkbox("Loop", (bool *)&a.is_looping);
+
+        BeginDisabled();
+        Checkbox("Is Playing", (bool *)&a.is_playing);
+        EndDisabled();
+
+        BeginDisabled((bool *)a.is_playing);
+        if (Button("Play")) { a.is_playing = 1; }
+        EndDisabled();
+        SameLine();
+        BeginDisabled(!(bool *)a.is_playing && !(bool *)a.is_looping);
+        if (Button("Stop")) { a.is_looping = 0; }
+        SameLine();
+        if (Button("Force Stop"))
+        {
+            a.is_looping = 0;
+            a.is_playing = 0;
+        }
+        EndDisabled();
+
+        int item_current_idx =
+          (int)p_skeleton->cnt_animation_index; // selection
+        const char *combo_preview_value =
+          p_skeleton->p_animations[item_current_idx]->name;
+
+        if (ImGui::BeginCombo("Animations", combo_preview_value))
+        {
+            for (int i = 0; i < p_skeleton->animations_count; i++)
+            {
+                const bool is_selected = (item_current_idx == i);
+                if (ImGui::Selectable(p_skeleton->p_animations[i]->name,
+                                      is_selected))
+                {
+                    item_current_idx = i;
+                    gsk_skeleton_set_animation(p_skeleton, i);
+                }
+
+                // Set the initial focus when opening the combo (scrolling +
+                // keyboard navigation focus)
+                if (is_selected) ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
 
         EndChild();
     }
-    if (gsk_ecs_has(e, C_TEST)) {
-        BeginChild("Lua Test Component", ImVec2(0, GetFontSize() * 8.0f), true);
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Lua Test Component");
-        PopStyleColor();
-        Separator();
-        // wow, this is ridiculous..
-        struct ComponentTest &p =
-          *(static_cast<struct ComponentTest *>(gsk_ecs_get(e, C_TEST)));
-        int movement_increment = p.movement_increment;
-        float rotation_speed   = p.rotation_speed;
-        Text("movement_increment: %d", movement_increment);
-        Text("rotation_speed: %f", rotation_speed);
 
-        EndChild();
-    }
-
-    if (gsk_ecs_has(e, C_WEAPON)) {
+    if (gsk_ecs_has(e, C_WEAPON))
+    {
         BeginChild("Weapon Component", ImVec2(0, GetFontSize() * 8.0f), true);
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         Text("Weapon Component");

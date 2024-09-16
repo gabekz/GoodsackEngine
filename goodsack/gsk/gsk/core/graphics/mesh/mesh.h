@@ -20,9 +20,21 @@
 #define DRAW_ELEMENTS           0x01
 #define DRAW_ELEMENTS_WIREFRAME 0x02
 
+// TODO: Rework
+#define MESH_TBN_MODE_NONE 0
+#define MESH_TBN_MODE_OBJ  1
+#define MESH_TBN_MODE_GLTF 2
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum gsk_PrimitiveTypeEnum {
+    GSK_PRIMITIVE_TYPE_TRIANGLE,
+    GSK_PRIMITIVE_TYPE_QUAD,
+    GSK_PRIMITIVE_TYPE_POLY,
+    GSK_PRIMITIVE_TYPE_FAN,
+} gsk_PrimitiveTypeEnum;
 
 // type of BUFFER
 // BUFFER_VERT (bitshift means this comes first)
@@ -37,7 +49,9 @@ typedef struct gsk_MeshData
     u32 indicesCount;
     u32 trianglesCount;
 
-    u32 drawType;
+    gsk_PrimitiveTypeEnum primitive_type;
+    u8 has_indices;
+    u8 hasTBN; // TODO: 2 == ONLY TANGENT
 
     struct
     {
@@ -58,9 +72,6 @@ typedef struct gsk_MeshData
     // TODO: Move to model
     gsk_Skeleton *skeleton;
     int isSkinnedMesh;
-
-    // TODO: Move
-    int hasTBN; // TODO: 2 == ONLY TANGENT
 
     vec3 boundingBox[2];
 

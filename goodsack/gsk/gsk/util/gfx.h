@@ -35,9 +35,9 @@
 
 #define DRAWING_MODE GL_TRIANGLES // TODO: Compatibility
 
-#define DEFAULT_CLEAR_COLOR       \
-    {                             \
-        0.15f, 0.15f, 0.15f, 1.0f \
+#define DEFAULT_CLEAR_COLOR    \
+    {                          \
+        0.1f, 0.1f, 0.8f, 1.0f \
     }
 
 // Drawing modes

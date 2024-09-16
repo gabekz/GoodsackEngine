@@ -117,7 +117,8 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
       .pInheritanceInfo = NULL, // Optional
     };
 
-    if (vkBeginCommandBuffer(*commandBuffer, &beginInfo) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(*commandBuffer, &beginInfo) != VK_SUCCESS)
+    {
         LOG_ERROR("Failed to begin recording command buffer!");
     }
 
@@ -194,7 +195,8 @@ vulkan_render_record_end(VkCommandBuffer *commandBuffer)
 {
     vkCmdEndRenderPass(*commandBuffer);
 
-    if (vkEndCommandBuffer(*commandBuffer) != VK_SUCCESS) {
+    if (vkEndCommandBuffer(*commandBuffer) != VK_SUCCESS)
+    {
         LOG_ERROR("Failed to record command buffer!");
     }
 }
@@ -218,7 +220,8 @@ vulkan_render_draw_begin(VulkanDeviceContext *context, GLFWwindow *window)
       VK_NULL_HANDLE,
       &context->presentImageIndex);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
         LOG_DEBUG("VK_ERROR_OUT_OF_DATE_KHR - recreating swapchain");
         context->swapChainDetails =
           vulkan_swapchain_recreate(context->physicalDevice,
@@ -230,7 +233,8 @@ vulkan_render_draw_begin(VulkanDeviceContext *context, GLFWwindow *window)
                                     window // TODO: Maybe don't use this??
           );
         return; // must pull-out for requeue
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    {
         LOG_ERROR("Failed to acquire next image!");
     }
 

@@ -11,12 +11,12 @@
 #include "util/sysdefs.h"
 
 #include "core/graphics/renderer/v1/renderer.h"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 // #define RENDERER_2
 #define USING_LUA                    1
 #define USING_RUNTIME_LOADING_SCREEN 1
-#define USING_JOYSTICK_CONTROLLER    1
+#define USING_JOYSTICK_CONTROLLER    0
 
 // Starting cursor state
 #define INIT_CURSOR_LOCKED  1
@@ -25,7 +25,10 @@
 #define GSK_RUNTIME_USE_DEBUG 1
 
 u32
-gsk_runtime_setup(const char *project_root, int argc, char *argv[]);
+gsk_runtime_setup(const char *root_dir,
+                  const char *root_scheme,
+                  int argc,
+                  char *argv[]);
 
 void
 gsk_runtime_loop();

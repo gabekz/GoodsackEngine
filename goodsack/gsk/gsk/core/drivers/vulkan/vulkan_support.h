@@ -37,7 +37,8 @@
     }
 
 #define VK_CHECK(x)                                       \
-    do {                                                  \
+    do                                                    \
+    {                                                     \
         VkResult err = x;                                 \
         if (err) { LOG_CRITICAL("Vulkan error: %s", x); } \
     } while (0)

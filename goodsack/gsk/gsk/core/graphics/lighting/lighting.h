@@ -18,6 +18,8 @@
 extern "C" {
 #endif
 
+#define MAX_LIGHTS 64
+
 typedef enum LightType { Directional = 0, Point = 1, Spot = 2 } LightType;
 
 typedef struct gsk_Light
@@ -26,14 +28,30 @@ typedef struct gsk_Light
     vec4 color;
     LightType type;
     float strength;
-
-    u32 ubo;
 } gsk_Light;
 
-gsk_Light *
-gsk_lighting_initialize(vec3 lightPos, vec4 lightColor);
+typedef struct gsk_LightingData
+{
+    u32 ubo_id, ubo_size;
+    u32 total_lights;
+    gsk_Light lights[MAX_LIGHTS];
+} gsk_LightingData;
+
+gsk_LightingData
+gsk_lighting_initialize(u32 ubo_binding);
+
+void
+gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
+                       vec3 light_position,
+                       vec4 light_color);
+
+#if 0
 void
 gsk_lighting_update(gsk_Light *light, vec3 lightPos, vec4 lightColor);
+#endif
+
+void
+gsk_lighting_update(gsk_LightingData *p_lighting_data);
 
 #ifdef __cplusplus
 }

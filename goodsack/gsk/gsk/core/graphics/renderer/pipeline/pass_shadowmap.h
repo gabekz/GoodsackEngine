@@ -45,6 +45,8 @@ void
 shadowmap_bind_texture();
 gsk_Material *
 shadowmap_getMaterial();
+gsk_Material *
+shadowmap_getMaterialSkinned();
 u32
 shadowmap_getTexture();
 vec4 *

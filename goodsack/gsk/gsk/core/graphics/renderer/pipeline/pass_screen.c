@@ -26,15 +26,22 @@ static gsk_ShaderProgram *shader;
 static gsk_GlVertexArray *vaoRect;
 
 static u32 frameWidth, frameHeight;
+static u32 ms_samples = 4;
 
 static void
 CreateMultisampleBuffer(u32 samples, u32 width, u32 height)
 {
+    ms_samples = samples;
+
     // Create texture
     glGenTextures(1, &msTexture);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msTexture);
-    glTexImage2DMultisample(
-      GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA16F, width, height, GL_TRUE);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
+                            ms_samples,
+                            GL_RGBA16F,
+                            width,
+                            height,
+                            GL_TRUE);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 
     // Create Framebuffer object
@@ -51,7 +58,7 @@ CreateMultisampleBuffer(u32 samples, u32 width, u32 height)
     glGenRenderbuffers(1, &msRBO);
     glBindRenderbuffer(GL_RENDERBUFFER, msRBO);
     glRenderbufferStorageMultisample(
-      GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, width, height);
+      GL_RENDERBUFFER, ms_samples, GL_DEPTH24_STENCIL8, width, height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     // Attach Renderbuffer
     glFramebufferRenderbuffer(
@@ -90,7 +97,8 @@ CreateScreenBuffer(u32 width, u32 height)
 
     // Error checking
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
         printf("\nFramebuffer ERROR: %u\n", status);
     }
 }
@@ -116,12 +124,16 @@ postbuffer_resize(u32 winWidth, u32 winHeight)
       GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, winWidth, winHeight);
 
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msTexture);
-    glTexImage2DMultisample(
-      GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGBA16F, winWidth, winHeight, GL_TRUE);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
+                            ms_samples,
+                            GL_RGBA16F,
+                            winWidth,
+                            winHeight,
+                            GL_TRUE);
 
     glBindRenderbuffer(GL_RENDERBUFFER, msRBO);
     glRenderbufferStorageMultisample(
-      GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, winWidth, winHeight);
+      GL_RENDERBUFFER, ms_samples, GL_DEPTH24_STENCIL8, winWidth, winHeight);
 
     frameWidth  = winWidth;
     frameHeight = winHeight;
@@ -162,10 +174,12 @@ postbuffer_bind(int enableMSAA)
 {
     // glDebugMessageInsert(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_MARKER, 0,
     //     GL_DEBUG_SEVERITY_NOTIFICATION, -1, "Post Processing buffer init");
-    if (enableMSAA) {
+    if (enableMSAA)
+    {
         glEnable(GL_MULTISAMPLE);
         glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
-    } else {
+    } else
+    {
         glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
     }
 
@@ -181,7 +195,8 @@ void
 postbuffer_draw(gsk_RendererProps *properties)
 {
 
-    if (properties->msaaEnable) {
+    if (properties->msaaEnable)
+    {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sbFBO);
         glBlitFramebuffer(0,
@@ -197,6 +212,8 @@ postbuffer_draw(gsk_RendererProps *properties)
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // TODO: Set to screen resolution
     glViewport(0, 0, frameWidth, frameHeight);
 
     gsk_gl_vertex_array_bind(vaoRect);

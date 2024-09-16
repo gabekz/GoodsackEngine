@@ -6,16 +6,16 @@
 #ifndef __PHYSICS_SOLVER_H__
 #define __PHYSICS_SOLVER_H__
 
+#include "util/array_list.h"
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
-#include "physics/physics_types.inl"
+#include "physics/physics_types.h"
 
 typedef struct gsk_PhysicsSolver
 {
     gsk_CollisionResult *solvers;
-    u64 solvers_count, solver_next;
-    u16 solver_empty;
+    ArrayList *solvers_list;
 } gsk_PhysicsSolver;
 
 gsk_PhysicsSolver

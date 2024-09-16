@@ -18,7 +18,8 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
     mesh->meshData     = meshData;
     gsk_MeshData *data = mesh->meshData;
 
-    if (GSK_DEVICE_API_OPENGL) {
+    if (GSK_DEVICE_API_OPENGL)
+    {
         // Create the VAO
         gsk_GlVertexArray *vao = gsk_gl_vertex_array_create();
         gsk_gl_vertex_array_bind(vao);
@@ -31,7 +32,8 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
 
         // TODO: Temporarily disabled IBO for .obj extensions
         // if (data->buffers.bufferIndices != NULL && strcmp(ext, ".obj")) {
-        if (data->buffers.bufferIndices_size > 0) {
+        if (data->buffers.bufferIndices_size > 0)
+        {
             gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
               data->buffers.bufferIndices, data->buffers.bufferIndices_size);
         }
@@ -44,14 +46,16 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
         if (data->buffers.vnL > 0)
             gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
 
-        if (data->hasTBN == 2) { // TODO: REWORK PLEASE
+        if (data->hasTBN == MESH_TBN_MODE_GLTF)
+        { // TODO: REWORK PLEASE
             gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
         }
 
         gsk_gl_vertex_array_add_buffer(vao, vbo); // VBO push -> VAO
 
         // TBN Buffer
-        if (data->hasTBN == 1) {
+        if (data->hasTBN == MESH_TBN_MODE_OBJ)
+        {
             // TBN vertex buffer
             gsk_GlVertexBuffer *vboTBN = gsk_gl_vertex_buffer_create(
               data->buffers.outTBN,
@@ -65,7 +69,8 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
 
 #if 1
 
-        if (data->isSkinnedMesh) {
+        if (data->isSkinnedMesh)
+        {
             gsk_GlVertexBuffer *vboJoints = gsk_gl_vertex_buffer_create(
               data->skeleton->bufferJoints, data->skeleton->bufferJointsSize);
             gsk_gl_vertex_buffer_push(
@@ -80,7 +85,8 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
         }
 #endif
 
-    } else if (GSK_DEVICE_API_VULKAN) {
+    } else if (GSK_DEVICE_API_VULKAN)
+    {
         LOG_WARN("gsk_mesh_assemble() not implemented for Vulkan!");
     }
 

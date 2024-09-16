@@ -41,7 +41,8 @@ _checkValidationLayerSupport(const char *validationLayers[], u32 count)
       malloc(sizeof(VkLayerProperties) * layerCount);
 
     if (vkEnumerateInstanceLayerProperties(&layerCount, availableLayers) !=
-        VK_SUCCESS) {
+        VK_SUCCESS)
+    {
         LOG_ERROR("Failed to enumerate instanced layer properties!");
     }
 
@@ -52,22 +53,25 @@ _checkValidationLayerSupport(const char *validationLayers[], u32 count)
     }
 #endif
 
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++)
+    {
         int layerFound = 0;
 #if 0
             LOG_INFO("Checking validation layer %s", validationLayers[i]);
 #endif
 
-        for (int j = 0; j < layerCount; j++) {
-            if (strcmp(validationLayers[i], availableLayers[j].layerName) ==
-                0) {
+        for (int j = 0; j < layerCount; j++)
+        {
+            if (strcmp(validationLayers[i], availableLayers[j].layerName) == 0)
+            {
                 layerFound = 1;
                 LOG_INFO("Validation Layer found: %s", validationLayers[i]);
                 break;
             }
         }
 
-        if (!layerFound) {
+        if (!layerFound)
+        {
             LOG_WARN("Validation layer UNAVAILABLE: %s", validationLayers[i]);
             return 0;
         }
@@ -97,11 +101,14 @@ _checkDeviceExtensionSupport(const char *extensions[],
     }
 #endif
 
-    for (u32 i = 0; i < count; i++) {
+    for (u32 i = 0; i < count; i++)
+    {
         int extensionFound = 0;
-        for (u32 j = 0; j < extensionsCount; j++) {
+        for (u32 j = 0; j < extensionsCount; j++)
+        {
             if (strcmp(extensions[i], availableExtensions[j].extensionName) ==
-                0) {
+                0)
+            {
                 extensionFound = 1;
                 LOG_INFO("Device Extension found: %s", extensions[i]);
                 break;
@@ -133,7 +140,8 @@ _isDeviceSuitable(VkPhysicalDevice physicalDevice)
       _checkDeviceExtensionSupport(deviceExtensions, 1, physicalDevice);
 
     int swapChainAdequate = 0;
-    if (extensionsSupported) {
+    if (extensionsSupported)
+    {
         // swapChainAdequate = _querySwapChainSupport(device);
     }
 
@@ -155,8 +163,10 @@ vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
     vkGetPhysicalDeviceQueueFamilyProperties(
       physicalDevice, &queueFamilyCount, queueFamilies);
 
-    for (u32 i = 0; i < queueFamilyCount; i++) {
-        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+    for (u32 i = 0; i < queueFamilyCount; i++)
+    {
+        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
             graphicsFamily = i;
         }
     }
@@ -198,8 +208,10 @@ vulkan_device_create()
     const char *validationLayers[VK_REQ_VALIDATION_COUNT] =
       VK_REQ_VALIDATION_LIST;
 
-    if (kEnableValidationLayers) {
-        if (!_checkValidationLayerSupport(validationLayers, 1)) {
+    if (kEnableValidationLayers)
+    {
+        if (!_checkValidationLayerSupport(validationLayers, 1))
+        {
             LOG_ERROR("Validation layer requested, but not available!");
         }
         createInfo.ppEnabledLayerNames = validationLayers;
@@ -207,7 +219,8 @@ vulkan_device_create()
 
         createInfo.enabledExtensionCount   = VK_EXTENSION_TEST_COUNT;
         createInfo.ppEnabledExtensionNames = extensionTest;
-    } else {
+    } else
+    {
         createInfo.enabledLayerCount       = 0;
         createInfo.enabledExtensionCount   = glfwExtensionCount;
         createInfo.ppEnabledExtensionNames = glfwExtensions;
@@ -216,16 +229,18 @@ vulkan_device_create()
     // Create Instance
     VulkanDeviceContext *ret = malloc(sizeof(VulkanDeviceContext));
     VkResult result = vkCreateInstance(&createInfo, NULL, &ret->vulkanInstance);
-    if (vkCreateInstance(&createInfo, NULL, &ret->vulkanInstance) !=
-        VK_SUCCESS) {
+    if (vkCreateInstance(&createInfo, NULL, &ret->vulkanInstance) != VK_SUCCESS)
+    {
         LOG_ERROR("Failed to initialize Vulkan Instance!");
         return NULL;
-    } else {
+    } else
+    {
         LOG_INFO("Successfully created Vulkan Instance!");
     }
 
     // Create Debug Messenger
-    if (kEnableValidationLayers) {
+    if (kEnableValidationLayers)
+    {
         vulkan_debug_messenger_create(ret->vulkanInstance, ret->debugMessenger);
     }
 
@@ -235,7 +250,8 @@ vulkan_device_create()
     VK_CHECK(
       vkEnumeratePhysicalDevices(ret->vulkanInstance, &deviceCount, NULL));
 
-    if (deviceCount == 0) {
+    if (deviceCount == 0)
+    {
         LOG_ERROR("failed to find GPUs with Vulkan support!");
     }
 
@@ -246,17 +262,20 @@ vulkan_device_create()
     VkPhysicalDeviceProperties deviceProperties;
 
     // TODO: This does not list all devices before picking suitable
-    for (u32 i = 0; i < deviceCount; i++) {
+    for (u32 i = 0; i < deviceCount; i++)
+    {
         vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
         LOG_INFO("Device Found: %s", deviceProperties.deviceName);
 
-        if (_isDeviceSuitable(devices[i])) {
+        if (_isDeviceSuitable(devices[i]))
+        {
             LOG_INFO("Picked Suitable Device: %s", deviceProperties.deviceName);
             physicalDevice = devices[i];
             break;
         }
     }
-    if (physicalDevice == VK_NULL_HANDLE) {
+    if (physicalDevice == VK_NULL_HANDLE)
+    {
         LOG_ERROR("Failed to find a Suitable GPU!");
     }
 
@@ -318,7 +337,8 @@ vulkan_context_create_sync(VulkanDeviceContext *context)
     VkFenceCreateInfo fenceInfo = {.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
                                    .flags = VK_FENCE_CREATE_SIGNALED_BIT};
 
-    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         if (vkCreateSemaphore(context->device,
                               &semaphoreInfo,
                               NULL,
@@ -331,7 +351,8 @@ vulkan_context_create_sync(VulkanDeviceContext *context)
               VK_SUCCESS ||
             vkCreateFence(
               context->device, &fenceInfo, NULL, &context->inFlightFences[i]) !=
-              VK_SUCCESS) {
+              VK_SUCCESS)
+        {
             LOG_ERROR("failed to create synchronization objcets for a frame!");
         }
     }
@@ -346,7 +367,8 @@ vulkan_device_cleanup(VulkanDeviceContext *context)
     // vkDestroyBuffer(context->device, context->vertexBuffer->buffer, NULL);
     // vkFreeMemory(context->device, context->vertexBuffer->bufferMemory, NULL);
 
-    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         vkDestroySemaphore(
           context->device, context->imageAvailableSemaphores[i], NULL);
         vkDestroySemaphore(

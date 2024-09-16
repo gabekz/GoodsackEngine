@@ -19,7 +19,7 @@
 
 #include "entity/component/ecs_component.hpp"
 #include "entity/component/ecs_component_layout_loader.hpp"
-#include "entity/v1/ecs.h"
+#include "entity/ecs.h"
 
 #define EVENTSTORE_LUA_VEC3_CLASS 1
 
@@ -54,7 +54,8 @@ LuaEventStore::Initialize(lua_State *L, gsk_ECS *ecs)
     s_Instance.m_functionList = (struct Lua_Functions **)malloc(
       sizeof(struct Lua_Functions *) * ECSEVENT_LAST + 1);
 
-    for (int i = 0; i < ECSEVENT_LAST + 1; i++) {
+    for (int i = 0; i < ECSEVENT_LAST + 1; i++)
+    {
         // create a table for each event
         lua_pushstring(L, ECSEVENT_STRING(ECSEVENT_FIRST + i));
         lua_newtable(L);
@@ -98,7 +99,8 @@ int
 _meta_Component_newindex(lua_State *L)
 {
     entity::ECSComponent *c;
-    if (lua_isuserdata(L, 1)) {
+    if (lua_isuserdata(L, 1))
+    {
         c = (entity::ECSComponent *)lua_topointer(L, 1);
     }
 
@@ -106,12 +108,14 @@ _meta_Component_newindex(lua_State *L)
     float var;
 
     // get variable type
-    if (c->GetVariableType(k) == EcsDataType::VEC3) {
+    if (c->GetVariableType(k) == EcsDataType::VEC3)
+    {
         vec3 vec = GLM_VEC3_ONE_INIT;
 
         lua_pushnil(L); // first key
         int stackIndex = -2, iter = 0;
-        while (lua_next(L, stackIndex)) { // traverse keys
+        while (lua_next(L, stackIndex))
+        { // traverse keys
             vec[iter] = lua_tonumber(L, -1);
             lua_pop(L, 1); // stack restore
             iter++;
@@ -122,11 +126,13 @@ _meta_Component_newindex(lua_State *L)
         return 0;
     }
 
-    if (c->GetVariable(k, &var)) {
+    if (c->GetVariable(k, &var))
+    {
         var = luaL_checknumber(L, -1);
         c->SetVariable(k, &var);
         return 0;
-    } else {
+    } else
+    {
         return luaL_argerror(
           L, -2, lua_pushfstring(L, "component does not contain '%s'", k));
     }
@@ -137,14 +143,16 @@ int
 _meta_Component_index(lua_State *L)
 {
     entity::ECSComponent *c;
-    if (lua_isuserdata(L, 1)) {
+    if (lua_isuserdata(L, 1))
+    {
         c = (entity::ECSComponent *)lua_topointer(L, 1);
     }
 
     const char *k = luaL_checkstring(L, -1);
 
     // get variable type
-    if (c->GetVariableType(k) == EcsDataType::VEC3) {
+    if (c->GetVariableType(k) == EcsDataType::VEC3)
+    {
         // LOG_DEBUG("We have a vec3");
         vec3 vec = GLM_VEC3_ONE_INIT;
 
@@ -175,7 +183,8 @@ _meta_Component_index(lua_State *L)
         lua_rawset(L, -3);
         return 1; // return table
 
-    } else if (c->GetVariableType(k) == EcsDataType::ENTITY) {
+    } else if (c->GetVariableType(k) == EcsDataType::ENTITY)
+    {
         int entityId = -1;
         c->GetVariable(k, &entityId);
         pushEntity(L, (int)entityId);
@@ -183,10 +192,12 @@ _meta_Component_index(lua_State *L)
     }
 
     float var = 0;
-    if (c->GetVariable(k, &var)) {
+    if (c->GetVariable(k, &var))
+    {
         lua_pushnumber(L, var);
         return 1;
-    } else {
+    } else
+    {
         lua_pushnil(L);
         return 0;
     }
@@ -249,30 +260,33 @@ pushEntity(lua_State *L, int entityId)
     // TODO: Move create to separate function (per Component?)
     // use luaL_getmetatable(L, const char *tname)
 
-    if (gsk_ecs_has(entityCompare, C_CAMERA)) {
+    if (gsk_ecs_has(entityCompare, C_CAMERA))
+    {
         __create_table_for_entity_component(
           L, "Camera", C_CAMERA, entityCompare);
     }
-    if (gsk_ecs_has(entityCompare, C_CAMERALOOK)) {
+    if (gsk_ecs_has(entityCompare, C_CAMERALOOK))
+    {
         __create_table_for_entity_component(
           L, "CameraLook", C_CAMERALOOK, entityCompare);
     }
-    if (gsk_ecs_has(entityCompare, C_CAMERAMOVEMENT)) {
+    if (gsk_ecs_has(entityCompare, C_CAMERAMOVEMENT))
+    {
         __create_table_for_entity_component(
           L, "CameraMovement", C_CAMERAMOVEMENT, entityCompare);
     }
-    if (gsk_ecs_has(entityCompare, C_TRANSFORM)) {
+    if (gsk_ecs_has(entityCompare, C_TRANSFORM))
+    {
         __create_table_for_entity_component(
           L, "Transform", C_TRANSFORM, entityCompare);
     }
-    if (gsk_ecs_has(entityCompare, C_TEST)) {
-        __create_table_for_entity_component(L, "Test", C_TEST, entityCompare);
-    }
-    if (gsk_ecs_has(entityCompare, C_WEAPON)) {
+    if (gsk_ecs_has(entityCompare, C_WEAPON))
+    {
         __create_table_for_entity_component(
           L, "Weapon", C_WEAPON, entityCompare);
     }
-    if (gsk_ecs_has(entityCompare, C_WEAPONSWAY)) {
+    if (gsk_ecs_has(entityCompare, C_WEAPONSWAY))
+    {
         __create_table_for_entity_component(
           L, "WeaponSway", C_WEAPONSWAY, entityCompare);
     }
@@ -294,10 +308,12 @@ pushEntity(lua_State *L, int entityId)
     lua_pop(L, 1);
     LUA_DUMP("After new metatable POP");
 
+#if 0
     lua_pushlightuserdata(L,
                           LuaEventStore::GetInstance()
                             .m_componentsList[C_TEST]
                             ->m_components[entityId]);
+#endif
     LUA_DUMP("After pushlightuserdata");
     luaL_setmetatable(L, tableName2);
     LUA_DUMP("After setmetatable");
@@ -319,14 +335,17 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
       L, LUA_REGISTRYINDEX, store.m_tableId); // retrieve function table
 
     lua_getfield(L, -1, fName); // retrieve all functions of 'fName'
-    for (int i = 0; i < store.m_functionList[event]->size; i++) {
+    for (int i = 0; i < store.m_functionList[event]->size; i++)
+    {
         // retreive function
         LUA_DUMP("Before rawgeti"); /* stack: <[-1] Table> <[-2] Table> */
         // lua_pop(L, 1);
         lua_rawgeti(L, -1, store.m_functionList[event]->functions[i]);
-        if (lua_isfunction(L, -1)) {
+        if (lua_isfunction(L, -1))
+        {
             // send data to function
-            for (u32 j = 0; j < store.m_ecs->nextIndex; j++) {
+            for (u32 j = 0; j < store.m_ecs->nextIndex; j++)
+            {
                 // Push entity onto stack
                 LUA_DUMP("dump");
                 // lua_pop(L, 1);
@@ -338,7 +357,8 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
                 (CheckLua(L, lua_pcall(L, 1, 0, 0)));
                 LUA_DUMP("lua_pcall");
                 // push same function for next entity
-                if (j + 1 < store.m_ecs->nextIndex) {
+                if (j + 1 < store.m_ecs->nextIndex)
+                {
                     lua_rawgeti(
                       L, -1, store.m_functionList[event]->functions[i]);
                     LUA_DUMP("j+1 <= nextIndex -> rawgeti -1");

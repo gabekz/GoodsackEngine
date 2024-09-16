@@ -11,7 +11,7 @@
 static int
 time_delta(lua_State *L)
 {
-    lua_pushnumber(L, gsk_device_getAnalytics().delta);
+    lua_pushnumber(L, gsk_device_getTime().delta_time);
     return 1;
 }
 

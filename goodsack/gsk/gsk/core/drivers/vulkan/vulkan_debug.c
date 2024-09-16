@@ -14,7 +14,8 @@ vulkan_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                       const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
                       void *pUserData)
 {
-    switch (messageSeverity) {
+    switch (messageSeverity)
+    {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
         LOG_WARN("[Validation Layer] %s", pCallbackData->pMessage);
         break;

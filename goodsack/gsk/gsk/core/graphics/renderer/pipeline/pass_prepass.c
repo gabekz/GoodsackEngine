@@ -16,6 +16,9 @@
 static gsk_ShaderProgram *s_depthPrepassShader;
 static gsk_Material *s_depthPrepassMaterial;
 
+static gsk_ShaderProgram *s_depthPrepassShader_skinned;
+static gsk_Material *s_depthPrepassMaterial_skinned;
+
 static u32 s_depthPrepassFBO;
 static u32 s_depthPrepassTextureId;
 
@@ -103,6 +106,11 @@ prepass_init()
       gsk_shader_program_create(GSK_PATH("gsk://shaders/depth-prepass.shader"));
     s_depthPrepassMaterial = gsk_material_create(s_depthPrepassShader, NULL, 0);
 
+    s_depthPrepassShader_skinned = gsk_shader_program_create(
+      GSK_PATH("gsk://shaders/depth-prepass-skinned.shader"));
+    s_depthPrepassMaterial_skinned =
+      gsk_material_create(s_depthPrepassShader_skinned, NULL, 0);
+
     // Create Rectangle
     s_vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(s_vaoRect);
@@ -116,7 +124,8 @@ prepass_init()
     free(rectPositions);
 
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
         LOG_ERROR("Framebuffer Error %u", status);
     }
 
@@ -164,6 +173,12 @@ gsk_Material *
 prepass_getMaterial()
 {
     return s_depthPrepassMaterial;
+}
+
+gsk_Material *
+prepass_getMaterialSkinned()
+{
+    return s_depthPrepassMaterial_skinned;
 }
 
 u32

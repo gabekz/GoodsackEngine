@@ -34,7 +34,8 @@ gsk_load_wav(const char *filepath)
     if (filePtr == NULL) { LOG_ERROR("Failed to open file: %s", filepath); }
 
     fread(magic, 1, 4, filePtr);
-    if (strcmp(magic, "RIFF")) {
+    if (strcmp(magic, "RIFF"))
+    {
         LOG_ERROR("First 4 bytes should be \"RIFF\", are \"%4s\"", magic);
     }
 
@@ -49,18 +50,21 @@ gsk_load_wav(const char *filepath)
     fread(&formatLength, 4, 1, filePtr);
 
     fread(&formatType, 2, 1, filePtr);
-    if (formatType != 1) {
+    if (formatType != 1)
+    {
         LOG_ERROR("%s format type should be 1, is %s", magic);
     }
 
     fread(&numChannels, 2, 1, filePtr);
-    if (numChannels != 1) {
+    if (numChannels != 1)
+    {
         LOG_ERROR("Number of channels exceeds 1, is %d", numChannels);
     }
     ret->numChannels = numChannels;
 
     fread(&sampleRate, 4, 1, filePtr);
-    if (sampleRate != SAMPLING_RATE) {
+    if (sampleRate != SAMPLING_RATE)
+    {
         LOG_ERROR("Incorrect Sample Rate. Expected %d, is %d",
                   SAMPLING_RATE,
                   sampleRate);
@@ -74,7 +78,8 @@ gsk_load_wav(const char *filepath)
     ret->samples = bitsPerSample;
 
     fread(magic, 1, 4, filePtr);
-    if (!strcmp(magic, "LIST")) {
+    if (!strcmp(magic, "LIST"))
+    {
         // WAV metadata
         u32 listSize;
         u16 listType;
@@ -84,19 +89,22 @@ gsk_load_wav(const char *filepath)
         fread(&listType, 1, 4, filePtr);
         fread(&listData, listSize, 1, filePtr);
     }
-    if (strcmp(magic, "data")) {
+    if (strcmp(magic, "data"))
+    {
         LOG_ERROR("Failed to read 'data' string, magic value is %s", magic);
     }
 
     fread(&dataSize, 4, 1, filePtr);
 
     ret->data = malloc(dataSize);
-    if (ret->data == NULL) {
+    if (ret->data == NULL)
+    {
         LOG_ERROR("Failed to allocate memory for audio data");
         free(ret->data);
     }
 
-    if (fread(ret->data, 1, dataSize, filePtr) != dataSize) {
+    if (fread(ret->data, 1, dataSize, filePtr) != dataSize)
+    {
         LOG_ERROR("Failed to read data bytes");
     }
     ret->dataSize = dataSize;

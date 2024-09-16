@@ -38,7 +38,8 @@ _vector__OPERATOR(lua_State *L, int lua_operation)
 
     Vector *ret = malloc(sizeof(Vector));
 
-    switch (lua_operation) {
+    switch (lua_operation)
+    {
     case (LUA_OPADD): glm_vec3_add(vec_a, vec_b, ret->float3); break;
     case (LUA_OPSUB): glm_vec3_sub(vec_a, vec_b, ret->float3); break;
     default: LOG_ERROR("Unknown Operation");
@@ -123,7 +124,8 @@ vector_new(lua_State *L)
 
     int iter = 1 + lua_istable(L, 1);
 
-    for (int i = 0; i < 3 /*vec3 values*/; i++) {
+    for (int i = 0; i < 3 /*vec3 values*/; i++)
+    {
         int j          = iter + i;
         foo->float3[i] = !lua_isnoneornil(L, j) ? luaL_checkinteger(L, j) : 0;
     }

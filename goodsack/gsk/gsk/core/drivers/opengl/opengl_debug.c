@@ -31,7 +31,8 @@ _gsk_gl_debug_output(GLenum source,
 
     LOG_DEBUG("------------\nOpenGL message: %s", message);
 
-    switch (source) {
+    switch (source)
+    {
     case GL_DEBUG_SOURCE_API: LOG_PRINT("Source: API"); break;
     case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
         LOG_PRINT("Source: Window System");
@@ -44,7 +45,8 @@ _gsk_gl_debug_output(GLenum source,
     case GL_DEBUG_SOURCE_OTHER: LOG_PRINT("Source: Other"); break;
     }
 
-    switch (type) {
+    switch (type)
+    {
     case GL_DEBUG_TYPE_ERROR: LOG_PRINT("Type: Error"); break;
     case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
         LOG_PRINT("Type: Deprecated Behaviour");
@@ -60,7 +62,8 @@ _gsk_gl_debug_output(GLenum source,
     case GL_DEBUG_TYPE_OTHER: LOG_PRINT("Type: Other"); break;
     }
 
-    switch (severity) {
+    switch (severity)
+    {
     case GL_DEBUG_SEVERITY_HIGH: LOG_PRINT("Severity: high"); break;
     case GL_DEBUG_SEVERITY_MEDIUM: LOG_PRINT("Severity: medium"); break;
     case GL_DEBUG_SEVERITY_LOW: LOG_PRINT("Severity: low"); break;
@@ -78,7 +81,8 @@ _gsk_gl_debug_init()
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
 
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(_gsk_gl_debug_output, NULL);
@@ -106,7 +110,8 @@ void
 _gsk_gl_error_check()
 {
     GLenum error = glGetError();
-    while (error) {
+    while (error)
+    {
         LOG_ERROR("|OpenGL Error| (%s)", error);
     }
 }

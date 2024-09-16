@@ -91,7 +91,8 @@ vulkan_descriptor_sets_create(VkDevice device,
 {
     // TODO: Make a proper multiplier for the layout
     VkDescriptorSetLayout layouts[MAX_FRAMES_IN_FLIGHT];
-    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         layouts[i] = layout;
     }
 
@@ -107,7 +108,8 @@ vulkan_descriptor_sets_create(VkDevice device,
 
     VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, sets));
 
-    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         // UBO info (binding 0)
         VkDescriptorBufferInfo bufferInfo = {
           .buffer = uniformBuffers[i], .offset = 0, .range = structSize};

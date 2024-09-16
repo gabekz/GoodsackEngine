@@ -15,6 +15,7 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/scene/scene.h"
 #include "core/graphics/ui/billboard.h"
+#include "core/graphics/ui/gui_canvas.h"
 #include "core/graphics/ui/gui_element.h"
 #include "core/graphics/ui/gui_text.h"
 
@@ -32,10 +33,11 @@ extern "C" {
 #endif
 
 #define RENDER_RESOLUTION_OVERRIDE SYS_DISABLED
-#define PSX_WIDTH                  320
-#define PSX_HEIGHT                 240
+#define PSX_WIDTH                  640
+#define PSX_HEIGHT                 480
 
 #define MAX_CAMERAS 4
+//#define MAX_LIGHTS  64
 
 typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
 
@@ -51,10 +53,12 @@ typedef struct gsk_Renderer
 
     RenderPass currentPass; // TODO: rename -> RenderStage
     gsk_Material *explicitMaterial;
+    gsk_Material
+      *explicitMaterial_skinned; // skinned version of explicit material
 
     gsk_Billboard2D *billboard; // Billboard testing
-    gsk_GuiElement *uiImage;    // GuiElement test
-    gsk_GuiText *uiText;        // GuiText test
+
+    gsk_GuiCanvas canvas; // Canvas test
 
     gsk_Skybox *activeSkybox;  // Active skybox that is being rendered
     gsk_Skybox *defaultSkybox; // Default skybox set for each scene on creation
@@ -71,7 +75,9 @@ typedef struct gsk_Renderer
     u32 totalVertices;
 
     // TODO: Fix this shit as well.
-    gsk_Light *light;
+
+    gsk_LightingData lighting_data;
+
     ShadowmapOptions shadowmapOptions;
     SsaoOptions ssaoOptions;
 
@@ -96,6 +102,7 @@ typedef struct gsk_Renderer
         u32 totalCameras; // TODO: find an alternative
         u32 activeCamera;
     } camera_data;
+
 } gsk_Renderer;
 
 /**

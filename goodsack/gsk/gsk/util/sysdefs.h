@@ -104,6 +104,12 @@
 #define STATIC_ASSERT(test_true) \
     _Static_assert((test_true), "(" #test_true ") failed")
 
+#if defined(_MSC_VER)
+#define _BRK __debugbreak
+#elif defined(__GNUC__)
+#define _BRK __builtin_trap
+#endif
+
 // -- Generally useful string-macros
 
 #define GLUE_HELPER(x, y) x##y

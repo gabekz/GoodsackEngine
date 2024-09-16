@@ -17,7 +17,10 @@
 // Line end: 0, 100, 0
 
 void
-gsk_debug_draw_line(gsk_DebugContext *debugContext, vec3 start, vec3 end)
+gsk_debug_draw_line(gsk_DebugContext *debugContext,
+                    vec3 start,
+                    vec3 end,
+                    vec4 color)
 {
     float vertices[] = {start[0], start[1], start[2], end[0], end[1], end[2]};
 
@@ -30,8 +33,59 @@ gsk_debug_draw_line(gsk_DebugContext *debugContext, vec3 start, vec3 end)
                        GL_FALSE,
                        (float *)bbMat4);
 
+    // set material color
+    glUniform4fv(glGetUniformLocation(debugContext->material->shaderProgram->id,
+                                      "u_Color"),
+                 1,
+                 color);
+
     gsk_gl_vertex_array_bind(debugContext->vaoLine);
     // Update the line vertices after binding VAO
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), &vertices);
     glDrawArrays(GL_LINES, 0, 2);
+}
+
+// TODO: MOVE THIS SOMEWHERE ELSE
+void
+gsk_debug_draw_ray(gsk_DebugContext *debugContext,
+                   vec3 start,
+                   vec3 direction,
+                   f32 length,
+                   vec4 color)
+{
+    vec3 end; // new end
+    glm_vec3_scale(direction, length, end);
+    glm_vec3_add(start, end, end); // store the directed ray into end
+
+    // Draw the line
+    gsk_material_use(debugContext->material);
+
+    // draw line
+    gsk_debug_draw_line(debugContext, start, end, color);
+
+    // ------- Draw arrowhead ------- //
+
+    // arrow matrix
+    mat4 matrix_pos = GLM_MAT4_IDENTITY_INIT;
+    mat4 matrix_rot = GLM_MAT4_IDENTITY_INIT;
+    vec3 newrot;
+
+    glm_translate(matrix_pos, end);
+    glm_normalize_to(direction, newrot);
+
+    // setup rotation
+    glm_lookat((vec3) {0, 0, 0}, newrot, (vec3) {1, 1, 0}, matrix_rot);
+    glm_mat4_inv(matrix_rot, matrix_rot);
+    // T * R
+    glm_mat4_mul(matrix_pos, matrix_rot, matrix_pos);
+
+    glUniformMatrix4fv(glGetUniformLocation(
+                         debugContext->material->shaderProgram->id, "u_Model"),
+                       1,
+                       GL_FALSE,
+                       (float *)matrix_pos);
+
+    gsk_Mesh *mesh_arrow = debugContext->model_sphere->meshes[0];
+    gsk_gl_vertex_array_bind(mesh_arrow->vao);
+    glDrawArrays(GL_LINE_LOOP, 0, mesh_arrow->meshData->vertexCount);
 }

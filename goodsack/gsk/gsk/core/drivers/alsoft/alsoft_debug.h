@@ -16,7 +16,8 @@ extern "C" {
 
 #if SYS_DEBUG == SYS_ENABLED
 #define AL_CHECK(x)              \
-    do {                         \
+    do                           \
+    {                            \
         x;                       \
         openal_debug_callback(); \
     } while (0)

@@ -33,7 +33,8 @@ vulkan_uniform_buffer_create(VkPhysicalDevice physicalDevice,
     void **uniformBuffersMapped = malloc(sizeof(void *) * MAX_FRAMES_IN_FLIGHT);
     *pMappedList                = uniformBuffersMapped;
 
-    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         vulkan_buffer_create(physicalDevice,
                              device,
                              size,

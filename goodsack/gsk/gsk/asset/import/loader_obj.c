@@ -18,6 +18,10 @@
 
 #define LOGGING_OBJ
 
+// TODO: May want to remove this - we should handle texture scaling directly
+// from textures (or materials) in shader code
+#define USING_TEX_SCALE 1
+
 #ifdef SYS_ENV_UNIX
 #define strtok_s(x, y, z) strtok_r(x, y, z)
 #endif
@@ -29,7 +33,8 @@ gsk_load_obj(const char *path, float scale)
     FILE *stream = NULL;
     char line[256]; // 256 = MAX line_length
 
-    if ((stream = fopen(path, "rb")) == NULL) {
+    if ((stream = fopen(path, "rb")) == NULL)
+    {
         LOG_CRITICAL("Error opening %s\n", path);
         exit(1);
     }
@@ -68,7 +73,8 @@ gsk_load_obj(const char *path, float scale)
     vec3 maxBounds = GLM_VEC3_ZERO_INIT;
 
     // Looping through the file
-    while (fgets(line, sizeof(line), stream)) {
+    while (fgets(line, sizeof(line), stream))
+    {
         // Get the first two characters
         char def[5]; // TODO: Fix uninitialized;
         memcpy(def, line, 2);
@@ -79,27 +85,38 @@ gsk_load_obj(const char *path, float scale)
         char *split = strtok(str, delim);  // line, split by spaces
         split       = strtok(NULL, delim); // split is now ignoring first value
 
-        if (strstr(def, "v ") != NULL) {
+        if (strstr(def, "v ") != NULL)
+        {
 
-            while (split != NULL) {
-                float saved = atof(split) * 0.2f;
+            while (split != NULL)
+            {
+                float saved = atof(split);
                 v[vL]       = saved * scale;
                 vL++;
 
                 split = strtok(NULL, delim);
             }
         }
-        if (strstr(def, "vt") != NULL) {
-            while (split != NULL) {
+        if (strstr(def, "vt") != NULL)
+        {
+            while (split != NULL)
+            {
                 float saved = atof(split);
-                vt[vtL]     = saved;
+#if USING_TEX_SCALE
+                vt[vtL] = saved * scale;
+#else
+                vt[vtL] = saved;
+#endif // USING_TEX_SCALE
+
                 vtL++;
 
                 split = strtok(NULL, delim);
             }
         }
-        if (strstr(def, "vn") != NULL) {
-            while (split != NULL) {
+        if (strstr(def, "vn") != NULL)
+        {
+            while (split != NULL)
+            {
                 float saved = atof(split);
                 vn[vnL]     = saved * scale;
                 vnL++;
@@ -107,10 +124,12 @@ gsk_load_obj(const char *path, float scale)
                 split = strtok(NULL, delim);
             }
         }
-        if (strstr(def, "f") != NULL) {
+        if (strstr(def, "f") != NULL)
+        {
             char *collection = split;
             // Create the "collections" for each face
-            while (collection != NULL) {
+            while (collection != NULL)
+            {
 
                 // Go through each collection and grab the vertex
                 char elemDem[] = "/";
@@ -121,11 +140,13 @@ gsk_load_obj(const char *path, float scale)
                 // Go through each element in the collection
                 // Get the incremental steps for the components we need
                 int inc = ((vL > 0) + (vtL > 0) + (vnL > 0));
-                for (int j = 0; j < inc; j++) {
+                for (int j = 0; j < inc; j++)
+                {
                     int saved = atoi(element);
 
                     // Vertex
-                    if (j == 0 && vL > 0) {
+                    if (j == 0 && vL > 0)
+                    {
                         int loc = saved * 3 - 3;
                         // Add vertex to positions
                         out[outI]     = v[loc];
@@ -152,7 +173,8 @@ gsk_load_obj(const char *path, float scale)
                             maxBounds[2] = v[loc + 2];
                     }
                     // Texture
-                    else if (j == 1 && vtL > 0) {
+                    else if (j == 1 && vtL > 0)
+                    {
                         int loc = saved * 2 - 2;
 
                         out[outI]     = vt[loc];
@@ -161,7 +183,8 @@ gsk_load_obj(const char *path, float scale)
 
                     }
                     // Normal
-                    else if (j == 2 && vnL > 0) {
+                    else if (j == 2 && vnL > 0)
+                    {
                         int loc = saved * 3 - 3;
 
                         out[outI]     = vn[loc];
@@ -211,7 +234,8 @@ gsk_load_obj(const char *path, float scale)
     // float* outTBN = malloc(2 * 3 * totalTriangles * sizeof(float));
     float *outTBN   = malloc(totalTriangles * 3 * 2 * sizeof(GLfloat));
     u32 cntTriangle = 0;
-    for (int i = 0; i < totalTriangles; i += 3) {
+    for (int i = 0; i < totalTriangles; i += 3)
+    {
 
         // if(i != 2684) continue;
 
@@ -257,12 +281,14 @@ gsk_load_obj(const char *path, float scale)
         // printf("\nF: %f", f);
 
         // loop for coordinates - x=0, y=1, z=2
-        for (int k = 0; k < 3; k++) {
+        for (int k = 0; k < 3; k++)
+        {
             tang[k]  = f * (del2[1] * edge1[k] - del1[1] * edge2[k]);
             btang[k] = f * (-del2[0] * edge1[k] + del1[0] * edge2[k]);
         }
 
-        for (int m = 0; m < 3; m++) {
+        for (int m = 0; m < 3; m++)
+        {
             int b         = i + m + (i * 5) + (m * 5);
             outTBN[b + 0] = tang[0];
             outTBN[b + 1] = tang[1];
@@ -311,8 +337,10 @@ gsk_load_obj(const char *path, float scale)
 
     ret->buffers.bufferIndices_size = 0;
 
-    ret->isSkinnedMesh = 0;
-    ret->hasTBN        = 1;
+    ret->isSkinnedMesh  = 0;
+    ret->hasTBN         = 1;
+    ret->has_indices    = FALSE;
+    ret->primitive_type = GSK_PRIMITIVE_TYPE_TRIANGLE;
 
     glm_vec3_copy(minBounds, ret->boundingBox[0]);
     glm_vec3_copy(maxBounds, ret->boundingBox[1]);

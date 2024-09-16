@@ -6,6 +6,7 @@
 #include "alsoft_buffer.h"
 
 #include "asset/import/loader_wav.h"
+#include "core/audio/audio_clip.h"
 #include "core/drivers/alsoft/alsoft_debug.h"
 
 /* static */
@@ -15,7 +16,8 @@ FileToEnum(u16 channels, u16 samples)
 {
     int stereo = (channels > 1);
 
-    switch (samples) {
+    switch (samples)
+    {
     case 16: return (stereo) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
     case 8: return (stereo) ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
     default: return -1;
@@ -23,10 +25,10 @@ FileToEnum(u16 channels, u16 samples)
 }
 
 ALuint
-openal_buffer_create(const char *filePath)
+openal_buffer_create(gsk_AudioClip *p_audio_clip)
 {
     // Load .wav file
-    gsk_AudioData *rawData = gsk_load_wav(filePath);
+    gsk_AudioData *rawData = p_audio_clip->p_audio_data;
     ALenum format          = FileToEnum(rawData->numChannels, rawData->samples);
 
     ALuint buffer;

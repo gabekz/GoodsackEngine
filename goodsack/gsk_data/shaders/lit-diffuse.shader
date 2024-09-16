@@ -7,7 +7,6 @@ layout(location = 1) in vec2 a_TexCoords;
 layout(location = 2) in vec3 a_Normal;
 
 layout(location = 3) in vec3 a_Tangent;
-layout(location = 4) in vec3 a_Bitangent;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -39,7 +38,7 @@ main()
       s_Camera.projection * s_Camera.view * u_Model * vec4(a_Position, 1.0);
 
     vec3 t = normalize(vec3(u_Model * vec4(a_Tangent, 0.0)));
-    vec3 b = normalize(vec3(u_Model * vec4(a_Bitangent, 0.0)));
+    vec3 b = normalize(vec3(u_Model * vec4(cross(a_Tangent, a_Normal), 0.0)));
     vec3 n = normalize(vec3(u_Model * vec4(a_Normal, 0.0)));
     // t = normalize(t - dot(t, n) * n);
     // vec3 b = cross(n, t);
@@ -159,7 +158,7 @@ vec4
 light(int type)
 {
     // Light attenuation
-    vec3 lightVec = vec3(1.0f, 1.0f, 1.0f); // default (for directional)
+    vec3 lightVec = vec3(s_Light.position);
     float inten   = 1.9f;
     if (type > 0) {
         lightVec = (s_Light.position - fs_in.crntPos);

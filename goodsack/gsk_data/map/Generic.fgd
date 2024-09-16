@@ -1,0 +1,38 @@
+@SolidClass = worldspawn : "World entity" []
+
+// @baseclass size(-16 -16 -24, 16 16 32) color(0 255 0) = PlayerClass []
+
+
+@BaseClass = Appearflags
+[
+	spawnflags(Flags) =
+	[
+		2048 : "Not in Deathmatch" : 0
+	]
+]
+
+@BaseClass = Angles
+[
+	angles(string) : "Pitch Yaw Roll (Y Z X)" : "0 0 0"
+]
+
+@BaseClass base(Appearflags, Angles) size(-16 -16 -36, 16 16 36) color(0 255 0) = PlayerClass []
+
+@PointClass size(-16 -16 -24, 16 16 8) model({ "path": "Resources/char/char0.obj", "scale": 20}) = info_player_start : "The player start. "
+[
+	scale(string) : "Scale" : ""
+    angle(integer) : "The starting angle - completely ignored, mind! - is always 90, or towards +Y." : 90
+    radius(float) : "The radius, in 'meters' (1 meter = 64 units). Defaults to 0.25, but if in Neverputt, this should be set to 0.0625." : "0.25"
+]
+
+@PointClass size(-16 -16 0, 16 16 64) model({ "path": "Resources/char/test.obj", "scale": 0.5}) = info_test : "The player start. "
+[
+	scale(string) : "Scale" : ""
+    angle(integer) : "The starting angle - completely ignored, mind! - is always 90, or towards +Y." : 90
+    radius(float) : "The radius, in 'meters' (1 meter = 64 units). Defaults to 0.25, but if in Neverputt, this should be set to 0.0625." : "0.25"
+]
+
+@PointClass base(PlayerClass) model({ "path": "Resources/char/char0.obj", "scale": 20 }) = info_player_start_2 : "Player 1 start" []
+@PointClass base(PlayerClass) model({ "path": "Resources/char/test.obj", "scale": 0.5 }) = info_player_start_3 : "Player 1 start test" []
+
+@PointClass size(-16 -16 0, 16 16 64) model({ "path": "Resources/char/test_monster.obj", "scale": 1.0}) = info_monster_test : "monster" []

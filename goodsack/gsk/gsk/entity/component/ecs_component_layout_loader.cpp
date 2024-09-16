@@ -33,10 +33,12 @@ entity::component::parse_components_from_json(std::string path, u32 rawData)
 {
     json JSON;
 
-    if (rawData <= 0) {
+    if (rawData <= 0)
+    {
         std::ifstream file(path);
         JSON = json::parse(file);
-    } else {
+    } else
+    {
         JSON = json::parse(path);
     }
 
@@ -71,7 +73,8 @@ entity::component::parse_components_from_json(std::string path, u32 rawData)
     std::map<std::string, ECSComponentLayout *> layouts;
 
     // Loop through every component
-    for (auto &cmp : JSON.items()) {
+    for (auto &cmp : JSON.items())
+    {
 
         // Component Layout
         ECSComponentLayout *component =
@@ -81,15 +84,18 @@ entity::component::parse_components_from_json(std::string path, u32 rawData)
         std::map<std::string, Accessor> data;
 
         // Every type of available data
-        for (auto type : dataTypes) {
+        for (auto type : dataTypes)
+        {
             // TODO: Switch loop to first check all data in the ComponentLayout
             // rather than all dataTypes.
 
             json JData = JSON[cmp.key()][type.first];
             // Every variable of 'type' in the component
-            for (int i = 0; i < JData.size(); i++) {
+            for (int i = 0; i < JData.size(); i++)
+            {
 
-                if (!strcmp(type.first.c_str(), "string")) {
+                if (!strcmp(type.first.c_str(), "string"))
+                {
                     // TODO: handle
                     // data[JData[i]] = (Accessor){0, type.second.size,
                     // type.second.stride};
@@ -146,7 +152,8 @@ extern "C" {
     // Create ECS Component ENUM
     std::cout << "typedef enum ECSComponentType_t {" << std::endl;
     int lastComponentIndex = -1;
-    for (const auto &p : map) {
+    for (const auto &p : map)
+    {
         std::string componentName = p.first;
         std::for_each(componentName.begin(), componentName.end(), [](char &c) {
             c = ::toupper(c);
@@ -161,7 +168,8 @@ extern "C" {
               << std::endl;
 
     // Create struct for each ECS Component Type
-    for (const auto &p : map) {
+    for (const auto &p : map)
+    {
 
         std::string componentName = p.first;
 
@@ -178,7 +186,8 @@ extern "C" {
 
         // Create struct data
         // TODO: Ordering
-        for (const auto &q : layout->getData()) {
+        for (const auto &q : layout->getData())
+        {
             Accessor accessor = layout->getData()[q.first];
 
             // Check to make sure the order is correct
@@ -188,7 +197,8 @@ extern "C" {
 
             std::cout << "\t";
             // TODO: change to inline converter
-            switch (accessor.type /* accessor.type */) {
+            switch (accessor.type /* accessor.type */)
+            {
             case EcsDataType::INT: std::cout << "s32 "; break;
             case EcsDataType::UINT: std::cout << "u32 "; break;
             case EcsDataType::FLOAT: std::cout << "f32 "; break;
@@ -249,7 +259,8 @@ extern "C" {
     // Create initializer Component Register
     std::cout << "static inline void\n_ecs_init_internal_gen(gsk_ECS *ecs) {"
               << std::endl;
-    for (const auto &p : map) {
+    for (const auto &p : map)
+    {
         std::string nameUpper = p.first;
         std::for_each(nameUpper.begin(), nameUpper.end(), [](char &c) {
             c = ::toupper(c);

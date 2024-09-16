@@ -60,6 +60,10 @@ struct gsk_Skeleton
     void *skinningBuffer;
     u32 skinningBufferSize;
 
+    gsk_Animation **p_animations;
+    u32 animations_count;
+    u32 cnt_animation_index;
+
     gsk_Animation *animation; // change to list
 
     mat4 rootMatrix;
@@ -82,6 +86,7 @@ struct gsk_Animation
     float duration; // animation time
 
     gsk_Skeleton *pSkeleton; // reference to associated skeleton
+    u32 index;               // animation-index relative to the parent-skeleton
 
     gsk_Keyframe **keyframes;
     u32 keyframesCount;
@@ -97,6 +102,9 @@ void
 gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
                                 u32 keyframe,
                                 float ratio);
+
+void
+gsk_skeleton_set_animation(gsk_Skeleton *p_skeleton, u32 index);
 
 #ifdef __cplusplus
 }

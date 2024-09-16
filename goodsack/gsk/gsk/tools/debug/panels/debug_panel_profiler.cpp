@@ -14,16 +14,18 @@ gsk::tools::panels::Profiler::draw(void)
     using namespace ImGui;
     gsk_RendererProps *props = &p_renderer->properties;
 
-    if (CollapsingHeader("Performace")) {
+    if (CollapsingHeader("Performace"))
+    {
         Separator();
         Text("Analytics");
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("%f FPS", gsk_device_getAnalytics().currentFps);
-        Text("%f ms", gsk_device_getAnalytics().currentMs);
+        Text("%f FPS", gsk_device_getTime().metrics.last_fps);
+        Text("%f ms", gsk_device_getTime().metrics.last_ms);
         PopStyleColor();
     }
 
-    if (CollapsingHeader("Settings")) {
+    if (CollapsingHeader("Settings"))
+    {
         Separator();
         Text("Window");
         int vsync = gsk_device_getGraphicsSettings().swapInterval;
@@ -59,10 +61,13 @@ gsk::tools::panels::Profiler::draw(void)
           items[item_current_idx]; // Pass in the preview value visible
                                    // before opening the combo (it could be
                                    // anything)
-        if (BeginCombo("Tonemapping", combo_preview_value, flags)) {
-            for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
+        if (BeginCombo("Tonemapping", combo_preview_value, flags))
+        {
+            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            {
                 const bool is_selected = (item_current_idx == n);
-                if (Selectable(items[n], is_selected)) {
+                if (Selectable(items[n], is_selected))
+                {
                     item_current_idx  = n;
                     props->tonemapper = n;
                 }
@@ -73,7 +78,8 @@ gsk::tools::panels::Profiler::draw(void)
             }
             EndCombo();
         }
-        if (item_current_idx == 2) { // Reinhard Extended
+        if (item_current_idx == 2)
+        { // Reinhard Extended
             SliderFloat("Max White", &props->maxWhite, 0.0f, 20.0f);
         }
 

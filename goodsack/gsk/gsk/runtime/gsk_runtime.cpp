@@ -5,27 +5,29 @@
 
 #include "gsk_runtime.hpp"
 
+#include <cstring>
+
 #include "util/filesystem.h"
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
 #include "core/device/device.h"
-#include "core/graphics/lighting/lighting.h"
+#include "core/drivers/alsoft/alsoft.h"
+#include "entity/ecs.h"
 #include "entity/lua/eventstore.hpp"
-#include "entity/v1/ecs.h"
 #include "wrapper/lua/lua_init.hpp"
 
 #if GSK_RUNTIME_USE_DEBUG
 #include "tools/debug/debug_toolbar.hpp"
 #endif // GSK_RUNTIME_USE_DEBUG
 
-#include "entity/v1/builtin/component_test.h"
-
 #ifdef RENDERER_2
 #include "core/graphics/renderer/renderer.hpp"
 #else
 #include "core/graphics/renderer/v1/renderer.h"
 #endif
+
+#include "core/drivers/alsoft/alsoft.h"
 
 extern "C" {
 static struct
@@ -43,43 +45,52 @@ static struct
 static void
 _gsk_check_args(int argc, char *argv[])
 {
-    if (argc <= 1) {
+    if (argc <= 1)
+    {
         gsk_device_setGraphics(GRAPHICS_API_OPENGL);
         return;
     }
 
-    for (int i = 0; i < argc; i++) {
-        if (std::string(argv[i]) == "--vulkan") {
+    for (int i = 0; i < argc; i++)
+    {
+        if (std::string(argv[i]) == "--vulkan")
+        {
             gsk_device_setGraphics(GRAPHICS_API_VULKAN);
-        } else if (std::string(argv[i]) == "--opengl") {
+        } else if (std::string(argv[i]) == "--opengl")
+        {
             gsk_device_setGraphics(GRAPHICS_API_OPENGL);
-        } else if (std::string(argv[i]) == "--errlevel") {
+        } else if (std::string(argv[i]) == "--errlevel")
+        {
             logger_setLevel(LogLevel_ERROR);
         }
     }
 }
 
 u32
-gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
+gsk_runtime_setup(const char *root_dir,
+                  const char *root_scheme,
+                  int argc,
+                  char *argv[])
 {
     // Setup logger
     int logStat = logger_initConsoleLogger(NULL);
     // logger_initFileLogger("logs/logs.txt", 0, 0);
 
-    logger_setLevel(LogLevel_NONE);
+    logger_setLevel(LogLevel_DEBUG);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
 
     _gsk_check_args(argc, argv);
 
-    switch (gsk_device_getGraphics()) {
+    switch (gsk_device_getGraphics())
+    {
     case GRAPHICS_API_OPENGL: LOG_INFO("Device API is OpenGL"); break;
     case GRAPHICS_API_VULKAN: LOG_INFO("Device API is Vulkan"); break;
     default: LOG_ERROR("Device API Failed to retreive Graphics Backend"); break;
     }
 
-    gsk_filesystem_initialize(root_dir);
+    gsk_filesystem_initialize(root_dir, root_scheme);
 
     // Initialize Renderer
 #ifdef RENDERER_2
@@ -95,13 +106,16 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
     // Initialize ECS
     s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, 0);
 
+#if 0
     // Lighting information
-    vec3 lightPos   = {1.5f, 2.4f, -0.5f};
-    vec4 lightColor = {0.95f, 0.87f, 0.78f, 1.0f};
+    vec3 lightPos   = {-3.4f, 2.4f, 1.4f};
+    vec4 lightColor = {0.73f, 0.87f, 0.91f, 1.0f};
 
-    // UBO Lighting
-    s_runtime.renderer->light =
-      gsk_lighting_initialize((float *)lightPos, (float *)lightColor);
+    // create directional light
+    gsk_lighting_add_light(&s_runtime.renderer->lighting_data,
+                           (float *)lightPos,
+                           (float *)lightColor);
+#endif
 
 #if GSK_RUNTIME_USE_DEBUG
     // Create DebugToolbar
@@ -110,7 +124,7 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 #endif // GSK_RUNTIME_USE_DEBUG
 
     // FPS Counter
-    gsk_device_resetAnalytics();
+    gsk_device_resetTime();
 
     // Initialize Graphics Settings
     gsk_device_setGraphicsSettings((gsk_GraphicsSettings {.swapInterval = 1}));
@@ -118,12 +132,16 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
     gsk_device_setInput((gsk_Input {.cursor_position = {0, 0}}));
     device_setCursorState(INIT_CURSOR_LOCKED, INIT_CURSOR_VISIBLE);
 
+    // Initialize audio interface
+    openal_init();
+
 #if USING_RUNTIME_LOADING_SCREEN
     glfwSwapInterval(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     gsk_GuiText *loading_text = gsk_gui_text_create("Loading");
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++)
+    {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         gsk_gui_text_draw(loading_text);
@@ -134,7 +152,10 @@ gsk_runtime_setup(const char *root_dir, int argc, char *argv[])
 #ifdef USING_LUA
     // Main Lua entry
     // TODO: possibly refactor this path (make mutable)
-    LuaInit(GSK_PATH("data://scripts/main.lua"), s_runtime.ecs);
+    char path[GSK_FS_MAX_PATH];
+    strcpy(path, root_scheme);
+    strcat(path, "://scripts/main.lua");
+    LuaInit(GSK_PATH(path), s_runtime.ecs);
 #endif
 
 #endif
@@ -150,6 +171,7 @@ gsk_runtime_loop()
 #if USING_LUA
 
     // Register components in Lua ECS
+    // TODO: automate
 
     entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
 
@@ -161,7 +183,6 @@ gsk_runtime_loop()
       C_CAMERAMOVEMENT, "CameraMovement");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
                                                                "Transform");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_TEST, "Test");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
                                                                "Weapon");
     entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPONSWAY,
@@ -172,12 +193,14 @@ gsk_runtime_loop()
 #endif
 
     // Main Engine Loop
-    while (!glfwWindowShouldClose(s_runtime.renderer->window)) {
-        gsk_device_updateAnalytics(glfwGetTime());
+    while (!glfwWindowShouldClose(s_runtime.renderer->window))
+    {
+        gsk_device_updateTime(glfwGetTime());
 
 #if USING_JOYSTICK_CONTROLLER
         int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
-        if (present) {
+        if (present)
+        {
             {
                 int count;
                 const float *axes =
@@ -196,7 +219,8 @@ gsk_runtime_loop()
         }
 #endif
 
-        if (GSK_DEVICE_API_OPENGL) {
+        if (GSK_DEVICE_API_OPENGL)
+        {
 
 #if USING_LUA
             entity::LuaEventStore::ECSEvent(ECS_UPDATE);
@@ -209,7 +233,8 @@ gsk_runtime_loop()
 #endif // GSK_RUNTIME_USE_DEBUG
 
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
-        } else if (GSK_DEVICE_API_VULKAN) {
+        } else if (GSK_DEVICE_API_VULKAN)
+        {
             glfwPollEvents();
             // debugGui->Update();
             gsk_ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
@@ -229,8 +254,12 @@ gsk_runtime_loop()
 
     LOG_TRACE("Closing Application");
 
+    //
     // Cleanup
-    if (GSK_DEVICE_API_VULKAN) {
+    //
+
+    if (GSK_DEVICE_API_VULKAN)
+    {
         vkDeviceWaitIdle(s_runtime.renderer->vulkanDevice->device);
         vulkan_device_cleanup(s_runtime.renderer->vulkanDevice);
     }
@@ -238,6 +267,9 @@ gsk_runtime_loop()
 #if GSK_RUNTIME_USE_DEBUG
     delete (s_runtime.p_debug_toolbar);
 #endif // GSK_RUNTIME_USE_DEBUG
+
+    // cleanup audio driver
+    openal_cleanup();
 
     glfwTerminate();
 }

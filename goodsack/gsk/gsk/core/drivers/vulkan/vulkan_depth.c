@@ -17,16 +17,19 @@ _FindSupportedFormat(VkPhysicalDevice physicalDevice,
                      VkImageTiling tiling,
                      VkFormatFeatureFlags features)
 {
-    for (int i = 0; i < candidateCount; i++) {
+    for (int i = 0; i < candidateCount; i++)
+    {
         VkFormat format = candidates[i];
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
 
         if (tiling == VK_IMAGE_TILING_LINEAR &&
-            (props.linearTilingFeatures & features) == features) {
+            (props.linearTilingFeatures & features) == features)
+        {
             return format;
         } else if (tiling == VK_IMAGE_TILING_OPTIMAL &&
-                   (props.optimalTilingFeatures & features) == features) {
+                   (props.optimalTilingFeatures & features) == features)
+        {
             return format;
         }
     }

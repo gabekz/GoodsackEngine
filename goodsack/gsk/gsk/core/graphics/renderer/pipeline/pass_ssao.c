@@ -70,7 +70,8 @@ pass_ssao_init()
 
     // Check FBO status
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
         LOG_ERROR("Framebuffer Error %u", status);
     }
     // reset FBO
@@ -98,7 +99,8 @@ pass_ssao_init()
 
     // Check FBO status
     status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
         LOG_ERROR("Framebuffer Error %u", status);
     }
     // reset FBO
@@ -114,7 +116,8 @@ pass_ssao_init()
     // Sample Kernel
     //--------------
 
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < 64; i++)
+    {
         vec3 sample = GLM_VEC3_ZERO_INIT;
         sample[0]   = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
         sample[1]   = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
@@ -138,7 +141,8 @@ pass_ssao_init()
     //--------------
 
     vec3 ssaoNoise[16];
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 16; i++)
+    {
         float x = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
         float y = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
 

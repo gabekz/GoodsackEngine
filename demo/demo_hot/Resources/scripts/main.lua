@@ -1,5 +1,6 @@
 -- creating an eventlist for future reference
-package.path = 'E:/Projects/GoodsackEngine/demo/demo_hot/Resources/scripts/?.lua;' .. package.path
+package.path = 'D:/Projects/GoodsackEngine/demo/demo_hot/Resources/scripts/?.lua;' .. package.path
+--package.path = '/home/gmk/gksrc/projects/GoodsackEngine/demo/demo_hot/Resources/scripts/?.lua;' .. package.path
 --package.path = '../build/bin/?;' .. package.path
 
 -- Running Systems

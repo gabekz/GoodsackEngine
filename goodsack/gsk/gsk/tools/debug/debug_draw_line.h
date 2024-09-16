@@ -10,6 +10,16 @@
 #include "util/maths.h"
 
 void
-gsk_debug_draw_line(gsk_DebugContext *debugContext, vec3 start, vec3 end);
+gsk_debug_draw_line(gsk_DebugContext *debugContext,
+                    vec3 start,
+                    vec3 end,
+                    vec4 color);
+
+void
+gsk_debug_draw_ray(gsk_DebugContext *debugContext,
+                   vec3 start,
+                   vec3 direction,
+                   f32 length,
+                   vec4 color);
 
 #endif // __DEBUG_DRAW_LINE_H__
