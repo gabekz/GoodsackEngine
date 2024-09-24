@@ -12,7 +12,7 @@
 
 TEST(GpakTestSuite, ReadWrite)
 {
-    gsk_GPAK pak = gsk_gpak_init();
+    gsk_GPAK pak = gsk_gpak_init(1000);
     gsk_gpak_write(&pak, "gsk://test/testfilefunctionhere.gltf", 32);
 
     u64 out = gsk_gpak_read(&pak, "gsk://test/testfilefunctionhere.gltf");

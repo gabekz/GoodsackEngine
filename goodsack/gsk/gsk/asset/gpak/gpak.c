@@ -10,6 +10,7 @@
 
 #include "util/array_list.h"
 #include "util/filesystem.h"
+#include "util/logger.h"
 #include "util/sysdefs.h"
 
 #define _HASHFN _hash_djb2
@@ -27,10 +28,10 @@ _hash_djb2(unsigned char *str)
 }
 
 gsk_GPAK
-gsk_gpak_init()
+gsk_gpak_init(u64 table_count)
 {
     gsk_GPAK ret;
-    ret.refs_table_count = 1000;
+    ret.refs_table_count = table_count;
     ret.p_refs_table = malloc(sizeof(gsk_GPakAssetRef) * ret.refs_table_count);
 
     for (u64 i = 0; i < ret.refs_table_count; i++)
@@ -51,8 +52,8 @@ gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value)
     gsk_GPakAssetRef asset = {
       .handle = value,
       .p_next = NULL,
-      //.uri    = strdup(str_key_uri),
-      .type = 0,
+      .uri    = strdup(str_key_uri),
+      .type   = 0,
     };
 
 #if 1
@@ -74,6 +75,21 @@ gsk_gpak_read(gsk_GPAK *p_gpak, const char *str_uri)
 {
     u64 hash = _HASHFN(str_uri);
     u64 idx  = hash % p_gpak->refs_table_count;
+
+    if (p_gpak->p_refs_table[idx].handle == 0)
+    {
+        LOG_CRITICAL("Entry in hashtable does not exist! (%s)", str_uri);
+    }
+
+    if (p_gpak->p_refs_table[idx].handle != 0)
+    {
+        gsk_GPakAssetRef *p_next = p_gpak->p_refs_table[idx].p_next;
+        if (p_next == NULL)
+        {
+            LOG_CRITICAL("Failed to reference chain in hashtable!");
+        }
+        return p_next->handle;
+    }
 
     return (gsk_GPakAssetRef *)p_gpak->p_refs_table[idx].handle;
 }

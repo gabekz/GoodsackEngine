@@ -29,7 +29,7 @@ typedef struct gsk_GPakContainer
 } gsk_GPAK;
 
 gsk_GPAK
-gsk_gpak_init();
+gsk_gpak_init(u64 table_count);
 
 void
 gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value);
