@@ -6,7 +6,9 @@
 #include "gpak.h"
 
 #include "stdlib.h"
+#include "string.h"
 
+#include "util/array_list.h"
 #include "util/filesystem.h"
 #include "util/sysdefs.h"
 
@@ -28,24 +30,50 @@ gsk_GPAK
 gsk_gpak_init()
 {
     gsk_GPAK ret;
-    ret.buf_len = 1000; // TODO: for now
-    ret.buf     = malloc(sizeof(gsk_GPAK) * ret.buf_len);
+    ret.refs_table_count = 1000;
+    ret.p_refs_table = malloc(sizeof(gsk_GPakAssetRef) * ret.refs_table_count);
+
+    for (u64 i = 0; i < ret.refs_table_count; i++)
+    {
+        (gsk_GPakAssetRef *)ret.p_refs_table[i].handle = 0;
+        (gsk_GPakAssetRef *)ret.p_refs_table[i].p_next = NULL;
+    }
 
     return ret;
 }
 
-gsk_GPAK
+void
 gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value)
 {
-    u64 hash         = _HASHFN(str_key_uri);
-    u64 idx          = hash % p_gpak->buf_len;
-    p_gpak->buf[idx] = value;
+    u64 hash = _HASHFN(str_key_uri);
+    u64 idx  = hash % p_gpak->refs_table_count;
+
+    gsk_GPakAssetRef asset = {
+      .handle = value,
+      .p_next = NULL,
+      //.uri    = strdup(str_key_uri),
+      .type = 0,
+    };
+
+#if 1
+    // check for chaining
+    if (p_gpak->p_refs_table[idx].handle != 0)
+    {
+        gsk_GPakAssetRef *p_chain        = malloc(sizeof(gsk_GPakAssetRef));
+        *p_chain                         = asset;
+        p_gpak->p_refs_table[idx].p_next = p_chain;
+        return;
+    }
+#endif
+
+    p_gpak->p_refs_table[idx] = asset;
 }
 
 u64
 gsk_gpak_read(gsk_GPAK *p_gpak, const char *str_uri)
 {
     u64 hash = _HASHFN(str_uri);
-    u64 idx  = hash % p_gpak->buf_len;
-    return p_gpak->buf[idx];
+    u64 idx  = hash % p_gpak->refs_table_count;
+
+    return (gsk_GPakAssetRef *)p_gpak->p_refs_table[idx].handle;
 }
