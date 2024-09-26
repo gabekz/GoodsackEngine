@@ -16,9 +16,9 @@ extern "C" {
 
 typedef struct gsk_GPakAssetRef
 {
-    char uri[GSK_FS_MAX_PATH];
     u64 handle;   // default to 0 when not in use
     u8 type;      // asset type
+    char *uri;    // uri of the reference
     void *p_next; // chain pointer to next asset in linked-list
 } gsk_GPakAssetRef;
 

@@ -8,6 +8,7 @@ build.ps1
 #>
 
 $run_demo = ($args[0] -eq "--demo");
+$run_tests = ($args[0] -eq "--test");
 
 # check cmake version
 try {
@@ -35,4 +36,7 @@ try {
 
 if($run_demo) {
     & .\build\output\bin\Debug\demo.exe
+}
+elseif($run_tests) {
+    & .\build\output\bin\Debug\GoodsackEngine_Test.exe
 }

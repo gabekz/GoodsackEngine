@@ -52,18 +52,32 @@ gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value)
     gsk_GPakAssetRef asset = {
       .handle = value,
       .p_next = NULL,
-      .uri    = strdup(str_key_uri),
       .type   = 0,
     };
+    asset.uri = strdup(str_key_uri);
 
 #if 1
     // check for chaining
     // TODO: currently only checks for a single chain..
     if (p_gpak->p_refs_table[idx].handle != 0)
     {
-        gsk_GPakAssetRef *p_chain        = malloc(sizeof(gsk_GPakAssetRef));
-        *p_chain                         = asset;
-        p_gpak->p_refs_table[idx].p_next = p_chain;
+        gsk_GPakAssetRef *p_last =
+          (gsk_GPakAssetRef *)&p_gpak->p_refs_table[idx];
+
+        gsk_GPakAssetRef *p_next_loc = NULL;
+        p_next_loc = ((gsk_GPakAssetRef *)&p_gpak->p_refs_table[idx])->p_next;
+
+        while (p_next_loc != NULL)
+        {
+            p_last     = p_next_loc;
+            p_next_loc = p_next_loc->p_next;
+        }
+
+        gsk_GPakAssetRef *p_chain = malloc(sizeof(gsk_GPakAssetRef));
+        *p_chain                  = asset;
+        // p_gpak->p_refs_table[idx].p_next = p_chain;
+        // p_next_loc = p_chain;
+        p_last->p_next = p_chain;
         return;
     }
 #endif
@@ -84,13 +98,33 @@ gsk_gpak_read(gsk_GPAK *p_gpak, const char *str_uri)
 
     if (p_gpak->p_refs_table[idx].handle != 0)
     {
-        gsk_GPakAssetRef *p_next = p_gpak->p_refs_table[idx].p_next;
-        if (p_next == NULL)
-        {
-            LOG_CRITICAL("Failed to reference chain in hashtable!");
-        }
-        return p_next->handle;
-    }
+        gsk_GPakAssetRef *p_last =
+          (gsk_GPakAssetRef *)&p_gpak->p_refs_table[idx];
 
-    return (gsk_GPakAssetRef *)p_gpak->p_refs_table[idx].handle;
+        gsk_GPakAssetRef *p_next = p_last->p_next;
+
+        while (p_next != NULL)
+        {
+            if (!strcmp(p_last->uri, str_uri)) { return p_last->handle; }
+
+            // ensure that the next item is valid
+            if (p_next->handle == 0)
+            {
+                LOG_ERROR("Failed to reference chain in hashtable!");
+            }
+
+            p_last = p_next;
+            p_next = p_last->p_next;
+        }
+
+        // one last check
+        if (strcmp(p_last->uri, str_uri))
+        {
+            LOG_ERROR("Failed to find asset %s", str_uri);
+            return 0;
+        }
+
+        // return the handle
+        return p_last->handle;
+    }
 }

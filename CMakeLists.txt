@@ -115,6 +115,11 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${SRC_DIR}/*.c"
     "${SRC_DIR}/*.cpp")
 
+# REMOVE MAIN FILES
+list(REMOVE_ITEM SOURCES
+    "${SRC_DIR}/runtime/gsk_runtime_main.cpp"
+    "${SRC_DIR}/prog/test/gsk_test_main.cpp")
+
 # Lua API-only sources
 file(GLOB_RECURSE API_SOURCES CONFIGURE_DEPENDS
     "${API_DIR}/common.h"
@@ -255,9 +260,12 @@ if(GOODSACK_TEST)
     #target_include_directories(GoodsackEngine_Test PRIVATE "${SRC_DIR}")
     target_link_libraries(GoodsackEngine_Test 
         GTest::gtest
-        GTest::gtest_main
+        # GTest::gtest_main -- disabled gtest_main
         GoodsackEngine_runtime
     )
+    # TODO: May need to rework this
+    target_sources(GoodsackEngine_Test PRIVATE "${SRC_DIR}/prog/test/gsk_test_main.cpp")
+    target_include_directories(GoodsackEngine_Test PRIVATE ${SRC_DIR} ${PROJECT_BINARY_DIR})
 
     set_target_properties(GoodsackEngine_Test PROPERTIES FOLDER "GoodsackEngine/internal")
     target_compile_options(GoodsackEngine_Test PUBLIC ${TEST_EXE_OPTIONS})
