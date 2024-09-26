@@ -22,12 +22,14 @@ typedef struct gsk_GPakAssetRef
     void *p_next; // chain pointer to next asset in linked-list
 } gsk_GPakAssetRef;
 
+#if 0
 typedef struct gsk_GPakAssetBlob
 {
     void *p_data;
     u64 data_size;
 
 } gsk_GPakAssetBlob;
+#endif
 
 typedef struct gsk_GPakContainer
 {

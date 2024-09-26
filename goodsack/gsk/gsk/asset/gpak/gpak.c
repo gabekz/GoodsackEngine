@@ -56,9 +56,7 @@ gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value)
     };
     asset.uri = strdup(str_key_uri);
 
-#if 1
     // check for chaining
-    // TODO: currently only checks for a single chain..
     if (p_gpak->p_refs_table[idx].handle != 0)
     {
         gsk_GPakAssetRef *p_last =
@@ -75,12 +73,9 @@ gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value)
 
         gsk_GPakAssetRef *p_chain = malloc(sizeof(gsk_GPakAssetRef));
         *p_chain                  = asset;
-        // p_gpak->p_refs_table[idx].p_next = p_chain;
-        // p_next_loc = p_chain;
-        p_last->p_next = p_chain;
+        p_last->p_next            = p_chain;
         return;
     }
-#endif
 
     p_gpak->p_refs_table[idx] = asset;
 }
