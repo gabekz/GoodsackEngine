@@ -5,7 +5,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(
     GoodsackEngine
-    #VERSION 0.1.0.0
     DESCRIPTION "Realtime 3D Rendering Engine"
     HOMEPAGE_URL "github.com/gabekz/GoodsackEngine")
 
@@ -101,8 +100,12 @@ set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk_data")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk/thirdparty")
 set(API_DIR "${SRC_DIR}/api/llib")
 
-set(LIB_FOLDER_PATH "GoodsackEngine/ThirdParty")
+set(GSK_ARCHIVE_OUT_DIR "${CMAKE_BINARY_DIR}/output/lib/archive")
+set(GSK_LIBRARY_OUT_DIR "${CMAKE_BINARY_DIR}/output/lib")
+set(GSK_RUNTIME_OUT_DIR "${CMAKE_BINARY_DIR}/output/bin")
+set(GSK_RESOURCES_OUT_DIR "${CMAKE_BINARY_DIR}")
 
+set(LIB_FOLDER_PATH "GoodsackEngine/ThirdParty")
 
 set(TEST_SUBDIR_REGEX ".*__tests__.*")
 # set(API_SUBDIR_REGEX ".*__api__.*")
@@ -177,13 +180,15 @@ target_link_libraries(GoodsackEngine_runtime PRIVATE
 
 target_include_directories(GoodsackEngine_runtime PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk")
 
+# set output directories
 set_target_properties(GoodsackEngine_runtime
 PROPERTIES
-ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib/archive"
-LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib"
-RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/bin"
-RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
+LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
+RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
+RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
 )
+
 
 #if(GOODSACK_TEST)
 #    target_link_libraries(GoodsackEngine_runtime PRIVATE ThirdParty_gtest)
@@ -200,12 +205,13 @@ set_target_properties(GoodsackEngine_api PROPERTIES
     OUTPUT_NAME "goodsack"
 )
 
+# set output directories
 set_target_properties(GoodsackEngine_api
 PROPERTIES
-ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib/archive"
-LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/lib"
-RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output/bin"
-RESOURCES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
+LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
+RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
+RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
 )
 
 # Link the include directory to the main project
@@ -267,6 +273,14 @@ if(GOODSACK_TEST)
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
         )
+    else()
+        set_target_properties(GoodsackEngine_Test
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
+        LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
+        RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
+)
     endif(UNIX)
 endif()
 

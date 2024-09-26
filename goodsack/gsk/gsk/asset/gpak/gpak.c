@@ -36,8 +36,8 @@ gsk_gpak_init(u64 table_count)
 
     for (u64 i = 0; i < ret.refs_table_count; i++)
     {
-        (gsk_GPakAssetRef *)ret.p_refs_table[i].handle = 0;
-        (gsk_GPakAssetRef *)ret.p_refs_table[i].p_next = NULL;
+        ((gsk_GPakAssetRef *)&ret.p_refs_table[i])->handle = 0;
+        ((gsk_GPakAssetRef *)&ret.p_refs_table[i])->p_next = NULL;
     }
 
     return ret;
@@ -58,6 +58,7 @@ gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value)
 
 #if 1
     // check for chaining
+    // TODO: currently only checks for a single chain..
     if (p_gpak->p_refs_table[idx].handle != 0)
     {
         gsk_GPakAssetRef *p_chain        = malloc(sizeof(gsk_GPakAssetRef));
