@@ -5,21 +5,16 @@
 
 #include <stdlib.h>
 
-#include "asset/asset.hpp"
-#include "asset/types/texture_asset.hpp"
+#include "asset/asset_cache.h"
 
 #include <gtest/gtest.h>
 
-using namespace goodsack::asset;
-
-TEST(AssetTestSuite, ReferenceInherited)
+TEST(AssetTestSuite, FirstTest)
 {
-    /*
-    //TextureAsset texture = TextureAsset((TextureProperties) {.bpp = 4});
+    gsk_AssetCache cache = gsk_asset_cache_init();
 
-    Asset *p = &texture;
-    EXPECT_EQ(p->IsLoaded(), false);
-    p->Load();
-    EXPECT_EQ(p->IsLoaded(), true);
-    */
+    gsk_asset_cache_add(&cache, 0, "gsk://textures/texture0.png");
+
+    EXPECT_EQ(hash_table_get(&cache.asset_table, "gsk://textures/texture0.png"),
+              1);
 }
