@@ -14,6 +14,8 @@
 extern "C" {
 #endif // __cplusplus
 
+#if 0
+
 typedef struct gsk_GPakAssetRef
 {
     u64 handle;   // default to 0 when not in use
@@ -91,6 +93,8 @@ gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value);
 // gsk_gpak_get_ref() (get_handle)
 u64
 gsk_gpak_read(gsk_GPAK *p_gpak, const char *str_uri);
+
+#endif
 
 #ifdef __cplusplus
 }
