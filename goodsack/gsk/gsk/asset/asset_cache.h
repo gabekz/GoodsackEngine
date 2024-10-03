@@ -11,7 +11,6 @@
 #include "util/hash_table.h"
 #include "util/sysdefs.h"
 
-#define GSK_TOTAL_ASSET_TYPES     2
 #define GSK_ASSET_CACHE_INCREMENT 32
 #define GSK_ASSET_CACHE_TABLE_MAX 1024
 
@@ -24,7 +23,8 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef enum AssetType { TEXTURE = 0, MESH } AssetType;
+#define GSK_TOTAL_ASSET_TYPES 3
+typedef enum AssetType { TEXTURE = 0, MESH, MATERIAL } AssetType;
 
 typedef struct gsk_AssetCacheState
 {
@@ -52,10 +52,13 @@ typedef struct gsk_AssetCache
 gsk_AssetCache
 gsk_asset_cache_init();
 
-void *
+void
 gsk_asset_cache_add(gsk_AssetCache *p_cache,
                     u32 asset_type,
                     const char *str_uri);
+
+void
+gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri);
 
 #if _GSK_ASSET_CACHE_GET_AT 0
 gsk_AssetCacheState *

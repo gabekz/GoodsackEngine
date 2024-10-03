@@ -5,13 +5,17 @@
 
 #include "asset_cache.h"
 
+#include "string.h"
+
 #include "util/array_list.h"
 #include "util/filesystem.h"
 #include "util/hash_table.h"
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#include "core/graphics/material/material.h"
 #include "core/graphics/texture/texture.h"
+
 
 gsk_AssetCache
 gsk_asset_cache_init()
@@ -28,13 +32,21 @@ gsk_asset_cache_init()
       array_list_init(sizeof(gsk_Texture), GSK_ASSET_CACHE_INCREMENT);
     ret.asset_lists[0].list_options =
       array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
+
+    // setup  asset lists
+    ret.asset_lists[2].list_state =
+      array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
+    ret.asset_lists[2].list_data =
+      array_list_init(sizeof(gsk_Material), GSK_ASSET_CACHE_INCREMENT);
+    ret.asset_lists[2].list_options =
+      array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
     // TODO: Other types
     // TODO: Handle specific file types elsewhere.
 
     return ret;
 }
 
-void *
+void
 gsk_asset_cache_add(gsk_AssetCache *p_cache,
                     u32 asset_type,
                     const char *str_uri)
@@ -76,6 +88,38 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
 
     // add empty data
     array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
+}
+
+void
+gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
+{
+    char *ext = strrchr(str_uri, '.');
+    if (!ext) { LOG_CRITICAL("Failed to find file extension for %s", str_uri); }
+
+    u32 list_type = 0;
+
+    // texture
+    if (!strcmp(ext, ".png") || !strcmp(ext, ".jpg"))
+    {
+        list_type = 0;
+    }
+    // model
+    else if (!strcmp(ext, ".obj") || !strcmp(ext, ".gltf"))
+    {
+        list_type = 1;
+    }
+    // material
+    else if (!strcmp(ext, ".material"))
+    {
+        list_type = 2;
+    }
+
+    gsk_asset_cache_add(p_cache, list_type, str_uri);
+
+    LOG_DEBUG("adding asset by extension (pool: %d, ext: %s)(asset: %s)",
+              list_type,
+              ext,
+              str_uri);
 }
 
 #if ASSET_CACHE_GET_AT

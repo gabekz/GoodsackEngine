@@ -1,0 +1,4 @@
+shader: gsk://shaders/lit-diffuse.shader
+texture0: data://textures/defaults/white.png
+texture1: data://textures/defaults/white.png
+texture2: data://tetures/defaults/white.png

@@ -102,10 +102,10 @@ gsk_runtime_setup(const char *root_dir,
     s_runtime.asset_cache   = p_cache;
 
     // Initialize Default Assets
-    gsk_asset_cache_add(p_cache, 0, "gsk://textures/defaults/black.png");
-    gsk_asset_cache_add(p_cache, 0, "gsk://textures/defaults/normal.png");
-    gsk_asset_cache_add(p_cache, 0, "gsk://textures/defaults/white.png");
-    gsk_asset_cache_add(p_cache, 0, "gsk://textures/defaults/missing.png");
+    gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/black.png");
+    gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/normal.png");
+    gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/white.png");
+    gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/missing.png");
 
     // Initialize Renderer
 #ifdef RENDERER_2

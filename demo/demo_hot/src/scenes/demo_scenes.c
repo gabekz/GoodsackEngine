@@ -10,6 +10,7 @@
 #include "entity/ecs.h"
 #include "entity/modules/modules_systems.h"
 
+#include "asset/asset.h"
 #include "asset/asset_cache.h"
 #include "physics/physics_types.h"
 
@@ -638,6 +639,10 @@ demo_scenes_create(gsk_ECS *ecs,
 
     skyboxMain = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
+
+    // test load material
+    gsk_asset_cache_add_by_ext(asset_cache, "data://materials/cube.material");
+    gsk_asset_get_str(asset_cache, "data://materials/cube.material");
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);
