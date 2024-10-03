@@ -5,6 +5,7 @@
 
 #include "gsk_runtime.hpp"
 
+#include <cstdlib>
 #include <cstring>
 
 #include "util/filesystem.h"
@@ -27,6 +28,8 @@
 #include "core/graphics/renderer/v1/renderer.h"
 #endif
 
+#include "asset/asset_cache.h"
+
 #include "core/drivers/alsoft/alsoft.h"
 
 extern "C" {
@@ -34,6 +37,7 @@ static struct
 {
     gsk_ECS *ecs;
     gsk_Renderer *renderer;
+    gsk_AssetCache *asset_cache;
 
 #if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
@@ -91,6 +95,17 @@ gsk_runtime_setup(const char *root_dir,
     }
 
     gsk_filesystem_initialize(root_dir, root_scheme);
+
+    // Initialize Asset System
+    gsk_AssetCache *p_cache = (gsk_AssetCache *)malloc(sizeof(gsk_AssetCache));
+    *p_cache                = gsk_asset_cache_init();
+    s_runtime.asset_cache   = p_cache;
+
+    // Initialize Default Assets
+    gsk_asset_cache_add(p_cache, 0, "gsk://textures/defaults/black.png");
+    gsk_asset_cache_add(p_cache, 0, "gsk://textures/defaults/normal.png");
+    gsk_asset_cache_add(p_cache, 0, "gsk://textures/defaults/white.png");
+    gsk_asset_cache_add(p_cache, 0, "gsk://textures/defaults/missing.png");
 
     // Initialize Renderer
 #ifdef RENDERER_2
@@ -268,6 +283,8 @@ gsk_runtime_loop()
     delete (s_runtime.p_debug_toolbar);
 #endif // GSK_RUNTIME_USE_DEBUG
 
+    // TODO: asset_cache cleanup
+
     // cleanup audio driver
     openal_cleanup();
 
@@ -283,6 +300,11 @@ gsk_Renderer *
 gsk_runtime_get_renderer()
 {
     return s_runtime.renderer;
+}
+gsk_AssetCache *
+gsk_runtime_get_asset_cache()
+{
+    return s_runtime.asset_cache;
 }
 
 void

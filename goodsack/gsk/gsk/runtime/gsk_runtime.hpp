@@ -10,6 +10,7 @@
 
 #include "util/sysdefs.h"
 
+#include "asset/asset_cache.h"
 #include "core/graphics/renderer/v1/renderer.h"
 #include "entity/ecs.h"
 
@@ -37,6 +38,8 @@ gsk_ECS *
 gsk_runtime_get_ecs();
 gsk_Renderer *
 gsk_runtime_get_renderer();
+gsk_AssetCache *
+gsk_runtime_get_asset_cache();
 
 void
 gsk_runtime_set_scene(u16 sceneIndex);

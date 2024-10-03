@@ -10,9 +10,11 @@
 #include "entity/ecs.h"
 #include "entity/modules/modules_systems.h"
 
+#include "asset/asset_cache.h"
 #include "physics/physics_types.h"
 
-#define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
+#define LOAD_SCENE(index)   GLUE(_scene, index)(ecs, renderer)
+#define LOAD_SCENE_2(index) GLUE(_scene, index)(ecs, renderer, asset_cache)
 
 gsk_Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
 gsk_Skybox *skyboxMain;
@@ -621,7 +623,9 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 }
 
 void
-demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer)
+demo_scenes_create(gsk_ECS *ecs,
+                   gsk_Renderer *renderer,
+                   gsk_AssetCache *asset_cache)
 {
     // Default textures with options
     texDefSpec =
@@ -644,6 +648,8 @@ demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer)
     LOAD_SCENE(5);
     LOAD_SCENE(6);
     LOAD_SCENE(7);
+#elif INITIAL_SCENE == SCENE_ASSET_TEST
+    LOAD_SCENE_2(9);
 #else
     LOAD_SCENE(INITIAL_SCENE);
 #endif // LOAD_ALL_SCENES

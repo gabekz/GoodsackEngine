@@ -7,14 +7,16 @@
 
 #include "core/graphics/texture/texture_set.h"
 
+#include "asset/asset_cache.h"
 #include "asset/import/loader_qmap.h"
+
 
 /*----------------------
  |  Scene 9
  |  Description: Asset Test
  -----------------------*/
 void
-_scene9(gsk_ECS *ecs, gsk_Renderer *renderer)
+_scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
 {
     gsk_Skybox *def_skybox;
     def_skybox = gsk_skybox_hdr_create(
@@ -40,6 +42,11 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer)
 
     gsk_Model *model_cube =
       gsk_model_load_from_file(GSK_PATH("gsk://models/cube.obj"), 1, FALSE);
+
+    /*----------------------
+     |  New texture tests
+     -----------------------*/
+    // gsk_Texture *tex_asset = gsk_asset_cache_get();
 
     /*----------------------
      |  ECS Setup

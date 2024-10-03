@@ -6,9 +6,11 @@
 #ifndef __DEMO_SCENES_H__
 #define __DEMO_SCENES_H__
 
+#include "asset/asset_cache.h"
 #include "core/graphics/renderer/v1/renderer.h"
 #include "entity/ecs.h"
 #include "util/sysdefs.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,7 +49,9 @@ extern "C" {
 
 // Creates and loads every demo scene in this project.
 void
-demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer);
+demo_scenes_create(gsk_ECS *ecs,
+                   gsk_Renderer *renderer,
+                   gsk_AssetCache *asset_cache);
 
 inline void
 __set_active_scene_skybox(gsk_Renderer *renderer, gsk_Skybox *skybox)
@@ -66,7 +70,7 @@ void
 _scene8(gsk_ECS *ecs, gsk_Renderer *renderer);
 
 void
-_scene9(gsk_ECS *ecs, gsk_Renderer *renderer);
+_scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache);
 
 #ifdef __cplusplus
 }
