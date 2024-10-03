@@ -16,7 +16,8 @@
 gsk_GCFG
 gsk_load_gcfg(const char *path)
 {
-    gsk_GCFG ret = {0};
+    gsk_GCFG ret   = {0};
+    ret.list_items = array_list_init(sizeof(gsk_GCFGItem), 6);
 
     FILE *stream = NULL;
     char line[256]; // 256 = MAX line_length
@@ -35,6 +36,11 @@ gsk_load_gcfg(const char *path)
         char *value = strtok(NULL, delim); // line, split by spaces
         LOG_TRACE("key: %s", key);
         LOG_TRACE("value: %s", value);
+
+        gsk_GCFGItem item = {0};
+        item.key          = strdup(key);
+        item.value        = strdup(value);
+        array_list_push(&ret.list_items, &item);
     }
 
     fclose(stream);

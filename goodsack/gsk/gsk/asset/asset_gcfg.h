@@ -18,9 +18,8 @@ extern "C" {
 
 typedef struct gsk_GCFGItem
 {
-    char key[GCFG_KEY_MAX_LEN];
-    char value[GCFG_VALUE_MAX_LEN];
-
+    const char *key;
+    const char *value;
 } gsk_GCFGItem;
 
 typedef struct gsk_GCFG

@@ -1,4 +1,4 @@
-shader: gsk://shaders/lit-diffuse.shader
-texture0: data://textures/defaults/white.png
-texture1: data://textures/defaults/white.png
-texture2: data://tetures/defaults/white.png
+shader gsk://shaders/lit-diffuse.shader
+texture data://textures/defaults/white.png
+texture data://textures/defaults/black.png
+texture data://tetures/defaults/missing.png

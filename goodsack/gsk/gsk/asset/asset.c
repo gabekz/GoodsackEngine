@@ -5,7 +5,11 @@
 
 #include "asset.h"
 
+#include <string.h>
+
+#include "util/array_list.h"
 #include "util/filesystem.h"
+#include "util/hash_table.h"
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
@@ -65,6 +69,23 @@ _gsk_asset_load_material(gsk_AssetCache *p_cache,
     }
 
     gsk_GCFG gcfg = gsk_load_gcfg(GSK_PATH(str_uri));
+
+    // need to grab the shader
+
+    for (int i = 0; i < gcfg.list_items.list_next; i++)
+    {
+        gsk_GCFGItem *item = array_list_get_at_index(&gcfg.list_items, i);
+        if (!strcmp(item->key, "shader"))
+        {
+            if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
+            {
+                LOG_ERROR("Shader asset is not cached! (%s)", item->value);
+            }
+
+            // check if the shader has already been loaded.
+            gsk_asset_get_str(p_cache, item->value);
+        }
+    }
 
     return NULL;
 }
