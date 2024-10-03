@@ -22,10 +22,13 @@ TEST(AssetTestSuite, HashTest)
     gsk_asset_cache_add(&cache, ASSET_TYPE, ASSET_NAME);
     EXPECT_EQ(hash_table_has(&cache.asset_table, ASSET_NAME), true);
 
-    u64 expected_handle = 1; // index reference
-    EXPECT_EQ(hash_table_get(&cache.asset_table, ASSET_NAME), expected_handle);
+    u32 expected_list  = 0; // table reference
+    u32 expected_index = 1; // index reference
+    u64 handle         = hash_table_get(&cache.asset_table, ASSET_NAME);
 
-    gsk_AssetCacheState *p_state =
-      gsk_asset_cache_get(&cache, ASSET_TYPE, ASSET_NAME);
+    EXPECT_EQ(GSK_ASSET_HANDLE_LIST_NUM(handle), expected_list);
+    EXPECT_EQ(GSK_ASSET_HANDLE_INDEX_NUM(handle), expected_index);
+
+    gsk_AssetCacheState *p_state = gsk_asset_cache_get(&cache, ASSET_NAME);
     EXPECT_EQ(p_state->is_loaded, false);
 }
