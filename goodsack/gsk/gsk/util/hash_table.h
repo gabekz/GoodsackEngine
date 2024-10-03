@@ -33,6 +33,9 @@ hash_table_init(u64 table_count);
 void
 hash_table_add(HashTable *p_table, const char *str_key_uri, u64 value);
 
+u8
+hash_table_has(HashTable *p_table, const char *str_key_uri);
+
 u64
 hash_table_get(HashTable *p_table, const char *str_key_uri);
 

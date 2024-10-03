@@ -78,6 +78,16 @@ hash_table_add(HashTable *p_table, const char *str_key, u64 value)
     p_table->p_attribs[idx] = attrib;
 }
 
+u8
+hash_table_has(HashTable *p_table, const char *str_key)
+{
+    u64 hash = _HASHFN(str_key);
+    u64 idx  = hash % p_table->total_attribs;
+
+    u64 handle = p_table->p_attribs[idx].handle;
+    return (handle > 0) ? 1 : 0;
+}
+
 u64
 hash_table_get(HashTable *p_table, const char *str_key)
 {

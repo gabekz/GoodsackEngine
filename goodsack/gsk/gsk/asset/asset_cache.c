@@ -22,6 +22,8 @@ gsk_asset_cache_init()
     ret.asset_table = hash_table_init(GSK_ASSET_CACHE_TABLE_MAX);
 
     // setup  asset lists
+    ret.asset_lists[0].list_state =
+      array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
     ret.asset_lists[0].list_data =
       array_list_init(sizeof(gsk_Texture), GSK_ASSET_CACHE_INCREMENT);
     ret.asset_lists[0].list_options =
@@ -30,32 +32,6 @@ gsk_asset_cache_init()
     // TODO: Handle specific file types elsewhere.
 
     return ret;
-}
-
-void *
-gsk_asset_cache_get(gsk_AssetCache *p_cache, u32 asset_type, u32 asset_index)
-{
-    if (asset_type > GSK_TOTAL_ASSET_TYPES)
-    {
-        LOG_CRITICAL("Attempt to access invalid asset type (%u is not valid)",
-                     asset_type);
-    }
-
-    u8 not_loaded = TRUE;
-
-    if (not_loaded)
-    {
-        switch (asset_type)
-        {
-            // case TEXTURE: texture_create(GSK_PATH())
-        }
-    }
-
-#if 0
-    ArrayList list_data;
-
-    if (p_cache->asset_lists[asset_type]) }
-#endif
 }
 
 void *
@@ -69,12 +45,65 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
                      asset_type);
     }
 
-    gsk_Texture *test;
+    // ensure asset name is not already cached
+    if (hash_table_has(&(p_cache->asset_table), str_uri))
+    {
+        LOG_CRITICAL(
+          "Attempt to add asset to cache when it already exists (%s)", str_uri);
+    }
+
+    // create asset item state
+    gsk_AssetCacheState item = {.is_loaded = FALSE};
 
     // add empty data
-    array_list_push(&(p_cache->asset_lists[asset_type].list_data), &test);
+    array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
 
     // add the handle to the hash table (after it is incremented)
-    u64 handle = p_cache->asset_lists[asset_type].list_data.list_next;
+    u64 handle = p_cache->asset_lists[asset_type].list_state.list_next;
     hash_table_add((HashTable *)&(p_cache->asset_table), str_uri, handle);
+}
+
+#if ASSET_CACHE_GET_AT
+gsk_AssetCacheState *
+gsk_asset_cache_get_at(gsk_AssetCache *p_cache, u32 asset_type, u32 asset_index)
+{
+    if (asset_type > GSK_TOTAL_ASSET_TYPES)
+    {
+        LOG_CRITICAL("Attempt to access invalid asset type (%u is not valid)",
+                     asset_type);
+    }
+
+    /* TODO: Change hashmap so we don't have to truncate from 1 (WTF)
+    we have to currently grab (asset_index - 1)
+    */
+    gsk_AssetCacheState *p_state =
+      (gsk_AssetCacheState *)array_list_get_at_index(
+        &(p_cache->asset_lists[asset_type].list_state), asset_index - 1);
+
+    // LOG_INFO("%d", p_state->is_loaded);
+    return p_state;
+}
+#endif
+
+gsk_AssetCacheState *
+gsk_asset_cache_get(gsk_AssetCache *p_cache,
+                    u32 asset_type,
+                    const char *str_uri)
+{
+    if (asset_type > GSK_TOTAL_ASSET_TYPES)
+    {
+        LOG_CRITICAL("Attempt to access invalid asset type (%u is not valid)",
+                     asset_type);
+    }
+
+    u64 handle = hash_table_get(&(p_cache->asset_table), str_uri);
+    gsk_AssetCacheState *p_state; // fetched cache state
+
+#if ASSET_CACHE_GET_AT
+    p_state = gsk_asset_cache_get_at(p_cache, asset_type, handle);
+#else
+    p_state = (gsk_AssetCacheState *)array_list_get_at_index(
+      &(p_cache->asset_lists[asset_type].list_state), handle - 1);
+#endif
+    return p_state;
 }
