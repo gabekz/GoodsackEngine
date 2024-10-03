@@ -23,10 +23,11 @@ extern "C" {
 #define SCENE_PHYSICS        6
 #define SCENE_TRANSFORM_TEST 7
 #define SCENE_MAP_TEST       8
+#define SCENE_ASSET_TEST     9
 #define DEMO_SCENES_TOTAL    SCENE_MAP_TEST
 
 #define LOAD_ALL_SCENES 0
-#define INITIAL_SCENE   SCENE_MAP_TEST
+#define INITIAL_SCENE   SCENE_ASSET_TEST
 
 #define DEMO_USING_AUDIO            0
 #define DEMO_USING_MULTIPLE_CAMERAS 1
@@ -61,9 +62,11 @@ __set_active_scene_skybox(gsk_Renderer *renderer, gsk_Skybox *skybox)
 void
 _scene7(gsk_ECS *ecs, gsk_Renderer *renderer);
 
-// outside scene declarations
 void
 _scene8(gsk_ECS *ecs, gsk_Renderer *renderer);
+
+void
+_scene9(gsk_ECS *ecs, gsk_Renderer *renderer);
 
 #ifdef __cplusplus
 }

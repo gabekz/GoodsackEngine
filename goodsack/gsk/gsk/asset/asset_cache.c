@@ -52,7 +52,8 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
           "Attempt to add asset to cache when it already exists (%s)", str_uri);
     }
 
-    // create asset item state
+    /*==== Create asset cache state ==================================*/
+
     gsk_AssetCacheState item = {.is_loaded = FALSE};
 
     // add empty data
@@ -68,8 +69,8 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     new_handle = (new_handle & 0x00FFFFFFFFFFFFFF) | ((u64)asset_type << 56);
     new_handle = (new_handle & 0xFFFFFFFF00000000) | next_index;
 
-    u32 list_type  = (u32)((new_handle >> 56) & 0xFF); // asset list
-    u32 list_index = (u32)(new_handle & 0xFFFFFFFF);
+    u32 list_type   = GSK_ASSET_HANDLE_LIST_NUM(new_handle);
+    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(new_handle);
 
     /*==== Populate hashmap with handle ==============================*/
 
