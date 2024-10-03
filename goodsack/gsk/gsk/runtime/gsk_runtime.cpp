@@ -80,7 +80,7 @@ gsk_runtime_setup(const char *root_dir,
     int logStat = logger_initConsoleLogger(NULL);
     // logger_initFileLogger("logs/logs.txt", 0, 0);
 
-    logger_setLevel(LogLevel_DEBUG);
+    logger_setLevel(LogLevel_TRACE);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }

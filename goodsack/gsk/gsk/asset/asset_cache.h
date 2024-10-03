@@ -28,6 +28,7 @@ typedef enum AssetType { TEXTURE = 0, MESH } AssetType;
 
 typedef struct gsk_AssetCacheState
 {
+    u64 asset_handle;
     u8 is_loaded;
     void *p_data;
 

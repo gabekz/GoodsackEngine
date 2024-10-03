@@ -52,17 +52,10 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
           "Attempt to add asset to cache when it already exists (%s)", str_uri);
     }
 
-    /*==== Create asset cache state ==================================*/
-
-    gsk_AssetCacheState item = {.is_loaded = FALSE};
-
-    // add empty data
-    array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
-
     /*==== Generate file handle ======================================*/
 
-    // get the next_index
-    u32 next_index = p_cache->asset_lists[asset_type].list_state.list_next;
+    // TODO: hashmap increment needs to be removed.. should truncate from 0.
+    u32 next_index = p_cache->asset_lists[asset_type].list_state.list_next + 1;
 
     // generate new handle, filled with asset type
     u64 new_handle = 0xFFFFFFFFFFFFFFFF;
@@ -76,6 +69,13 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
 
     // add the handle to the hash table (after it is incremented)
     hash_table_add((HashTable *)&(p_cache->asset_table), str_uri, new_handle);
+
+    /*==== Create asset cache state ==================================*/
+
+    gsk_AssetCacheState item = {.is_loaded = FALSE, .asset_handle = new_handle};
+
+    // add empty data
+    array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
 }
 
 #if ASSET_CACHE_GET_AT

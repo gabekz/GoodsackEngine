@@ -7,9 +7,9 @@
 
 #include "core/graphics/texture/texture_set.h"
 
+#include "asset/asset.h"
 #include "asset/asset_cache.h"
 #include "asset/import/loader_qmap.h"
-
 
 /*----------------------
  |  Scene 9
@@ -23,9 +23,8 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
     // textures
-
-    gsk_Texture *def_norm;
-    def_norm = texture_create_n(GSK_PATH("gsk://textures/defaults/normal.png"));
+    gsk_Texture *def_norm = (gsk_Texture *)gsk_asset_get_str(
+      p_asset_cache, "gsk://textures/defaults/normal.png");
 
     gsk_Texture *texContDiff =
       texture_create_d(GSK_PATH("data://textures/container/diffuse.png"));
@@ -46,7 +45,6 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
     /*----------------------
      |  New texture tests
      -----------------------*/
-    // gsk_Texture *tex_asset = gsk_asset_cache_get();
 
     /*----------------------
      |  ECS Setup
