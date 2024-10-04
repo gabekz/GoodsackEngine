@@ -17,6 +17,8 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
+#include "asset/asset.h"
+
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
@@ -677,8 +679,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
           texture_create(GSK_PATH("gsk://textures/defaults/normal.png"),
                          NULL,
                          (TextureOptions) {0, GL_RGB, false, false});
-        s_pbrShader =
-          gsk_shader_program_create(GSK_PATH("gsk://shaders/pbr.shader"));
+        s_pbrShader             = GSK_ASSET("gsk://shaders/pbr.shader");
         s_loaded_textures_count = 0;
     }
 

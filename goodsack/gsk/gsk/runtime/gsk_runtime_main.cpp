@@ -25,8 +25,8 @@ _gsk_getFilepathInfo()
 int
 main(int argc, char *argv[])
 {
-    gsk_runtime_setup(NULL, "data", argc, argv);
-    gsk_runtime_loop();
+    gsk::runtime::rt_setup(NULL, "data", argc, argv);
+    gsk::runtime::rt_loop();
 
     _gsk_getFilepathInfo();
 }

@@ -8,12 +8,15 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "util/filesystem.h"
 #include "util/gfx.h"
 #include "util/logger.h"
 
 #include "core/device/device.h"
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
+
+#include "asset/asset.h"
 
 gsk_Material *
 gsk_material_create(gsk_ShaderProgram *shader,
@@ -28,7 +31,9 @@ gsk_material_create(gsk_ShaderProgram *shader,
         ret->shaderProgram = shader;
     } else if (shaderPath != "" || shaderPath != NULL)
     {
-        ret->shaderProgram = gsk_shader_program_create(shaderPath);
+        char uri[GSK_FS_MAX_PATH];
+        gsk_filesystem_path_to_uri(shaderPath, uri);
+        ret->shaderProgram = GSK_ASSET(uri);
     } else
     {
         LOG_ERROR(

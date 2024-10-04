@@ -25,23 +25,26 @@
 
 #define GSK_RUNTIME_USE_DEBUG 1
 
+namespace gsk {
+namespace runtime {
+
 u32
-gsk_runtime_setup(const char *root_dir,
-                  const char *root_scheme,
-                  int argc,
-                  char *argv[]);
+rt_setup(const char *root_dir, const char *root_scheme, int argc, char *argv[]);
 
 void
-gsk_runtime_loop();
+rt_loop();
 
 gsk_ECS *
-gsk_runtime_get_ecs();
+rt_get_ecs();
 gsk_Renderer *
-gsk_runtime_get_renderer();
+rt_get_renderer();
 gsk_AssetCache *
-gsk_runtime_get_asset_cache();
+rt_get_asset_cache();
 
 void
-gsk_runtime_set_scene(u16 sceneIndex);
+rt_set_scene(u16 sceneIndex);
+
+} // namespace runtime
+} // namespace gsk
 
 #endif // __GSK_RUNTIME_HPP__

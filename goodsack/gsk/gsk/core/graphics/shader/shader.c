@@ -114,7 +114,7 @@ CompileSingleShader(unsigned int type, const char *path)
  * and fragment shaders in one file.
  * Returns the source object containing id's and compiled sources.
  */
-static gsk_ShaderSource *
+static gsk_ShaderSource
 ParseShader(const char *path)
 {
     // File in
@@ -207,26 +207,25 @@ ParseShader(const char *path)
 
     /* TODO: Report 'NULL' declaration bug */
 
-    gsk_ShaderSource *ss = malloc(sizeof(gsk_ShaderSource));
+    gsk_ShaderSource ss = {0};
 
-    // TODO: Is this malloc'd?
-    if (vertLen > 0) { ss->shaderVertex = strdup(vertOut); }
-    if (fragLen > 0) { ss->shaderFragment = strdup(fragOut); }
-    if (compLen > 0) { ss->shaderCompute = strdup(compOut); }
+    if (vertLen > 0) { ss.shaderVertex = strdup(vertOut); }
+    if (fragLen > 0) { ss.shaderFragment = strdup(fragOut); }
+    if (compLen > 0) { ss.shaderCompute = strdup(compOut); }
 
     return ss;
 }
 
-gsk_ShaderProgram *
+gsk_ShaderProgram
 gsk_shader_program_create(const char *path)
 {
     if (GSK_DEVICE_API_OPENGL)
     {
-        gsk_ShaderSource *ss = ParseShader(path);
+        gsk_ShaderSource ss = ParseShader(path);
 
         u32 program = glCreateProgram();
-        u32 vs      = CompileSingleShader(GL_VERTEX_SHADER, ss->shaderVertex);
-        u32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss->shaderFragment);
+        u32 vs      = CompileSingleShader(GL_VERTEX_SHADER, ss.shaderVertex);
+        u32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss.shaderFragment);
 
         // TODO: Read documentation on these functions
         glAttachShader(program, vs);
@@ -237,25 +236,23 @@ gsk_shader_program_create(const char *path)
         glDeleteShader(vs);
         glDeleteShader(fs);
 
-        gsk_ShaderProgram *ret = malloc(sizeof(gsk_ShaderProgram));
-        ret->id                = program;
-        ret->shaderSource      = ss;
+        gsk_ShaderProgram ret = {.id = program, .shaderSource = ss};
         return ret;
 
     } else if (GSK_DEVICE_API_VULKAN)
     {
         LOG_DEBUG("Shader not implemented for Vulkan");
-        return NULL;
+        return;
     }
-    return NULL;
+    return;
 }
 
 gsk_ShaderProgram *
 gsk_shader_compute_program_create(const char *path)
 {
-    gsk_ShaderSource *ss = ParseShader(path);
-    u32 program          = glCreateProgram();
-    u32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss->shaderCompute);
+    gsk_ShaderSource ss = ParseShader(path);
+    u32 program         = glCreateProgram();
+    u32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss.shaderCompute);
 
     glAttachShader(program, csSingle);
     glLinkProgram(program);

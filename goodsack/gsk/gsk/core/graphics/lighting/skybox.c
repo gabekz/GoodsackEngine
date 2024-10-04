@@ -12,6 +12,9 @@
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/shader/shader.h"
 
+#include "asset/asset.h"
+#include "runtime/gsk_runtime_wrapper.h"
+
 static u32 cubemapProjectionFBO;
 static u32 cubemapProjectionRBO;
 static gsk_GlVertexArray *cubemapProjectionVAO;
@@ -37,9 +40,9 @@ gsk_skybox_create(gsk_Texture *cubemap)
       PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
     gsk_gl_index_buffer_bind(ibo);
     free(vbo);
-    gsk_ShaderProgram *shader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/skybox.shader"));
-    ret->shader = shader;
+    gsk_ShaderProgram *shader = gsk_asset_get(gsk_runtime_get_asset_cache(),
+                                              "gsk://shaders/skybox.shader");
+    ret->shader               = shader;
 
     return ret;
 }
@@ -185,25 +188,25 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     gsk_gl_index_buffer_bind(ibo);
     cubemapProjectionVAO = vao;
 
-    gsk_ShaderProgram *shaderP =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-cubemap.shader"));
+    gsk_ShaderProgram *shaderP = gsk_asset_get(
+      gsk_runtime_get_asset_cache(), "gsk://shaders/hdr-cubemap.shader");
     cubemapProjectionShader = shaderP;
 
-    gsk_ShaderProgram *shaderConvolute =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-convolute.shader"));
+    gsk_ShaderProgram *shaderConvolute = gsk_asset_get(
+      gsk_runtime_get_asset_cache(), "gsk://shaders/hdr-convolute.shader");
     cubemapShaderConvolute = shaderConvolute;
 
-    gsk_ShaderProgram *shaderPrefilter =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-prefilter.shader"));
+    gsk_ShaderProgram *shaderPrefilter = gsk_asset_get(
+      gsk_runtime_get_asset_cache(), "gsk://shaders/hdr-prefilter.shader");
     cubemapShaderPrefilter = shaderPrefilter;
 
-    gsk_ShaderProgram *brdfShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-brdf.shader"));
+    gsk_ShaderProgram *brdfShader = gsk_asset_get(
+      gsk_runtime_get_asset_cache(), "gsk://shaders/hdr-brdf.shader");
     cubemapBrdfShader = brdfShader;
 
     // Base skybox-render shader
-    gsk_ShaderProgram *baseShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/skybox.shader"));
+    gsk_ShaderProgram *baseShader = gsk_asset_get(
+      gsk_runtime_get_asset_cache(), "gsk://shaders/skybox.shader");
 
     cubemapProjectionFBO = captureFBO;
     cubemapProjectionRBO = captureRBO;

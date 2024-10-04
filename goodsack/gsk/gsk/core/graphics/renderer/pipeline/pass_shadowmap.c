@@ -18,6 +18,8 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/shader/shader.h"
 
+#include "asset/asset.h"
+
 static gsk_ShaderProgram *shaderDepthMap;
 static gsk_Material *materialDepthMap;
 
@@ -80,12 +82,11 @@ shadowmap_init()
     glm_mat4_mul(lightProjection, lightView, lightSpaceMatrix);
     */
 
-    shaderDepthMap =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/depth-map.shader"));
+    shaderDepthMap   = GSK_ASSET("gsk://shaders/depth-map.shader");
     materialDepthMap = gsk_material_create(shaderDepthMap, NULL, 0);
 
-    shaderDepthMap_skinned = gsk_shader_program_create(
-      GSK_PATH("gsk://shaders/depth-map-skinned.shader"));
+    shaderDepthMap_skinned =
+      GSK_ASSET("gsk://shaders/depth-map-skinned.shader");
     materialDepthMap_skinned =
       gsk_material_create(shaderDepthMap_skinned, NULL, 0);
 }

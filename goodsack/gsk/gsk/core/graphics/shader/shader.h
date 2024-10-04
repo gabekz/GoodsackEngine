@@ -53,10 +53,10 @@ typedef struct gsk_ShaderSource
 typedef struct gsk_ShaderProgram
 {
     u32 id;
-    gsk_ShaderSource *shaderSource;
+    gsk_ShaderSource shaderSource;
 } gsk_ShaderProgram;
 
-gsk_ShaderProgram *
+gsk_ShaderProgram
 gsk_shader_program_create(const char *path);
 
 gsk_ShaderProgram *

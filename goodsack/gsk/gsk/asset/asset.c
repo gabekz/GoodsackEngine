@@ -42,17 +42,12 @@ _gsk_asset_load_texture(gsk_AssetCache *p_cache,
     TextureOptions ops = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
 
     // TODO: texture_create without allocating!!
-    gsk_Texture *tex = texture_create(GSK_PATH(str_uri), NULL, ops);
+    gsk_Texture tex = texture_create_2(GSK_PATH(str_uri), NULL, ops);
 
     gsk_Texture *p_data = (gsk_Texture *)array_list_get_at_index(
       &(p_cache->asset_lists[TEXTURE_TYPE].list_data), asset_index - 1);
 
-    p_data->id         = tex->id;
-    p_data->width      = tex->width;
-    p_data->height     = tex->height;
-    p_data->activeSlot = tex->activeSlot;
-    p_data->bpp        = tex->bpp;
-    p_data->filePath   = strdup(tex->filePath);
+    *p_data = tex;
 
     gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
     p_state->is_loaded           = TRUE;
@@ -74,13 +69,12 @@ _gsk_asset_load_shader(gsk_AssetCache *p_cache,
     }
 
     // TODO: need to stop allocating from here.
-    gsk_ShaderProgram *shader = gsk_shader_program_create(GSK_PATH(str_uri));
+    gsk_ShaderProgram shader = gsk_shader_program_create(GSK_PATH(str_uri));
 
     gsk_ShaderProgram *p_data = (gsk_ShaderProgram *)array_list_get_at_index(
       &(p_cache->asset_lists[SHADER_TYPE].list_data), asset_index - 1);
 
-    p_data->id           = shader->id;
-    p_data->shaderSource = shader->shaderSource;
+    *p_data = shader;
 
     gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
     p_state->is_loaded           = TRUE;
@@ -218,4 +212,9 @@ void
 gsk_asset_get_handle(gsk_AssetCache *p_cache, u64 handle)
 {
     return NULL;
+}
+
+void *
+gsk_asset_alloc(gsk_AssetCache *p_cache, u64 handle)
+{
 }

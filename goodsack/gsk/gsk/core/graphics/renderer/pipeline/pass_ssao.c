@@ -18,6 +18,8 @@
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/renderer/pipeline/pass_prepass.h"
 
+#include "asset/asset.h"
+
 static vec3 s_ssaoSamples[64];
 static u32 s_ssaoFBO;
 static u32 s_ssaoNoiseTextureId;
@@ -108,10 +110,8 @@ pass_ssao_init()
 
     // Create Shaders
     //---------------
-    s_ssaoOutShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/ssao-color.shader"));
-    s_ssaoBlurShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/ssao-blur.shader"));
+    s_ssaoOutShader  = GSK_ASSET("gsk://shaders/ssao-color.shader");
+    s_ssaoBlurShader = GSK_ASSET("gsk://shaders/ssao-blur.shader");
 
     // Sample Kernel
     //--------------

@@ -79,15 +79,15 @@ _gsk_runtime_cache_asset_file(const char *uri)
 }
 
 u32
-gsk_runtime_setup(const char *root_dir,
-                  const char *root_scheme,
-                  int argc,
-                  char *argv[])
+gsk::runtime::rt_setup(const char *root_dir,
+                       const char *root_scheme,
+                       int argc,
+                       char *argv[])
 {
     /*==== Initialize Logger =========================================*/
 
     int logStat = logger_initConsoleLogger(NULL);
-    logger_initFileLogger("logs.txt", 0, 0);
+    // logger_initFileLogger("logs.txt", 0, 0);
 
     logger_setLevel(LogLevel_TRACE);
     logger_setDetail(LogDetail_SIMPLE);
@@ -108,6 +108,17 @@ gsk_runtime_setup(const char *root_dir,
 
     gsk_filesystem_initialize(root_dir, root_scheme);
 
+    /*==== Initialize Asset System ===================================*/
+
+    gsk_AssetCache *p_cache = (gsk_AssetCache *)malloc(sizeof(gsk_AssetCache));
+    *p_cache                = gsk_asset_cache_init();
+    s_runtime.asset_cache   = p_cache;
+
+    gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
+                            _gsk_runtime_cache_asset_file);
+
+    gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
+
     /*==== Initialize Renderer =======================================*/
 
 #ifdef RENDERER_2
@@ -119,17 +130,6 @@ gsk_runtime_setup(const char *root_dir,
 
     int winWidth  = s_runtime.renderer->windowWidth;
     int winHeight = s_runtime.renderer->windowHeight;
-
-    /*==== Initialize Asset System ===================================*/
-
-    gsk_AssetCache *p_cache = (gsk_AssetCache *)malloc(sizeof(gsk_AssetCache));
-    *p_cache                = gsk_asset_cache_init();
-    s_runtime.asset_cache   = p_cache;
-
-    gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
-                            _gsk_runtime_cache_asset_file);
-
-    gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
 
     /*==== Initialize ECS ============================================*/
 
@@ -197,7 +197,7 @@ gsk_runtime_setup(const char *root_dir,
 }
 
 void
-gsk_runtime_loop()
+gsk::runtime::rt_loop()
 {
     gsk_renderer_start(
       s_runtime.renderer); // Initialization for the render loop
@@ -311,23 +311,23 @@ gsk_runtime_loop()
 }
 
 gsk_ECS *
-gsk_runtime_get_ecs()
+gsk::runtime::rt_get_ecs()
 {
     return s_runtime.ecs;
 }
 gsk_Renderer *
-gsk_runtime_get_renderer()
+gsk::runtime::rt_get_renderer()
 {
     return s_runtime.renderer;
 }
 gsk_AssetCache *
-gsk_runtime_get_asset_cache()
+gsk::runtime::rt_get_asset_cache()
 {
     return s_runtime.asset_cache;
 }
 
 void
-gsk_runtime_set_scene(u16 sceneIndex)
+gsk::runtime::rt_set_scene(u16 sceneIndex)
 {
     s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, sceneIndex);
 }

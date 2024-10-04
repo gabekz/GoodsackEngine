@@ -13,6 +13,8 @@
 
 #include "core/drivers/opengl/opengl.h"
 
+#include "asset/asset.h"
+
 static gsk_ShaderProgram *s_depthPrepassShader;
 static gsk_Material *s_depthPrepassMaterial;
 
@@ -102,12 +104,11 @@ prepass_init()
     glDrawBuffers(2, attachments);
 
     // create shader and material
-    s_depthPrepassShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/depth-prepass.shader"));
+    s_depthPrepassShader   = GSK_ASSET("gsk://shaders/depth-prepass.shader");
     s_depthPrepassMaterial = gsk_material_create(s_depthPrepassShader, NULL, 0);
 
-    s_depthPrepassShader_skinned = gsk_shader_program_create(
-      GSK_PATH("gsk://shaders/depth-prepass-skinned.shader"));
+    s_depthPrepassShader_skinned =
+      GSK_ASSET("gsk://shaders/depth-prepass-skinned.shader");
     s_depthPrepassMaterial_skinned =
       gsk_material_create(s_depthPrepassShader_skinned, NULL, 0);
 

@@ -14,6 +14,8 @@
 #include "core/device/device.h"
 #include "core/graphics/mesh/primitives.h"
 
+#include "asset/asset.h"
+
 static u32 csTexture;
 static gsk_ShaderProgram *csShader;
 static gsk_ShaderProgram *shader2;
@@ -26,8 +28,7 @@ computebuffer_init()
     // shader Program
     const char *csPath = "../res/shaders/hello.compute";
     csShader           = gsk_shader_compute_program_create(csPath);
-    shader2 =
-      gsk_shader_program_create("../res/shaders/framebuffer-simple.shader");
+    shader2            = GSK_ASSET("../res/shaders/framebuffer-simple.shader");
 
     // texture size
     const u32 TEXTURE_WIDTH = 320, TEXTURE_HEIGHT = 180;

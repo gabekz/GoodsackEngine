@@ -48,6 +48,11 @@ texture_create(const char *path,
                VulkanDeviceContext *vkDevice,
                TextureOptions options);
 
+gsk_Texture
+texture_create_2(const char *path,
+                 VulkanDeviceContext *vkDevice,
+                 TextureOptions options);
+
 gsk_Texture *
 texture_create_cubemap(u32 faceCount, ...);
 gsk_Texture *

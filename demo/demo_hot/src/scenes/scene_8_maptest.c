@@ -7,7 +7,9 @@
 
 #include "core/graphics/texture/texture_set.h"
 
+#include "asset/asset.h"
 #include "asset/import/loader_qmap.h"
+
 
 /*----------------------
  |  Scene 8
@@ -92,7 +94,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      |  Import QMap
      -----------------------*/
     gsk_ShaderProgram *p_shader_qmap =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/lit-diffuse.shader"));
+      GSK_ASSET("gsk://shaders/lit-diffuse.shader");
 
     gsk_QMapContainer qmap = gsk_qmap_load(
       GSK_PATH("gsk://map/cube_valve.map"), &texture_set, p_shader_qmap);

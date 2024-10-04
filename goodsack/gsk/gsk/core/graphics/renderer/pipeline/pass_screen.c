@@ -18,6 +18,8 @@
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/shader/shader.h"
 
+#include "asset/asset.h"
+
 static u32 msFBO, sbFBO;
 static u32 msRBO, sbRBO;
 static u32 msTexture, sbTexture;
@@ -146,8 +148,7 @@ postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties)
     frameHeight = height;
 
     // Shader
-    shader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/framebuffer.shader"));
+    shader = GSK_ASSET("gsk://shaders/framebuffer.shader");
     gsk_shader_use(shader);
     glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
 
