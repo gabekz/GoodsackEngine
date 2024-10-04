@@ -15,7 +15,9 @@ extern "C" {
 #endif // __cplusplus
 
 // absolute path from the provided uri
-#define GSK_PATH(uri) (gsk_filesystem_path_from_uri(uri).path)
+#define GSK_PATH(uri) (gsk_filesystem_uri_to_path(uri).path)
+
+typedef void (*FileUriHandler)(const char *uri);
 
 typedef struct gsk_URI
 {
@@ -51,7 +53,13 @@ gsk_URI
 gsk_filesystem_uri(const char *uri_path);
 
 gsk_Path
-gsk_filesystem_path_from_uri(const char *uri_path);
+gsk_filesystem_uri_to_path(const char *uri_path);
+
+char *
+gsk_filesystem_path_to_uri(const char *file_path, char *output_uri);
+
+void
+gsk_filesystem_traverse(const char *dirpath, FileUriHandler process_fn);
 
 #ifdef __cplusplus
 }

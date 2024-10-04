@@ -18,6 +18,8 @@
 #include "entity/lua/eventstore.hpp"
 #include "wrapper/lua/lua_init.hpp"
 
+#include <GoodsackEngineConfig.h> // TODO: change this
+
 #if GSK_RUNTIME_USE_DEBUG
 #include "tools/debug/debug_toolbar.hpp"
 #endif // GSK_RUNTIME_USE_DEBUG
@@ -70,6 +72,13 @@ _gsk_check_args(int argc, char *argv[])
     }
 }
 
+void
+gsk_runtime_cache_asset_file(const char *uri)
+{
+
+    LOG_INFO("Process for: %s", uri);
+}
+
 u32
 gsk_runtime_setup(const char *root_dir,
                   const char *root_scheme,
@@ -84,6 +93,7 @@ gsk_runtime_setup(const char *root_dir,
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
+    LOG_INFO("Root directory: %s", root_dir);
 
     _gsk_check_args(argc, argv);
 
@@ -109,6 +119,12 @@ gsk_runtime_setup(const char *root_dir,
 
     // initialize shaders
     gsk_asset_cache_add_by_ext(p_cache, "gsk://shaders/lit-diffuse.shader");
+
+#if 1
+    gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
+                            gsk_runtime_cache_asset_file);
+    gsk_filesystem_traverse(root_dir, gsk_runtime_cache_asset_file);
+#endif
 
     // Initialize Renderer
 #ifdef RENDERER_2
