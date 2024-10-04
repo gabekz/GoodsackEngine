@@ -112,7 +112,8 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
     u32 list_type = 0;
 
     // texture
-    if (!strcmp(ext, ".png") || !strcmp(ext, ".jpg"))
+    if (!strcmp(ext, ".png") || !strcmp(ext, ".jpg") || !strcmp(ext, ".tga") ||
+        !strcmp(ext, ".hdr"))
     {
         list_type = 0;
     }
@@ -147,27 +148,6 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
 }
 /*--------------------------------------------------------------------*/
 
-#if ASSET_CACHE_GET_AT
-/*--------------------------------------------------------------------*/
-gsk_AssetCacheState *
-gsk_asset_cache_get_at(gsk_AssetCache *p_cache, u32 asset_type, u32 asset_index)
-{
-    if (asset_type > GSK_TOTAL_ASSET_TYPES)
-    {
-        LOG_CRITICAL("Attempt to access invalid asset type (%u is not valid)",
-                     asset_type);
-    }
-
-    gsk_AssetCacheState *p_state =
-      (gsk_AssetCacheState *)array_list_get_at_index(
-        &(p_cache->asset_lists[asset_type].list_state), asset_index - 1);
-
-    // LOG_INFO("%d", p_state->is_loaded);
-    return p_state;
-}
-/*--------------------------------------------------------------------*/
-#endif
-
 /*--------------------------------------------------------------------*/
 gsk_AssetCacheState *
 gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
@@ -197,12 +177,5 @@ gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
       &(p_cache->asset_lists[asset_type].list_state), asset_index - 1);
 #endif
     return p_state;
-}
-/*--------------------------------------------------------------------*/
-
-/*--------------------------------------------------------------------*/
-void
-gsk_asset_cache_fill_by_directory(gsk_AssetCache *p_cache, const char *root_uri)
-{
 }
 /*--------------------------------------------------------------------*/

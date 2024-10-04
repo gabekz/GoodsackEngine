@@ -11,7 +11,6 @@
 #include "entity/ecs.h"
 #include "util/sysdefs.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
