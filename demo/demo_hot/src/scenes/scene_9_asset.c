@@ -22,21 +22,11 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
     def_skybox = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
-    // textures
-    gsk_Texture *def_norm = (gsk_Texture *)gsk_asset_get_str(
-      p_asset_cache, "gsk://textures/defaults/normal.png");
-
-    gsk_Texture *texContDiff =
-      texture_create_d(GSK_PATH("data://textures/container/diffuse.png"));
-    gsk_Texture *texContSpec =
-      texture_create_d(GSK_PATH("data://textures/container/specular.png"));
-
     // get asset
-    gsk_Material *matBox = (gsk_Material *)gsk_asset_get_str(
+    gsk_Material *mat_box = (gsk_Material *)gsk_asset_get(
       p_asset_cache, "data://materials/cube.material");
 
     // model
-
     gsk_Model *model_cube =
       gsk_model_load_from_file(GSK_PATH("gsk://models/cube.obj"), 1, FALSE);
 
@@ -103,7 +93,7 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
     _gsk_ecs_add_internal(
       cubeEntity,
       C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
+      (void *)(&(struct ComponentModel) {.material   = mat_box,
                                          .pModel     = model_cube,
                                          .properties = {
                                            .drawMode = DRAW_ARRAYS,

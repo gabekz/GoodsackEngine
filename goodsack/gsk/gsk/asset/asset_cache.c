@@ -17,6 +17,7 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
+/*--------------------------------------------------------------------*/
 gsk_AssetCache
 gsk_asset_cache_init()
 {
@@ -53,7 +54,9 @@ gsk_asset_cache_init()
 
     return ret;
 }
+/*--------------------------------------------------------------------*/
 
+/*--------------------------------------------------------------------*/
 void
 gsk_asset_cache_add(gsk_AssetCache *p_cache,
                     u32 asset_type,
@@ -97,7 +100,9 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     // add empty data
     array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
 }
+/*--------------------------------------------------------------------*/
 
+/*--------------------------------------------------------------------*/
 void
 gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
 {
@@ -134,8 +139,10 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
               ext,
               str_uri);
 }
+/*--------------------------------------------------------------------*/
 
 #if ASSET_CACHE_GET_AT
+/*--------------------------------------------------------------------*/
 gsk_AssetCacheState *
 gsk_asset_cache_get_at(gsk_AssetCache *p_cache, u32 asset_type, u32 asset_index)
 {
@@ -152,8 +159,10 @@ gsk_asset_cache_get_at(gsk_AssetCache *p_cache, u32 asset_type, u32 asset_index)
     // LOG_INFO("%d", p_state->is_loaded);
     return p_state;
 }
+/*--------------------------------------------------------------------*/
 #endif
 
+/*--------------------------------------------------------------------*/
 gsk_AssetCacheState *
 gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
 {
@@ -164,8 +173,8 @@ gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
     u64 handle = hash_table_get(&(p_cache->asset_table), str_uri);
 
     // get references
-    u32 asset_type  = (u32)((handle >> 56) & 0xFF); // asset list
-    u32 asset_index = (u32)(handle & 0xFFFFFFFF);
+    u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(handle);
+    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(handle);
 
     if (asset_type > GSK_TOTAL_ASSET_TYPES)
     {
@@ -183,3 +192,11 @@ gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
 #endif
     return p_state;
 }
+/*--------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------*/
+void
+gsk_asset_cache_fill_by_directory(gsk_AssetCache *p_cache, const char *root_uri)
+{
+}
+/*--------------------------------------------------------------------*/

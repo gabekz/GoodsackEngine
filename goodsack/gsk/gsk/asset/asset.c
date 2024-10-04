@@ -39,7 +39,7 @@ _gsk_asset_load_texture(gsk_AssetCache *p_cache,
     }
 
     // TODO: fetch options somehow
-    TextureOptions ops = (TextureOptions) {1, GL_RGB, TRUE, TRUE};
+    TextureOptions ops = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
 
     // TODO: texture_create without allocating!!
     gsk_Texture *tex = texture_create(GSK_PATH(str_uri), NULL, ops);
@@ -116,8 +116,7 @@ _gsk_asset_load_material(gsk_AssetCache *p_cache,
                 LOG_ERROR("Shader asset is not cached! (%s)", item->value);
             }
 
-            p_shader =
-              (gsk_ShaderProgram *)gsk_asset_get_str(p_cache, item->value);
+            p_shader = (gsk_ShaderProgram *)gsk_asset_get(p_cache, item->value);
         }
     }
     if (p_shader == NULL)
@@ -142,7 +141,7 @@ _gsk_asset_load_material(gsk_AssetCache *p_cache,
             // load and add texture
 
             gsk_Texture *p_tex =
-              (gsk_Texture *)gsk_asset_get_str(p_cache, item->value);
+              (gsk_Texture *)gsk_asset_get(p_cache, item->value);
 
             gsk_material_add_texture(p_material, p_tex);
         }
@@ -162,8 +161,8 @@ _gsk_asset_load_material(gsk_AssetCache *p_cache,
     return p_data;
 }
 
-static void *
-_gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
+void *
+gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
 {
     // check if the asset has been added already
     // -- if not, exit
@@ -193,27 +192,26 @@ _gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
         {
             data_ret =
               _gsk_asset_load_shader(p_cache, p_state->asset_handle, str_uri);
+        } else
+        {
+            LOG_CRITICAL("INVALID asset type %d", asset_type);
+        }
+
+        if (p_state->is_loaded == FALSE)
+        {
+            LOG_ERROR("Probably failed to load asset. This may result in a "
+                      "memory leak. (%s)",
+                      str_uri);
+            return NULL;
         }
 
         return data_ret;
-
-        // if we are hot-loaded, load it from the address on disk
     }
+
     LOG_DEBUG("asset already loaded. referencing (%s)", str_uri);
 
     return array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_data), asset_index - 1);
-
-    // check if the asset has been loaded
-    // -- if not, load it
-
-    // return the asset
-}
-
-void *
-gsk_asset_get_str(gsk_AssetCache *p_cache, const char *str_uri)
-{
-    return _gsk_asset_get(p_cache, str_uri);
 }
 
 void

@@ -13,7 +13,7 @@ extern "C" {
 #endif // __cplusplus
 
 void *
-gsk_asset_get_str(gsk_AssetCache *p_cache, const char *str_uri);
+gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri);
 
 void
 gsk_asset_get_handle(gsk_AssetCache *p_cache, u64 handle);

@@ -14,7 +14,7 @@
 #define GSK_ASSET_CACHE_INCREMENT 32
 #define GSK_ASSET_CACHE_TABLE_MAX 1024
 
-#define _GSK_ASSET_CACHE_GET_AT 0
+#define _GSK_ASSET_CACHE_GET_AT SYS_DISABLED
 
 #define GSK_ASSET_HANDLE_LIST_NUM(x)  (u32)((x >> 56) & 0xFF)
 #define GSK_ASSET_HANDLE_INDEX_NUM(x) (u32)(x & 0xFFFFFFFF)
@@ -69,6 +69,10 @@ gsk_asset_cache_get_at(gsk_AssetCache *p_cache,
 
 gsk_AssetCacheState *
 gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri);
+
+void
+gsk_asset_cache_fill_by_directory(gsk_AssetCache *p_cache,
+                                  const char *root_uri);
 
 #ifdef __cplusplus
 }

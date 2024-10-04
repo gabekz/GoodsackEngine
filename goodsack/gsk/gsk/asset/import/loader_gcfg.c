@@ -42,8 +42,6 @@ gsk_load_gcfg(const char *path)
 
         char *key   = strtok(str, delim);  // line, split by spaces
         char *value = strtok(NULL, delim); // line, split by spaces
-        LOG_TRACE("key: %s", key);
-        LOG_TRACE("value: %s", value);
 
         gsk_GCFGItem item = {0};
         item.key          = strdup(key);
