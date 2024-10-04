@@ -107,6 +107,9 @@ gsk_runtime_setup(const char *root_dir,
     gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/white.png");
     gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/missing.png");
 
+    // initialize shaders
+    gsk_asset_cache_add_by_ext(p_cache, "gsk://shaders/lit-diffuse.shader");
+
     // Initialize Renderer
 #ifdef RENDERER_2
     gsk_Renderer renderer = new gsk_Renderer();

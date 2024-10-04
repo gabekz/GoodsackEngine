@@ -14,6 +14,7 @@
 #include "util/sysdefs.h"
 
 #include "core/graphics/material/material.h"
+#include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
 #include "asset/asset_gcfg.h"
@@ -21,6 +22,7 @@
 
 #define TEXTURE_TYPE  0
 #define MATERIAL_TYPE 2
+#define SHADER_TYPE   3
 
 static gsk_Texture *
 _gsk_asset_load_texture(gsk_AssetCache *p_cache,
@@ -47,10 +49,41 @@ _gsk_asset_load_texture(gsk_AssetCache *p_cache,
 
     p_data->id         = tex->id;
     p_data->width      = tex->width;
+    p_data->height     = tex->height;
     p_data->activeSlot = tex->activeSlot;
     p_data->bpp        = tex->bpp;
-    p_data->filePath   = NULL;
+    p_data->filePath   = strdup(tex->filePath);
 
+    gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
+    p_state->is_loaded           = TRUE;
+    return p_data;
+}
+
+static gsk_ShaderProgram *
+_gsk_asset_load_shader(gsk_AssetCache *p_cache,
+                       u64 asset_handle,
+                       const char *str_uri)
+{
+    u32 asset_list  = GSK_ASSET_HANDLE_LIST_NUM(asset_handle);
+    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(asset_handle);
+
+    if (asset_list != SHADER_TYPE)
+    {
+        // TODO: better logging
+        LOG_CRITICAL("Asset handle is for incorrect asset type.");
+    }
+
+    // TODO: need to stop allocating from here.
+    gsk_ShaderProgram *shader = gsk_shader_program_create(GSK_PATH(str_uri));
+
+    gsk_ShaderProgram *p_data = (gsk_ShaderProgram *)array_list_get_at_index(
+      &(p_cache->asset_lists[SHADER_TYPE].list_data), asset_index - 1);
+
+    p_data->id           = shader->id;
+    p_data->shaderSource = shader->shaderSource;
+
+    gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
+    p_state->is_loaded           = TRUE;
     return p_data;
 }
 
@@ -70,8 +103,9 @@ _gsk_asset_load_material(gsk_AssetCache *p_cache,
 
     gsk_GCFG gcfg = gsk_load_gcfg(GSK_PATH(str_uri));
 
-    // need to grab the shader
+    gsk_ShaderProgram *p_shader = NULL;
 
+    // need to grab the shader
     for (int i = 0; i < gcfg.list_items.list_next; i++)
     {
         gsk_GCFGItem *item = array_list_get_at_index(&gcfg.list_items, i);
@@ -82,12 +116,50 @@ _gsk_asset_load_material(gsk_AssetCache *p_cache,
                 LOG_ERROR("Shader asset is not cached! (%s)", item->value);
             }
 
-            // check if the shader has already been loaded.
-            gsk_asset_get_str(p_cache, item->value);
+            p_shader =
+              (gsk_ShaderProgram *)gsk_asset_get_str(p_cache, item->value);
+        }
+    }
+    if (p_shader == NULL)
+    {
+        LOG_CRITICAL("Material does not have a shader reference. (%s)",
+                     str_uri);
+    }
+
+    gsk_Material *p_material = gsk_material_create(p_shader, NULL, 0);
+
+    // attach textures
+    for (int i = 0; i < gcfg.list_items.list_next; i++)
+    {
+        gsk_GCFGItem *item = array_list_get_at_index(&gcfg.list_items, i);
+        if (!strcmp(item->key, "texture"))
+        {
+            if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
+            {
+                LOG_ERROR("Texture asset is not cached! (%s)", item->value);
+            }
+
+            // load and add texture
+
+            gsk_Texture *p_tex =
+              (gsk_Texture *)gsk_asset_get_str(p_cache, item->value);
+
+            gsk_material_add_texture(p_material, p_tex);
         }
     }
 
-    return NULL;
+    gsk_Material *p_data = (gsk_Material *)array_list_get_at_index(
+      &(p_cache->asset_lists[MATERIAL_TYPE].list_data), asset_index - 1);
+
+    p_data->shaderProgram = p_material->shaderProgram;
+    p_data->textures      = p_material->textures;
+    p_data->texturesCount = p_material->texturesCount;
+    // p_data->vulkan.pipelineLayout = p_data->vulkan.pipelineLayout;
+
+    gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
+    p_state->is_loaded           = TRUE;
+
+    return p_data;
 }
 
 static void *
@@ -117,12 +189,17 @@ _gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
         {
             data_ret =
               _gsk_asset_load_material(p_cache, p_state->asset_handle, str_uri);
+        } else if (asset_type == SHADER_TYPE)
+        {
+            data_ret =
+              _gsk_asset_load_shader(p_cache, p_state->asset_handle, str_uri);
         }
 
         return data_ret;
 
         // if we are hot-loaded, load it from the address on disk
     }
+    LOG_DEBUG("asset already loaded. referencing (%s)", str_uri);
 
     return array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_data), asset_index - 1);

@@ -28,6 +28,14 @@ gsk_load_gcfg(const char *path)
     }
     while (fgets(line, sizeof(line), stream))
     {
+        // Strip newline characters (\n or \r\n)
+        size_t len = strlen(line);
+        if (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r'))
+        {
+            line[len - 1] = '\0';
+            if (len > 1 && line[len - 2] == '\r') { line[len - 2] = '\0'; }
+        }
+
         // separate coordinate by spaces
         char delim[] = " ";
         char *str    = line;

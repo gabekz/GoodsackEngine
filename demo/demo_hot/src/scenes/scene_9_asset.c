@@ -31,11 +31,9 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
     gsk_Texture *texContSpec =
       texture_create_d(GSK_PATH("data://textures/container/specular.png"));
 
-    // shader
-    const char *standard_shader_path =
-      GSK_PATH("gsk://shaders/lit-diffuse.shader");
-    gsk_Material *matBox = gsk_material_create(
-      NULL, standard_shader_path, 3, texContDiff, def_norm, texContSpec);
+    // get asset
+    gsk_Material *matBox = (gsk_Material *)gsk_asset_get_str(
+      p_asset_cache, "data://materials/cube.material");
 
     // model
 

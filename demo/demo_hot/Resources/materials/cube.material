@@ -1,4 +1,4 @@
 shader gsk://shaders/lit-diffuse.shader
-texture data://textures/defaults/white.png
-texture data://textures/defaults/black.png
-texture data://tetures/defaults/missing.png
+texture data://textures/container/diffuse.png
+texture gsk://textures/defaults/normal.png
+texture data://textures/container/specular.png

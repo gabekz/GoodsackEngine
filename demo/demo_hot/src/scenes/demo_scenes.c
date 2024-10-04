@@ -628,6 +628,7 @@ demo_scenes_create(gsk_ECS *ecs,
                    gsk_Renderer *renderer,
                    gsk_AssetCache *asset_cache)
 {
+#if 0
     // Default textures with options
     texDefSpec =
       texture_create_n(GSK_PATH("gsk://textures/defaults/black.png"));
@@ -636,13 +637,18 @@ demo_scenes_create(gsk_ECS *ecs,
     texPbrAo = texture_create_n(GSK_PATH("gsk://textures/defaults/white.png"));
     texMissing =
       texture_create_n(GSK_PATH("gsk://textures/defaults/missing.jpg"));
+#endif
 
     skyboxMain = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
+    gsk_asset_cache_add_by_ext(asset_cache,
+                               "data://textures/container/diffuse.png");
+    gsk_asset_cache_add_by_ext(asset_cache,
+                               "data://textures/container/specular.png");
+
     // test load material
     gsk_asset_cache_add_by_ext(asset_cache, "data://materials/cube.material");
-    gsk_asset_get_str(asset_cache, "data://materials/cube.material");
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);

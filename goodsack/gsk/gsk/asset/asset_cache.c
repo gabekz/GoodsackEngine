@@ -14,8 +14,8 @@
 #include "util/sysdefs.h"
 
 #include "core/graphics/material/material.h"
+#include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
-
 
 gsk_AssetCache
 gsk_asset_cache_init()
@@ -39,6 +39,14 @@ gsk_asset_cache_init()
     ret.asset_lists[2].list_data =
       array_list_init(sizeof(gsk_Material), GSK_ASSET_CACHE_INCREMENT);
     ret.asset_lists[2].list_options =
+      array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
+
+    // setup  asset lists
+    ret.asset_lists[3].list_state =
+      array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
+    ret.asset_lists[3].list_data =
+      array_list_init(sizeof(gsk_ShaderProgram), GSK_ASSET_CACHE_INCREMENT);
+    ret.asset_lists[3].list_options =
       array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
     // TODO: Other types
     // TODO: Handle specific file types elsewhere.
@@ -112,6 +120,11 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
     else if (!strcmp(ext, ".material"))
     {
         list_type = 2;
+    }
+    // shader
+    else if (!strcmp(ext, ".shader"))
+    {
+        list_type = 3;
     }
 
     gsk_asset_cache_add(p_cache, list_type, str_uri);
