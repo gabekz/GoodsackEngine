@@ -81,11 +81,8 @@ hash_table_add(HashTable *p_table, const char *str_key, u64 value)
 u8
 hash_table_has(HashTable *p_table, const char *str_key)
 {
-    u64 hash = _HASHFN(str_key);
-    u64 idx  = hash % p_table->total_attribs;
-
-    u64 handle = p_table->p_attribs[idx].handle;
-    return (handle > 0) ? 1 : 0;
+    u64 result = hash_table_get(p_table, str_key);
+    return (result > 0) ? 1 : 0;
 }
 
 u64
@@ -94,38 +91,36 @@ hash_table_get(HashTable *p_table, const char *str_key)
     u64 hash = _HASHFN(str_key);
     u64 idx  = hash % p_table->total_attribs;
 
-    if (p_table->p_attribs[idx].handle == 0)
-    {
-        LOG_CRITICAL("Entry in hashtable does not exist! (%s)", str_key);
-    }
+    if (p_table->p_attribs[idx].handle == 0) { return 0; }
 
-    if (p_table->p_attribs[idx].handle != 0)
-    {
-        HashTableAttrib *p_last = (HashTableAttrib *)&p_table->p_attribs[idx];
-        HashTableAttrib *p_next = p_last->p_next;
+    HashTableAttrib *p_last = (HashTableAttrib *)&p_table->p_attribs[idx];
+    HashTableAttrib *p_next = p_last->p_next;
 
-        while (p_next != NULL)
+    while (p_next != NULL)
+    {
+        if (!strcmp(p_last->uri, str_key)) { return p_last->handle; }
+
+        // ensure that the next item is valid
+        if (p_next->handle == 0)
         {
-            if (!strcmp(p_last->uri, str_key)) { return p_last->handle; }
-
-            // ensure that the next item is valid
-            if (p_next->handle == 0)
-            {
-                LOG_ERROR("Failed to reference chain in hashtable!");
-            }
-
-            p_last = p_next;
-            p_next = p_last->p_next;
+            LOG_ERROR("Failed to reference chain in hashtable!");
+            return 0;
         }
 
-        // one last check
-        if (strcmp(p_last->uri, str_key))
-        {
-            LOG_ERROR("Failed to find attrib (%s) in hash_table", str_key);
-            return 1;
-        }
-
-        // return the handle
-        return p_last->handle;
+        p_last = p_next;
+        p_next = p_last->p_next;
     }
+
+    // one last check
+    if (strcmp(p_last->uri, str_key))
+    {
+        // TODO: Make this a LOG_CRITICAL again when we actually need to get the
+        // data. Currently making this a TRACE to use the function in
+        // hash_table_get()
+        LOG_TRACE("Did not find attrib (%s) in chained hash_table", str_key);
+        return 0;
+    }
+
+    // return the handle
+    return p_last->handle;
 }

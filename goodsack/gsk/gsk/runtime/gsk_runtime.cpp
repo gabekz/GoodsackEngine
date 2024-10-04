@@ -75,8 +75,7 @@ _gsk_check_args(int argc, char *argv[])
 void
 gsk_runtime_cache_asset_file(const char *uri)
 {
-
-    LOG_INFO("Process for: %s", uri);
+    gsk_asset_cache_add_by_ext(s_runtime.asset_cache, uri);
 }
 
 u32
@@ -111,6 +110,7 @@ gsk_runtime_setup(const char *root_dir,
     *p_cache                = gsk_asset_cache_init();
     s_runtime.asset_cache   = p_cache;
 
+#if 0
     // Initialize Default Assets
     gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/black.png");
     gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/normal.png");
@@ -119,8 +119,8 @@ gsk_runtime_setup(const char *root_dir,
 
     // initialize shaders
     gsk_asset_cache_add_by_ext(p_cache, "gsk://shaders/lit-diffuse.shader");
+#else
 
-#if 1
     gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
                             gsk_runtime_cache_asset_file);
     gsk_filesystem_traverse(root_dir, gsk_runtime_cache_asset_file);

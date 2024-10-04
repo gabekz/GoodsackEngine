@@ -116,11 +116,13 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
     {
         list_type = 0;
     }
+#if 0
     // model
     else if (!strcmp(ext, ".obj") || !strcmp(ext, ".gltf"))
     {
         list_type = 1;
     }
+#endif
     // material
     else if (!strcmp(ext, ".material"))
     {
@@ -130,6 +132,10 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
     else if (!strcmp(ext, ".shader"))
     {
         list_type = 3;
+    } else
+    {
+        LOG_TRACE("asset format is not available. (%s)", str_uri);
+        return;
     }
 
     gsk_asset_cache_add(p_cache, list_type, str_uri);

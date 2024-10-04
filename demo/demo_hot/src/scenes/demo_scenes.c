@@ -642,6 +642,8 @@ demo_scenes_create(gsk_ECS *ecs,
     skyboxMain = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
+// NOTE: asset cache now handled by runtime
+#if 0
     gsk_asset_cache_add_by_ext(asset_cache,
                                "data://textures/container/diffuse.png");
     gsk_asset_cache_add_by_ext(asset_cache,
@@ -649,6 +651,7 @@ demo_scenes_create(gsk_ECS *ecs,
 
     // test load material
     gsk_asset_cache_add_by_ext(asset_cache, "data://materials/cube.material");
+#endif
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);
