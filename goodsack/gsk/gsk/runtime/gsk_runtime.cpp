@@ -72,8 +72,8 @@ _gsk_check_args(int argc, char *argv[])
     }
 }
 
-void
-gsk_runtime_cache_asset_file(const char *uri)
+static void
+_gsk_runtime_cache_asset_file(const char *uri)
 {
     gsk_asset_cache_add_by_ext(s_runtime.asset_cache, uri);
 }
@@ -84,9 +84,10 @@ gsk_runtime_setup(const char *root_dir,
                   int argc,
                   char *argv[])
 {
-    // Setup logger
+    /*==== Initialize Logger =========================================*/
+
     int logStat = logger_initConsoleLogger(NULL);
-    // logger_initFileLogger("logs/logs.txt", 0, 0);
+    logger_initFileLogger("logs.txt", 0, 0);
 
     logger_setLevel(LogLevel_TRACE);
     logger_setDetail(LogDetail_SIMPLE);
@@ -103,30 +104,12 @@ gsk_runtime_setup(const char *root_dir,
     default: LOG_ERROR("Device API Failed to retreive Graphics Backend"); break;
     }
 
+    /*==== Setup gsk filesystem (uri) ================================*/
+
     gsk_filesystem_initialize(root_dir, root_scheme);
 
-    // Initialize Asset System
-    gsk_AssetCache *p_cache = (gsk_AssetCache *)malloc(sizeof(gsk_AssetCache));
-    *p_cache                = gsk_asset_cache_init();
-    s_runtime.asset_cache   = p_cache;
+    /*==== Initialize Renderer =======================================*/
 
-#if 0
-    // Initialize Default Assets
-    gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/black.png");
-    gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/normal.png");
-    gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/white.png");
-    gsk_asset_cache_add_by_ext(p_cache, "gsk://textures/defaults/missing.png");
-
-    // initialize shaders
-    gsk_asset_cache_add_by_ext(p_cache, "gsk://shaders/lit-diffuse.shader");
-#else
-
-    gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
-                            gsk_runtime_cache_asset_file);
-    gsk_filesystem_traverse(root_dir, gsk_runtime_cache_asset_file);
-#endif
-
-    // Initialize Renderer
 #ifdef RENDERER_2
     gsk_Renderer renderer = new gsk_Renderer();
     // ECSManager ecs = gsk_Renderer.
@@ -137,7 +120,19 @@ gsk_runtime_setup(const char *root_dir,
     int winWidth  = s_runtime.renderer->windowWidth;
     int winHeight = s_runtime.renderer->windowHeight;
 
-    // Initialize ECS
+    /*==== Initialize Asset System ===================================*/
+
+    gsk_AssetCache *p_cache = (gsk_AssetCache *)malloc(sizeof(gsk_AssetCache));
+    *p_cache                = gsk_asset_cache_init();
+    s_runtime.asset_cache   = p_cache;
+
+    gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
+                            _gsk_runtime_cache_asset_file);
+
+    gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
+
+    /*==== Initialize ECS ============================================*/
+
     s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, 0);
 
 #if 0
@@ -152,10 +147,15 @@ gsk_runtime_setup(const char *root_dir,
 #endif
 
 #if GSK_RUNTIME_USE_DEBUG
-    // Create DebugToolbar
+
+    /*==== Initialize Debug Toolbar ==================================*/
+
     s_runtime.p_debug_toolbar =
       new gsk::tools::DebugToolbar(s_runtime.renderer);
+
 #endif // GSK_RUNTIME_USE_DEBUG
+
+    /*==== Runtime setup =============================================*/
 
     // FPS Counter
     gsk_device_resetTime();

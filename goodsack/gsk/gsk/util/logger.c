@@ -137,20 +137,6 @@ hasFlag(int flags, int flag)
     return (flags & flag) == flag;
 }
 
-static char
-getLevelChar(LogLevel level)
-{
-    switch (level)
-    {
-    case LogLevel_TRACE: return 'T';
-    case LogLevel_DEBUG: return 'D';
-    case LogLevel_INFO: return 'I';
-    case LogLevel_WARN: return 'W';
-    case LogLevel_ERROR: return 'E';
-    case LogLevel_CRITICAL: return 'C';
-    default: return ' ';
-    }
-}
 static void
 setLevelStr(LogLevel level, int colored, char *dest)
 {
@@ -186,13 +172,16 @@ setLevelStr(LogLevel level, int colored, char *dest)
     default: return;
     }
 
+    dest[0] = '\0';
     if (colored)
     {
-        dest[0] = '\0';
+        // dest[0] = '\0';
         strncpy(dest, levelCol, 32);
         strncat(dest, levelStr, 32);
         strncat(dest, COLOR_RESET, 32);
+        return;
     }
+    strncat(dest, levelStr, 32);
 }
 
 static void
@@ -404,8 +393,8 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
 {
     struct timeval now;
     unsigned long long currentTime; /* milliseconds */
-    char levelStr[32];
-    char levelc;
+    char levelStr_col[32];          /* colored levelStr */
+    char levelStr[32];              /* non-colored levelStr */
     char timestamp[32];
     long threadID;
     va_list carg, farg;
@@ -427,10 +416,13 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
 
     gettimeofday(&now, NULL);
     currentTime = now.tv_sec * 1000 + now.tv_usec / 1000;
-    levelc      = getLevelChar(level);
     threadID    = getCurrentThreadID();
 
-    if (level != LogLevel_NONE) { setLevelStr(level, TRUE, levelStr); }
+    if (level != LogLevel_NONE)
+    {
+        setLevelStr(level, FALSE, levelStr);
+        setLevelStr(level, TRUE, levelStr_col);
+    }
 
     getTimestamp(&now, timestamp, sizeof(timestamp));
 
@@ -440,7 +432,7 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
     {
         va_start(carg, fmt);
         vflog(s_clog.output,
-              levelStr,
+              levelStr_col,
               timestamp,
               threadID,
               file,
