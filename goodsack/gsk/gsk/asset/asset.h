@@ -20,6 +20,10 @@
 extern "C" {
 #endif // __cplusplus
 
+typedef void (*LoadAssetFunc)(gsk_AssetCache *p_cache,
+                              const char *uri,
+                              void *p_dest);
+
 void *
 gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri);
 

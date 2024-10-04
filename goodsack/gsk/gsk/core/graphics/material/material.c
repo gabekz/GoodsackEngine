@@ -17,6 +17,7 @@
 #include "core/graphics/texture/texture.h"
 
 #include "asset/asset.h"
+#include "asset/asset_gcfg.h"
 
 gsk_Material *
 gsk_material_create(gsk_ShaderProgram *shader,
@@ -63,6 +64,56 @@ gsk_material_create(gsk_ShaderProgram *shader,
     return ret;
 
     // TODO: Create descriptor set
+}
+gsk_Material *
+gsk_material_create_from_gcfg(gsk_AssetCache *p_cache, gsk_GCFG *p_gcfg)
+{
+    gsk_ShaderProgram *p_shader = NULL;
+    gsk_Material *p_material    = NULL;
+
+    // need to grab the shader
+    for (int i = 0; i < p_gcfg->list_items.list_next; i++)
+    {
+        gsk_GCFGItem *item = array_list_get_at_index(&p_gcfg->list_items, i);
+        if (!strcmp(item->key, "shader"))
+        {
+            if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
+            {
+                LOG_ERROR("Shader asset is not cached! (%s)", item->value);
+            }
+
+            p_shader = (gsk_ShaderProgram *)gsk_asset_get(p_cache, item->value);
+        }
+    }
+    if (p_shader == NULL)
+    {
+        // TODO: get filename from gcfg
+        LOG_CRITICAL("GCFG Material does not have a shader reference.");
+    }
+
+    p_material = gsk_material_create(p_shader, NULL, 0);
+
+    // attach textures
+    for (int i = 0; i < p_gcfg->list_items.list_next; i++)
+    {
+        gsk_GCFGItem *item = array_list_get_at_index(&p_gcfg->list_items, i);
+        if (!strcmp(item->key, "texture"))
+        {
+            if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
+            {
+                LOG_ERROR("Texture asset is not cached! (%s)", item->value);
+            }
+
+            // load and add texture
+
+            gsk_Texture *p_tex =
+              (gsk_Texture *)gsk_asset_get(p_cache, item->value);
+
+            gsk_material_add_texture(p_material, p_tex);
+        }
+    }
+
+    return p_material;
 }
 
 void

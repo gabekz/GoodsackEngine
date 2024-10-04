@@ -24,135 +24,59 @@
 #define MATERIAL_TYPE 2
 #define SHADER_TYPE   3
 
-static gsk_Texture *
-_gsk_asset_load_texture(gsk_AssetCache *p_cache,
-                        u64 asset_handle,
-                        const char *str_uri)
+static void *
+_asset_load_generic(gsk_AssetCache *p_cache,
+                    u64 asset_handle,
+                    const char *str_uri,
+                    LoadAssetFunc create_asset_func,
+                    u32 expected_type)
 {
     u32 asset_list  = GSK_ASSET_HANDLE_LIST_NUM(asset_handle);
     u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(asset_handle);
 
-    if (asset_list != TEXTURE_TYPE)
+    if (asset_list != expected_type)
     {
-        // TODO: better logging
         LOG_CRITICAL("Asset handle is for incorrect asset type.");
     }
 
-    // TODO: fetch options somehow
-    TextureOptions ops = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
+    // Get the pre-allocated memory location
+    void *p_data = array_list_get_at_index(
+      &(p_cache->asset_lists[asset_list].list_data), asset_index - 1);
 
-    // TODO: texture_create without allocating!!
-    gsk_Texture tex = texture_create_2(GSK_PATH(str_uri), NULL, ops);
-
-    gsk_Texture *p_data = (gsk_Texture *)array_list_get_at_index(
-      &(p_cache->asset_lists[TEXTURE_TYPE].list_data), asset_index - 1);
-
-    *p_data = tex;
+    // Call the create_asset_func to initialize data at p_data
+    create_asset_func(p_cache, str_uri, p_data);
 
     gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
     p_state->is_loaded           = TRUE;
     return p_data;
 }
 
-static gsk_ShaderProgram *
-_gsk_asset_load_shader(gsk_AssetCache *p_cache,
-                       u64 asset_handle,
-                       const char *str_uri)
+static void
+__create_texture(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
 {
-    u32 asset_list  = GSK_ASSET_HANDLE_LIST_NUM(asset_handle);
-    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(asset_handle);
+    TextureOptions ops       = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
+    gsk_Texture tex          = texture_create_2(GSK_PATH(str_uri), NULL, ops);
+    *((gsk_Texture *)p_dest) = tex;
+}
 
-    if (asset_list != SHADER_TYPE)
-    {
-        // TODO: better logging
-        LOG_CRITICAL("Asset handle is for incorrect asset type.");
-    }
-
-    // TODO: need to stop allocating from here.
+static void
+__create_shader(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
+{
     gsk_ShaderProgram shader = gsk_shader_program_create(GSK_PATH(str_uri));
-
-    gsk_ShaderProgram *p_data = (gsk_ShaderProgram *)array_list_get_at_index(
-      &(p_cache->asset_lists[SHADER_TYPE].list_data), asset_index - 1);
-
-    *p_data = shader;
-
-    gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
-    p_state->is_loaded           = TRUE;
-    return p_data;
+    *((gsk_ShaderProgram *)p_dest) = shader;
 }
 
-static gsk_Material *
-_gsk_asset_load_material(gsk_AssetCache *p_cache,
-                         u64 asset_handle,
-                         const char *str_uri)
+static void
+__create_material(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
 {
-    u32 asset_list  = GSK_ASSET_HANDLE_LIST_NUM(asset_handle);
-    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(asset_handle);
+    // TODO: Material should not use malloc
 
-    if (asset_list != MATERIAL_TYPE)
-    {
-        // TODO: better logging
-        LOG_CRITICAL("Asset handle is for incorrect asset type.");
-    }
+    gsk_GCFG gcfg            = gsk_load_gcfg(GSK_PATH(str_uri));
+    gsk_Material *p_material = gsk_material_create_from_gcfg(p_cache, &gcfg);
 
-    gsk_GCFG gcfg = gsk_load_gcfg(GSK_PATH(str_uri));
-
-    gsk_ShaderProgram *p_shader = NULL;
-
-    // need to grab the shader
-    for (int i = 0; i < gcfg.list_items.list_next; i++)
-    {
-        gsk_GCFGItem *item = array_list_get_at_index(&gcfg.list_items, i);
-        if (!strcmp(item->key, "shader"))
-        {
-            if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
-            {
-                LOG_ERROR("Shader asset is not cached! (%s)", item->value);
-            }
-
-            p_shader = (gsk_ShaderProgram *)gsk_asset_get(p_cache, item->value);
-        }
-    }
-    if (p_shader == NULL)
-    {
-        LOG_CRITICAL("Material does not have a shader reference. (%s)",
-                     str_uri);
-    }
-
-    gsk_Material *p_material = gsk_material_create(p_shader, NULL, 0);
-
-    // attach textures
-    for (int i = 0; i < gcfg.list_items.list_next; i++)
-    {
-        gsk_GCFGItem *item = array_list_get_at_index(&gcfg.list_items, i);
-        if (!strcmp(item->key, "texture"))
-        {
-            if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
-            {
-                LOG_ERROR("Texture asset is not cached! (%s)", item->value);
-            }
-
-            // load and add texture
-
-            gsk_Texture *p_tex =
-              (gsk_Texture *)gsk_asset_get(p_cache, item->value);
-
-            gsk_material_add_texture(p_material, p_tex);
-        }
-    }
-
-    gsk_Material *p_data = (gsk_Material *)array_list_get_at_index(
-      &(p_cache->asset_lists[MATERIAL_TYPE].list_data), asset_index - 1);
-
-    p_data->shaderProgram = p_material->shaderProgram;
-    p_data->textures      = p_material->textures;
-    p_data->texturesCount = p_material->texturesCount;
-    // p_data->vulkan.pipelineLayout = p_data->vulkan.pipelineLayout;
-
-    gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
-    p_state->is_loaded           = TRUE;
-
-    return p_data;
+    ((gsk_Material *)p_dest)->shaderProgram = p_material->shaderProgram;
+    ((gsk_Material *)p_dest)->textures      = p_material->textures;
+    ((gsk_Material *)p_dest)->texturesCount = p_material->texturesCount;
 }
 
 void *
@@ -173,19 +97,34 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
     {
         LOG_DEBUG("asset not yet loaded. loading asset (%s)", str_uri);
 
-        // asset type
+        // Texture
         if (asset_type == TEXTURE_TYPE)
         {
-            data_ret =
-              _gsk_asset_load_texture(p_cache, p_state->asset_handle, str_uri);
-        } else if (asset_type == MATERIAL_TYPE)
+            data_ret = (gsk_Texture *)_asset_load_generic(p_cache,
+                                                          p_state->asset_handle,
+                                                          str_uri,
+                                                          __create_texture,
+                                                          TEXTURE_TYPE);
+        }
+        // Material
+        else if (asset_type == MATERIAL_TYPE)
         {
             data_ret =
-              _gsk_asset_load_material(p_cache, p_state->asset_handle, str_uri);
-        } else if (asset_type == SHADER_TYPE)
+              (gsk_Material *)_asset_load_generic(p_cache,
+                                                  p_state->asset_handle,
+                                                  str_uri,
+                                                  __create_material,
+                                                  MATERIAL_TYPE);
+        }
+        // Shader
+        else if (asset_type == SHADER_TYPE)
         {
             data_ret =
-              _gsk_asset_load_shader(p_cache, p_state->asset_handle, str_uri);
+              (gsk_ShaderProgram *)_asset_load_generic(p_cache,
+                                                       p_state->asset_handle,
+                                                       str_uri,
+                                                       __create_shader,
+                                                       SHADER_TYPE);
         } else
         {
             LOG_CRITICAL("INVALID asset type %d", asset_type);

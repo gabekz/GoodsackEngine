@@ -8,6 +8,8 @@
 
 #include "util/sysdefs.h"
 
+#include "asset/asset_cache.h"
+#include "asset/asset_gcfg.h"
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
@@ -28,6 +30,10 @@ gsk_material_create(gsk_ShaderProgram *shader,
                     const char *shaderPath,
                     u32 textureCount,
                     ...);
+
+gsk_Material *
+gsk_material_create_from_gcfg(gsk_AssetCache *p_cache, gsk_GCFG *p_gcfg);
+
 void
 gsk_material_use(gsk_Material *self);
 
