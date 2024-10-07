@@ -26,48 +26,26 @@ gsk_asset_cache_init()
 {
     gsk_AssetCache ret;
 
+    u32 type_sizes[ASSETTYPE_LAST + 1];
+    type_sizes[GSK_ASSET_CACHE_GCFG]     = sizeof(gsk_GCFG);
+    type_sizes[GSK_ASSET_CACHE_TEXTURE]  = sizeof(gsk_Texture);
+    type_sizes[GSK_ASSET_CACHE_MATERIAL] = sizeof(gsk_Material);
+    type_sizes[GSK_ASSET_CACHE_SHADER]   = sizeof(gsk_ShaderProgram);
+    type_sizes[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_Model);
+
     // setup hash table
     ret.asset_table = hash_table_init(GSK_ASSET_CACHE_TABLE_MAX);
 
-    // setup  asset lists
-    ret.asset_lists[0].list_state =
-      array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[0].list_data =
-      array_list_init(sizeof(gsk_GCFG), GSK_ASSET_CACHE_INCREMENT);
-
-    // setup  asset lists
-    ret.asset_lists[1].list_state =
-      array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[1].list_data =
-      array_list_init(sizeof(gsk_Texture), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[1].list_options =
-      array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
-
-    // setup  asset lists
-    ret.asset_lists[2].list_state =
-      array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[2].list_data =
-      array_list_init(sizeof(gsk_Material), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[2].list_options =
-      array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
-
-    // setup  asset lists
-    ret.asset_lists[3].list_state =
-      array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[3].list_data =
-      array_list_init(sizeof(gsk_ShaderProgram), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[3].list_options =
-      array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
-    // setup  asset lists
-    ret.asset_lists[4].list_state =
-      array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[4].list_data =
-      array_list_init(sizeof(gsk_Model), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[4].list_options =
-      array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
-    // TODO: Other types
-    // TODO: Handle specific file types elsewhere.
-
+    for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
+    {
+        ret.asset_lists[i].list_state = array_list_init(
+          sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
+        ret.asset_lists[i].list_data =
+          array_list_init(type_sizes[i], GSK_ASSET_CACHE_INCREMENT);
+        // TODO: Change
+        ret.asset_lists[i].list_options =
+          array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
+    }
     return ret;
 }
 /*--------------------------------------------------------------------*/
@@ -78,7 +56,7 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
                     u32 asset_type,
                     const char *str_uri)
 {
-    if (asset_type > GSK_TOTAL_ASSET_TYPES)
+    if (asset_type > ASSETTYPE_LAST)
     {
         LOG_CRITICAL("Attempt to access invalid asset type (%u is not valid)",
                      asset_type);
@@ -130,30 +108,30 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
     // gcfg
     if (!strcmp(ext, ".gcfg"))
     {
-        list_type = 0;
+        list_type = GSK_ASSET_CACHE_GCFG;
     }
 
     // texture
     else if (!strcmp(ext, ".png") || !strcmp(ext, ".jpg") ||
              !strcmp(ext, ".tga") || !strcmp(ext, ".hdr"))
     {
-        list_type = 1;
+        list_type = GSK_ASSET_CACHE_TEXTURE;
     }
     // material
     else if (!strcmp(ext, ".material"))
     {
-        list_type = 2;
+        list_type = GSK_ASSET_CACHE_MATERIAL;
     }
     // shader
     else if (!strcmp(ext, ".shader"))
     {
-        list_type = 3;
+        list_type = GSK_ASSET_CACHE_SHADER;
     }
     // model
     else if (!strcmp(ext, ".obj") || !strcmp(ext, ".gltf") ||
              !strcmp(ext, ".glb"))
     {
-        list_type = 4;
+        list_type = GSK_ASSET_CACHE_MODEL;
     }
     // None
     else
@@ -185,7 +163,7 @@ gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(handle);
     u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(handle);
 
-    if (asset_type > GSK_TOTAL_ASSET_TYPES)
+    if (asset_type > ASSETTYPE_LAST)
     {
         LOG_CRITICAL("Attempt to access invalid asset type (%u is not valid)",
                      asset_type);

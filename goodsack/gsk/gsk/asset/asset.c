@@ -18,14 +18,9 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
+#include "asset/asset_cache.h"
 #include "asset/asset_gcfg.h"
 #include "asset/import/loader_gcfg.h"
-
-#define GCFG_TYPE     0
-#define TEXTURE_TYPE  1
-#define MATERIAL_TYPE 2
-#define SHADER_TYPE   3
-#define MODEL_TYPE    4
 
 static void *
 _asset_load_generic(gsk_AssetCache *p_cache,
@@ -120,58 +115,26 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
     {
         LOG_DEBUG("asset not yet loaded. loading asset (%s)", str_uri);
 
-        // GCFG
-        if (asset_type == GCFG_TYPE)
+        LoadAssetFunc p_create_func = NULL;
+        switch (asset_type)
         {
-            data_ret = (gsk_GCFG *)_asset_load_generic(p_cache,
-                                                       p_state->asset_handle,
-                                                       str_uri,
-                                                       __create_gcfg,
-                                                       GCFG_TYPE);
+        case GSK_ASSET_CACHE_GCFG: p_create_func = __create_gcfg; break;
+        case GSK_ASSET_CACHE_TEXTURE: p_create_func = __create_texture; break;
+        case GSK_ASSET_CACHE_MATERIAL: p_create_func = __create_material; break;
+        case GSK_ASSET_CACHE_SHADER: p_create_func = __create_shader; break;
+        case GSK_ASSET_CACHE_MODEL: p_create_func = __create_model; break;
+        default: p_create_func = NULL; break;
         }
-        // Texture
-        else if (asset_type == TEXTURE_TYPE)
-        {
-            data_ret = (gsk_Texture *)_asset_load_generic(p_cache,
-                                                          p_state->asset_handle,
-                                                          str_uri,
-                                                          __create_texture,
-                                                          TEXTURE_TYPE);
-        }
-        // Material
-        else if (asset_type == MATERIAL_TYPE)
-        {
-            data_ret =
-              (gsk_Material *)_asset_load_generic(p_cache,
-                                                  p_state->asset_handle,
-                                                  str_uri,
-                                                  __create_material,
-                                                  MATERIAL_TYPE);
-        }
-        // Shader
-        else if (asset_type == SHADER_TYPE)
-        {
-            data_ret =
-              (gsk_ShaderProgram *)_asset_load_generic(p_cache,
-                                                       p_state->asset_handle,
-                                                       str_uri,
-                                                       __create_shader,
-                                                       SHADER_TYPE);
-        }
-        // Model
-        else if (asset_type == MODEL_TYPE)
-        {
-            data_ret = (gsk_Model *)_asset_load_generic(p_cache,
-                                                        p_state->asset_handle,
-                                                        str_uri,
-                                                        __create_model,
-                                                        MODEL_TYPE);
-        }
+
         // None
-        else
+        if (p_create_func == NULL)
         {
             LOG_CRITICAL("INVALID asset type %d", asset_type);
         }
+
+        // get the data
+        data_ret = (gsk_GCFG *)_asset_load_generic(
+          p_cache, p_state->asset_handle, str_uri, p_create_func, asset_type);
 
         if (p_state->is_loaded == FALSE)
         {

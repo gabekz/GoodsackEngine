@@ -21,8 +21,16 @@
 extern "C" {
 #endif // __cplusplus
 
-#define GSK_TOTAL_ASSET_TYPES 5
-typedef enum AssetType { GCFG = 0, TEXTURE, MATERIAL, SHADER, MODEL } AssetType;
+typedef enum gsk_AssetCacheType {
+    GSK_ASSET_CACHE_GCFG = 0,
+    GSK_ASSET_CACHE_TEXTURE,
+    GSK_ASSET_CACHE_MATERIAL,
+    GSK_ASSET_CACHE_SHADER,
+    GSK_ASSET_CACHE_MODEL,
+} gsk_AssetCacheType;
+
+#define ASSETTYPE_FIRST GSK_ASSET_CACHE_GCFG
+#define ASSETTYPE_LAST  GSK_ASSET_CACHE_MODEL
 
 typedef struct gsk_AssetCacheState
 {
@@ -43,7 +51,7 @@ typedef struct gsk_AssetList
 typedef struct gsk_AssetCache
 {
     HashTable asset_table;
-    gsk_AssetList asset_lists[GSK_TOTAL_ASSET_TYPES];
+    gsk_AssetList asset_lists[ASSETTYPE_LAST + 1];
 
 } gsk_AssetCache;
 
