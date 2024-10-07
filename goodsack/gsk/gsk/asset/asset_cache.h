@@ -21,8 +21,8 @@
 extern "C" {
 #endif // __cplusplus
 
-#define GSK_TOTAL_ASSET_TYPES 4
-typedef enum AssetType { GCFG = 0, TEXTURE, MATERIAL, SHADER } AssetType;
+#define GSK_TOTAL_ASSET_TYPES 5
+typedef enum AssetType { GCFG = 0, TEXTURE, MATERIAL, SHADER, MODEL } AssetType;
 
 typedef struct gsk_AssetCacheState
 {

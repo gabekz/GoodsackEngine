@@ -26,9 +26,12 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
     gsk_Material *mat_box = (gsk_Material *)gsk_asset_get(
       p_asset_cache, "data://materials/cube.material");
 
-    // model
     gsk_Model *model_cube =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/cube.obj"), 1, FALSE);
+      gsk_asset_get(p_asset_cache, "gsk://models/cube.obj");
+
+    // model
+    // gsk_Model *model_cube =
+    //  gsk_model_load_from_file(GSK_PATH("gsk://models/cube.obj"), 1, FALSE);
 
     /*----------------------
      |  New texture tests

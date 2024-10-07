@@ -14,6 +14,7 @@
 #include "util/sysdefs.h"
 
 #include "core/graphics/material/material.h"
+#include "core/graphics/mesh/model.h"
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
@@ -24,6 +25,7 @@
 #define TEXTURE_TYPE  1
 #define MATERIAL_TYPE 2
 #define SHADER_TYPE   3
+#define MODEL_TYPE    4
 
 static void *
 _asset_load_generic(gsk_AssetCache *p_cache,
@@ -87,6 +89,19 @@ __create_material(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
     ((gsk_Material *)p_dest)->texturesCount = p_material->texturesCount;
 }
 
+static void
+__create_model(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
+{
+    // TODO: Material should not use malloc
+
+    gsk_Model *p_model =
+      gsk_model_load_from_file(GSK_PATH(str_uri), 1.0f, FALSE);
+
+    ((gsk_Model *)p_dest)->meshes      = p_model->meshes;
+    ((gsk_Model *)p_dest)->meshesCount = p_model->meshesCount;
+    ((gsk_Model *)p_dest)->fileType    = p_model->fileType;
+}
+
 void *
 gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
 {
@@ -142,7 +157,18 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
                                                        str_uri,
                                                        __create_shader,
                                                        SHADER_TYPE);
-        } else
+        }
+        // Model
+        else if (asset_type == MODEL_TYPE)
+        {
+            data_ret = (gsk_Model *)_asset_load_generic(p_cache,
+                                                        p_state->asset_handle,
+                                                        str_uri,
+                                                        __create_model,
+                                                        MODEL_TYPE);
+        }
+        // None
+        else
         {
             LOG_CRITICAL("INVALID asset type %d", asset_type);
         }
