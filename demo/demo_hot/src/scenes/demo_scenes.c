@@ -642,6 +642,12 @@ demo_scenes_create(gsk_ECS *ecs,
     skyboxMain = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
+    // Default textures with options
+    texDefSpec = GSK_ASSET("gsk://textures/defaults/black.png");
+    texDefNorm = GSK_ASSET("gsk://textures/defaults/normal.png");
+    texPbrAo   = GSK_ASSET("gsk://textures/defaults/white.png");
+    texMissing = GSK_ASSET("gsk://textures/defaults/missing.jpg");
+
 // NOTE: asset cache now handled by runtime
 #if 0
     gsk_asset_cache_add_by_ext(asset_cache,

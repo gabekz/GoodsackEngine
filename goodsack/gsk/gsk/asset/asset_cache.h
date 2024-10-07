@@ -12,7 +12,7 @@
 #include "util/sysdefs.h"
 
 #define GSK_ASSET_CACHE_INCREMENT 32
-#define GSK_ASSET_CACHE_TABLE_MAX 1024
+#define GSK_ASSET_CACHE_TABLE_MAX 1031
 
 #define GSK_ASSET_HANDLE_LIST_NUM(x)  (u32)((x >> 56) & 0xFF)
 #define GSK_ASSET_HANDLE_INDEX_NUM(x) (u32)(x & 0xFFFFFFFF)
@@ -35,6 +35,7 @@ typedef enum gsk_AssetCacheType {
 typedef struct gsk_AssetCacheState
 {
     u64 asset_handle;
+    u32 asset_uri_index; // index to uri in cache uri-array
     u8 is_loaded;
     void *p_data;
 
@@ -50,8 +51,9 @@ typedef struct gsk_AssetList
 
 typedef struct gsk_AssetCache
 {
-    HashTable asset_table;
-    gsk_AssetList asset_lists[ASSETTYPE_LAST + 1];
+    ArrayList asset_uri_list; // store for URI string pointers
+    HashTable asset_table;    // asset handle hashtable
+    gsk_AssetList asset_lists[ASSETTYPE_LAST + 1]; // asset data
 
 } gsk_AssetCache;
 

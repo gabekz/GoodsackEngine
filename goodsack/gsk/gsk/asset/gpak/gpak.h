@@ -10,6 +10,8 @@
 #include "util/filesystem.h"
 #include "util/sysdefs.h"
 
+#include "asset/asset_cache.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -95,6 +97,9 @@ u64
 gsk_gpak_read(gsk_GPAK *p_gpak, const char *str_uri);
 
 #endif
+
+void
+gsk_gpak_make_raw(gsk_AssetCache *p_cache);
 
 #ifdef __cplusplus
 }

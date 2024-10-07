@@ -114,6 +114,9 @@ gsk::runtime::rt_setup(const char *root_dir,
     *p_cache                = gsk_asset_cache_init();
     s_runtime.asset_cache   = p_cache;
 
+    // TODO: Setup default assets here
+    // gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
+
     gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
                             _gsk_runtime_cache_asset_file);
 

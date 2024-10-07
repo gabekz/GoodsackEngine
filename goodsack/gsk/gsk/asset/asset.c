@@ -106,6 +106,10 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
     gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
     void *data_ret;
 
+    char *str;
+    str = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
+                                          p_state->asset_uri_index);
+
     if (p_state == NULL) { LOG_CRITICAL("Failed to get asset (%s)", str_uri); }
 
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_state->asset_handle);

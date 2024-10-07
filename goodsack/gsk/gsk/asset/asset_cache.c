@@ -34,6 +34,7 @@ gsk_asset_cache_init()
     type_sizes[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_Model);
 
     // setup hash table
+    // TODO: needs to scale
     ret.asset_table = hash_table_init(GSK_ASSET_CACHE_TABLE_MAX);
 
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
@@ -46,6 +47,10 @@ gsk_asset_cache_init()
         ret.asset_lists[i].list_options =
           array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
     }
+
+    // asset uri array
+    ret.asset_uri_list = array_list_init(GSK_FS_MAX_PATH, 100);
+
     return ret;
 }
 /*--------------------------------------------------------------------*/
@@ -87,9 +92,22 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     // add the handle to the hash table (after it is incremented)
     hash_table_add((HashTable *)&(p_cache->asset_table), str_uri, new_handle);
 
+    /*==== Create reference in uri-string array ======================*/
+    array_list_push(&(p_cache->asset_uri_list), str_uri);
+
     /*==== Create asset cache state ==================================*/
 
-    gsk_AssetCacheState item = {.is_loaded = FALSE, .asset_handle = new_handle};
+#if 0
+    char *str;
+    str = (char *)array_list_get_at_index(
+      &(p_cache->asset_uri_list), p_cache->asset_uri_list.list_next - 1);
+#endif
+
+    gsk_AssetCacheState item = {
+      .asset_handle    = new_handle,
+      .asset_uri_index = p_cache->asset_uri_list.list_next - 1,
+      .is_loaded       = FALSE,
+    };
 
     // add empty data
     array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
