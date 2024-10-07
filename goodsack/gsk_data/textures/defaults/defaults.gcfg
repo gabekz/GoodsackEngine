@@ -1,0 +1,43 @@
+{
+    "type": "texture"
+    "path": "./white.png"
+
+    "Texture_Options": {
+        "af_range": 1
+        "internal_format": "SRGB"
+        "gen_mips": False
+    }
+}
+
+{
+    "type": "texture"
+    "path": "./black.png"
+
+    "Texture_Options": {
+        "af_range": 1
+        "internal_format": "SRGB"
+        "gen_mips": False
+    }
+}
+
+{
+    "type": "texture"
+    "path": "./missing.png"
+
+    "Texture_Options": {
+        "af_range": 1
+        "internal_format": "SRGB"
+        "gen_mips": TRUE
+    }
+}
+
+{
+    "type": "texture"
+    "path": "./normal.png"
+
+    "Texture_Options": {
+        "af_range": 0
+        "internal_format": "RGB"
+        "gen_mips": False
+    }
+}

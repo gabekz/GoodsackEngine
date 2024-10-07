@@ -6,6 +6,8 @@
 #ifndef __ASSET_GCFG_H__
 #define __ASSET_GCFG_H__
 
+#include "asset/asset_cache.h"
+
 #include "util/array_list.h"
 #include "util/sysdefs.h"
 
@@ -28,6 +30,9 @@ typedef struct gsk_GCFG
     ArrayList list_items;
 
 } gsk_GCFG;
+
+void
+gsk_asset_gcfg_load_all(gsk_AssetCache *p_cache);
 
 #ifdef __cplusplus
 }

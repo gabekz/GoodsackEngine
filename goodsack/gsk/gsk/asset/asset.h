@@ -27,11 +27,8 @@ typedef void (*LoadAssetFunc)(gsk_AssetCache *p_cache,
 void *
 gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri);
 
-void
-gsk_asset_get_handle(gsk_AssetCache *p_cache, u64 handle);
-
-void *
-gsk_asset_alloc(gsk_AssetCache *p_cache, u64 handle);
+// void
+// gsk_asset_load_all_gcfg(gsk_AssetCache *p_cache);
 
 #ifdef __cplusplus
 }

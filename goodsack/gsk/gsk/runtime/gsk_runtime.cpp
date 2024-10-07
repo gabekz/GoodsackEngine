@@ -119,6 +119,8 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
 
+    // TODO: Preload all GCFG here
+
     /*==== Initialize Renderer =======================================*/
 
 #ifdef RENDERER_2

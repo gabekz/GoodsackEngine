@@ -7,6 +7,8 @@
 
 #include "string.h"
 
+#include "asset/import/loader_gcfg.h"
+
 #include "util/array_list.h"
 #include "util/filesystem.h"
 #include "util/hash_table.h"
@@ -30,8 +32,14 @@ gsk_asset_cache_init()
     ret.asset_lists[0].list_state =
       array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
     ret.asset_lists[0].list_data =
+      array_list_init(sizeof(gsk_GCFG), GSK_ASSET_CACHE_INCREMENT);
+
+    // setup  asset lists
+    ret.asset_lists[1].list_state =
+      array_list_init(sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
+    ret.asset_lists[1].list_data =
       array_list_init(sizeof(gsk_Texture), GSK_ASSET_CACHE_INCREMENT);
-    ret.asset_lists[0].list_options =
+    ret.asset_lists[1].list_options =
       array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
 
     // setup  asset lists
@@ -111,19 +119,18 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
 
     u32 list_type = 0;
 
-    // texture
-    if (!strcmp(ext, ".png") || !strcmp(ext, ".jpg") || !strcmp(ext, ".tga") ||
-        !strcmp(ext, ".hdr"))
+    // gcfg
+    if (!strcmp(ext, ".gcfg"))
     {
         list_type = 0;
     }
-#if 0
-    // model
-    else if (!strcmp(ext, ".obj") || !strcmp(ext, ".gltf"))
+
+    // texture
+    else if (!strcmp(ext, ".png") || !strcmp(ext, ".jpg") ||
+             !strcmp(ext, ".tga") || !strcmp(ext, ".hdr"))
     {
         list_type = 1;
     }
-#endif
     // material
     else if (!strcmp(ext, ".material"))
     {

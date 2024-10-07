@@ -20,7 +20,8 @@
 #include "asset/asset_gcfg.h"
 #include "asset/import/loader_gcfg.h"
 
-#define TEXTURE_TYPE  0
+#define GCFG_TYPE     0
+#define TEXTURE_TYPE  1
 #define MATERIAL_TYPE 2
 #define SHADER_TYPE   3
 
@@ -49,6 +50,13 @@ _asset_load_generic(gsk_AssetCache *p_cache,
     gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
     p_state->is_loaded           = TRUE;
     return p_data;
+}
+
+static void
+__create_gcfg(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
+{
+    gsk_GCFG gcfg         = gsk_load_gcfg(GSK_PATH(str_uri));
+    *((gsk_GCFG *)p_dest) = gcfg;
 }
 
 static void
@@ -97,8 +105,17 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
     {
         LOG_DEBUG("asset not yet loaded. loading asset (%s)", str_uri);
 
+        // GCFG
+        if (asset_type == GCFG_TYPE)
+        {
+            data_ret = (gsk_GCFG *)_asset_load_generic(p_cache,
+                                                       p_state->asset_handle,
+                                                       str_uri,
+                                                       __create_gcfg,
+                                                       GCFG_TYPE);
+        }
         // Texture
-        if (asset_type == TEXTURE_TYPE)
+        else if (asset_type == TEXTURE_TYPE)
         {
             data_ret = (gsk_Texture *)_asset_load_generic(p_cache,
                                                           p_state->asset_handle,
@@ -145,15 +162,4 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
 
     return array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_data), asset_index - 1);
-}
-
-void
-gsk_asset_get_handle(gsk_AssetCache *p_cache, u64 handle)
-{
-    return NULL;
-}
-
-void *
-gsk_asset_alloc(gsk_AssetCache *p_cache, u64 handle)
-{
 }
