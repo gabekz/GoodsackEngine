@@ -21,6 +21,7 @@
 #include "asset/asset_cache.h"
 #include "asset/asset_gcfg.h"
 #include "asset/import/loader_gcfg.h"
+#include "io/parse_image.h"
 
 static void *
 _asset_load_generic(gsk_AssetCache *p_cache,
@@ -45,23 +46,33 @@ _asset_load_generic(gsk_AssetCache *p_cache,
     create_asset_func(p_cache, str_uri, p_data);
 
     gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
-    p_state->is_loaded           = TRUE;
+    p_state->is_mem_loaded       = TRUE;
+    p_state->is_gpu_loaded       = TRUE;
     return p_data;
 }
 
 static void
 __create_gcfg(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
 {
-    gsk_GCFG gcfg         = gsk_load_gcfg(GSK_PATH(str_uri));
+    // gsk_IO_AssetGCFG asset = gsk_io_import_gcfg(GSK_PATH(str_uri));
+
+    gsk_GCFG gcfg = gsk_load_gcfg(GSK_PATH(str_uri));
+
+    // gsk_io_free(gsk_IO_AssetGCFG);
+
     *((gsk_GCFG *)p_dest) = gcfg;
 }
 
 static void
 __create_texture(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
 {
+    gsk_IO_Asset asset_buff = parse_image(GSK_PATH(str_uri));
+
     TextureOptions ops       = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
-    gsk_Texture tex          = texture_create_2(GSK_PATH(str_uri), NULL, ops);
+    gsk_Texture tex          = texture_create_2(&asset_buff, NULL, ops);
     *((gsk_Texture *)p_dest) = tex;
+
+    free(asset_buff.buff);
 }
 
 static void
@@ -115,7 +126,7 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_state->asset_handle);
     u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_state->asset_handle);
 
-    if (p_state->is_loaded == FALSE)
+    if (p_state->is_mem_loaded == FALSE)
     {
         LOG_DEBUG("asset not yet loaded. loading asset (%s)", str_uri);
 
@@ -140,7 +151,7 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
         data_ret = (gsk_GCFG *)_asset_load_generic(
           p_cache, p_state->asset_handle, str_uri, p_create_func, asset_type);
 
-        if (p_state->is_loaded == FALSE)
+        if (p_state->is_mem_loaded == FALSE)
         {
             LOG_ERROR("Probably failed to load asset. This may result in a "
                       "memory leak. (%s)",

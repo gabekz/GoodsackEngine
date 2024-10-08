@@ -13,8 +13,18 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
-gsk_GCFG
-gsk_load_gcfg(const char *path)
+#if 0
+gsk_parse_gcfg() // parse data
+
+gsk_pack_gcfg() // gpak pack the data
+gsk_unpack_gcfg() // gpak unpack the data
+
+gsk_load_gcfg() // load, no matter what we use this func
+-- will either run gsk_unpack() or gsk_parse()
+#endif
+
+static gsk_GCFG
+_parse_gcfg(char *path)
 {
     gsk_GCFG ret   = {0};
     ret.list_items = array_list_init(sizeof(gsk_GCFGItem), 6);
@@ -52,4 +62,36 @@ gsk_load_gcfg(const char *path)
     fclose(stream);
 
     return ret;
+}
+
+static gsk_GCFG
+_upack_gcfg(const char *uri)
+{
+    // 1. get gpak handler
+    // 2. get asset info from uri
+    // 3. read blocks
+    // 4. fill data; return
+    gsk_GCFG ret = {0};
+    return ret;
+}
+
+static void
+_package_gcfg(gsk_GCFG *p_gcfg)
+{
+    // 1. get gpak handler
+    // 2. add asset info to GPAK handler (asset cache stuff)
+    // 3. add blob to GPAK handler
+
+    // gsk_GPakWriter gsk_gpak_writer_init();
+    // gsk_gpak_asset_write(handle, uri_idx, data, data_size);
+}
+
+gsk_GCFG
+gsk_load_gcfg(const char *path)
+{
+    // if HOT
+    return _parse_gcfg(path);
+
+    // else
+    // return gsk_unpack_gcfg();
 }

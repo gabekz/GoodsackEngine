@@ -25,6 +25,8 @@
 
 #define GSK_RUNTIME_USE_DEBUG 1
 
+#define GSK_BUILD_GPAK 0
+
 namespace gsk {
 namespace runtime {
 

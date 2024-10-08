@@ -106,7 +106,8 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     gsk_AssetCacheState item = {
       .asset_handle    = new_handle,
       .asset_uri_index = p_cache->asset_uri_list.list_next - 1,
-      .is_loaded       = FALSE,
+      .is_mem_loaded   = FALSE,
+      .is_gpu_loaded   = FALSE,
     };
 
     // add empty data

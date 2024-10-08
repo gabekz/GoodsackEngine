@@ -30,5 +30,5 @@ TEST(AssetTestSuite, HashTest)
     EXPECT_EQ(GSK_ASSET_HANDLE_INDEX_NUM(handle), expected_index);
 
     gsk_AssetCacheState *p_state = gsk_asset_cache_get(&cache, ASSET_NAME);
-    EXPECT_EQ(p_state->is_loaded, false);
+    EXPECT_EQ(p_state->is_mem_loaded, false);
 }

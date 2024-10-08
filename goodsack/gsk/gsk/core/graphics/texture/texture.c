@@ -20,27 +20,37 @@
 #define TEXTURE_WRAPPING GL_REPEAT
 
 gsk_Texture
-texture_create_2(const char *path,
+texture_create_2(gsk_IO_Asset *p_asset_buff,
                  VulkanDeviceContext *vkDevice,
                  TextureOptions options)
 {
     gsk_Texture ret = {0};
-    ret.filePath    = path;
+    // ret.filePath    = path;
 
     // TODO: create parameter
     stbi_set_flip_vertically_on_load(options.flip_vertically);
     unsigned char *localBuffer;
-    if (path != NULL)
+    if (p_asset_buff != NULL)
     {
-        LOG_INFO("Loading Image at path: %s", path);
+        // LOG_INFO("Loading Image at path: %s", path);
         // LOG_DEBUG("Format: %d, GenMips: %d, AFRange: %f",
         //         format, genMipMaps, afRange);
 
+#if 0
         localBuffer = stbi_load(path,
                                 &ret.width,
                                 &ret.height,
                                 &ret.bpp,
                                 /*Type*/ STBI_rgb_alpha);
+#endif
+
+        localBuffer = stbi_load_from_memory(p_asset_buff->buff,
+                                            p_asset_buff->buff_len,
+                                            &ret.width,
+                                            &ret.height,
+                                            &ret.bpp,
+                                            STBI_rgb_alpha);
+
     } else
     {
         localBuffer = NULL;

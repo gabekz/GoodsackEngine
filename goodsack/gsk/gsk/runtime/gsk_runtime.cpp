@@ -31,6 +31,7 @@
 #endif
 
 #include "asset/asset_cache.h"
+#include "asset/gpak/gpak.h"
 
 #include "core/drivers/alsoft/alsoft.h"
 
@@ -114,13 +115,27 @@ gsk::runtime::rt_setup(const char *root_dir,
     *p_cache                = gsk_asset_cache_init();
     s_runtime.asset_cache   = p_cache;
 
-    // TODO: Setup default assets here
-    // gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
+// TODO: Setup default assets here
+// gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
+#if GSK_BUILD_GPAK
+    gsk_GpakWriter writer = gsk_gpak_writer_init();
+#endif
+
+    // TODO: filesystem traverse should be sorted to be platform-agnostic
 
     gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
                             _gsk_runtime_cache_asset_file);
 
     gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
+
+#if GSK_BUILD_GPAK
+    gsk_gpak_writer_populate_cache(&writer, p_cache);
+    gsk_gpak_writer_write(&writer);
+    gsk_gpak_writer_close(&writer);
+    exit(0);
+#endif
+
+    // gsk_gpak_make_raw(p_cache);
 
     // TODO: Preload all GCFG here
 

@@ -16,90 +16,42 @@
 extern "C" {
 #endif // __cplusplus
 
-#if 0
-
-typedef struct gsk_GPakAssetRef
+typedef struct gsk_GpakHeader
 {
-    u64 handle;   // default to 0 when not in use
-    u8 type;      // asset type
-    char *uri;    // uri of the reference
-    void *p_next; // chain pointer to next asset in linked-list
-} gsk_GPakAssetRef;
+    char signature[4];
+    char version[4];
+    u16 file_size;
+} gsk_GpakHeader;
 
-#if 0
-typedef struct gsk_GPakAssetBlob
+typedef struct gsk_GpakHandler
 {
-    void *p_data;
-    u64 data_size;
+    void *p_file;
+    u8 is_ready;
+    u8 is_compiled;
+    u8 mode;
 
-} gsk_GPakAssetBlob;
-#endif
-
-typedef struct gsk_GPakAsset
+} gsk_GpakHandler;
+typedef struct gsk_GpakWriter
 {
-    u64 buffer_size;
-    u8 is_on_ram, is_on_gpu;
-    void *p_ram_buff, *p_gpu_buff;
-    u8 type;
+    void *file_ptr;
+    u8 is_ready;
 
-} gsk_GPakAsset;
+} gsk_GpakWriter;
 
-#if 0
-typedef struct gsk_GPakHeader
-{
-    byte_t signature[4];
-    byte_t version[4];
-    byte_t build_version[2];
-    byte_t total_assets[4];
-    byte_t file_date;
+gsk_GpakHandler
+gsk_gpak_handler_init();
 
-} gsk_GPakHeader;
-#endif
-
-// NOTE: Might want to have separate lists so that we can bundle same kinds of
-// data?
-typedef struct gsk_GPakAssetCollection
-{
-    ArrayList list_textures;
-
-} gsk_GPakAssetCollection;
-
-typedef struct gsk_GPakContainer
-{
-    gsk_GPakAssetRef *p_refs_table;
-    u64 refs_table_count;
-
-    u64 total_assets;
-
-} gsk_GPAK;
-
-// initialize the container cache
-gsk_GPAK
-gsk_gpak_init(u64 table_count);
-
-// gsk_gpak_fill_from_directory() -- add assets recursively from a directory
-
-// gsk_gpak_add_asset() -- add asset from C++ side to cache
-
-// gsk_gpak_get_asset() -- get an asset from the container
-
-// gsk_gpak_write_to_disk() -- write the entire Container to disk
-
-/* NOTE: FileHandle should reference to some blob info. I.E., start_index,
-    buffer_length, etc. */
-
-// gsk_gpak_add_ref() (add_handle)
-void
-gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value);
-
-// gsk_gpak_get_ref() (get_handle)
-u64
-gsk_gpak_read(gsk_GPAK *p_gpak, const char *str_uri);
-
-#endif
+gsk_GpakWriter
+gsk_gpak_writer_init();
 
 void
-gsk_gpak_make_raw(gsk_AssetCache *p_cache);
+gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
+                               gsk_AssetCache *p_cache);
+void
+gsk_gpak_writer_write(gsk_GpakWriter *p_writer);
+
+void
+gsk_gpak_writer_close(gsk_GpakWriter *p_writer);
 
 #ifdef __cplusplus
 }

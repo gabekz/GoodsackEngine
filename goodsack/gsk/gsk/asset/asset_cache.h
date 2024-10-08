@@ -36,8 +36,8 @@ typedef struct gsk_AssetCacheState
 {
     u64 asset_handle;
     u32 asset_uri_index; // index to uri in cache uri-array
-    u8 is_loaded;
-    void *p_data;
+    u8 is_mem_loaded;
+    u8 is_gpu_loaded;
 
 } gsk_AssetCacheState;
 
