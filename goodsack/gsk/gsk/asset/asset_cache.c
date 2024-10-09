@@ -5,7 +5,7 @@
 
 #include "asset_cache.h"
 
-#include "string.h"
+#include <string.h>
 
 #include "asset/import/loader_gcfg.h"
 
@@ -116,6 +116,9 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
 /*--------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------*/
+// a.k.a, gsk_asset_cache_add_hot(cache, uri)
+// we also want gsk_asset_cache_add_explicit(cache, uri, handle) a.k.a. gpak
+
 void
 gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
 {

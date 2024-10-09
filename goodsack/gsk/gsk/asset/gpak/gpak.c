@@ -84,6 +84,7 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
         }
     }
 }
+
 void
 gsk_gpak_writer_write(gsk_GpakWriter *p_writer)
 {

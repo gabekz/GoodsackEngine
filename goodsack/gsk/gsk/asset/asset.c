@@ -21,7 +21,38 @@
 #include "asset/asset_cache.h"
 #include "asset/asset_gcfg.h"
 #include "asset/import/loader_gcfg.h"
+#include "io/io_asset.h"
 #include "io/parse_image.h"
+
+#if 1
+static gsk_IO_Asset
+_gsk_asset_import(gsk_AssetCache *p_cache, const char *str_uri)
+{
+    gsk_IO_Asset ret = {0};
+
+    gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
+    if (p_state == NULL) { LOG_CRITICAL("Failed to get asset (%s)", str_uri); }
+
+    if (p_state->is_mem_loaded)
+    {
+        LOG_CRITICAL("Probably don't want to do this!");
+    }
+
+    u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_state->asset_handle);
+    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_state->asset_handle);
+
+    // TODO: handle path for importing hot
+    if (asset_type == GSK_ASSET_CACHE_TEXTURE)
+    {
+        ret = parse_image(GSK_PATH(str_uri));
+    }
+
+    p_state->is_mem_loaded = TRUE;
+    return ret;
+
+    // TODO: handle path for importing from .gpak
+}
+#endif
 
 static void *
 _asset_load_generic(gsk_AssetCache *p_cache,
@@ -42,8 +73,15 @@ _asset_load_generic(gsk_AssetCache *p_cache,
     void *p_data = array_list_get_at_index(
       &(p_cache->asset_lists[asset_list].list_data), asset_index - 1);
 
+    // TODO: load memory data here
+    // gsk_AssetRaw asset_raw = _gsk_asset_import(p_cache, str_uri);
+
     // Call the create_asset_func to initialize data at p_data
-    create_asset_func(p_cache, str_uri, p_data);
+    // create_asset_func(&asset_raw, str_uri, p_data);
+    create_asset_func(str_uri, p_data);
+
+    // TODO: free memory data here (if specified by Asset)
+    // free(asset_raw.buff);
 
     gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
     p_state->is_mem_loaded       = TRUE;
@@ -52,7 +90,7 @@ _asset_load_generic(gsk_AssetCache *p_cache,
 }
 
 static void
-__create_gcfg(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
+__create_gcfg(const char *str_uri, void *p_dest)
 {
     // gsk_IO_AssetGCFG asset = gsk_io_import_gcfg(GSK_PATH(str_uri));
 
@@ -64,31 +102,28 @@ __create_gcfg(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
 }
 
 static void
-__create_texture(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
+__create_texture(const char *str_uri, void *p_dest)
 {
-    gsk_IO_Asset asset_buff = parse_image(GSK_PATH(str_uri));
-
+    gsk_IO_Asset p_asset_raw = parse_image(GSK_PATH(str_uri));
     TextureOptions ops       = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
-    gsk_Texture tex          = texture_create_2(&asset_buff, NULL, ops);
+    gsk_Texture tex          = texture_create_2(&p_asset_raw, NULL, ops);
     *((gsk_Texture *)p_dest) = tex;
-
-    free(asset_buff.buff);
 }
 
 static void
-__create_shader(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
+__create_shader(const char *str_uri, void *p_dest)
 {
     gsk_ShaderProgram shader = gsk_shader_program_create(GSK_PATH(str_uri));
     *((gsk_ShaderProgram *)p_dest) = shader;
 }
 
 static void
-__create_material(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
+__create_material(const char *str_uri, void *p_dest)
 {
     // TODO: Material should not use malloc
 
     gsk_GCFG gcfg            = gsk_load_gcfg(GSK_PATH(str_uri));
-    gsk_Material *p_material = gsk_material_create_from_gcfg(p_cache, &gcfg);
+    gsk_Material *p_material = gsk_material_create_from_gcfg(&gcfg);
 
     ((gsk_Material *)p_dest)->shaderProgram = p_material->shaderProgram;
     ((gsk_Material *)p_dest)->textures      = p_material->textures;
@@ -96,10 +131,8 @@ __create_material(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
 }
 
 static void
-__create_model(gsk_AssetCache *p_cache, const char *str_uri, void *p_dest)
+__create_model(const char *str_uri, void *p_dest)
 {
-    // TODO: Material should not use malloc
-
     gsk_Model *p_model =
       gsk_model_load_from_file(GSK_PATH(str_uri), 1.0f, FALSE);
 

@@ -41,6 +41,13 @@ typedef struct gsk_AssetCacheState
 
 } gsk_AssetCacheState;
 
+typedef struct gsk_AssetCacheData
+{
+    void *buff_ram, *buff_gpu;
+    u32 buff_ram_len, buff_gpu_len;
+
+} gsk_AssetCacheData;
+
 typedef struct gsk_AssetList
 {
     ArrayList list_state;   // load state

@@ -17,6 +17,7 @@
 #include "core/graphics/texture/texture.h"
 
 #include "asset/asset.h"
+#include "asset/asset_cache.h"
 #include "asset/asset_gcfg.h"
 
 gsk_Material *
@@ -66,10 +67,12 @@ gsk_material_create(gsk_ShaderProgram *shader,
     // TODO: Create descriptor set
 }
 gsk_Material *
-gsk_material_create_from_gcfg(gsk_AssetCache *p_cache, gsk_GCFG *p_gcfg)
+gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg)
 {
     gsk_ShaderProgram *p_shader = NULL;
     gsk_Material *p_material    = NULL;
+
+    gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache();
 
     // need to grab the shader
     for (int i = 0; i < p_gcfg->list_items.list_next; i++)

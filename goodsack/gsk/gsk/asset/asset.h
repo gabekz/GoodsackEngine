@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef __ASSET_H__
-#define __ASSET_H__
+#ifndef __GSK_ASSET_H__
+#define __GSK_ASSET_H__
 
 #include "asset/asset_cache.h"
+#include "util/sysdefs.h"
 
 #ifdef __cplusplus
 #include "runtime/gsk_runtime.hpp"
@@ -20,9 +21,7 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef void (*LoadAssetFunc)(gsk_AssetCache *p_cache,
-                              const char *uri,
-                              void *p_dest);
+typedef void (*LoadAssetFunc)(const char *uri, void *p_dest);
 
 void *
 gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri);
@@ -34,4 +33,4 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri);
 }
 #endif // __cplusplus
 
-#endif // __ASSET_H__
+#endif // __GSK_ASSET_H__

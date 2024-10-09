@@ -51,7 +51,7 @@ texture_create(const char *path,
                TextureOptions options);
 
 gsk_Texture
-texture_create_2(gsk_IO_Asset *p_asset_buff,
+texture_create_2(gsk_IO_Asset *p_asset_raw,
                  VulkanDeviceContext *vkDevice,
                  TextureOptions options);
 
