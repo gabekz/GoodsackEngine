@@ -20,26 +20,27 @@
 
 #include "asset/asset_cache.h"
 #include "asset/asset_gcfg.h"
+#include "asset/assetdefs.h"
 #include "asset/import/loader_gcfg.h"
 #include "io/io_asset.h"
 #include "io/parse_image.h"
 
-#if 1
-static gsk_IO_Asset
+#if 0
+static gsk_AssetRef
 _gsk_asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 {
-    gsk_IO_Asset ret = {0};
+    gsk_AssetRef ret = {0};
 
-    gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
-    if (p_state == NULL) { LOG_CRITICAL("Failed to get asset (%s)", str_uri); }
+    gsk_AssetRef *p_ref = gsk_asset_cache_get(p_cache, str_uri);
+    if (p_ref == NULL) { LOG_CRITICAL("Failed to get asset (%s)", str_uri); }
 
-    if (p_state->is_mem_loaded)
+    if (p_ref->is_imported == TRUE)
     {
         LOG_CRITICAL("Probably don't want to do this!");
     }
 
-    u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_state->asset_handle);
-    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_state->asset_handle);
+    u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
+    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
 
     // TODO: handle path for importing hot
     if (asset_type == GSK_ASSET_CACHE_TEXTURE)
@@ -47,7 +48,7 @@ _gsk_asset_import(gsk_AssetCache *p_cache, const char *str_uri)
         ret = parse_image(GSK_PATH(str_uri));
     }
 
-    p_state->is_mem_loaded = TRUE;
+    p_ref->is_imported = TRUE;
     return ret;
 
     // TODO: handle path for importing from .gpak
@@ -83,9 +84,9 @@ _asset_load_generic(gsk_AssetCache *p_cache,
     // TODO: free memory data here (if specified by Asset)
     // free(asset_raw.buff);
 
-    gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
-    p_state->is_mem_loaded       = TRUE;
-    p_state->is_gpu_loaded       = TRUE;
+    gsk_AssetRef *p_ref = gsk_asset_cache_get(p_cache, str_uri);
+    p_ref->is_imported  = TRUE; // TODO: don't handle this here
+    p_ref->is_utilized  = TRUE;
     return p_data;
 }
 
@@ -104,9 +105,10 @@ __create_gcfg(const char *str_uri, void *p_dest)
 static void
 __create_texture(const char *str_uri, void *p_dest)
 {
-    gsk_IO_Asset p_asset_raw = parse_image(GSK_PATH(str_uri));
+    gsk_AssetBlob asset_source = parse_image(GSK_PATH(str_uri));
+
     TextureOptions ops       = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
-    gsk_Texture tex          = texture_create_2(&p_asset_raw, NULL, ops);
+    gsk_Texture tex          = texture_create_2(&asset_source, NULL, ops);
     *((gsk_Texture *)p_dest) = tex;
 }
 
@@ -147,21 +149,21 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
     // check if the asset has been added already
     // -- if not, exit
 
-    gsk_AssetCacheState *p_state = gsk_asset_cache_get(p_cache, str_uri);
+    gsk_AssetRef *p_ref = gsk_asset_cache_get(p_cache, str_uri);
     void *data_ret;
 
     char *str;
     str = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
-                                          p_state->asset_uri_index);
+                                          p_ref->asset_uri_index);
 
-    if (p_state == NULL) { LOG_CRITICAL("Failed to get asset (%s)", str_uri); }
+    if (p_ref == NULL) { LOG_CRITICAL("Failed to get asset (%s)", str_uri); }
 
-    u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_state->asset_handle);
-    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_state->asset_handle);
+    u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
+    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
 
-    if (p_state->is_mem_loaded == FALSE)
+    if (p_ref->is_utilized == FALSE)
     {
-        LOG_DEBUG("asset not yet loaded. loading asset (%s)", str_uri);
+        LOG_DEBUG("asset not yet loaded. Loading asset (%s)", str_uri);
 
         LoadAssetFunc p_create_func = NULL;
         switch (asset_type)
@@ -180,11 +182,19 @@ gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri)
             LOG_CRITICAL("INVALID asset type %d", asset_type);
         }
 
-        // get the data
-        data_ret = (gsk_GCFG *)_asset_load_generic(
-          p_cache, p_state->asset_handle, str_uri, p_create_func, asset_type);
+        // TODO: Import asset here
+        // also clear..
 
-        if (p_state->is_mem_loaded == FALSE)
+        // get the data
+        data_ret = (void *)_asset_load_generic(
+          p_cache, p_ref->asset_handle, str_uri, p_create_func, asset_type);
+
+        if (p_ref->is_imported == FALSE)
+        {
+            LOG_ERROR("Failed to import asset data for (%s).", str_uri);
+        }
+
+        if (p_ref->is_utilized == FALSE)
         {
             LOG_ERROR("Probably failed to load asset. This may result in a "
                       "memory leak. (%s)",

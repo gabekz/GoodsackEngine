@@ -6,13 +6,13 @@
 #ifndef __PARSE_IMAGE_H__
 #define __PARSE_IMAGE_H__
 
-#include "io/io_asset.h"
+#include "asset/assetdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-gsk_IO_Asset
+gsk_AssetBlob
 parse_image(const char *path);
 
 #ifdef __cplusplus

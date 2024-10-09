@@ -13,7 +13,7 @@
 
 #include "core/drivers/vulkan/vulkan.h"
 
-#include "io/io_asset.h"
+#include "asset/assetdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,7 +51,7 @@ texture_create(const char *path,
                TextureOptions options);
 
 gsk_Texture
-texture_create_2(gsk_IO_Asset *p_asset_raw,
+texture_create_2(gsk_AssetBlob *p_asset_blob,
                  VulkanDeviceContext *vkDevice,
                  TextureOptions options);
 

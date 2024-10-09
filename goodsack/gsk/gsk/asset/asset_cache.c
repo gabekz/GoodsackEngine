@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include "asset/assetdefs.h"
 #include "asset/import/loader_gcfg.h"
 
 #include "util/array_list.h"
@@ -39,8 +40,8 @@ gsk_asset_cache_init()
 
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
     {
-        ret.asset_lists[i].list_state = array_list_init(
-          sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
+        ret.asset_lists[i].list_state =
+          array_list_init(sizeof(gsk_AssetRef), GSK_ASSET_CACHE_INCREMENT);
         ret.asset_lists[i].list_data =
           array_list_init(type_sizes[i], GSK_ASSET_CACHE_INCREMENT);
         // TODO: Change
@@ -103,11 +104,11 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       &(p_cache->asset_uri_list), p_cache->asset_uri_list.list_next - 1);
 #endif
 
-    gsk_AssetCacheState item = {
+    gsk_AssetRef item = {
       .asset_handle    = new_handle,
       .asset_uri_index = p_cache->asset_uri_list.list_next - 1,
-      .is_mem_loaded   = FALSE,
-      .is_gpu_loaded   = FALSE,
+      .is_imported     = FALSE,
+      .is_utilized     = FALSE,
     };
 
     // add empty data
@@ -172,7 +173,7 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
 /*--------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------*/
-gsk_AssetCacheState *
+gsk_AssetRef *
 gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
 {
     /* TODO: Change hashmap so we don't have to truncate from 1 (WTF)
@@ -191,14 +192,14 @@ gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
                      asset_type);
     }
 
-    gsk_AssetCacheState *p_state; // fetched cache state
+    gsk_AssetRef *p_ref; // fetched cache state
 
 #if ASSET_CACHE_GET_AT
-    p_state = gsk_asset_cache_get_at(p_cache, asset_type, handle);
+    p_ref = gsk_asset_cache_get_at(p_cache, asset_type, handle);
 #else
-    p_state = (gsk_AssetCacheState *)array_list_get_at_index(
+    p_ref = (gsk_AssetRef *)array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_state), asset_index - 1);
 #endif
-    return p_state;
+    return p_ref;
 }
 /*--------------------------------------------------------------------*/

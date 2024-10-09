@@ -11,6 +11,8 @@
 #include "util/hash_table.h"
 #include "util/sysdefs.h"
 
+#include "asset/assetdefs.h"
+
 #define GSK_ASSET_CACHE_INCREMENT 32
 #define GSK_ASSET_CACHE_TABLE_MAX 1031
 
@@ -31,22 +33,6 @@ typedef enum gsk_AssetCacheType {
 
 #define ASSETTYPE_FIRST GSK_ASSET_CACHE_GCFG
 #define ASSETTYPE_LAST  GSK_ASSET_CACHE_MODEL
-
-typedef struct gsk_AssetCacheState
-{
-    u64 asset_handle;
-    u32 asset_uri_index; // index to uri in cache uri-array
-    u8 is_mem_loaded;
-    u8 is_gpu_loaded;
-
-} gsk_AssetCacheState;
-
-typedef struct gsk_AssetCacheData
-{
-    void *buff_ram, *buff_gpu;
-    u32 buff_ram_len, buff_gpu_len;
-
-} gsk_AssetCacheData;
 
 typedef struct gsk_AssetList
 {
@@ -75,7 +61,7 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
 void
 gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri);
 
-gsk_AssetCacheState *
+gsk_AssetRef *
 gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri);
 
 #ifdef __cplusplus

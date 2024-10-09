@@ -4,12 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "io/io_asset.h"
+#include "asset/assetdefs.h"
 
-gsk_IO_Asset
+gsk_AssetBlob
 parse_image(const char *path)
 {
-    gsk_IO_Asset ret = {0};
+    gsk_AssetBlob ret = {0};
 
     // find the location on disk
     char *buffer = 0;
@@ -28,8 +28,8 @@ parse_image(const char *path)
 
     if (buffer)
     {
-        ret.buff     = buffer;
-        ret.buff_len = length;
+        ret.p_buffer   = buffer;
+        ret.buffer_len = length;
         // free(buffer);
     }
 
