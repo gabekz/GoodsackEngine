@@ -23,11 +23,9 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
     // get asset
-    gsk_Material *mat_box = (gsk_Material *)gsk_asset_get(
-      p_asset_cache, "data://materials/cube.material");
+    gsk_Material *mat_box = GSK_ASSET("data://materials/cube.material");
 
-    gsk_Model *model_cube =
-      gsk_asset_get(p_asset_cache, "gsk://models/test.gltf");
+    gsk_Model *model_cube = GSK_ASSET("gsk://models/test.gltf");
 
     // model
     // gsk_Model *model_cube =

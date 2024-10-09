@@ -85,7 +85,7 @@ gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg)
                 LOG_ERROR("Shader asset is not cached! (%s)", item->value);
             }
 
-            p_shader = (gsk_ShaderProgram *)gsk_asset_get(p_cache, item->value);
+            p_shader = (gsk_ShaderProgram *)GSK_ASSET(item->value);
         }
     }
     if (p_shader == NULL)
@@ -109,8 +109,7 @@ gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg)
 
             // load and add texture
 
-            gsk_Texture *p_tex =
-              (gsk_Texture *)gsk_asset_get(p_cache, item->value);
+            gsk_Texture *p_tex = (gsk_Texture *)GSK_ASSET(item->value);
 
             gsk_material_add_texture(p_material, p_tex);
         }

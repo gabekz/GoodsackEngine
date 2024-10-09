@@ -11,10 +11,13 @@
 
 #ifdef __cplusplus
 #include "runtime/gsk_runtime.hpp"
-#define GSK_ASSET(x) gsk_asset_get(gsk::runtime::rt_get_asset_cache(), x)
+#define GSK_ASSET(x)                                               \
+    _gsk_asset_get_internal(gsk::runtime::rt_get_asset_cache(), x) \
+      ->p_data_active
 #else
 #include "runtime/gsk_runtime_wrapper.h"
-#define GSK_ASSET(x) gsk_asset_get(gsk_runtime_get_asset_cache(), x)
+#define GSK_ASSET(x) \
+    _gsk_asset_get_internal(gsk_runtime_get_asset_cache(), x)->p_data_active
 #endif // __cplusplus
 
 #ifdef __cplusplus
@@ -23,8 +26,8 @@ extern "C" {
 
 typedef void (*LoadAssetFunc)(const char *uri, void *p_dest);
 
-void *
-gsk_asset_get(gsk_AssetCache *p_cache, const char *str_uri);
+gsk_AssetRef *
+_gsk_asset_get_internal(gsk_AssetCache *p_cache, const char *str_uri);
 
 // void
 // gsk_asset_load_all_gcfg(gsk_AssetCache *p_cache);

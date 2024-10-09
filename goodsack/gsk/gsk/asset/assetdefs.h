@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef __ASSETDEFS_H__
 #define __ASSETDEFS_H__
 
@@ -13,7 +18,7 @@ typedef struct gsk_AssetRef
     u32 asset_uri_index; // index to uri in cache uri-array
     u8 is_imported;      // is asset-data imported
     u8 is_utilized;      // is asset-data utilized by the runtime
-    void *p_data;        // pointer to full asset data
+    void *p_data_active; // pointer to full asset data
 
 } gsk_AssetRef;
 
