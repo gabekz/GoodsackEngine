@@ -22,6 +22,9 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
     def_skybox = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
 
+    // GCFG
+    GSK_ASSET("data://test.gcfg");
+
     // get asset
     gsk_Material *mat_box = GSK_ASSET("data://materials/cube.material");
 

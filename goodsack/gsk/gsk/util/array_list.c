@@ -83,9 +83,14 @@ array_list_push(ArrayList *self, void *data)
         self->list_count       = newcount;
     }
 
-    memcpy((char *)self->data.buffer + (self->list_next * self->data.data_size),
-           data,
-           self->data.data_size);
+    if (data != NULL)
+    {
+        memcpy((char *)self->data.buffer +
+                 (self->list_next * self->data.data_size),
+               data,
+               self->data.data_size);
+    }
+
     self->list_next++;
     self->is_list_empty = FALSE;
 }
@@ -112,13 +117,14 @@ array_list_pop(ArrayList *self)
 void *
 array_list_get_at_index(ArrayList *self, u64 index)
 {
-    // TODO: error-handling
-    // assert(self->list_count <= index);
+    if (self->list_next <= index)
+    {
+        LOG_CRITICAL(
+          "Failed to retrieve item in array list. Unchecked data not allowed!");
+    }
 
     void *data = self->data.buffer;
 
     u32 size = self->data.data_size * index;
     return (char *)data + size;
-
-    // return (char *)self->data.buffer + size;
 }

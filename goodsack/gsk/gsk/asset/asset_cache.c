@@ -27,7 +27,9 @@ gsk_asset_cache_init()
 {
     gsk_AssetCache ret;
 
-    u32 type_sizes[ASSETTYPE_LAST + 1];
+    u32 sizes_data[ASSETTYPE_LAST + 1];
+    // u32 sizes_ops[ASSETTYPE_LAST + 1];
+
     type_sizes[GSK_ASSET_CACHE_GCFG]     = sizeof(gsk_GCFG);
     type_sizes[GSK_ASSET_CACHE_TEXTURE]  = sizeof(gsk_Texture);
     type_sizes[GSK_ASSET_CACHE_MATERIAL] = sizeof(gsk_Material);
@@ -111,8 +113,20 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       .is_utilized     = FALSE,
     };
 
-    // add empty data
+    TextureOptions default_tex = {
+      .af_range        = 8,
+      .flip_vertically = TRUE,
+      .gen_mips        = TRUE,
+      .internal_format = GL_SRGB_ALPHA,
+    };
+
     array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
+    array_list_push(&(p_cache->asset_lists[asset_type].list_options),
+                    &default_tex);
+
+    // add empty data -- we might want to may array_list act as a regular
+    // buffer, too.
+    array_list_push(&(p_cache->asset_lists[asset_type].list_data), NULL);
 }
 /*--------------------------------------------------------------------*/
 

@@ -26,6 +26,7 @@ typedef struct gsk_GCFGItem
 
 typedef struct gsk_GCFG
 {
+    // u64 asset_handles[3];
     u32 asset_type;
     ArrayList list_items;
 

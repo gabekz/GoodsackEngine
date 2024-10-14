@@ -22,7 +22,6 @@
 #include "asset/asset_gcfg.h"
 #include "asset/assetdefs.h"
 #include "asset/import/loader_gcfg.h"
-#include "io/io_asset.h"
 #include "io/parse_image.h"
 
 #if 0
@@ -56,11 +55,67 @@ _gsk_asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 #endif
 
 static void
-__create_gcfg(const char *str_uri, void *p_dest)
+__create_gcfg(const char *str_uri, void *p_options, void *p_dest)
 {
     // gsk_IO_AssetGCFG asset = gsk_io_import_gcfg(GSK_PATH(str_uri));
 
     gsk_GCFG gcfg = gsk_load_gcfg(GSK_PATH(str_uri));
+
+    gsk_AssetRef *p_ref   = NULL;
+    TextureOptions *p_ops = NULL;
+
+    for (int i = 0; i < gcfg.list_items.list_next; i++)
+    {
+        gsk_GCFGItem *p_item = array_list_get_at_index(&(gcfg.list_items), i);
+        if (!strcmp(p_item->key, "path"))
+        {
+            LOG_INFO("Contains path: %s", p_item->value);
+
+            gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache();
+
+            // get the asset ref
+            p_ref = gsk_asset_cache_get(p_cache, p_item->value);
+
+            u32 asset_list  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
+            u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
+
+            if (asset_list == GSK_ASSET_CACHE_TEXTURE)
+            {
+                // Get the pre-allocated memory location from cache
+                p_ops = array_list_get_at_index(
+                  &(p_cache->asset_lists[asset_list].list_options),
+                  asset_index - 1);
+            }
+        }
+    }
+
+    if (p_ops != NULL)
+    {
+        for (int i = 0; i < gcfg.list_items.list_next; i++)
+        {
+            gsk_GCFGItem *p_item =
+              array_list_get_at_index(&(gcfg.list_items), i);
+
+#if 0
+            if (!strcmp(p_item->key, "af_range"))
+            {
+                LOG_INFO("SETTING ATOF");
+                p_options->af_range = atof(p_item->value);
+            }
+#endif
+            if (!strcmp(p_item->key, "is_normal"))
+            {
+                LOG_INFO("SETTING NORM");
+                // p_options->af_range = atof(p_item->value);
+                p_ops->af_range        = 1;
+                p_ops->internal_format = GL_RGB;
+                p_ops->gen_mips        = TRUE;
+                p_ops->flip_vertically = TRUE;
+            }
+        }
+    }
+
+    // go through all entities in gcfg, set up config
 
     // gsk_io_free(gsk_IO_AssetGCFG);
 
@@ -68,26 +123,27 @@ __create_gcfg(const char *str_uri, void *p_dest)
 }
 
 static void
-__create_texture(const char *str_uri, void *p_dest)
+__create_texture(const char *str_uri, void *p_options, void *p_dest)
 {
     gsk_AssetBlob asset_source = parse_image(GSK_PATH(str_uri));
 
-    TextureOptions ops       = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
-    gsk_Texture tex          = texture_create_2(&asset_source, NULL, ops);
+    // TextureOptions ops = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
+    gsk_Texture tex =
+      texture_create_2(&asset_source, NULL, *(TextureOptions *)p_options);
     *((gsk_Texture *)p_dest) = tex;
 
     free(asset_source.p_buffer); // TODO: change
 }
 
 static void
-__create_shader(const char *str_uri, void *p_dest)
+__create_shader(const char *str_uri, void *p_options, void *p_dest)
 {
     gsk_ShaderProgram shader = gsk_shader_program_create(GSK_PATH(str_uri));
     *((gsk_ShaderProgram *)p_dest) = shader;
 }
 
 static void
-__create_material(const char *str_uri, void *p_dest)
+__create_material(const char *str_uri, void *p_options, void *p_dest)
 {
     // TODO: Material should not use malloc
 
@@ -100,7 +156,7 @@ __create_material(const char *str_uri, void *p_dest)
 }
 
 static void
-__create_model(const char *str_uri, void *p_dest)
+__create_model(const char *str_uri, void *p_options, void *p_dest)
 {
     gsk_Model *p_model =
       gsk_model_load_from_file(GSK_PATH(str_uri), 1.0f, FALSE);
@@ -142,7 +198,10 @@ _asset_load_generic(gsk_AssetCache *p_cache,
     void *p_data = array_list_get_at_index(
       &(p_cache->asset_lists[asset_list].list_data), asset_index - 1);
 
-    create_asset_func(str_uri, p_data);
+    void *p_options = array_list_get_at_index(
+      &(p_cache->asset_lists[asset_list].list_options), asset_index - 1);
+
+    create_asset_func(str_uri, p_options, p_data);
 
     p_ref->is_utilized = TRUE;
     return p_data;
