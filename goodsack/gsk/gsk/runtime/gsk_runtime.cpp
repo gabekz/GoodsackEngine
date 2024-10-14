@@ -30,6 +30,7 @@
 #include "core/graphics/renderer/v1/renderer.h"
 #endif
 
+#include "asset/asset.h"
 #include "asset/asset_cache.h"
 #include "asset/gpak/gpak.h"
 
@@ -137,7 +138,20 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     // gsk_gpak_make_raw(p_cache);
 
-    // TODO: Preload all GCFG here
+    // preload all GCFG files
+    ArrayList *p_gcfg_refs = &(p_cache->asset_lists[0].list_state);
+    for (int i = 0; i < p_gcfg_refs->list_next; i++)
+    {
+        gsk_AssetRef *p_ref =
+          (gsk_AssetRef *)array_list_get_at_index(p_gcfg_refs, i);
+
+        char *str;
+        str = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
+                                              p_ref->asset_uri_index);
+
+        // TODO: Do not reference by URI, reference by handle.
+        GSK_ASSET(str);
+    }
 
     /*==== Initialize Renderer =======================================*/
 

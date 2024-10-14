@@ -27,7 +27,7 @@ gsk_asset_cache_init()
 {
     gsk_AssetCache ret;
 
-    u32 sizes_data[ASSETTYPE_LAST + 1];
+    u32 type_sizes[ASSETTYPE_LAST + 1];
     // u32 sizes_ops[ASSETTYPE_LAST + 1];
 
     type_sizes[GSK_ASSET_CACHE_GCFG]     = sizeof(gsk_GCFG);

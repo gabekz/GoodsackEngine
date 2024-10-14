@@ -32,8 +32,13 @@ typedef struct gsk_GCFG
 
 } gsk_GCFG;
 
+#if 0
 void
 gsk_asset_gcfg_load_all(gsk_AssetCache *p_cache);
+#endif
+
+void
+gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg);
 
 #ifdef __cplusplus
 }
