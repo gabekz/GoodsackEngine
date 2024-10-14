@@ -134,6 +134,7 @@ gsk_filesystem_uri_to_path(const char *uri_path)
     if (!strcmp(ret.uri.scheme, s_path_roots.proj_scheme))
     {
         strcat(absolute_path, s_path_roots.proj_root);
+        strcat(absolute_path, "/");
     }
     // Engine-specific data directory
     else if (!strcmp(ret.uri.scheme, "gsk"))
@@ -171,7 +172,7 @@ gsk_filesystem_path_to_uri(const char *file_path, char *output_uri)
         // It's a project-specific path
         strcpy(output_uri, s_path_roots.proj_scheme);
         strcat(output_uri, "://");
-        strcat(output_uri, &file_path[1] + strlen(s_path_roots.proj_root));
+        strcat(output_uri, file_path + strlen(s_path_roots.proj_root) + 1);
         /* TODO: I'm not sure yet why there is an extra "/" in the file_path for
         project-specific paths. Currently just starting from the 1nth byte. */
     } else
