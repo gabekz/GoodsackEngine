@@ -25,7 +25,7 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
     // get asset
     gsk_Material *mat_box = GSK_ASSET("data://materials/cube.material");
 
-    gsk_Model *model_cube = GSK_ASSET("gsk://models/test.gltf");
+    gsk_Model *model_cube = GSK_ASSET("gsk://models/cube.obj");
 
     // model
     // gsk_Model *model_cube =

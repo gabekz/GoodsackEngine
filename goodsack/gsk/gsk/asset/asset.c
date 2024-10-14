@@ -101,8 +101,9 @@ __create_material(const char *str_uri, void *p_options, void *p_dest)
 static void
 __create_model(const char *str_uri, void *p_options, void *p_dest)
 {
-    gsk_Model *p_model =
-      gsk_model_load_from_file(GSK_PATH(str_uri), 1.0f, FALSE);
+    gsk_AssetModelOptions *p_ops = (gsk_AssetModelOptions *)p_options;
+    gsk_Model *p_model           = gsk_model_load_from_file(
+      GSK_PATH(str_uri), p_ops->scale, p_ops->import_materials);
 
     ((gsk_Model *)p_dest)->meshes      = p_model->meshes;
     ((gsk_Model *)p_dest)->meshesCount = p_model->meshesCount;

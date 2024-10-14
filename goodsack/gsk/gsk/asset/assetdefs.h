@@ -37,6 +37,13 @@ typedef struct gsk_AssetData
     u32 buff_active_len;
 } gsk_AssetData;
 
+typedef struct gsk_AssetModelOptions
+{
+    f32 scale;
+    u8 import_materials;
+
+} gsk_AssetModelOptions;
+
 #ifdef __cplusplus
 }
 #endif //_cplusplus

@@ -27,14 +27,20 @@ gsk_asset_cache_init()
 {
     gsk_AssetCache ret;
 
-    u32 type_sizes[ASSETTYPE_LAST + 1];
-    // u32 sizes_ops[ASSETTYPE_LAST + 1];
+    u32 sizes_data[ASSETTYPE_LAST + 1];
+    u32 sizes_ops[ASSETTYPE_LAST + 1];
 
-    type_sizes[GSK_ASSET_CACHE_GCFG]     = sizeof(gsk_GCFG);
-    type_sizes[GSK_ASSET_CACHE_TEXTURE]  = sizeof(gsk_Texture);
-    type_sizes[GSK_ASSET_CACHE_MATERIAL] = sizeof(gsk_Material);
-    type_sizes[GSK_ASSET_CACHE_SHADER]   = sizeof(gsk_ShaderProgram);
-    type_sizes[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_Model);
+    sizes_data[GSK_ASSET_CACHE_GCFG]     = sizeof(gsk_GCFG);
+    sizes_data[GSK_ASSET_CACHE_TEXTURE]  = sizeof(gsk_Texture);
+    sizes_data[GSK_ASSET_CACHE_MATERIAL] = sizeof(gsk_Material);
+    sizes_data[GSK_ASSET_CACHE_SHADER]   = sizeof(gsk_ShaderProgram);
+    sizes_data[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_Model);
+
+    sizes_ops[GSK_ASSET_CACHE_GCFG]     = 1;
+    sizes_ops[GSK_ASSET_CACHE_TEXTURE]  = sizeof(TextureOptions);
+    sizes_ops[GSK_ASSET_CACHE_MATERIAL] = 1;
+    sizes_ops[GSK_ASSET_CACHE_SHADER]   = 1;
+    sizes_ops[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_AssetModelOptions);
 
     // setup hash table
     // TODO: needs to scale
@@ -45,10 +51,9 @@ gsk_asset_cache_init()
         ret.asset_lists[i].list_state =
           array_list_init(sizeof(gsk_AssetRef), GSK_ASSET_CACHE_INCREMENT);
         ret.asset_lists[i].list_data =
-          array_list_init(type_sizes[i], GSK_ASSET_CACHE_INCREMENT);
-        // TODO: Change
+          array_list_init(sizes_data[i], GSK_ASSET_CACHE_INCREMENT);
         ret.asset_lists[i].list_options =
-          array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
+          array_list_init(sizes_ops[i], GSK_ASSET_CACHE_INCREMENT);
     }
 
     // asset uri array
@@ -113,6 +118,14 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       .is_utilized     = FALSE,
     };
 
+    array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
+
+    // add empty data -- we might want to may array_list act as a regular
+    // buffer, too.
+    array_list_push(&(p_cache->asset_lists[asset_type].list_data), NULL);
+
+    /*==== Create default asset options ==============================*/
+
     TextureOptions default_tex = {
       .af_range        = 8,
       .flip_vertically = TRUE,
@@ -120,13 +133,22 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       .internal_format = GL_SRGB_ALPHA,
     };
 
-    array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
-    array_list_push(&(p_cache->asset_lists[asset_type].list_options),
-                    &default_tex);
+    gsk_AssetModelOptions default_model = {
+      .scale            = 1.0f,
+      .import_materials = FALSE,
+    };
 
-    // add empty data -- we might want to may array_list act as a regular
-    // buffer, too.
-    array_list_push(&(p_cache->asset_lists[asset_type].list_data), NULL);
+    void *p_options = NULL;
+    switch (list_type)
+    {
+    case GSK_ASSET_CACHE_MODEL: p_options = &default_model; break;
+    case GSK_ASSET_CACHE_TEXTURE: p_options = &default_tex; break;
+    default: break;
+    }
+
+    // TODO: Should not push anything at all if null. Check references.
+    array_list_push(&(p_cache->asset_lists[asset_type].list_options),
+                    p_options);
 }
 /*--------------------------------------------------------------------*/
 
