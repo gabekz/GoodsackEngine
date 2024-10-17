@@ -15,6 +15,9 @@ gsk_runtime_get_asset_cache();
 gsk_Renderer *
 gsk_runtime_get_renderer();
 
+gsk_ECS *
+gsk_runtime_get_ecs();
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

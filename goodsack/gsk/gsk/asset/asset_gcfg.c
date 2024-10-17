@@ -64,6 +64,12 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
                     p_ops->gen_mips        = TRUE;
                     p_ops->flip_vertically = TRUE;
                 }
+
+                else if (!strcmp(p_item->key, "flip_vertically"))
+                {
+                    p_ops->flip_vertically = atof(p_item->value);
+                }
+
             } else if (asset_list == GSK_ASSET_CACHE_MODEL)
             {
                 gsk_AssetModelOptions *p_ops =

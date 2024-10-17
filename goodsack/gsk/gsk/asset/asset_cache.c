@@ -127,10 +127,10 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     /*==== Create default asset options ==============================*/
 
     TextureOptions default_tex = {
-      .af_range        = 8,
-      .flip_vertically = TRUE,
-      .gen_mips        = TRUE,
+      .af_range        = 1,
       .internal_format = GL_SRGB_ALPHA,
+      .gen_mips        = FALSE,
+      .flip_vertically = TRUE,
     };
 
     gsk_AssetModelOptions default_model = {

@@ -291,6 +291,7 @@ init(gsk_Entity e)
         }
 
         // TODO: Duplicate model here (for skinned-mesh / animator)
+        // TODO: we probably dont want model->mesh. Maybe model->skinned_mesh?
         model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
 
         // TODO: rework defaults
@@ -299,16 +300,6 @@ init(gsk_Entity e)
             model->cast_shadows = 1;
         }
 
-        // send lightspace matrix from renderer to entity shader
-        gsk_ShaderProgram *shader =
-          ((gsk_Material *)model->material)->shaderProgram;
-        gsk_shader_use(shader);
-        glUniformMatrix4fv(
-          glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
-          1,
-          GL_FALSE,
-          (float *)e.ecs->renderer->lightSpaceMatrix);
-        // TODO: send model matrix to shader
     } else if (GSK_DEVICE_API_VULKAN)
     {
         model->mesh = malloc(sizeof(gsk_Mesh));
