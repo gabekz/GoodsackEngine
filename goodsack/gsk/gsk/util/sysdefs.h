@@ -115,6 +115,8 @@
 #define GLUE_HELPER(x, y) x##y
 #define GLUE(x, y)        GLUE_HELPER(x, y)
 
+#define _EXPAND(x) x
+
 // -- Types //
 
 #if defined(SYS_ENV_64)

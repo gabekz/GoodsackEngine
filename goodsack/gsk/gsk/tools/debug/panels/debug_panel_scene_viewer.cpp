@@ -32,7 +32,7 @@ gsk::tools::panels::SceneViewer::draw(void)
         } else
         {
             gsk_renderer_active_scene(p_renderer, scene_queued);
-            gsk_renderer_start(p_renderer);
+            // gsk_renderer_start(p_renderer);
             scene_queued = p_renderer->activeScene;
         }
     }

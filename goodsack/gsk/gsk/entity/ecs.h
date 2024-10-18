@@ -6,6 +6,8 @@
 #ifndef __ECS_H__
 #define __ECS_H__
 
+#include <stdio.h>
+
 #include "entity/ecsdefs.h"
 #include "util/sysdefs.h"
 
@@ -31,11 +33,16 @@
 #define ecs_add(...) \
     _ecs_add_overload(__VA_ARGS__, _ecs_add3, _ecs_add2)(__VA_ARGS__)
 
-#define _ecs_new_2(e, n)                     _gsk_ecs_new_internal(e, n)
-#define _ecs_new_1(e)                        _gsk_ecs_new_internal(e, NULL)
+#define _ecs_new_2(e, n) _gsk_ecs_new_internal(e, n)
+#define _ecs_new_1(e)    _gsk_ecs_new_internal(e, NULL)
+
 #define _ecs_new_overload(_1, _2, NAME, ...) NAME
 #define gsk_ecs_new(...) \
-    _ecs_new_overload(__VA_ARGS__, _ecs_new_2, _ecs_new_1)(__VA_ARGS__)
+    _EXPAND(_ecs_new_overload(__VA_ARGS__, _ecs_new_2, _ecs_new_1)(__VA_ARGS__))
+
+//#define _ecs_new_overload(_1, _2, NAME, ...) NAME
+//#define gsk_ecs_new(...) \
+//    _ecs_new_overload(__VA_ARGS__, _ecs_new_2, _ecs_new_1)(__VA_ARGS__)
 
 #ifdef __cplusplus
 extern "C" {

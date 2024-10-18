@@ -71,6 +71,8 @@ gsk_renderer_init()
     ret->sceneC      = 1;
     ret->activeScene = 0;
 
+    ret->defaultSkybox = NULL;
+
     ret->properties = (gsk_RendererProps) {.tonemapper      = 0,
                                            .exposure        = 9.5f,
                                            .maxWhite        = 1.0f,
@@ -202,8 +204,12 @@ gsk_renderer_start(gsk_Renderer *renderer)
 
         renderer->defaultSkybox = gsk_skybox_create(skyboxCubemap);
 #else
-        renderer->defaultSkybox = gsk_skybox_hdr_create(texture_create_hdr(
-          GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
+        if (renderer->defaultSkybox == NULL)
+        {
+
+            renderer->defaultSkybox = gsk_skybox_hdr_create(texture_create_hdr(
+              GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
+        }
 #endif
 
         // Set the current renderer skybox to that of the active scene
@@ -286,7 +292,8 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     double current_time = glfwGetTime();
     if (_gsk_device_check_fixed_update(current_time))
     {
-        gsk_ecs_event(ecs, ECS_INIT); // TODO: Move
+        gsk_ecs_event(ecs, ECS_INIT); // call init at fixed (does not call on
+                                      // entities that are already initialized)
 
         gsk_ecs_event(ecs, ECS_ON_COLLIDE);
         gsk_ecs_event(ecs, ECS_FIXED_UPDATE);
