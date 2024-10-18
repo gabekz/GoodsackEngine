@@ -207,7 +207,12 @@ gsk::runtime::rt_setup(const char *root_dir,
     glfwSwapInterval(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    gsk_GuiText *loading_text = gsk_gui_text_create("Loading");
+    vec2 text_pos   = {0.0f, 0.0f};
+    vec3 text_color = {1.0f, 1.0f, 1.0f};
+
+    gsk_GuiText *loading_text =
+      gsk_gui_text_create("Loading", text_pos, text_color);
+
     for (int i = 0; i < 2; i++)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -225,6 +230,25 @@ gsk::runtime::rt_setup(const char *root_dir,
     strcat(path, "://scripts/main.lua");
     LuaInit(GSK_PATH(path), s_runtime.ecs);
 #endif
+
+    // const char *info =
+    //  ("Goodsack Engine | " GOODSACK_VERSION_MAJOR "."
+    //  GOODSACK_VERSION_MINOR);
+
+    char str_info[256];
+    sprintf(str_info,
+            "Goodsack Engine | v%d.%d.%d.%d",
+            GOODSACK_VERSION_MAJOR,
+            GOODSACK_VERSION_MINOR,
+            GOODSACK_VERSION_PATCH,
+            GOODSACK_VERSION_TWEAK);
+
+    vec2 text_info_pos = {5.0f, 5.0f};
+    vec3 text_info_col = {1.0f, 1.0f, 1.0f};
+
+    gsk_GuiText *text_info =
+      gsk_gui_text_create(str_info, text_info_pos, text_info_col);
+    gsk_gui_canvas_add_text(&s_runtime.renderer->canvas, text_info);
 
 #endif
     return 0;

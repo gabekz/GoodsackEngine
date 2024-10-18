@@ -118,14 +118,14 @@ gsk_renderer_init()
 
     ret->canvas = gsk_gui_canvas_create();
 
-    gsk_GuiElement *element = gsk_gui_element_create(
-      (vec2) {1920 / 2, 1080 / 2}, (vec2) {10, 10}, guiTexture, NULL);
-
-    // Test GUI Text
-    gsk_GuiText *text = gsk_gui_text_create("Goodsack Engine");
+    gsk_GuiElement *element =
+      gsk_gui_element_create((vec2) {1920 / 2, 1080 / 2},
+                             (vec2) {10, 10},
+                             (vec3) {1, 1, 1},
+                             guiTexture,
+                             NULL);
 
     gsk_gui_canvas_add_element(&ret->canvas, element);
-    gsk_gui_canvas_add_text(&ret->canvas, text);
 
     // Lighting information
     vec3 lightPos   = {-3.4f, 2.4f, 1.4f};

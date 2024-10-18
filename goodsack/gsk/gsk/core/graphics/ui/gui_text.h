@@ -28,7 +28,7 @@ typedef struct gsk_GuiText
 } gsk_GuiText;
 
 gsk_GuiText *
-gsk_gui_text_create(const char *text_string);
+gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color);
 
 void
 gsk_gui_text_draw(gsk_GuiText *self);
