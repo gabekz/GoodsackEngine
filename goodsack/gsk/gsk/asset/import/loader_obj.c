@@ -230,11 +230,11 @@ gsk_load_obj(const char *path, float scale)
     ret->vertexCount  = outI;
 
 #if 1 // Calcuate TBN for each triangle/vertex
-    u32 totalTriangles = fL * 3;
-    // float* outTBN = malloc(2 * 3 * totalTriangles * sizeof(float));
-    float *outTBN   = malloc(totalTriangles * 3 * 2 * sizeof(GLfloat));
-    u32 cntTriangle = 0;
-    for (int i = 0; i < totalTriangles; i += 3)
+    u32 total_verts = fL * 3;
+    // float* buffer_tbn = malloc(2 * 3 * total_verts * sizeof(float));
+    float *buffer_tbn = malloc(total_verts * 3 * 2 * sizeof(GLfloat));
+    u32 cntTriangle   = 0;
+    for (int i = 0; i < total_verts; i += 3)
     {
 
         // if(i != 2684) continue;
@@ -289,14 +289,14 @@ gsk_load_obj(const char *path, float scale)
 
         for (int m = 0; m < 3; m++)
         {
-            int b         = i + m + (i * 5) + (m * 5);
-            outTBN[b + 0] = tang[0];
-            outTBN[b + 1] = tang[1];
-            outTBN[b + 2] = tang[2];
+            int b             = i + m + (i * 5) + (m * 5);
+            buffer_tbn[b + 0] = tang[0];
+            buffer_tbn[b + 1] = tang[1];
+            buffer_tbn[b + 2] = tang[2];
 
-            outTBN[b + 3] = btang[0];
-            outTBN[b + 4] = btang[1];
-            outTBN[b + 5] = btang[2];
+            buffer_tbn[b + 3] = btang[0];
+            buffer_tbn[b + 4] = btang[1];
+            buffer_tbn[b + 5] = btang[2];
         }
 
         // printf("\n%d", i);
@@ -305,37 +305,39 @@ gsk_load_obj(const char *path, float scale)
 #endif
 
 #ifdef LOGGING_OBJ
-    printf("-------------------------------------\n[OBJ Loader]\n");
-    printf("path: \t\t%s", path);
-    printf("\n\nVertice "
-           "Count\nPosition:\t%d\nTexture:\t%d\nNormal:\t\t%d\n\nFaces:\t\t%"
-           "d\nTris:\t\t%d\n\n",
-           vL / 3,
-           vtL / 2,
-           vnL / 3,
-           fL,
-           totalTriangles);
-    printf("Output Buffer Size: %.2f KB\n", (float)outI / 1000);
-    printf("-------------------------------------\n\n");
+    LOG_PRINT("-------------------------------------\n[OBJ Loader]\n");
+    LOG_PRINT("path: \t\t%s", path);
+    LOG_PRINT("\n\nVertice "
+              "Count\nPosition:\t%d\nTexture:\t%d\nNormal:\t\t%d\n",
+              vL / 3,
+              vtL / 2,
+              vnL / 3);
+    LOG_PRINT("Output Total\n"
+              "Vertices:\t%d\nTriangles:\t%d\n\n",
+              total_verts,
+              fL);
+    LOG_PRINT("Output Buffer Size: %.2f KB\n", (float)outI / 1000);
+    LOG_PRINT("-------------------------------------\n\n");
 #endif
 
     // ret->meshPath       = path;
-    ret->trianglesCount = totalTriangles;
+    ret->trianglesCount = total_verts;
 
-    ret->buffers.v  = v;
-    ret->buffers.vt = vt;
-    ret->buffers.vn = vn;
+    // ret->buffers.v  = v;
+    // ret->buffers.vt = vt;
+    // ret->buffers.vn = vn;
 
     ret->buffers.vL  = vL;
     ret->buffers.vtL = vtL;
     ret->buffers.vnL = vnL;
 
-    ret->buffers.out = out;
-    // TODO: fix this crap right here
-    ret->buffers.outI   = outI * sizeof(float);
-    ret->buffers.outTBN = outTBN;
+    ret->buffers.buffer_vertices      = out;
+    ret->buffers.buffer_vertices_size = outI * sizeof(float);
+    // ret->buffers.buffer_tbn               = buffer_tbn;
+    ret->buffers.buffer_tbn = buffer_tbn;
 
-    ret->buffers.bufferIndices_size = 0;
+    // ret->buffers.buffer_indices_size = 0;
+    ret->buffers.buffer_indices_size = 0;
 
     ret->isSkinnedMesh  = 0;
     ret->hasTBN         = 1;
@@ -350,9 +352,9 @@ gsk_load_obj(const char *path, float scale)
 
     // glBindVertexArray(0);
     //  Free a lot of memory....
-    // free(v);
-    // free(vt);
-    // free(vn);
+    free(v);
+    free(vt);
+    free(vn);
     // free(out);
     // free(outIndices);
     // free(outIndices);

@@ -284,8 +284,9 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     u32 vTanBufferSize = vertCount * sizeof(float) * 3 * 2;
 
     // Required
-    ret->buffers.outI = vPosBufferSize + vTexBufferSize + vNrmBufferSize;
-    ret->buffers.outI += vTanBufferSize;
+    ret->buffers.buffer_vertices_size =
+      vPosBufferSize + vTexBufferSize + vNrmBufferSize;
+    ret->buffers.buffer_vertices_size += vTanBufferSize;
     // Add space for tangent data
     if (attribInfo.idxTan > -1)
     {
@@ -304,7 +305,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // Set primitive type
     ret->primitive_type = GSK_PRIMITIVE_TYPE_TRIANGLE; // TODO: Get from file
 
-    ret->buffers.out = malloc(ret->buffers.outI);
+    ret->buffers.buffer_vertices = malloc(ret->buffers.buffer_vertices_size);
 
     // Position, TextureCoord, Normal
 
@@ -313,27 +314,29 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     {
         // Fill Positions
         cgltf_accessor_read_float(
-          attribInfo.posData, i, ret->buffers.out + offsetA, 100);
+          attribInfo.posData, i, ret->buffers.buffer_vertices + offsetA, 100);
         offsetA += 3;
         // Fill TextureCoords
         cgltf_accessor_read_float(
-          attribInfo.texData, i, ret->buffers.out + offsetA, 100);
+          attribInfo.texData, i, ret->buffers.buffer_vertices + offsetA, 100);
         offsetA += 2;
         // Fill Normals
         cgltf_accessor_read_float(
-          attribInfo.nrmData, i, ret->buffers.out + offsetA, 100);
+          attribInfo.nrmData, i, ret->buffers.buffer_vertices + offsetA, 100);
         offsetA += 3;
         // Fill Tangent
         if (ret->hasTBN)
         {
-            cgltf_accessor_read_float(
-              attribInfo.tanData, i, ret->buffers.out + offsetA, 100);
+            cgltf_accessor_read_float(attribInfo.tanData,
+                                      i,
+                                      ret->buffers.buffer_vertices + offsetA,
+                                      100);
             offsetA += 3;
         } else
         {
             // TODO: calculate TBN
             vec3 vec = GLM_VEC3_ONE_INIT;
-            memcpy(ret->buffers.out + offsetA, vec, sizeof(vec3));
+            memcpy(ret->buffers.buffer_vertices + offsetA, vec, sizeof(vec3));
             offsetA += 3;
         }
     }
@@ -348,17 +351,17 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
     // Indices //
 
-    ret->indicesCount               = attribInfo.indicesData->count;
-    ret->buffers.bufferIndices_size = ret->indicesCount * sizeof(u32);
+    ret->indicesCount                = attribInfo.indicesData->count;
+    ret->buffers.buffer_indices_size = ret->indicesCount * sizeof(u32);
 
-    ret->buffers.bufferIndices = malloc(ret->buffers.bufferIndices_size);
+    ret->buffers.buffer_indices = malloc(ret->buffers.buffer_indices_size);
 
     // store all indices
     for (int i = 0; i < ret->indicesCount; i++)
     {
         if (!cgltf_accessor_read_uint(attribInfo.indicesData,
                                       i,
-                                      ret->buffers.bufferIndices + i,
+                                      ret->buffers.buffer_indices + i,
                                       ret->indicesCount))
         {
             LOG_ERROR("Failed to read uint! %d", i);

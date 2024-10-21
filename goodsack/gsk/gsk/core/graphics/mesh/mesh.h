@@ -55,18 +55,15 @@ typedef struct gsk_MeshData
 
     struct
     {
-        // attribute buffers
-        float *v, *vt, *vn; // position, texCoord, normal
-        u32 vL, vtL, vnL;   // lengths
+        u32 vL, vtL, vnL; // buffer sets
 
-        float *out;
-        u32 outI;
+        float *buffer_vertices; // Position, Texture, Normal
+        float *buffer_indices;  // indices
+        float *buffer_tbn;      // Tangent, Bitangent
 
-        float *outTBN;
-
-        u32 *bufferIndices;
-        u32 bufferIndices_size;
-
+        u32 buffer_vertices_size;
+        u32 buffer_indices_size;
+        u32 buffer_tbn_size;
     } buffers;
 
     // TODO: Move to model

@@ -25,17 +25,15 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
         gsk_gl_vertex_array_bind(vao);
         mesh->vao = vao;
 
-        gsk_GlVertexBuffer *vbo =
-          // gsk_gl_vertex_buffer_create(data->buffers.out, data->buffers.outI *
-          // sizeof(float));
-          gsk_gl_vertex_buffer_create(data->buffers.out, data->buffers.outI);
+        gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
+          data->buffers.buffer_vertices, data->buffers.buffer_vertices_size);
 
         // TODO: Temporarily disabled IBO for .obj extensions
-        // if (data->buffers.bufferIndices != NULL && strcmp(ext, ".obj")) {
-        if (data->buffers.bufferIndices_size > 0)
+        // if (data->buffers.buffer_indices != NULL && strcmp(ext, ".obj")) {
+        if (data->buffers.buffer_indices_size > 0)
         {
             gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
-              data->buffers.bufferIndices, data->buffers.bufferIndices_size);
+              data->buffers.buffer_indices, data->buffers.buffer_indices_size);
         }
 
         // Push our data into our single VBO
@@ -58,13 +56,13 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
         {
             // TBN vertex buffer
             gsk_GlVertexBuffer *vboTBN = gsk_gl_vertex_buffer_create(
-              data->buffers.outTBN,
+              data->buffers.buffer_tbn,
               data->trianglesCount * 3 * 2 * sizeof(GLfloat));
             gsk_gl_vertex_buffer_push(vboTBN, 3, GL_FLOAT, GL_FALSE); // tangent
             gsk_gl_vertex_buffer_push(
               vboTBN, 3, GL_FLOAT, GL_FALSE); // bitangent
             gsk_gl_vertex_array_add_buffer(vao, vboTBN);
-            // free(data->buffers.outTBN);
+            // free(data->buffers.buffer_tbn);
         }
 
 #if 1

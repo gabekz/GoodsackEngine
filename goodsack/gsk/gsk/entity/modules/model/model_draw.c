@@ -313,8 +313,9 @@ init(gsk_Entity e)
           context->device,
           context->graphicsQueue,
           context->commandPool,
-          ((gsk_Mesh *)model->mesh)->meshData->buffers.out,
-          ((gsk_Mesh *)model->mesh)->meshData->buffers.outI * sizeof(float));
+          ((gsk_Mesh *)model->mesh)->meshData->buffers.buffer_vertices,
+          ((gsk_Mesh *)model->mesh)->meshData->buffers.buffer_vertices_size *
+            sizeof(float));
     }
 }
 
