@@ -154,6 +154,7 @@ typedef struct ComponentEntityReference
 struct ComponentHealth
 {
     CACHE_ALIGN(int current_health);
+    CACHE_ALIGN(int last_health);
     CACHE_ALIGN(int max_health);
     CACHE_ALIGN(u32 is_alive);
 };

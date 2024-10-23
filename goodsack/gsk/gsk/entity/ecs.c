@@ -27,6 +27,9 @@
 // Player
 #include "entity/modules/player/player_controller-system.h"
 
+// Misc
+#include "entity/modules/misc/health_setup.h"
+
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION
 #include "entity/__generated__/components_gen.h"
@@ -89,6 +92,9 @@ gsk_ecs_init(gsk_Renderer *renderer)
 
     // Player Controller
     s_player_controller_system_init(ecs);
+
+    // Misc Systems
+    s_health_setup_init(ecs);
 
 #if USING_GENERATED_COMPONENTS
     _ecs_init_internal_gen(ecs);

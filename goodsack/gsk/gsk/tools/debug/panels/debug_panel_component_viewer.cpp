@@ -12,34 +12,47 @@
 #include "core/drivers/alsoft/alsoft_debug.h"
 #include "core/graphics/mesh/model.h"
 
+#include "entity/__generated__/components_gen.h"
+
 #include <imgui.h>
 
-void
-gsk::tools::panels::ComponentViewer::show_for_entity(gsk_Entity entity)
+static std::string
+_component_type_name(ECSComponentType component_type)
 {
-    selected_entity = entity;
-    visible         = true;
+    switch (component_type)
+    {
+    case C_ANIMATOR: return "Animator";
+    case C_AUDIOLISTENER: return "Audio Listener";
+    case C_AUDIOSOURCE: return "Audio Source";
+    case C_BANE: return "Bane";
+    case C_BONE_ATTACHMENT: return "Bone Attachment";
+    case C_CAMERA: return "Camera";
+    case C_CAMERALOOK: return "Camera Look";
+    case C_CAMERAMOVEMENT: return "Camera Movement";
+    case C_COLLIDER: return "Collider";
+    case C_ENEMY: return "Enemy";
+    case C_ENTITY_REFERENCE: return "Entity Reference";
+    case C_HEALTH: return "Health";
+    case C_LIGHT: return "Light";
+    case C_MODEL: return "Model";
+    case C_PLAYER_CONTROLLER: return "Player Controller";
+    case C_RENDERLAYER: return "Render Layer";
+    case C_RIGIDBODY: return "Rigidbody";
+    case C_SWORD_CONTROLLER: return "Sword Controller";
+    case C_TRANSFORM: return "Transform";
+    case C_WEAPON: return "Weapon";
+    case C_WEAPONSWAY: return "Weapon Sway";
+    default: return "None";
+    }
 }
 
-void
-gsk::tools::panels::ComponentViewer::draw(void)
+static void
+_draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 {
     using namespace ImGui;
 
-    gsk_Entity e = this->selected_entity;
-
-    PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
-    Text("entity %d", e.id);
-    PopStyleColor();
-
-    if (gsk_ecs_has(e, C_TRANSFORM))
+    if (cmp_type == C_TRANSFORM)
     {
-        BeginChild("Transform", ImVec2(0, GetFontSize() * 12.0f), true);
-
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Transform Component");
-        PopStyleColor();
-        Separator();
         // wow, this is ridiculous..
         struct ComponentTransform &p =
           *(static_cast<struct ComponentTransform *>(
@@ -60,19 +73,8 @@ gsk::tools::panels::ComponentViewer::draw(void)
         {
             Text("None");
         }
-
-        EndChild();
-    }
-    if (gsk_ecs_has(e, C_RIGIDBODY))
+    } else if (cmp_type == C_RIGIDBODY)
     {
-        BeginChild("Rigidbody", ImVec2(0, GetFontSize() * 14.0f), true);
-
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Rigidbody Component");
-        PopStyleColor();
-
-        Separator();
-
         struct ComponentRigidbody &p =
           *(static_cast<struct ComponentRigidbody *>(
             gsk_ecs_get(e, C_RIGIDBODY)));
@@ -90,31 +92,13 @@ gsk::tools::panels::ComponentViewer::draw(void)
 
         DragFloat("Static Friction", &p.static_friction, 0.1f, 0.0f, 1.0f);
         DragFloat("Dynamic Friction", &p.dynamic_friction, 0.1f, 0.0f, 1.0f);
-
-        EndChild();
-    }
-    if (gsk_ecs_has(e, C_COLLIDER))
+    } else if (cmp_type == C_COLLIDER)
     {
-        BeginChild("Collider", ImVec2(0, GetFontSize() * 14.0f), true);
-
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Collider Component");
-        PopStyleColor();
-
-        Separator();
-
         struct ComponentCollider &p = *(
           static_cast<struct ComponentCollider *>(gsk_ecs_get(e, C_COLLIDER)));
-
-        EndChild();
     }
-    if (gsk_ecs_has(e, C_MODEL))
+    if (cmp_type == C_MODEL)
     {
-        BeginChild("Model", ImVec2(0, GetFontSize() * 15.0f), true);
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Model Component");
-        PopStyleColor();
-        Separator();
         // wow, this is ridiculous..
         struct ComponentModel &p =
           *(static_cast<struct ComponentModel *>(gsk_ecs_get(e, C_MODEL)));
@@ -180,15 +164,10 @@ gsk::tools::panels::ComponentViewer::draw(void)
                 }
             } // GSK_DEVICE_API_OPENGL
         }     // Textures collapsing header
-        EndChild();
     }
-    if (gsk_ecs_has(e, C_CAMERA))
+
+    else if (cmp_type == C_CAMERA)
     {
-        BeginChild("Camera", ImVec2(0, GetFontSize() * 10.0f), true);
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Camera Component");
-        PopStyleColor();
-        Separator();
         // wow, this is ridiculous..
         struct ComponentCamera &p =
           *(static_cast<struct ComponentCamera *>(gsk_ecs_get(e, C_CAMERA)));
@@ -198,53 +177,26 @@ gsk::tools::panels::ComponentViewer::draw(void)
         DragFloat("Near", &p.nearZ, 0.01, 0, 10);
         SameLine();
         DragFloat("Far", &p.farZ, 1, 0, 1000);
-        EndChild();
     }
-    if (gsk_ecs_has(e, C_CAMERALOOK))
+
+    else if (cmp_type == C_CAMERALOOK)
     {
-        BeginChild("Camera Look", ImVec2(0, GetFontSize() * 6.0f), true);
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("CameraLook Component");
-        PopStyleColor();
-        Separator();
         struct ComponentCameraLook &p =
           *(static_cast<struct ComponentCameraLook *>(
             gsk_ecs_get(e, C_CAMERALOOK)));
         DragFloat("Sensitivity", &p.sensitivity, 0.45f, 0.9f);
-        EndChild();
     }
 
-    if (gsk_ecs_has(e, C_CAMERAMOVEMENT))
+    else if (cmp_type == C_CAMERAMOVEMENT)
     {
-        BeginChild("Camera Movement", ImVec2(0, GetFontSize() * 6.0f), true);
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("CameraMovement Component");
-        PopStyleColor();
-        Separator();
         struct ComponentCameraMovement &p =
           *(static_cast<struct ComponentCameraMovement *>(
             gsk_ecs_get(e, C_CAMERAMOVEMENT)));
         DragFloat("Speed ", &p.speed, 0.45f, 0.9f);
-        EndChild();
     }
 
-    if (gsk_ecs_has(e, C_AUDIOLISTENER))
+    else if (cmp_type == C_AUDIOSOURCE)
     {
-        BeginChild("Audio Listener");
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Audio Listener Component");
-        PopStyleColor();
-        Separator();
-
-        EndChild();
-    }
-    if (gsk_ecs_has(e, C_AUDIOSOURCE))
-    {
-        BeginChild("Audio Source", ImVec2(0, GetFontSize() * 10.0f), true);
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Audio Source Component");
-        PopStyleColor();
-        Separator();
         // wow, this is ridiculous..
         struct ComponentAudioSource &a =
           *(static_cast<struct ComponentAudioSource *>(
@@ -263,23 +215,15 @@ gsk::tools::panels::ComponentViewer::draw(void)
         {
             AL_CHECK(alSourcei(a.buffer_source, AL_LOOPING, a.is_looping));
         }
-        EndChild();
     }
-    if (gsk_ecs_has(e, C_ANIMATOR))
+
+    else if (cmp_type == C_ANIMATOR)
     {
 
         struct ComponentAnimator &a = *(
           static_cast<struct ComponentAnimator *>(gsk_ecs_get(e, C_ANIMATOR)));
 
         gsk_Skeleton *p_skeleton = ((gsk_Animation *)a.cntAnimation)->pSkeleton;
-
-        BeginChild("Animator", ImVec2(0, GetFontSize() * 10.0f), true);
-
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Animator Component");
-        PopStyleColor();
-
-        Separator();
 
         Text("Total Animations: %d",
              ((gsk_Animation *)a.cntAnimation)->pSkeleton->animations_count);
@@ -333,23 +277,55 @@ gsk::tools::panels::ComponentViewer::draw(void)
             }
             ImGui::EndCombo();
         }
-
-        EndChild();
     }
 
-    if (gsk_ecs_has(e, C_WEAPON))
+    else if (cmp_type == C_WEAPON)
     {
-        BeginChild("Weapon Component", ImVec2(0, GetFontSize() * 8.0f), true);
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text("Weapon Component");
-        PopStyleColor();
-        Separator();
-
         struct ComponentWeapon &p =
           *(static_cast<struct ComponentWeapon *>(gsk_ecs_get(e, C_WEAPON)));
 
         DragFloat3("pos_starting", p.pos_starting, 0.1f, -3000, 3000);
         DragFloat3("rot_starting", p.rot_starting, 0.1f, -3000, 3000);
+    }
+}
+
+void
+gsk::tools::panels::ComponentViewer::show_for_entity(gsk_Entity entity)
+{
+    selected_entity = entity;
+    visible         = true;
+}
+
+void
+gsk::tools::panels::ComponentViewer::draw(void)
+{
+    using namespace ImGui;
+
+    gsk_Entity e = this->selected_entity;
+
+    PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
+    Text("entity %d", e.id);
+    PopStyleColor();
+
+    for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
+    {
+        ECSComponentType cmp_type = (ECSComponentType)i;
+
+        // skip if entity does not have component
+        if (!(gsk_ecs_has(e, cmp_type))) continue;
+
+        std::string _cmp_name = _component_type_name(cmp_type);
+
+        // component header
+        BeginChild(_cmp_name.c_str(), ImVec2(0, GetFontSize() * 12.0f), true);
+        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+        Text(_cmp_name.c_str());
+        PopStyleColor();
+
+        Separator();
+
+        // component-specific editor
+        _draw_component_editors(e, cmp_type);
 
         EndChild();
     }
