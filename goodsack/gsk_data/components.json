@@ -60,7 +60,7 @@
     },
 
     "Health": {
-        "int": ["current_health", "max_health"],
+        "int": ["current_health", "last_health", "max_health"],
         "bool": ["is_alive"]
     },
 
