@@ -33,7 +33,8 @@ gsk_debug_context_init()
     if (GSK_DEVICE_API_OPENGL)
     {
         // Assets
-        ret->material     = GSK_ASSET("gsk://shaders/basic_unlit.shader");
+        ret->material = gsk_material_create(
+          NULL, GSK_PATH("gsk://shaders/basic_unlit.shader"), NULL, 0);
         ret->model_sphere = GSK_ASSET("gsk://models/pyramid.obj");
 
         // VAO Cube

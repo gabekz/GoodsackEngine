@@ -71,6 +71,15 @@ _gsk_check_args(int argc, char *argv[])
         {
             logger_setLevel(LogLevel_ERROR);
         }
+
+#if 0
+        if (std::string(argv[i]).find("--map") != std::string::npos)
+        {
+            {
+                LOG_INFO("MAP");
+            }
+        }
+#endif
     }
 }
 

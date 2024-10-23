@@ -141,6 +141,7 @@ struct ComponentCollider
 struct ComponentEnemy
 {
     CACHE_ALIGN(int enemy_type);
+    CACHE_ALIGN(vec3 hit_position);
     CACHE_ALIGN(u8 is_wep_loaded);
     CACHE_ALIGN(ResRef projectile_material);
     CACHE_ALIGN(ResRef projectile_model);
