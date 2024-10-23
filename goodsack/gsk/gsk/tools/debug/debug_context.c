@@ -80,6 +80,7 @@ gsk_debug_context_init()
           gsk_gl_vertex_buffer_create(lineverts, 6 * sizeof(float));
         gsk_gl_vertex_buffer_push(lineVbo, 3, GL_FLOAT, GL_FALSE);
         gsk_gl_vertex_array_add_buffer(ret->vaoLine, lineVbo);
+        ret->vboLineId = lineVbo->id;
 
         // OpenGL Line smoothing
         glLineWidth(1.0f);
