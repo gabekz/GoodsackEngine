@@ -12,6 +12,9 @@
 // TODO: Move this
 #include <GoodsackEngineConfig.h>
 
+#include "stb_image.h"
+
+#include "core/graphics/texture/texture.h"
 #include "util/gfx.h"
 #include "util/logger.h"
 #include "util/sysdefs.h"
@@ -75,7 +78,11 @@ _cursor_callback(GLFWwindow *window, double xpos, double ypos)
 }
 
 GLFWwindow *
-gsk_window_create(int winWidth, int winHeight, VulkanDeviceContext **vkd)
+gsk_window_create(int win_width,
+                  int win_height,
+                  const char *win_image_path,
+                  const char *win_app_title,
+                  VulkanDeviceContext **vkd)
 {
 
     glfwSetErrorCallback(_error_callback);
@@ -97,22 +104,34 @@ gsk_window_create(int winWidth, int winHeight, VulkanDeviceContext **vkd)
 
         char title[256];
         sprintf(title,
-                "Goodsack Engine | %d.%d.%d.%d\n",
+                "%s | Goodsack Engine %d.%d.%d.%d\n",
+                win_app_title,
                 GOODSACK_VERSION_MAJOR,
                 GOODSACK_VERSION_MINOR,
                 GOODSACK_VERSION_PATCH,
                 GOODSACK_VERSION_TWEAK);
+        // sprintf(title, win_app_title);
 
         GLFWwindow *window =
-          glfwCreateWindow(winWidth, winHeight, title, NULL, NULL);
+          glfwCreateWindow(win_width, win_height, title, NULL, NULL);
 
         if (!window) LOG_ERROR("Failed to create window");
+
+        // load image
+        GLFWimage *image_win = malloc(sizeof(GLFWimage));
+        image_win->pixels    = stbi_load(
+          win_image_path, &image_win->width, &image_win->height, 0, 4);
+        if (image_win->pixels)
+        {
+            glfwSetWindowIcon(window, 1, image_win);
+            stbi_image_free(image_win->pixels);
+        }
 
         // Set the context and load GL [Note: different for Vk]
         glfwMakeContextCurrent(window);
         gladLoadGL(glfwGetProcAddress);
 
-        glfwGetFramebufferSize(window, &winWidth, &winHeight);
+        glfwGetFramebufferSize(window, &win_width, &win_height);
         glfwSetFramebufferSizeCallback(window, _resize_callback);
         glfwSetKeyCallback(window, _key_callback);
         glfwSetCursorPosCallback(window, _cursor_callback);
@@ -144,7 +163,7 @@ gsk_window_create(int winWidth, int winHeight, VulkanDeviceContext **vkd)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         GLFWwindow *window =
-          glfwCreateWindow(winWidth, winHeight, "Title", NULL, NULL);
+          glfwCreateWindow(win_width, win_height, "Title", NULL, NULL);
 
         glfwSetKeyCallback(window, _key_callback);
 

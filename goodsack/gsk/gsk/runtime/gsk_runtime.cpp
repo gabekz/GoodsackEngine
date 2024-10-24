@@ -92,6 +92,7 @@ _gsk_runtime_cache_asset_file(const char *uri)
 u32
 gsk::runtime::rt_setup(const char *root_dir,
                        const char *root_scheme,
+                       const char *app_name,
                        int argc,
                        char *argv[])
 {
@@ -169,7 +170,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     // ECSManager ecs = gsk_Renderer.
     gsk_Scene scene0 = renderer->SetActiveScene(0);
 #else
-    s_runtime.renderer = gsk_renderer_init();
+    s_runtime.renderer = gsk_renderer_init(app_name);
 
     int winWidth  = s_runtime.renderer->windowWidth;
     int winHeight = s_runtime.renderer->windowHeight;

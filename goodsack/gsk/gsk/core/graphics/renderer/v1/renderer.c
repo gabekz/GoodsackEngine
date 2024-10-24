@@ -39,14 +39,16 @@
 #define TESTING_DRAW_LINE 0
 
 gsk_Renderer *
-gsk_renderer_init()
+gsk_renderer_init(const char *app_name)
 {
-    int winWidth  = DEFAULT_WINDOW_WIDTH;
-    int winHeight = DEFAULT_WINDOW_HEIGHT;
+    int winWidth             = DEFAULT_WINDOW_WIDTH;
+    int winHeight            = DEFAULT_WINDOW_HEIGHT;
+    const char *winImagePath = GSK_PATH("gsk://textures/defaults/missing.jpg");
 
     gsk_Renderer *ret = malloc(sizeof(gsk_Renderer));
     GLFWwindow *window =
-      /*context*/ gsk_window_create(winWidth, winHeight, &ret->vulkanDevice);
+      /*context*/ gsk_window_create(
+        winWidth, winHeight, winImagePath, app_name, &ret->vulkanDevice);
 
     ret->window       = window;
     ret->windowWidth  = winWidth;

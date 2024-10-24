@@ -110,7 +110,7 @@ typedef struct gsk_Renderer
  * @return allocated Renderer structure
  */
 gsk_Renderer *
-gsk_renderer_init();
+gsk_renderer_init(const char *app_name);
 
 // Rendering Loop
 void
