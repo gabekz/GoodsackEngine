@@ -194,15 +194,15 @@ DrawModel(struct ComponentModel *model,
 
             // u16 drawMode = model->properties.drawMode;
 
-            gsk_PrimitiveTypeEnum primitive = mesh->meshData->primitive_type;
+            GskMeshPrimitiveType_ primitive = mesh->meshData->primitive_type;
             GLenum gl_prim                  = GL_TRIANGLES;
 
             switch (primitive)
             {
-            case GSK_PRIMITIVE_TYPE_TRIANGLE: gl_prim = GL_TRIANGLES; break;
-            case GSK_PRIMITIVE_TYPE_QUAD: gl_prim = GL_QUADS; break;
-            case GSK_PRIMITIVE_TYPE_POLY: gl_prim = GL_POLYGON; break;
-            case GSK_PRIMITIVE_TYPE_FAN: gl_prim = GL_TRIANGLE_FAN; break;
+            case GskMeshPrimitiveType_Triangle: gl_prim = GL_TRIANGLES; break;
+            case GskMeshPrimitiveType_Quad: gl_prim = GL_QUADS; break;
+            case GskMeshPrimitiveType_Poly: gl_prim = GL_POLYGON; break;
+            case GskMeshPrimitiveType_Fan: gl_prim = GL_TRIANGLE_FAN; break;
             default: break;
             }
 

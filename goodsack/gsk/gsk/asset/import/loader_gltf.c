@@ -303,7 +303,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     glm_vec3_copy(attribInfo.posData->max, ret->boundingBox[1]);
 
     // Set primitive type
-    ret->primitive_type = GSK_PRIMITIVE_TYPE_TRIANGLE; // TODO: Get from file
+    ret->primitive_type = GskMeshPrimitiveType_Triangle; // TODO: Get from file
 
     ret->buffers.buffer_vertices = malloc(ret->buffers.buffer_vertices_size);
 

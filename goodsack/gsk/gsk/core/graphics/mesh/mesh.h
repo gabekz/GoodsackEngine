@@ -29,18 +29,33 @@
 extern "C" {
 #endif
 
-typedef enum gsk_PrimitiveTypeEnum {
-    GSK_PRIMITIVE_TYPE_TRIANGLE,
-    GSK_PRIMITIVE_TYPE_QUAD,
-    GSK_PRIMITIVE_TYPE_POLY,
-    GSK_PRIMITIVE_TYPE_FAN,
-} gsk_PrimitiveTypeEnum;
+typedef enum GskMeshPrimitiveType_ {
+    GskMeshPrimitiveType_Triangle,
+    GskMeshPrimitiveType_Quad,
+    GskMeshPrimitiveType_Poly,
+    GskMeshPrimitiveType_Fan,
+} GskMeshPrimitiveType_;
 
-// type of BUFFER
-// BUFFER_VERT (bitshift means this comes first)
-//
-// type of MESH
-// MESH_SKINNED
+typedef enum GskMeshBufferFlag_ {
+    GskMeshBufferFlag_None       = 0,
+    GskMeshBufferFlag_Positions  = 1 << 0,
+    GskMeshBufferFlag_Textures   = 1 << 1,
+    GskMeshBufferFlag_Normals    = 1 << 2,
+    GskMeshBufferFlag_Tangents   = 1 << 3,
+    GskMeshBufferFlag_Bitangents = 1 << 4,
+    GskMeshBufferFlag_Joints     = 1 << 5,
+    GskMeshBufferFlag_Weights    = 1 << 6,
+} GskMeshBufferFlag_;
+
+typedef s32 GskMeshBufferFlags;
+
+typedef struct gsk_MeshBuffer
+{
+    float *p_buffer;
+    u32 buffer_size;
+    GskMeshBufferFlags buffer_flags;
+
+} gsk_MeshBuffer;
 
 // gsk_MeshData - API-agonstic buffer information
 typedef struct gsk_MeshData
@@ -49,7 +64,7 @@ typedef struct gsk_MeshData
     u32 indicesCount;
     u32 trianglesCount;
 
-    gsk_PrimitiveTypeEnum primitive_type;
+    GskMeshPrimitiveType_ primitive_type;
     u8 has_indices;
     u8 hasTBN; // TODO: 2 == ONLY TANGENT
 
@@ -65,6 +80,9 @@ typedef struct gsk_MeshData
         u32 buffer_indices_size;
         u32 buffer_tbn_size;
     } buffers;
+
+    gsk_MeshBuffer mesh_buffers[4];
+    u32 mesh_buffers_count;
 
     // TODO: Move to model
     gsk_Skeleton *skeleton;

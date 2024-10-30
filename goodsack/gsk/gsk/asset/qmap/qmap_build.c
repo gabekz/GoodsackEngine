@@ -611,7 +611,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
         meshdata->buffers.buffer_indices_size = 0;
         meshdata->isSkinnedMesh               = 0;
         meshdata->has_indices                 = FALSE;
-        meshdata->primitive_type              = GSK_PRIMITIVE_TYPE_FAN;
+        meshdata->primitive_type              = GskMeshPrimitiveType_Fan;
 
         glm_vec3_zero(meshdata->boundingBox[0]);
         glm_vec3_zero(meshdata->boundingBox[1]);
