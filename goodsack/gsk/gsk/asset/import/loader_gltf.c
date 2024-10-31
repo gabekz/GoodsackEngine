@@ -271,7 +271,13 @@ _create_joint_recurse(gsk_Skeleton *skeleton,
 static gsk_MeshData *
 _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 {
-    gsk_MeshData *ret = malloc(sizeof(gsk_MeshData));
+    gsk_MeshData *ret       = malloc(sizeof(gsk_MeshData));
+    ret->mesh_buffers_count = 0;
+    ret->hasTBN             = 0;
+
+    GskMeshBufferFlags flags_mesh_buffer =
+      (GskMeshBufferFlag_Positions | GskMeshBufferFlag_Textures |
+       GskMeshBufferFlag_Normals | GskMeshBufferFlag_Tangents);
 
     // TODO: Get more than just the first primitive
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
@@ -283,20 +289,13 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     u32 vNrmBufferSize = vertCount * sizeof(float) * 3;
     u32 vTanBufferSize = vertCount * sizeof(float) * 3 * 2;
 
-    // Required
-    ret->buffers.buffer_vertices_size =
-      vPosBufferSize + vTexBufferSize + vNrmBufferSize;
-    ret->buffers.buffer_vertices_size += vTanBufferSize;
-    // Add space for tangent data
-    if (attribInfo.idxTan > -1)
-    {
+    // Buffer size + tangent (override later if not pulled from file)
+    u32 buff_size =
+      vPosBufferSize + vTexBufferSize + vNrmBufferSize + vTanBufferSize;
 
-        ret->hasTBN = MESH_TBN_MODE_GLTF;
-    } else
-    {
-        ret->hasTBN = MESH_TBN_MODE_NONE;
-        LOG_WARN("Mesh does not contain tangent data");
-    }
+    float *buff_verts = malloc(buff_size);
+
+    u8 has_tbn = (attribInfo.idxTan > -1);
 
     // Set min-max bounds
     glm_vec3_copy(attribInfo.posData->min, ret->boundingBox[0]);
@@ -305,8 +304,6 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // Set primitive type
     ret->primitive_type = GskMeshPrimitiveType_Triangle; // TODO: Get from file
 
-    ret->buffers.buffer_vertices = malloc(ret->buffers.buffer_vertices_size);
-
     // Position, TextureCoord, Normal
 
     int offsetA = 0;
@@ -314,71 +311,66 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     {
         // Fill Positions
         cgltf_accessor_read_float(
-          attribInfo.posData, i, ret->buffers.buffer_vertices + offsetA, 100);
+          attribInfo.posData, i, buff_verts + offsetA, 100);
         offsetA += 3;
         // Fill TextureCoords
         cgltf_accessor_read_float(
-          attribInfo.texData, i, ret->buffers.buffer_vertices + offsetA, 100);
+          attribInfo.texData, i, buff_verts + offsetA, 100);
         offsetA += 2;
         // Fill Normals
         cgltf_accessor_read_float(
-          attribInfo.nrmData, i, ret->buffers.buffer_vertices + offsetA, 100);
+          attribInfo.nrmData, i, buff_verts + offsetA, 100);
         offsetA += 3;
         // Fill Tangent
-        if (ret->hasTBN)
+        if (has_tbn)
         {
-            cgltf_accessor_read_float(attribInfo.tanData,
-                                      i,
-                                      ret->buffers.buffer_vertices + offsetA,
-                                      100);
+            cgltf_accessor_read_float(
+              attribInfo.tanData, i, buff_verts + offsetA, 100);
             offsetA += 3;
         } else
         {
             // TODO: calculate TBN
             vec3 vec = GLM_VEC3_ONE_INIT;
-            memcpy(ret->buffers.buffer_vertices + offsetA, vec, sizeof(vec3));
+            memcpy(buff_verts + offsetA, vec, sizeof(vec3));
             offsetA += 3;
         }
     }
-    // TODO: this is kind of goofy.
-    ret->hasTBN = MESH_TBN_MODE_GLTF;
 
-    // set this so we push the position to buffer
-    ret->buffers.vL  = vertCount;
-    ret->buffers.vtL = vertCount;
-    ret->buffers.vnL = vertCount;
-    // ret->buffers.vnL = 0;
+    ret->mesh_buffers_count += 1;
+    ret->mesh_buffers[0].p_buffer     = buff_verts;
+    ret->mesh_buffers[0].buffer_size  = buff_size;
+    ret->mesh_buffers[0].buffer_flags = flags_mesh_buffer;
 
     // Indices //
 
-    ret->indicesCount                = attribInfo.indicesData->count;
-    ret->buffers.buffer_indices_size = ret->indicesCount * sizeof(u32);
+    u32 indices_count     = attribInfo.indicesData->count;
+    u32 buff_indices_size = indices_count * sizeof(u32);
+    float *buff_indices   = malloc(buff_indices_size);
 
-    ret->buffers.buffer_indices = malloc(ret->buffers.buffer_indices_size);
+    ret->indicesCount = indices_count;
 
     // store all indices
     for (int i = 0; i < ret->indicesCount; i++)
     {
-        if (!cgltf_accessor_read_uint(attribInfo.indicesData,
-                                      i,
-                                      ret->buffers.buffer_indices + i,
-                                      ret->indicesCount))
+        if (!cgltf_accessor_read_uint(
+              attribInfo.indicesData, i, buff_indices + i, ret->indicesCount))
         {
             LOG_ERROR("Failed to read uint! %d", i);
         }
     }
 
-    // set has_indices
-    ret->has_indices = (attribInfo.indicesData->count > 0) ? TRUE : FALSE;
+    ret->mesh_buffers_count += 1;
+    ret->mesh_buffers[1].p_buffer     = buff_indices;
+    ret->mesh_buffers[1].buffer_size  = buff_indices_size;
+    ret->mesh_buffers[1].buffer_flags = (GskMeshBufferFlag_Indices);
 
     // Skinned mesh
 
-    ret->isSkinnedMesh = data->skins_count;
+    u8 is_skinned = (data->skins_count >= 1);
 
     // If we have a skinned mesh
-    if (ret->isSkinnedMesh >= 1)
+    if (is_skinned)
     {
-
         gsk_Skeleton *skeleton = malloc(sizeof(gsk_Skeleton));
         ret->skeleton          = skeleton;
 
@@ -411,10 +403,6 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         u32 *jointsBuffer    = malloc(jointsBufferSize);
         float *weightsBuffer = malloc(weightsBufferSize);
 
-        // ret->skeleton->skinningBuffer    = skinningBuffer;
-        // ret->skeleton->skinningBufferSize =
-        //  jointsBufferSize + weightsBufferSize;
-
         // fill joint and weight buffers
         int offset = 0;
         for (int i = 0; i < vertCount; i++)
@@ -435,11 +423,16 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
             // step for the next buffer position
             offset += 4;
         }
-        skeleton->bufferJoints     = jointsBuffer;
-        skeleton->bufferJointsSize = jointsBufferSize;
 
-        skeleton->bufferWeights     = weightsBuffer;
-        skeleton->bufferWeightsSize = weightsBufferSize;
+        ret->mesh_buffers_count += 1;
+        ret->mesh_buffers[2].p_buffer     = jointsBuffer;
+        ret->mesh_buffers[2].buffer_size  = jointsBufferSize;
+        ret->mesh_buffers[2].buffer_flags = (GskMeshBufferFlag_Joints);
+
+        ret->mesh_buffers_count += 1;
+        ret->mesh_buffers[3].p_buffer     = weightsBuffer;
+        ret->mesh_buffers[3].buffer_size  = weightsBufferSize;
+        ret->mesh_buffers[3].buffer_flags = (GskMeshBufferFlag_Weights);
 
         // Animations //
 

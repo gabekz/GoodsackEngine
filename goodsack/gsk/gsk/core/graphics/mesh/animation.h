@@ -57,9 +57,6 @@ struct gsk_Skeleton
     u32 bufferJointsCount, bufferWeightsCount;
     u32 bufferJointsSize, bufferWeightsSize;
 
-    void *skinningBuffer;
-    u32 skinningBufferSize;
-
     gsk_Animation **p_animations;
     u32 animations_count;
     u32 cnt_animation_index;

@@ -31,28 +31,43 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
 
             for (int i = 0; i < data->mesh_buffers_count; i++)
             {
-                used_flags              = 0;
                 gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
                   data->mesh_buffers[i].p_buffer,
                   data->mesh_buffers[i].buffer_size);
 
                 for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
                 {
-                    s32 flag   = (1 << j);
-                    s32 n_vals = (flag == GskMeshBufferFlag_Textures) ? 2 : 3;
+                    s32 flag = (1 << j);
+
+                    // get number of vals
+                    s32 n_vals  = 3;
+                    u32 gl_type = GL_FLOAT;
+
+                    if (flag == GskMeshBufferFlag_Textures)
+                    {
+                        n_vals = 2;
+                    } else if ((flag == GskMeshBufferFlag_Joints) ||
+                               (flag == GskMeshBufferFlag_Weights))
+                    {
+                        n_vals = 4;
+                    }
+
+                    gl_type = (flag == GskMeshBufferFlag_Joints)
+                                ? GL_UNSIGNED_INT
+                                : GL_FLOAT;
 
                     // skip IBO for now. Done later.
                     if (flag == GskMeshBufferFlag_Indices) { continue; }
 
-                    if (used_flags & flag)
-                    {
-                        LOG_CRITICAL("Duplicate mesh vertex data.");
-                    }
-
                     if (data->mesh_buffers[i].buffer_flags & flag)
                     {
+                        if (used_flags & flag)
+                        {
+                            LOG_CRITICAL("Duplicate mesh vertex data.");
+                        }
+
                         gsk_gl_vertex_buffer_push(
-                          vbo, n_vals, GL_FLOAT, GL_FALSE);
+                          vbo, n_vals, gl_type, GL_FALSE);
 
                         used_flags |= flag;
                     }
@@ -71,9 +86,13 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
                       data->mesh_buffers[i].p_buffer,
                       data->mesh_buffers[i].buffer_size);
 
-                    used_flags = (used_flags | GskMeshBufferFlag_Indices);
+                    used_flags |= GskMeshBufferFlag_Indices;
                 }
             }
+
+            data->has_indices   = (used_flags & GskMeshBufferFlag_Indices);
+            data->isSkinnedMesh = ((used_flags & GskMeshBufferFlag_Joints) ||
+                                   (used_flags & GskMeshBufferFlag_Weights));
 
             return mesh;
         }
