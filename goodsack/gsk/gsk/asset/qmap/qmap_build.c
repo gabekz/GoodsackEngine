@@ -594,24 +594,18 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
         gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
         poly->p_mesh_data      = meshdata;
 
-        // meshdata->buffers.out = v;
-
-        // meshdata->buffers.buffer_indices_size = (buff_count) * sizeof(float);
-        meshdata->buffers.buffer_vertices      = v;
-        meshdata->buffers.buffer_vertices_size = buff_count * sizeof(float);
+        meshdata->mesh_buffers_count = 1;
+        meshdata->mesh_buffers[0]    = (gsk_MeshBuffer) {
+          .p_buffer    = v,
+          .buffer_size = buff_count * sizeof(float),
+          .buffer_flags =
+            (GskMeshBufferFlag_Positions | GskMeshBufferFlag_Textures |
+             GskMeshBufferFlag_Normals | GskMeshBufferFlag_Tangents),
+        };
 
         meshdata->vertexCount = vL / 3;
 
-        meshdata->buffers.vL  = 1;
-        meshdata->buffers.vtL = 1;
-        meshdata->buffers.vnL = 1;
-        meshdata->hasTBN      = MESH_TBN_MODE_GLTF;
-
-        // meshdata->buffers.buffer_indices_size = 0;
-        meshdata->buffers.buffer_indices_size = 0;
-        meshdata->isSkinnedMesh               = 0;
-        meshdata->has_indices                 = FALSE;
-        meshdata->primitive_type              = GskMeshPrimitiveType_Fan;
+        meshdata->primitive_type = GskMeshPrimitiveType_Fan;
 
         glm_vec3_zero(meshdata->boundingBox[0]);
         glm_vec3_zero(meshdata->boundingBox[1]);

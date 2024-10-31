@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -19,11 +19,6 @@
 #define DRAW_ARRAYS             0x00
 #define DRAW_ELEMENTS           0x01
 #define DRAW_ELEMENTS_WIREFRAME 0x02
-
-// TODO: Rework
-#define MESH_TBN_MODE_NONE 0
-#define MESH_TBN_MODE_OBJ  1
-#define MESH_TBN_MODE_GLTF 2
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,27 +62,14 @@ typedef struct gsk_MeshData
 
     GskMeshPrimitiveType_ primitive_type;
     u8 has_indices;
-    u8 hasTBN; // TODO: 2 == ONLY TANGENT
-
-    struct
-    {
-        u32 vL, vtL, vnL; // buffer sets
-
-        float *buffer_vertices; // Position, Texture, Normal
-        float *buffer_indices;  // indices
-        float *buffer_tbn;      // Tangent, Bitangent
-
-        u32 buffer_vertices_size;
-        u32 buffer_indices_size;
-        u32 buffer_tbn_size;
-    } buffers;
+    u8 isSkinnedMesh;
 
     gsk_MeshBuffer mesh_buffers[4];
     u32 mesh_buffers_count;
+    GskMeshBufferFlags combined_flags; // flags used by every buff
 
     // TODO: Move to model
     gsk_Skeleton *skeleton;
-    int isSkinnedMesh;
 
     vec3 boundingBox[2];
 

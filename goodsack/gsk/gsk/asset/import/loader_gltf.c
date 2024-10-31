@@ -273,7 +273,6 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 {
     gsk_MeshData *ret       = malloc(sizeof(gsk_MeshData));
     ret->mesh_buffers_count = 0;
-    ret->hasTBN             = 0;
 
     GskMeshBufferFlags flags_mesh_buffer =
       (GskMeshBufferFlag_Positions | GskMeshBufferFlag_Textures |

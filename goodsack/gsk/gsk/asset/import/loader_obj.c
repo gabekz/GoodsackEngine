@@ -307,7 +307,6 @@ gsk_load_obj(const char *path, float scale)
 #endif
 
     ret->trianglesCount = total_verts;
-    ret->hasTBN         = 0;
     ret->primitive_type = GskMeshPrimitiveType_Triangle;
 
     ret->mesh_buffers_count = 2;
