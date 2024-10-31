@@ -210,20 +210,9 @@ gsk_load_obj(const char *path, float scale)
         }
     }
 
-#if 0
-    printf("Vertex values: \n");
-    for(int i = 0; i < vL; i++) {
-        printf("%f\n", v[i]);
-    }
-    printf("Texture values: \n");
-    for(int i = 0; i < vtL; i++) {
-        printf("%f\n", vt[i]);
-    }
-    printf("Normal values: \n");
-    for(int i = 0; i < vnL; i++) {
-        printf("%f\n", vn[i]);
-    }
-#endif
+    // --
+    // Close the file pointer
+    fclose(stream);
 
     // Output
     gsk_MeshData *ret = malloc(sizeof(gsk_MeshData));
@@ -298,10 +287,7 @@ gsk_load_obj(const char *path, float scale)
             buffer_tbn[b + 4] = btang[1];
             buffer_tbn[b + 5] = btang[2];
         }
-
-        // printf("\n%d", i);
     }
-    // free(vboTBN);
 #endif
 
 #ifdef LOGGING_OBJ
@@ -320,48 +306,34 @@ gsk_load_obj(const char *path, float scale)
     LOG_PRINT("-------------------------------------\n\n");
 #endif
 
-    // ret->meshPath       = path;
     ret->trianglesCount = total_verts;
-
-    // ret->buffers.v  = v;
-    // ret->buffers.vt = vt;
-    // ret->buffers.vn = vn;
-
-    ret->buffers.vL  = vL;
-    ret->buffers.vtL = vtL;
-    ret->buffers.vnL = vnL;
-
-    ret->buffers.buffer_vertices      = out;
-    ret->buffers.buffer_vertices_size = outI * sizeof(float);
-    // ret->buffers.buffer_tbn               = buffer_tbn;
-    ret->buffers.buffer_tbn = buffer_tbn;
-
-    // ret->buffers.buffer_indices_size = 0;
-    ret->buffers.buffer_indices_size = 0;
-
+    ret->hasTBN         = 0;
     ret->isSkinnedMesh  = 0;
-    ret->hasTBN         = 1;
     ret->has_indices    = FALSE;
     ret->primitive_type = GskMeshPrimitiveType_Triangle;
+
+    ret->mesh_buffers_count = 2;
+
+    ret->mesh_buffers[0] = (gsk_MeshBuffer) {
+      .p_buffer     = out,
+      .buffer_size  = outI * sizeof(float),
+      .buffer_flags = (GskMeshBufferFlag_Positions |
+                       GskMeshBufferFlag_Textures | GskMeshBufferFlag_Normals),
+    };
+
+    ret->mesh_buffers[1] = (gsk_MeshBuffer) {
+      .p_buffer    = buffer_tbn,
+      .buffer_size = total_verts * 3 * 2 * sizeof(float),
+      .buffer_flags =
+        (GskMeshBufferFlag_Tangents | GskMeshBufferFlag_Bitangents),
+    };
 
     glm_vec3_copy(minBounds, ret->boundingBox[0]);
     glm_vec3_copy(maxBounds, ret->boundingBox[1]);
 
-    // mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
-    // glm_mat4_copy(localMatrix, ret->localMatrix);
-
-    // glBindVertexArray(0);
-    //  Free a lot of memory....
     free(v);
     free(vt);
     free(vn);
-    // free(out);
-    // free(outIndices);
-    // free(outIndices);
-    //  .. and some more.
-    // free(ibo);
-
-    fclose(stream);
 
     return ret;
 }

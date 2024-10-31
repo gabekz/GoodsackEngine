@@ -37,7 +37,6 @@ typedef enum GskMeshPrimitiveType_ {
 } GskMeshPrimitiveType_;
 
 typedef enum GskMeshBufferFlag_ {
-    GskMeshBufferFlag_None       = 0,
     GskMeshBufferFlag_Positions  = 1 << 0,
     GskMeshBufferFlag_Textures   = 1 << 1,
     GskMeshBufferFlag_Normals    = 1 << 2,
@@ -45,7 +44,9 @@ typedef enum GskMeshBufferFlag_ {
     GskMeshBufferFlag_Bitangents = 1 << 4,
     GskMeshBufferFlag_Joints     = 1 << 5,
     GskMeshBufferFlag_Weights    = 1 << 6,
+    GskMeshBufferFlag_Indices    = 1 << 7,
 } GskMeshBufferFlag_;
+#define GSK_MESH_BUFFER_FLAGS_TOTAL 8
 
 typedef s32 GskMeshBufferFlags;
 

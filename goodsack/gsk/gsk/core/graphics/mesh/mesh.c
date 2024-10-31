@@ -25,6 +25,59 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
         gsk_gl_vertex_array_bind(vao);
         mesh->vao = vao;
 
+        if (data->hasTBN == 0) // TODO: small hack to test out new MeshBuffer.
+        {
+            GskMeshBufferFlags used_flags = 0; // overall flags of mesh
+
+            for (int i = 0; i < data->mesh_buffers_count; i++)
+            {
+                used_flags              = 0;
+                gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
+                  data->mesh_buffers[i].p_buffer,
+                  data->mesh_buffers[i].buffer_size);
+
+                for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
+                {
+                    s32 flag   = (1 << j);
+                    s32 n_vals = (flag == GskMeshBufferFlag_Textures) ? 2 : 3;
+
+                    // skip IBO for now. Done later.
+                    if (flag == GskMeshBufferFlag_Indices) { continue; }
+
+                    if (used_flags & flag)
+                    {
+                        LOG_CRITICAL("Duplicate mesh vertex data.");
+                    }
+
+                    if (data->mesh_buffers[i].buffer_flags & flag)
+                    {
+                        gsk_gl_vertex_buffer_push(
+                          vbo, n_vals, GL_FLOAT, GL_FALSE);
+
+                        used_flags |= flag;
+                    }
+                }
+
+                gsk_gl_vertex_array_add_buffer(vao, vbo); // VBO push -> VAO
+            }
+
+            // Check if we have IBO
+            for (int i = 0; i < data->mesh_buffers_count; i++)
+            {
+                if (data->mesh_buffers[i].buffer_flags &
+                    GskMeshBufferFlag_Indices)
+                {
+                    gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
+                      data->mesh_buffers[i].p_buffer,
+                      data->mesh_buffers[i].buffer_size);
+
+                    used_flags = (used_flags | GskMeshBufferFlag_Indices);
+                }
+            }
+
+            return mesh;
+        }
+
         gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
           data->buffers.buffer_vertices, data->buffers.buffer_vertices_size);
 
