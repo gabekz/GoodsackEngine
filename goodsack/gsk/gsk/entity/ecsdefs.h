@@ -37,7 +37,7 @@ enum ECSEvent {
 
 #define ECS_FIRST_ID 300
 
-#define ECS_ENT_CAPACITY 128
+#define ECS_ENT_CAPACITY 11
 #define ECS_NAME_LEN_MAX 128
 
 // Should always be True
