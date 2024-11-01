@@ -16,6 +16,14 @@ enum ECSEvent {
     ECS_LATE_UPDATE
 };
 
+typedef enum GskEcsEntityFlag_ {
+    GskEcsEntityFlag_None        = 0,
+    GskEcsEntityFlag_Initialized = 1 << 0,
+    GskEcsEntityFlag_Enabled     = 1 << 1,
+    GskEcsEntityFlag_Delete      = 1 << 2,
+} GskEcsEntityFlag_;
+#define GSK_ECS_ENTITY_FLAGS_TOTAL 4
+
 #define ECSEVENT_FIRST ECS_INIT
 #define ECSEVENT_LAST  ECS_LATE_UPDATE
 
@@ -27,9 +35,6 @@ enum ECSEvent {
 #define ECS_TAG_SIZE   1 // Tag size as bytes
 #define ECS_TAG_UNUSED 0b00000000
 #define ECS_TAG_USED   0b00110000
-
-#define ECS_ENT_FLAG_INITIALIZED 0x01
-#define ECS_ENT_FLAG_PENDING     0x00
 
 #define ECS_VAL_NAN      0 // TODO: could be disabled
 #define ECS_VAL_ENABLED  1

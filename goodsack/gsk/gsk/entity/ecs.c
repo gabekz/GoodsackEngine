@@ -71,12 +71,12 @@ __check_reallocate_ecs(gsk_ECS *self)
     /*==== Resize *ids_init ==========================================*/
 
     self->ids_init = __safe_realloc(
-      self->ids_init, newsize * sizeof(gsk_EntityId), "ids_init");
+      self->ids_init, newsize * sizeof(gsk_EntityFlags), "ids_init");
 
     for (int i = self->nextIndex; i < newsize; i++)
     {
         // default entity flags
-        self->ids_init[i] = ECS_ENT_FLAG_PENDING;
+        self->ids_init[i] = GskEcsEntityFlag_None;
     }
 
     /*==== Resize *entity_names ======================================*/
@@ -119,8 +119,19 @@ __check_reallocate_ecs(gsk_ECS *self)
     return TRUE;
 }
 
+// mark entity as NONE + disables associated components
+static void
+__ent_destroy(gsk_ECS *self, gsk_Entity entity)
+{
+    for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
+    {
+        _gsk_ecs_set_internal(entity, i, FALSE);
+    }
+    self->ids_init[entity.index] = GskEcsEntityFlag_None;
+}
+
 gsk_ECS *
-gsk_ecs_init(gsk_Renderer *renderer)
+gsk_ecs_init(void *renderer)
 {
     gsk_ECS *ecs = malloc(sizeof(gsk_ECS));
 
@@ -136,11 +147,11 @@ gsk_ecs_init(gsk_Renderer *renderer)
     // initialize init list (list of entities with initialization flag)
     // TODO: gsk_EntityFlag *p_ent_flags
     // TODO: gsk_EntityId *p_ent_ids
-    ecs->ids_init = malloc(capacity * sizeof(gsk_EntityId));
+    ecs->ids_init = malloc(capacity * sizeof(gsk_EntityFlags));
     for (int i = 0; i < capacity; i++)
     {
         // default entity flags
-        ecs->ids_init[i] = ECS_ENT_FLAG_PENDING;
+        ecs->ids_init[i] = GskEcsEntityFlag_None;
     }
 
     // Create Entity names cache
@@ -197,8 +208,8 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
                     .index = self->nextIndex, // TODO: alignment (for deletion)
                     .ecs   = self};
 
-    // set initialization flag
-    self->ids_init[entity.index] = ECS_ENT_FLAG_PENDING;
+    // Enable the entity
+    self->ids_init[entity.index] |= GskEcsEntityFlag_Enabled;
 
     // TODO: Fill next available slot (if deletion)
 
@@ -217,7 +228,7 @@ _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
 {
     gsk_ECS *ecs = entity.ecs;
 
-    if (ecs->ids_init[entity.index] == 1)
+    if (ecs->ids_init[entity.index] & GskEcsEntityFlag_Initialized)
     {
         LOG_WARN("Cannot add components (yet) to an already initialized entity "
                  "(id: %d).",
@@ -353,8 +364,15 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
         gsk_Entity ent =
           (gsk_Entity) {.id = self->ids[i], .index = i, .ecs = self};
 
-        if (event != ECS_INIT && self->ids_init[i] == ECS_ENT_FLAG_PENDING)
+        u8 is_ent_pending = !(self->ids_init[i] & GskEcsEntityFlag_Initialized);
+
+        if (event != ECS_INIT && is_ent_pending) { continue; }
+        if (!(self->ids_init[i] & GskEcsEntityFlag_Enabled)) { continue; }
+
+        if (event == ECS_DESTROY && is_ent_pending &&
+            (self->ids_init[i] & GskEcsEntityFlag_Delete))
         {
+            __ent_destroy(self, ent);
             continue;
         }
 
@@ -366,7 +384,7 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
 
             // ignore ECS_INIT for initialized entities
             if (event == ECS_INIT &&
-                self->ids_init[i] == ECS_ENT_FLAG_INITIALIZED)
+                (self->ids_init[i] & GskEcsEntityFlag_Initialized))
             {
                 continue;
             }
@@ -374,8 +392,15 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
             func(ent);
         }
 
+        if (event == ECS_DESTROY &&
+            (self->ids_init[i] & GskEcsEntityFlag_Delete))
+        {
+            __ent_destroy(self, ent);
+            continue;
+        }
+
         // set the initialization flag
-        self->ids_init[i] = ECS_ENT_FLAG_INITIALIZED;
+        self->ids_init[i] |= GskEcsEntityFlag_Initialized;
     }
 
     // TODO: determine whether or not there is a required component.

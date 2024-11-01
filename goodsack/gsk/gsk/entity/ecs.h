@@ -53,7 +53,9 @@ typedef union gsk_ECSSystem gsk_ECSSystem;
 typedef struct gsk_ECSComponentList gsk_ECSComponentList;
 
 typedef void (*gsk_ECSSubscriber)(gsk_Entity);
+
 typedef u64 gsk_EntityId;
+typedef s32 gsk_EntityFlags;
 
 typedef struct gsk_ECS gsk_ECS;
 
@@ -115,7 +117,7 @@ struct gsk_ECS
     u32 nextIndex;
     u32 capacity;
 
-    gsk_EntityId *ids_init;
+    gsk_EntityFlags *ids_init;
 
     char **entity_names;
 

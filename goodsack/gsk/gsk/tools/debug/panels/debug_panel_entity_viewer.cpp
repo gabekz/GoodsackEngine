@@ -116,6 +116,21 @@ gsk::tools::panels::EntityViewer::draw(void)
             for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd;
                  row_n++)
             {
+                // TODO: This menu breaks when we have no initialized
+                // entities
+                if (!(ecs->ids_init[row_n] & GskEcsEntityFlag_Initialized))
+                {
+                    continue;
+                }
+
+                u8 is_disabled =
+                  !(ecs->ids_init[row_n] & GskEcsEntityFlag_Enabled);
+
+                if (is_disabled)
+                {
+                    PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+                }
+
                 // Display a data item
                 // MyItem* item = &items[row_n];
                 PushID(row_n);
@@ -126,6 +141,8 @@ gsk::tools::panels::EntityViewer::draw(void)
                 Text("%04d", (int)ecs->ids[(int)row_n]);
                 TableNextColumn();
                 TextUnformatted(ecs->entity_names[(int)row_n]);
+                if (is_disabled) { PopStyleColor(); }
+
                 TableNextColumn();
                 if (SmallButton("Inspect"))
                 {
