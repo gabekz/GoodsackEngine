@@ -297,6 +297,9 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
         gsk_ecs_event(ecs, ECS_INIT); // call init at fixed (does not call on
                                       // entities that are already initialized)
 
+        gsk_ecs_event(ecs, ECS_DESTROY);
+
+        // fixed-update related events
         gsk_ecs_event(ecs, ECS_ON_COLLIDE);
         gsk_ecs_event(ecs, ECS_FIXED_UPDATE);
 

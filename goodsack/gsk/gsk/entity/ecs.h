@@ -158,6 +158,12 @@ gsk_ecs_init(gsk_Renderer *renderer);
 gsk_Entity
 _gsk_ecs_new_internal(gsk_ECS *self, char *name);
 
+void
+gsk_ecs_ent_set_active(gsk_Entity entity, u8 is_active);
+
+void
+gsk_ecs_ent_destroy(gsk_Entity entity);
+
 int
 gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id);
 

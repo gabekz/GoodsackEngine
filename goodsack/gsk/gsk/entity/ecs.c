@@ -128,6 +128,7 @@ __ent_destroy(gsk_ECS *self, gsk_Entity entity)
         _gsk_ecs_set_internal(entity, i, FALSE);
     }
     self->ids_init[entity.index] = GskEcsEntityFlag_None;
+    self->ids[entity.index]      = ECS_ID_DELETED;
 }
 
 gsk_ECS *
@@ -141,7 +142,7 @@ gsk_ecs_init(void *renderer)
 
     // initialize id list
     ecs->ids       = malloc(capacity * sizeof(gsk_EntityId));
-    ecs->nextId    = ECS_FIRST_ID;
+    ecs->nextId    = ECS_ID_FIRST;
     ecs->nextIndex = 0;
 
     // initialize init list (list of entities with initialization flag)
@@ -201,26 +202,61 @@ gsk_ecs_init(void *renderer)
 gsk_Entity
 _gsk_ecs_new_internal(gsk_ECS *self, char *name)
 {
-    __check_reallocate_ecs(self);
+
+    u64 next_index  = self->nextIndex; // nextIndex by default
+    u8 is_replacing = FALSE;
+
+    // Find possible replacement
+    // TODO: optimize by not going through each entity, just a "delete-list"
+    for (int i = 0; i < self->nextIndex; i++)
+    {
+        if (self->ids[i] == ECS_ID_DELETED)
+        {
+            next_index   = (u64)i;
+            is_replacing = TRUE;
+            break;
+        }
+    }
+
+    if (is_replacing == FALSE) { __check_reallocate_ecs(self); }
 
     gsk_Entity entity =
-      (gsk_Entity) {.id    = self->nextId,
-                    .index = self->nextIndex, // TODO: alignment (for deletion)
-                    .ecs   = self};
+      (gsk_Entity) {.id = self->nextId, .index = next_index, .ecs = self};
 
     // Enable the entity
+    self->ids[entity.index] = entity.id;
     self->ids_init[entity.index] |= GskEcsEntityFlag_Enabled;
 
-    // TODO: Fill next available slot (if deletion)
-
-    self->ids[self->nextIndex] = entity.id;
-    self->nextId++;
-    self->nextIndex++;
+    // only iterate nextIndex if we did not replace an old entity
+    if (is_replacing == FALSE) { self->nextIndex++; }
 
     // Assign name if passed in
     if (name != NULL) { strcpy(self->entity_names[entity.index], name); }
 
+    // No matter what, increment nextId
+    self->nextId++;
+
     return entity;
+}
+
+void
+gsk_ecs_ent_set_active(gsk_Entity entity, u8 is_active)
+{
+    gsk_EntityFlags *p_flags = &(entity.ecs->ids_init[entity.index]);
+
+    if (is_active == TRUE)
+    {
+        *p_flags |= GskEcsEntityFlag_Enabled;
+        return;
+    }
+
+    *p_flags &= ~GskEcsEntityFlag_Enabled;
+}
+
+void
+gsk_ecs_ent_destroy(gsk_Entity entity)
+{
+    entity.ecs->ids_init[entity.index] |= GskEcsEntityFlag_Delete;
 }
 
 void

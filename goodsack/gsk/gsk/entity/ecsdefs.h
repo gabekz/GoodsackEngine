@@ -40,7 +40,8 @@ typedef enum GskEcsEntityFlag_ {
 #define ECS_VAL_ENABLED  1
 #define ECS_VAL_DISABLED 2
 
-#define ECS_FIRST_ID 300
+#define ECS_ID_FIRST   300
+#define ECS_ID_DELETED 2
 
 #define ECS_ENT_CAPACITY 11
 #define ECS_NAME_LEN_MAX 128
