@@ -105,7 +105,6 @@ struct gsk_ECSComponentList
 {
     void *components;
     u64 component_size;
-    u64 *entity_index_list;
 };
 
 /*-------------------------------------------*/

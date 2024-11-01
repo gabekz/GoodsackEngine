@@ -35,12 +35,89 @@
 #include "entity/__generated__/components_gen.h"
 #endif
 
-#if 0
-static void
-__reallocate_ecs_data(gsk_ECS *self) {
-
+// subroutine to safely reallocate data to new_size
+static void *
+__safe_realloc(void *ptr, size_t new_size, const char *error_type_name)
+{
+    void *p = realloc(ptr, new_size);
+    if (p == NULL)
+    {
+        LOG_CRITICAL("Failed to reallocate %s (%p)", error_type_name, p);
+    }
+    return p;
 }
-#endif
+
+/**
+ * @brief           Reallocates ECS data if capacity is reached.
+ *
+ * @param[in] self  Pointer to gsk_ECS
+ * @return          TRUE if reallocated
+ * @return          FALSE if capacity was not reached.
+ */
+static u8
+__check_reallocate_ecs(gsk_ECS *self)
+{
+    if (self->nextIndex < self->capacity) { return FALSE; }
+
+    u32 newsize = self->capacity * 2;
+
+    LOG_DEBUG("Resizing ECS Data cap from %d to %d", self->capacity, newsize);
+
+    /*==== Resize state data =========================================*/
+
+    self->ids =
+      __safe_realloc(self->ids, newsize * sizeof(gsk_EntityId), "ids");
+
+    /*==== Resize *ids_init ==========================================*/
+
+    self->ids_init = __safe_realloc(
+      self->ids_init, newsize * sizeof(gsk_EntityId), "ids_init");
+
+    for (int i = self->nextIndex; i < newsize; i++)
+    {
+        // default entity flags
+        self->ids_init[i] = ECS_ENT_FLAG_PENDING;
+    }
+
+    /*==== Resize *entity_names ======================================*/
+
+    self->entity_names = __safe_realloc(
+      self->entity_names, newsize * sizeof(char *), "entity_names");
+
+    /*---- create new strings for each new name ------------------*/
+    for (int i = self->nextIndex; i < newsize; i++)
+    {
+        self->entity_names[i] = malloc(sizeof(char) * ECS_NAME_LEN_MAX);
+        snprintf(self->entity_names[i], 16, "Entity_%d", i);
+    }
+
+    /*==== Resize *component_lists ===================================*/
+
+    for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
+    {
+        u32 cmpsize = self->component_lists[i].component_size + ECS_TAG_SIZE;
+
+        self->component_lists[i].components =
+          __safe_realloc(self->component_lists[i].components,
+                         newsize * cmpsize,
+                         "component_list");
+
+        /*---- set each component as ECS_TAG_UNUSED --------------*/
+
+        for (int j = self->nextIndex; j < newsize; j++)
+        {
+            u32 size = (j * ECS_TAG_SIZE) +
+                       (self->component_lists[i].component_size * (j + 1));
+
+            char *tag =
+              (char *)((void *)self->component_lists[i].components) + size;
+            *tag = ECS_TAG_UNUSED;
+        }
+    }
+
+    self->capacity = newsize;
+    return TRUE;
+}
 
 gsk_ECS *
 gsk_ecs_init(gsk_Renderer *renderer)
@@ -113,74 +190,7 @@ gsk_ecs_init(gsk_Renderer *renderer)
 gsk_Entity
 _gsk_ecs_new_internal(gsk_ECS *self, char *name)
 {
-    if (self->nextIndex >= self->capacity)
-    {
-        LOG_INFO("RESIZING");
-        u32 newsize = self->capacity * 2;
-        // ID's
-        {
-            void *p;
-            p = realloc(self->ids, newsize * sizeof(gsk_EntityId));
-            if (p == NULL) { LOG_CRITICAL("Failed to reallocate id's!"); }
-            self->ids = p;
-        }
-        // ID's Init
-        {
-            void *p;
-            p = realloc(self->ids_init, newsize * sizeof(gsk_EntityId));
-            if (p == NULL) { LOG_CRITICAL("Failed to reallocate id_init!"); }
-            self->ids_init = p;
-
-            for (int i = self->nextIndex; i < newsize; i++)
-            {
-                // default entity flags
-                self->ids_init[i] = ECS_ENT_FLAG_PENDING;
-            }
-        }
-        // Names list
-        {
-            void *p;
-            p = realloc(self->entity_names, newsize * sizeof(char *));
-            if (p == NULL) { LOG_CRITICAL("Failed to reallocate id_init!"); }
-            self->entity_names = p;
-
-            // names
-            for (int i = self->nextIndex; i < newsize; i++)
-            {
-                self->entity_names[i] = malloc(sizeof(char) * ECS_NAME_LEN_MAX);
-                snprintf(self->entity_names[i], 16, "Entity_%d", i);
-            }
-        }
-        // Component List
-        {
-            for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
-            {
-                void *p;
-                p = realloc(self->component_lists[i].components,
-                            newsize * (self->component_lists[i].component_size +
-                                       ECS_TAG_SIZE));
-                if (p == NULL)
-                {
-                    LOG_CRITICAL("Failed to reallocate component list %d!", i);
-                }
-                self->component_lists[i].components = p;
-
-                for (int j = self->nextIndex; j < newsize; j++)
-                {
-                    u32 size =
-                      (j * ECS_TAG_SIZE) +
-                      (self->component_lists[i].component_size * (j + 1));
-
-                    char *tag =
-                      (char *)((void *)self->component_lists[i].components) +
-                      size;
-                    *tag = ECS_TAG_UNUSED;
-                }
-            }
-        }
-
-        self->capacity = newsize;
-    }
+    __check_reallocate_ecs(self);
 
     gsk_Entity entity =
       (gsk_Entity) {.id    = self->nextId,
