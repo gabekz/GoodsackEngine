@@ -6,6 +6,10 @@
 #ifndef __ECSDEFS_H__
 #define __ECSDEFS_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 enum ECSEvent {
     ECS_INIT = 0,
     ECS_DESTROY,
@@ -43,7 +47,7 @@ typedef enum GskEcsEntityFlag_ {
 #define ECS_ID_FIRST   300
 #define ECS_ID_DELETED 2
 
-#define ECS_ENT_CAPACITY 11
+#define ECS_ENT_CAPACITY 256
 #define ECS_NAME_LEN_MAX 128
 
 // Should always be True
@@ -86,4 +90,8 @@ _gsk_ecs_EventToString(int event)
 // #define ECS_SYSTEM_DECLARE(_name) static
 #endif
 
-#endif // H_ECSDEFS
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // __ECSDEFS_H__

@@ -121,7 +121,7 @@ __check_reallocate_ecs(gsk_ECS *self)
 
 // mark entity as NONE + disables associated components
 static void
-__ent_destroy(gsk_ECS *self, gsk_Entity entity)
+__ent_mark_deleted(gsk_ECS *self, gsk_Entity entity)
 {
     for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
     {
@@ -400,43 +400,40 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
         gsk_Entity ent =
           (gsk_Entity) {.id = self->ids[i], .index = i, .ecs = self};
 
-        u8 is_ent_pending = !(self->ids_init[i] & GskEcsEntityFlag_Initialized);
+        gsk_EntityFlags *p_flags = &self->ids_init[i];
 
-        if (event != ECS_INIT && is_ent_pending) { continue; }
-        if (!(self->ids_init[i] & GskEcsEntityFlag_Enabled)) { continue; }
+        u8 is_ent_enabled     = (*p_flags & GskEcsEntityFlag_Enabled);
+        u8 is_ent_delete      = (*p_flags & GskEcsEntityFlag_Delete);
+        u8 is_ent_initialized = (*p_flags & GskEcsEntityFlag_Initialized);
 
-        if (event == ECS_DESTROY && is_ent_pending &&
-            (self->ids_init[i] & GskEcsEntityFlag_Delete))
+        if (event != ECS_INIT && !is_ent_initialized) { continue; }
+        if (event != ECS_DESTROY && !is_ent_enabled) { continue; }
+
+        if (event == ECS_DESTROY && is_ent_delete && !is_ent_initialized)
         {
-            __ent_destroy(self, ent);
+            __ent_mark_deleted(self, ent);
             continue;
         }
+
+        if (event == ECS_DESTROY && !is_ent_delete) { continue; }
+        if (event == ECS_INIT && is_ent_initialized) { continue; }
 
         // Loop through each system, fire the appropriate event
         for (int j = 0; j < self->systems_size; j++)
         {
             gsk_ECSSubscriber func = self->systems[j].subscribers[event];
-            if (func == NULL) { continue; }
-
-            // ignore ECS_INIT for initialized entities
-            if (event == ECS_INIT &&
-                (self->ids_init[i] & GskEcsEntityFlag_Initialized))
-            {
-                continue;
-            }
-
-            func(ent);
+            if (func != NULL) { func(ent); }
         }
 
-        if (event == ECS_DESTROY &&
-            (self->ids_init[i] & GskEcsEntityFlag_Delete))
+        // ensure we flagged the entity as deleted
+        if (event == ECS_DESTROY && is_ent_delete)
         {
-            __ent_destroy(self, ent);
+            __ent_mark_deleted(self, ent);
             continue;
         }
 
         // set the initialization flag
-        self->ids_init[i] |= GskEcsEntityFlag_Initialized;
+        *p_flags |= GskEcsEntityFlag_Initialized;
     }
 
     // TODO: determine whether or not there is a required component.

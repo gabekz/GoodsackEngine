@@ -52,12 +52,12 @@ typedef struct gsk_Entity gsk_Entity;
 typedef union gsk_ECSSystem gsk_ECSSystem;
 typedef struct gsk_ECSComponentList gsk_ECSComponentList;
 
-typedef void (*gsk_ECSSubscriber)(gsk_Entity);
-
 typedef u64 gsk_EntityId;
 typedef s32 gsk_EntityFlags;
 
 typedef struct gsk_ECS gsk_ECS;
+
+typedef void (*gsk_ECSSubscriber)(gsk_Entity);
 
 // TODO: Fix this placement (dep-cyclical issue)
 #include <core/graphics/renderer/v1/renderer.h>

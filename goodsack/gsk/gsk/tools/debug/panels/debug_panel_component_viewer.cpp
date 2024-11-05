@@ -144,22 +144,23 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         {
             if (GSK_DEVICE_API_OPENGL)
             {
-                int textureCount = ((gsk_Material *)p.material)->texturesCount;
+                int tex_count = ((gsk_Material *)p.material)->texturesCount;
                 // Display textures
-                for (int i = 0; i < textureCount; i++)
+                for (int i = 0; i < tex_count; i++)
                 {
+                    gsk_Texture *p_texture =
+                      (gsk_Texture *)((gsk_Material *)p.material)->textures[i];
+
                     Separator();
-                    Image((void *)(intptr_t)((gsk_Material *)p.material)
-                            ->textures[i]
-                            ->id,
+                    Image((void *)(intptr_t)p_texture->id,
                           ImVec2(200, 200),
                           ImVec2(0, 1),
                           ImVec2(1, 0));
                     SameLine();
                     Text("File Path: %s\nDimensions: %dx%d\nType: %s",
-                         ((gsk_Material *)p.material)->textures[i]->filePath,
-                         ((gsk_Material *)p.material)->textures[i]->width,
-                         ((gsk_Material *)p.material)->textures[i]->height,
+                         p_texture->filePath,
+                         p_texture->width,
+                         p_texture->height,
                          "");
                 }
             } // GSK_DEVICE_API_OPENGL

@@ -360,6 +360,21 @@ gsk::runtime::rt_loop()
     // Cleanup
     //
 
+    // Delete all ECS Entities
+    for (int i = 0; i < s_runtime.renderer->sceneC; i++)
+    {
+        gsk_ECS *p_ecs = s_runtime.renderer->sceneL[i]->ecs;
+
+        // mark each entity for deletion
+        for (int j = 0; j < p_ecs->nextIndex; j++)
+        {
+            gsk_ecs_ent_destroy(gsk_ecs_ent(p_ecs, p_ecs->ids[j]));
+        }
+
+        // call ECS_DESTROY for each ECS handler
+        gsk_ecs_event(s_runtime.renderer->sceneL[i]->ecs, ECS_DESTROY);
+    }
+
     if (GSK_DEVICE_API_VULKAN)
     {
         vkDeviceWaitIdle(s_runtime.renderer->vulkanDevice->device);

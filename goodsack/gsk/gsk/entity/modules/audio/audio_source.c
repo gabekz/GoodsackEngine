@@ -123,6 +123,13 @@ update(gsk_Entity e)
     cmp_audio_source->is_playing = (source_state == AL_PLAYING) ? TRUE : FALSE;
 }
 
+static void
+destroy(gsk_Entity entity)
+{
+    if (!(gsk_ecs_has(entity, C_AUDIOSOURCE))) return;
+    LOG_INFO("Destroy");
+}
+
 void
 s_audio_source_init(gsk_ECS *ecs)
 {
@@ -130,7 +137,8 @@ s_audio_source_init(gsk_ECS *ecs)
     //  ecs, C_AUDIO_SOURCE, sizeof(struct ComponentAudioSource));
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
-                              .init   = (gsk_ECSSubscriber)init,
-                              .update = (gsk_ECSSubscriber)update,
+                              .init    = (gsk_ECSSubscriber)init,
+                              .update  = (gsk_ECSSubscriber)update,
+                              .destroy = (gsk_ECSSubscriber)destroy,
                             }));
 }
