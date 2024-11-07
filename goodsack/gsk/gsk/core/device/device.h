@@ -19,6 +19,7 @@ extern "C" {
 #define GSK_DEVICE_API_VULKAN gsk_device_getGraphics() == GRAPHICS_API_VULKAN
 
 #define GSK_TIME_FIXED_DELTA_DEFAULT 1.0 / 100.0
+#define GSK_TIME_ANALYTICS_DEFAULT   1.0 / 1.0
 #define GSK_TIME_SCALE_DEFAULT       1.0
 
 typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } gsk_GraphicsAPI;
@@ -91,10 +92,7 @@ gsk_device_updateTime(double time);
 // fixed delta-time clock handlers //
 
 u8
-_gsk_device_check_fixed_update(double time);
-
-void
-_gsk_device_reset_fixed_update(double time);
+_gsk_device_check_fixed_update();
 
 // input //
 

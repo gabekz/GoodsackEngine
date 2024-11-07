@@ -233,9 +233,6 @@ gsk_renderer_start(gsk_Renderer *renderer)
 
         // renderer->skybox = gsk_skybox_create(skyboxCubemap);
 
-        // Send ECS event init
-        gsk_ecs_event(ecs, ECS_INIT);
-
         // glEnable(GL_FRAMEBUFFER_SRGB);
         clearGLState();
 
@@ -262,6 +259,9 @@ gsk_renderer_start(gsk_Renderer *renderer)
         renderer->camera_data.uboSize      = camera_uboSize;
         renderer->camera_data.totalCameras = 2; // TODO: find an alternative
         renderer->camera_data.activeCamera = 0;
+
+        // Send ECS event init
+        gsk_ecs_event(ecs, ECS_INIT);
 
     } else if (GSK_DEVICE_API_VULKAN)
     {
@@ -291,8 +291,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glfwPollEvents();
 
     // Check fixed_update interval
-    double current_time = glfwGetTime();
-    if (_gsk_device_check_fixed_update(current_time))
+    if (_gsk_device_check_fixed_update())
     {
         gsk_ecs_event(ecs, ECS_INIT); // call init at fixed (does not call on
                                       // entities that are already initialized)
@@ -302,8 +301,6 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
         // fixed-update related events
         gsk_ecs_event(ecs, ECS_ON_COLLIDE);
         gsk_ecs_event(ecs, ECS_FIXED_UPDATE);
-
-        _gsk_device_reset_fixed_update(current_time);
     }
 
     gsk_ecs_event(ecs, ECS_UPDATE);

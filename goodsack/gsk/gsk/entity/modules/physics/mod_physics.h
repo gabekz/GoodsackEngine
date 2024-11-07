@@ -9,7 +9,6 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
-
 #include "entity/ecs.h"
 #include "physics/physics_types.h"
 

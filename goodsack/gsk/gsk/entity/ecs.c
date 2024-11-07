@@ -132,7 +132,7 @@ __ent_mark_deleted(gsk_ECS *self, gsk_Entity entity)
 }
 
 gsk_ECS *
-gsk_ecs_init(void *renderer)
+gsk_ecs_init(gsk_Renderer *renderer)
 {
     gsk_ECS *ecs = malloc(sizeof(gsk_ECS));
 
