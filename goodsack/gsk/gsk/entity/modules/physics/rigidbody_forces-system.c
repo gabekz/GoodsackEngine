@@ -26,7 +26,7 @@ fixed_update(gsk_Entity entity)
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;
 
-    glm_vec3_divs(rigidbody->force, delta, rigidbody->force);
+    if (delta > 0) { glm_vec3_divs(rigidbody->force, delta, rigidbody->force); }
 
     // --
     // -- Add gravity to net force (mass considered)

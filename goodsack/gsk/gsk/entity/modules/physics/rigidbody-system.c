@@ -130,6 +130,12 @@ init(gsk_Entity entity)
     rigidbody->static_friction  = DEFAULT_STATIC_FRICTION;
     rigidbody->dynamic_friction = DEFAULT_DYNAMIC_FRICTION;
 
+    if (rigidbody->mass <= 0)
+    {
+        LOG_WARN("mass was <= 0 - setting mass to 1");
+        rigidbody->mass = 1.0f;
+    }
+
 #if CALC_INERTIA
     // calculate rotational inertia
     // TODO: Defaults

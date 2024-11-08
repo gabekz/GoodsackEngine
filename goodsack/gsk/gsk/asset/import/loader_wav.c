@@ -91,6 +91,18 @@ gsk_load_wav(const char *filepath)
         fread(&listType, 1, 4, filePtr);
         fread(&listData, listSize, 1, filePtr);
     }
+
+    if (!strcmp(magic, "junk"))
+    {
+        s32 junk_size = 0;
+        u8 odd_offset = (junk_size % 2 == 1) ? 1 : 0;
+
+        fread(&junk_size, 1, 4, filePtr);
+        fseek(filePtr, junk_size + odd_offset, SEEK_CUR);
+
+        fread(magic, 1, 4, filePtr);
+    }
+
     if (strcmp(magic, "data"))
     {
         LOG_ERROR("Failed to read 'data' string, magic value is %s", magic);
