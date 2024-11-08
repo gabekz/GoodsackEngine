@@ -11,7 +11,7 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
-#define JUMP_FORCE 16000
+#define JUMP_FORCE 160
 
 static void
 init(gsk_Entity entity)

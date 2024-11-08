@@ -233,6 +233,9 @@ postbuffer_draw(gsk_RendererProps *properties)
                 properties->vignetteAmount);
     glUniform1f(glGetUniformLocation(shader->id, "u_VignetteFalloff"),
                 properties->vignetteFalloff);
+    glUniform3fv(glGetUniformLocation(shader->id, "u_VignetteColor"),
+                 1,
+                 (float *)properties->vignetteColor);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sbTexture);

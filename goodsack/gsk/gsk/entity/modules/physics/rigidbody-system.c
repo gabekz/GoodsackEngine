@@ -263,8 +263,6 @@ _position_solver(_SolverData solver_data)
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    f32 inverse_scalar = body_a.inverse_mass + body_b.inverse_mass;
-
 #if 1
     // I think these are better settings right now..
     const float percent = 1.0f;
@@ -278,7 +276,6 @@ _position_solver(_SolverData solver_data)
     f32 c_weight = fmax((collision_result->points.depth - slop), 0);
     glm_vec3_scale(collision_normal, percent, correction);
     glm_vec3_scale(correction, c_weight, correction);
-    // glm_vec3_scale(correction, inverse_scalar, correction);
 
     // integrate new position
     glm_vec3_add(transform->position, correction, transform->position);

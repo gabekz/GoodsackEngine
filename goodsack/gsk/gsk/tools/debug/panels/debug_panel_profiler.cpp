@@ -95,6 +95,7 @@ gsk::tools::panels::Profiler::draw(void)
         DragFloat("Amount", &props->vignetteAmount, 0.1f, 0.0f, 2.0f, "%.01f");
         DragFloat(
           "Falloff", &props->vignetteFalloff, 0.1f, 0.0f, 1.0f, "%.01f");
+        ColorEdit3("Color", p_renderer->properties.vignetteColor);
 
         Separator();
         Text("Anti Aliasing");

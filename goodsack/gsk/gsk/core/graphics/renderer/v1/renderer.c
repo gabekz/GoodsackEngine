@@ -75,15 +75,18 @@ gsk_renderer_init(const char *app_name)
 
     ret->defaultSkybox = NULL;
 
-    ret->properties = (gsk_RendererProps) {.tonemapper      = 0,
-                                           .exposure        = 9.5f,
-                                           .maxWhite        = 1.0f,
-                                           .gamma           = 2.2f,
-                                           .gammaEnable     = TRUE,
-                                           .msaaEnable      = TRUE,
-                                           .msaaSamples     = 4,
-                                           .vignetteAmount  = 0.5f,
-                                           .vignetteFalloff = 0.5f};
+    ret->properties = (gsk_RendererProps) {
+      .tonemapper      = 0,
+      .exposure        = 9.5f,
+      .maxWhite        = 1.0f,
+      .gamma           = 2.2f,
+      .gammaEnable     = TRUE,
+      .msaaEnable      = TRUE,
+      .msaaSamples     = 4,
+      .vignetteAmount  = 0.5f,
+      .vignetteFalloff = 0.5f,
+      .vignetteColor   = {0, 0, 0},
+    };
 
     ret->shadowmapOptions = (ShadowmapOptions) {
       .nearPlane = 0.00f,
@@ -287,10 +290,11 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     gsk_device_setInput(
       gsk_device_getInput()); // TODO: Weird hack to reset for axis
+
     device_updateCursorState(renderer->window);
+
     glfwPollEvents();
 
-    // Check fixed_update interval
     if (_gsk_device_check_fixed_update())
     {
         gsk_ecs_event(ecs, ECS_INIT); // call init at fixed (does not call on

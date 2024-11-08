@@ -143,22 +143,6 @@ gsk_device_getInput()
 }
 
 void
-device_setCursorState(int is_locked, int is_visible)
-{
-    s_input.cursor_state.is_locked  = is_locked;
-    s_input.cursor_state.is_visible = is_visible;
-}
-
-void
-device_updateCursorState(GLFWwindow *window)
-{
-    glfwSetInputMode(window,
-                     GLFW_CURSOR,
-                     (s_input.cursor_state.is_visible) ? GLFW_CURSOR_NORMAL
-                                                       : GLFW_CURSOR_DISABLED);
-}
-
-void
 gsk_device_setInput(gsk_Input input)
 {
     double lastX = s_input.cursor_position[0];
@@ -187,4 +171,20 @@ gsk_device_setInput(gsk_Input input)
 
     // s_input.holding_right_button = input.holding_right_button;
     //_update_cursor_state();
+}
+
+void
+device_setCursorState(int is_locked, int is_visible)
+{
+    s_input.cursor_state.is_locked  = is_locked;
+    s_input.cursor_state.is_visible = is_visible;
+}
+
+void
+device_updateCursorState(GLFWwindow *window)
+{
+    glfwSetInputMode(window,
+                     GLFW_CURSOR,
+                     (s_input.cursor_state.is_visible) ? GLFW_CURSOR_NORMAL
+                                                       : GLFW_CURSOR_DISABLED);
 }
