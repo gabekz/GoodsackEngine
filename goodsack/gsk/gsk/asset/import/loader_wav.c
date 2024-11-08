@@ -19,7 +19,7 @@ gsk_load_wav(const char *filepath)
     gsk_AudioData *ret = malloc(sizeof(gsk_AudioData));
 
     FILE *filePtr;
-    char magic[4];
+    char magic[5];
     s32 fileSize;
     s32 formatLength;
     s16 formatType;
@@ -30,10 +30,12 @@ gsk_load_wav(const char *filepath)
     s16 bitsPerSample;  // 16
     s32 dataSize;
 
+    magic[4] = '\0';
+
     filePtr = fopen(filepath, "rb");
     if (filePtr == NULL) { LOG_ERROR("Failed to open file: %s", filepath); }
 
-    fread(magic, 1, 4, filePtr);
+    fread(magic, strlen("RIFF"), 1, filePtr);
     if (strcmp(magic, "RIFF"))
     {
         LOG_ERROR("First 4 bytes should be \"RIFF\", are \"%4s\"", magic);
@@ -89,6 +91,18 @@ gsk_load_wav(const char *filepath)
         fread(&listType, 1, 4, filePtr);
         fread(&listData, listSize, 1, filePtr);
     }
+
+    if (!strcmp(magic, "junk"))
+    {
+        s32 junk_size = 0;
+        u8 odd_offset = (junk_size % 2 == 1) ? 1 : 0;
+
+        fread(&junk_size, 1, 4, filePtr);
+        fseek(filePtr, junk_size + odd_offset, SEEK_CUR);
+
+        fread(magic, 1, 4, filePtr);
+    }
+
     if (strcmp(magic, "data"))
     {
         LOG_ERROR("Failed to read 'data' string, magic value is %s", magic);

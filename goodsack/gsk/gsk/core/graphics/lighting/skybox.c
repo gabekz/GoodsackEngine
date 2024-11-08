@@ -40,8 +40,7 @@ gsk_skybox_create(gsk_Texture *cubemap)
       PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
     gsk_gl_index_buffer_bind(ibo);
     free(vbo);
-    gsk_ShaderProgram *shader = gsk_asset_get(gsk_runtime_get_asset_cache(),
-                                              "gsk://shaders/skybox.shader");
+    gsk_ShaderProgram *shader = GSK_ASSET("gsk://shaders/skybox.shader");
     ret->shader               = shader;
 
     return ret;
@@ -188,25 +187,22 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     gsk_gl_index_buffer_bind(ibo);
     cubemapProjectionVAO = vao;
 
-    gsk_ShaderProgram *shaderP = gsk_asset_get(
-      gsk_runtime_get_asset_cache(), "gsk://shaders/hdr-cubemap.shader");
-    cubemapProjectionShader = shaderP;
+    gsk_ShaderProgram *shaderP = GSK_ASSET("gsk://shaders/hdr-cubemap.shader");
+    cubemapProjectionShader    = shaderP;
 
-    gsk_ShaderProgram *shaderConvolute = gsk_asset_get(
-      gsk_runtime_get_asset_cache(), "gsk://shaders/hdr-convolute.shader");
+    gsk_ShaderProgram *shaderConvolute =
+      GSK_ASSET("gsk://shaders/hdr-convolute.shader");
     cubemapShaderConvolute = shaderConvolute;
 
-    gsk_ShaderProgram *shaderPrefilter = gsk_asset_get(
-      gsk_runtime_get_asset_cache(), "gsk://shaders/hdr-prefilter.shader");
+    gsk_ShaderProgram *shaderPrefilter =
+      GSK_ASSET("gsk://shaders/hdr-prefilter.shader");
     cubemapShaderPrefilter = shaderPrefilter;
 
-    gsk_ShaderProgram *brdfShader = gsk_asset_get(
-      gsk_runtime_get_asset_cache(), "gsk://shaders/hdr-brdf.shader");
-    cubemapBrdfShader = brdfShader;
+    gsk_ShaderProgram *brdfShader = GSK_ASSET("gsk://shaders/hdr-brdf.shader");
+    cubemapBrdfShader             = brdfShader;
 
     // Base skybox-render shader
-    gsk_ShaderProgram *baseShader = gsk_asset_get(
-      gsk_runtime_get_asset_cache(), "gsk://shaders/skybox.shader");
+    gsk_ShaderProgram *baseShader = GSK_ASSET("gsk://shaders/skybox.shader");
 
     cubemapProjectionFBO = captureFBO;
     cubemapProjectionRBO = captureRBO;

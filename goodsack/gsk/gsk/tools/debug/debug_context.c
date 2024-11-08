@@ -16,6 +16,8 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/primitives.h"
 
+#include "asset/asset.h"
+
 #define DRAW_MESH_ONLY 0
 
 gsk_DebugContext *
@@ -30,10 +32,10 @@ gsk_debug_context_init()
 
     if (GSK_DEVICE_API_OPENGL)
     {
-
-        // Materials
+        // Assets
         ret->material = gsk_material_create(
-          NULL, GSK_PATH("gsk://shaders/basic_unlit.shader"), 0);
+          NULL, GSK_PATH("gsk://shaders/basic_unlit.shader"), NULL, 0);
+        ret->model_sphere = GSK_ASSET("gsk://models/pyramid.obj");
 
         // VAO Cube
         ret->vaoCube    = gsk_gl_vertex_array_create();
@@ -64,10 +66,6 @@ gsk_debug_context_init()
           PRIM_ARR_I_CUBE2, PRIM_SIZ_I_CUBE2 * sizeof(unsigned int));
         gsk_gl_index_buffer_bind(iboBoundingBox);
 
-        // Sphere (Model)
-        ret->model_sphere = gsk_model_load_from_file(
-          GSK_PATH("gsk://models/pyramid.obj"), 0.1f, FALSE);
-
         // VAO Line
         vec3 lineStart    = GLM_VEC3_ZERO_INIT;
         vec3 lineEnd      = GLM_VEC3_ZERO_INIT;
@@ -82,6 +80,7 @@ gsk_debug_context_init()
           gsk_gl_vertex_buffer_create(lineverts, 6 * sizeof(float));
         gsk_gl_vertex_buffer_push(lineVbo, 3, GL_FLOAT, GL_FALSE);
         gsk_gl_vertex_array_add_buffer(ret->vaoLine, lineVbo);
+        ret->vboLineId = lineVbo->id;
 
         // OpenGL Line smoothing
         glLineWidth(1.0f);

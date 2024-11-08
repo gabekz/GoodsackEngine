@@ -9,13 +9,6 @@
 #include "tools/debug/debug_context.h"
 #include "util/maths.h"
 
-// NOTE: should take gsk_DebugContext -> contains shader information
-
-// Line start: 0, 0, 0
-// Line direction: 0, 1, 0
-// Line length: 100
-// Line end: 0, 100, 0
-
 void
 gsk_debug_draw_line(gsk_DebugContext *debugContext,
                     vec3 start,
@@ -40,6 +33,7 @@ gsk_debug_draw_line(gsk_DebugContext *debugContext,
                  color);
 
     gsk_gl_vertex_array_bind(debugContext->vaoLine);
+    glBindBuffer(GL_ARRAY_BUFFER, debugContext->vboLineId);
     // Update the line vertices after binding VAO
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), &vertices);
     glDrawArrays(GL_LINES, 0, 2);
@@ -56,9 +50,6 @@ gsk_debug_draw_ray(gsk_DebugContext *debugContext,
     vec3 end; // new end
     glm_vec3_scale(direction, length, end);
     glm_vec3_add(start, end, end); // store the directed ray into end
-
-    // Draw the line
-    gsk_material_use(debugContext->material);
 
     // draw line
     gsk_debug_draw_line(debugContext, start, end, color);
@@ -78,6 +69,10 @@ gsk_debug_draw_ray(gsk_DebugContext *debugContext,
     glm_mat4_inv(matrix_rot, matrix_rot);
     // T * R
     glm_mat4_mul(matrix_pos, matrix_rot, matrix_pos);
+
+    // GL Draw
+
+    gsk_material_use(debugContext->material);
 
     glUniformMatrix4fv(glGetUniformLocation(
                          debugContext->material->shaderProgram->id, "u_Model"),

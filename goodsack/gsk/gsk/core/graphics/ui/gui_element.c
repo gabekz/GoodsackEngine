@@ -42,12 +42,13 @@
 #endif
 
 gsk_GuiElement *
-gsk_gui_element_create(vec2 position, vec2 size, gsk_Texture *p_texture, vec4 tex_coords)
+gsk_gui_element_create(vec2 position, vec2 size, vec3 color, gsk_Texture *p_texture, vec4 tex_coords)
 {
     gsk_GuiElement *ret = malloc(sizeof(gsk_GuiElement));
 
     glm_vec2_copy(position, ret->position);
     glm_vec2_copy(size, ret->size);
+    glm_vec3_copy(color, ret->color_rgb);
 
     float pos_x = position[0];
     float pos_y = position[1];
@@ -118,6 +119,12 @@ gsk_gui_element_draw(gsk_GuiElement *self)
     glUniform1i(
       glGetUniformLocation(self->material->shaderProgram->id, "u_using_texture"),
       self->using_texture);
+
+    // send color info
+    glUniform3fv(
+      glGetUniformLocation(self->material->shaderProgram->id, "u_color"),
+      1,
+      (float *)self->color_rgb);
 
     gsk_gl_vertex_array_bind(self->vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);

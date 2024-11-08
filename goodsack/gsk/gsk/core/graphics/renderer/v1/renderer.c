@@ -39,14 +39,16 @@
 #define TESTING_DRAW_LINE 0
 
 gsk_Renderer *
-gsk_renderer_init()
+gsk_renderer_init(const char *app_name)
 {
-    int winWidth  = DEFAULT_WINDOW_WIDTH;
-    int winHeight = DEFAULT_WINDOW_HEIGHT;
+    int winWidth             = DEFAULT_WINDOW_WIDTH;
+    int winHeight            = DEFAULT_WINDOW_HEIGHT;
+    const char *winImagePath = GSK_PATH("gsk://textures/defaults/missing.jpg");
 
     gsk_Renderer *ret = malloc(sizeof(gsk_Renderer));
     GLFWwindow *window =
-      /*context*/ gsk_window_create(winWidth, winHeight, &ret->vulkanDevice);
+      /*context*/ gsk_window_create(
+        winWidth, winHeight, winImagePath, app_name, &ret->vulkanDevice);
 
     ret->window       = window;
     ret->windowWidth  = winWidth;
@@ -71,15 +73,20 @@ gsk_renderer_init()
     ret->sceneC      = 1;
     ret->activeScene = 0;
 
-    ret->properties = (gsk_RendererProps) {.tonemapper      = 0,
-                                           .exposure        = 9.5f,
-                                           .maxWhite        = 1.0f,
-                                           .gamma           = 2.2f,
-                                           .gammaEnable     = TRUE,
-                                           .msaaEnable      = TRUE,
-                                           .msaaSamples     = 4,
-                                           .vignetteAmount  = 0.5f,
-                                           .vignetteFalloff = 0.5f};
+    ret->defaultSkybox = NULL;
+
+    ret->properties = (gsk_RendererProps) {
+      .tonemapper      = 0,
+      .exposure        = 9.5f,
+      .maxWhite        = 1.0f,
+      .gamma           = 2.2f,
+      .gammaEnable     = TRUE,
+      .msaaEnable      = TRUE,
+      .msaaSamples     = 4,
+      .vignetteAmount  = 0.5f,
+      .vignetteFalloff = 0.5f,
+      .vignetteColor   = {0, 0, 0},
+    };
 
     ret->shadowmapOptions = (ShadowmapOptions) {
       .nearPlane = 0.00f,
@@ -116,14 +123,14 @@ gsk_renderer_init()
 
     ret->canvas = gsk_gui_canvas_create();
 
-    gsk_GuiElement *element = gsk_gui_element_create(
-      (vec2) {1920 / 2, 1080 / 2}, (vec2) {10, 10}, guiTexture, NULL);
-
-    // Test GUI Text
-    gsk_GuiText *text = gsk_gui_text_create("Goodsack Engine");
+    gsk_GuiElement *element =
+      gsk_gui_element_create((vec2) {1920 / 2, 1080 / 2},
+                             (vec2) {10, 10},
+                             (vec3) {1, 1, 1},
+                             guiTexture,
+                             NULL);
 
     gsk_gui_canvas_add_element(&ret->canvas, element);
-    gsk_gui_canvas_add_text(&ret->canvas, text);
 
     // Lighting information
     vec3 lightPos   = {-3.4f, 2.4f, 1.4f};
@@ -202,8 +209,12 @@ gsk_renderer_start(gsk_Renderer *renderer)
 
         renderer->defaultSkybox = gsk_skybox_create(skyboxCubemap);
 #else
-        renderer->defaultSkybox = gsk_skybox_hdr_create(texture_create_hdr(
-          GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
+        if (renderer->defaultSkybox == NULL)
+        {
+
+            renderer->defaultSkybox = gsk_skybox_hdr_create(texture_create_hdr(
+              GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
+        }
 #endif
 
         // Set the current renderer skybox to that of the active scene
@@ -224,9 +235,6 @@ gsk_renderer_start(gsk_Renderer *renderer)
         pass_ssao_init();
 
         // renderer->skybox = gsk_skybox_create(skyboxCubemap);
-
-        // Send ECS event init
-        gsk_ecs_event(ecs, ECS_INIT);
 
         // glEnable(GL_FRAMEBUFFER_SRGB);
         clearGLState();
@@ -255,6 +263,9 @@ gsk_renderer_start(gsk_Renderer *renderer)
         renderer->camera_data.totalCameras = 2; // TODO: find an alternative
         renderer->camera_data.activeCamera = 0;
 
+        // Send ECS event init
+        gsk_ecs_event(ecs, ECS_INIT);
+
     } else if (GSK_DEVICE_API_VULKAN)
     {
         gsk_ecs_event(ecs, ECS_INIT);
@@ -279,19 +290,21 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     gsk_device_setInput(
       gsk_device_getInput()); // TODO: Weird hack to reset for axis
+
     device_updateCursorState(renderer->window);
+
     glfwPollEvents();
 
-    // Check fixed_update interval
-    double current_time = glfwGetTime();
-    if (_gsk_device_check_fixed_update(current_time))
+    if (_gsk_device_check_fixed_update())
     {
-        gsk_ecs_event(ecs, ECS_INIT); // TODO: Move
+        gsk_ecs_event(ecs, ECS_INIT); // call init at fixed (does not call on
+                                      // entities that are already initialized)
 
+        gsk_ecs_event(ecs, ECS_DESTROY);
+
+        // fixed-update related events
         gsk_ecs_event(ecs, ECS_ON_COLLIDE);
         gsk_ecs_event(ecs, ECS_FIXED_UPDATE);
-
-        _gsk_device_reset_fixed_update(current_time);
     }
 
     gsk_ecs_event(ecs, ECS_UPDATE);

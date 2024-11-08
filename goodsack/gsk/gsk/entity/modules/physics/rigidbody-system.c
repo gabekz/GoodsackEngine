@@ -32,16 +32,10 @@
 #define DEFAULT_DYNAMIC_FRICTION 0.4f
 
 // constant for putting dynamic objects to sleep
-#define SLEEP_EPSILON 0.001f
+#define SLEEP_EPSILON 0.5f
 
 static void
 _position_solver(_SolverData solver_data);
-
-static void
-_impulse_solver_with_rotation(_SolverData solver_data);
-
-static void
-_impulse_solver_with_rotation_friction(_SolverData solver_data);
 
 //-----------------------------------------------------------------------------
 #if DEBUG_TRACK
@@ -129,6 +123,12 @@ init(gsk_Entity entity)
     // todo: add restitution here
     rigidbody->static_friction  = DEFAULT_STATIC_FRICTION;
     rigidbody->dynamic_friction = DEFAULT_DYNAMIC_FRICTION;
+
+    if (rigidbody->mass <= 0)
+    {
+        LOG_WARN("mass was <= 0 - setting mass to 1");
+        rigidbody->mass = 1.0f;
+    }
 
 #if CALC_INERTIA
     // calculate rotational inertia
@@ -220,6 +220,13 @@ fixed_update(gsk_Entity entity)
         gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
     }
 
+    // Rigidbody sleep threshold
+    if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON)
+    {
+        glm_vec3_zero(rigidbody->force);
+        return;
+    }
+
     // --
     // -- Integrate velocities
 
@@ -237,13 +244,9 @@ fixed_update(gsk_Entity entity)
     aVD[2] = glm_deg(aVD[2]);
 #endif // orientation
 
-    // TODO: Optimization - Put object to sleep
-    // TODO: check aVD with epsilon
-    if (glm_vec3_norm(vD) > 0.001)
-    {
-        glm_vec3_add(transform->position, vD, transform->position);
-        glm_vec3_add(transform->orientation, aVD, transform->orientation);
-    }
+    // update positions
+    glm_vec3_add(transform->position, vD, transform->position);
+    glm_vec3_add(transform->orientation, aVD, transform->orientation);
 
     // --
     // -- Reset net force
@@ -263,8 +266,6 @@ _position_solver(_SolverData solver_data)
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    f32 inverse_scalar = body_a.inverse_mass + body_b.inverse_mass;
-
 #if 1
     // I think these are better settings right now..
     const float percent = 1.0f;
@@ -278,7 +279,6 @@ _position_solver(_SolverData solver_data)
     f32 c_weight = fmax((collision_result->points.depth - slop), 0);
     glm_vec3_scale(collision_normal, percent, correction);
     glm_vec3_scale(correction, c_weight, correction);
-    // glm_vec3_scale(correction, inverse_scalar, correction);
 
     // integrate new position
     glm_vec3_add(transform->position, correction, transform->position);

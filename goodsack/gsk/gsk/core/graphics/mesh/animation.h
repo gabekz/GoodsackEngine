@@ -52,14 +52,6 @@ struct gsk_Skeleton
     gsk_Joint **joints;
     u16 jointsCount;
 
-    // GPU Buffers
-    void *bufferJoints, *bufferWeights;
-    u32 bufferJointsCount, bufferWeightsCount;
-    u32 bufferJointsSize, bufferWeightsSize;
-
-    void *skinningBuffer;
-    u32 skinningBufferSize;
-
     gsk_Animation **p_animations;
     u32 animations_count;
     u32 cnt_animation_index;

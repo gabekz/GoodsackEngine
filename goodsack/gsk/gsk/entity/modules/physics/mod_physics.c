@@ -64,6 +64,9 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
 
                 return (gsk_mod_RaycastResult) {
                   .entity        = e_compare,
+                  .hit_position  = {points.point_a[0],
+                                   points.point_a[1],
+                                   points.point_a[2]},
                   .has_collision = TRUE,
                 };
         }

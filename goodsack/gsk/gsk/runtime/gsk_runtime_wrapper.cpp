@@ -14,4 +14,11 @@ gsk_runtime_get_renderer()
     return gsk::runtime::rt_get_renderer(); // Calls the C++ function
                                             // internally
 }
+
+gsk_ECS *
+gsk_runtime_get_ecs()
+{
+    return gsk::runtime::rt_get_ecs(); // Calls the C++ function
+                                       // internally
+}
 }

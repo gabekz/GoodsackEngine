@@ -31,7 +31,11 @@ namespace gsk {
 namespace runtime {
 
 u32
-rt_setup(const char *root_dir, const char *root_scheme, int argc, char *argv[]);
+rt_setup(const char *root_dir,
+         const char *root_scheme,
+         const char *app_name,
+         int argc,
+         char *argv[]);
 
 void
 rt_loop();

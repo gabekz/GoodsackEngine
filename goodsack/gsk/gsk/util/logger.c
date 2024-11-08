@@ -372,6 +372,7 @@ rotateLogFiles(void)
 int
 logger_isEnabled(LogLevel level)
 {
+    if (level == LogLevel_NONE) return 1;
     return s_logLevel <= level;
 }
 

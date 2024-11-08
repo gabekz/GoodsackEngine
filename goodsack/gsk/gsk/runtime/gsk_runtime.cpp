@@ -30,6 +30,7 @@
 #include "core/graphics/renderer/v1/renderer.h"
 #endif
 
+#include "asset/asset.h"
 #include "asset/asset_cache.h"
 #include "asset/gpak/gpak.h"
 
@@ -70,6 +71,15 @@ _gsk_check_args(int argc, char *argv[])
         {
             logger_setLevel(LogLevel_ERROR);
         }
+
+#if 0
+        if (std::string(argv[i]).find("--map") != std::string::npos)
+        {
+            {
+                LOG_INFO("MAP");
+            }
+        }
+#endif
     }
 }
 
@@ -82,6 +92,7 @@ _gsk_runtime_cache_asset_file(const char *uri)
 u32
 gsk::runtime::rt_setup(const char *root_dir,
                        const char *root_scheme,
+                       const char *app_name,
                        int argc,
                        char *argv[])
 {
@@ -137,7 +148,20 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     // gsk_gpak_make_raw(p_cache);
 
-    // TODO: Preload all GCFG here
+    // preload all GCFG files
+    ArrayList *p_gcfg_refs = &(p_cache->asset_lists[0].list_state);
+    for (int i = 0; i < p_gcfg_refs->list_next; i++)
+    {
+        gsk_AssetRef *p_ref =
+          (gsk_AssetRef *)array_list_get_at_index(p_gcfg_refs, i);
+
+        char *str;
+        str = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
+                                              p_ref->asset_uri_index);
+
+        // TODO: Do not reference by URI, reference by handle.
+        GSK_ASSET(str);
+    }
 
     /*==== Initialize Renderer =======================================*/
 
@@ -146,7 +170,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     // ECSManager ecs = gsk_Renderer.
     gsk_Scene scene0 = renderer->SetActiveScene(0);
 #else
-    s_runtime.renderer = gsk_renderer_init();
+    s_runtime.renderer = gsk_renderer_init(app_name);
 
     int winWidth  = s_runtime.renderer->windowWidth;
     int winHeight = s_runtime.renderer->windowHeight;
@@ -193,7 +217,12 @@ gsk::runtime::rt_setup(const char *root_dir,
     glfwSwapInterval(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    gsk_GuiText *loading_text = gsk_gui_text_create("Loading");
+    vec2 text_pos   = {0.0f, 0.0f};
+    vec3 text_color = {1.0f, 1.0f, 1.0f};
+
+    gsk_GuiText *loading_text =
+      gsk_gui_text_create("Loading", text_pos, text_color);
+
     for (int i = 0; i < 2; i++)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -211,6 +240,25 @@ gsk::runtime::rt_setup(const char *root_dir,
     strcat(path, "://scripts/main.lua");
     LuaInit(GSK_PATH(path), s_runtime.ecs);
 #endif
+
+    // const char *info =
+    //  ("Goodsack Engine | " GOODSACK_VERSION_MAJOR "."
+    //  GOODSACK_VERSION_MINOR);
+
+    char str_info[256];
+    sprintf(str_info,
+            "Goodsack Engine | v%d.%d.%d.%d",
+            GOODSACK_VERSION_MAJOR,
+            GOODSACK_VERSION_MINOR,
+            GOODSACK_VERSION_PATCH,
+            GOODSACK_VERSION_TWEAK);
+
+    vec2 text_info_pos = {5.0f, 5.0f};
+    vec3 text_info_col = {1.0f, 1.0f, 1.0f};
+
+    gsk_GuiText *text_info =
+      gsk_gui_text_create(str_info, text_info_pos, text_info_col);
+    gsk_gui_canvas_add_text(&s_runtime.renderer->canvas, text_info);
 
 #endif
     return 0;
@@ -311,6 +359,21 @@ gsk::runtime::rt_loop()
     //
     // Cleanup
     //
+
+    // Delete all ECS Entities
+    for (int i = 0; i < s_runtime.renderer->sceneC; i++)
+    {
+        gsk_ECS *p_ecs = s_runtime.renderer->sceneL[i]->ecs;
+
+        // mark each entity for deletion
+        for (int j = 0; j < p_ecs->nextIndex; j++)
+        {
+            gsk_ecs_ent_destroy(gsk_ecs_ent(p_ecs, p_ecs->ids[j]));
+        }
+
+        // call ECS_DESTROY for each ECS handler
+        gsk_ecs_event(s_runtime.renderer->sceneL[i]->ecs, ECS_DESTROY);
+    }
 
     if (GSK_DEVICE_API_VULKAN)
     {

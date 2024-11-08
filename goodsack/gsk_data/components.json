@@ -52,6 +52,7 @@
     "Enemy": {
         "int": ["enemy_type"],
         "bool": ["is_wep_loaded"],
+        "vec3": ["hit_position"],
         "Resource": ["projectile_model", "projectile_material"]
     },
 
@@ -60,7 +61,7 @@
     },
 
     "Health": {
-        "int": ["current_health", "max_health"],
+        "int": ["current_health", "last_health", "max_health"],
         "bool": ["is_alive"]
     },
 

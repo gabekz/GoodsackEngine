@@ -26,13 +26,19 @@ typedef struct gsk_GCFGItem
 
 typedef struct gsk_GCFG
 {
+    // u64 asset_handles[3];
     u32 asset_type;
     ArrayList list_items;
 
 } gsk_GCFG;
 
+#if 0
 void
 gsk_asset_gcfg_load_all(gsk_AssetCache *p_cache);
+#endif
+
+void
+gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg);
 
 #ifdef __cplusplus
 }

@@ -28,8 +28,8 @@ main()
 layout(binding = 0) uniform sampler2D t_Texture;
 
 uniform bool u_using_texture = false;
+uniform vec3 u_color = vec3(1);
 
-uniform vec4 u_color = vec4(1);
 out vec4 out_color;
 
 in VS_OUT { vec2 texCoords; }
@@ -38,11 +38,12 @@ fs_in;
 void
 main()
 {
+    vec4 col = vec4(u_color, 1);
     vec4 pixel = (u_using_texture)
-                   ? texture(t_Texture, fs_in.texCoords) * u_color
-                   : u_color;
+                   ? texture(t_Texture, fs_in.texCoords) * col
+                   : col;
 
-    if (pixel.rgb == vec3(0)) discard;
+    if (pixel.rgb == vec3(0.0)) discard;
 
-    out_color = pixel * u_color;
+    out_color = pixel;
 }

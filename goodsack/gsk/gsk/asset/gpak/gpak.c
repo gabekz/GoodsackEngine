@@ -14,6 +14,7 @@
 #include "util/sysdefs.h"
 
 #include "asset/asset_cache.h"
+#include "asset/assetdefs.h"
 
 gsk_GpakWriter
 gsk_gpak_writer_init()
@@ -57,21 +58,21 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
         for (int j = 0; j < p_cache->asset_lists[i].list_state.list_next - 1;
              j++)
         {
-            gsk_AssetCacheState *p_state;
-            p_state = (gsk_AssetCacheState *)array_list_get_at_index(
+            gsk_AssetRef *p_ref;
+            p_ref = (gsk_AssetRef *)array_list_get_at_index(
               &(p_cache->asset_lists[i].list_state), j);
 
             char *uri;
             uri = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
-                                                  p_state->asset_uri_index);
+                                                  p_ref->asset_uri_index);
 
             // ASSET_HANDLE
-            fwrite(&p_state->asset_handle, 1, sizeof(u64), p_writer->file_ptr);
+            fwrite(&p_ref->asset_handle, 1, sizeof(u64), p_writer->file_ptr);
 
 #if 0
             // ASSET_URI_INDEX (maybe just put the uri here?)
             fwrite(
-              &p_state->asset_uri_index, 1, sizeof(u32), p_writer->file_ptr);
+              &p_ref->asset_uri_index, 1, sizeof(u32), p_writer->file_ptr);
 #endif
             // ASSET URI
             fwrite(uri, strlen(uri), 1, p_writer->file_ptr);
@@ -84,6 +85,7 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
         }
     }
 }
+
 void
 gsk_gpak_writer_write(gsk_GpakWriter *p_writer)
 {
@@ -145,15 +147,15 @@ gsk_gpak_make_raw(gsk_AssetCache *p_cache)
     // i++)
     for (int i = 0; i < 1; i++)
     {
-        gsk_AssetCacheState *p_state;
+        gsk_AssetCacheState *p_ref;
 
-        p_state = (gsk_AssetCacheState *)array_list_get_at_index(
+        p_ref = (gsk_AssetCacheState *)array_list_get_at_index(
           &(p_cache->asset_lists[1].list_state), i);
 
         // grab the URI
         char *uri;
         uri = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
-                                              p_state->asset_uri_index);
+                                              p_ref->asset_uri_index);
 
         const char *full_path = GSK_PATH(uri);
 

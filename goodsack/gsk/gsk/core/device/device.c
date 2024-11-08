@@ -18,8 +18,8 @@ static volatile int s_initialized = 0; // false
 static struct
 {
     u32 counter;
-    f64 prevTime;
-    f64 clock_metrics, clock_fixed_delta;
+    f64 clock_metrics, clock_metrics_prev;
+    f64 clock_fixed_delta, clock_fixed_delta_prev;
     f64 time_elapsed;
     gsk_Time time;
 } s_device;
@@ -63,11 +63,12 @@ gsk_device_getTime()
 void
 gsk_device_resetTime()
 {
-    s_device.counter  = 0;
-    s_device.prevTime = 0;
+    s_device.counter = 0;
 
-    s_device.clock_metrics     = 0;
-    s_device.clock_fixed_delta = 0;
+    s_device.clock_metrics          = 0;
+    s_device.clock_metrics_prev     = 0;
+    s_device.clock_fixed_delta      = 0;
+    s_device.clock_fixed_delta_prev = 0;
 
     // Track performance metrics
     s_device.time.metrics.last_fps = 0;
@@ -97,19 +98,18 @@ gsk_device_updateTime(double time)
     // update timescale
     s_device.time.time_scale = s_device.time.next_time_scale;
 
-    // time *= s_device.time.time_scale;
-    const f64 analytics_interval_ms = 1000;
-
     // Delta Time
     s_device.time.delta_time = time - s_device.time_elapsed;
     s_device.time_elapsed    = time;
 
-    // Analytical Time
-    s_device.clock_metrics = time - s_device.prevTime;
+    // Update interval-clocks
+    s_device.clock_metrics     = time - s_device.clock_metrics_prev;
+    s_device.clock_fixed_delta = time - s_device.clock_fixed_delta_prev;
+
     s_device.counter++; // total frames since last interval
 
     // update metrics based on interval
-    if (s_device.clock_metrics >= analytics_interval_ms / 1000)
+    if (s_device.clock_metrics >= GSK_TIME_ANALYTICS_DEFAULT)
     {
 
         s_device.time.metrics.last_fps =
@@ -119,45 +119,27 @@ gsk_device_updateTime(double time)
           (s_device.clock_metrics / s_device.counter) * 1000;
 
         // Reset Timer
-        s_device.prevTime = time;
-        s_device.counter  = 0;
+        s_device.clock_metrics_prev = time;
+        s_device.counter            = 0;
+    }
+
+    // update fixed-delta based on interval
+    if (s_device.clock_fixed_delta >= s_device.time.fixed_delta_time)
+    {
+        s_device.clock_fixed_delta_prev = time;
     }
 }
 
 u8
-_gsk_device_check_fixed_update(double time)
+_gsk_device_check_fixed_update()
 {
-    f64 clock_check = time - s_device.clock_fixed_delta;
-    if (clock_check >= s_device.time.fixed_delta_time) { return 1; }
-    return 0;
-}
-
-void
-_gsk_device_reset_fixed_update(double time)
-{
-    s_device.clock_fixed_delta = time;
+    return (s_device.clock_fixed_delta >= s_device.time.fixed_delta_time);
 }
 
 gsk_Input
 gsk_device_getInput()
 {
     return s_input;
-}
-
-void
-device_setCursorState(int is_locked, int is_visible)
-{
-    s_input.cursor_state.is_locked  = is_locked;
-    s_input.cursor_state.is_visible = is_visible;
-}
-
-void
-device_updateCursorState(GLFWwindow *window)
-{
-    glfwSetInputMode(window,
-                     GLFW_CURSOR,
-                     (s_input.cursor_state.is_visible) ? GLFW_CURSOR_NORMAL
-                                                       : GLFW_CURSOR_DISABLED);
 }
 
 void
@@ -189,4 +171,20 @@ gsk_device_setInput(gsk_Input input)
 
     // s_input.holding_right_button = input.holding_right_button;
     //_update_cursor_state();
+}
+
+void
+device_setCursorState(int is_locked, int is_visible)
+{
+    s_input.cursor_state.is_locked  = is_locked;
+    s_input.cursor_state.is_visible = is_visible;
+}
+
+void
+device_updateCursorState(GLFWwindow *window)
+{
+    glfwSetInputMode(window,
+                     GLFW_CURSOR,
+                     (s_input.cursor_state.is_visible) ? GLFW_CURSOR_NORMAL
+                                                       : GLFW_CURSOR_DISABLED);
 }

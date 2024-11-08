@@ -194,15 +194,15 @@ DrawModel(struct ComponentModel *model,
 
             // u16 drawMode = model->properties.drawMode;
 
-            gsk_PrimitiveTypeEnum primitive = mesh->meshData->primitive_type;
+            GskMeshPrimitiveType_ primitive = mesh->meshData->primitive_type;
             GLenum gl_prim                  = GL_TRIANGLES;
 
             switch (primitive)
             {
-            case GSK_PRIMITIVE_TYPE_TRIANGLE: gl_prim = GL_TRIANGLES; break;
-            case GSK_PRIMITIVE_TYPE_QUAD: gl_prim = GL_QUADS; break;
-            case GSK_PRIMITIVE_TYPE_POLY: gl_prim = GL_POLYGON; break;
-            case GSK_PRIMITIVE_TYPE_FAN: gl_prim = GL_TRIANGLE_FAN; break;
+            case GskMeshPrimitiveType_Triangle: gl_prim = GL_TRIANGLES; break;
+            case GskMeshPrimitiveType_Quad: gl_prim = GL_QUADS; break;
+            case GskMeshPrimitiveType_Poly: gl_prim = GL_POLYGON; break;
+            case GskMeshPrimitiveType_Fan: gl_prim = GL_TRIANGLE_FAN; break;
             default: break;
             }
 
@@ -291,6 +291,7 @@ init(gsk_Entity e)
         }
 
         // TODO: Duplicate model here (for skinned-mesh / animator)
+        // TODO: we probably dont want model->mesh. Maybe model->skinned_mesh?
         model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
 
         // TODO: rework defaults
@@ -299,16 +300,6 @@ init(gsk_Entity e)
             model->cast_shadows = 1;
         }
 
-        // send lightspace matrix from renderer to entity shader
-        gsk_ShaderProgram *shader =
-          ((gsk_Material *)model->material)->shaderProgram;
-        gsk_shader_use(shader);
-        glUniformMatrix4fv(
-          glGetUniformLocation(shader->id, "u_LightSpaceMatrix"),
-          1,
-          GL_FALSE,
-          (float *)e.ecs->renderer->lightSpaceMatrix);
-        // TODO: send model matrix to shader
     } else if (GSK_DEVICE_API_VULKAN)
     {
         model->mesh = malloc(sizeof(gsk_Mesh));
@@ -322,8 +313,8 @@ init(gsk_Entity e)
           context->device,
           context->graphicsQueue,
           context->commandPool,
-          ((gsk_Mesh *)model->mesh)->meshData->buffers.out,
-          ((gsk_Mesh *)model->mesh)->meshData->buffers.outI * sizeof(float));
+          ((gsk_Mesh *)model->mesh)->meshData->mesh_buffers[0].p_buffer,
+          ((gsk_Mesh *)model->mesh)->meshData->mesh_buffers[0].buffer_size);
     }
 }
 

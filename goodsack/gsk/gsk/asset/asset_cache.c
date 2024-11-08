@@ -5,8 +5,9 @@
 
 #include "asset_cache.h"
 
-#include "string.h"
+#include <string.h>
 
+#include "asset/assetdefs.h"
 #include "asset/import/loader_gcfg.h"
 
 #include "util/array_list.h"
@@ -26,12 +27,20 @@ gsk_asset_cache_init()
 {
     gsk_AssetCache ret;
 
-    u32 type_sizes[ASSETTYPE_LAST + 1];
-    type_sizes[GSK_ASSET_CACHE_GCFG]     = sizeof(gsk_GCFG);
-    type_sizes[GSK_ASSET_CACHE_TEXTURE]  = sizeof(gsk_Texture);
-    type_sizes[GSK_ASSET_CACHE_MATERIAL] = sizeof(gsk_Material);
-    type_sizes[GSK_ASSET_CACHE_SHADER]   = sizeof(gsk_ShaderProgram);
-    type_sizes[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_Model);
+    u32 sizes_data[ASSETTYPE_LAST + 1];
+    u32 sizes_ops[ASSETTYPE_LAST + 1];
+
+    sizes_data[GSK_ASSET_CACHE_GCFG]     = sizeof(gsk_GCFG);
+    sizes_data[GSK_ASSET_CACHE_TEXTURE]  = sizeof(gsk_Texture);
+    sizes_data[GSK_ASSET_CACHE_MATERIAL] = sizeof(gsk_Material);
+    sizes_data[GSK_ASSET_CACHE_SHADER]   = sizeof(gsk_ShaderProgram);
+    sizes_data[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_Model);
+
+    sizes_ops[GSK_ASSET_CACHE_GCFG]     = 1;
+    sizes_ops[GSK_ASSET_CACHE_TEXTURE]  = sizeof(TextureOptions);
+    sizes_ops[GSK_ASSET_CACHE_MATERIAL] = 1;
+    sizes_ops[GSK_ASSET_CACHE_SHADER]   = 1;
+    sizes_ops[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_AssetModelOptions);
 
     // setup hash table
     // TODO: needs to scale
@@ -39,13 +48,12 @@ gsk_asset_cache_init()
 
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
     {
-        ret.asset_lists[i].list_state = array_list_init(
-          sizeof(gsk_AssetCacheState), GSK_ASSET_CACHE_INCREMENT);
+        ret.asset_lists[i].list_state =
+          array_list_init(sizeof(gsk_AssetRef), GSK_ASSET_CACHE_INCREMENT);
         ret.asset_lists[i].list_data =
-          array_list_init(type_sizes[i], GSK_ASSET_CACHE_INCREMENT);
-        // TODO: Change
+          array_list_init(sizes_data[i], GSK_ASSET_CACHE_INCREMENT);
         ret.asset_lists[i].list_options =
-          array_list_init(sizeof(TextureOptions), GSK_ASSET_CACHE_INCREMENT);
+          array_list_init(sizes_ops[i], GSK_ASSET_CACHE_INCREMENT);
     }
 
     // asset uri array
@@ -103,19 +111,51 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       &(p_cache->asset_uri_list), p_cache->asset_uri_list.list_next - 1);
 #endif
 
-    gsk_AssetCacheState item = {
+    gsk_AssetRef item = {
       .asset_handle    = new_handle,
       .asset_uri_index = p_cache->asset_uri_list.list_next - 1,
-      .is_mem_loaded   = FALSE,
-      .is_gpu_loaded   = FALSE,
+      .is_imported     = FALSE,
+      .is_utilized     = FALSE,
     };
 
-    // add empty data
     array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
+
+    // add empty data -- we might want to may array_list act as a regular
+    // buffer, too.
+    array_list_push(&(p_cache->asset_lists[asset_type].list_data), NULL);
+
+    /*==== Create default asset options ==============================*/
+
+    TextureOptions default_tex = {
+      .af_range        = 1,
+      .internal_format = GL_SRGB_ALPHA,
+      .gen_mips        = FALSE,
+      .flip_vertically = TRUE,
+    };
+
+    gsk_AssetModelOptions default_model = {
+      .scale            = 1.0f,
+      .import_materials = FALSE,
+    };
+
+    void *p_options = NULL;
+    switch (list_type)
+    {
+    case GSK_ASSET_CACHE_MODEL: p_options = &default_model; break;
+    case GSK_ASSET_CACHE_TEXTURE: p_options = &default_tex; break;
+    default: break;
+    }
+
+    // TODO: Should not push anything at all if null. Check references.
+    array_list_push(&(p_cache->asset_lists[asset_type].list_options),
+                    p_options);
 }
 /*--------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------*/
+// a.k.a, gsk_asset_cache_add_hot(cache, uri)
+// we also want gsk_asset_cache_add_explicit(cache, uri, handle) a.k.a. gpak
+
 void
 gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
 {
@@ -169,7 +209,7 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
 /*--------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------*/
-gsk_AssetCacheState *
+gsk_AssetRef *
 gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
 {
     /* TODO: Change hashmap so we don't have to truncate from 1 (WTF)
@@ -188,14 +228,14 @@ gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
                      asset_type);
     }
 
-    gsk_AssetCacheState *p_state; // fetched cache state
+    gsk_AssetRef *p_ref; // fetched cache state
 
 #if ASSET_CACHE_GET_AT
-    p_state = gsk_asset_cache_get_at(p_cache, asset_type, handle);
+    p_ref = gsk_asset_cache_get_at(p_cache, asset_type, handle);
 #else
-    p_state = (gsk_AssetCacheState *)array_list_get_at_index(
+    p_ref = (gsk_AssetRef *)array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_state), asset_index - 1);
 #endif
-    return p_state;
+    return p_ref;
 }
 /*--------------------------------------------------------------------*/

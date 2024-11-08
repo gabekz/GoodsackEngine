@@ -57,8 +57,7 @@ typedef struct gsk_Renderer
       *explicitMaterial_skinned; // skinned version of explicit material
 
     gsk_Billboard2D *billboard; // Billboard testing
-
-    gsk_GuiCanvas canvas; // Canvas test
+    gsk_GuiCanvas canvas;       // Canvas test
 
     gsk_Skybox *activeSkybox;  // Active skybox that is being rendered
     gsk_Skybox *defaultSkybox; // Default skybox set for each scene on creation
@@ -66,32 +65,18 @@ typedef struct gsk_Renderer
     // Hacky shit for temporary shadowmap values
     gsk_ShaderProgram *shaderDepthMap;
     gsk_Material *materialDepthMap;
-    u32 depthMapFBO;
-    u32 depthMapTexture;
     mat4 lightSpaceMatrix;
 
-    u32 drawCalls;
-    u32 faces;
-    u32 totalVertices;
-
-    // TODO: Fix this shit as well.
-
-    gsk_LightingData lighting_data;
-
+    // Options
     ShadowmapOptions shadowmapOptions;
     SsaoOptions ssaoOptions;
-
     struct
     {
         vec3 ambient_color_multiplier;
         float ambient_strength, prefilter_strength;
     } lightOptions;
 
-    // TODO: still hacky shit
-    VulkanDeviceContext *vulkanDevice;
-    u32 hdrTextureId;
-
-    gsk_DebugContext *debugContext;
+    gsk_LightingData lighting_data;
 
     // Camera information
     struct
@@ -103,6 +88,10 @@ typedef struct gsk_Renderer
         u32 activeCamera;
     } camera_data;
 
+    // TODO: still hacky shit
+    VulkanDeviceContext *vulkanDevice;
+    gsk_DebugContext *debugContext;
+
 } gsk_Renderer;
 
 /**
@@ -110,7 +99,7 @@ typedef struct gsk_Renderer
  * @return allocated Renderer structure
  */
 gsk_Renderer *
-gsk_renderer_init();
+gsk_renderer_init(const char *app_name);
 
 // Rendering Loop
 void

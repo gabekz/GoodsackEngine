@@ -6,6 +6,8 @@
 #ifndef __ECS_H__
 #define __ECS_H__
 
+#include <stdio.h>
+
 #include "entity/ecsdefs.h"
 #include "util/sysdefs.h"
 
@@ -31,11 +33,16 @@
 #define ecs_add(...) \
     _ecs_add_overload(__VA_ARGS__, _ecs_add3, _ecs_add2)(__VA_ARGS__)
 
-#define _ecs_new_2(e, n)                     _gsk_ecs_new_internal(e, n)
-#define _ecs_new_1(e)                        _gsk_ecs_new_internal(e, NULL)
+#define _ecs_new_2(e, n) _gsk_ecs_new_internal(e, n)
+#define _ecs_new_1(e)    _gsk_ecs_new_internal(e, NULL)
+
 #define _ecs_new_overload(_1, _2, NAME, ...) NAME
 #define gsk_ecs_new(...) \
-    _ecs_new_overload(__VA_ARGS__, _ecs_new_2, _ecs_new_1)(__VA_ARGS__)
+    _EXPAND(_ecs_new_overload(__VA_ARGS__, _ecs_new_2, _ecs_new_1)(__VA_ARGS__))
+
+//#define _ecs_new_overload(_1, _2, NAME, ...) NAME
+//#define gsk_ecs_new(...) \
+//    _ecs_new_overload(__VA_ARGS__, _ecs_new_2, _ecs_new_1)(__VA_ARGS__)
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,10 +52,12 @@ typedef struct gsk_Entity gsk_Entity;
 typedef union gsk_ECSSystem gsk_ECSSystem;
 typedef struct gsk_ECSComponentList gsk_ECSComponentList;
 
-typedef void (*gsk_ECSSubscriber)(gsk_Entity);
 typedef u64 gsk_EntityId;
+typedef s32 gsk_EntityFlags;
 
 typedef struct gsk_ECS gsk_ECS;
+
+typedef void (*gsk_ECSSubscriber)(gsk_Entity);
 
 // TODO: Fix this placement (dep-cyclical issue)
 #include <core/graphics/renderer/v1/renderer.h>
@@ -98,7 +107,6 @@ struct gsk_ECSComponentList
 {
     void *components;
     u64 component_size;
-    u64 *entity_index_list;
 };
 
 /*-------------------------------------------*/
@@ -109,7 +117,7 @@ struct gsk_ECS
     u32 nextIndex;
     u32 capacity;
 
-    gsk_EntityId *ids_init;
+    gsk_EntityFlags *ids_init;
 
     char **entity_names;
 
@@ -149,6 +157,12 @@ gsk_ecs_init(gsk_Renderer *renderer);
 
 gsk_Entity
 _gsk_ecs_new_internal(gsk_ECS *self, char *name);
+
+void
+gsk_ecs_ent_set_active(gsk_Entity entity, u8 is_active);
+
+void
+gsk_ecs_ent_destroy(gsk_Entity entity);
 
 int
 gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id);

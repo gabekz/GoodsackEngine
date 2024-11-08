@@ -6,6 +6,7 @@
 #ifndef __MOD_PHYSICS_H__
 #define __MOD_PHYSICS_H__
 
+#include "util/maths.h"
 #include "util/sysdefs.h"
 
 #include "entity/ecs.h"
@@ -18,6 +19,7 @@ extern "C" {
 typedef struct gsk_mod_RaycastResult
 {
     gsk_Entity entity;
+    vec3 hit_position;
     u8 has_collision;
 
 } gsk_mod_RaycastResult;
