@@ -36,6 +36,12 @@
 
 #include "core/drivers/alsoft/alsoft.h"
 
+#define USING_COMPOSER 1
+
+#if USING_COMPOSER
+#include "core/audio/music_composer.h"
+#endif // USING_COMPOSER
+
 extern "C" {
 static struct
 {
@@ -294,10 +300,18 @@ gsk::runtime::rt_loop()
     entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
 #endif
 
+#if USING_COMPOSER
+    gsk_MusicComposer composer = gsk_music_composer_create();
+#endif // USING_COMPOSER
+
     // Main Engine Loop
     while (!glfwWindowShouldClose(s_runtime.renderer->window))
     {
         gsk_device_updateTime(glfwGetTime());
+
+#if USING_COMPOSER
+        gsk_music_composer_update(&composer, glfwGetTime());
+#endif // USING_COMPOSER
 
 #if USING_JOYSTICK_CONTROLLER
         int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
