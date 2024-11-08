@@ -23,12 +23,35 @@ _sequence_create_track(gsk_ComposerSequence *p_sequence, const char *uri)
     AL_CHECK(alSourcei(buffer_source, AL_BUFFER, buffer_clip));
     AL_CHECK(alSourcei(buffer_source, AL_LOOPING, TRUE));
 
+    AL_CHECK(alSourcef(buffer_source, AL_ROLLOFF_FACTOR, 0));
+
+    // AL_CHECK(alSourcef(buffer_source, AL_GAIN, 0.1f));
+
     p_sequence->tracks[p_sequence->num_tracks] = (gsk_ComposerTrack) {
       .buffer_source = buffer_source,
       .buffer_clip   = buffer_clip,
+      .is_looping    = TRUE,
+      .is_playing    = FALSE,
     };
 
     p_sequence->num_tracks += 1;
+}
+
+static void
+_play_track(gsk_MusicComposer *p_composer, gsk_ComposerTrack *p_track)
+{
+    ALint source_state = 0;
+    AL_CHECK(
+      alGetSourcei(p_track->buffer_source, AL_SOURCE_STATE, &source_state));
+
+    p_track->is_playing = (source_state == AL_PLAYING) ? TRUE : FALSE;
+
+    if (p_track->is_playing == TRUE) { return; }
+
+    AL_CHECK(alSourcef(
+      p_track->buffer_source, AL_SEC_OFFSET, p_composer->time_offset));
+
+    AL_CHECK(alSourcePlay(p_track->buffer_clip));
 }
 
 static void
@@ -45,8 +68,7 @@ _begin_stage(gsk_MusicComposer *p_composer, u32 next_stage)
         for (int j = 0; j < p_sequence->num_tracks; j++)
         {
             gsk_ComposerTrack *p_track = &p_sequence->tracks[j];
-
-            AL_CHECK(alSourcePlay(p_track->buffer_clip));
+            _play_track(p_composer, p_track);
         }
     }
 
@@ -105,13 +127,13 @@ gsk_music_composer_create()
 
     // create sequences
     gsk_ComposerSequence sequence_0 = {0};
-    _sequence_create_track(&sequence_0, "gsk://audio/track_A.wav");
+    _sequence_create_track(&sequence_0, "gsk://audio/pattern_1.wav");
 
     ret.sequences[0] = sequence_0;
     ret.total_sequences++;
 
     gsk_ComposerSequence sequence_1 = {0};
-    _sequence_create_track(&sequence_1, "gsk://audio/track_B.wav");
+    _sequence_create_track(&sequence_1, "gsk://audio/pattern_2.wav");
 
     ret.sequences[1] = sequence_1;
     ret.total_sequences++;
@@ -131,14 +153,11 @@ gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
     u32 next_stage  = p_composer->current_stage + 1;
     u32 last_phrase = p_composer->current_phrase;
 
-    f64 beat_time = 0.4511; // 133bpm
+    // f64 beat_time = 0.4511; // 133bpm
+    f64 beat_time = 0.5; // 120bpm
 
     p_composer->clock_beat_crnt = time_sec - p_composer->clock_beat_prev;
-
-    if (p_composer->clock_beat_crnt > beat_time)
-    {
-        LOG_INFO("Time offset: %f", p_composer->clock_beat_crnt - beat_time);
-    }
+    p_composer->time_offset     = p_composer->clock_beat_crnt - beat_time;
 
     if (p_composer->clock_beat_crnt >= beat_time)
     {
@@ -151,14 +170,14 @@ gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
             p_composer->current_beat = 0;
             p_composer->current_bar += 1;
 
-            // LOG_INFO("Next bar: %d", p_composer->current_bar);
+            LOG_DEBUG("Next bar: %d", p_composer->current_bar);
 
             if (p_composer->current_bar == BARS_PER_PHRASE)
             {
                 p_composer->current_bar = 0;
                 p_composer->current_phrase += 1;
 
-                LOG_INFO("Next phrase: %d", p_composer->current_phrase);
+                LOG_DEBUG("Next phrase: %d", p_composer->current_phrase);
             }
         }
 

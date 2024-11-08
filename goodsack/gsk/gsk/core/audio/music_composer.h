@@ -16,6 +16,8 @@ typedef struct gsk_ComposerTrack
 {
     s32 buffer_source;
     s32 buffer_clip;
+    u8 is_playing;
+    u8 is_looping;
 
 } gsk_ComposerTrack;
 
