@@ -12,6 +12,10 @@
 #include "core/drivers/alsoft/alsoft.h"
 #include "core/drivers/alsoft/alsoft_debug.h"
 
+#define BEATS_PER_BAR   4
+#define BARS_PER_PHRASE 4
+#define TEMPO_MS        0.5 // 120bpm
+
 static void
 _sequence_create_track(gsk_ComposerSequence *p_sequence, const char *uri)
 {
@@ -60,6 +64,9 @@ _begin_stage(gsk_MusicComposer *p_composer, u32 next_stage)
     // go to next stage
     gsk_ComposerStage *p_next_stage = &p_composer->stages[next_stage];
 
+    gsk_ComposerTrack *p_playlist[32] = {0};
+    u32 playlist_total                = 0;
+
     for (int i = 0; i < p_next_stage->sequence_indices_total; i++)
     {
         gsk_ComposerSequence *p_sequence =
@@ -69,11 +76,13 @@ _begin_stage(gsk_MusicComposer *p_composer, u32 next_stage)
         {
             gsk_ComposerTrack *p_track = &p_sequence->tracks[j];
             _play_track(p_composer, p_track);
+
+            p_playlist[playlist_total] = p_track;
+            playlist_total++;
         }
     }
 
     // initial stage.
-    return;
     if (next_stage == 0) { return; };
 
     gsk_ComposerStage *p_last_stage = &p_composer->stages[next_stage - 1];
@@ -85,8 +94,24 @@ _begin_stage(gsk_MusicComposer *p_composer, u32 next_stage)
         for (int j = 0; j < p_sequence->num_tracks; j++)
         {
             gsk_ComposerTrack *p_track = &p_sequence->tracks[j];
+            u8 skip_stop               = FALSE;
 
-            AL_CHECK(alSourceStop(p_track->buffer_clip));
+            // TODO: check if we have the same track. If we do, skip
+            // - otherwise, stop audio
+            for (int k = 0; k < playlist_total; k++)
+            {
+                if (p_track == p_playlist[k])
+                {
+                    LOG_TRACE("Track is included, don't stop");
+                    skip_stop = TRUE;
+                    break;
+                }
+            }
+
+            if (skip_stop == FALSE)
+            {
+                AL_CHECK(alSourceStop(p_track->buffer_clip));
+            }
         }
     }
 }
@@ -118,8 +143,9 @@ gsk_music_composer_create()
 
     gsk_ComposerStage stage_3 = {
       .enter_beat             = 0,
-      .sequence_indices[0]    = 1,
-      .sequence_indices_total = 1,
+      .sequence_indices[0]    = 0,
+      .sequence_indices[1]    = 1,
+      .sequence_indices_total = 2,
     };
 
     ret.stages[2] = stage_3;
@@ -143,9 +169,6 @@ gsk_music_composer_create()
     return ret;
 }
 
-#define BEATS_PER_BAR   4
-#define BARS_PER_PHRASE 4
-
 // handles switching stages
 void
 gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
@@ -154,7 +177,7 @@ gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
     u32 last_phrase = p_composer->current_phrase;
 
     // f64 beat_time = 0.4511; // 133bpm
-    f64 beat_time = 0.5; // 120bpm
+    f64 beat_time = TEMPO_MS;
 
     p_composer->clock_beat_crnt = time_sec - p_composer->clock_beat_prev;
     p_composer->time_offset     = p_composer->clock_beat_crnt - beat_time;
@@ -187,7 +210,7 @@ gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
     // check to increment stage
 
     if (p_composer->queue_next_stage == TRUE &&
-        next_stage <= p_composer->total_stages)
+        next_stage < p_composer->total_stages)
     {
         if (p_composer->current_phrase != last_phrase)
         {

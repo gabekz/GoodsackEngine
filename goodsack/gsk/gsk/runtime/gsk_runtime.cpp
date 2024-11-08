@@ -307,10 +307,11 @@ gsk::runtime::rt_loop()
     // Main Engine Loop
     while (!glfwWindowShouldClose(s_runtime.renderer->window))
     {
-        gsk_device_updateTime(glfwGetTime());
+        double time_sec = glfwGetTime();
+        gsk_device_updateTime(time_sec);
 
 #if USING_COMPOSER
-        gsk_music_composer_update(&composer, glfwGetTime());
+        gsk_music_composer_update(&composer, time_sec);
 #endif // USING_COMPOSER
 
 #if USING_JOYSTICK_CONTROLLER
