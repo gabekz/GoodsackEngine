@@ -96,8 +96,9 @@ _begin_stage(gsk_MusicComposer *p_composer, u32 next_stage)
             gsk_ComposerTrack *p_track = &p_sequence->tracks[j];
             u8 skip_stop               = FALSE;
 
-            // TODO: check if we have the same track. If we do, skip
-            // - otherwise, stop audio
+            // TODO: Maky a sequence playlist, not a track playlist.
+            // we want to check by sequence.
+
             for (int k = 0; k < playlist_total; k++)
             {
                 if (p_track == p_playlist[k])
@@ -193,14 +194,14 @@ gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
             p_composer->current_beat = 0;
             p_composer->current_bar += 1;
 
-            LOG_DEBUG("Next bar: %d", p_composer->current_bar);
+            LOG_TRACE("next bar: %d", p_composer->current_bar);
 
             if (p_composer->current_bar == BARS_PER_PHRASE)
             {
                 p_composer->current_bar = 0;
                 p_composer->current_phrase += 1;
 
-                LOG_DEBUG("Next phrase: %d", p_composer->current_phrase);
+                LOG_DEBUG("next phrase: %d", p_composer->current_phrase);
             }
         }
 
@@ -214,7 +215,9 @@ gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
     {
         if (p_composer->current_phrase != last_phrase)
         {
-            LOG_INFO("Setting next stage (due to end of phrase)");
+            LOG_DEBUG("setting next stage (due to end of phrase) from %d to %d",
+                      last_phrase,
+                      p_composer->current_phrase);
 
             p_composer->current_stage = next_stage;
             // p_composer->queue_next_stage = FALSE;
