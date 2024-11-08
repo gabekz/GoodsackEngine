@@ -14,7 +14,8 @@ extern "C" {
 
 typedef struct gsk_ComposerTrack
 {
-    u32 test;
+    s32 buffer_source;
+    s32 buffer_clip;
 
 } gsk_ComposerTrack;
 
@@ -28,6 +29,9 @@ typedef struct gsk_ComposerSequence
 typedef struct gsk_ComposerStage
 {
     u32 enter_beat;
+
+    u32 sequence_indices[32];
+    u32 sequence_indices_total;
 } gsk_ComposerStage;
 
 typedef struct gsk_MusicComposer
@@ -44,6 +48,7 @@ typedef struct gsk_MusicComposer
 
     f64 clock_beat_crnt;
     f64 clock_beat_prev;
+    double time_offset;
 
     u32 current_phrase;
     u32 current_bar;

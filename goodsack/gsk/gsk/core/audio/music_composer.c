@@ -18,44 +18,111 @@ _sequence_create_track(gsk_ComposerSequence *p_sequence, const char *uri)
     gsk_AudioClip *p_clip = gsk_audio_clip_load_from_file(uri);
 
     s32 buffer_source = openal_generate_source();
-    s32 buffer_audio  = openal_buffer_create(p_clip);
+    s32 buffer_clip   = openal_buffer_create(p_clip);
 
-    AL_CHECK(alSourcei(buffer_source, AL_BUFFER, buffer_audio));
-    // AL_CHECK(alSourcePlay(buffer_audio));
+    AL_CHECK(alSourcei(buffer_source, AL_BUFFER, buffer_clip));
+    AL_CHECK(alSourcei(buffer_source, AL_LOOPING, TRUE));
+
+    p_sequence->tracks[p_sequence->num_tracks] = (gsk_ComposerTrack) {
+      .buffer_source = buffer_source,
+      .buffer_clip   = buffer_clip,
+    };
 
     p_sequence->num_tracks += 1;
-    p_sequence->tracks[p_sequence->num_tracks] = (gsk_ComposerTrack) {
-      .test = 3,
-    };
+}
+
+static void
+_begin_stage(gsk_MusicComposer *p_composer, u32 next_stage)
+{
+    // go to next stage
+    gsk_ComposerStage *p_next_stage = &p_composer->stages[next_stage];
+
+    for (int i = 0; i < p_next_stage->sequence_indices_total; i++)
+    {
+        gsk_ComposerSequence *p_sequence =
+          &p_composer->sequences[p_next_stage->sequence_indices[i]];
+
+        for (int j = 0; j < p_sequence->num_tracks; j++)
+        {
+            gsk_ComposerTrack *p_track = &p_sequence->tracks[j];
+
+            AL_CHECK(alSourcePlay(p_track->buffer_clip));
+        }
+    }
+
+    // initial stage.
+    return;
+    if (next_stage == 0) { return; };
+
+    gsk_ComposerStage *p_last_stage = &p_composer->stages[next_stage - 1];
+    for (int i = 0; i < p_last_stage->sequence_indices_total; i++)
+    {
+        gsk_ComposerSequence *p_sequence =
+          &p_composer->sequences[p_last_stage->sequence_indices[i]];
+
+        for (int j = 0; j < p_sequence->num_tracks; j++)
+        {
+            gsk_ComposerTrack *p_track = &p_sequence->tracks[j];
+
+            AL_CHECK(alSourceStop(p_track->buffer_clip));
+        }
+    }
 }
 
 gsk_MusicComposer
 gsk_music_composer_create()
 {
     gsk_MusicComposer ret = {0};
-    ret.queue_next_stage  = FALSE;
+    ret.queue_next_stage  = TRUE;
 
     // create stages
 
     gsk_ComposerStage stage_1 = {
-      .enter_beat = 0,
+      .enter_beat             = 0,
+      .sequence_indices_total = 0,
     };
 
     ret.stages[0] = stage_1;
     ret.total_stages++;
 
+    gsk_ComposerStage stage_2 = {
+      .enter_beat             = 0,
+      .sequence_indices[0]    = 0,
+      .sequence_indices_total = 1,
+    };
+
+    ret.stages[1] = stage_2;
+    ret.total_stages++;
+
+    gsk_ComposerStage stage_3 = {
+      .enter_beat             = 0,
+      .sequence_indices[0]    = 1,
+      .sequence_indices_total = 1,
+    };
+
+    ret.stages[2] = stage_3;
+    ret.total_stages++;
+
     // create sequences
     gsk_ComposerSequence sequence_0 = {0};
-    _sequence_create_track(&sequence_0, "gsk://audio/test.wav");
+    _sequence_create_track(&sequence_0, "gsk://audio/track_A.wav");
 
     ret.sequences[0] = sequence_0;
     ret.total_sequences++;
+
+    gsk_ComposerSequence sequence_1 = {0};
+    _sequence_create_track(&sequence_1, "gsk://audio/track_B.wav");
+
+    ret.sequences[1] = sequence_1;
+    ret.total_sequences++;
+
+    _begin_stage(&ret, 0);
 
     return ret;
 }
 
 #define BEATS_PER_BAR   4
-#define BARS_PER_PHRASE 3
+#define BARS_PER_PHRASE 4
 
 // handles switching stages
 void
@@ -67,6 +134,11 @@ gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
     f64 beat_time = 0.4511; // 133bpm
 
     p_composer->clock_beat_crnt = time_sec - p_composer->clock_beat_prev;
+
+    if (p_composer->clock_beat_crnt > beat_time)
+    {
+        LOG_INFO("Time offset: %f", p_composer->clock_beat_crnt - beat_time);
+    }
 
     if (p_composer->clock_beat_crnt >= beat_time)
     {
@@ -95,12 +167,17 @@ gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
 
     // check to increment stage
 
-    if (p_composer->queue_next_stage == TRUE)
+    if (p_composer->queue_next_stage == TRUE &&
+        next_stage <= p_composer->total_stages)
     {
         if (p_composer->current_phrase != last_phrase)
         {
-            p_composer->current_stage    = next_stage;
-            p_composer->queue_next_stage = FALSE;
+            LOG_INFO("Setting next stage (due to end of phrase)");
+
+            p_composer->current_stage = next_stage;
+            // p_composer->queue_next_stage = FALSE;
+
+            _begin_stage(p_composer, next_stage);
         }
     }
 }
