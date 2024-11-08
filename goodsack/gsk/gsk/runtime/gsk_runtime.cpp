@@ -40,6 +40,7 @@
 
 #if USING_COMPOSER
 #include "core/audio/music_composer.h"
+#include "core/audio/music_composer_loader.hpp"
 #endif // USING_COMPOSER
 
 extern "C" {
@@ -302,6 +303,7 @@ gsk::runtime::rt_loop()
 
 #if USING_COMPOSER
     gsk_MusicComposer composer = gsk_music_composer_create();
+    gsk::audio::composer::create_from_json(GSK_PATH("gsk://composer.json"));
 #endif // USING_COMPOSER
 
     // Main Engine Loop
