@@ -32,16 +32,10 @@
 #define DEFAULT_DYNAMIC_FRICTION 0.4f
 
 // constant for putting dynamic objects to sleep
-#define SLEEP_EPSILON 0.001f
+#define SLEEP_EPSILON 0.5f
 
 static void
 _position_solver(_SolverData solver_data);
-
-static void
-_impulse_solver_with_rotation(_SolverData solver_data);
-
-static void
-_impulse_solver_with_rotation_friction(_SolverData solver_data);
 
 //-----------------------------------------------------------------------------
 #if DEBUG_TRACK
@@ -226,6 +220,13 @@ fixed_update(gsk_Entity entity)
         gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
     }
 
+    // Rigidbody sleep threshold
+    if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON)
+    {
+        glm_vec3_zero(rigidbody->force);
+        return;
+    }
+
     // --
     // -- Integrate velocities
 
@@ -243,13 +244,9 @@ fixed_update(gsk_Entity entity)
     aVD[2] = glm_deg(aVD[2]);
 #endif // orientation
 
-    // TODO: Optimization - Put object to sleep
-    // TODO: check aVD with epsilon
-    if (glm_vec3_norm(vD) > 0.001)
-    {
-        glm_vec3_add(transform->position, vD, transform->position);
-        glm_vec3_add(transform->orientation, aVD, transform->orientation);
-    }
+    // update positions
+    glm_vec3_add(transform->position, vD, transform->position);
+    glm_vec3_add(transform->orientation, aVD, transform->orientation);
 
     // --
     // -- Reset net force

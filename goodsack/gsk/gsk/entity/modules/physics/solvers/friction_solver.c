@@ -52,7 +52,6 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     struct ComponentTransform *transform   = solver_data.p_transform;
     struct ComponentRigidbody *rigidbody_a = solver_data.p_rigidbody;
-    const f64 delta                        = solver_data.delta;
 
     gsk_DynamicBody body_a = marker.body_a;
     gsk_DynamicBody body_b = marker.body_b;
