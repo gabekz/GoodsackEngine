@@ -127,7 +127,7 @@ static void
 destroy(gsk_Entity entity)
 {
     if (!(gsk_ecs_has(entity, C_AUDIOSOURCE))) return;
-    LOG_INFO("Destroy");
+    // LOG_INFO("Destroy");
 }
 
 void

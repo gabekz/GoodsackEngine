@@ -167,6 +167,7 @@ gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex)
         u32 newCount = sceneIndex - sceneCount + (sceneCount + 1);
 
         // Create a new, empty scene
+        // TODO: Create new empty scenes for all newly "sandwiched" scenes.
         gsk_Scene *newScene  = malloc(sizeof(gsk_Scene));
         newScene->id         = newCount;
         newScene->ecs        = gsk_ecs_init(self);

@@ -36,12 +36,10 @@
 
 #include "core/drivers/alsoft/alsoft.h"
 
-#define USING_COMPOSER 1
-
-#if USING_COMPOSER
+#if GSK_USING_COMPOSER
 #include "core/audio/music_composer.h"
 #include "core/audio/music_composer_loader.hpp"
-#endif // USING_COMPOSER
+#endif // GSK_USING_COMPOSER
 
 extern "C" {
 static struct
@@ -301,10 +299,10 @@ gsk::runtime::rt_loop()
     entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
 #endif
 
-#if USING_COMPOSER
+#if GSK_USING_COMPOSER
     gsk_MusicComposer composer = gsk_music_composer_create();
     gsk::audio::composer::create_from_json(GSK_PATH("gsk://composer.json"));
-#endif // USING_COMPOSER
+#endif // GSK_USING_COMPOSER
 
     // Main Engine Loop
     while (!glfwWindowShouldClose(s_runtime.renderer->window))
@@ -312,9 +310,9 @@ gsk::runtime::rt_loop()
         double time_sec = glfwGetTime();
         gsk_device_updateTime(time_sec);
 
-#if USING_COMPOSER
+#if GSK_USING_COMPOSER
         gsk_music_composer_update(&composer, time_sec);
-#endif // USING_COMPOSER
+#endif // GSK_USING_COMPOSER
 
 #if USING_JOYSTICK_CONTROLLER
         int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
@@ -380,7 +378,11 @@ gsk::runtime::rt_loop()
     // Delete all ECS Entities
     for (int i = 0; i < s_runtime.renderer->sceneC; i++)
     {
+        if (s_runtime.renderer->sceneL[i] == NULL) { continue; }
+
         gsk_ECS *p_ecs = s_runtime.renderer->sceneL[i]->ecs;
+
+        if (p_ecs == NULL) { continue; }
 
         // mark each entity for deletion
         for (int j = 0; j < p_ecs->nextIndex; j++)

@@ -12,6 +12,13 @@
 
 #include "asset/asset_cache.h"
 
+// Maximum bytes per page
+//#define GSK_GPAK_MAX_FILESIZE 0xF424000U
+#define GSK_GPAK_MAX_FILESIZE 0x2FAF080
+
+// Maximum bytes bloc
+#define GSK_GPAK_MAX_BLOC 0xFFFFFFFFU
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -35,6 +42,10 @@ typedef struct gsk_GpakWriter
 {
     void *file_ptr;
     u8 is_ready;
+
+    void *data_file_ptr;
+    u32 dat_file_count;
+    u32 dat_file_crnt;
 
 } gsk_GpakWriter;
 

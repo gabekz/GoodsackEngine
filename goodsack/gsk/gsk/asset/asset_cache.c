@@ -199,12 +199,12 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
         return;
     }
 
-    gsk_asset_cache_add(p_cache, list_type, str_uri);
-
     LOG_DEBUG("adding asset by extension (pool: %d, ext: %s)(asset: %s)",
               list_type,
               ext,
               str_uri);
+
+    gsk_asset_cache_add(p_cache, list_type, str_uri);
 }
 /*--------------------------------------------------------------------*/
 

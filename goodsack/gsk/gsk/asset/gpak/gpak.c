@@ -16,13 +16,39 @@
 #include "asset/asset_cache.h"
 #include "asset/assetdefs.h"
 
+#include "io/parse_image.h"
+
+static void
+__rotate_data_file(gsk_GpakWriter *p_writer)
+{
+    if (p_writer->dat_file_count > 0) { fclose(p_writer->data_file_ptr); };
+
+    FILE *dat_file;
+
+    char *buff    = "GPAK_CACHE";
+    u32 buff_size = strlen(buff);
+
+    char pathT[256];
+    sprintf(pathT, "gsk://test_%d.gpak", p_writer->dat_file_count);
+    LOG_INFO("%s", pathT);
+
+    const char *data_full_path = GSK_PATH(pathT);
+    dat_file                   = fopen(data_full_path, "wb");
+    if (!dat_file) { LOG_CRITICAL("Failed to create file %s", data_full_path); }
+    fwrite(buff, buff_size, 1, dat_file);
+
+    p_writer->data_file_ptr = dat_file;
+    p_writer->dat_file_count += 1;
+    p_writer->dat_file_crnt += 1;
+}
+
 gsk_GpakWriter
 gsk_gpak_writer_init()
 {
-    gsk_GpakWriter ret;
+    gsk_GpakWriter ret = {0};
 
     FILE *file;
-    char *uri             = "gsk://test.bin";
+    char *uri             = "gsk://test.gpak";
     const char *full_path = GSK_PATH(uri);
 
     char *buff    = "GPAK";
@@ -36,8 +62,14 @@ gsk_gpak_writer_init()
     // TODO: write asset-type container block
     // -- contains start/end blocks
 
-    ret.file_ptr = file;
-    ret.is_ready = TRUE;
+    ret.file_ptr      = file;
+    ret.data_file_ptr = NULL;
+    ret.is_ready      = TRUE;
+
+    ret.dat_file_count = 0;
+    ret.dat_file_crnt  = 0;
+
+    __rotate_data_file(&ret);
 
     return ret;
 }
@@ -52,12 +84,16 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
 
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
     {
+        // TODO: Temporarily only checking Textures
+        if (i != GSK_ASSET_CACHE_TEXTURE) { continue; }
+
         // TODO: update asset-type container block
 
-        // go through each gcfg
         for (int j = 0; j < p_cache->asset_lists[i].list_state.list_next - 1;
              j++)
         {
+            /*---- capture AssetRef ------------------------------------------*/
+
             gsk_AssetRef *p_ref;
             p_ref = (gsk_AssetRef *)array_list_get_at_index(
               &(p_cache->asset_lists[i].list_state), j);
@@ -66,22 +102,59 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
             uri = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
                                                   p_ref->asset_uri_index);
 
+            /*---- BLOC info -------------------------------------------------*/
+
+            u32 bloc_offset = 0;
+            u32 bloc_length = 0;
+
+            u8 bloc_pages[2] = {p_writer->dat_file_crnt, 0};
+
+            /*==== Write Asset Blob Data =====================================*/
+
+            if (p_ref->is_imported == FALSE)
+            {
+                gsk_AssetBlob asset_source = parse_image(GSK_PATH(uri));
+
+                u32 size_check =
+                  ftell(p_writer->data_file_ptr) + asset_source.buffer_len;
+                if (size_check >= GSK_GPAK_MAX_FILESIZE)
+                {
+                    __rotate_data_file(p_writer);
+                }
+
+                bloc_offset = ftell(p_writer->data_file_ptr) + 1;
+                bloc_length = asset_source.buffer_len;
+
+                fwrite(asset_source.p_buffer,
+                       asset_source.buffer_len,
+                       1,
+                       p_writer->data_file_ptr);
+
+                free(asset_source.p_buffer);
+            }
+
+            // get bloc_page_end after writing asset blob
+            bloc_pages[1] = p_writer->dat_file_crnt;
+
+            /*==== Write Asset Info ==========================================*/
+
             // ASSET_HANDLE
             fwrite(&p_ref->asset_handle, 1, sizeof(u64), p_writer->file_ptr);
 
 #if 0
-            // ASSET_URI_INDEX (maybe just put the uri here?)
+            // ASSET_URI_INDEX
             fwrite(
               &p_ref->asset_uri_index, 1, sizeof(u32), p_writer->file_ptr);
-#endif
+#else
             // ASSET URI
             fwrite(uri, strlen(uri), 1, p_writer->file_ptr);
-            // START_BLOC_ID
-            int p = 0xAAAAAAAA;
-            fwrite(&p, 1, sizeof(u32), p_writer->file_ptr);
-            // BLOCK_LEN
-            int q = 0xBBBBBBBB;
-            fwrite(&q, 1, sizeof(u32), p_writer->file_ptr);
+#endif
+            // BLOC_PAGES
+            fwrite(bloc_pages, 2, sizeof(u8), p_writer->file_ptr);
+            // START_BLOC_ID -- offset
+            fwrite(&bloc_offset, 1, sizeof(u32), p_writer->file_ptr);
+            // BLOC_LEN
+            fwrite(&bloc_length, 1, sizeof(u32), p_writer->file_ptr);
         }
     }
 }

@@ -10,30 +10,34 @@
 
         "Riff_Melody": [
             {
-                "track": "melody"
+                "track": "gsk://audio/comp/melody.wav"
             },
             {
-                "track": "melody_ambience",
+                "track": "gsk://audio/comp/melody_ambience.wav",
                 "start_time": 30
             }
         ],
 
         "Riff_Bass": [
             {
-                "track": "bass"
+                "track": "gsk://audio/comp/bass.wav",
+
+                "enter_volume": 100,
+                "enter_phrase": 1,
+                "enter_beat": 4
             }
         ],
 
         "Riff_Drums": [
             {
-                "track": "drums"
+                "track": "gsk://audio/comp/drums.wav"
             }
         ]
     },
 
     "Stages": [
         {
-            "bpm": 133,
+            "bpm": 120,
 
             "beats_per_bar": 4,
             "bars_per_phrase": 4,
