@@ -25,17 +25,17 @@ __rotate_data_file(gsk_GpakWriter *p_writer)
 
     FILE *dat_file;
 
-    char *buff    = "GPAK_CACHE";
-    u32 buff_size = strlen(buff);
-
+    char headT[32];
     char pathT[256];
+
+    sprintf(headT, "GPAK_PAGE%d", p_writer->dat_file_count);
     sprintf(pathT, "gsk://test_%d.gpak", p_writer->dat_file_count);
-    LOG_INFO("%s", pathT);
 
     const char *data_full_path = GSK_PATH(pathT);
     dat_file                   = fopen(data_full_path, "wb");
     if (!dat_file) { LOG_CRITICAL("Failed to create file %s", data_full_path); }
-    fwrite(buff, buff_size, 1, dat_file);
+
+    fwrite(headT, strlen(headT), 1, dat_file);
 
     p_writer->data_file_ptr = dat_file;
     p_writer->dat_file_count += 1;
@@ -79,7 +79,7 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
                                gsk_AssetCache *p_cache)
 {
     // write the cache
-    u8 err = (p_writer == NULL | p_writer->file_ptr == NULL) ? 1 : 0;
+    u8 err = (p_writer == NULL || p_writer->file_ptr == NULL) ? 1 : 0;
     if (err) { LOG_CRITICAL("Failed to open GPAK writer!"); }
 
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
@@ -114,6 +114,8 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
             if (p_ref->is_imported == FALSE)
             {
                 gsk_AssetBlob asset_source = parse_image(GSK_PATH(uri));
+
+                // TODO: check page-spanning
 
                 u32 size_check =
                   ftell(p_writer->data_file_ptr) + asset_source.buffer_len;
@@ -167,94 +169,9 @@ gsk_gpak_writer_write(gsk_GpakWriter *p_writer)
         LOG_CRITICAL("Failed to open GPAK writer!");
     }
 }
+
 void
 gsk_gpak_writer_close(gsk_GpakWriter *p_writer)
 {
     fclose(p_writer->file_ptr);
 }
-
-#if 0
-static void
-gsk_gpak_write(void *buff, int buff_size)
-{
-    FILE *file;
-    char *uri             = "gsk://test.bin";
-    const char *full_path = GSK_PATH(uri);
-
-    // reserve mem
-    char *readed_buff = malloc(buff_size);
-
-    file = fopen(full_path, "wb");
-    if (!file) { LOG_CRITICAL("Failed to create file %s", full_path); }
-
-    fwrite(buff, buff_size, 1, file);
-
-    fclose(file);
-
-    // now read info
-    file = fopen(full_path, "rb");
-    if (!file) { LOG_CRITICAL("Failed to read file!"); }
-    fread(readed_buff, buff_size, 1, file);
-
-    fclose(file);
-
-    LOG_INFO("READ %s", readed_buff);
-}
-
-void
-gsk_gpak_make_raw(gsk_AssetCache *p_cache)
-{
-
-    // get raw texture data
-    // gsk_Texture tex = gsk_asset_cache_get_by_handle(p_cache, HANDLE);
-
-    // 1. go through each texture asset
-    // 2. get the handle and URI
-    // 3. from the URI, get the image path
-    // 4. get the raw image data
-    // 5. store to gpak
-
-    // need to store URI, then store binary location based on it
-
-    // for (int i = 0; i < p_cache->asset_lists[0].list_state.list_next - 1;
-    // i++)
-    for (int i = 0; i < 1; i++)
-    {
-        gsk_AssetCacheState *p_ref;
-
-        p_ref = (gsk_AssetCacheState *)array_list_get_at_index(
-          &(p_cache->asset_lists[1].list_state), i);
-
-        // grab the URI
-        char *uri;
-        uri = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
-                                              p_ref->asset_uri_index);
-
-        const char *full_path = GSK_PATH(uri);
-
-        // find the location on disk
-        char *buffer = 0;
-        long length;
-        FILE *f = fopen(full_path, "rb");
-
-        if (f)
-        {
-            fseek(f, 0, SEEK_END);
-            length = ftell(f);
-            fseek(f, 0, SEEK_SET);
-            buffer = malloc(length);
-            if (buffer) { fread(buffer, 1, length, f); }
-            fclose(f);
-        }
-
-        if (buffer)
-        {
-            LOG_INFO("%c", buffer[0]);
-            // start to process your data / extract strings here...
-            gsk_gpak_write(buffer, length);
-
-            free(buffer);
-        }
-    }
-}
-#endif

@@ -116,6 +116,8 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       .asset_uri_index = p_cache->asset_uri_list.list_next - 1,
       .is_imported     = FALSE,
       .is_utilized     = FALSE,
+      .p_data_import   = NULL,
+      .p_data_active   = NULL,
     };
 
     array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);

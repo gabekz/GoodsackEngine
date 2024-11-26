@@ -114,7 +114,7 @@ static void *
 _asset_load_generic(gsk_AssetCache *p_cache,
                     gsk_AssetRef *p_ref,
                     const char *str_uri,
-                    LoadAssetFunc create_asset_func,
+                    gsk_CreateAssetFptr create_asset_func,
                     u32 expected_type)
 {
 
@@ -159,7 +159,11 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache, const char *str_uri)
 
     gsk_AssetRef *p_ref = gsk_asset_cache_get(p_cache, str_uri);
 
-    if (p_ref == NULL) { LOG_CRITICAL("Failed to get asset (%s)", str_uri); }
+    if (p_ref == NULL)
+    {
+        LOG_ERROR("Failed to get asset (%s)", str_uri);
+        return NULL;
+    }
 
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
     u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
@@ -168,7 +172,7 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache, const char *str_uri)
 
     LOG_DEBUG("loading asset (%s)", str_uri);
 
-    LoadAssetFunc p_create_func = NULL;
+    gsk_CreateAssetFptr p_create_func = NULL;
     switch (asset_type)
     {
     case GSK_ASSET_CACHE_GCFG: p_create_func = __create_gcfg; break;
@@ -182,7 +186,9 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache, const char *str_uri)
     // None
     if (p_create_func == NULL)
     {
-        LOG_CRITICAL("INVALID asset type %d", asset_type);
+        LOG_CRITICAL("INVALID asset type %d. Asset handle (%d) is corrupt",
+                     asset_type,
+                     p_ref->asset_handle);
     }
 
     // TODO: Import asset here
@@ -196,6 +202,7 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache, const char *str_uri)
     if (p_ref->is_imported == FALSE)
     {
         LOG_ERROR("Failed to import asset data for (%s).", str_uri);
+        return NULL; // TODO: Fallback asset
     }
 
     if (p_ref->is_utilized == FALSE)
@@ -203,11 +210,8 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache, const char *str_uri)
         LOG_ERROR("Probably failed to load asset. This may result in a "
                   "memory leak. (%s)",
                   str_uri);
-        return NULL;
+        return NULL; // TODO: Fallback asset
     }
 
     return p_ref;
-
-    // return array_list_get_at_index(
-    //  &(p_cache->asset_lists[asset_type].list_data), asset_index - 1);
 }

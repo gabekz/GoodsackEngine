@@ -6,32 +6,41 @@
 
 #include "asset/assetdefs.h"
 
+#include "util/logger.h"
+
 gsk_AssetBlob
 parse_image(const char *path)
 {
-    gsk_AssetBlob ret = {0};
+    gsk_AssetBlob ret = {.p_buffer = NULL, .buffer_len = 0};
 
     // find the location on disk
     char *buffer = 0;
     long length;
     FILE *f = fopen(path, "rb");
 
-    if (f)
+    if (f == NULL)
     {
-        fseek(f, 0, SEEK_END);
-        length = ftell(f);
-        fseek(f, 0, SEEK_SET);
-        buffer = malloc(length);
-        if (buffer) { fread(buffer, 1, length, f); }
-        fclose(f);
+        LOG_ERROR("Failed open file at %s", path);
+        return ret;
     }
 
-    if (buffer)
+    fseek(f, 0, SEEK_END);
+    length = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    buffer = malloc(length);
+    if (buffer) { fread(buffer, 1, length, f); }
+
+    fclose(f);
+
+    if (buffer == NULL)
     {
-        ret.p_buffer   = buffer;
-        ret.buffer_len = length;
-        // free(buffer);
+        LOG_ERROR("Failed to parse image, buffer broken. %s", path);
+        return ret;
     }
+
+    ret.p_buffer   = buffer;
+    ret.buffer_len = length;
 
     return ret;
 }
