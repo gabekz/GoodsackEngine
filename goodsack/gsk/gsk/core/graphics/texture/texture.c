@@ -20,45 +20,39 @@
 #define TEXTURE_WRAPPING GL_REPEAT
 
 gsk_Texture
-texture_create_2(gsk_AssetBlob *p_asset_blob,
-                 VulkanDeviceContext *vkDevice,
-                 TextureOptions options)
+_gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
+                             const char *path,
+                             VulkanDeviceContext *vkDevice,
+                             TextureOptions *p_options)
 {
-    gsk_Texture ret = {0};
-    // ret.filePath    = path;
+    gsk_Texture ret            = {0};
+    unsigned char *localBuffer = NULL;
 
-    // TODO: create parameter
-    stbi_set_flip_vertically_on_load(options.flip_vertically);
-    unsigned char *localBuffer;
+    stbi_set_flip_vertically_on_load(p_options->flip_vertically);
+
     if (p_asset_blob != NULL)
     {
-        // LOG_INFO("Loading Image at path: %s", path);
-        // LOG_DEBUG("Format: %d, GenMips: %d, AFRange: %f",
-        //         format, genMipMaps, afRange);
-
-#if 0
-        localBuffer = stbi_load(path,
-                                &ret.width,
-                                &ret.height,
-                                &ret.bpp,
-                                /*Type*/ STBI_rgb_alpha);
-#endif
-
         localBuffer = stbi_load_from_memory(p_asset_blob->p_buffer,
                                             p_asset_blob->buffer_len,
                                             &ret.width,
                                             &ret.height,
                                             &ret.bpp,
                                             STBI_rgb_alpha);
-
+    } else if (path != NULL)
+    {
+        ret.filePath = path;
+        localBuffer =
+          stbi_load(path, &ret.width, &ret.height, &ret.bpp, STBI_rgb_alpha);
     } else
     {
-        localBuffer = NULL;
+        LOG_ERROR("Failed to create texture. Must pass either blob or path.");
+        return ret;
     }
 
     if (localBuffer == NULL || localBuffer == 0x00)
     {
-        LOG_CRITICAL("Failed to load texture data!");
+        LOG_ERROR("Failed to load texture data!");
+        return ret;
     }
 
     if (GSK_DEVICE_API_OPENGL)
@@ -68,7 +62,7 @@ texture_create_2(gsk_AssetBlob *p_asset_blob,
 
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     options.internal_format,
+                     p_options->internal_format,
                      ret.width,
                      ret.height,
                      0,
@@ -81,7 +75,7 @@ texture_create_2(gsk_AssetBlob *p_asset_blob,
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_WRAPPING);
 
         // Mipmaps
-        if (options.gen_mips > 0)
+        if (p_options->gen_mips > 0)
         {
             glGenerateTextureMipmap(ret.id);
             glTexParameteri(
@@ -94,10 +88,10 @@ texture_create_2(gsk_AssetBlob *p_asset_blob,
         }
 
         // Anistropic Filtering
-        if (options.af_range > 0)
+        if (p_options->af_range > 0)
         {
             glTexParameterf(
-              GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, options.af_range);
+              GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, p_options->af_range);
         }
     } // GSK_DEVICE_API_OPENGL
 
@@ -189,150 +183,12 @@ texture_create(const char *path,
                TextureOptions options)
 {
     gsk_Texture *tex = malloc(sizeof(gsk_Texture));
-    tex->filePath    = path;
-
-    // TODO: create parameter
-    stbi_set_flip_vertically_on_load(options.flip_vertically);
-    unsigned char *localBuffer;
-    if (path != NULL)
+    if (tex == NULL)
     {
-        LOG_INFO("Loading Image at path: %s", path);
-        // LOG_DEBUG("Format: %d, GenMips: %d, AFRange: %f",
-        //         format, genMipMaps, afRange);
-
-        localBuffer = stbi_load(path,
-                                &tex->width,
-                                &tex->height,
-                                &tex->bpp,
-                                /*Type*/ STBI_rgb_alpha);
-    } else
-    {
-        localBuffer = NULL;
+        LOG_CRITICAL("Failled to allocate memory for texture.");
     }
 
-    if (localBuffer == NULL || localBuffer == 0x00)
-    {
-        LOG_CRITICAL("Failed to load texture data!");
-    }
-
-    if (GSK_DEVICE_API_OPENGL)
-    {
-        glGenTextures(1, &tex->id);
-        glBindTexture(GL_TEXTURE_2D, tex->id);
-
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     options.internal_format,
-                     tex->width,
-                     tex->height,
-                     0,
-                     GL_RGBA,
-                     GL_UNSIGNED_BYTE,
-                     localBuffer);
-
-        // Wrapping
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, TEXTURE_WRAPPING);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_WRAPPING);
-
-        // Mipmaps
-        if (options.gen_mips > 0)
-        {
-            glGenerateTextureMipmap(tex->id);
-            glTexParameteri(
-              GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        } else
-        {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        }
-
-        // Anistropic Filtering
-        if (options.af_range > 0)
-        {
-            glTexParameterf(
-              GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, options.af_range);
-        }
-    } // GSK_DEVICE_API_OPENGL
-
-    else if (GSK_DEVICE_API_VULKAN && vkDevice)
-    {
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        VkDeviceSize imageSize = tex->width * tex->height * 4;
-
-        vulkan_buffer_create(vkDevice->physicalDevice,
-                             vkDevice->device,
-                             imageSize,
-                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                             &stagingBuffer,
-                             &stagingBufferMemory);
-
-        void *data;
-        VK_CHECK(vkMapMemory(
-          vkDevice->device, stagingBufferMemory, 0, imageSize, 0, &data));
-        memcpy(data, localBuffer, (u32)imageSize);
-        vkUnmapMemory(vkDevice->device, stagingBufferMemory);
-
-        vulkan_image_create(vkDevice->physicalDevice,
-                            vkDevice->device,
-                            &tex->vulkan.textureImage,
-                            &tex->vulkan.textureImageMemory,
-                            tex->width,
-                            tex->height,
-                            VK_FORMAT_R8G8B8A8_SRGB,
-                            VK_IMAGE_TILING_OPTIMAL,
-                            VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-                              VK_IMAGE_USAGE_SAMPLED_BIT,
-                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-        vulkan_image_layout_transition(vkDevice->device,
-                                       vkDevice->commandPool,
-                                       vkDevice->graphicsQueue,
-                                       tex->vulkan.textureImage,
-                                       VK_FORMAT_R8G8B8A8_SRGB,
-                                       VK_IMAGE_LAYOUT_UNDEFINED,
-                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-        vulkan_image_copy_from_buffer(vkDevice->device,
-                                      vkDevice->commandPool,
-                                      vkDevice->graphicsQueue,
-                                      stagingBuffer,
-                                      tex->vulkan.textureImage,
-                                      (u32)tex->width,
-                                      (u32)tex->height);
-
-        // Final transition for shader access
-        vulkan_image_layout_transition(
-          vkDevice->device,
-          vkDevice->commandPool,
-          vkDevice->graphicsQueue,
-          tex->vulkan.textureImage,
-          VK_FORMAT_R8G8B8A8_SRGB,
-          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        // Clean-up staging buffer
-        vkDestroyBuffer(vkDevice->device, stagingBuffer, NULL);
-        vkFreeMemory(vkDevice->device, stagingBufferMemory, NULL);
-
-        // Create Texture ImageView
-        tex->vulkan.textureImageView =
-          vulkan_image_view_create(vkDevice->device,
-                                   tex->vulkan.textureImage,
-                                   VK_FORMAT_R8G8B8A8_SRGB,
-                                   VK_IMAGE_ASPECT_COLOR_BIT);
-
-        // Create Texture Sampler (for shader access)
-        tex->vulkan.textureSampler = vulkan_image_texture_sampler(
-          vkDevice->device, vkDevice->physicalDeviceProperties);
-
-    } // GSK_DEVICE_API_VULKAN
-
-    if (localBuffer) { stbi_image_free(localBuffer); }
+    *tex = _gsk_texture_create_internal(NULL, path, vkDevice, &options);
 
     return tex;
 }

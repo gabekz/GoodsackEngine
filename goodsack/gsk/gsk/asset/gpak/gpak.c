@@ -13,10 +13,9 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#include "asset/asset.h"
 #include "asset/asset_cache.h"
 #include "asset/assetdefs.h"
-
-#include "io/parse_image.h"
 
 static void
 __rotate_data_file(gsk_GpakWriter *p_writer)
@@ -94,13 +93,22 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
         {
             /*---- capture AssetRef ------------------------------------------*/
 
-            gsk_AssetRef *p_ref;
-            p_ref = (gsk_AssetRef *)array_list_get_at_index(
+            gsk_AssetRef *p_ref = NULL;
+            p_ref               = (gsk_AssetRef *)array_list_get_at_index(
               &(p_cache->asset_lists[i].list_state), j);
 
             char *uri;
             uri = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
                                                   p_ref->asset_uri_index);
+
+            p_ref =
+              _gsk_asset_get_internal(p_cache, uri, GSK_ASSET_FETCH_IMPORT);
+
+            if (p_ref == NULL) { LOG_ERROR("Failed to get asset"); }
+            if (p_ref->is_imported == FALSE || p_ref->p_data_import == NULL)
+            {
+                LOG_ERROR("Failed to import asset");
+            }
 
             /*---- BLOC info -------------------------------------------------*/
 
@@ -111,29 +119,28 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
 
             /*==== Write Asset Blob Data =====================================*/
 
-            if (p_ref->is_imported == FALSE)
+            gsk_AssetBlob asset_source = *(gsk_AssetBlob *)p_ref->p_data_import;
+
+            // TODO: check page-spanning
+
+            u32 size_check =
+              ftell(p_writer->data_file_ptr) + asset_source.buffer_len;
+            if (size_check >= GSK_GPAK_MAX_FILESIZE)
             {
-                gsk_AssetBlob asset_source = parse_image(GSK_PATH(uri));
-
-                // TODO: check page-spanning
-
-                u32 size_check =
-                  ftell(p_writer->data_file_ptr) + asset_source.buffer_len;
-                if (size_check >= GSK_GPAK_MAX_FILESIZE)
-                {
-                    __rotate_data_file(p_writer);
-                }
-
-                bloc_offset = ftell(p_writer->data_file_ptr) + 1;
-                bloc_length = asset_source.buffer_len;
-
-                fwrite(asset_source.p_buffer,
-                       asset_source.buffer_len,
-                       1,
-                       p_writer->data_file_ptr);
-
-                free(asset_source.p_buffer);
+                __rotate_data_file(p_writer);
             }
+
+            bloc_offset = ftell(p_writer->data_file_ptr) + 1;
+            bloc_length = asset_source.buffer_len;
+
+            fwrite(asset_source.p_buffer,
+                   asset_source.buffer_len,
+                   1,
+                   p_writer->data_file_ptr);
+
+            // TODO: Move this somewhere else.
+            // cleanup
+            free(asset_source.p_buffer);
 
             // get bloc_page_end after writing asset blob
             bloc_pages[1] = p_writer->dat_file_crnt;

@@ -48,12 +48,18 @@ gsk_asset_cache_init()
 
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
     {
+        u32 inc = GSK_ASSET_CACHE_INCREMENT;
+
         ret.asset_lists[i].list_state =
-          array_list_init(sizeof(gsk_AssetRef), GSK_ASSET_CACHE_INCREMENT);
-        ret.asset_lists[i].list_data =
-          array_list_init(sizes_data[i], GSK_ASSET_CACHE_INCREMENT);
-        ret.asset_lists[i].list_options =
-          array_list_init(sizes_ops[i], GSK_ASSET_CACHE_INCREMENT);
+          array_list_init(sizeof(gsk_AssetRef), inc);
+
+        ret.asset_lists[i].list_data_active =
+          array_list_init(sizes_data[i], inc);
+
+        ret.asset_lists[i].list_data_import =
+          array_list_init(sizeof(gsk_AssetBlob), inc);
+
+        ret.asset_lists[i].list_options = array_list_init(sizes_ops[i], inc);
     }
 
     // asset uri array
@@ -124,7 +130,8 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
 
     // add empty data -- we might want to may array_list act as a regular
     // buffer, too.
-    array_list_push(&(p_cache->asset_lists[asset_type].list_data), NULL);
+    array_list_push(&(p_cache->asset_lists[asset_type].list_data_import), NULL);
+    array_list_push(&(p_cache->asset_lists[asset_type].list_data_active), NULL);
 
     /*==== Create default asset options ==============================*/
 

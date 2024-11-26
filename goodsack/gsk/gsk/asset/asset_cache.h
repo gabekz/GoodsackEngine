@@ -36,9 +36,10 @@ typedef enum gsk_AssetCacheType {
 
 typedef struct gsk_AssetList
 {
-    ArrayList list_state;   // load state
-    ArrayList list_data;    // memory data
-    ArrayList list_options; // asset options
+    ArrayList list_state;       // load state
+    ArrayList list_data_active; // active loaded data
+    ArrayList list_data_import; // raw import data
+    ArrayList list_options;     // asset options
 
 } gsk_AssetList;
 

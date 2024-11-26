@@ -45,15 +45,16 @@ typedef struct gsk_Texture
     } vulkan;
 } gsk_Texture;
 
+gsk_Texture
+_gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
+                             const char *path,
+                             VulkanDeviceContext *vkDevice,
+                             TextureOptions *p_options);
+
 gsk_Texture *
 texture_create(const char *path,
                VulkanDeviceContext *vkDevice,
                TextureOptions options);
-
-gsk_Texture
-texture_create_2(gsk_AssetBlob *p_asset_blob,
-                 VulkanDeviceContext *vkDevice,
-                 TextureOptions options);
 
 gsk_Texture *
 texture_create_cubemap(u32 faceCount, ...);

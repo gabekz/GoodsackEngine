@@ -24,12 +24,9 @@
 #include "asset/import/loader_gcfg.h"
 #include "io/parse_image.h"
 
-#if 0
-static gsk_AssetRef
-_gsk_asset_import(gsk_AssetCache *p_cache, const char *str_uri)
+static u8
+__asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 {
-    gsk_AssetRef ret = {0};
-
     gsk_AssetRef *p_ref = gsk_asset_cache_get(p_cache, str_uri);
     if (p_ref == NULL) { LOG_CRITICAL("Failed to get asset (%s)", str_uri); }
 
@@ -41,18 +38,25 @@ _gsk_asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
     u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
 
+#if 0
+    // pre-allocated import blob data
+    gsk_AssetBlob *p_blob = array_list_get_at_index(
+      &(p_cache->asset_lists[asset_type].list_data_import), asset_index - 1);
+
     // TODO: handle path for importing hot
     if (asset_type == GSK_ASSET_CACHE_TEXTURE)
     {
-        ret = parse_image(GSK_PATH(str_uri));
+        *p_blob = parse_image(GSK_PATH(str_uri));
+        if (p_blob == NULL) { return 0; }
     }
 
+    p_ref->p_data_import = p_blob;
+#endif
     p_ref->is_imported = TRUE;
-    return ret;
+    return 1;
 
     // TODO: handle path for importing from .gpak
 }
-#endif
 
 static void
 __create_gcfg(const char *str_uri, void *p_options, void *p_dest)
@@ -72,10 +76,24 @@ __create_texture(const char *str_uri, void *p_options, void *p_dest)
 
     // TextureOptions ops = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
     gsk_Texture tex =
-      texture_create_2(&asset_source, NULL, *(TextureOptions *)p_options);
+      _gsk_texture_create_internal(&asset_source, NULL, NULL, p_options);
     *((gsk_Texture *)p_dest) = tex;
 
     free(asset_source.p_buffer); // TODO: change
+}
+
+static void
+__load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
+{
+    gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
+
+    gsk_Texture tex =
+      _gsk_texture_create_internal(p_blob, NULL, NULL, p_options);
+
+    *((gsk_Texture *)p_dest) = tex;
+
+    free(p_blob->p_buffer);
+    free(p_blob);
 }
 
 static void
@@ -140,7 +158,7 @@ _asset_load_generic(gsk_AssetCache *p_cache,
 
     // Get the pre-allocated memory location from cache
     void *p_data = array_list_get_at_index(
-      &(p_cache->asset_lists[asset_list].list_data), asset_index - 1);
+      &(p_cache->asset_lists[asset_list].list_data_active), asset_index - 1);
 
     void *p_options = array_list_get_at_index(
       &(p_cache->asset_lists[asset_list].list_options), asset_index - 1);
@@ -152,7 +170,9 @@ _asset_load_generic(gsk_AssetCache *p_cache,
 }
 
 gsk_AssetRef *
-_gsk_asset_get_internal(gsk_AssetCache *p_cache, const char *str_uri)
+_gsk_asset_get_internal(gsk_AssetCache *p_cache,
+                        const char *str_uri,
+                        u8 fetch_mode)
 {
     // check if the asset has been added already
     // -- if not, exit
@@ -191,19 +211,31 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache, const char *str_uri)
                      p_ref->asset_handle);
     }
 
-    // TODO: Import asset here
-    // also clear..
-    p_ref->is_imported = TRUE; // should be replaced with import function
+    if (fetch_mode == GSK_ASSET_FETCH_VALIDATE)
+    {
+        LOG_DEBUG("Asset handle (%d) validated successfully.",
+                  p_ref->asset_handle);
+        return p_ref;
+    }
 
-    // get the data
-    p_ref->p_data_active = (void *)_asset_load_generic(
-      p_cache, p_ref, str_uri, p_create_func, asset_type);
-
-    if (p_ref->is_imported == FALSE)
+    // Import asset here
+    u8 import_code = __asset_import(p_cache, str_uri);
+    if (import_code == 0 || p_ref->is_imported == FALSE)
     {
         LOG_ERROR("Failed to import asset data for (%s).", str_uri);
         return NULL; // TODO: Fallback asset
     }
+
+    if (fetch_mode == GSK_ASSET_FETCH_IMPORT)
+    {
+        LOG_DEBUG("Asset (%s) fetched import.", str_uri);
+        return p_ref;
+    }
+
+    // Utilize/Create data
+
+    p_ref->p_data_active = (void *)_asset_load_generic(
+      p_cache, p_ref, str_uri, p_create_func, asset_type);
 
     if (p_ref->is_utilized == FALSE)
     {
