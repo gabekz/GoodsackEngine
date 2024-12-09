@@ -38,6 +38,7 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
     u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
 
+// NOTE: Enable to import data to blob.
 #if 0
     // pre-allocated import blob data
     gsk_AssetBlob *p_blob = array_list_get_at_index(
@@ -74,7 +75,6 @@ __create_texture(const char *str_uri, void *p_options, void *p_dest)
 {
     gsk_AssetBlob asset_source = parse_image(GSK_PATH(str_uri));
 
-    // TextureOptions ops = (TextureOptions) {8, GL_SRGB_ALPHA, TRUE, TRUE};
     gsk_Texture tex =
       _gsk_texture_create_internal(&asset_source, NULL, NULL, p_options);
     *((gsk_Texture *)p_dest) = tex;
@@ -106,8 +106,6 @@ __create_shader(const char *str_uri, void *p_options, void *p_dest)
 static void
 __create_material(const char *str_uri, void *p_options, void *p_dest)
 {
-    // TODO: Material should not use malloc
-
     gsk_GCFG gcfg            = gsk_load_gcfg(GSK_PATH(str_uri));
     gsk_Material *p_material = gsk_material_create_from_gcfg(&gcfg);
 

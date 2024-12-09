@@ -52,39 +52,66 @@ static struct
     gsk::tools::DebugToolbar *p_debug_toolbar;
 #endif // GSK_RUNTIME_DEBUG
 
+    u8 fs_mode; // 0 = gpak; 1 = hot
+
 } s_runtime;
 }
 
 static void
 _gsk_check_args(int argc, char *argv[])
 {
+    // If no arguments are given, default to OpenGL
     if (argc <= 1)
     {
         gsk_device_setGraphics(GRAPHICS_API_OPENGL);
         return;
     }
 
-    for (int i = 0; i < argc; i++)
+    for (int i = 1; i < argc; i++)
     {
-        if (std::string(argv[i]) == "--vulkan")
-        {
-            gsk_device_setGraphics(GRAPHICS_API_VULKAN);
-        } else if (std::string(argv[i]) == "--opengl")
-        {
-            gsk_device_setGraphics(GRAPHICS_API_OPENGL);
-        } else if (std::string(argv[i]) == "--errlevel")
-        {
-            logger_setLevel(LogLevel_ERROR);
-        }
+        std::string arg = argv[i];
 
-#if 0
-        if (std::string(argv[i]).find("--map") != std::string::npos)
+        // Check for key=value arguments first
+        size_t equal_pos = arg.find('=');
+        if (equal_pos != std::string::npos)
         {
+            std::string key   = arg.substr(0, equal_pos);
+            std::string value = arg.substr(equal_pos + 1);
+
+            // Handle "--gpu=..."
+            if (key == "--gpu")
             {
-                LOG_INFO("MAP");
+                if (value == "vulkan")
+                {
+                    gsk_device_setGraphics(GRAPHICS_API_VULKAN);
+                } else if (value == "opengl")
+                {
+                    gsk_device_setGraphics(GRAPHICS_API_OPENGL);
+                } else
+                {
+                    LOG_WARN("GPU type not specified. Fallback to OpenGL");
+                    gsk_device_setGraphics(GRAPHICS_API_OPENGL);
+                }
+            }
+            // Handle "--map=..."
+            else if (key == "--map")
+            {
+                LOG_INFO("Loading map from: %s", value.c_str());
+                // TODO: implement your map loading logic here
             }
         }
-#endif
+        // Check flags without values
+        else
+        {
+            if (arg == "--errlevel")
+            {
+                logger_setLevel(LogLevel_ERROR);
+            } else if (arg == "--hot")
+            {
+                LOG_INFO("Set FS Mode to RunHot");
+                s_runtime.fs_mode = 1;
+            }
+        }
     }
 }
 
@@ -112,6 +139,8 @@ gsk::runtime::rt_setup(const char *root_dir,
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
     LOG_INFO("Root directory: %s", root_dir);
 
+    s_runtime.fs_mode = 0; // TODO: Change this.
+
     _gsk_check_args(argc, argv);
 
     switch (gsk_device_getGraphics())
@@ -131,27 +160,27 @@ gsk::runtime::rt_setup(const char *root_dir,
     *p_cache                = gsk_asset_cache_init();
     s_runtime.asset_cache   = p_cache;
 
-// TODO: Setup default assets here
-// gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
+    // TODO: Setup default assets here
+    // gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
+
+    if (s_runtime.fs_mode == 1)
+    {
 #if GSK_BUILD_GPAK
-    gsk_GpakWriter writer = gsk_gpak_writer_init();
+        gsk_GpakWriter writer = gsk_gpak_writer_init();
 #endif
+        // TODO: filesystem traverse should be sorted to be platform-agnostic
+        gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
+                                _gsk_runtime_cache_asset_file);
 
-    // TODO: filesystem traverse should be sorted to be platform-agnostic
-
-    gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
-                            _gsk_runtime_cache_asset_file);
-
-    gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
+        gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
 
 #if GSK_BUILD_GPAK
-    gsk_gpak_writer_populate_cache(&writer, p_cache);
-    gsk_gpak_writer_write(&writer);
-    gsk_gpak_writer_close(&writer);
-    exit(0);
+        gsk_gpak_writer_populate_cache(&writer, p_cache);
+        gsk_gpak_writer_write(&writer);
+        gsk_gpak_writer_close(&writer);
+        exit(0);
 #endif
-
-    // gsk_gpak_make_raw(p_cache);
+    }
 
     // preload all GCFG files
     ArrayList *p_gcfg_refs = &(p_cache->asset_lists[0].list_state);

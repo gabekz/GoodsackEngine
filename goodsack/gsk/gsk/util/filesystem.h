@@ -10,6 +10,8 @@
 #define GSK_FS_MAX_SCHEME  16
 #define GSK_FS_MAX_SEG_LEN 256
 
+#define GSK_FS_GSK_SCHEME "gsk"
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus

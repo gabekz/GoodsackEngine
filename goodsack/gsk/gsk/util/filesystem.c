@@ -25,6 +25,7 @@
 static struct
 {
     char gsk_root[GSK_FS_MAX_PATH];
+    char gsk_scheme[GSK_FS_MAX_SCHEME];
     char proj_root[GSK_FS_MAX_PATH];
     char proj_scheme[GSK_FS_MAX_SCHEME];
 } s_path_roots;
@@ -47,41 +48,6 @@ _strip_filename(char *buffer)
     if (pos != NULL) { *pos = '\0'; }
 }
 
-static void
-_get_absolute_path(char *buffer)
-{
-
-    /*------------------------------------------------------
-      Some directory check testing stuff                  */
-
-#if 0
-#if defined(SYS_ENV_WIN)
-
-#if 0
-    GetModuleFileName(NULL, buffer, GSK_FS_MAX_PATH);
-#elif 0
-    GetCurrentDirectory(GSK_FS_MAX_PATH, buffer);
-#endif
-    char b[GSK_FS_MAX_PATH] = (_GOODSACK_FS_DIR_DATA "/");
-    // strcat(b, "/res");
-    strcpy(buffer, s_path_roots.gsk_root);
-    _to_forward_slash(buffer);
-    return;
-#endif // SYS_ENV_WIN
-#endif // 0
-    /*-----------------------------------------------------*/
-
-    char b[GSK_FS_MAX_PATH] = (_GOODSACK_FS_DIR_DATA "/");
-    // strcat(b, "/res");
-    strcpy(buffer, s_path_roots.gsk_root);
-    _to_forward_slash(buffer);
-    return;
-
-#if 0 // TODO: no need for this right now
-    _strip_filename(buffer);
-#endif
-}
-
 char *
 gsk_filesystem_get_extension(const char *path)
 {
@@ -92,10 +58,17 @@ gsk_filesystem_get_extension(const char *path)
 void
 gsk_filesystem_initialize(const char *project_root, const char *project_scheme)
 {
-    if (project_root == NULL) { LOG_ERROR("Failed to initialize filesystem"); }
+    if (project_root == NULL)
+    {
+        LOG_CRITICAL("Failed to initialize filesystem - missing project_root.");
+    }
 
     strcpy(s_path_roots.gsk_root, (_GOODSACK_FS_DIR_DATA "/"));
+    strcpy(s_path_roots.gsk_scheme, GSK_FS_GSK_SCHEME);
+
     strcpy(s_path_roots.proj_root, project_root);
+    strcat(s_path_roots.proj_root, "/");
+
     strcpy(s_path_roots.proj_scheme, project_scheme);
 }
 
@@ -109,7 +82,7 @@ gsk_filesystem_uri(const char *uri_path)
       uri_path, "%99[^:]%99[^/]//%99[^\n]", ret.scheme, ret.macro, ret.path);
     if (result != nparams)
     {
-        // LOG_WARN("Failed to parse URI: %s", uri_path);
+        LOG_WARN("Failed to parse URI: %s", uri_path);
         return (gsk_URI) {.scheme = '\0', .macro = '\0', .path = '\0'};
     }
 
@@ -122,7 +95,7 @@ gsk_filesystem_uri_to_path(const char *uri_path)
     gsk_Path ret = (gsk_Path) {.uri = gsk_filesystem_uri(uri_path)};
     if (ret.uri.scheme[0] == '\0')
     {
-        // LOG_WARN("Failed to parse URI: %s", uri_path);
+        LOG_ERROR("Failed to parse URI: %s", uri_path);
         return (gsk_Path) {.path = '\0'};
     }
 
@@ -134,15 +107,12 @@ gsk_filesystem_uri_to_path(const char *uri_path)
     if (!strcmp(ret.uri.scheme, s_path_roots.proj_scheme))
     {
         strcat(absolute_path, s_path_roots.proj_root);
-        strcat(absolute_path, "/");
     }
     // Engine-specific data directory
-    else if (!strcmp(ret.uri.scheme, "gsk"))
+    else if (!strcmp(ret.uri.scheme, s_path_roots.gsk_scheme))
     {
-
-        char buff[256] = "";
-        _get_absolute_path(buff);
-        strcat(absolute_path, buff);
+        strcpy(absolute_path, s_path_roots.gsk_root);
+        _to_forward_slash(absolute_path);
     }
 
     strcat(absolute_path, ret.uri.path);
@@ -153,37 +123,38 @@ gsk_filesystem_uri_to_path(const char *uri_path)
 char *
 gsk_filesystem_path_to_uri(const char *file_path, char *output_uri)
 {
-#if 1
-    // Check if the file path starts with the Goodsack engine root
+    void *p_root   = NULL;
+    void *p_scheme = NULL;
+
+    // engine-specific path
     if (strncmp(
           file_path, s_path_roots.gsk_root, strlen(s_path_roots.gsk_root)) == 0)
     {
-        // It's an engine-specific path (gsk://)
-        strcpy(output_uri, "gsk://");
-        strcat(output_uri,
-               file_path + strlen(s_path_roots.gsk_root)); // Skip the root part
+        p_root   = s_path_roots.gsk_root;
+        p_scheme = s_path_roots.gsk_scheme;
+
     }
-#endif
-    // Check if the file path starts with the project root
+    // project-specific path
     else if (strncmp(file_path,
                      s_path_roots.proj_root,
                      strlen(s_path_roots.proj_root)) == 0)
     {
-        // It's a project-specific path
-        strcpy(output_uri, s_path_roots.proj_scheme);
-        strcat(output_uri, "://");
-        strcat(output_uri, file_path + strlen(s_path_roots.proj_root) + 1);
-        /* TODO: I'm not sure yet why there is an extra "/" in the file_path for
-        project-specific paths. Currently just starting from the 1nth byte. */
-    } else
+        p_root   = s_path_roots.proj_root;
+        p_scheme = s_path_roots.proj_scheme;
+    }
+    // unknown path
+    else
     {
-        LOG_ERROR("Failed to get uri for: %s", file_path);
+        LOG_ERROR("Failed to get uri for path: %s", file_path);
         return NULL;
     }
 
-    // Normalize the path to use forward slashes ('/')
-    _to_forward_slash(output_uri);
+    // It's a project-specific path
+    strcpy(output_uri, (char *)p_scheme);
+    strcat(output_uri, "://");
+    strcat(output_uri, file_path + strlen((char *)p_root));
 
+    _to_forward_slash(output_uri);
     return output_uri;
 }
 
