@@ -226,8 +226,10 @@ struct _BlocInfo
 #pragma pack(pop)
 
 void
-gsk_gpak_reader_create_cache(const char *gpak_path)
+gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path)
 {
+    // TODO: find dict file based on AssetCache in gpak_directory
+
     FILE *file_dic;
     char magic[5];
 
@@ -244,6 +246,7 @@ gsk_gpak_reader_create_cache(const char *gpak_path)
     {
         LOG_ERROR("First 4 bytes should be \"GPAK\", are \"%4s\"", magic);
     }
+    // TODO: get scheme instead of seeking 1 byte
     if (fseek(file_dic, 1, SEEK_CUR) != 0) { LOG_CRITICAL("fseek failed"); }
 
     u32 n_assets = 0;
@@ -251,15 +254,41 @@ gsk_gpak_reader_create_cache(const char *gpak_path)
 
     for (int i = 0; i < n_assets; i++)
     {
-        char path[GSK_FS_MAX_PATH] = "";
         struct _BlocInfo bloc_info = {0};
+
         if (fread(&bloc_info, sizeof(bloc_info), 1, file_dic) != 1)
         {
-            LOG_CRITICAL("FAILED TO READ!");
+            LOG_CRITICAL("Failed to read asset info");
         }
-        fread(path, bloc_info.path_len, 1, file_dic);
-        LOG_INFO(
-          "%d, %d, %s", bloc_info.bloc_offset, bloc_info.bloc_length, path);
+
+        if (bloc_info.path_len > GSK_FS_MAX_PATH)
+        {
+            LOG_CRITICAL("URI length is too large.");
+        }
+
+        char path[GSK_FS_MAX_PATH] = "";
+        if (fread(path, bloc_info.path_len, 1, file_dic) != 1)
+        {
+            LOG_CRITICAL("Failed to read asset URI from info");
+        }
+
+        char uri[GSK_FS_MAX_PATH] = "";
+        sprintf(uri, "%s://%s", p_cache->cache_scheme, path);
+
+        LOG_DEBUG(
+          "%d, %d, %s", bloc_info.bloc_offset, bloc_info.bloc_length, uri);
+
+        // validate URI
+        {
+            gsk_URI uri_check = gsk_filesystem_uri(uri);
+            if (uri_check.path == '\0')
+            {
+                LOG_CRITICAL("Failed to parse asset URI from bloc. Corrupted.");
+            }
+        }
+
+        u32 list_type = GSK_ASSET_HANDLE_LIST_NUM(bloc_info.handle);
+        gsk_asset_cache_add(p_cache, list_type, uri);
     }
 
     fclose(file_dic);

@@ -163,6 +163,8 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     // TODO: Should not push anything at all if null. Check references.
     array_list_push(&(p_cache->asset_lists[asset_type].list_options),
                     p_options);
+
+    LOG_DEBUG("added asset to cache. (pool: %d, uri: %s)", list_type, str_uri);
 }
 /*--------------------------------------------------------------------*/
 

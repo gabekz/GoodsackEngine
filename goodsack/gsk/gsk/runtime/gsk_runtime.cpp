@@ -194,7 +194,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     if (s_runtime.options.fs_mode == 0)
     {
         const char *path = (_GOODSACK_FS_DIR_BUILD "/output/gpak/gsk.gpak");
-        gsk_gpak_reader_create_cache(path);
+        gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[0], path);
         exit(0);
 
     }
