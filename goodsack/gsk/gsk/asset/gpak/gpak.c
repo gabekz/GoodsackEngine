@@ -233,7 +233,8 @@ gsk_gpak_reader_create_cache(const char *gpak_path)
             LOG_CRITICAL("FAILED TO READ!");
         }
         fread(path, bloc_info.path_len, 1, file_dic);
-        LOG_INFO("%d, %s", bloc_info.bloc_length, path);
+        LOG_INFO(
+          "%d, %d, %s", bloc_info.bloc_offset, bloc_info.bloc_length, path);
     }
 
     fclose(file_dic);

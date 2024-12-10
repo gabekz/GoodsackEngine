@@ -162,7 +162,7 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     // TODO: Setup default assets here
     // gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
-    s_runtime.fs_mode = 0;
+    // s_runtime.fs_mode = 0;
 
     // GPAK
     if (s_runtime.fs_mode == 0)

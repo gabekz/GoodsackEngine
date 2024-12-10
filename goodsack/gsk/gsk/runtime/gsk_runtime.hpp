@@ -25,7 +25,7 @@
 
 #define GSK_RUNTIME_USE_DEBUG 1
 
-#define GSK_BUILD_GPAK     1
+#define GSK_BUILD_GPAK     0
 #define GSK_USING_COMPOSER 0
 
 namespace gsk {
