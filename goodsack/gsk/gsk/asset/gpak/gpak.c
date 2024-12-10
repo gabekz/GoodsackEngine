@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "util/array_list.h"
 #include "util/filesystem.h"
@@ -47,8 +48,8 @@ gsk_gpak_writer_init()
     gsk_GpakWriter ret = {0};
 
     FILE *file;
-    char *uri             = "gsk://test.gpak";
-    const char *full_path = GSK_PATH(uri);
+    char *file_dest       = "gsk://test.gpak";
+    const char *full_path = GSK_PATH(file_dest);
 
     char *buff    = "GPAK";
     u32 buff_size = strlen(buff);
@@ -57,6 +58,9 @@ gsk_gpak_writer_init()
     if (!file) { LOG_CRITICAL("Failed to create file %s", full_path); }
 
     fwrite(buff, buff_size, 1, file);
+
+    u32 n_assets_fill = 0;
+    fwrite(&n_assets_fill, 1, sizeof(u32), file);
 
     // TODO: write asset-type container block
     // -- contains start/end blocks
@@ -81,6 +85,8 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
     u8 err = (p_writer == NULL || p_writer->file_ptr == NULL) ? 1 : 0;
     if (err) { LOG_CRITICAL("Failed to open GPAK writer!"); }
 
+    u32 total_assets = 0;
+
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
     {
         // TODO: Temporarily only checking Textures
@@ -104,10 +110,15 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
             p_ref =
               _gsk_asset_get_internal(p_cache, uri, GSK_ASSET_FETCH_IMPORT);
 
-            if (p_ref == NULL) { LOG_ERROR("Failed to get asset"); }
+            if (p_ref == NULL)
+            {
+                LOG_ERROR("Failed to get asset");
+                continue;
+            }
             if (p_ref->is_imported == FALSE || p_ref->p_data_import == NULL)
             {
-                LOG_ERROR("Failed to import asset");
+                LOG_ERROR("Failed to import asset: %s", uri);
+                continue;
             }
 
             /*---- BLOC info -------------------------------------------------*/
@@ -150,35 +161,80 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
             // ASSET_HANDLE
             fwrite(&p_ref->asset_handle, 1, sizeof(u64), p_writer->file_ptr);
 
-#if 0
-            // ASSET_URI_INDEX
-            fwrite(
-              &p_ref->asset_uri_index, 1, sizeof(u32), p_writer->file_ptr);
-#else
-            // ASSET URI
-            fwrite(uri, strlen(uri), 1, p_writer->file_ptr);
-#endif
             // BLOC_PAGES
             fwrite(bloc_pages, 2, sizeof(u8), p_writer->file_ptr);
             // START_BLOC_ID -- offset
             fwrite(&bloc_offset, 1, sizeof(u32), p_writer->file_ptr);
             // BLOC_LEN
             fwrite(&bloc_length, 1, sizeof(u32), p_writer->file_ptr);
+
+            // ASSET URI
+
+            gsk_URI suri = gsk_filesystem_uri(uri);
+            s32 suri_len = strlen(suri.path);
+
+            fwrite(&suri_len, 1, sizeof(s32), p_writer->file_ptr);
+            fwrite(suri.path, suri_len, 1, p_writer->file_ptr);
+
+            total_assets += 1;
         }
     }
-}
 
-void
-gsk_gpak_writer_write(gsk_GpakWriter *p_writer)
-{
-    if (p_writer->file_ptr == NULL)
-    {
-        LOG_CRITICAL("Failed to open GPAK writer!");
-    }
+    fseek(p_writer->file_ptr, 4, SEEK_SET);
+    fwrite(&total_assets, 1, sizeof(u32), p_writer->file_ptr);
 }
 
 void
 gsk_gpak_writer_close(gsk_GpakWriter *p_writer)
 {
     fclose(p_writer->file_ptr);
+}
+
+#pragma pack(push, 1)
+struct _BlocInfo
+{
+    u64 handle;
+    u8 bloc_pages[2];
+    u32 bloc_offset;
+    u32 bloc_length;
+    u32 path_len;
+};
+#pragma pack(pop)
+
+void
+gsk_gpak_reader_create_cache(const char *gpak_path)
+{
+    FILE *file_dic;
+    char magic[5];
+
+    file_dic = fopen(gpak_path, "rb");
+    if (!file_dic)
+    {
+        LOG_CRITICAL("Failed to open dictionary file %s", gpak_path);
+    }
+
+    magic[4] = '\0';
+    fread(magic, strlen("GPAK"), 1, file_dic);
+
+    if (strcmp(magic, "GPAK"))
+    {
+        LOG_ERROR("First 4 bytes should be \"GPAK\", are \"%4s\"", magic);
+    }
+
+    u32 n_assets = 0;
+    fread(&n_assets, 1, sizeof(u32), file_dic);
+
+    for (int i = 0; i < n_assets; i++)
+    {
+        char path[GSK_FS_MAX_PATH] = "";
+        struct _BlocInfo bloc_info = {0};
+        if (fread(&bloc_info, sizeof(bloc_info), 1, file_dic) != 1)
+        {
+            LOG_CRITICAL("FAILED TO READ!");
+        }
+        fread(path, bloc_info.path_len, 1, file_dic);
+        LOG_INFO("%d, %s", bloc_info.bloc_length, path);
+    }
+
+    fclose(file_dic);
 }

@@ -57,11 +57,12 @@ gsk_gpak_writer_init();
 void
 gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
                                gsk_AssetCache *p_cache);
-void
-gsk_gpak_writer_write(gsk_GpakWriter *p_writer);
 
 void
 gsk_gpak_writer_close(gsk_GpakWriter *p_writer);
+
+void
+gsk_gpak_reader_create_cache(const char *gpak_path);
 
 #ifdef __cplusplus
 }

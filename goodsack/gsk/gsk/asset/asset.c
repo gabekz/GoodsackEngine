@@ -24,6 +24,9 @@
 #include "asset/import/loader_gcfg.h"
 #include "io/parse_image.h"
 
+// NOTE: Currently required for gsk_runtime gpak
+#define _IMPORT_FROM_DISK 1
+
 static u8
 __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 {
@@ -39,7 +42,7 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
 
 // NOTE: Enable to import data to blob.
-#if 0
+#if _IMPORT_FROM_DISK
     // pre-allocated import blob data
     gsk_AssetBlob *p_blob = array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_data_import), asset_index - 1);

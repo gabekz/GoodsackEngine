@@ -162,8 +162,16 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     // TODO: Setup default assets here
     // gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
+    s_runtime.fs_mode = 0;
 
-    if (s_runtime.fs_mode == 1)
+    // GPAK
+    if (s_runtime.fs_mode == 0)
+    {
+        gsk_gpak_reader_create_cache(GSK_PATH("gsk://test.gpak"));
+
+    }
+    // HOT
+    else if (s_runtime.fs_mode == 1)
     {
 #if GSK_BUILD_GPAK
         gsk_GpakWriter writer = gsk_gpak_writer_init();
@@ -176,7 +184,6 @@ gsk::runtime::rt_setup(const char *root_dir,
 
 #if GSK_BUILD_GPAK
         gsk_gpak_writer_populate_cache(&writer, p_cache);
-        gsk_gpak_writer_write(&writer);
         gsk_gpak_writer_close(&writer);
         exit(0);
 #endif
