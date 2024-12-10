@@ -65,6 +65,14 @@ CreateMultisampleBuffer(u32 samples, u32 width, u32 height)
     // Attach Renderbuffer
     glFramebufferRenderbuffer(
       GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRBO);
+
+    // Error checking
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        LOG_CRITICAL("\nFramebuffer failed: %u\n", status);
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -101,14 +109,20 @@ CreateScreenBuffer(u32 width, u32 height)
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE)
     {
-        printf("\nFramebuffer ERROR: %u\n", status);
+        LOG_CRITICAL("\nFramebuffer failed: %u\n", status);
     }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void
 postbuffer_resize(u32 winWidth, u32 winHeight)
 {
     LOG_INFO("Resizing window to %d x %d", winWidth, winHeight);
+
+    GLenum err = NULL;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
 
     glBindTexture(GL_TEXTURE_2D, sbTexture);
     glTexImage2D(GL_TEXTURE_2D,
@@ -125,6 +139,11 @@ postbuffer_resize(u32 winWidth, u32 winHeight)
     glRenderbufferStorage(
       GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, winWidth, winHeight);
 
+    err = glGetError();
+    if (err != GL_NO_ERROR) { LOG_CRITICAL("glTexImage2D error: 0x%x", err); }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msTexture);
     glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
                             ms_samples,
@@ -136,6 +155,12 @@ postbuffer_resize(u32 winWidth, u32 winHeight)
     glBindRenderbuffer(GL_RENDERBUFFER, msRBO);
     glRenderbufferStorageMultisample(
       GL_RENDERBUFFER, ms_samples, GL_DEPTH24_STENCIL8, winWidth, winHeight);
+
+    err = glGetError();
+    if (err != GL_NO_ERROR)
+    {
+        LOG_CRITICAL("glTexImage2DMultisample error: 0x%x", err);
+    }
 
     frameWidth  = winWidth;
     frameHeight = winHeight;

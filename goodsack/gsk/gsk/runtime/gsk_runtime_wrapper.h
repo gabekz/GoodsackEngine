@@ -10,7 +10,7 @@ extern "C" {
 #endif // __cplusplus
 
 gsk_AssetCache *
-gsk_runtime_get_asset_cache();
+gsk_runtime_get_asset_cache(const char *uri_str);
 
 gsk_Renderer *
 gsk_runtime_get_renderer();

@@ -94,8 +94,8 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
 
         // TODO: update asset-type container block
 
-        for (int j = 0; j < p_cache->asset_lists[i].list_state.list_next - 1;
-             j++)
+        int total_refs = p_cache->asset_lists[i].list_state.list_next - 1;
+        for (int j = 0; j < total_refs; j++)
         {
             /*---- capture AssetRef ------------------------------------------*/
 

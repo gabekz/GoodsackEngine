@@ -2,10 +2,10 @@
 
 extern "C" {
 gsk_AssetCache *
-gsk_runtime_get_asset_cache()
+gsk_runtime_get_asset_cache(const char *uri_str)
 {
-    return gsk::runtime::rt_get_asset_cache(); // Calls the C++ function
-                                               // internally
+    return gsk::runtime::rt_get_asset_cache(uri_str); // Calls the C++ function
+                                                      // internally
 }
 
 gsk_Renderer *

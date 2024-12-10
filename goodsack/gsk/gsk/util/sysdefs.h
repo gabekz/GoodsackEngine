@@ -76,12 +76,7 @@
 #define SYS_ENABLED  1
 #define SYS_DISABLED 0
 
-#define SYS_LOG_LEVEL 0
-#define SYS_DEBUG     SYS_ENABLED
-
-#ifndef SYS_DEBUG
-#define SYS_DEBUG SYS_DISABLED
-#endif
+#define SYS_DEBUG SYS_ENABLED
 
 // -- Cache/Memory Alignment //
 

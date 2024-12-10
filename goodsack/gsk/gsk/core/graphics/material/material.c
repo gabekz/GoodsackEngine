@@ -72,14 +72,15 @@ gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg)
     gsk_ShaderProgram *p_shader = NULL;
     gsk_Material *p_material    = NULL;
 
-    gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache();
-
     // need to grab the shader
     for (int i = 0; i < p_gcfg->list_items.list_next; i++)
     {
         gsk_GCFGItem *item = array_list_get_at_index(&p_gcfg->list_items, i);
         if (!strcmp(item->key, "shader"))
         {
+            // get correct cache based on shader path
+            gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(item->value);
+
             if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
             {
                 LOG_ERROR("Shader asset is not cached! (%s)", item->value);
@@ -102,6 +103,9 @@ gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg)
         gsk_GCFGItem *item = array_list_get_at_index(&p_gcfg->list_items, i);
         if (!strcmp(item->key, "texture"))
         {
+            // get correct cache based on texture path
+            gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(item->value);
+
             if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
             {
                 LOG_ERROR("Texture asset is not cached! (%s)", item->value);

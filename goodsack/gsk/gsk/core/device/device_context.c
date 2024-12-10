@@ -47,6 +47,7 @@ _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
+#if SYS_DEBUG
     // Toggle cursor state
     if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
     {
@@ -54,6 +55,7 @@ _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
         device_setCursorState(!deviceInput.cursor_state.is_locked,
                               !deviceInput.cursor_state.is_visible);
     }
+#endif
 
     // 1.) Send the key to the input device stack
     // 2.) (From UPDATE) - GetKey() checks the stack for actions and inputs

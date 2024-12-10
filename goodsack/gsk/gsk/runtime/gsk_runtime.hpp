@@ -23,9 +23,8 @@
 #define INIT_CURSOR_LOCKED  1
 #define INIT_CURSOR_VISIBLE 0
 
-#define GSK_RUNTIME_USE_DEBUG 1
+#define GSK_RUNTIME_USE_DEBUG SYS_DEBUG
 
-#define GSK_BUILD_GPAK     0
 #define GSK_USING_COMPOSER 0
 
 namespace gsk {
@@ -46,7 +45,7 @@ rt_get_ecs();
 gsk_Renderer *
 rt_get_renderer();
 gsk_AssetCache *
-rt_get_asset_cache();
+rt_get_asset_cache(const char *uri_str);
 
 void
 rt_set_scene(u16 sceneIndex);

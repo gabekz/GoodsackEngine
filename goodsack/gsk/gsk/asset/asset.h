@@ -15,15 +15,15 @@
 
 #ifdef __cplusplus
 #include "runtime/gsk_runtime.hpp"
-#define GSK_ASSET(x)                                              \
-    _gsk_asset_get_internal(                                      \
-      gsk::runtime::rt_get_asset_cache(), x, GSK_ASSET_FETCH_ALL) \
+#define GSK_ASSET(x)                                               \
+    _gsk_asset_get_internal(                                       \
+      gsk::runtime::rt_get_asset_cache(x), x, GSK_ASSET_FETCH_ALL) \
       ->p_data_active
 #else
 #include "runtime/gsk_runtime_wrapper.h"
-#define GSK_ASSET(x)                                         \
-    _gsk_asset_get_internal(                                 \
-      gsk_runtime_get_asset_cache(), x, GSK_ASSET_FETCH_ALL) \
+#define GSK_ASSET(x)                                          \
+    _gsk_asset_get_internal(                                  \
+      gsk_runtime_get_asset_cache(x), x, GSK_ASSET_FETCH_ALL) \
       ->p_data_active
 #endif // __cplusplus
 

@@ -46,16 +46,23 @@ static struct
 {
     gsk_ECS *ecs;
     gsk_Renderer *renderer;
-    gsk_AssetCache *asset_cache;
+
+    gsk_AssetCache *pp_asset_caches[2];
+    u32 cache_cnt;
+    char proj_scheme[GSK_FS_MAX_SCHEME];
 
 #if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
 #endif // GSK_RUNTIME_DEBUG
 
-    u8 fs_mode; // 0 = gpak; 1 = hot
+    struct
+    {
+        u8 fs_mode;    // 0 = gpak; 1 = hot
+        u8 build_gpak; // 0 = FALSE; 1 = TRUE
+    } options;
 
 } s_runtime;
-}
+} // extern "C"
 
 static void
 _gsk_check_args(int argc, char *argv[])
@@ -109,7 +116,12 @@ _gsk_check_args(int argc, char *argv[])
             } else if (arg == "--hot")
             {
                 LOG_INFO("Set FS Mode to RunHot");
-                s_runtime.fs_mode = 1;
+                s_runtime.options.fs_mode = 1;
+            } else if (arg == "--testgpak")
+            {
+                LOG_INFO("Testing GPAK (overriding FS Mode to RunHot)");
+                s_runtime.options.build_gpak = 1;
+                s_runtime.options.fs_mode    = 1;
             }
         }
     }
@@ -118,7 +130,8 @@ _gsk_check_args(int argc, char *argv[])
 static void
 _gsk_runtime_cache_asset_file(const char *uri)
 {
-    gsk_asset_cache_add_by_ext(s_runtime.asset_cache, uri);
+    gsk_asset_cache_add_by_ext(s_runtime.pp_asset_caches[s_runtime.cache_cnt],
+                               uri);
 }
 
 u32
@@ -139,7 +152,9 @@ gsk::runtime::rt_setup(const char *root_dir,
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
     LOG_INFO("Root directory: %s", root_dir);
 
-    s_runtime.fs_mode = 0; // TODO: Change this.
+    s_runtime.cache_cnt          = 0; // TODO: Change this.
+    s_runtime.options.fs_mode    = 0; // TODO: Change this.
+    s_runtime.options.build_gpak = 0; // TODO: Change this.
 
     _gsk_check_args(argc, argv);
 
@@ -152,56 +167,68 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     /*==== Setup gsk filesystem (uri) ================================*/
 
+    strcpy(s_runtime.proj_scheme, root_scheme);
     gsk_filesystem_initialize(root_dir, root_scheme);
 
     /*==== Initialize Asset System ===================================*/
 
-    gsk_AssetCache *p_cache = (gsk_AssetCache *)malloc(sizeof(gsk_AssetCache));
-    *p_cache                = gsk_asset_cache_init();
-    s_runtime.asset_cache   = p_cache;
+    for (int i = 0; i < 2; i++)
+    {
+        gsk_AssetCache *p_cache =
+          (gsk_AssetCache *)malloc(sizeof(gsk_AssetCache));
+
+        *p_cache                     = gsk_asset_cache_init();
+        s_runtime.pp_asset_caches[i] = p_cache;
+    }
 
     // TODO: Setup default assets here
     // gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
     // s_runtime.fs_mode = 0;
 
     // GPAK
-    if (s_runtime.fs_mode == 0)
+    if (s_runtime.options.fs_mode == 0)
     {
         gsk_gpak_reader_create_cache(GSK_PATH("gsk://test.gpak"));
 
     }
     // HOT
-    else if (s_runtime.fs_mode == 1)
+    else if (s_runtime.options.fs_mode == 1)
     {
-#if GSK_BUILD_GPAK
-        gsk_GpakWriter writer = gsk_gpak_writer_init();
-#endif
         // TODO: filesystem traverse should be sorted to be platform-agnostic
+        s_runtime.cache_cnt = 0;
         gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
                                 _gsk_runtime_cache_asset_file);
 
+        s_runtime.cache_cnt = 1;
         gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
 
-#if GSK_BUILD_GPAK
-        gsk_gpak_writer_populate_cache(&writer, p_cache);
-        gsk_gpak_writer_close(&writer);
-        exit(0);
-#endif
+        if (s_runtime.options.build_gpak)
+        {
+            gsk_GpakWriter writer = gsk_gpak_writer_init();
+            gsk_gpak_writer_populate_cache(&writer,
+                                           s_runtime.pp_asset_caches[1]);
+            gsk_gpak_writer_close(&writer);
+            exit(0);
+        }
     }
 
-    // preload all GCFG files
-    ArrayList *p_gcfg_refs = &(p_cache->asset_lists[0].list_state);
-    for (int i = 0; i < p_gcfg_refs->list_next; i++)
+    for (int i = 0; i < 2; i++)
     {
-        gsk_AssetRef *p_ref =
-          (gsk_AssetRef *)array_list_get_at_index(p_gcfg_refs, i);
+        gsk_AssetCache *p_cache = s_runtime.pp_asset_caches[i];
+        // preload all GCFG files
+        ArrayList *p_gcfg_refs = &(p_cache->asset_lists[0].list_state);
+        for (int i = 0; i < p_gcfg_refs->list_next; i++)
+        {
+            gsk_AssetRef *p_ref =
+              (gsk_AssetRef *)array_list_get_at_index(p_gcfg_refs, i);
 
-        char *str;
-        str = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
-                                              p_ref->asset_uri_index);
+            char *str;
+            str = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
+                                                  p_ref->asset_uri_index);
 
-        // TODO: Do not reference by URI, reference by handle.
-        GSK_ASSET(str);
+            // TODO: Do not reference by URI, reference by handle.
+            GSK_ASSET(str);
+        }
     }
 
     /*==== Initialize Renderer =======================================*/
@@ -273,7 +300,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     }
 #endif // RUNTIME_LOADING_SCREEN
 
-#ifdef USING_LUA
+#if USING_LUA
     // Main Lua entry
     // TODO: possibly refactor this path (make mutable)
     char path[GSK_FS_MAX_PATH];
@@ -459,9 +486,22 @@ gsk::runtime::rt_get_renderer()
     return s_runtime.renderer;
 }
 gsk_AssetCache *
-gsk::runtime::rt_get_asset_cache()
+gsk::runtime::rt_get_asset_cache(const char *uri_str)
 {
-    return s_runtime.asset_cache;
+    // validate uri
+    gsk_URI uri  = gsk_filesystem_uri(uri_str);
+    void *p_data = NULL;
+
+    if (!strcmp(uri.scheme, GSK_FS_GSK_SCHEME))
+    {
+        return s_runtime.pp_asset_caches[0];
+    } else if (!strcmp(uri.scheme, s_runtime.proj_scheme))
+    {
+
+        return s_runtime.pp_asset_caches[1];
+    }
+    LOG_ERROR("Failed to find asset cache for: %s", uri_str);
+    return NULL;
 }
 
 void

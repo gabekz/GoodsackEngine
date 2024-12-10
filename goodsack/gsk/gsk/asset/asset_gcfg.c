@@ -31,7 +31,8 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
         {
             LOG_DEBUG("GCFG - Setting config for: %s", p_item->value);
 
-            gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache();
+            gsk_AssetCache *p_cache =
+              gsk_runtime_get_asset_cache(p_item->value);
 
             // get the asset ref
             p_ref = gsk_asset_cache_get(p_cache, p_item->value);
