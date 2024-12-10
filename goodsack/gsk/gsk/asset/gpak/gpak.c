@@ -23,17 +23,26 @@ __rotate_data_file(gsk_GpakWriter *p_writer)
 {
     if (p_writer->dat_file_count > 0) { fclose(p_writer->data_file_ptr); };
 
+    if (p_writer->p_cache == NULL)
+    {
+        LOG_CRITICAL("Failed to rotate data file - asset cache is NULL");
+    }
+
     FILE *dat_file;
 
     char headT[32];
     char pathT[256];
 
     sprintf(headT, "GPAK_PAGE%d", p_writer->dat_file_count);
-    sprintf(pathT, "gsk://test_%d.gpak", p_writer->dat_file_count);
+    sprintf(pathT,
+            "%s%s_%d.gpak",
+            p_writer->output_dir,
+            p_writer->p_cache->cache_scheme,
+            p_writer->dat_file_count);
 
-    const char *data_full_path = GSK_PATH(pathT);
-    dat_file                   = fopen(data_full_path, "wb");
-    if (!dat_file) { LOG_CRITICAL("Failed to create file %s", data_full_path); }
+    // const char *data_full_path = GSK_PATH(pathT);
+    dat_file = fopen(pathT, "wb");
+    if (!dat_file) { LOG_CRITICAL("Failed to create file %s", pathT); }
 
     fwrite(headT, strlen(headT), 1, dat_file);
 
@@ -43,21 +52,31 @@ __rotate_data_file(gsk_GpakWriter *p_writer)
 }
 
 gsk_GpakWriter
-gsk_gpak_writer_init()
+gsk_gpak_writer_init(gsk_AssetCache *p_cache, const char *output_absolute_dir)
 {
     gsk_GpakWriter ret = {0};
 
+    if (p_cache == NULL)
+    {
+        LOG_CRITICAL("Failed to start writer - asset cache is NULL");
+    }
+    ret.p_cache = p_cache;
+    strcpy(ret.output_dir, output_absolute_dir);
+
     FILE *file;
-    char *file_dest       = "gsk://test.gpak";
-    const char *full_path = GSK_PATH(file_dest);
 
-    char *buff    = "GPAK";
-    u32 buff_size = strlen(buff);
+    char file_dest[GSK_FS_MAX_PATH];
+    sprintf(file_dest, "%s%s.gpak", ret.output_dir, p_cache->cache_scheme);
 
-    file = fopen(full_path, "wb");
-    if (!file) { LOG_CRITICAL("Failed to create file %s", full_path); }
+    char head[6] = "GPAK_";
 
-    fwrite(buff, buff_size, 1, file);
+    char buff_head[128];
+    sprintf(buff_head, "%s", head);
+
+    file = fopen(file_dest, "wb");
+    if (!file) { LOG_CRITICAL("Failed to create file %s", file_dest); }
+
+    fwrite(buff_head, strlen(buff_head), 1, file);
 
     u32 n_assets_fill = 0;
     fwrite(&n_assets_fill, 1, sizeof(u32), file);
@@ -78,12 +97,17 @@ gsk_gpak_writer_init()
 }
 
 void
-gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
-                               gsk_AssetCache *p_cache)
+gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer)
 {
     // write the cache
     u8 err = (p_writer == NULL || p_writer->file_ptr == NULL) ? 1 : 0;
     if (err) { LOG_CRITICAL("Failed to open GPAK writer!"); }
+
+    gsk_AssetCache *p_cache = p_writer->p_cache;
+    if (p_cache == NULL)
+    {
+        LOG_CRITICAL("Failed to populate cache in writer. Lost p_cache");
+    }
 
     u32 total_assets = 0;
 
@@ -180,7 +204,7 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
         }
     }
 
-    fseek(p_writer->file_ptr, 4, SEEK_SET);
+    fseek(p_writer->file_ptr, 5, SEEK_SET);
     fwrite(&total_assets, 1, sizeof(u32), p_writer->file_ptr);
 }
 
@@ -220,6 +244,7 @@ gsk_gpak_reader_create_cache(const char *gpak_path)
     {
         LOG_ERROR("First 4 bytes should be \"GPAK\", are \"%4s\"", magic);
     }
+    if (fseek(file_dic, 1, SEEK_CUR) != 0) { LOG_CRITICAL("fseek failed"); }
 
     u32 n_assets = 0;
     fread(&n_assets, 1, sizeof(u32), file_dic);

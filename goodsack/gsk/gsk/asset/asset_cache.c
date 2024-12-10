@@ -23,9 +23,14 @@
 
 /*--------------------------------------------------------------------*/
 gsk_AssetCache
-gsk_asset_cache_init()
+gsk_asset_cache_init(const char *cache_scheme)
 {
     gsk_AssetCache ret;
+
+    if (cache_scheme != NULL && cache_scheme != '\0')
+    {
+        strcpy(ret.cache_scheme, cache_scheme);
+    }
 
     u32 sizes_data[ASSETTYPE_LAST + 1];
     u32 sizes_ops[ASSETTYPE_LAST + 1];

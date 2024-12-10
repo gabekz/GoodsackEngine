@@ -13,7 +13,7 @@
 #include "asset/asset_cache.h"
 
 // Maximum bytes per page
-#define GSK_GPAK_MAX_FILESIZE 0x2FAF080U
+#define GSK_GPAK_MAX_FILESIZE 0xF424000U // 256MB
 
 // Maximum bytes bloc
 #define GSK_GPAK_MAX_BLOC 0xFFFFFFFFU
@@ -46,17 +46,19 @@ typedef struct gsk_GpakWriter
     u32 dat_file_count;
     u32 dat_file_crnt;
 
+    gsk_AssetCache *p_cache;
+    char output_dir[GSK_FS_MAX_PATH];
+
 } gsk_GpakWriter;
 
 gsk_GpakHandler
 gsk_gpak_handler_init();
 
 gsk_GpakWriter
-gsk_gpak_writer_init();
+gsk_gpak_writer_init(gsk_AssetCache *p_cache, const char *output_absolute_dir);
 
 void
-gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer,
-                               gsk_AssetCache *p_cache);
+gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer);
 
 void
 gsk_gpak_writer_close(gsk_GpakWriter *p_writer);

@@ -41,13 +41,15 @@
 #include "core/audio/music_composer_loader.hpp"
 #endif // GSK_USING_COMPOSER
 
+#define _TOTAL_ASSET_CACHES 2
+
 extern "C" {
 static struct
 {
     gsk_ECS *ecs;
     gsk_Renderer *renderer;
 
-    gsk_AssetCache *pp_asset_caches[2];
+    gsk_AssetCache *pp_asset_caches[_TOTAL_ASSET_CACHES];
     u32 cache_cnt;
     char proj_scheme[GSK_FS_MAX_SCHEME];
 
@@ -172,23 +174,28 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     /*==== Initialize Asset System ===================================*/
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
     {
+        // weird hack to stop possible issue
+        if (i >= 2) { LOG_CRITICAL("Not implemented.."); }
+
         gsk_AssetCache *p_cache =
           (gsk_AssetCache *)malloc(sizeof(gsk_AssetCache));
 
-        *p_cache                     = gsk_asset_cache_init();
+        *p_cache = gsk_asset_cache_init(
+          ((i == 0) ? GSK_FS_GSK_SCHEME : s_runtime.proj_scheme));
         s_runtime.pp_asset_caches[i] = p_cache;
     }
 
     // TODO: Setup default assets here
     // gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
-    // s_runtime.fs_mode = 0;
 
     // GPAK
     if (s_runtime.options.fs_mode == 0)
     {
-        gsk_gpak_reader_create_cache(GSK_PATH("gsk://test.gpak"));
+        const char *path = (_GOODSACK_FS_DIR_BUILD "/output/gpak/gsk.gpak");
+        gsk_gpak_reader_create_cache(path);
+        exit(0);
 
     }
     // HOT
@@ -204,19 +211,28 @@ gsk::runtime::rt_setup(const char *root_dir,
 
         if (s_runtime.options.build_gpak)
         {
-            gsk_GpakWriter writer = gsk_gpak_writer_init();
-            gsk_gpak_writer_populate_cache(&writer,
-                                           s_runtime.pp_asset_caches[1]);
-            gsk_gpak_writer_close(&writer);
+            const char *path_gpak = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
+
+            for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
+            {
+                gsk_GpakWriter writer =
+                  gsk_gpak_writer_init(s_runtime.pp_asset_caches[i], path_gpak);
+
+                gsk_gpak_writer_populate_cache(&writer);
+                gsk_gpak_writer_close(&writer);
+            }
+#if GSK_TESTGPAK_EXIT
             exit(0);
+#endif
         }
     }
 
-    for (int i = 0; i < 2; i++)
+    // preload all GCFG files per Asset Cache
+    for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
     {
         gsk_AssetCache *p_cache = s_runtime.pp_asset_caches[i];
-        // preload all GCFG files
-        ArrayList *p_gcfg_refs = &(p_cache->asset_lists[0].list_state);
+        ArrayList *p_gcfg_refs  = &(p_cache->asset_lists[0].list_state);
+
         for (int i = 0; i < p_gcfg_refs->list_next; i++)
         {
             gsk_AssetRef *p_ref =

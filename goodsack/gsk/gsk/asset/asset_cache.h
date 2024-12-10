@@ -48,11 +48,12 @@ typedef struct gsk_AssetCache
     ArrayList asset_uri_list; // store for URI string pointers
     HashTable asset_table;    // asset handle hashtable
     gsk_AssetList asset_lists[ASSETTYPE_LAST + 1]; // asset data
+    char cache_scheme[GSK_FS_MAX_SCHEME];
 
 } gsk_AssetCache;
 
 gsk_AssetCache
-gsk_asset_cache_init();
+gsk_asset_cache_init(const char *cache_scheme);
 
 void
 gsk_asset_cache_add(gsk_AssetCache *p_cache,

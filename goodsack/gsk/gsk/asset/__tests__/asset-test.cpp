@@ -18,7 +18,7 @@
 
 TEST(AssetTestSuite, HashTest)
 {
-    gsk_AssetCache cache = gsk_asset_cache_init();
+    gsk_AssetCache cache = gsk_asset_cache_init("gsk");
 
     gsk_asset_cache_add(&cache, ASSET_TYPE, ASSET_NAME);
     EXPECT_EQ(hash_table_has(&cache.asset_table, ASSET_NAME), true);

@@ -25,7 +25,7 @@
 #include "io/parse_image.h"
 
 // NOTE: Currently required for gsk_runtime gpak
-#define _IMPORT_FROM_DISK 0
+#define _IMPORT_FROM_DISK 1
 
 static u8
 __asset_import(gsk_AssetCache *p_cache, const char *str_uri)

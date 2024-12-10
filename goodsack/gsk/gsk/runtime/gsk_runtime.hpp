@@ -26,6 +26,7 @@
 #define GSK_RUNTIME_USE_DEBUG SYS_DEBUG
 
 #define GSK_USING_COMPOSER 0
+#define GSK_TESTGPAK_EXIT  1
 
 namespace gsk {
 namespace runtime {
