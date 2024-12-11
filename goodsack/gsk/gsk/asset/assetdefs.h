@@ -12,14 +12,23 @@
 extern "C" {
 #endif //_cplusplus
 
+typedef struct gsk_AssetBlocInfo
+{
+    u32 bloc_offset;
+    u32 bloc_length;
+    u8 bloc_pages[2];
+} gsk_AssetBlocInfo;
+
 typedef struct gsk_AssetRef
 {
     u64 asset_handle;
     u32 asset_uri_index; // index to uri in cache uri-array
     u8 is_imported;      // is asset-data imported
     u8 is_utilized;      // is asset-data utilized by the runtime
+    u8 is_baked;         // when baked, bloc_info required.
     void *p_data_import; // pointer to raw imported data
     void *p_data_active; // pointer to full asset data
+    gsk_AssetBlocInfo bloc_info;
 } gsk_AssetRef;
 
 typedef struct gsk_AssetBlob

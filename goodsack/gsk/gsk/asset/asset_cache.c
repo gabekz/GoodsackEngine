@@ -78,7 +78,8 @@ gsk_asset_cache_init(const char *cache_scheme)
 void
 gsk_asset_cache_add(gsk_AssetCache *p_cache,
                     u32 asset_type,
-                    const char *str_uri)
+                    const char *str_uri,
+                    gsk_AssetBlocInfo *p_bloc_info)
 {
     if (asset_type > ASSETTYPE_LAST)
     {
@@ -127,9 +128,11 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       .asset_uri_index = p_cache->asset_uri_list.list_next - 1,
       .is_imported     = FALSE,
       .is_utilized     = FALSE,
+      .is_baked        = (p_bloc_info == NULL) ? FALSE : TRUE,
       .p_data_import   = NULL,
       .p_data_active   = NULL,
     };
+    if (item.is_baked == TRUE) { item.bloc_info = *p_bloc_info; }
 
     array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
 
@@ -164,7 +167,10 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     array_list_push(&(p_cache->asset_lists[asset_type].list_options),
                     p_options);
 
-    LOG_DEBUG("added asset to cache. (pool: %d, uri: %s)", list_type, str_uri);
+    LOG_DEBUG("added asset to cache. is_baked: %s, pool: %d, uri: %s",
+              (item.is_baked == TRUE) ? "true" : "false",
+              list_type,
+              str_uri);
 }
 /*--------------------------------------------------------------------*/
 
@@ -220,7 +226,7 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
               ext,
               str_uri);
 
-    gsk_asset_cache_add(p_cache, list_type, str_uri);
+    gsk_asset_cache_add(p_cache, list_type, str_uri, NULL);
 }
 /*--------------------------------------------------------------------*/
 

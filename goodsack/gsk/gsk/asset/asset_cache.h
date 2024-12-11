@@ -58,7 +58,8 @@ gsk_asset_cache_init(const char *cache_scheme);
 void
 gsk_asset_cache_add(gsk_AssetCache *p_cache,
                     u32 asset_type,
-                    const char *str_uri);
+                    const char *str_uri,
+                    gsk_AssetBlocInfo *p_bloc_info);
 
 void
 gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri);

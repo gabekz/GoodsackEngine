@@ -254,20 +254,20 @@ gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path)
 
     for (int i = 0; i < n_assets; i++)
     {
-        struct _BlocInfo bloc_info = {0};
+        struct _BlocInfo bloc_read = {0};
 
-        if (fread(&bloc_info, sizeof(bloc_info), 1, file_dic) != 1)
+        if (fread(&bloc_read, sizeof(bloc_read), 1, file_dic) != 1)
         {
             LOG_CRITICAL("Failed to read asset info");
         }
 
-        if (bloc_info.path_len > GSK_FS_MAX_PATH)
+        if (bloc_read.path_len > GSK_FS_MAX_PATH)
         {
             LOG_CRITICAL("URI length is too large.");
         }
 
         char path[GSK_FS_MAX_PATH] = "";
-        if (fread(path, bloc_info.path_len, 1, file_dic) != 1)
+        if (fread(path, bloc_read.path_len, 1, file_dic) != 1)
         {
             LOG_CRITICAL("Failed to read asset URI from info");
         }
@@ -276,7 +276,7 @@ gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path)
         sprintf(uri, "%s://%s", p_cache->cache_scheme, path);
 
         LOG_DEBUG(
-          "%d, %d, %s", bloc_info.bloc_offset, bloc_info.bloc_length, uri);
+          "%d, %d, %s", bloc_read.bloc_offset, bloc_read.bloc_length, uri);
 
         // validate URI
         {
@@ -287,8 +287,16 @@ gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path)
             }
         }
 
-        u32 list_type = GSK_ASSET_HANDLE_LIST_NUM(bloc_info.handle);
-        gsk_asset_cache_add(p_cache, list_type, uri);
+        // create BLOC info to pass to cache
+        gsk_AssetBlocInfo bloc = {
+          .bloc_length   = bloc_read.bloc_length,
+          .bloc_offset   = bloc_read.bloc_offset,
+          .bloc_pages[0] = bloc_read.bloc_pages[0],
+          .bloc_pages[1] = bloc_read.bloc_pages[1],
+        };
+
+        u32 list_type = GSK_ASSET_HANDLE_LIST_NUM(bloc_read.handle);
+        gsk_asset_cache_add(p_cache, list_type, uri, &bloc);
     }
 
     fclose(file_dic);
