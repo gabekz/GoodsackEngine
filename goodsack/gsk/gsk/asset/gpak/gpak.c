@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <GoodsackEngineConfig.h> // TODO: change this
+
 #include "util/array_list.h"
 #include "util/filesystem.h"
 #include "util/logger.h"
@@ -296,8 +298,58 @@ gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path)
         };
 
         u32 list_type = GSK_ASSET_HANDLE_LIST_NUM(bloc_read.handle);
+
+        // send to asset cache
         gsk_asset_cache_add(p_cache, list_type, uri, &bloc);
     }
 
     fclose(file_dic);
+}
+
+gsk_AssetBlob
+gsk_gpak_reader_import_blob(const char *uri_str)
+{
+    // TODO: Spanning
+
+    gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(uri_str);
+    gsk_AssetRef *p_ref     = gsk_asset_cache_get(p_cache, uri_str);
+    const char *path        = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
+
+    char pathT[256];
+    sprintf(pathT,
+            "%s%s_%d.gpak",
+            path,
+            p_cache->cache_scheme,
+            p_ref->bloc_info.bloc_pages[0] - 1);
+
+    // check with FS to open
+    FILE *file_ptr;
+    file_ptr = fopen(pathT, "rb");
+    if (!file_ptr) { LOG_CRITICAL("Failed to open file: %s", pathT); }
+
+    char *buffer    = NULL;
+    long buffer_len = p_ref->bloc_info.bloc_length;
+
+    buffer = malloc(buffer_len);
+    if (buffer == NULL) { LOG_CRITICAL("Failed to allocate AssetBlob buffer"); }
+
+    fseek(file_ptr, p_ref->bloc_info.bloc_offset - 1, SEEK_SET);
+#if 0
+    if (fread(buffer, 1, buffer_len, file_ptr) != 1)
+    {
+        LOG_CRITICAL("Failed to read buffer");
+    }
+#else
+    fread(buffer, 1, buffer_len, file_ptr);
+#endif
+
+    gsk_AssetBlob ret = {
+      .p_buffer   = buffer,
+      .buffer_len = buffer_len,
+    };
+
+    // TODO: close - Need to handle this somewhere. Probably in the runtime.
+    fclose(file_ptr);
+
+    return ret;
 }

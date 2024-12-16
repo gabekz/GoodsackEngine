@@ -32,10 +32,13 @@ _error_callback(int error, const char *description)
 }
 
 static void
-_resize_callback(GLFWwindow *window, int widthRe, int heightRe)
+_resize_callback(GLFWwindow *window, int new_width, int new_height)
 {
-    glViewport(0, 0, widthRe, heightRe);
-    postbuffer_resize((u32)widthRe, (u32)heightRe);
+    if (new_width > 0 && new_height > 0)
+    {
+        glViewport(0, 0, new_width, new_height);
+        postbuffer_resize((u32)new_width, (u32)new_height);
+    }
 }
 
 static void
@@ -87,12 +90,11 @@ gsk_window_create(int win_width,
                   VulkanDeviceContext **vkd)
 {
 
+    u8 is_fullscreen = FALSE;
+
     glfwSetErrorCallback(_error_callback);
 
-    if (!glfwInit())
-    { // Initialization failed
-        printf("Failed to initialize glfw");
-    }
+    if (!glfwInit()) { LOG_CRITICAL("Failed to initialize glfw"); }
 
     // OpenGL
     if (GSK_DEVICE_API_OPENGL)
@@ -104,6 +106,8 @@ gsk_window_create(int win_width,
         // debug ALL OpenGL Errors
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, SYS_DEBUG);
 
+        // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+
         char title[256];
         sprintf(title,
                 "%s | Goodsack Engine %d.%d.%d.%d\n",
@@ -114,10 +118,24 @@ gsk_window_create(int win_width,
                 GOODSACK_VERSION_TWEAK);
         // sprintf(title, win_app_title);
 
-        GLFWwindow *window =
-          glfwCreateWindow(win_width, win_height, title, NULL, NULL);
+        const GLFWmonitor *monitor = glfwGetPrimaryMonitor();
 
-        if (!window) LOG_ERROR("Failed to create window");
+// windowed-fullscreen hints
+#if 1
+        const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+
+        glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+        glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+        glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+        glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+#endif
+
+        GLFWwindow *window = glfwCreateWindow(
+          win_width, win_height, title, (is_fullscreen) ? monitor : NULL, NULL);
+
+        if (!window) { LOG_CRITICAL("Failed to create window"); }
+
+        // glfwSetWindowPos(window, 500, 0);
 
         // load image
         GLFWimage *image_win = malloc(sizeof(GLFWimage));
@@ -134,6 +152,7 @@ gsk_window_create(int win_width,
         gladLoadGL(glfwGetProcAddress);
 
         glfwGetFramebufferSize(window, &win_width, &win_height);
+
         glfwSetFramebufferSizeCallback(window, _resize_callback);
         glfwSetKeyCallback(window, _key_callback);
         glfwSetCursorPosCallback(window, _cursor_callback);

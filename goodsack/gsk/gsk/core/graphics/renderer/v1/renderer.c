@@ -55,10 +55,8 @@ gsk_renderer_init(const char *app_name)
     ret->windowHeight = winHeight;
 
     // Set Render Resolution
-    ret->renderWidth =
-      (RENDER_RESOLUTION_OVERRIDE) ? PSX_WIDTH : DEFAULT_WINDOW_WIDTH;
-    ret->renderHeight =
-      (RENDER_RESOLUTION_OVERRIDE) ? PSX_HEIGHT : DEFAULT_WINDOW_HEIGHT;
+    ret->renderWidth  = (RENDER_RESOLUTION_OVERRIDE) ? PSX_WIDTH : winWidth;
+    ret->renderHeight = (RENDER_RESOLUTION_OVERRIDE) ? PSX_HEIGHT : winHeight;
 
     // Create the initial scene
     gsk_Scene *scene  = malloc(sizeof(gsk_Scene));

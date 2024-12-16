@@ -21,6 +21,7 @@
 #include "asset/asset_cache.h"
 #include "asset/asset_gcfg.h"
 #include "asset/assetdefs.h"
+#include "asset/gpak/gpak.h"
 #include "asset/import/loader_gcfg.h"
 #include "io/parse_image.h"
 
@@ -47,11 +48,24 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     gsk_AssetBlob *p_blob = array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_data_import), asset_index - 1);
 
-    // TODO: handle path for importing hot
-    if (asset_type == GSK_ASSET_CACHE_TEXTURE)
+    // import from gpak
+    if (p_ref->is_baked == TRUE)
     {
-        *p_blob = parse_image(GSK_PATH(str_uri));
-        if (p_blob == NULL) { return 0; }
+        if (asset_type == GSK_ASSET_CACHE_TEXTURE)
+        {
+            *p_blob = gsk_gpak_reader_import_blob(str_uri);
+            if (p_blob == NULL) { return 0; }
+        }
+    }
+
+    // import from disk
+    else
+    {
+        if (asset_type == GSK_ASSET_CACHE_TEXTURE)
+        {
+            *p_blob = parse_image(GSK_PATH(str_uri));
+            if (p_blob == NULL) { return 0; }
+        }
     }
 
     p_ref->p_data_import = p_blob;

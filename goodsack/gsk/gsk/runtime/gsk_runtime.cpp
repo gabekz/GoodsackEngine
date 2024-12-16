@@ -42,6 +42,7 @@
 #endif // GSK_USING_COMPOSER
 
 #define _TOTAL_ASSET_CACHES 2
+#define _TEST_WRITE_PNG     0
 
 extern "C" {
 static struct
@@ -146,7 +147,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     /*==== Initialize Logger =========================================*/
 
     int logStat = logger_initConsoleLogger(NULL);
-    // logger_initFileLogger("logs.txt", 0, 0);
+    // logger_initFileLogger(exe_path.c_str(), 0, 0);
 
     logger_setLevel(LogLevel_TRACE);
     logger_setDetail(LogDetail_SIMPLE);
@@ -195,8 +196,19 @@ gsk::runtime::rt_setup(const char *root_dir,
     {
         const char *path = (_GOODSACK_FS_DIR_BUILD "/output/gpak/gsk.gpak");
         gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[0], path);
-        exit(0);
 
+#if _TEST_WRITE_PNG
+        gsk_AssetBlob blob = gsk_gpak_reader_import_blob("gsk://map/Icon.png");
+        LOG_INFO("%d", blob.buffer_len);
+
+        FILE *file_test;
+        file_test = fopen(GSK_PATH("gsk://test.png"), "wb");
+        if (file_test == NULL) { LOG_CRITICAL("FAIL"); }
+        fwrite(blob.p_buffer, 1, blob.buffer_len, file_test);
+        fclose(file_test);
+#endif
+
+        exit(0);
     }
     // HOT
     else if (s_runtime.options.fs_mode == 1)
@@ -209,6 +221,7 @@ gsk::runtime::rt_setup(const char *root_dir,
         s_runtime.cache_cnt = 1;
         gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
 
+        // NOTE: test build_gpak requires hot-loading
         if (s_runtime.options.build_gpak)
         {
             const char *path_gpak = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
@@ -222,6 +235,7 @@ gsk::runtime::rt_setup(const char *root_dir,
                 gsk_gpak_writer_close(&writer);
             }
 #if GSK_TESTGPAK_EXIT
+
             exit(0);
 #endif
         }

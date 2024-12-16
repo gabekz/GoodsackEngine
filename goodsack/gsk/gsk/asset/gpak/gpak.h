@@ -66,6 +66,9 @@ gsk_gpak_writer_close(gsk_GpakWriter *p_writer);
 void
 gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path);
 
+gsk_AssetBlob
+gsk_gpak_reader_import_blob(const char *uri_str);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
