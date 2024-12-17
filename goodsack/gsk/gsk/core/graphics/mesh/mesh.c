@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -12,10 +12,50 @@
 #include "core/device/device.h"
 
 gsk_Mesh *
-gsk_mesh_assemble(gsk_MeshData *meshData)
+gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
 {
-    gsk_Mesh *mesh     = malloc(sizeof(gsk_Mesh));
-    mesh->meshData     = meshData;
+    gsk_Mesh *mesh = malloc(sizeof(gsk_Mesh));
+    if (mesh == NULL) { LOG_CRITICAL("Failed to allocate memory for Mesh"); }
+
+    mesh->meshData      = p_mesh_data;
+    mesh->is_gpu_loaded = FALSE;
+
+    GskMeshBufferFlags used_flags = 0;
+
+    for (int i = 0; i < mesh->meshData->mesh_buffers_count; i++)
+    {
+        for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
+        {
+            s32 flag = (1 << j);
+
+            if (p_mesh_data->mesh_buffers[i].buffer_flags & flag)
+            {
+                if (used_flags & flag)
+                {
+                    LOG_ERROR("Duplicate mesh vertex data.");
+                }
+
+                used_flags |= flag;
+            }
+        }
+
+        mesh->meshData->combined_flags = used_flags;
+    }
+
+    return mesh;
+}
+
+gsk_Mesh *
+gsk_mesh_assemble(gsk_Mesh *mesh)
+{
+    if (mesh == NULL) { LOG_CRITICAL("Passing NULL Mesh to assemble."); }
+
+    if (mesh->is_gpu_loaded == TRUE)
+    {
+        LOG_WARN("Trying to upload an already gpu uploaded Mesh.");
+        return gsk_Mesh;
+    }
+
     gsk_MeshData *data = mesh->meshData;
 
     if (GSK_DEVICE_API_OPENGL)
@@ -89,7 +129,8 @@ gsk_mesh_assemble(gsk_MeshData *meshData)
         data->isSkinnedMesh = ((used_flags & GskMeshBufferFlag_Joints) ||
                                (used_flags & GskMeshBufferFlag_Weights));
 
-        data->combined_flags = used_flags;
+        // data->combined_flags = used_flags;
+        mesh->is_gpu_loaded = TRUE;
         return mesh;
 
     } else if (GSK_DEVICE_API_VULKAN)

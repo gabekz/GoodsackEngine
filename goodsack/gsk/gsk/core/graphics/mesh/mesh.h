@@ -77,6 +77,8 @@ typedef struct gsk_MeshData
 
 typedef struct gsk_Mesh
 {
+    u8 is_gpu_loaded;
+
     // Mesh data
     gsk_MeshData *meshData;
     mat4 localMatrix;
@@ -91,14 +93,21 @@ typedef struct gsk_Mesh
 } gsk_Mesh;
 
 /**
- * Assemble mesh per Graphics API spec.
- * Currently, this handles loading the model (wavefront & gltf) as well.
+ * Setup Mesh for GPU readiness.
  *
- * @param[in] mesh data
- * @return pointer to allocated Model structure.
+ * @return pointer to heap-allocated Mesh.
  */
 gsk_Mesh *
-gsk_mesh_assemble(gsk_MeshData *meshData);
+gsk_mesh_allocate(gsk_MeshData *p_mesh_data);
+
+/**
+ * Upload mesh to GPU per Graphics API spec.
+ *
+ * @param[in] mesh data
+ * @return pointer to mesh
+ */
+gsk_Mesh *
+gsk_mesh_assemble(gsk_Mesh *mesh);
 
 #ifdef __cplusplus
 }

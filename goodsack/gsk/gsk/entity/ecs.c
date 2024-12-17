@@ -36,7 +36,7 @@
 #endif
 
 // subroutine to safely reallocate data to new_size
-void *
+static void *
 __safe_realloc(void *ptr, size_t new_size, const char *error_type_name)
 {
     void *p = realloc(ptr, new_size);

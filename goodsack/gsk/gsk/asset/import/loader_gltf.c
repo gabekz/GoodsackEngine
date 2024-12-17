@@ -689,7 +689,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
             {
                 gsk_MeshData *meshData = _load_mesh_vertex_data(
                   &data->nodes[i].mesh->primitives[j], data);
-                ret->meshes[cntMesh] = gsk_mesh_assemble(meshData);
+                ret->meshes[cntMesh] = gsk_mesh_allocate(meshData);
 
                 mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
                 glm_translate(localMatrix, data->nodes[i].translation);

@@ -22,18 +22,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-
-typedef enum gsk_AssetCacheType {
-    GSK_ASSET_CACHE_GCFG = 0,
-    GSK_ASSET_CACHE_TEXTURE,
-    GSK_ASSET_CACHE_MATERIAL,
-    GSK_ASSET_CACHE_SHADER,
-    GSK_ASSET_CACHE_MODEL,
-} gsk_AssetCacheType;
-
-#define ASSETTYPE_FIRST GSK_ASSET_CACHE_GCFG
-#define ASSETTYPE_LAST  GSK_ASSET_CACHE_MODEL
-
 typedef struct gsk_AssetList
 {
     ArrayList list_state;       // load state

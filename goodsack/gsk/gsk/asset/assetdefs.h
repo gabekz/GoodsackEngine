@@ -12,6 +12,19 @@
 extern "C" {
 #endif //_cplusplus
 
+typedef enum GskAssetType_ {
+    GskAssetType_GCFG = 0,
+    GskAssetType_Texture,
+    GskAssetType_Material,
+    GskAssetType_Shader,
+    GskAssetType_Model,
+} GskAssetType_;
+
+#define ASSETTYPE_FIRST GskAssetType_GCFG
+#define ASSETTYPE_LAST  GskAssetType_Model
+
+typedef s32 GskAssetType;
+
 typedef struct gsk_AssetBlocInfo
 {
     u32 bloc_offset;
@@ -39,7 +52,6 @@ typedef struct gsk_AssetBlob
 
 typedef struct gsk_AssetData
 {
-
     void *buff_source; // buffer for imported data
     void *buff_active; // buffer for utilized data
     u32 buff_source_len;

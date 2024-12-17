@@ -35,17 +35,17 @@ gsk_asset_cache_init(const char *cache_scheme)
     u32 sizes_data[ASSETTYPE_LAST + 1];
     u32 sizes_ops[ASSETTYPE_LAST + 1];
 
-    sizes_data[GSK_ASSET_CACHE_GCFG]     = sizeof(gsk_GCFG);
-    sizes_data[GSK_ASSET_CACHE_TEXTURE]  = sizeof(gsk_Texture);
-    sizes_data[GSK_ASSET_CACHE_MATERIAL] = sizeof(gsk_Material);
-    sizes_data[GSK_ASSET_CACHE_SHADER]   = sizeof(gsk_ShaderProgram);
-    sizes_data[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_Model);
+    sizes_data[GskAssetType_GCFG]     = sizeof(gsk_GCFG);
+    sizes_data[GskAssetType_Texture]  = sizeof(gsk_Texture);
+    sizes_data[GskAssetType_Material] = sizeof(gsk_Material);
+    sizes_data[GskAssetType_Shader]   = sizeof(gsk_ShaderProgram);
+    sizes_data[GskAssetType_Model]    = sizeof(gsk_Model);
 
-    sizes_ops[GSK_ASSET_CACHE_GCFG]     = 1;
-    sizes_ops[GSK_ASSET_CACHE_TEXTURE]  = sizeof(TextureOptions);
-    sizes_ops[GSK_ASSET_CACHE_MATERIAL] = 1;
-    sizes_ops[GSK_ASSET_CACHE_SHADER]   = 1;
-    sizes_ops[GSK_ASSET_CACHE_MODEL]    = sizeof(gsk_AssetModelOptions);
+    sizes_ops[GskAssetType_GCFG]     = 1;
+    sizes_ops[GskAssetType_Texture]  = sizeof(TextureOptions);
+    sizes_ops[GskAssetType_Material] = 1;
+    sizes_ops[GskAssetType_Shader]   = 1;
+    sizes_ops[GskAssetType_Model]    = sizeof(gsk_AssetModelOptions);
 
     // setup hash table
     // TODO: needs to scale
@@ -158,8 +158,8 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     void *p_options = NULL;
     switch (list_type)
     {
-    case GSK_ASSET_CACHE_MODEL: p_options = &default_model; break;
-    case GSK_ASSET_CACHE_TEXTURE: p_options = &default_tex; break;
+    case GskAssetType_Model: p_options = &default_model; break;
+    case GskAssetType_Texture: p_options = &default_tex; break;
     default: break;
     }
 
@@ -189,30 +189,30 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
     // gcfg
     if (!strcmp(ext, ".gcfg"))
     {
-        list_type = GSK_ASSET_CACHE_GCFG;
+        list_type = GskAssetType_GCFG;
     }
 
     // texture
     else if (!strcmp(ext, ".png") || !strcmp(ext, ".jpg") ||
              !strcmp(ext, ".tga") || !strcmp(ext, ".hdr"))
     {
-        list_type = GSK_ASSET_CACHE_TEXTURE;
+        list_type = GskAssetType_Texture;
     }
     // material
     else if (!strcmp(ext, ".material"))
     {
-        list_type = GSK_ASSET_CACHE_MATERIAL;
+        list_type = GskAssetType_Material;
     }
     // shader
     else if (!strcmp(ext, ".shader"))
     {
-        list_type = GSK_ASSET_CACHE_SHADER;
+        list_type = GskAssetType_Shader;
     }
     // model
     else if (!strcmp(ext, ".obj") || !strcmp(ext, ".gltf") ||
              !strcmp(ext, ".glb"))
     {
-        list_type = GSK_ASSET_CACHE_MODEL;
+        list_type = GskAssetType_Model;
     }
     // None
     else

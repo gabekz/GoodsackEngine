@@ -116,7 +116,7 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer)
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
     {
         // TODO: Temporarily only checking Textures
-        if (i != GSK_ASSET_CACHE_TEXTURE) { continue; }
+        if (i != GskAssetType_Texture) { continue; }
 
         // TODO: update asset-type container block
 

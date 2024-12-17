@@ -221,6 +221,13 @@ gsk::runtime::rt_setup(const char *root_dir,
         s_runtime.cache_cnt = 1;
         gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
 
+#if 1
+        _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                "gsk://models/cube.obj",
+                                GSK_ASSET_FETCH_IMPORT);
+        exit(0);
+#endif
+
         // NOTE: test build_gpak requires hot-loading
         if (s_runtime.options.build_gpak)
         {
@@ -234,8 +241,8 @@ gsk::runtime::rt_setup(const char *root_dir,
                 gsk_gpak_writer_populate_cache(&writer);
                 gsk_gpak_writer_close(&writer);
             }
-#if GSK_TESTGPAK_EXIT
 
+#if GSK_TESTGPAK_EXIT
             exit(0);
 #endif
         }

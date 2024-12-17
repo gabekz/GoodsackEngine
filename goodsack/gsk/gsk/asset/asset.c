@@ -24,9 +24,10 @@
 #include "asset/gpak/gpak.h"
 #include "asset/import/loader_gcfg.h"
 #include "io/parse_image.h"
+#include "io/serialize_model.h"
 
 // NOTE: Currently required for gsk_runtime gpak
-#define _IMPORT_FROM_DISK 0
+#define _IMPORT_FROM_DISK 1
 
 static u8
 __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
@@ -51,7 +52,7 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     // import from gpak
     if (p_ref->is_baked == TRUE)
     {
-        if (asset_type == GSK_ASSET_CACHE_TEXTURE)
+        if (asset_type == GskAssetType_Texture)
         {
             *p_blob = gsk_gpak_reader_import_blob(str_uri);
             if (p_blob == NULL) { return 0; }
@@ -61,11 +62,24 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     // import from disk
     else
     {
-        if (asset_type == GSK_ASSET_CACHE_TEXTURE)
+        // Texture import
+        if (asset_type == GskAssetType_Texture)
         {
             *p_blob = parse_image(GSK_PATH(str_uri));
             if (p_blob == NULL) { return 0; }
         }
+#if 1
+        // Model import
+        else if (asset_type == GskAssetType_Model)
+        {
+            gsk_Model *p_model =
+              gsk_model_load_from_file(GSK_PATH(str_uri), 1.0f, NULL);
+
+            *p_blob = serialize_model(p_model);
+
+            if (p_blob == NULL) { return 0; }
+        }
+#endif
     }
 
     p_ref->p_data_import = p_blob;
@@ -210,11 +224,11 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     gsk_CreateAssetFptr p_create_func = NULL;
     switch (asset_type)
     {
-    case GSK_ASSET_CACHE_GCFG: p_create_func = __create_gcfg; break;
-    case GSK_ASSET_CACHE_TEXTURE: p_create_func = __create_texture; break;
-    case GSK_ASSET_CACHE_MATERIAL: p_create_func = __create_material; break;
-    case GSK_ASSET_CACHE_SHADER: p_create_func = __create_shader; break;
-    case GSK_ASSET_CACHE_MODEL: p_create_func = __create_model; break;
+    case GskAssetType_GCFG: p_create_func = __create_gcfg; break;
+    case GskAssetType_Texture: p_create_func = __create_texture; break;
+    case GskAssetType_Material: p_create_func = __create_material; break;
+    case GskAssetType_Shader: p_create_func = __create_shader; break;
+    case GskAssetType_Model: p_create_func = __create_model; break;
     default: p_create_func = NULL; break;
     }
 

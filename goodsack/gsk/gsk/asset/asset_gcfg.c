@@ -54,7 +54,7 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
             gsk_GCFGItem *p_item =
               array_list_get_at_index(&(p_gcfg->list_items), i);
 
-            if (asset_list == GSK_ASSET_CACHE_TEXTURE)
+            if (asset_list == GskAssetType_Texture)
             {
                 TextureOptions *p_ops = (TextureOptions *)p_options;
 
@@ -71,7 +71,7 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
                     p_ops->flip_vertically = atof(p_item->value);
                 }
 
-            } else if (asset_list == GSK_ASSET_CACHE_MODEL)
+            } else if (asset_list == GskAssetType_Model)
             {
                 gsk_AssetModelOptions *p_ops =
                   (gsk_AssetModelOptions *)p_options;
