@@ -158,6 +158,13 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer)
 
             gsk_AssetBlob asset_source = *(gsk_AssetBlob *)p_ref->p_data_import;
 
+            if (asset_source.is_serialized == FALSE)
+            {
+                LOG_ERROR("Asset not serialized. Failed to write asset: %s",
+                          uri);
+                continue;
+            }
+
             // TODO: check page-spanning
 
             u32 size_check =

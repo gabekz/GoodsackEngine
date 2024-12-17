@@ -42,7 +42,8 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
         mesh->meshData->combined_flags = used_flags;
     }
 
-    return mesh;
+    return gsk_mesh_assemble(mesh);
+    // return mesh;
 }
 
 gsk_Mesh *
@@ -53,7 +54,7 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
     if (mesh->is_gpu_loaded == TRUE)
     {
         LOG_WARN("Trying to upload an already gpu uploaded Mesh.");
-        return gsk_Mesh;
+        return mesh;
     }
 
     gsk_MeshData *data = mesh->meshData;

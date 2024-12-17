@@ -46,8 +46,10 @@ typedef struct gsk_AssetRef
 
 typedef struct gsk_AssetBlob
 {
+    u8 is_serialized;
     void *p_buffer;
     u32 buffer_len;
+    GskAssetType asset_type;
 } gsk_AssetBlob;
 
 typedef struct gsk_AssetData

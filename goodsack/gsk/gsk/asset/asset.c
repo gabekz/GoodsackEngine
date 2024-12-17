@@ -27,7 +27,7 @@
 #include "io/serialize_model.h"
 
 // NOTE: Currently required for gsk_runtime gpak
-#define _IMPORT_FROM_DISK 1
+#define _IMPORT_FROM_DISK 0
 
 static u8
 __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
@@ -45,16 +45,22 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 
 // NOTE: Enable to import data to blob.
 #if _IMPORT_FROM_DISK
+
     // pre-allocated import blob data
     gsk_AssetBlob *p_blob = array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_data_import), asset_index - 1);
+
+    // pre-allocated options data
+    void *p_options = array_list_get_at_index(
+      &(p_cache->asset_lists[asset_type].list_options), asset_index - 1);
 
     // import from gpak
     if (p_ref->is_baked == TRUE)
     {
         if (asset_type == GskAssetType_Texture)
         {
-            *p_blob = gsk_gpak_reader_import_blob(str_uri);
+            *p_blob               = gsk_gpak_reader_import_blob(str_uri);
+            p_blob->is_serialized = TRUE;
             if (p_blob == NULL) { return 0; }
         }
     }
@@ -68,22 +74,29 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
             *p_blob = parse_image(GSK_PATH(str_uri));
             if (p_blob == NULL) { return 0; }
         }
-#if 1
         // Model import
         else if (asset_type == GskAssetType_Model)
         {
-            gsk_Model *p_model =
-              gsk_model_load_from_file(GSK_PATH(str_uri), 1.0f, NULL);
+            gsk_AssetModelOptions *p_ops = NULL;
+            p_ops                        = (gsk_AssetModelOptions *)p_options;
 
-            *p_blob = serialize_model(p_model);
+            gsk_Model *p_model = gsk_model_load_from_file(
+              GSK_PATH(str_uri), p_ops->scale, p_ops->import_materials);
 
-            if (p_blob == NULL) { return 0; }
+            p_blob->p_buffer      = p_model;
+            p_blob->is_serialized = FALSE;
+
+            if (p_blob == NULL || p_blob->p_buffer == NULL) { return 0; }
         }
-#endif
+
+        // TODO: Check if we want to serialize HERE
     }
 
+    p_blob->asset_type   = (GskAssetType)asset_type;
     p_ref->p_data_import = p_blob;
+
 #endif
+
     p_ref->is_imported = TRUE;
     return 1;
 
@@ -156,6 +169,27 @@ __create_model(const char *str_uri, void *p_options, void *p_dest)
     ((gsk_Model *)p_dest)->meshesCount = p_model->meshesCount;
     ((gsk_Model *)p_dest)->fileType    = p_model->fileType;
 }
+
+#if 0
+static void
+__load_model(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
+{
+    gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
+
+    if(p_blob->is_serialized == TRUE) {
+        // extract
+        // assemble
+    }
+    else if(p_blob->is_serialized == FALSE) // imported and ready {
+        // only assemble
+    }
+
+    *((gsk_Model *)p_dest) = model;
+
+    free(p_blob->p_buffer);
+    free(p_blob);
+}
+#endif
 
 static void *
 _asset_load_generic(gsk_AssetCache *p_cache,

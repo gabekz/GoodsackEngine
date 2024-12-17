@@ -221,7 +221,7 @@ gsk::runtime::rt_setup(const char *root_dir,
         s_runtime.cache_cnt = 1;
         gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
 
-#if 1
+#if 0
         _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
                                 "gsk://models/cube.obj",
                                 GSK_ASSET_FETCH_IMPORT);
