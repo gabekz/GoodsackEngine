@@ -27,7 +27,7 @@
 #include "io/serialize_model.h"
 
 // NOTE: Currently required for gsk_runtime gpak
-#define _IMPORT_FROM_DISK 0
+#define _IMPORT_FROM_DISK_MODEL 0
 
 static u8
 __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
@@ -43,12 +43,11 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
     u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
 
-// NOTE: Enable to import data to blob.
-#if _IMPORT_FROM_DISK
-
     // pre-allocated import blob data
     gsk_AssetBlob *p_blob = array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_data_import), asset_index - 1);
+
+    p_blob->asset_type = (GskAssetType)asset_type;
 
     // pre-allocated options data
     void *p_options = array_list_get_at_index(
@@ -71,9 +70,11 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
         // Texture import
         if (asset_type == GskAssetType_Texture)
         {
-            *p_blob = parse_image(GSK_PATH(str_uri));
-            if (p_blob == NULL) { return 0; }
+            *p_blob               = parse_image(GSK_PATH(str_uri));
+            p_blob->is_serialized = FALSE;
         }
+
+#if _IMPORT_FROM_DISK_MODEL
         // Model import
         else if (asset_type == GskAssetType_Model)
         {
@@ -85,19 +86,16 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 
             p_blob->p_buffer      = p_model;
             p_blob->is_serialized = FALSE;
-
-            if (p_blob == NULL || p_blob->p_buffer == NULL) { return 0; }
         }
+#endif // _IMPORT_FROM_DISK_MODEL
+
+        if (p_blob == NULL || p_blob->p_buffer == NULL) { return 0; }
 
         // TODO: Check if we want to serialize HERE
     }
 
-    p_blob->asset_type   = (GskAssetType)asset_type;
     p_ref->p_data_import = p_blob;
-
-#endif
-
-    p_ref->is_imported = TRUE;
+    p_ref->is_imported   = TRUE;
     return 1;
 
     // TODO: handle path for importing from .gpak
@@ -112,32 +110,6 @@ __create_gcfg(const char *str_uri, void *p_options, void *p_dest)
     gsk_asset_gcfg_set_config(&gcfg);
 
     *((gsk_GCFG *)p_dest) = gcfg;
-}
-
-static void
-__create_texture(const char *str_uri, void *p_options, void *p_dest)
-{
-    gsk_AssetBlob asset_source = parse_image(GSK_PATH(str_uri));
-
-    gsk_Texture tex =
-      _gsk_texture_create_internal(&asset_source, NULL, NULL, p_options);
-    *((gsk_Texture *)p_dest) = tex;
-
-    free(asset_source.p_buffer); // TODO: change
-}
-
-static void
-__load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
-{
-    gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
-
-    gsk_Texture tex =
-      _gsk_texture_create_internal(p_blob, NULL, NULL, p_options);
-
-    *((gsk_Texture *)p_dest) = tex;
-
-    free(p_blob->p_buffer);
-    free(p_blob);
 }
 
 static void
@@ -170,34 +142,54 @@ __create_model(const char *str_uri, void *p_options, void *p_dest)
     ((gsk_Model *)p_dest)->fileType    = p_model->fileType;
 }
 
-#if 0
+static void
+__load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
+{
+    gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
+
+    gsk_Texture tex =
+      _gsk_texture_create_internal(p_blob, NULL, NULL, p_options);
+
+    *((gsk_Texture *)p_dest) = tex;
+
+    free(p_blob->p_buffer);
+}
+
+#if _IMPORT_FROM_DISK_MODEL
 static void
 __load_model(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
     gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
 
-    if(p_blob->is_serialized == TRUE) {
+    if (p_blob->is_serialized == TRUE)
+    {
         // extract
         // assemble
-    }
-    else if(p_blob->is_serialized == FALSE) // imported and ready {
-        // only assemble
-    }
+    } else if (p_blob->is_serialized == FALSE) // imported and ready {
+                                               // only assemble
 
-    *((gsk_Model *)p_dest) = model;
+        *((gsk_Model *)p_dest) = model;
 
     free(p_blob->p_buffer);
     free(p_blob);
 }
-#endif
+#endif // _IMPORT_FROM_DISK_MODEL
 
 static void *
 _asset_load_generic(gsk_AssetCache *p_cache,
                     gsk_AssetRef *p_ref,
                     const char *str_uri,
                     gsk_CreateAssetFptr create_asset_func,
+                    gsk_LoadAssetFptr load_asset_func,
                     u32 expected_type)
 {
+
+    if ((create_asset_func && load_asset_func) ||
+        (create_asset_func == NULL && load_asset_func == NULL))
+    {
+        LOG_CRITICAL("Failed to get create/load function for asset %s",
+                     str_uri);
+    }
 
     if (p_ref->is_imported == FALSE)
     {
@@ -226,7 +218,15 @@ _asset_load_generic(gsk_AssetCache *p_cache,
     void *p_options = array_list_get_at_index(
       &(p_cache->asset_lists[asset_list].list_options), asset_index - 1);
 
-    create_asset_func(str_uri, p_options, p_data);
+    if (create_asset_func)
+    {
+        create_asset_func(str_uri, p_options, p_data);
+    }
+
+    else if (load_asset_func)
+    {
+        load_asset_func(p_ref, p_options, p_data);
+    }
 
     p_ref->is_utilized = TRUE;
     return p_data;
@@ -256,18 +256,26 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     LOG_DEBUG("loading asset (%s)", str_uri);
 
     gsk_CreateAssetFptr p_create_func = NULL;
+    gsk_LoadAssetFptr p_load_func     = NULL;
+
     switch (asset_type)
     {
+    // create-functions
     case GskAssetType_GCFG: p_create_func = __create_gcfg; break;
-    case GskAssetType_Texture: p_create_func = __create_texture; break;
     case GskAssetType_Material: p_create_func = __create_material; break;
     case GskAssetType_Shader: p_create_func = __create_shader; break;
     case GskAssetType_Model: p_create_func = __create_model; break;
-    default: p_create_func = NULL; break;
+    // load-functions
+    case GskAssetType_Texture: p_load_func = __load_texture; break;
+    // failed
+    default:
+        p_create_func = NULL;
+        p_load_func   = NULL;
+        break;
     }
 
     // None
-    if (p_create_func == NULL)
+    if (p_create_func == NULL && p_load_func == NULL)
     {
         LOG_CRITICAL("INVALID asset type %d. Asset handle (%d) is corrupt",
                      asset_type,
@@ -298,7 +306,7 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     // Utilize/Create data
 
     p_ref->p_data_active = (void *)_asset_load_generic(
-      p_cache, p_ref, str_uri, p_create_func, asset_type);
+      p_cache, p_ref, str_uri, p_create_func, p_load_func, asset_type);
 
     if (p_ref->is_utilized == FALSE)
     {

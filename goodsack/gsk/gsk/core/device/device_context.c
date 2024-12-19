@@ -128,6 +128,10 @@ gsk_window_create(int win_width,
         glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
         glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
         glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+        // glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
+        // glfwWindowHint(GLFW_FLOATING, GLFW_FALSE);
+
 #endif
 
         GLFWwindow *window = glfwCreateWindow(
