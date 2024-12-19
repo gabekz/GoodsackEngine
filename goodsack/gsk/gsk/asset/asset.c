@@ -29,9 +29,6 @@
 // TODO: We don't want to depend on the runtime
 #include "runtime/gsk_runtime_wrapper.h"
 
-// NOTE: Currently required for gsk_runtime gpak
-#define _IMPORT_FROM_DISK_MODEL 0
-
 static u8
 __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 {
@@ -77,7 +74,6 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
             p_blob->is_serialized = FALSE;
         }
 
-#if _IMPORT_FROM_DISK_MODEL
         // Model import
         else if (asset_type == GskAssetType_Model)
         {
@@ -90,7 +86,6 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
             p_blob->p_buffer      = p_model;
             p_blob->is_serialized = FALSE;
         }
-#endif // _IMPORT_FROM_DISK_MODEL
 
         if (p_blob == NULL || p_blob->p_buffer == NULL) { return 0; }
 
@@ -133,18 +128,6 @@ __create_material(const char *str_uri, void *p_options, void *p_dest)
     ((gsk_Material *)p_dest)->texturesCount = p_material->texturesCount;
 }
 
-static void
-__create_model(const char *str_uri, void *p_options, void *p_dest)
-{
-    gsk_AssetModelOptions *p_ops = (gsk_AssetModelOptions *)p_options;
-    gsk_Model *p_model           = gsk_model_load_from_file(
-      GSK_PATH(str_uri), p_ops->scale, p_ops->import_materials);
-
-    ((gsk_Model *)p_dest)->meshes      = p_model->meshes;
-    ((gsk_Model *)p_dest)->meshesCount = p_model->meshesCount;
-    ((gsk_Model *)p_dest)->fileType    = p_model->fileType;
-}
-
 static u8
 __load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
@@ -162,25 +145,41 @@ __load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
     return 1;
 }
 
-#if _IMPORT_FROM_DISK_MODEL
-static void
+static u8
 __load_model(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
     gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
 
     if (p_blob->is_serialized == TRUE)
     {
+        LOG_INFO("SERIAL");
         // extract
         // assemble
-    } else if (p_blob->is_serialized == FALSE) // imported and ready {
-                                               // only assemble
+    }
+    // assemble without extraction
+    else if (p_blob->is_serialized == FALSE)
+    {
+        gsk_Model *p_model = (gsk_Model *)p_blob->p_buffer;
 
-        *((gsk_Model *)p_dest) = model;
+        // upload each mesh to the GPU
+        for (int i = 0; i < p_model->meshesCount; i++)
+        {
+            u8 status = gsk_mesh_assemble(p_model->meshes[i]);
+            if (status == 0 || p_model->meshes[i]->is_gpu_loaded != TRUE)
+            {
+                LOG_CRITICAL("Failed to upload");
+                return 0;
+            }
+        }
+
+        ((gsk_Model *)p_dest)->meshes      = p_model->meshes;
+        ((gsk_Model *)p_dest)->meshesCount = p_model->meshesCount;
+        ((gsk_Model *)p_dest)->fileType    = p_model->fileType;
+    }
+    return 1;
 
     free(p_blob->p_buffer);
-    free(p_blob);
 }
-#endif // _IMPORT_FROM_DISK_MODEL
 
 static void *
 _asset_load_generic(gsk_AssetCache *p_cache,
@@ -302,9 +301,9 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     case GskAssetType_GCFG: p_create_func = __create_gcfg; break;
     case GskAssetType_Material: p_create_func = __create_material; break;
     case GskAssetType_Shader: p_create_func = __create_shader; break;
-    case GskAssetType_Model: p_create_func = __create_model; break;
     // load-functions
     case GskAssetType_Texture: p_load_func = __load_texture; break;
+    case GskAssetType_Model: p_load_func = __load_model; break;
     // failed
     default:
         p_create_func = NULL;

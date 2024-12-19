@@ -68,8 +68,10 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                 gsk_QMapPlane *plane =
                   array_list_get_at_index(&brush->list_planes, k);
 
+                // Allocate Mesh and immediately push to GPU
                 qmap_model->meshes[cnt_poly] =
                   gsk_mesh_allocate((gsk_MeshData *)poly->p_mesh_data);
+                gsk_mesh_assemble(qmap_model->meshes[cnt_poly]);
 
                 mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
                 glm_mat4_copy(localMatrix,

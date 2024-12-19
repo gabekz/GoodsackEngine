@@ -106,7 +106,7 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data);
  * @param[in] mesh data
  * @return pointer to mesh
  */
-gsk_Mesh *
+u8
 gsk_mesh_assemble(gsk_Mesh *mesh);
 
 #ifdef __cplusplus

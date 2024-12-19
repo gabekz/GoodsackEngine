@@ -55,6 +55,7 @@ static struct
     char proj_scheme[GSK_FS_MAX_SCHEME];
 
     gsk_AssetRef *p_default_texture;
+    gsk_AssetRef *p_default_model;
 
 #if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
@@ -223,17 +224,17 @@ gsk::runtime::rt_setup(const char *root_dir,
         s_runtime.cache_cnt = 1;
         gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
 
+        // set defaults
+
         s_runtime.p_default_texture =
           _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
                                   "gsk://textures/defaults/missing.jpg",
                                   GSK_ASSET_FETCH_IMPORT);
 
-#if 0
-        _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
-                                "gsk://models/cube.obj",
-                                GSK_ASSET_FETCH_IMPORT);
-        exit(0);
-#endif
+        s_runtime.p_default_model =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://models/cube.obj",
+                                  GSK_ASSET_FETCH_IMPORT);
 
         // NOTE: test build_gpak requires hot-loading
         if (s_runtime.options.build_gpak)
@@ -556,6 +557,7 @@ gsk::runtime::rt_get_fallback_asset(GskAssetType type)
     switch (type)
     {
     case GskAssetType_Texture: p_ret = s_runtime.p_default_texture; break;
+    case GskAssetType_Model: p_ret = s_runtime.p_default_model; break;
     default: p_ret = NULL; break;
     }
 

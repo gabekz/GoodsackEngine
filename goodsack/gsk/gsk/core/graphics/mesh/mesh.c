@@ -17,7 +17,8 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
     gsk_Mesh *mesh = malloc(sizeof(gsk_Mesh));
     if (mesh == NULL) { LOG_CRITICAL("Failed to allocate memory for Mesh"); }
 
-    mesh->meshData      = p_mesh_data;
+    mesh->meshData = p_mesh_data;
+
     mesh->is_gpu_loaded = FALSE;
 
     GskMeshBufferFlags used_flags = 0;
@@ -33,6 +34,7 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
                 if (used_flags & flag)
                 {
                     LOG_ERROR("Duplicate mesh vertex data.");
+                    return NULL;
                 }
 
                 used_flags |= flag;
@@ -42,19 +44,18 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
         mesh->meshData->combined_flags = used_flags;
     }
 
-    return gsk_mesh_assemble(mesh);
-    // return mesh;
+    return mesh;
 }
 
-gsk_Mesh *
+u8
 gsk_mesh_assemble(gsk_Mesh *mesh)
 {
     if (mesh == NULL) { LOG_CRITICAL("Passing NULL Mesh to assemble."); }
 
     if (mesh->is_gpu_loaded == TRUE)
     {
-        LOG_WARN("Trying to upload an already gpu uploaded Mesh.");
-        return mesh;
+        LOG_WARN("Trying to upload an already gpu-loaded Mesh.");
+        return 0;
     }
 
     gsk_MeshData *data = mesh->meshData;
@@ -101,7 +102,8 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
                 {
                     if (used_flags & flag)
                     {
-                        LOG_CRITICAL("Duplicate mesh vertex data.");
+                        LOG_ERROR("Duplicate mesh vertex data.");
+                        return 0;
                     }
 
                     gsk_gl_vertex_buffer_push(vbo, n_vals, gl_type, GL_FALSE);
@@ -130,9 +132,8 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
         data->isSkinnedMesh = ((used_flags & GskMeshBufferFlag_Joints) ||
                                (used_flags & GskMeshBufferFlag_Weights));
 
-        // data->combined_flags = used_flags;
-        mesh->is_gpu_loaded = TRUE;
-        return mesh;
+        data->combined_flags = used_flags;
+        mesh->is_gpu_loaded  = TRUE;
 
     } else if (GSK_DEVICE_API_VULKAN)
     {
@@ -146,5 +147,6 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
     gsk_gl_vertex_array_add_buffer(vao, vboSkinnedMesh);
 #endif
 
-    return mesh;
+    // return mesh;
+    return 1;
 }
