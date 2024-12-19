@@ -25,7 +25,9 @@ _gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
                              VulkanDeviceContext *vkDevice,
                              TextureOptions *p_options)
 {
-    gsk_Texture ret            = {0};
+    gsk_Texture ret = {0};
+    ret.id          = 0;
+
     unsigned char *localBuffer = NULL;
 
     stbi_set_flip_vertically_on_load(p_options->flip_vertically);

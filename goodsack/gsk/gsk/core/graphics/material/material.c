@@ -106,11 +106,6 @@ gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg)
             // get correct cache based on texture path
             gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(item->value);
 
-            if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
-            {
-                LOG_ERROR("Texture asset is not cached! (%s)", item->value);
-            }
-
             // load and add texture
 
             gsk_Texture *p_tex = (gsk_Texture *)GSK_ASSET(item->value);

@@ -131,6 +131,7 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       .is_baked        = (p_bloc_info == NULL) ? FALSE : TRUE,
       .p_data_import   = NULL,
       .p_data_active   = NULL,
+      .p_fallback      = NULL,
     };
     if (item.is_baked == TRUE) { item.bloc_info = *p_bloc_info; }
 
@@ -237,8 +238,14 @@ gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
     /* TODO: Change hashmap so we don't have to truncate from 1 (WTF)
     we have to currently grab (asset_index - 1)
     */
+    const u64 handle_err = 0;
 
     u64 handle = hash_table_get(&(p_cache->asset_table), str_uri);
+    if (handle == handle_err)
+    {
+        LOG_WARN("asset cache does not contain %s.", str_uri);
+        return NULL;
+    }
 
     // get references
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(handle);

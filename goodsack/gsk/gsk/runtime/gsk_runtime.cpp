@@ -54,6 +54,8 @@ static struct
     u32 cache_cnt;
     char proj_scheme[GSK_FS_MAX_SCHEME];
 
+    gsk_AssetRef *p_default_texture;
+
 #if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
 #endif // GSK_RUNTIME_DEBUG
@@ -220,6 +222,11 @@ gsk::runtime::rt_setup(const char *root_dir,
 
         s_runtime.cache_cnt = 1;
         gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
+
+        s_runtime.p_default_texture =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://textures/defaults/missing.jpg",
+                                  GSK_ASSET_FETCH_IMPORT);
 
 #if 0
         _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
@@ -539,6 +546,20 @@ gsk::runtime::rt_get_asset_cache(const char *uri_str)
     }
     LOG_ERROR("Failed to find asset cache for: %s", uri_str);
     return NULL;
+}
+
+gsk_AssetRef *
+gsk::runtime::rt_get_fallback_asset(GskAssetType type)
+{
+    gsk_AssetRef *p_ret = NULL;
+
+    switch (type)
+    {
+    case GskAssetType_Texture: p_ret = s_runtime.p_default_texture; break;
+    default: p_ret = NULL; break;
+    }
+
+    return p_ret;
 }
 
 void

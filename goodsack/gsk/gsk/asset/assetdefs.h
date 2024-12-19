@@ -41,6 +41,7 @@ typedef struct gsk_AssetRef
     u8 is_baked;         // when baked, bloc_info required.
     void *p_data_import; // pointer to raw imported data
     void *p_data_active; // pointer to full asset data
+    void *p_fallback;    // pointer to fallback asset
     gsk_AssetBlocInfo bloc_info;
 } gsk_AssetRef;
 

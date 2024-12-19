@@ -9,14 +9,17 @@
 extern "C" {
 #endif // __cplusplus
 
-gsk_AssetCache *
-gsk_runtime_get_asset_cache(const char *uri_str);
+gsk_ECS *
+gsk_runtime_get_ecs();
 
 gsk_Renderer *
 gsk_runtime_get_renderer();
 
-gsk_ECS *
-gsk_runtime_get_ecs();
+gsk_AssetCache *
+gsk_runtime_get_asset_cache(const char *uri_str);
+
+gsk_AssetRef *
+gsk_runtime_get_fallback_asset(GskAssetType type);
 
 #ifdef __cplusplus
 }

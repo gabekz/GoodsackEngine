@@ -26,6 +26,9 @@
 #include "io/parse_image.h"
 #include "io/serialize_model.h"
 
+// TODO: We don't want to depend on the runtime
+#include "runtime/gsk_runtime_wrapper.h"
+
 // NOTE: Currently required for gsk_runtime gpak
 #define _IMPORT_FROM_DISK_MODEL 0
 
@@ -142,7 +145,7 @@ __create_model(const char *str_uri, void *p_options, void *p_dest)
     ((gsk_Model *)p_dest)->fileType    = p_model->fileType;
 }
 
-static void
+static u8
 __load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
     gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
@@ -150,9 +153,13 @@ __load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
     gsk_Texture tex =
       _gsk_texture_create_internal(p_blob, NULL, NULL, p_options);
 
+    if (tex.id == 0) { return 0; }
+
     *((gsk_Texture *)p_dest) = tex;
 
     free(p_blob->p_buffer);
+
+    return 1;
 }
 
 #if _IMPORT_FROM_DISK_MODEL
@@ -225,7 +232,14 @@ _asset_load_generic(gsk_AssetCache *p_cache,
 
     else if (load_asset_func)
     {
-        load_asset_func(p_ref, p_options, p_data);
+        const u8 load_err = 0;
+        u8 load_code      = load_asset_func(p_ref, p_options, p_data);
+
+        if (load_code == load_err)
+        {
+            p_ref->is_utilized = FALSE;
+            return NULL;
+        }
     }
 
     p_ref->is_utilized = TRUE;
@@ -241,11 +255,35 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     // -- if not, exit
 
     gsk_AssetRef *p_ref = gsk_asset_cache_get(p_cache, str_uri);
+    u8 is_fallback      = FALSE;
 
     if (p_ref == NULL)
     {
         LOG_ERROR("Failed to get asset (%s)", str_uri);
-        return NULL;
+
+        gsk_asset_cache_add_by_ext(p_cache, str_uri);
+        p_ref = gsk_asset_cache_get(p_cache, str_uri);
+
+        if (p_ref == NULL)
+        {
+            LOG_CRITICAL("Failed to create intermediate asset");
+        }
+
+        u32 type          = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
+        p_ref->p_fallback = gsk_runtime_get_fallback_asset(type);
+
+        if (p_ref->p_fallback == NULL)
+        {
+            LOG_CRITICAL("Failed to retrieve fallback asset for type: %d",
+                         type);
+        }
+    }
+
+    // swap ref with fallback
+    if (p_ref->p_fallback)
+    {
+        p_ref       = (gsk_AssetRef *)p_ref->p_fallback;
+        is_fallback = TRUE;
     }
 
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
@@ -289,12 +327,29 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
         return p_ref;
     }
 
-    // Import asset here
-    u8 import_code = __asset_import(p_cache, str_uri);
+    u8 import_code = 1;
+    if (p_ref->is_imported == FALSE)
+    {
+        import_code = __asset_import(p_cache, str_uri);
+    }
+
     if (import_code == 0 || p_ref->is_imported == FALSE)
     {
+        // Abort if we can't even import the fallback asset
+        if (is_fallback == TRUE)
+        {
+            LOG_CRITICAL("Failed to import FALLBACK asset. asset_type: (%d).",
+                         asset_type);
+        }
+
         LOG_ERROR("Failed to import asset data for (%s).", str_uri);
-        return NULL; // TODO: Fallback asset
+
+        // Return fallback
+        if (p_ref->p_fallback == NULL)
+        {
+            p_ref->p_fallback = gsk_runtime_get_fallback_asset(asset_type);
+        }
+        return p_ref->p_fallback;
     }
 
     if (fetch_mode == GSK_ASSET_FETCH_IMPORT)
@@ -308,12 +363,25 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     p_ref->p_data_active = (void *)_asset_load_generic(
       p_cache, p_ref, str_uri, p_create_func, p_load_func, asset_type);
 
-    if (p_ref->is_utilized == FALSE)
+    if (p_ref->p_data_active == NULL || p_ref->is_utilized == FALSE)
     {
+        // Abort if we can't even LOAD the fallback asset
+        if (is_fallback == TRUE)
+        {
+            LOG_CRITICAL("Failed to load FALLBACK asset. asset_type: (%d).",
+                         asset_type);
+        }
+
         LOG_ERROR("Probably failed to load asset. This may result in a "
                   "memory leak. (%s)",
                   str_uri);
-        return NULL; // TODO: Fallback asset
+
+        // Return fallback
+        if (p_ref->p_fallback == NULL)
+        {
+            p_ref->p_fallback = gsk_runtime_get_fallback_asset(asset_type);
+        }
+        return p_ref->p_fallback;
     }
 
     return p_ref;

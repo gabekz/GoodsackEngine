@@ -35,13 +35,9 @@ typedef void (*gsk_CreateAssetFptr)(const char *uri,
                                     void *p_options,
                                     void *p_dest);
 
-typedef void (*gsk_ImportAssetFptr)(const char *uri,
-                                    void *p_options,
-                                    void *p_dest);
-
-typedef void (*gsk_LoadAssetFptr)(gsk_AssetBlob *p_blob,
-                                  void *p_options,
-                                  void *p_dest);
+typedef u8 (*gsk_LoadAssetFptr)(gsk_AssetRef *p_ref,
+                                void *p_options,
+                                void *p_dest);
 
 gsk_AssetRef *
 _gsk_asset_get_internal(gsk_AssetCache *p_cache,
