@@ -94,6 +94,7 @@ typedef struct ComponentBoneAttachment
 {
     CACHE_ALIGN(u32 bone_id);
     CACHE_ALIGN(int entity_skeleton);
+    CACHE_ALIGN(ResRef p_joint);
 } gsk_C_BoneAttachment;
 
 typedef struct ComponentCamera

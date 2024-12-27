@@ -17,6 +17,7 @@
 void
 transform_translate(struct ComponentTransform *transform, vec3 position)
 {
+    glm_translate(transform->model, position);
 }
 
 void
@@ -33,6 +34,65 @@ void transform_rotate(struct ComponentTransform *transform, vec3 rotation) {
     glm_rotate(*transform->mvp.matrix, rotation);
 }
 */
+
+static void
+_validate_bone_matrix(gsk_Entity e)
+{
+    if (!gsk_ecs_has(e, C_BONE_ATTACHMENT)) { return; }
+    gsk_C_BoneAttachment *c_bone_attachment = gsk_ecs_get(e, C_BONE_ATTACHMENT);
+
+    c_bone_attachment->p_joint = NULL;
+
+    gsk_Entity ent_skeleton =
+      gsk_ecs_ent(e.ecs, c_bone_attachment->entity_skeleton);
+
+    // Get joint from skeleton
+    if (!gsk_ecs_has(ent_skeleton, C_MODEL))
+    {
+        LOG_ERROR("ent_skeleton does not have a Mesh component!");
+        return;
+    }
+    gsk_Model *pmdl =
+      ((struct ComponentModel *)gsk_ecs_get(ent_skeleton, C_MODEL))->pModel;
+    gsk_Mesh *pmsh = pmdl->meshes[0];
+
+    if (!pmsh->meshData->isSkinnedMesh)
+    {
+        LOG_ERROR("Attempting to attach to non skinned-mesh!");
+        return;
+    }
+
+    gsk_Joint *joint =
+      pmsh->meshData->skeleton->joints[c_bone_attachment->bone_id];
+
+    if (joint == NULL)
+    {
+        LOG_ERROR("Failed to get joint by bone_id: %d",
+                  c_bone_attachment->bone_id);
+        return;
+    }
+
+    c_bone_attachment->p_joint = joint;
+}
+
+static void
+_set_to_joint_matrix(gsk_Entity e, mat4 *m4i, mat4 *skinned)
+{
+    if (!gsk_ecs_has(e, C_BONE_ATTACHMENT)) { return; }
+    gsk_C_BoneAttachment *c_bone_attachment = gsk_ecs_get(e, C_BONE_ATTACHMENT);
+
+    if (c_bone_attachment->p_joint == NULL) { return; }
+
+    gsk_Entity ent_skeleton =
+      gsk_ecs_ent(e.ecs, c_bone_attachment->entity_skeleton);
+
+    gsk_C_Transform *skel_transform = gsk_ecs_get(ent_skeleton, C_TRANSFORM);
+
+    gsk_Joint *joint = c_bone_attachment->p_joint;
+
+    glm_mat4_copy(joint->pose.mTransform, *skinned);
+    glm_mat4_copy(skel_transform->model, *m4i);
+}
 
 static void
 init(gsk_Entity e)
@@ -65,6 +125,9 @@ init(gsk_Entity e)
 
     // set the default forward vector
     glm_vec3_zero(transform->forward);
+
+    // Validate BONE_ATTACHMENT (ensure bone exists)
+    _validate_bone_matrix(e);
 }
 
 static void
@@ -73,45 +136,11 @@ late_update(gsk_Entity e)
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
-    mat4 m4i = GLM_MAT4_IDENTITY_INIT;
-
-#if 1
+    mat4 m4i     = GLM_MAT4_IDENTITY_INIT;
     mat4 skinned = GLM_MAT4_IDENTITY_INIT;
-    if (gsk_ecs_has(e, C_BONE_ATTACHMENT))
-    {
 
-        gsk_C_BoneAttachment *c_bone_attachment =
-          gsk_ecs_get(e, C_BONE_ATTACHMENT);
-
-        gsk_Entity ent_skeleton =
-          gsk_ecs_ent(e.ecs, c_bone_attachment->entity_skeleton);
-
-        // Get joint from skeleton
-        if (!gsk_ecs_has(ent_skeleton, C_MODEL))
-        {
-            LOG_WARN("ent_skeleton does not have a Mesh component!");
-        }
-        gsk_Model *pmdl =
-          ((struct ComponentModel *)gsk_ecs_get(ent_skeleton, C_MODEL))->pModel;
-        gsk_Mesh *pmsh = pmdl->meshes[0];
-
-        if (!pmsh->meshData->isSkinnedMesh)
-        {
-            LOG_ERROR("Attempting to attach to non skinned-mesh!");
-        }
-
-        gsk_Joint *joint =
-          pmsh->meshData->skeleton->joints[c_bone_attachment->bone_id];
-
-        mat4 matrix = GLM_MAT4_IDENTITY_INIT;
-        glm_mat4_copy(joint->pose.mTransform, skinned);
-
-        // Copy model matrix too
-        gsk_C_Transform *skel_transform =
-          gsk_ecs_get(ent_skeleton, C_TRANSFORM);
-        glm_mat4_copy(skel_transform->model, m4i);
-    }
-#endif
+    // check for BONE_ATTACHMENT
+    _set_to_joint_matrix(e, &m4i, &skinned);
 
     if (gsk_ecs_has(e, C_CAMERA))
     {

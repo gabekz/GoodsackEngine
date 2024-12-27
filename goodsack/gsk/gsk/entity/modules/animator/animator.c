@@ -24,7 +24,11 @@ init(gsk_Entity e)
 
     gsk_Mesh *mesh = model->mesh;
 
-    if (!mesh->meshData->isSkinnedMesh) return;
+    if (!mesh->meshData->isSkinnedMesh)
+    {
+        _gsk_ecs_set_internal(e, C_ANIMATOR, FALSE);
+        return;
+    }
 
     gsk_Skeleton *skeleton   = mesh->meshData->skeleton;
     gsk_Animation *animation = skeleton->animation;

@@ -66,10 +66,13 @@ DrawModel(struct ComponentModel *model,
 
             } else if (useOverrideMaterial)
             {
-                if (renderer->currentPass == SHADOW)
+                // Check if shadow-casting is disabled
+                if (renderer->currentPass == SHADOW &&
+                    model->cast_shadows == ECS_VAL_DISABLED)
                 {
-                    if (model->cast_shadows == ECS_VAL_DISABLED) return;
+                    return;
                 }
+
                 if (mesh->meshData->isSkinnedMesh)
                 {
                     material = renderer->explicitMaterial_skinned;
