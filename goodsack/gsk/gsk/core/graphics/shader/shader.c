@@ -123,10 +123,11 @@ ParseShader(const char *path)
 
     // output stream
     FILE *stream = NULL;
-    char *vertOut, *fragOut, *compOut;
-    size_t vertLen = 0, fragLen = 0, compLen = 0;
+    char *vertOut, *fragOut, *compOut, *geomOut;
+    size_t vertLen = 0, fragLen = 0, geomLen = 0, compLen = 0;
 
-    short mode = -1; /* -1: NONE | 0: Vert | 1: Frag */
+    short mode =
+      -1; /* -1: NONE | 0: Vert | 1: Frag | 2: Geometry | 3: Compute */
 
     if ((fptr = fopen(path, "rb")) == NULL)
     {
@@ -177,10 +178,21 @@ ParseShader(const char *path)
                 stream = open_memstream(&fragOut, &fragLen);
 #endif
             }
+            // Begin Geometry
+            else if (strstr(line, "geometry") != NULL)
+            {
+                mode = 2;
+#ifdef WIN32
+                stream  = open_memstream(&geomOut, geomLen);
+                geomLen = 1;
+#else
+                stream = open_memstream(&geomOut, &geomLen);
+#endif
+            }
             // Begin Compute
             else if (strstr(line, "compute") != NULL)
             {
-                mode = 2;
+                mode = 3;
 #ifdef WIN32
                 stream  = open_memstream(&compOut, compLen);
                 compLen = 1;
@@ -211,6 +223,7 @@ ParseShader(const char *path)
 
     if (vertLen > 0) { ss.shaderVertex = strdup(vertOut); }
     if (fragLen > 0) { ss.shaderFragment = strdup(fragOut); }
+    if (geomLen > 0) { ss.shaderGeometry = strdup(geomOut); }
     if (compLen > 0) { ss.shaderCompute = strdup(compOut); }
 
     return ss;
@@ -226,15 +239,23 @@ gsk_shader_program_create(const char *path)
         u32 program = glCreateProgram();
         u32 vs      = CompileSingleShader(GL_VERTEX_SHADER, ss.shaderVertex);
         u32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss.shaderFragment);
+        u32 gs = 0;
+
+        if (ss.shaderGeometry != NULL)
+        {
+            gs = CompileSingleShader(GL_GEOMETRY_SHADER, ss.shaderGeometry);
+        }
 
         // TODO: Read documentation on these functions
         glAttachShader(program, vs);
         glAttachShader(program, fs);
+        if (gs != 0) { glAttachShader(program, gs); }
         glLinkProgram(program);
         glValidateProgram(program);
 
         glDeleteShader(vs);
         glDeleteShader(fs);
+        if (gs != 0) { glDeleteShader(gs); }
 
         gsk_ShaderProgram ret = {.id = program, .shaderSource = ss};
         return ret;

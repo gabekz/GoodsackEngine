@@ -95,13 +95,15 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
     // Polygon generation from intersecting planes
     // ----------------------------------------------
 
-    LOG_DEBUG("Assembling polygon from brush (brush_index: %d)",
+#if 0
+    LOG_TRACE("Assembling polygon from brush (brush_index: %d)",
               p_brush->brush_index);
+#endif
 
     u32 iterations = 0; // for debugging purposes
     for (int i = 0; i < planes_count; i++)
     {
-        LOG_DEBUG("Checking intersections for poly %d", i);
+        // LOG_DEBUG("Checking intersections for poly %d", i);
 
         for (int j = 0; j < planes_count; j++)
         {
@@ -135,8 +137,10 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                     if (check1 > 0.1f)
                     {
                         is_illegal = TRUE;
+#if 0
                         LOG_TRACE(
                           "Illegal point - vertex: %d (term: %f)", m, check1);
+#endif
                         break;
                     }
                 }
@@ -194,7 +198,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                           vert.position, compare->position, 0.001f))
                     {
                         is_duplicate = TRUE;
-                        LOG_TRACE("vertex is duplicate..");
+                        // LOG_TRACE("vertex is duplicate..");
                     }
                 }
 
@@ -213,7 +217,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                 array_list_push(&p_container->vertices, &vertex);
 #endif // POLY_PER_FACE
 
-#if 1
+#if 0
                 LOG_TRACE(
                   "Vertex at (%f, %f, %f)", vertex[0], vertex[1], vertex[2]);
 #endif
@@ -221,7 +225,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
         }
     }
 
-    LOG_DEBUG("Assembled polygon with %d iterations", iterations);
+    LOG_TRACE("Assembled polygon with %d iterations", iterations);
 
     // ----------------------------------------------
     // Sort polygon vertices
@@ -231,7 +235,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
 
     for (int i = 0; i < num_poly; i++)
     {
-        LOG_DEBUG("Sorting polygon %d", i);
+        // LOG_TRACE("Sorting polygon %d", i);
 
         // if (i != 2) continue;
 
@@ -249,7 +253,6 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
         // calculate center
         for (int j = 0; j < num_vert; j++)
         {
-
             gsk_QMapPolygonVertex *vert =
               array_list_get_at_index(&poly->list_vertices, j);
 
@@ -332,7 +335,9 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                         smallest_angle = angle;
                         smallest       = m;
                     }
-                } else
+                }
+#if 0
+                else
                 {
                     LOG_TRACE("Poly %d, vert %d, m %d facing is: %s",
                               i,
@@ -344,6 +349,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                                      ? "QMAP_CLASS_FRONT"
                                      : "QMAP_CLASS_ON_PLANE"));
                 }
+#endif
             }
 
 #if 1

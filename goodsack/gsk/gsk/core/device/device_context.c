@@ -164,8 +164,6 @@ gsk_window_create(int win_width,
 
         // Initialize GL debug callback
         _gsk_gl_debug_init();
-        // Get current OpenGL version
-        LOG_INFO("%s\n", glGetString(GL_VERSION));
 
         unsigned char pixels[16 * 16 * 4];
         memset(pixels, 0xff, sizeof(pixels));
@@ -177,6 +175,21 @@ gsk_window_create(int win_width,
 
         GLFWcursor *cursor = glfwCreateCursor(image, 0, 0);
         if (cursor != NULL) { glfwSetCursor(window, cursor); }
+
+        // OpenGL Info
+        {
+            int max_tex = 0, max_coords = 0, max_size = 0;
+            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_tex);
+            glGetIntegerv(GL_MAX_TEXTURE_COORDS, &max_coords);
+            glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+
+            LOG_INFO("---- OpenGL Info\n%s\nmax_tex: %d\nmax_coords: "
+                     "%d\nmax_size: %dpx\n----",
+                     glGetString(GL_VERSION),
+                     max_tex,
+                     max_coords,
+                     max_size);
+        }
 
         return window;
     }

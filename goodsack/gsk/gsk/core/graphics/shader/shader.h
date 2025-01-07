@@ -47,7 +47,7 @@ typedef enum UniformType {
 
 typedef struct gsk_ShaderSource
 {
-    char *shaderVertex, *shaderFragment, *shaderCompute;
+    char *shaderVertex, *shaderFragment, *shaderGeometry, *shaderCompute;
 } gsk_ShaderSource;
 
 typedef struct gsk_ShaderProgram

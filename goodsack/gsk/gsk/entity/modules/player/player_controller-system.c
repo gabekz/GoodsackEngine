@@ -137,31 +137,15 @@ fixed_update(gsk_Entity entity)
     if (cmp_controller->walk_direction & WALK_LEFT)
     {
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
-
-#if 0
-        // diagonal-check
-        speed =
-          (cmp_controller->walk_direction & (WALK_FORWARD | WALK_BACKWARD))
-            ? speed / 2
-            : speed;
-#endif
-
         glm_vec3_scale(cross, speed, cross);
+
         glm_vec3_sub(newvel, cross, newvel);
     }
     if (cmp_controller->walk_direction & WALK_RIGHT)
     {
         glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
-
-#if 0
-        // diagonal-check
-        speed =
-          (cmp_controller->walk_direction & (WALK_FORWARD | WALK_BACKWARD))
-            ? speed / 2
-            : speed;
-#endif
-
         glm_vec3_scale(cross, speed, cross);
+
         glm_vec3_add(newvel, cross, newvel);
     }
 

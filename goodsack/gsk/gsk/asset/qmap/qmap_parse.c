@@ -115,7 +115,7 @@ __qmap_container_add_brush(gsk_QMapContainer *p_container)
 gsk_QMapPlane
 gsk_qmap_parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
 {
-    LOG_DEBUG("Parsing plane..");
+    // LOG_DEBUG("Parsing plane..");
 
     gsk_QMapPlane ret;
 
@@ -525,7 +525,7 @@ gsk_qmap_parse_field_from_line(char *line)
             total_values++;
         }
     }
-    LOG_DEBUG("Total values in key-value pair: %d. Type is: %d",
+    LOG_TRACE("Total values in key-value pair: %d. Type is: %d",
               total_values,
               value_type);
 
@@ -604,11 +604,11 @@ gsk_qmap_parse_map_file(const char *map_path, gsk_TextureSet *p_textureset)
 
             if (current_mode == QM_MODE_FILL_ENT)
             {
-                LOG_DEBUG("Creating new entity");
+                // LOG_DEBUG("Creating new entity");
                 __qmap_container_add_entity(&ret);
             } else if (current_mode == QM_MODE_FILL_BSH)
             {
-                LOG_DEBUG("Creating new brush");
+                // LOG_DEBUG("Creating new brush");
                 __qmap_container_add_brush(&ret);
             }
         }
@@ -619,7 +619,7 @@ gsk_qmap_parse_map_file(const char *map_path, gsk_TextureSet *p_textureset)
             // entity field
             if (current_mode == QM_MODE_FILL_ENT)
             {
-                LOG_DEBUG("Fill entity member");
+                // LOG_DEBUG("Fill entity member");
                 gsk_QMapEntityField field =
                   gsk_qmap_parse_field_from_line(line);
                 array_list_push(&ret.p_cnt_entity->list_fields, &field);
