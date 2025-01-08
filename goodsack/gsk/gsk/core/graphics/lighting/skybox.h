@@ -37,7 +37,7 @@ gsk_skybox_draw(gsk_Skybox *self);
 // HDR
 
 gsk_Skybox *
-gsk_skybox_hdr_create();
+gsk_skybox_hdr_create(gsk_Texture *hdrTexture);
 gsk_Texture *
 gsk_skybox_hdr_projection(gsk_Skybox *skybox);
 

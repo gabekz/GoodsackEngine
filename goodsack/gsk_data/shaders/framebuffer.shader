@@ -20,6 +20,7 @@ out vec4 FragColor;
 in vec2 texCoords;
 
 uniform sampler2D u_ScreenTexture;
+uniform sampler2D u_BloomTexture;
 uniform int u_Tonemapper   = 1;
 uniform float u_Exposure   = 2.5;
 uniform float u_Gamma      = 2.2;
@@ -29,6 +30,8 @@ uniform float u_MaxWhite   = 1.0;
 uniform float u_VignetteAmount  = 0.5;
 uniform float u_VignetteFalloff = 0.5;
 uniform vec3 u_VignetteColor    = vec3(1);
+
+uniform float u_BloomIntensity = 1.0;
 
 // -- Tonemappers
 
@@ -122,6 +125,7 @@ void
 main()
 {
     vec3 pixel_rgb = sample_tonemap_gamma(u_ScreenTexture);
+    vec3 bloom_rgb = sample_tonemap_gamma(u_BloomTexture);
 
     // Vignette
     float vignette_factor = smoothstep(
@@ -129,7 +133,9 @@ main()
       u_VignetteFalloff * 0.799,
       distance(texCoords, vec2(0.5)) * (u_VignetteAmount + u_VignetteFalloff));
 
-    vec3 vignette_color = mix(u_VignetteColor, pixel_rgb, vignette_factor);
+    vec3 vignette_color = mix(u_VignetteColor,
+                              pixel_rgb + (bloom_rgb * u_BloomIntensity),
+                              vignette_factor);
     pixel_rgb           = vignette_color;
 
     // Kernel

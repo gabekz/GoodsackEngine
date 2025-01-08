@@ -29,6 +29,10 @@ typedef struct gsk_RendererProps
     float vignetteFalloff;
     vec3 vignetteColor;
 
+    float bloom_intensity;
+    float bloom_threshold;
+    float bloom_radius;
+
 } gsk_RendererProps;
 
 #endif // __RENDERER_PROPS_INL__

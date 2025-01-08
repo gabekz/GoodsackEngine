@@ -37,7 +37,7 @@
 
 #define DEFAULT_CLEAR_COLOR    \
     {                          \
-        0.1f, 0.1f, 0.8f, 1.0f \
+        0.1f, 0.1f, 0.4f, 1.0f \
     }
 
 // Drawing modes

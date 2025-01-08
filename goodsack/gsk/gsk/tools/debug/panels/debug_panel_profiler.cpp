@@ -106,6 +106,15 @@ gsk::tools::panels::Profiler::draw(void)
         DragInt("Samples", &samples, 2, 0, 4);
         EndDisabled();
 
+        Separator();
+        Text("Bloom");
+        DragFloat(
+          "Intensity", &props->bloom_intensity, 0.1f, 0.0f, 20.0f, "%.1f");
+        DragFloat(
+          "Filter Radius", &props->bloom_radius, 0.001f, 0.0f, 1.0f, "%.4f");
+        DragFloat(
+          "Threshold", &props->bloom_threshold, 0.01f, 0.0f, 20.0f, "%.4f");
+
         /*
         Separator();
         Text("Draw Calls: ");

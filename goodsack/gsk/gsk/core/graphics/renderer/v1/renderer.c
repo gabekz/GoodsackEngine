@@ -12,6 +12,7 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#include "core/graphics/renderer/pipeline/pass_bloom.h"
 #include "core/graphics/renderer/pipeline/pass_compute.h"
 #include "core/graphics/renderer/pipeline/pipeline.h"
 
@@ -84,6 +85,10 @@ gsk_renderer_init(const char *app_name)
       .vignetteAmount  = 0.5f,
       .vignetteFalloff = 0.5f,
       .vignetteColor   = {0, 0, 0},
+
+      .bloom_intensity = 1.0f,
+      .bloom_radius    = 0.01f,
+      .bloom_threshold = 0.8f,
     };
 
     ret->shadowmapOptions = (ShadowmapOptions) {
@@ -232,6 +237,9 @@ gsk_renderer_start(gsk_Renderer *renderer)
 
         // generate SSAO textures
         pass_ssao_init();
+
+        // init bloom
+        pass_bloom_init();
 
         // renderer->skybox = gsk_skybox_create(skyboxCubemap);
 
@@ -416,12 +424,22 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     glPopDebugGroup();
     /*-------------------------------------------
-        Pass #4 - Final: Backbuffer draw
+        Pass #4 - Bloom Stage
+    */
+
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 4, -1, "Pass: Bloom");
+    u32 cnt_draw_id = postbuffer_get_id();
+    pass_bloom_render(cnt_draw_id, &renderer->properties);
+
+    glPopDebugGroup();
+
+    /*-------------------------------------------
+        Pass #5 - Final: Backbuffer draw
     */
     glPushDebugGroup(
-      GL_DEBUG_SOURCE_APPLICATION, 4, -1, "Pass: Backbuffer Draw (Final)");
+      GL_DEBUG_SOURCE_APPLICATION, 5, -1, "Pass: Backbuffer Draw (Final)");
 
-    postbuffer_draw(&renderer->properties);
+    postbuffer_draw(&renderer->properties, pass_bloom_get_texture_id());
 
     glPopDebugGroup();
 

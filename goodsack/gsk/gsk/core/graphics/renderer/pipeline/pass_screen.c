@@ -176,6 +176,7 @@ postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties)
     shader = GSK_ASSET("gsk://shaders/framebuffer.shader");
     gsk_shader_use(shader);
     glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
+    glUniform1i(glGetUniformLocation(shader->id, "u_BloomTexture"), 1);
 
     // Create Rectangle
     vaoRect = gsk_gl_vertex_array_create();
@@ -218,7 +219,7 @@ postbuffer_bind(int enableMSAA)
 }
 
 void
-postbuffer_draw(gsk_RendererProps *properties)
+postbuffer_draw(gsk_RendererProps *properties, u32 bloom_texture_id)
 {
 
     if (properties->msaaEnable)
@@ -262,8 +263,13 @@ postbuffer_draw(gsk_RendererProps *properties)
                  1,
                  (float *)properties->vignetteColor);
 
+    glUniform1f(glGetUniformLocation(shader->id, "u_BloomIntensity"),
+                properties->bloom_intensity);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sbTexture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, bloom_texture_id);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
@@ -302,4 +308,11 @@ void
 postbuffer_cleanup()
 {
     glDeleteProgram(shader->id);
+}
+
+u32
+postbuffer_get_id()
+{
+    // TODO: Check if MSAA enabled
+    return sbTexture;
 }
