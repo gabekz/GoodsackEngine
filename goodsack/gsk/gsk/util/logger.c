@@ -163,11 +163,11 @@ setLevelStr(LogLevel level, int colored, char *dest)
         break;
     case LogLevel_ERROR:
         levelStr = "Error";
-        levelCol = MAG;
+        levelCol = RED;
         break;
     case LogLevel_CRITICAL:
         levelStr = "Critical";
-        levelCol = RED;
+        levelCol = MAG;
         break;
     default: return;
     }
