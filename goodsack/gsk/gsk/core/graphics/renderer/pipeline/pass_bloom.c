@@ -18,7 +18,6 @@
 typedef struct gsk_BloomMip
 {
     vec2 size;
-    ivec2 int_size;
     u32 texture;
 } gsk_BloomMip;
 
@@ -44,8 +43,7 @@ pass_bloom_init()
     glGenFramebuffers(1, &bloom_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, bloom_fbo);
 
-    vec2 mip_size      = {1280, 720};
-    ivec2 mip_int_size = {1280, 720};
+    vec2 mip_size = {1280, 720};
 
     for (int i = 0; i < mip_chain_length; i++)
     {
@@ -53,11 +51,8 @@ pass_bloom_init()
 
         mip_size[0] *= 0.5f;
         mip_size[1] *= 0.5f;
-        mip_int_size[0] /= 2;
-        mip_int_size[1] /= 2;
 
         glm_vec2_copy(mip_size, mip.size);
-        glm_ivec2_copy(mip_int_size, mip.int_size);
 
         mip.size[0] = (int)mip.size[0];
         mip.size[1] = (int)mip.size[1];
@@ -152,10 +147,9 @@ _render_downsamples(u32 tex_source_id, f32 threshold)
       1,
       (float *)viewport); // TODO: CHANGE TO SOURCE VIEWPORT RESOLUTION
 
-    int do_pre = 1;
     // prefilter for first pass
     glUniform1i(glGetUniformLocation(s_shader_downsample->id, "u_DoPrefilter"),
-                do_pre);
+                TRUE);
 
     // send threshold
     glUniform1f(glGetUniformLocation(s_shader_downsample->id, "u_Threshold"),
@@ -188,11 +182,13 @@ _render_downsamples(u32 tex_source_id, f32 threshold)
         // bind new texture
         glBindTexture(GL_TEXTURE_2D, mip.texture);
 
-        do_pre = 0;
-        // disable prefilter
-        glUniform1ui(
-          glGetUniformLocation(s_shader_downsample->id, "u_DoPrefilter"),
-          do_pre);
+        if (i == 0)
+        {
+            // disable prefilter after first iteration
+            glUniform1ui(
+              glGetUniformLocation(s_shader_downsample->id, "u_DoPrefilter"),
+              FALSE);
+        }
     }
     glEnable(GL_BLEND);
 }
@@ -200,10 +196,17 @@ _render_downsamples(u32 tex_source_id, f32 threshold)
 static void
 _render_upsamples(f32 filter_radius)
 {
+    vec2 viewport    = {1280, 720};
+    f32 aspect_ratio = viewport[0] / viewport[1];
+
     // shaders
     gsk_shader_use(s_shader_upsample);
     glUniform1f(glGetUniformLocation(s_shader_upsample->id, "u_filter_radius"),
                 filter_radius);
+
+    // send aspect ratio
+    glUniform1f(glGetUniformLocation(s_shader_downsample->id, "u_AspectRatio"),
+                aspect_ratio);
 
     // Enable additive blending
     glEnable(GL_BLEND);

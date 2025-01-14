@@ -1,5 +1,5 @@
 #shader vertex
-#version 330 core
+#version 420 core
 
 layout(location = 0) in vec2 inPos;
 layout(location = 1) in vec2 inTexCoords;
@@ -14,13 +14,13 @@ main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 
-out vec4 FragColor;
 in vec2 texCoords;
 
-uniform sampler2D u_ScreenTexture;
-uniform sampler2D u_BloomTexture;
+layout(binding = 0) uniform sampler2D u_ScreenTexture;
+layout(binding = 1) uniform sampler2D u_BloomTexture;
+
 uniform int u_Tonemapper   = 1;
 uniform float u_Exposure   = 2.5;
 uniform float u_Gamma      = 2.2;
@@ -32,6 +32,8 @@ uniform float u_VignetteFalloff = 0.5;
 uniform vec3 u_VignetteColor    = vec3(1);
 
 uniform float u_BloomIntensity = 1.0;
+
+out vec4 FragColor;
 
 // -- Tonemappers
 
@@ -124,8 +126,9 @@ sample_tonemap_gamma(sampler2D tex_in)
 void
 main()
 {
-    vec3 pixel_rgb = sample_tonemap_gamma(u_ScreenTexture);
-    vec3 bloom_rgb = sample_tonemap_gamma(u_BloomTexture);
+    vec3 pixel_rgb =
+      (sample_tonemap_gamma(u_ScreenTexture) +
+       (sample_tonemap_gamma(u_BloomTexture) * u_BloomIntensity));
 
     // Vignette
     float vignette_factor = smoothstep(
@@ -133,9 +136,7 @@ main()
       u_VignetteFalloff * 0.799,
       distance(texCoords, vec2(0.5)) * (u_VignetteAmount + u_VignetteFalloff));
 
-    vec3 vignette_color = mix(u_VignetteColor,
-                              pixel_rgb + (bloom_rgb * u_BloomIntensity),
-                              vignette_factor);
+    vec3 vignette_color = mix(u_VignetteColor, pixel_rgb, vignette_factor);
     pixel_rgb           = vignette_color;
 
     // Kernel

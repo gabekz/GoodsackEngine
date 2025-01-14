@@ -19,8 +19,8 @@ main()
 layout(binding = 0) uniform sampler2D srcTexture;
 
 uniform vec2 u_src_resolution;
-uniform float u_Threshold = 0;
-uniform int u_DoPrefilter = 0;
+uniform float u_Threshold  = 0;
+uniform bool u_DoPrefilter = false;
 
 in vec2 texCoord;
 layout(location = 0) out vec4 downsample;
@@ -82,13 +82,13 @@ main()
     // (e.g.) contribute 0.5 to the final color output. The code below is
     // written to effectively yield this sum. We get: 0.125*5 + 0.03125*4 +
     // 0.0625*4 = 1
-    vec3 dsamp = vec3(1);
-    dsamp      = e * 0.125;
+    vec3 dsamp = e * 0.125;
     dsamp += (a + c + g + i) * 0.03125;
     dsamp += (b + d + f + h) * 0.0625;
     dsamp += (j + k + l + m) * 0.125;
 
-    if (u_src_resolution.x == 1280) { dsamp = prefilter_threshold(dsamp); }
+    if (u_DoPrefilter == true) { dsamp = prefilter_threshold(dsamp); }
 
+    dsamp      = max(dsamp, 0.0001f);
     downsample = vec4(dsamp, 1);
 }

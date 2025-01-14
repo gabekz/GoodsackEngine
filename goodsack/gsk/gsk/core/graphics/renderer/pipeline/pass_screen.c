@@ -175,8 +175,6 @@ postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties)
     // Shader
     shader = GSK_ASSET("gsk://shaders/framebuffer.shader");
     gsk_shader_use(shader);
-    glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
-    glUniform1i(glGetUniformLocation(shader->id, "u_BloomTexture"), 1);
 
     // Create Rectangle
     vaoRect = gsk_gl_vertex_array_create();
