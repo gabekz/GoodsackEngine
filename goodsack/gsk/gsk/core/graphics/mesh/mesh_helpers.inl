@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -19,13 +19,15 @@ _joint_transform_local(gsk_Joint *joint, float *outMatrix)
 {
     float *lm = outMatrix;
 
-    if (joint->pose.hasMatrix) {
+    if (joint->pose.hasMatrix)
+    {
         memcpy(lm, joint->pose.mTransform, sizeof(float) * 16);
-    } else {
+    } else
+    {
         gsk_Pose *node = &joint->pose;
-        float tx   = node->translation[0];
-        float ty   = node->translation[1];
-        float tz   = node->translation[2];
+        float tx       = node->translation[0];
+        float ty       = node->translation[1];
+        float tz       = node->translation[2];
 
         float qx = node->rotation[0];
         float qy = node->rotation[1];
@@ -66,11 +68,13 @@ _joint_transform_world(gsk_Joint *joint, float *outMatrix)
 
     gsk_Joint *parent = joint->parent;
 
-    while (parent) {
+    while (parent)
+    {
         float pm[16];
         _joint_transform_local(parent, pm);
 
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 4; ++i)
+        {
 
             float l0 = lm[i * 4 + 0];
             float l1 = lm[i * 4 + 1];

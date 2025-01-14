@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-present, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef __GSK_RUNTIME_WRAPPER_H__
 #define __GSK_RUNTIME_WRAPPER_H__
 

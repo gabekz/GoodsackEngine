@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2024-present, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "parse_image.h"
 
 #include <stdarg.h>

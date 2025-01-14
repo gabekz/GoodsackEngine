@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-present, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "gsk_runtime.hpp"
 
 extern "C" {
