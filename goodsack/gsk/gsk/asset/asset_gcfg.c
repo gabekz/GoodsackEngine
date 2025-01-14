@@ -13,6 +13,44 @@
 #include "core/graphics/texture/texture.h"
 #include "runtime/gsk_runtime_wrapper.h"
 
+static u8
+_parse_texture_ops(gsk_GCFGItem *p_item, TextureOptions *p_dest)
+{
+    if (!strcmp(p_item->key, "is_normal"))
+    {
+        p_dest->af_range        = 1;
+        p_dest->internal_format = GL_RGB;
+        p_dest->gen_mips        = TRUE;
+        p_dest->flip_vertically = TRUE;
+    }
+
+    else if (!strcmp(p_item->key, "flip_vertically"))
+    {
+        if (GCFG_CHECK(p_item, GskGCFGItemType_Number))
+        {
+            p_dest->flip_vertically = atof(p_item->value);
+        }
+    }
+
+    return 1;
+}
+
+static u8
+_parse_model_ops(gsk_GCFGItem *p_item, gsk_AssetModelOptions *p_dest)
+{
+    if (!strcmp(p_item->key, "scale"))
+    {
+        p_dest->scale = atof(p_item->value);
+    }
+
+    else if (!strcmp(p_item->key, "import_materials"))
+    {
+        p_dest->import_materials = 1;
+    }
+
+    return 1;
+}
+
 void
 gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
 {
@@ -47,40 +85,30 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
         }
     }
 
-    if (p_options != NULL)
+    if (p_options == NULL) { return; }
+
+    for (int i = 0; i < p_gcfg->list_items.list_next; i++)
     {
-        for (int i = 0; i < p_gcfg->list_items.list_next; i++)
+        gsk_GCFGItem *p_item =
+          array_list_get_at_index(&(p_gcfg->list_items), i);
+
+        switch (asset_list)
         {
-            gsk_GCFGItem *p_item =
-              array_list_get_at_index(&(p_gcfg->list_items), i);
-
-            if (asset_list == GskAssetType_Texture)
-            {
-                TextureOptions *p_ops = (TextureOptions *)p_options;
-
-                if (!strcmp(p_item->key, "is_normal"))
-                {
-                    p_ops->af_range        = 1;
-                    p_ops->internal_format = GL_RGB;
-                    p_ops->gen_mips        = TRUE;
-                    p_ops->flip_vertically = TRUE;
-                }
-
-                else if (!strcmp(p_item->key, "flip_vertically"))
-                {
-                    p_ops->flip_vertically = atof(p_item->value);
-                }
-
-            } else if (asset_list == GskAssetType_Model)
-            {
-                gsk_AssetModelOptions *p_ops =
-                  (gsk_AssetModelOptions *)p_options;
-
-                if (!strcmp(p_item->key, "scale"))
-                {
-                    p_ops->scale = atof(p_item->value);
-                }
-            }
+        case (GskAssetType_Texture):
+            _parse_texture_ops(p_item, (TextureOptions *)p_options);
+            break;
+        case (GskAssetType_Model):
+            _parse_model_ops(p_item, (TextureOptions *)p_options);
+            break;
+        default: break;
         }
     }
+}
+
+u8
+gsk_asset_gcfg_check_type(const gsk_GCFGItem *p_item,
+                          const GskGCFGItemType type)
+{
+    if (p_item->type == type) { return 1; }
+    return 0;
 }

@@ -18,10 +18,22 @@
 extern "C" {
 #endif // __cplusplus
 
+#define GCFG_CHECK(v, x) gsk_asset_gcfg_check_type(v, x)
+
+typedef enum GskGCFGItemType_ {
+    GskGCFGItemType_None = 0,
+    GskGCFGItemType_Number,
+    GskGCFGItemType_Bool,
+    GskGCFGItemType_String,
+} GskGCFGItemType_;
+
+typedef s32 GskGCFGItemType;
+
 typedef struct gsk_GCFGItem
 {
     const char *key;
     const char *value;
+    GskGCFGItemType type;
 } gsk_GCFGItem;
 
 typedef struct gsk_GCFG
@@ -39,6 +51,10 @@ gsk_asset_gcfg_load_all(gsk_AssetCache *p_cache);
 
 void
 gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg);
+
+u8
+gsk_asset_gcfg_check_type(const gsk_GCFGItem *p_item,
+                          const GskGCFGItemType type);
 
 #ifdef __cplusplus
 }

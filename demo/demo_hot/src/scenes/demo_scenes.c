@@ -408,16 +408,12 @@ _scene5(gsk_ECS *ecs, gsk_Renderer *renderer)
     __set_active_scene_skybox(renderer, skyboxMain);
 
     gsk_Material *matWire =
-      gsk_material_create(NULL, GSK_PATH("gsk://shaders/wireframe.shader"), 0);
+      gsk_material_create(GSK_ASSET("gsk://shaders/wireframe.shader"), NULL, 0);
 
-    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
-    *pCamera = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f}, NULL);
-    gsk_Entity e_camera = *pCamera;
+    gsk_Entity e_camera =
+      __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f}, NULL);
 
-    gsk_Model *modelSponza =
-      // gsk_model_load_from_file("../demo/demo_hot/Resources/models/AK.glb",
-      // 1);
-      gsk_model_load_from_file(GSK_PATH("data://models/sponza.glb"), 1, TRUE);
+    gsk_Model *modelSponza = GSK_ASSET("data://models/sponza.glb");
 
     gsk_Entity e_sponza = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(e_sponza,
@@ -426,19 +422,12 @@ _scene5(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .position = {0.0f, -1.5f, 0.0f},
                             .scale    = {0.001f, 0.001f, 0.001f},
                           }));
-    _gsk_ecs_add_internal(
-      e_sponza,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {
-        .material = matWire,
-        .pModel   = modelSponza,
-        //.modelPath = "../demo/demo_hot/Resources/models/sponza.glb",
-        //.modelPath  = "../res/models/test3.gltf",
-        .properties = {
-          .drawMode = DRAW_ELEMENTS,
-          .cullMode = CULL_CW | CULL_FORWARD,
-        }}));
-    //_gsk_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
+    _gsk_ecs_add_internal(e_sponza,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matWire,
+                            .pModel   = modelSponza,
+                          }));
 }
 
 // physics test

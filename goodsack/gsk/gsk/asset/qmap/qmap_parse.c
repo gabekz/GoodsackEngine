@@ -93,10 +93,11 @@ __qmap_container_add_brush(gsk_QMapContainer *p_container)
     array_list_push(&p_container->p_cnt_entity->list_brushes, (void *)&brush);
     p_container->total_brushes++; // increment total
 
-    if ((int)p_container->total_brushes !=
+    if ((int)p_container->total_brushes <
         (int)p_container->p_cnt_entity->list_brushes.list_next)
     {
-        LOG_ERROR("Failed to allocate correct number of brushes");
+        LOG_CRITICAL(
+          "QMap memory: failed to allocate correct number of brushes.");
     }
 
     // set the current buffer view in Container to entity's Brush
