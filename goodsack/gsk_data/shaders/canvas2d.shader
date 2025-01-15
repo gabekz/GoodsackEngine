@@ -9,7 +9,7 @@ out VS_OUT { vec2 texCoords; }
 vs_out;
 
 uniform vec2 u_position = vec2(0, 0);
-uniform vec2 u_viewport = vec2(1920, 1080);
+uniform vec2 u_viewport = vec2(1280, 720);
 uniform float u_scale   = 1;
 
 void

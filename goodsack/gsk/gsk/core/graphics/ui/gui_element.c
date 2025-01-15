@@ -16,8 +16,9 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/primitives.h"
 
+#include "core/device/device.h"
+
 #define USING_SPRITE_SHEET FALSE
-#define USING_BLENDING     TRUE
 
 #define S_X 1.0f
 #define S_Y 3.0f
@@ -88,48 +89,87 @@ gsk_gui_element_create(vec2 position, vec2 size, vec3 color, gsk_Texture *p_text
 
     ret->using_texture = (p_texture != NULL) ? TRUE : FALSE;
 
+#if 0
     ret->material =
       gsk_material_create(NULL, GSK_PATH("gsk://shaders/canvas2d.shader"), 0, NULL);
+#else
+      ret->material = NULL;
+#endif
 
-    if(ret->using_texture) {
+    if(ret->using_texture)
+    {
         ret->texture = p_texture;
-        gsk_material_add_texture(ret->material, ret->texture);
+
+        if(ret->material) {
+          gsk_material_add_texture(ret->material, ret->texture);
+        }
     }
 
     return ret;
 }
 
 void
-gsk_gui_element_draw(gsk_GuiElement *self)
+gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
 {
-#if USING_BLENDING
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+#if 0
+    if(self->material != NULL) {
+      gsk_material_use(self->material);
+    }
 #endif
 
-    gsk_material_use(self->material);
+  if(self->using_texture == TRUE && self->texture != NULL) {
+    texture_bind(self->texture, 0);
+  }
 
-    // send position to shader
-    glUniform2fv(
-      glGetUniformLocation(self->material->shaderProgram->id, "u_position"),
-      1,
-      (float *)self->position);
+  // send position to shader
+  glUniform2fv(
+    glGetUniformLocation(shader_id, "u_position"),
+    1,
+    (float *)self->position);
 
-    // send texture info
-    glUniform1i(
-      glGetUniformLocation(self->material->shaderProgram->id, "u_using_texture"),
-      self->using_texture);
+  // send texture info
+  glUniform1i(
+    glGetUniformLocation(shader_id, "u_using_texture"),
+    self->using_texture);
 
-    // send color info
+  // send color info
+  glUniform3fv(
+    glGetUniformLocation(shader_id, "u_color"),
+    1,
+    (float *)self->color_rgb);
+
+#if 0
+  if(self->size[0] == 10 && self->size[1] == 10) {
+  
+    double x_bounds[2] = {self->position[0] - self->size[0],
+                          self->position[0] + self->size[0]};
+  
+    double y_bounds[2] = {self->position[1] - self->size[1],
+                          self->position[1] + self->size[1]};
+  
+    const gsk_Input input = gsk_device_getInput();
+    const double cursor_pos[2] = {
+      input.cursor_position[0],
+      input.cursor_position[1]
+      };
+  
+    if((cursor_pos[0] > x_bounds[0] && cursor_pos[0] < x_bounds[1]) &&
+      (cursor_pos[1] > y_bounds[0] && cursor_pos[1] < y_bounds[1])) {
+
+        vec3 col = {0, 1, 0};
+
     glUniform3fv(
       glGetUniformLocation(self->material->shaderProgram->id, "u_color"),
       1,
-      (float *)self->color_rgb);
+      (float *)col);
 
-    gsk_gl_vertex_array_bind(self->vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-#if USING_BLENDING
-    glDisable(GL_BLEND);
+    }
+  }
 #endif
+
+
+  gsk_gl_vertex_array_bind(self->vao);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+
 }

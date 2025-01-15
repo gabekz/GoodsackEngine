@@ -47,6 +47,7 @@ typedef struct gsk_Renderer
     gsk_RendererProps properties;  // Frame properties/configuration
     int windowWidth, windowHeight; // window resolution
     int renderWidth, renderHeight; // render resolution
+    f32 window_aspect_ratio;       // window aspect ratio
 
     gsk_Scene **sceneL;
     u16 sceneC, activeScene;
@@ -101,14 +102,6 @@ typedef struct gsk_Renderer
 gsk_Renderer *
 gsk_renderer_init(const char *app_name);
 
-// Rendering Loop
-void
-gsk_renderer_start(gsk_Renderer *renderer);
-void
-gsk_renderer_tick(gsk_Renderer *renderer);
-
-/* scene management */
-
 /**
  * Sets the active scene for the renderer. Will create a new scene
  * if the specified index does not yet exist.
@@ -119,6 +112,19 @@ gsk_renderer_tick(gsk_Renderer *renderer);
  */
 struct gsk_ECS *
 gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex);
+
+// Rendering Loop
+void
+gsk_renderer_start(gsk_Renderer *renderer);
+void
+gsk_renderer_tick(gsk_Renderer *renderer);
+
+/**
+ * Utility function to handle window resizing
+ */
+void
+gsk_renderer_resize(gsk_Renderer *p_self, int new_width, int new_height);
+
 //-------------------------------
 
 // #endif // __cplusplus

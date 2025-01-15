@@ -51,9 +51,10 @@ gsk_renderer_init(const char *app_name)
       /*context*/ gsk_window_create(
         winWidth, winHeight, winImagePath, app_name, &ret->vulkanDevice);
 
-    ret->window       = window;
-    ret->windowWidth  = winWidth;
-    ret->windowHeight = winHeight;
+    ret->window              = window;
+    ret->windowWidth         = winWidth;
+    ret->windowHeight        = winHeight;
+    ret->window_aspect_ratio = (f32)winWidth / (f32)winHeight;
 
     // Set Render Resolution
     ret->renderWidth  = (RENDER_RESOLUTION_OVERRIDE) ? PSX_WIDTH : winWidth;
@@ -126,12 +127,12 @@ gsk_renderer_init(const char *app_name)
 
     ret->canvas = gsk_gui_canvas_create();
 
-    gsk_GuiElement *element =
-      gsk_gui_element_create((vec2) {1920 / 2, 1080 / 2},
-                             (vec2) {10, 10},
-                             (vec3) {1, 1, 1},
-                             guiTexture,
-                             NULL);
+    gsk_GuiElement *element = gsk_gui_element_create(
+      (vec2) {ret->canvas.canvas_size[0] / 2, ret->canvas.canvas_size[1] / 2},
+      (vec2) {10, 10},
+      (vec3) {1, 1, 1},
+      guiTexture,
+      NULL);
 
     gsk_gui_canvas_add_element(&ret->canvas, element);
 
@@ -519,4 +520,23 @@ gsk_renderer_tick(gsk_Renderer *renderer)
     {
         // renderer_tick_VULKAN(renderer, ecs);
     }
+}
+
+void
+gsk_renderer_resize(gsk_Renderer *p_self, int new_width, int new_height)
+{
+    // --
+    // update window information
+
+    p_self->windowWidth         = new_width;
+    p_self->windowHeight        = new_height;
+    p_self->window_aspect_ratio = (f32)new_width / (f32)new_height;
+
+    // --
+    // update pipeline
+
+    // update OpenGL viewport
+    if (GSK_DEVICE_API_OPENGL) { glViewport(0, 0, new_width, new_height); }
+
+    postbuffer_resize((u32)new_width, (u32)new_height);
 }

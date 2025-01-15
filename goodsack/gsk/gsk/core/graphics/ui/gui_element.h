@@ -7,6 +7,7 @@
 #define __GUI_ELEMENT_H__
 
 #include "util/maths.h"
+#include "util/sysdefs.h"
 
 #include "core/drivers/opengl/opengl.h"
 
@@ -39,7 +40,7 @@ gsk_gui_element_create(vec2 position,
                        vec4 tex_coords);
 
 void
-gsk_gui_element_draw(gsk_GuiElement *element);
+gsk_gui_element_draw(gsk_GuiElement *element, u32 shader_id);
 
 #ifdef __cplusplus
 }

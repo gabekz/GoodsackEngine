@@ -336,11 +336,14 @@ gsk::runtime::rt_setup(const char *root_dir,
     gsk_GuiText *loading_text =
       gsk_gui_text_create("Loading", text_pos, text_color);
 
+    const u32 canvas_shader_id =
+      s_runtime.renderer->canvas.p_material->shaderProgram->id;
+
     for (int i = 0; i < 2; i++)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        gsk_gui_text_draw(loading_text);
+        gsk_gui_text_draw(loading_text, canvas_shader_id);
         glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
     }
 #endif // RUNTIME_LOADING_SCREEN

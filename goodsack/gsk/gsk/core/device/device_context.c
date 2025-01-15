@@ -23,7 +23,8 @@
 #include "core/drivers/opengl/opengl.h"
 #include "core/drivers/vulkan/vulkan.h"
 
-#include "core/graphics/renderer/pipeline/pass_screen.h"
+#include "core/graphics/renderer/v1/renderer.h"
+#include "runtime/gsk_runtime_wrapper.h"
 
 static void
 _error_callback(int error, const char *description)
@@ -34,11 +35,10 @@ _error_callback(int error, const char *description)
 static void
 _resize_callback(GLFWwindow *window, int new_width, int new_height)
 {
-    if (new_width > 0 && new_height > 0)
-    {
-        glViewport(0, 0, new_width, new_height);
-        postbuffer_resize((u32)new_width, (u32)new_height);
-    }
+    if ((new_width > 0 && new_height > 0) == FALSE) { return; }
+
+    gsk_Renderer *p_renderer = gsk_runtime_get_renderer();
+    gsk_renderer_resize(p_renderer, new_width, new_height);
 }
 
 static void
