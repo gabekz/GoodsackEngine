@@ -127,12 +127,13 @@ gsk_renderer_init(const char *app_name)
 
     ret->canvas = gsk_gui_canvas_create();
 
-    gsk_GuiElement *element = gsk_gui_element_create(
-      (vec2) {ret->canvas.canvas_size[0] / 2, ret->canvas.canvas_size[1] / 2},
-      (vec2) {10, 10},
-      (vec3) {1, 1, 1},
-      guiTexture,
-      NULL);
+    gsk_GuiElement *element =
+      gsk_gui_element_create(GskGuiElementAnchorType_Center,
+                             (vec2) {0, 0},
+                             (vec2) {10, 10},
+                             (vec3) {1, 1, 1},
+                             guiTexture,
+                             NULL);
 
     gsk_gui_canvas_add_element(&ret->canvas, element);
 

@@ -18,6 +18,13 @@
 extern "C" {
 #endif // __cplusplus
 
+typedef enum GskGuiElementAnchorType_ {
+    GskGuiElementAnchorType_None,
+    GskGuiElementAnchorType_Center,
+} GskGuiElementAnchorType_;
+
+typedef s32 GskGuiElementAnchorType;
+
 typedef struct gsk_GuiElement
 {
     gsk_GlVertexArray *vao;
@@ -28,12 +35,14 @@ typedef struct gsk_GuiElement
     vec2 position;  // position in pixel-coordinates
     vec2 size;      // size in pixel-coordinates
 
+    GskGuiElementAnchorType anchor_type;
     u16 using_texture;
 
 } gsk_GuiElement;
 
 gsk_GuiElement *
-gsk_gui_element_create(vec2 position,
+gsk_gui_element_create(GskGuiElementAnchorType anchor,
+                       vec2 position,
                        vec2 size,
                        vec3 color,
                        gsk_Texture *p_texture,

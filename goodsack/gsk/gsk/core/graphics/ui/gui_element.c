@@ -43,7 +43,7 @@
 #endif
 
 gsk_GuiElement *
-gsk_gui_element_create(vec2 position, vec2 size, vec3 color, gsk_Texture *p_texture, vec4 tex_coords)
+gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size, vec3 color, gsk_Texture *p_texture, vec4 tex_coords)
 {
     gsk_GuiElement *ret = malloc(sizeof(gsk_GuiElement));
 
@@ -105,6 +105,8 @@ gsk_gui_element_create(vec2 position, vec2 size, vec3 color, gsk_Texture *p_text
         }
     }
 
+    ret->anchor_type = anchor;
+
     return ret;
 }
 
@@ -121,12 +123,6 @@ gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
   if(self->using_texture == TRUE && self->texture != NULL) {
     texture_bind(self->texture, 0);
   }
-
-  // send position to shader
-  glUniform2fv(
-    glGetUniformLocation(shader_id, "u_position"),
-    1,
-    (float *)self->position);
 
   // send texture info
   glUniform1i(

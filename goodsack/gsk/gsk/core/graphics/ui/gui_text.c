@@ -136,7 +136,8 @@ gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color)
 
         // CREATE NEW ELEMENTS
         ret->elements[i] =
-          gsk_gui_element_create((vec2) {current_x_position, start_pos[1]},
+          gsk_gui_element_create(GskGuiElementAnchorType_None,
+                                 (vec2) {current_x_position, start_pos[1]},
                                  (vec2) {char_size, char_size},
                                  text_color_rgb,
                                  ret->font_atlas,

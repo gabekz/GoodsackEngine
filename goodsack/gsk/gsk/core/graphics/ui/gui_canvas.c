@@ -6,6 +6,7 @@
 #include "gui_canvas.h"
 
 #include "core/graphics/material/material.h"
+#include "core/graphics/ui/gui_element.h"
 #include "runtime/gsk_runtime_wrapper.h"
 
 #define USING_BLENDING  TRUE
@@ -74,6 +75,26 @@ gsk_gui_canvas_draw(gsk_GuiCanvas *p_self)
 
     for (int i = 0; i < p_self->elements_count; i++)
     {
+        vec2 element_pos = {0, 0};
+
+        switch (p_self->elements[i]->anchor_type)
+        {
+        case (GskGuiElementAnchorType_Center):
+            element_pos[0] = viewport[0] / 2;
+            element_pos[1] = viewport[1] / 2;
+            break;
+        case (GskGuiElementAnchorType_None):
+        default: break;
+        }
+
+        glm_vec2_add(element_pos, p_self->elements[i]->position, element_pos);
+
+        // send position to shader
+        glUniform2fv(glGetUniformLocation(shader_id, "u_position"),
+                     1,
+                     (float *)element_pos);
+
+        // continue draw
         gsk_gui_element_draw(p_self->elements[i], shader_id);
     }
 
