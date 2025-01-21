@@ -5,6 +5,8 @@
 
 #include "collider_setup-system.h"
 
+#include <stdlib.h>
+
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
@@ -390,6 +392,20 @@ on_collide(gsk_Entity e)
     }
 }
 
+static void
+destroy(gsk_Entity entity)
+{
+    if (!(gsk_ecs_has(entity, C_COLLIDER))) return;
+    struct ComponentCollider *collider = gsk_ecs_get(entity, C_COLLIDER);
+
+    if (collider->pCollider == NULL) { return; }
+    gsk_Collider *p_col = (gsk_Collider *)collider->pCollider;
+
+    if (p_col->collider_data) { free(p_col->collider_data); }
+
+    free(p_col);
+}
+
 void
 s_collider_setup_system_init(gsk_ECS *ecs)
 {
@@ -397,5 +413,6 @@ s_collider_setup_system_init(gsk_ECS *ecs)
                             ((gsk_ECSSystem) {
                               .init       = (gsk_ECSSubscriber)init,
                               .on_collide = (gsk_ECSSubscriber)on_collide,
+                              .destroy    = (gsk_ECSSubscriber)destroy,
                             }));
 }

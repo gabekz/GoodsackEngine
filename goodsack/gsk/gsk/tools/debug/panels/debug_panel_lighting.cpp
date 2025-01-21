@@ -40,11 +40,12 @@ gsk::tools::panels::Lighting::draw(void)
     Separator();
     Text("Shadowmap");
     DragFloat(
-      "Near Plane", &p_renderer->shadowmapOptions.nearPlane, 0.1f, 0, 20);
-    DragFloat("Far Plane", &p_renderer->shadowmapOptions.farPlane, 0.1f, 0, 20);
+      "Near Plane", &p_renderer->shadowmapOptions.nearPlane, 0.1f, -100, 100);
     DragFloat(
-      "Projection Size", &p_renderer->shadowmapOptions.camSize, 0.1f, 0, 20);
-    DragInt("PCF Samples", &p_renderer->shadowmapOptions.pcfSamples, 1, 0, 20);
+      "Far Plane", &p_renderer->shadowmapOptions.farPlane, 0.1f, -100, 100);
+    DragFloat(
+      "Projection Size", &p_renderer->shadowmapOptions.camSize, 0.1f, 0, 100);
+    DragInt("PCF Samples", &p_renderer->shadowmapOptions.pcfSamples, 1, 0, 10);
 
     DragFloat("Normal Bias min",
               &p_renderer->shadowmapOptions.normalBiasMin,

@@ -88,7 +88,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                 // TODO: Change this (we don't want duplicated materials)
                 if (poly->p_texture != NULL)
                 {
-                    LOG_DEBUG("Successful loaded texture %s", plane->tex_name);
+                    LOG_TRACE("Successful loaded texture %s", plane->tex_name);
 
                     gsk_Material *material = gsk_material_create(
                       p_shader,
@@ -103,7 +103,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                     qmap_model->meshes[cnt_poly]->materialImported = material;
                 } else
                 {
-                    LOG_WARN("Failed to find texture %s", plane->tex_name);
+                    LOG_ERROR("Failed to find texture %s", plane->tex_name);
                 }
 
                 //----------------------------------------------------------

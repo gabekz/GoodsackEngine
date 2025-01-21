@@ -32,7 +32,8 @@ typedef struct gsk_GuiElement
     gsk_Material *material;
 
     vec3 color_rgb; // element pixel color
-    vec2 position;  // position in pixel-coordinates
+    vec2 offset;    // offset in pixel-coordinates
+    vec2 position;  // offset position in pixel-coordinates with viewport
     vec2 size;      // size in pixel-coordinates
 
     GskGuiElementAnchorType anchor_type;

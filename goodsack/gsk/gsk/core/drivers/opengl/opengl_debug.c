@@ -29,7 +29,7 @@ _gsk_gl_debug_output(GLenum source,
     if (type == GL_DEBUG_TYPE_PUSH_GROUP || type == GL_DEBUG_TYPE_POP_GROUP)
         return;
 
-    LOG_DEBUG("------------\nOpenGL message: %s", message);
+    LOG_WARN("------------\nOpenGL message: %s", message);
 
     switch (source)
     {

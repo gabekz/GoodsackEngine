@@ -8,6 +8,10 @@
 
 #include "core/graphics/material/material.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 void
 prepass_init();
 
@@ -27,5 +31,9 @@ u32
 prepass_getPosition();
 u32
 prepass_getNormal();
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __PASS_PREPASS_H__

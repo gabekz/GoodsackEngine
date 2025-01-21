@@ -22,10 +22,8 @@ gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials)
     char *ext = strrchr(path, '.');
     if (!ext)
     {
-        LOG_CRITICAL("Failed to find file extension for %s\n", path);
-    } else
-    {
-        LOG_INFO("extension is %s\n", ext);
+        LOG_ERROR("Failed to find file extension for %s\n", path);
+        return NULL;
     }
 
     gsk_Model *model;

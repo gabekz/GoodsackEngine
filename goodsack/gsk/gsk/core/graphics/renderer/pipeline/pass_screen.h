@@ -9,6 +9,10 @@
 #include "core/graphics/renderer/renderer_props.inl"
 #include "util/sysdefs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 void
 postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties);
 void
@@ -21,5 +25,9 @@ void
 postbuffer_cleanup();
 u32
 postbuffer_get_id();
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __PASS_SCREEN_H__

@@ -243,7 +243,7 @@ texture_create_cubemap(u32 faceCount, ...)
 gsk_Texture *
 texture_create_hdr(const char *path)
 {
-    LOG_INFO("Loading HDR Image at path: %s", path);
+    LOG_DEBUG("Loading HDR Image at path: %s", path);
 
     gsk_Texture *tex = malloc(sizeof(gsk_Texture));
 

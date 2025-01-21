@@ -274,6 +274,18 @@ pass_ssao_bind(SsaoOptions options)
 }
 
 u32
+pass_ssao_getNoiseTextureId()
+{
+    return s_ssaoNoiseTextureId;
+}
+
+u32
+pass_ssao_getFirstTextureId()
+{
+    return s_ssaoOutTextureId;
+}
+
+u32
 pass_ssao_getOutputTextureId()
 {
     return s_ssaoBlurOutTextureId;

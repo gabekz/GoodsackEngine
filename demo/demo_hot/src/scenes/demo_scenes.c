@@ -55,11 +55,10 @@ _scene0(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 0);
 
-    gsk_Texture *texEarthDiff =
-      texture_create_d(GSK_PATH("data://textures/earth/diffuse.png"));
-    gsk_Texture *texEarthNorm =
-      texture_create_n(GSK_PATH("data://textures/earth/normal.png"));
-    texture_create_n(GSK_PATH("data://textures/earth/normal.png"));
+    gsk_Texture *texEarthDiff = GSK_ASSET("data://textures/earth/diffuse.png");
+    gsk_Texture *texEarthNorm = GSK_ASSET("data://textures/earth/normal.png");
+
+    gsk_Model *model_earth = GSK_ASSET("gsk://models/sphere.obj");
 
     gsk_Material *matSuzanne =
       gsk_material_create(NULL,
@@ -77,12 +76,9 @@ _scene0(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(suzanneObject,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matSuzanne,
-                            .modelPath  = GSK_PATH("gsk://models/sphere.obj"),
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material = matSuzanne,
+                            .pModel   = model_earth,
+                          }));
 }
 
 static void
@@ -321,6 +317,7 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
     ecs = gsk_renderer_active_scene(renderer, 3);
     __set_active_scene_skybox(renderer, skyboxMain);
 
+#if 0
     gsk_Texture *texCerbA =
       texture_create_d(GSK_PATH("data://textures/pbr/cerberus/Cerberus_A.tga"));
     gsk_Texture *texCerbN =
@@ -339,33 +336,29 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
                           texCerbM,
                           texCerbS,
                           texPbrAo);
+#else
+    gsk_Material *matCerb =
+      GSK_ASSET("data://textures/pbr/cerberus/cerberus.material");
+#endif
 
     gsk_Entity camera =
       __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f}, NULL);
 
-    gsk_Model *model_cerb = gsk_model_load_from_file(
-      GSK_PATH("data://models/cerberus-triang.obj"), 1.0f, NULL);
+    gsk_Model *model_cerb = GSK_ASSET("data://models/cerberus-triang.obj");
 
-#if 1
-    gsk_Entity entCerb                          = gsk_ecs_new(ecs);
-    struct ComponentTransform compCerbTransform = {
-      .position = {0.0f, 0.0f, 0.0f},
-      .scale    = {4.0f, 4.0f, 4.0f},
-    };
-    struct ComponentModel compCerbMesh = {.material   = matCerb,
-                                          .pModel     = model_cerb,
-                                          .properties = {
-                                            .drawMode = DRAW_ARRAYS,
-                                            .cullMode = CULL_CW | CULL_FORWARD,
-                                          }};
-    _gsk_ecs_add_internal(
-      entCerb,
-      C_TRANSFORM,
-      (void *)((struct ComponentTransform *)&compCerbTransform));
-
-    _gsk_ecs_add_internal(
-      entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
-#endif
+    gsk_Entity e_cerb = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(e_cerb,
+                          C_TRANSFORM,
+                          (void *)(&(struct ComponentTransform) {
+                            .position = {0.0f, 0.0f, 0.0f},
+                            .scale    = {4.0f, 4.0f, 4.0f},
+                          }));
+    _gsk_ecs_add_internal(e_cerb,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matCerb,
+                            .pModel   = model_cerb,
+                          }));
 }
 
 static void

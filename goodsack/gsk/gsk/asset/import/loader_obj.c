@@ -17,7 +17,7 @@
 
 #include "core/graphics/mesh/mesh.h"
 
-#define LOGGING_OBJ
+// #define LOGGING_OBJ
 
 // TODO: May want to remove this - we should handle texture scaling directly
 // from textures (or materials) in shader code
@@ -43,7 +43,7 @@ gsk_load_obj(const char *path, float scale)
     }
 
 #ifdef LOGGING_OBJ
-    LOG_INFO("Loading OBJ at path: %s", path);
+    LOG_DEBUG("Loading OBJ at path: %s", path);
 #endif
 
     ArrayList buff_pos  = array_list_init(sizeof(float), _ARRAYLIST_CAP);

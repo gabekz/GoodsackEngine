@@ -1,0 +1,5 @@
+shader gsk://shaders/pbr.shader
+texture data://textures/pbr/cerberus/Cerberus_A.tga
+texture data://textures/pbr/cerberus/Cerberus_N.tga
+texture data://textures/pbr/cerberus/Cerberus_M.tga
+texture data://textures/pbr/cerberus/Cerberus_R.tga
