@@ -111,7 +111,7 @@ init(gsk_Entity e)
 
         vec3 base  = {0.0f, 1.255f, 0.0f};
         vec3 tip   = {0.0f, 1.0f, 0.0f};
-        f32 radius = 1.0f;
+        f32 radius = 0.3f;
 
         glm_vec3_copy(base, capsule_collider->base);
         glm_vec3_copy(tip, capsule_collider->tip);
@@ -220,7 +220,7 @@ on_collide(gsk_Entity e)
             case COLLIDER_BOX:
                 points = gsk_physics_collision_find_box_box(__clsn_prm);
                 break;
-#if 0
+#if 1
             case COLLIDER_CAPSULE:
                 points = gsk_physics_collision_find_box_capsule(__clsn_prm);
                 break;
@@ -240,7 +240,7 @@ on_collide(gsk_Entity e)
             case COLLIDER_SPHERE:
                 points = gsk_physics_collision_find_capsule_sphere(__clsn_prm);
                 break;
-#if 0
+#if 1
             case COLLIDER_BOX:
                 points = gsk_physics_collision_find_capsule_box(__clsn_prm);
                 break;
