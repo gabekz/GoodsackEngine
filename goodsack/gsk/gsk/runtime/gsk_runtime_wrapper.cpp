@@ -34,4 +34,11 @@ gsk_runtime_get_fallback_asset(GskAssetType type)
     return gsk::runtime::rt_get_fallback_asset(type); // Calls the C++ function
                                                       // internally
 }
+
+char *
+gsk_runtime_get_startup_map()
+{
+    return gsk::runtime::rt_get_startup_map(); // Calls the C++ function
+                                               // internally
+}
 }

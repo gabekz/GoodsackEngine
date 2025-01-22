@@ -26,6 +26,9 @@ gsk_runtime_get_asset_cache(const char *uri_str);
 gsk_AssetRef *
 gsk_runtime_get_fallback_asset(GskAssetType type);
 
+char *
+gsk_runtime_get_startup_map();
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

@@ -67,6 +67,12 @@ static struct
         u8 build_gpak; // 0 = FALSE; 1 = TRUE
     } options;
 
+    struct
+    {
+        char map_uri[GSK_FS_MAX_PATH];
+        u8 map_from_runtime;
+    } map_setup;
+
 } s_runtime;
 } // extern "C"
 
@@ -110,7 +116,8 @@ _gsk_check_args(int argc, char *argv[])
             else if (key == "--map")
             {
                 LOG_INFO("Loading map from: %s", value.c_str());
-                // TODO: implement your map loading logic here
+                strcpy(s_runtime.map_setup.map_uri, value.c_str());
+                s_runtime.map_setup.map_from_runtime = 1;
             }
         }
         // Check flags without values
@@ -152,7 +159,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     int logStat = logger_initConsoleLogger(NULL);
     // logger_initFileLogger(exe_path.c_str(), 0, 0);
 
-    logger_setLevel(LogLevel_TRACE);
+    logger_setLevel(LogLevel_DEBUG);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
@@ -161,6 +168,8 @@ gsk::runtime::rt_setup(const char *root_dir,
     s_runtime.cache_cnt          = 0; // TODO: Change this.
     s_runtime.options.fs_mode    = 0; // TODO: Change this.
     s_runtime.options.build_gpak = 0; // TODO: Change this.
+
+    s_runtime.map_setup.map_from_runtime = 0; // TODO: Change this.
 
     _gsk_check_args(argc, argv);
 
@@ -343,7 +352,9 @@ gsk::runtime::rt_setup(const char *root_dir,
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+#if RUNTIME_LOADING_TEXT
         gsk_gui_text_draw(loading_text, canvas_shader_id);
+#endif // RUNTIME_LOADING_TEXT
         glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
     }
 #endif // RUNTIME_LOADING_SCREEN
@@ -571,4 +582,11 @@ void
 gsk::runtime::rt_set_scene(u16 sceneIndex)
 {
     s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, sceneIndex);
+}
+
+char *
+gsk::runtime::rt_get_startup_map()
+{
+    if (s_runtime.map_setup.map_from_runtime == 0) { return NULL; }
+    return s_runtime.map_setup.map_uri;
 }

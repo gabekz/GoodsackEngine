@@ -526,6 +526,9 @@ gsk_renderer_tick(gsk_Renderer *renderer)
 void
 gsk_renderer_resize(gsk_Renderer *p_self, int new_width, int new_height)
 {
+    // clear OpenGL Errors
+    _gsk_gl_error_clear();
+
     // --
     // update window information
 

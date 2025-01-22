@@ -131,6 +131,7 @@ gsk::tools::panels::Profiler::draw(void)
         */
     }
 
+#if 1
     if (CollapsingHeader("Renderer Debug"))
     {
         Separator();
@@ -201,4 +202,5 @@ gsk::tools::panels::Profiler::draw(void)
                   ImVec2(1, 0));
         }
     }
+#endif
 }

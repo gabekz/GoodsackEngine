@@ -17,6 +17,7 @@
 // #define RENDERER_2
 #define USING_LUA                    1
 #define USING_RUNTIME_LOADING_SCREEN 1
+#define RUNTIME_LOADING_TEXT         0
 #define USING_JOYSTICK_CONTROLLER    0
 
 // Starting cursor state
@@ -55,6 +56,9 @@ rt_get_fallback_asset(GskAssetType type);
 
 void
 rt_set_scene(u16 sceneIndex);
+
+char *
+rt_get_startup_map();
 
 } // namespace runtime
 } // namespace gsk

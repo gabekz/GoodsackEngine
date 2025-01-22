@@ -12,6 +12,8 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#define LOG_LOADER_AUDIO FALSE
+
 gsk_AudioData *
 gsk_load_wav(const char *filepath)
 {
@@ -123,14 +125,16 @@ gsk_load_wav(const char *filepath)
     }
     ret->dataSize = dataSize;
 
+#if LOG_LOADER_AUDIO
     LOG_PRINT("-----------------");
-    LOG_INFO("Loaded WAV File: %s", filepath);
+    LOG_TRACE("Loaded WAV File: %s", filepath);
     LOG_PRINT("Sampling rate is %d", SAMPLING_RATE, sampleRate);
     LOG_PRINT("Samples %d", bitsPerSample);
     LOG_PRINT("BPS %d", bytesPerSecond);
     LOG_PRINT("Block Align %d", blockAlign);
     LOG_PRINT("Data size is %d", dataSize);
     LOG_PRINT("-----------------");
+#endif
 
     fclose(filePtr);
     return ret;

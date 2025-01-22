@@ -168,7 +168,7 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     array_list_push(&(p_cache->asset_lists[asset_type].list_options),
                     p_options);
 
-    LOG_DEBUG("added asset to cache. is_baked: %s, pool: %d, uri: %s",
+    LOG_TRACE("added asset to cache. is_baked: %s, pool: %d, uri: %s",
               (item.is_baked == TRUE) ? "true" : "false",
               list_type,
               str_uri);
@@ -222,7 +222,7 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
         return;
     }
 
-    LOG_DEBUG("adding asset by extension (pool: %d, ext: %s)(asset: %s)",
+    LOG_TRACE("adding asset by extension (pool: %d, ext: %s)(asset: %s)",
               list_type,
               ext,
               str_uri);

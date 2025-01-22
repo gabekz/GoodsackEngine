@@ -381,7 +381,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
         // Skeleton name from node
         skeleton->name = strdup(armatureNode->name);
-        LOG_DEBUG("Skeleton name: %s\nSkeleton children: %d",
+        LOG_TRACE("Skeleton name: %s\nSkeleton children: %d",
                   skeleton->name,
                   armatureNode->children_count);
 
