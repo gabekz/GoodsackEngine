@@ -11,8 +11,12 @@
 
 #include "util/logger.h"
 #include "util/sysdefs.h"
+#include "util/vec_colors.h"
 
-#define JUMP_FORCE 160
+#define DEFAULT_JUMP_FORCE 160
+
+#define USING_COLLIDE_AND_SLIDE TRUE
+#define COLLIDE_AND_SLIDE_DIST  0.6f
 
 static void
 init(gsk_Entity entity)
@@ -31,7 +35,7 @@ init(gsk_Entity entity)
     cmp_controller->is_grounded = FALSE;
     cmp_controller->is_jumping  = FALSE;
     cmp_controller->can_jump    = TRUE;
-    cmp_controller->jump_force  = JUMP_FORCE;
+    cmp_controller->jump_force  = DEFAULT_JUMP_FORCE;
 }
 
 static void
@@ -121,17 +125,17 @@ fixed_update(gsk_Entity entity)
 
     // --------- ground-check ---------
 
-    gsk_Raycast raycast;
-    vec3 dir = {0, -1.0f, 0};
-    glm_vec3_copy(cmp_transform->position, raycast.origin);
-    glm_vec3_copy(dir, raycast.direction);
+    {
+        gsk_Raycast raycast;
+        vec3 dir = {0, -1.0f, 0};
+        glm_vec3_copy(cmp_transform->position, raycast.origin);
+        glm_vec3_copy(dir, raycast.direction);
 
-    gsk_mod_RaycastResult result =
-      gsk_mod_physics_raycast(entity, &raycast, 1.65f);
+        gsk_mod_RaycastResult result =
+          gsk_mod_physics_raycast(entity, &raycast, 1.65f);
 
-    cmp_controller->is_grounded = result.has_collision;
-    // cmp_controller->is_jumping  = (cmp_controller->is_grounded &&
-    // input_jump);
+        cmp_controller->is_grounded = result.has_collision;
+    }
 
     // --------- logic ---------
 
@@ -197,15 +201,86 @@ fixed_update(gsk_Entity entity)
     }
 #endif
 
-    is_moving = (glm_vec3_norm(newvel) > 0);
+    f32 newvel_mag = glm_vec3_norm(newvel);
 
-    // directly modify velocity
-    if (is_moving)
+    is_moving = (newvel_mag > 0);
+
+    if (is_moving == FALSE) { return; }
+
+    // --------- Collide And Slide -----------------
+#if USING_COLLIDE_AND_SLIDE
     {
-        cmp_rigidbody->linear_velocity[0] = newvel[0];
-        cmp_rigidbody->linear_velocity[2] = newvel[2];
-        // glm_vec3_copy(newvel, cmp_rigidbody->linear_velocity);
+        gsk_Raycast raycast;
+        glm_vec3_copy(cmp_transform->position, raycast.origin);
+        glm_vec3_normalize_to(newvel, raycast.direction);
+
+        gsk_mod_RaycastResult result =
+          gsk_mod_physics_raycast(entity, &raycast, newvel_mag);
+
+        vec3 offset = {0, 0, 0};
+        glm_vec3_copy(raycast.origin, offset);
+        offset[1] -= 0.5f;
+
+        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                               MARKER_RAY,
+                               327125,
+                               offset,
+                               raycast.direction,
+                               newvel_mag,
+                               VCOL_BLUE,
+                               FALSE);
+
+        u8 can_slide = (result.has_collision == TRUE);
+        if (can_slide)
+        {
+            if (gsk_ecs_has(result.entity, C_RIGIDBODY)) { can_slide = FALSE; }
+        }
+
+        if (can_slide)
+        {
+            f32 dist = glm_vec3_distance(raycast.origin, result.hit_position);
+
+            vec3 snapped = GLM_VEC3_ZERO_INIT;
+            glm_vec3_normalize_to(newvel, snapped);
+            glm_vec3_scale(snapped, dist, snapped);
+
+            // leftover = newvel - snapped
+            vec3 leftover;
+            glm_vec3_sub(newvel, snapped, leftover);
+
+            // plane-projection
+            float dotval = glm_vec3_dot(leftover, result.hit_normal);
+
+            vec3 normalcomp;
+            glm_vec3_scale(result.hit_normal, dotval, normalcomp);
+
+            vec3 slide;
+            glm_vec3_sub(leftover, normalcomp, slide);
+            // glm_vec3_normalize(slide);
+            // glm_vec3_scale(slide, glm_vec3_norm(newvel), slide);
+
+            if (dist <= COLLIDE_AND_SLIDE_DIST)
+            {
+                glm_vec3_copy(slide, newvel);
+            }
+
+            gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                                   MARKER_RAY,
+                                   327128,
+                                   result.hit_position,
+                                   slide,
+                                   5,
+                                   VCOL_RED,
+                                   FALSE);
+        }
     }
+#endif // USING_COLLIDE_AND_SLIDE
+
+    // --------- update Rigidbody velocity ---------
+
+    cmp_rigidbody->linear_velocity[0] = newvel[0];
+    cmp_rigidbody->linear_velocity[2] = newvel[2];
+    // glm_vec3_copy(newvel, cmp_rigidbody->linear_velocity);
 }
 
 //-----------------------------------------------------------------------------

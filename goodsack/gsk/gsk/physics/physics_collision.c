@@ -200,6 +200,11 @@ __find_box_capsule_inverse(gsk_BoxCollider *box,
         glm_vec3_copy(normal, ret.normal);
         ret.depth = penetration;
 
+#if 0
+        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
+        glm_vec3_normalize(ret.normal);
+#endif
+
         // If 'inverse' is set, invert the contact points and flip the normal
         if (!inverse)
         {
@@ -742,6 +747,26 @@ gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,
     glm_vec3_adds(ray->origin, discriminant, hitPosition);
     glm_vec3_mul(hitPosition, ray->direction, hitPosition);
 
+    if (discriminant < 0.0f) { return ret; }
+
+    float sqrtDisc = sqrtf(discriminant);
+    float t0       = (-b - sqrtDisc) / (2.0f * a);
+    float t1       = (-b + sqrtDisc) / (2.0f * a);
+
+    // pick the smallest positive t
+    float t = -1.0f;
+    if (t0 > 0.0f && t1 > 0.0f)
+        t = fminf(t0, t1);
+    else if (t0 > 0.0f)
+        t = t0;
+    else if (t1 > 0.0f)
+        t = t1;
+
+    // If t is still < 0 => intersection behind ray origin
+    if (t < 0.0f) { return ret; }
+
+    ret.has_collision = 1;
+
 #if 0
     LOG_INFO("Hit Position:\t%lf\t%lf\t%lf",
              hitPosition[0],
@@ -750,7 +775,12 @@ gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,
     LOG_INFO("discriminant %f", discriminant);
 #endif
 
-    ret.has_collision = (discriminant > 0);
+    glm_vec3_scale(ray->direction, t, ret.point_a);
+    glm_vec3_add(ray->origin, ret.point_a, ret.point_a);
+
+    glm_vec3_sub(ret.point_a, pos_sphere, ret.normal);
+    glm_vec3_normalize(ret.normal);
+
     return ret;
 }
 
@@ -809,6 +839,28 @@ gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
     glm_vec3_scale(ray->direction, t, ret.point_a);
     glm_vec3_add(ray->origin, ret.point_a, ret.point_a);
 
+    // Identify which plane we hit:
+    // Compare tmin with each t1..t6 to see which equals tmin
+    if (fabsf(t - t1) < 1e-6f || fabsf(t - t2) < 1e-6f)
+    {
+        // collision on X plane
+        // Check sign:
+        float sign = (t == t1) ? box->bounds[0][0] : box->bounds[1][0];
+        glm_vec3_copy((vec3) {sign, 0.0f, 0.0f}, ret.normal);
+
+    } else if (fabsf(t - t3) < 1e-6f || fabsf(t - t4) < 1e-6f)
+    {
+        // collision on Y plane
+        float sign = (t == t3) ? box->bounds[0][1] : box->bounds[1][1];
+        glm_vec3_copy((vec3) {0.0f, sign, 0.0f}, ret.normal);
+
+    } else if (fabsf(t - t5) < 1e-6f || fabsf(t - t6) < 1e-6f)
+    {
+        // collision on Z plane
+        float sign = (t == t5) ? box->bounds[0][2] : box->bounds[1][2];
+        glm_vec3_copy((vec3) {0.0f, 0.0f, sign}, ret.normal);
+    }
+
     return ret;
 
 #if 0
@@ -861,6 +913,7 @@ gsk_physics_collision_find_ray_plane(gsk_Raycast *ray,
     // intersection_point = origin + t * direction
     glm_vec3_scale(ray->direction, t, ret.point_a);
     glm_vec3_add(ray->origin, ret.point_a, ret.point_a);
+    glm_vec3_normalize_to(plane_normal, ret.normal);
 
     return ret;
 }

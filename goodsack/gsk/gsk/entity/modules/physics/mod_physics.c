@@ -18,6 +18,9 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
                         gsk_Raycast *raycast,
                         float range)
 {
+    f32 closest_range         = 6000;
+    gsk_mod_RaycastResult ret = {.entity = NULL, .has_collision = FALSE};
+
     for (int i = 0; i < entity_caller.ecs->nextIndex; i++)
     {
         if (entity_caller.index == (gsk_EntityId)i)
@@ -65,21 +68,25 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
 
         if (points.has_collision)
         {
-            if (range &&
-                glm_vec3_distance(raycast->origin, points.point_a) <= range)
+            f32 ray_range = glm_vec3_distance(raycast->origin, points.point_a);
 
-                return (gsk_mod_RaycastResult) {
+            if (range && ray_range <= range && ray_range <= closest_range)
+            {
+                closest_range = ray_range;
+
+                ret = (gsk_mod_RaycastResult) {
                   .entity        = e_compare,
                   .hit_position  = {points.point_a[0],
                                    points.point_a[1],
                                    points.point_a[2]},
+                  .hit_normal    = {points.normal[0],
+                                 points.normal[1],
+                                 points.normal[2]},
                   .has_collision = TRUE,
                 };
+            }
         }
     };
 
-    return (gsk_mod_RaycastResult) {
-      .entity        = NULL,
-      .has_collision = FALSE,
-    };
+    return ret;
 }

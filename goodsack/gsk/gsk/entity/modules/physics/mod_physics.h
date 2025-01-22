@@ -20,6 +20,7 @@ typedef struct gsk_mod_RaycastResult
 {
     gsk_Entity entity;
     vec3 hit_position;
+    vec3 hit_normal;
     u8 has_collision;
 
 } gsk_mod_RaycastResult;

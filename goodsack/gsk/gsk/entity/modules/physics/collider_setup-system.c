@@ -39,7 +39,7 @@ init(gsk_Entity e)
     {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
         // NOTE: Default radius is temporarily changed here
-        sphereCollider->radius = 0.2f;
+        sphereCollider->radius = 1.0f;
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_SphereCollider *)sphereCollider;
