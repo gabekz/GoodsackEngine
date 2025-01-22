@@ -17,6 +17,7 @@
 
 #define USING_COLLIDE_AND_SLIDE TRUE
 #define COLLIDE_AND_SLIDE_DIST  0.6f
+#define COLLIDE_AND_SLIDE_DEBUG FALSE
 
 static void
 init(gsk_Entity entity)
@@ -210,25 +211,27 @@ fixed_update(gsk_Entity entity)
     // --------- Collide And Slide -----------------
 #if USING_COLLIDE_AND_SLIDE
     {
-        gsk_Raycast raycast;
-        glm_vec3_copy(cmp_transform->position, raycast.origin);
-        glm_vec3_normalize_to(newvel, raycast.direction);
-
-        gsk_mod_RaycastResult result =
-          gsk_mod_physics_raycast(entity, &raycast, newvel_mag);
+        // gsk_Raycast raycast;
+        // glm_vec3_copy(cmp_transform->position, raycast.origin);
+        // glm_vec3_normalize_to(newvel, raycast.direction);
 
         vec3 offset = {0, 0, 0};
-        glm_vec3_copy(raycast.origin, offset);
-        offset[1] -= 0.5f;
+        glm_vec3_copy(cmp_transform->position, offset);
+        offset[1] -= 0.2f;
 
+        gsk_mod_RaycastResult result = gsk_mod_physics_spherecast(
+          entity, cmp_transform->position, newvel, 10);
+
+#if COLLIDE_AND_SLIDE_DEBUG
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                MARKER_RAY,
                                327125,
                                offset,
-                               raycast.direction,
+                               newvel,
                                newvel_mag,
                                VCOL_BLUE,
                                FALSE);
+#endif // COLLIDE_AND_SLIDE_DEBUG
 
         u8 can_slide = (result.has_collision == TRUE);
         if (can_slide)
@@ -238,7 +241,8 @@ fixed_update(gsk_Entity entity)
 
         if (can_slide)
         {
-            f32 dist = glm_vec3_distance(raycast.origin, result.hit_position);
+            f32 dist =
+              glm_vec3_distance(cmp_transform->position, result.hit_position);
 
             vec3 snapped = GLM_VEC3_ZERO_INIT;
             glm_vec3_normalize_to(newvel, snapped);
@@ -264,6 +268,7 @@ fixed_update(gsk_Entity entity)
                 glm_vec3_copy(slide, newvel);
             }
 
+#if COLLIDE_AND_SLIDE_DEBUG
             gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                    MARKER_RAY,
                                    327128,
@@ -272,6 +277,7 @@ fixed_update(gsk_Entity entity)
                                    5,
                                    VCOL_RED,
                                    FALSE);
+#endif // COLLIDE_AND_SLIDE_DEBUG
         }
     }
 #endif // USING_COLLIDE_AND_SLIDE
