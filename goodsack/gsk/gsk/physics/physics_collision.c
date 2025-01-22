@@ -821,3 +821,46 @@ gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
 
     return ret;
 }
+
+// gsk_Raycast v. Plane
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_plane(gsk_Raycast *ray,
+                                     gsk_PlaneCollider *plane,
+                                     vec3 pos_plane)
+{
+    gsk_CollisionPoints ret = {.has_collision = 0};
+
+    // Get the plane's normal
+    vec3 plane_normal = GLM_VEC3_ZERO_INIT;
+    glm_vec3_copy(((gsk_PlaneCollider *)plane->plane)->normal, plane_normal);
+
+    // Compute denominator = ray->direction · plane_normal
+    float denom = glm_vec3_dot(ray->direction, plane_normal);
+
+    // If denom is near zero, the ray is parallel or nearly parallel to the
+    // plane
+    if (fabsf(denom) < 1e-6f) return ret; // No intersection
+
+    // Vector from ray origin to any point on the plane (pos_plane)
+    //    We'll do: difference = (pos_plane - ray->origin)
+    vec3 difference;
+    glm_vec3_sub(pos_plane, ray->origin, difference);
+
+    // Solve for t in the plane equation:
+    //        (origin + t*dir - pos_plane) · plane_normal = 0
+    //    =>  t = [ (pos_plane - origin) · plane_normal ] / (dir · plane_normal)
+    float t = glm_vec3_dot(difference, plane_normal) / denom;
+
+    // We only consider an intersection if t >= 0 (in front of the ray)
+    if (t < 0.0f)
+        return ret; // Intersection is behind the origin => no forward hit
+
+    // We have a valid intersection => fill in the results
+    ret.has_collision = 1;
+
+    // intersection_point = origin + t * direction
+    glm_vec3_scale(ray->direction, t, ret.point_a);
+    glm_vec3_add(ray->origin, ret.point_a, ret.point_a);
+
+    return ret;
+}

@@ -6,6 +6,7 @@
 // TODO: Move input checks to update()
 
 #include "player_controller-system.h"
+#include "gsk/entity/modules/physics/mod_physics.h"
 #include "player.h"
 
 #include "util/logger.h"
@@ -29,6 +30,8 @@ init(gsk_Entity entity)
 
     cmp_controller->is_grounded = FALSE;
     cmp_controller->is_jumping  = FALSE;
+    cmp_controller->can_jump    = TRUE;
+    cmp_controller->jump_force  = JUMP_FORCE;
 }
 
 static void
@@ -50,9 +53,21 @@ update(gsk_Entity entity)
     int input_left  = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
     int input_right = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
 
-    int input_jump = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
+    int input_jump = glfwGetKey(window, GLFW_KEY_SPACE);
 
-    cmp_controller->is_jumping = (cmp_controller->is_grounded && input_jump);
+    // jump begin
+    if (input_jump == GLFW_PRESS && cmp_controller->can_jump)
+    {
+        cmp_controller->is_jumping =
+          (cmp_controller->is_grounded && input_jump);
+        cmp_controller->can_jump = FALSE;
+    }
+    // jump release
+    else if (input_jump == GLFW_RELEASE && cmp_controller->is_grounded)
+    {
+        cmp_controller->can_jump   = TRUE;
+        cmp_controller->is_jumping = FALSE;
+    }
 
     if (cmp_controller->is_jumping) { return; }
 
@@ -82,8 +97,14 @@ static void
 fixed_update(gsk_Entity entity)
 {
     if (!gsk_ecs_has(entity, C_PLAYER_CONTROLLER)) { return; }
+    if (!gsk_ecs_has(entity, C_TRANSFORM)) { return; }
+    if (!gsk_ecs_has(entity, C_RIGIDBODY)) { return; }
+    if (!gsk_ecs_has(entity, C_COLLIDER)) { return; }
+
     struct ComponentPlayerController *cmp_controller =
       gsk_ecs_get(entity, C_PLAYER_CONTROLLER);
+
+    struct ComponentTransform *cmp_transform = gsk_ecs_get(entity, C_TRANSFORM);
 
     struct ComponentRigidbody *cmp_rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
     struct ComponentCollider *cmp_collider   = gsk_ecs_get(entity, C_COLLIDER);
@@ -94,22 +115,34 @@ fixed_update(gsk_Entity entity)
 
     if (!gsk_ecs_has(ent_camera, C_CAMERA))
     {
-        LOG_WARN("camera-child does not have camera a Camera component!");
+        LOG_ERROR("camera-child does not have camera a Camera component!");
     }
     struct ComponentCamera *cmp_camera = gsk_ecs_get(ent_camera, C_CAMERA);
+
+    // --------- ground-check ---------
+
+    gsk_Raycast raycast;
+    vec3 dir = {0, -1.0f, 0};
+    glm_vec3_copy(cmp_transform->position, raycast.origin);
+    glm_vec3_copy(dir, raycast.direction);
+
+    gsk_mod_RaycastResult result =
+      gsk_mod_physics_raycast(entity, &raycast, 1.65f);
+
+    cmp_controller->is_grounded = result.has_collision;
+    // cmp_controller->is_jumping  = (cmp_controller->is_grounded &&
+    // input_jump);
 
     // --------- logic ---------
 
     u8 is_moving = FALSE;
-
-    cmp_controller->is_grounded = (cmp_collider->isColliding);
 
     vec3 direction, cross, newvel = GLM_VEC3_ZERO_INIT;
     direction[0] = cmp_camera->front[0]; // copy x-axis
     direction[2] = cmp_camera->front[2]; // copy z-axis
 
     // no mid-air movement
-    if (!cmp_controller->is_grounded) return;
+    if (!cmp_controller->is_grounded && !cmp_collider->isColliding) return;
 
     f32 speed = cmp_controller->speed;
 #if 0
@@ -159,7 +192,8 @@ fixed_update(gsk_Entity entity)
         // cmp_rigidbody->linear_velocity[1] = newvel[1] + 5;
 
         // TODO: Better way to add forces
-        cmp_rigidbody->force[1] = cmp_rigidbody->force[1] + JUMP_FORCE;
+        cmp_rigidbody->force[1] =
+          cmp_rigidbody->force[1] + cmp_controller->jump_force;
     }
 #endif
 

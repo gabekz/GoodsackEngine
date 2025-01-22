@@ -2,7 +2,8 @@
     "Animator": {
         "int": [ "cntTime", "cntKeyframeIndex", "nxtKeyframeIndex" ],
         "Resource": [ "cntAnimation"],
-        "float": [ "timerStart", "timerNow" ]
+        "float": [ "timerStart", "timerNow" ],
+        "bool": ["is_transition_delayed", "is_looping", "is_playing", "force_replay"]
     },
 
     "AudioListener": {
@@ -23,7 +24,8 @@
 
     "BoneAttachment": {
         "uint": ["bone_id"],
-        "entity": ["entity_skeleton"]
+        "entity": ["entity_skeleton"],
+        "Resource": ["p_joint"]
     },
 
     "Camera": {
@@ -81,9 +83,9 @@
     },
 
     "PlayerController": {
-        "float": ["speed"],
+        "float": ["speed", "jump_force"],
         "int": ["walk_direction"],
-        "bool": ["is_grounded", "is_jumping"]
+        "bool": ["is_grounded", "is_jumping", "can_jump"]
     },
 
     "RenderLayer": {

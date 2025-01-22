@@ -55,6 +55,12 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
               raycast,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
               compareTransform->position);
+        } else if (compareCollider->type == COLLIDER_PLANE)
+        {
+            points = gsk_physics_collision_find_ray_plane(
+              raycast,
+              ((gsk_Collider *)compareCollider->pCollider)->collider_data,
+              compareTransform->position);
         }
 
         if (points.has_collision)

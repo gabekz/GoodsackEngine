@@ -148,6 +148,12 @@ gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
                                    gsk_BoxCollider *box,
                                    vec3 pos_box);
 
+// gsk_Raycast v. Plane
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_plane(gsk_Raycast *ray,
+                                     gsk_PlaneCollider *plane,
+                                     vec3 pos_plane);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

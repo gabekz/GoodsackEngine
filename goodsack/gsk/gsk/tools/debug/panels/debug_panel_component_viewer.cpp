@@ -92,12 +92,19 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 
         DragFloat("Static Friction", &p.static_friction, 0.1f, 0.0f, 1.0f);
         DragFloat("Dynamic Friction", &p.dynamic_friction, 0.1f, 0.0f, 1.0f);
-    } else if (cmp_type == C_COLLIDER)
+    }
+
+    else if (cmp_type == C_COLLIDER)
     {
         struct ComponentCollider &p = *(
           static_cast<struct ComponentCollider *>(gsk_ecs_get(e, C_COLLIDER)));
+
+        BeginDisabled();
+        Checkbox("is_colliding", (bool *)&p.isColliding);
+        EndDisabled();
     }
-    if (cmp_type == C_MODEL)
+
+    else if (cmp_type == C_MODEL)
     {
         // wow, this is ridiculous..
         struct ComponentModel &p =
@@ -165,6 +172,21 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
                 }
             } // GSK_DEVICE_API_OPENGL
         }     // Textures collapsing header
+    }
+
+    else if (cmp_type == C_PLAYER_CONTROLLER)
+    {
+        struct ComponentPlayerController &p =
+          *(static_cast<struct ComponentPlayerController *>(
+            gsk_ecs_get(e, C_PLAYER_CONTROLLER)));
+
+        DragFloat("Walk Speed", &p.speed, 0.1f, 0.0f, 100.0f);
+        DragFloat("Jump Force", &p.jump_force, 1.0f, 0.0f, 1000.0f);
+        BeginDisabled();
+        Checkbox("is_grounded", (bool *)&p.is_grounded);
+        Checkbox("is_jumping", (bool *)&p.is_jumping);
+        Checkbox("can_jump", (bool *)&p.can_jump);
+        EndDisabled();
     }
 
     else if (cmp_type == C_CAMERA)
@@ -310,24 +332,37 @@ gsk::tools::panels::ComponentViewer::draw(void)
 
     for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
     {
-        ECSComponentType cmp_type = (ECSComponentType)i;
+        u32 selected_component = i;
+
+        // NOTE: Weird hack to swap Transform and the component in it's place to
+        // have Transform always show on top.
+        if (i == 0)
+        {
+            selected_component = C_TRANSFORM;
+        } else if (i == C_TRANSFORM)
+        {
+            selected_component = 0;
+        }
+
+        ECSComponentType cmp_type = (ECSComponentType)(selected_component);
 
         // skip if entity does not have component
         if (!(gsk_ecs_has(e, cmp_type))) continue;
 
         std::string _cmp_name = _component_type_name(cmp_type);
 
-        // component header
-        BeginChild(_cmp_name.c_str(), ImVec2(0, GetFontSize() * 12.0f), true);
-        PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-        Text(_cmp_name.c_str());
-        PopStyleColor();
+        if (CollapsingHeader(_cmp_name.c_str()))
+        {
+#if 0
+            PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+            Text(_cmp_name.c_str());
+            PopStyleColor();
 
-        Separator();
+            Separator();
+#endif
 
-        // component-specific editor
-        _draw_component_editors(e, cmp_type);
-
-        EndChild();
+            // component-specific editor
+            _draw_component_editors(e, cmp_type);
+        }
     }
 }
