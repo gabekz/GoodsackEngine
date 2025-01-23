@@ -133,7 +133,7 @@ fixed_update(gsk_Entity entity)
         glm_vec3_copy(dir, raycast.direction);
 
         gsk_mod_RaycastResult result =
-          gsk_mod_physics_raycast(entity, &raycast, 1.65f);
+          gsk_mod_physics_raycast(entity, &raycast, 2.0f);
 
         cmp_controller->is_grounded = result.has_collision;
     }
@@ -143,25 +143,24 @@ fixed_update(gsk_Entity entity)
     u8 is_moving = FALSE;
 
     vec3 direction, cross, newvel = GLM_VEC3_ZERO_INIT;
-    direction[0] = cmp_camera->front[0]; // copy x-axis
-    direction[2] = cmp_camera->front[2]; // copy z-axis
+
+    glm_vec3_copy(cmp_camera->front, direction);
+    direction[1] = 0.0f;
+
+    // normalize direction.xz
+    {
+        const f32 len = glm_vec3_norm(direction);
+        if (len > 0.0f) { glm_vec3_scale(direction, 1.0f / len, direction); }
+    }
+
+    // scale by speed
+    const f32 speed = cmp_controller->speed;
+    glm_vec3_scale(direction, cmp_controller->speed, direction);
 
     // no mid-air movement
     if (!cmp_controller->is_grounded && !cmp_collider->isColliding) return;
 
-    f32 speed = cmp_controller->speed;
-#if 0
-    if (cmp_controller->walk_direction & (WALK_FORWARD | WALK_BACKWARD)) {
-        if (cmp_controller->walk_direction & (WALK_LEFT | WALK_RIGHT)) {
-            speed = speed / 2;
-        }
-    }
-    LOG_INFO("%f speed: ", speed);
-#endif
-
-    // scale speed based on direction
-    glm_vec3_scale(direction, speed, direction);
-    direction[1] = cmp_rigidbody->linear_velocity[1]; // keep y-axis
+    // Movement
 
     if (cmp_controller->walk_direction & WALK_FORWARD)
     {

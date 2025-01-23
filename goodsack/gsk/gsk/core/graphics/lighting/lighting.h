@@ -10,6 +10,8 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
+#include "util/sysdefs.h"
+
 // TODO: Move to thirdparty directive - gkutuzov/GoodsackEngine#19
 #include <cglm/cglm.h>
 #include <cglm/struct.h>
@@ -28,6 +30,7 @@ typedef struct gsk_Light
     vec4 color;
     LightType type;
     float strength;
+    u8 is_awake;
 } gsk_Light;
 
 typedef struct gsk_LightingData

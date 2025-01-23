@@ -59,6 +59,7 @@ gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
     glm_vec3_copy(light_position, p_light->position);
     glm_vec4_copy(light_color, p_light->color);
     p_light->strength = 1;
+    p_light->is_awake = (p_lighting_data->total_lights > 0) ? FALSE : TRUE;
 
 #if 1 // send call to update UBO
     if (GSK_DEVICE_API_OPENGL)

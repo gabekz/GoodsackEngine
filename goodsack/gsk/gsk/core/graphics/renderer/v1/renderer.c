@@ -114,6 +114,15 @@ gsk_renderer_init(const char *app_name)
     ret->lightOptions.ambient_strength   = 1.0f;
     ret->lightOptions.prefilter_strength = 1.0f;
 
+    // Fog options
+    ret->fogOptions.fog_start   = -1.0f;
+    ret->fogOptions.fog_end     = 100.0f;
+    ret->fogOptions.fog_density = 1.0f;
+    {
+        vec4 fogcol4 = DEFAULT_CLEAR_COLOR;
+        glm_vec3_copy(fogcol4, ret->fogOptions.fog_color);
+    }
+
     // Billboard test
     vec2 bbsize = {0.01f, 0.01f};
     ret->billboard =
@@ -526,9 +535,6 @@ gsk_renderer_tick(gsk_Renderer *renderer)
 void
 gsk_renderer_resize(gsk_Renderer *p_self, int new_width, int new_height)
 {
-    // clear OpenGL Errors
-    _gsk_gl_error_clear();
-
     // --
     // update window information
 

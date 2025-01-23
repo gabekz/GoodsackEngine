@@ -155,6 +155,23 @@ DrawModel(struct ComponentModel *model,
                                              "u_normalBiasMax"),
                         renderer->shadowmapOptions.normalBiasMax);
 
+// Fog uniforms
+#if 1
+            glUniform1f(
+              glGetUniformLocation(material->shaderProgram->id, "u_FogStart"),
+              renderer->fogOptions.fog_start);
+            glUniform1f(
+              glGetUniformLocation(material->shaderProgram->id, "u_FogEnd"),
+              renderer->fogOptions.fog_end);
+            glUniform1f(
+              glGetUniformLocation(material->shaderProgram->id, "u_FogDensity"),
+              renderer->fogOptions.fog_density);
+            glUniform3fv(
+              glGetUniformLocation(material->shaderProgram->id, "u_FogColor"),
+              1,
+              (float *)renderer->fogOptions.fog_color);
+#endif
+
             // SSAO Options
             glUniform1f(glGetUniformLocation(material->shaderProgram->id,
                                              "u_ssao_strength"),

@@ -40,7 +40,7 @@ main(int argc, char *argv[])
 
     demo_scenes_create(gsk::runtime::rt_get_ecs(),
                        gsk::runtime::rt_get_renderer(),
-                       gsk::runtime::rt_get_asset_cache("demo://demo.test"));
+                       gsk::runtime::rt_get_asset_cache("data://demo.test"));
     gsk::runtime::rt_set_scene(INITIAL_SCENE);
 
     gsk::runtime::rt_loop();

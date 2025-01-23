@@ -89,7 +89,7 @@ __find_box_sphere_inverse(
 
     // Find the closest point on AABB to sphere center
     vec3 closest_point;
-    _aabb_clamped_point(bounds, pos_a, pos_b, closest_point);
+    _aabb_clamped_in(bounds[0], bounds[1], pos_b, closest_point);
 
     // Calculate the vector from the sphere center to this closest point
     vec3 to_closest;

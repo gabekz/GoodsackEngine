@@ -67,4 +67,11 @@ gsk::tools::panels::Lighting::draw(void)
               ImVec2(0, 1),
               ImVec2(1, 0));
     }
+
+    Separator();
+    Text("Fog");
+    DragFloat("Fog Start", &p_renderer->fogOptions.fog_start, 0.1f, -1, 100);
+    DragFloat("Fog End", &p_renderer->fogOptions.fog_end, 0.1f, 1, 4096);
+    DragFloat("Density", &p_renderer->fogOptions.fog_density, 0.1f, 0.1f, 100);
+    // ColorEdit3("Color", p_renderer->fogOptions.fog_color);
 }

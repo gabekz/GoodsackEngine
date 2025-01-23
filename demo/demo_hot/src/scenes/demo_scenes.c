@@ -430,39 +430,14 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     ecs = gsk_renderer_active_scene(renderer, 6);
     __set_active_scene_skybox(renderer, skyboxMain);
 
-    gsk_Texture *texContDiff =
-      texture_create_d(GSK_PATH("data://textures/container/diffuse.png"));
-    gsk_Texture *texContSpec =
-      texture_create_n(GSK_PATH("data://textures/container/specular.png"));
+    gsk_Model *model_plane = GSK_ASSET("gsk://models/plane.obj");
 
-    gsk_Texture *texBrickDiff =
-      texture_create_d(GSK_PATH("data://textures/brickwall/diffuse.png"));
-    gsk_Texture *texBrickNorm =
-      texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
+    gsk_Model *model_sphere = GSK_ASSET("gsk://models/sphere.obj");
 
-    gsk_Model *model_plane =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
+    gsk_Model *model_cube = GSK_ASSET("gsk://models/cube.obj");
 
-    gsk_Model *model_sphere =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/sphere.obj"), 1, FALSE);
-
-    gsk_Model *model_cube =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/cube.obj"), 1, FALSE);
-
-    gsk_Material *matFloor =
-      gsk_material_create(NULL,
-                          GSK_PATH("gsk://shaders/lit-diffuse.shader"),
-                          3,
-                          texBrickDiff,
-                          texBrickNorm,
-                          texDefSpec);
     gsk_Material *matBox =
-      gsk_material_create(NULL,
-                          GSK_PATH("gsk://shaders/lit-diffuse.shader"),
-                          3,
-                          texContDiff,
-                          texDefNorm,
-                          texContSpec);
+      GSK_ASSET("data://textures/pbr/cerberus/cerberus.material");
 
     gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
 
@@ -487,16 +462,15 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                           (void *)(&(struct ComponentCollider) {
                             .type = COLLIDER_PLANE,
                           }));
-    _gsk_ecs_add_internal(
-      floorEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matFloor,
-                                         .pModel     = model_plane,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
-#endif
+#if 0
+    _gsk_ecs_add_internal(floorEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matBox,
+                            .pModel   = model_plane,
+                          }));
+#endif // BOX
+#endif // FLOOR
 #if 1
 
     gsk_Entity *pSphereEntity = malloc(sizeof(gsk_Entity));
@@ -521,15 +495,12 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .type = COLLIDER_SPHERE,
                           }));
 
-    _gsk_ecs_add_internal(
-      sphereEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_sphere,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(sphereEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matBox,
+                            .pModel   = model_sphere,
+                          }));
 #endif
 
 // Second sphere
@@ -541,7 +512,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity2,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0.0f, 3.0f, -2.2f},
+                            .position = {0.0f, 3.0f, -2.6f},
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,

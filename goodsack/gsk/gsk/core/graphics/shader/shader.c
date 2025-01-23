@@ -79,7 +79,7 @@ open_memstream(char **buffer, int bufferLen)
 
 #endif
 
-/* Compile single shader type (vertex, fragment, etc.) and return
+/* Compile single shader type (vertex, fragment, geometry, etc.) and return
  * the id from OpenGL.
  */
 static unsigned int
@@ -93,7 +93,7 @@ CompileSingleShader(unsigned int type, const char *path)
     /* Error handling */
     int result;
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-    const char *typeStr = (type == GL_VERTEX_SHADER) ? "Vertex" : "Fragment";
+
     if (result == GL_FALSE)
     {
         int length;
@@ -101,9 +101,9 @@ CompileSingleShader(unsigned int type, const char *path)
         char *message = (char *)alloca(length * sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
         // printf("Error at: %s\n", path);
-        printf("Failed to compile %s shader.\n Error output: %s\n",
-               typeStr,
-               message);
+        LOG_ERROR("Failed to compile shader (type: %d).\n Error output: %s\n",
+                  type,
+                  message);
         glDeleteShader(id);
         return 0;
     }
@@ -181,6 +181,7 @@ ParseShader(const char *path)
             // Begin Geometry
             else if (strstr(line, "geometry") != NULL)
             {
+                LOG_INFO("GEOMETRY SHADER FOUND");
                 mode = 2;
 #ifdef WIN32
                 stream  = open_memstream(&geomOut, geomLen);
@@ -258,6 +259,7 @@ gsk_shader_program_create(const char *path)
         if (gs != 0) { glDeleteShader(gs); }
 
         gsk_ShaderProgram ret = {.id = program, .shaderSource = ss};
+
         return ret;
 
     } else if (GSK_DEVICE_API_VULKAN)

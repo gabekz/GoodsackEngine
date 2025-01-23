@@ -493,11 +493,12 @@ gsk::runtime::rt_loop()
 
     LOG_TRACE("Closing Application");
 
-    //
-    // Cleanup
-    //
+//
+// Cleanup
+//
 
-    // Delete all ECS Entities
+// Delete all ECS Entities
+#if 1
     for (int i = 0; i < s_runtime.renderer->sceneC; i++)
     {
         if (s_runtime.renderer->sceneL[i] == NULL) { continue; }
@@ -515,6 +516,7 @@ gsk::runtime::rt_loop()
         // call ECS_DESTROY for each ECS handler
         gsk_ecs_event(s_runtime.renderer->sceneL[i]->ecs, ECS_DESTROY);
     }
+#endif
 
     if (GSK_DEVICE_API_VULKAN)
     {

@@ -12,6 +12,9 @@
 
 #include "util/gfx.h"
 #include "util/logger.h"
+#include "util/sysdefs.h"
+
+#define _BREAK_ON_MSG FALSE
 
 void APIENTRY
 _gsk_gl_debug_output(GLenum source,
@@ -73,6 +76,10 @@ _gsk_gl_debug_output(GLenum source,
     }
 
     LOG_PRINT("\n");
+
+#if _BREAK_ON_MSG
+    _BRK();
+#endif // _BREAK_ON_MSG
 }
 
 void
@@ -97,6 +104,7 @@ void
 _gsk_gl_error_callback(int error, const char *description)
 {
     LOG_ERROR("%s", description);
+    _gsk_gl_error_clear();
 }
 
 void
