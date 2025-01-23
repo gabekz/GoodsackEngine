@@ -92,10 +92,10 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
 }
 
 gsk_mod_RaycastResult
-gsk_mod_physics_spherecast(gsk_Entity entity_caller,
-                           vec3 origin,
-                           vec3 direction,
-                           float max_distance)
+gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
+                            vec3 origin,
+                            vec3 direction,
+                            float max_distance)
 {
 
     gsk_mod_RaycastResult ret = {0};
@@ -105,8 +105,13 @@ gsk_mod_physics_spherecast(gsk_Entity entity_caller,
     glm_vec3_scale(direction, 0.01f, ray_vec);
     glm_vec3_add(origin, ray_vec, ray_vec);
 
-    gsk_SphereCollider sphereCollider = {.radius = 0.3f};
-    glm_vec3_copy(ray_vec, sphereCollider.center);
+    vec3 base  = {0.0f, 1.255f, 0.0f};
+    vec3 tip   = {0.0f, 1.0f, 0.0f};
+    f32 radius = 0.3f;
+
+    gsk_CapsuleCollider capsuleCollider = {.radius = radius};
+    glm_vec3_copy(base, capsuleCollider.base);
+    glm_vec3_copy(tip, capsuleCollider.tip);
 
     for (int i = 0; i < entity_caller.ecs->nextIndex; i++)
     {
@@ -136,25 +141,25 @@ gsk_mod_physics_spherecast(gsk_Entity entity_caller,
 
         if (compareCollider->type == COLLIDER_SPHERE)
         {
-            points = gsk_physics_collision_find_sphere_sphere(
-              &sphereCollider,
+            points = gsk_physics_collision_find_capsule_sphere(
+              &capsuleCollider,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
-              sphereCollider.center,
+              ray_vec,
               compareTransform->position);
 
         } else if (compareCollider->type == COLLIDER_BOX)
         {
-            points = gsk_physics_collision_find_sphere_box(
-              &sphereCollider,
+            points = gsk_physics_collision_find_capsule_box(
+              &capsuleCollider,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
-              sphereCollider.center,
+              ray_vec,
               compareTransform->position);
         } else if (compareCollider->type == COLLIDER_PLANE)
         {
-            points = gsk_physics_collision_find_sphere_plane(
-              &sphereCollider,
+            points = gsk_physics_collision_find_capsule_plane(
+              &capsuleCollider,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
-              sphereCollider.center,
+              ray_vec,
               compareTransform->position);
         }
 

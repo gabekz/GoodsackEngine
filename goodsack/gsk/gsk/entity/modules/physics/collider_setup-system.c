@@ -78,8 +78,8 @@ init(gsk_Entity e)
     else if (collider->type == COLLIDER_BOX)
     {
         gsk_BoxCollider *box_collider = malloc(sizeof(gsk_BoxCollider));
-        // glm_vec3_zero(box_collider->bounds[0]);
-        // glm_vec3_zero(box_collider->bounds[1]);
+        glm_vec3_zero(box_collider->bounds[0]);
+        glm_vec3_zero(box_collider->bounds[1]);
 
         if (gsk_ecs_has(e, C_MODEL))
         {
@@ -87,18 +87,15 @@ init(gsk_Entity e)
             gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
             glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
             glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
-#if 0
-            LOG_INFO("Box collider min-bounds: %f\t%f\t%f",
-                     box_collider->bounds[0][0],
-                     box_collider->bounds[0][1],
-                     box_collider->bounds[0][2]);
-            LOG_INFO("Box collider max-bounds: %f\t%f\t%f",
-                     box_collider->bounds[1][0],
-                     box_collider->bounds[1][1],
-                     box_collider->bounds[1][2]);
-#endif
         }
-        // TODO: Add default BOX bounds
+        // default BOX bounds
+        else
+        {
+            vec3 bounds_min = {-20.0f, -1.0f, -20.0f};
+            vec3 bounds_max = {20.0f, 1.0f, 20.0f};
+            glm_vec3_copy(bounds_min, box_collider->bounds[0]);
+            glm_vec3_copy(bounds_max, box_collider->bounds[1]);
+        }
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_BoxCollider *)box_collider;

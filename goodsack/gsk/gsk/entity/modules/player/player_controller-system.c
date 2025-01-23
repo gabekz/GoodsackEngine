@@ -16,7 +16,7 @@
 #define DEFAULT_JUMP_FORCE 160
 
 #define USING_COLLIDE_AND_SLIDE TRUE
-#define COLLIDE_AND_SLIDE_DIST  0.6f
+#define COLLIDE_AND_SLIDE_DIST  1.6f
 #define COLLIDE_AND_SLIDE_DEBUG FALSE
 
 static void
@@ -219,7 +219,7 @@ fixed_update(gsk_Entity entity)
         glm_vec3_copy(cmp_transform->position, offset);
         offset[1] -= 0.2f;
 
-        gsk_mod_RaycastResult result = gsk_mod_physics_spherecast(
+        gsk_mod_RaycastResult result = gsk_mod_physics_capsuletest(
           entity, cmp_transform->position, newvel, 10);
 
 #if COLLIDE_AND_SLIDE_DEBUG
@@ -265,6 +265,16 @@ fixed_update(gsk_Entity entity)
 
             if (dist <= COLLIDE_AND_SLIDE_DIST)
             {
+#if 0
+                if (glm_vec3_norm(slide) <= 0.2f)
+                {
+                    glm_vec3_normalize(slide);
+                    glm_vec3_scale(slide, 2.0f, slide);
+                }
+#endif
+
+                glm_vec3_normalize(slide);
+                glm_vec3_scale(slide, newvel_mag, slide);
                 glm_vec3_copy(slide, newvel);
             }
 
@@ -276,6 +286,22 @@ fixed_update(gsk_Entity entity)
                                    slide,
                                    5,
                                    VCOL_RED,
+                                   FALSE);
+            gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                                   MARKER_POINT,
+                                   327122,
+                                   snapped,
+                                   slide,
+                                   5,
+                                   VCOL_BLUE,
+                                   FALSE);
+            gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                                   MARKER_POINT,
+                                   327129,
+                                   result.hit_position,
+                                   slide,
+                                   5,
+                                   VCOL_GREEN,
                                    FALSE);
 #endif // COLLIDE_AND_SLIDE_DEBUG
         }

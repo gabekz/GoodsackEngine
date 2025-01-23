@@ -31,10 +31,10 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
                         float range);
 
 gsk_mod_RaycastResult
-gsk_mod_physics_spherecast(gsk_Entity entity_caller,
-                           vec3 origin,
-                           vec3 direction,
-                           float max_distance);
+gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
+                            vec3 origin,
+                            vec3 direction,
+                            float max_distance);
 
 #ifdef __cplusplus
 }

@@ -11,6 +11,15 @@
  * Helper functions
  *************************************************************************/
 
+// Helper: clamp a value to [minVal, maxVal]
+static inline float
+clampf(float x, float minVal, float maxVal)
+{
+    if (x < minVal) return minVal;
+    if (x > maxVal) return maxVal;
+    return x;
+}
+
 static void
 _aabb_clamped_point(vec3 bounds[2], vec3 point_a, vec3 point_b, float *dest)
 {
@@ -23,6 +32,17 @@ _aabb_clamped_point(vec3 bounds[2], vec3 point_a, vec3 point_b, float *dest)
     clamped[2]    = MAX(-halfwidth, MIN(halfwidth, point_b[2] - point_a[2]));
 
     glm_vec3_add(center, clamped, dest);
+}
+static void
+
+_aabb_clamped_in(const vec3 boxMin,
+                 const vec3 boxMax,
+                 const vec3 point_in,
+                 vec3 out_clamped)
+{
+    out_clamped[0] = clampf(point_in[0], boxMin[0], boxMax[0]);
+    out_clamped[1] = clampf(point_in[1], boxMin[1], boxMax[1]);
+    out_clamped[2] = clampf(point_in[2], boxMin[2], boxMax[2]);
 }
 
 static void
@@ -103,6 +123,8 @@ __find_box_sphere_inverse(
     return ret;
 }
 
+// NOTE: temporarily disables while testing narrow-phase capsule_box collision
+#if 0
 static gsk_CollisionPoints
 __find_box_capsule_inverse(gsk_BoxCollider *box,
                            gsk_CapsuleCollider *cap,
@@ -215,6 +237,94 @@ __find_box_capsule_inverse(gsk_BoxCollider *box,
 
     return ret;
 }
+#else
+gsk_CollisionPoints
+__find_box_capsule_inverse(gsk_BoxCollider *box,
+                           gsk_CapsuleCollider *cap,
+                           vec3 pos_box,
+                           vec3 pos_cap,
+                           bool inverse)
+{
+    gsk_CollisionPoints ret = {.has_collision = false};
+
+    // Compute the capsule's line segment in world space
+    vec3 A, B;
+    {
+        // base_ws = pos_cap - cap->base
+        vec3 base_ws;
+        glm_vec3_sub(pos_cap, cap->base, base_ws);
+
+        // tip_ws = pos_cap + cap->tip
+        vec3 tip_ws;
+        glm_vec3_add(pos_cap, cap->tip, tip_ws);
+
+        glm_vec3_copy(base_ws, A);
+        glm_vec3_copy(tip_ws, B);
+    }
+
+    vec3 boxMin, boxMax;
+    glm_vec3_add(pos_box, box->bounds[0], boxMin); // min corner
+    glm_vec3_add(pos_box, box->bounds[1], boxMax); // max corner
+
+    // Compute the center of the box
+    // (Even if the box is large/offset, this is the actual midpoint.)
+    vec3 boxCenter;
+    glm_vec3_add(boxMin, boxMax, boxCenter);
+    glm_vec3_scale(boxCenter, 0.5f, boxCenter);
+
+    // Find the closest point on the capsule line segment to the box's center
+    vec3 closest_on_segment;
+    _closest_point_line_segment(A, B, boxCenter, closest_on_segment);
+
+    // clamp that "capsule-closest" point onto the AABB
+    vec3 closest_on_box;
+    _aabb_clamped_in(boxMin, boxMax, closest_on_segment, closest_on_box);
+
+    // measure the distance. If < capsule.radius => collision
+    vec3 diff;
+    glm_vec3_sub(closest_on_segment, closest_on_box, diff);
+    float dist_sq = glm_vec3_dot(diff, diff);
+    float r       = cap->radius;
+
+    if (dist_sq < r * r)
+    {
+        ret.has_collision = true;
+
+        float dist  = sqrtf(dist_sq);
+        float pen   = r - dist; // penetration depth
+        vec3 normal = GLM_VEC3_ZERO_INIT;
+
+        if (dist > 1e-6f)
+        {
+            // normal = (closest_on_segment - closest_on_box) / dist
+            glm_vec3_scale(diff, 1.0f / dist, normal);
+        } else
+        {
+            normal[1] = 1.0f;
+        }
+
+        // collision points
+        // offset on capsule side = normal * radius
+        glm_vec3_copy(closest_on_box, ret.point_a);
+
+        vec3 offset;
+        glm_vec3_scale(normal, r, offset);
+        glm_vec3_add(closest_on_segment, offset, ret.point_b);
+
+        glm_vec3_copy(normal, ret.normal);
+        ret.depth = pen;
+
+        // TODO: !inverse for now
+        if (!inverse)
+        {
+            _invert_points(ret.point_a, ret.point_b);
+            glm_vec3_negate(ret.normal);
+        }
+    }
+
+    return ret;
+}
+#endif
 
 static gsk_CollisionPoints
 __find_capsule_sphere_inverse(gsk_CapsuleCollider *a,
@@ -861,6 +971,7 @@ gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
         glm_vec3_copy((vec3) {0.0f, 0.0f, sign}, ret.normal);
     }
 
+    glm_vec3_normalize(ret.normal);
     return ret;
 
 #if 0
