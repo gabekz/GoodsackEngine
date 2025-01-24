@@ -25,7 +25,6 @@
 #include "core/graphics/ui/gui_element.h"
 #include "core/graphics/ui/gui_text.h"
 
-
 #include "entity/ecs.h"
 
 #include "core/device/device.h"
@@ -428,6 +427,9 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     renderer->currentPass = REGULAR;
     gsk_ecs_event(ecs, ECS_RENDER);
 
+    // render particles
+    gsk_particle_system_render(NULL);
+
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
     if (scene->has_skybox)
@@ -504,7 +506,6 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 #endif
 
     // computebuffer_draw();
-    gsk_particle_system_render(NULL);
 }
 
 /*

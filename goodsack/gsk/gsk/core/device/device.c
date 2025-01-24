@@ -20,7 +20,6 @@ static struct
     u32 counter;
     f64 clock_metrics, clock_metrics_prev;
     f64 clock_fixed_delta, clock_fixed_delta_prev;
-    f64 time_elapsed;
     gsk_Time time;
 } s_device;
 
@@ -99,8 +98,8 @@ gsk_device_updateTime(double time)
     s_device.time.time_scale = s_device.time.next_time_scale;
 
     // Delta Time
-    s_device.time.delta_time = time - s_device.time_elapsed;
-    s_device.time_elapsed    = time;
+    s_device.time.delta_time   = time - s_device.time.time_elapsed;
+    s_device.time.time_elapsed = time;
 
     // Update interval-clocks
     s_device.clock_metrics     = time - s_device.clock_metrics_prev;
