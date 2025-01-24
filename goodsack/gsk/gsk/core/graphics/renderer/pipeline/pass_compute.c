@@ -27,8 +27,11 @@ computebuffer_init()
 
     // shader Program
     const char *csPath = "../res/shaders/hello.compute";
-    csShader           = gsk_shader_compute_program_create(csPath);
-    shader2            = GSK_ASSET("../res/shaders/framebuffer-simple.shader");
+
+    csShader = gsk_shader_compute_program_create(
+      GSK_PATH("gsk://shaders/hello.compute"));
+
+    shader2 = GSK_ASSET("gsk://shaders/framebuffer-simple.shader");
 
     // texture size
     const u32 TEXTURE_WIDTH = 320, TEXTURE_HEIGHT = 180;

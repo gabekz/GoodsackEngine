@@ -181,7 +181,6 @@ ParseShader(const char *path)
             // Begin Geometry
             else if (strstr(line, "geometry") != NULL)
             {
-                LOG_INFO("GEOMETRY SHADER FOUND");
                 mode = 2;
 #ifdef WIN32
                 stream  = open_memstream(&geomOut, geomLen);
@@ -252,6 +251,24 @@ gsk_shader_program_create(const char *path)
         glAttachShader(program, fs);
         if (gs != 0) { glAttachShader(program, gs); }
         glLinkProgram(program);
+
+        GLint linkStatus = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+        if (linkStatus == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+            // The maxLength includes the NULL character
+            char *infoLog = (char *)malloc(maxLength);
+            glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
+
+            // Log the error
+            LOG_ERROR("Program link error message: %s", infoLog);
+
+            free(infoLog);
+        }
+
         glValidateProgram(program);
 
         glDeleteShader(vs);
