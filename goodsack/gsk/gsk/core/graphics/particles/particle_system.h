@@ -17,10 +17,10 @@ extern "C" {
 
 typedef struct gsk_Particle
 {
-    vec3 startPos;
-    vec3 position;
-    vec3 velocity;
-    vec3 convergenceTarget;
+    vec4 startPos;
+    vec4 position;
+    vec4 velocity;
+    vec4 convergenceTarget;
     f32 life;
     f32 colorLookup;
     f32 STRIDE_FILLER1;
