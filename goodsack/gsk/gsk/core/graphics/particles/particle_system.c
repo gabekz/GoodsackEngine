@@ -27,14 +27,16 @@ static gsk_Particle sp_particles[_GSK_PARTICLE_COUNT];
 
 static f32 s_curl_E_min        = 0.1f;
 static f32 s_curl_E_max        = 3.3f;
-static f32 s_curl_E_multiplier = 0.05f;
+static f32 s_curl_E_multiplier = 1.05f;
 static f32 s_curl_E_speed      = 1.0f;
 static f32 s_curl_E            = 0;
 
-static f32 s_smoke_dist = 5.0f;
+static f32 s_smoke_dist = 4.0f;
 
-static f32 s_min_life = 2.0f;
-static f32 s_max_life = 10.0f;
+static f32 s_min_life = 0.1f;
+static f32 s_max_life = 3.0f;
+
+static f32 s_updraft = 0.025f;
 
 void
 _update_curl()
@@ -82,10 +84,10 @@ gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
 
     vec4 triangle[6] = {{0, 0, 0, 8},
                         {0, 0, 1, 9},
-                        {0, 1, 0, 10},
-                        {1, 1, 1, 8},
-                        {1, 1, 2, 9},
-                        {2, 1, 1, 10}};
+                        {1, 0, 1, 10},
+                        {2, 0, 2, 8},
+                        {2, 0, 0, 9},
+                        {0, 0, 2, 10}};
 
     ssbo_size    = sizeof(vec4) * 3;
     ssbo_binding = 0;
@@ -129,21 +131,15 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
     {
         u32 shader_id = p_compute_shader->id;
 
-        GLfloat df  = 1.0f;
-        GLfloat df0 = 0.0f;
-        GLfloat df1 = 0.025f;
-        GLfloat df3 = 0.3f;
-        vec3 dv     = {1, 1, 0};
-        vec3 dv0    = {0, 0, 0};
+        vec3 dv  = {1, 1, 0};
+        vec3 dv0 = {0, 0, 0};
 
-        vec3 conv_point   = {0, 2, 0};
+        vec3 conv_point   = {0.5f, 2, 0.5f};
         f32 conv_strength = 0.001f;
 
-        f32 min_life = 1.0f;
-        f32 max_life = 8.0f;
         int num_vert = 6;
 
-        int rand_idx = rand() % num_vert * 20 + 1;
+        int rand_idx = rand() % num_vert + 1;
 
         glUniform1f(glGetUniformLocation(shader_id, "deltaTime"),
                     gsk_device_getTime().delta_time);
@@ -152,9 +148,9 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
         glUniform1f(glGetUniformLocation(shader_id, "curlMultiplier"),
                     s_curl_E_multiplier);
         glUniform1f(glGetUniformLocation(shader_id, "particleMinLife"),
-                    min_life);
+                    s_min_life);
         glUniform1f(glGetUniformLocation(shader_id, "particleMaxLife"),
-                    max_life);
+                    s_max_life);
 
         glUniform3fv(
           glGetUniformLocation(shader_id, "emitterPos"), 1, (float *)dv0);
@@ -171,7 +167,7 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
 
         glUniform1f(glGetUniformLocation(shader_id, "totalSmokeDistance"),
                     s_smoke_dist);
-        glUniform1f(glGetUniformLocation(shader_id, "updraft"), df1);
+        glUniform1f(glGetUniformLocation(shader_id, "updraft"), s_updraft);
         glUniform1f(glGetUniformLocation(shader_id, "randseed"), rand_idx);
         glUniform1i(glGetUniformLocation(shader_id, "numVertices"),
                     (float)num_vert);
@@ -189,9 +185,9 @@ gsk_particle_system_render(gsk_ShaderProgram *p_render_shader)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Default alpha blending
     glBlendEquation(GL_FUNC_ADD);
 
-    // glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
 
-    gsk_Texture *tex_ramp = GSK_ASSET("gsk://textures/gradient.png");
+    gsk_Texture *tex_ramp = GSK_ASSET("gsk://textures/gradient3.png");
     texture_bind(tex_ramp, 9);
 
     gsk_Texture *tex_main = GSK_ASSET("gsk://textures/particle_fire3.png");
@@ -210,11 +206,13 @@ gsk_particle_system_render(gsk_ShaderProgram *p_render_shader)
         shader_id = p_render_shader->id;
     }
 
-    GLfloat df01 = 0.15f;
-    GLfloat df   = 0.9f;
+    GLfloat size_life_min = 0.1f;
+    GLfloat size_life_max = 0.3f;
 
-    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMin"), df01);
-    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMax"), df);
+    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMin"),
+                size_life_min);
+    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMax"),
+                size_life_max);
 
     glUniform1f(glGetUniformLocation(shader_id, "_TotalSmokeDistance"),
                 s_smoke_dist);
@@ -231,5 +229,5 @@ gsk_particle_system_render(gsk_ShaderProgram *p_render_shader)
     glDrawArraysInstanced(GL_POINTS, 0, 1, _GSK_PARTICLE_COUNT);
 
     glDisable(GL_BLEND);
-    // glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 }

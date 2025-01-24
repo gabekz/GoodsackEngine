@@ -29,7 +29,7 @@ typedef struct gsk_Particle
 
 #define _GSK_PARTICLE_SIZE 64
 
-#define _GSK_PARTICLE_COUNT 200
+#define _GSK_PARTICLE_COUNT 5000
 #define _GSK_PARTICLE_AWAY  99999999.0f;
 
 void
