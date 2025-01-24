@@ -9,6 +9,7 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#include "core/graphics/mesh/mesh.h"
 #include "core/graphics/shader/shader.h"
 
 #ifdef __cplusplus
@@ -27,14 +28,15 @@ typedef struct gsk_Particle
     f32 STRIDE_FILLER2;
 } gsk_Particle;
 
-#define _GSK_PARTICLE_SIZE 64
+#define _GSK_PARTICLE_SIZE 80
 
-#define _GSK_PARTICLE_COUNT 5000
+#define _GSK_PARTICLE_COUNT 10000
 #define _GSK_PARTICLE_AWAY  99999999.0f;
 
 void
 gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
-                         gsk_ShaderProgram *p_render_shader);
+                         gsk_ShaderProgram *p_render_shader,
+                         gsk_MeshData *p_emitter_mesh);
 
 void
 gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,

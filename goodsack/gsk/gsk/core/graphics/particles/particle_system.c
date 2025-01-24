@@ -16,6 +16,8 @@
 #include "core/drivers/opengl/opengl.h"
 #include "core/graphics/shader/shader.h"
 
+#include <stdlib.h>
+
 #define WARP_SIZE 256.0f
 
 static u32 s_mesh_ssbo_id     = 0;
@@ -34,7 +36,7 @@ static f32 s_curl_E            = 0;
 static f32 s_smoke_dist = 4.0f;
 
 static f32 s_min_life = 0.1f;
-static f32 s_max_life = 3.0f;
+static f32 s_max_life = 10.0f;
 
 static f32 s_updraft = 0.025f;
 
@@ -49,7 +51,8 @@ _update_curl()
 
 void
 gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
-                         gsk_ShaderProgram *p_render_shader)
+                         gsk_ShaderProgram *p_render_shader,
+                         gsk_MeshData *p_emitter_mesh)
 {
 
     s_saved_render_shader = p_render_shader;
@@ -82,26 +85,104 @@ gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
 
     // Create mesh SSBO
 
-    vec4 triangle[6] = {{0, 0, 0, 8},
+    float *buff;
+
+    u32 triangle_count = 2;
+    vec4 triangle[6]   = {{0, 0, 0, 8},
                         {0, 0, 1, 9},
                         {1, 0, 1, 10},
                         {2, 0, 2, 8},
                         {2, 0, 0, 9},
                         {0, 0, 2, 10}};
+    if (p_emitter_mesh == NULL)
+    {
+        LOG_WARN("Using default particle triangles");
+    }
+    // emitter mesh
+    else
+    {
+        if ((p_emitter_mesh->mesh_buffers[0].buffer_flags &
+             GskMeshBufferFlag_Positions) == FALSE)
+        {
+            LOG_CRITICAL("Failed");
+        }
+
+        // get triangle positions from meshdata
+
+        triangle_count =
+          p_emitter_mesh->mesh_buffers[0].buffer_size / sizeof(float);
+
+        u32 triangle_len = 0;
+        u32 iters        = 0;
+
+        float *p = malloc(triangle_count * (sizeof(vec4) * 3));
+        buff     = p;
+
+        // calculate triangle_len
+        {
+            u32 vertex_len = 0;
+            if (p_emitter_mesh->combined_flags & GskMeshBufferFlag_Positions)
+            {
+                vertex_len += 3;
+            }
+            if (p_emitter_mesh->combined_flags & GskMeshBufferFlag_Textures)
+            {
+                vertex_len += 2;
+            }
+            if (p_emitter_mesh->combined_flags & GskMeshBufferFlag_Normals)
+            {
+                vertex_len += 3;
+            }
+            if (vertex_len == 0)
+            {
+                LOG_CRITICAL("Cannot split on broken mesh.");
+            }
+
+            triangle_len = vertex_len * 3;
+        }
+
+        for (int i = 0; i < triangle_count; i += triangle_len)
+        {
+            vec3 tri[3] = {
+              GLM_VEC3_ZERO_INIT, GLM_VEC3_ZERO_INIT, GLM_VEC3_ZERO_INIT};
+
+            float *p_buff_vert = p_emitter_mesh->mesh_buffers[0].p_buffer;
+
+            // get only the positions
+            glm_vec3_copy((float *)&p_buff_vert[i], tri[0]);
+            glm_vec3_copy((float *)&p_buff_vert[i + 8], tri[1]);
+            glm_vec3_copy((float *)&p_buff_vert[i + 16], tri[2]);
+            iters++;
+
+            LOG_INFO("POS: {%f, %f, %f}", tri[0][0], tri[0][1], tri[0][2]);
+            LOG_INFO("POS: {%f, %f, %f}", tri[1][0], tri[1][1], tri[1][2]);
+            LOG_INFO("POS: {%f, %f, %f}", tri[2][0], tri[2][1], tri[2][2]);
+
+            glm_vec3_copy(tri[0], (float *)&buff[i]);
+            buff[i + 3] = 1.0f;
+            glm_vec3_copy(tri[1], (float *)&buff[i + 4]);
+            buff[i + 6] = 1.0f;
+            glm_vec3_copy(tri[2], (float *)&buff[i + 8]);
+        }
+    }
+
+    LOG_INFO("TRIANGLES: %d", triangle_count);
 
     ssbo_size    = sizeof(vec4) * 3;
     ssbo_binding = 0;
 
     glGenBuffers(1, &s_mesh_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_mesh_ssbo_id);
-    glBufferData(
-      GL_SHADER_STORAGE_BUFFER, ssbo_size * 2, triangle, GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,
+                 ssbo_size * triangle_count,
+                 buff,
+                 GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssbo_binding, s_mesh_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     // Create particle SSBO
 
-    ssbo_size    = _GSK_PARTICLE_SIZE + (sizeof(float) * 4);
+    ssbo_size    = _GSK_PARTICLE_SIZE;
     ssbo_binding = 1;
 
     glGenBuffers(1, &s_particle_ssbo_id);
@@ -137,8 +218,9 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
         vec3 conv_point   = {0.5f, 2, 0.5f};
         f32 conv_strength = 0.001f;
 
-        int num_vert = 6;
+        vec3 emitter_scale = {1, 1, 1};
 
+        int num_vert = 320;
         int rand_idx = rand() % num_vert + 1;
 
         glUniform1f(glGetUniformLocation(shader_id, "deltaTime"),
@@ -154,8 +236,9 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
 
         glUniform3fv(
           glGetUniformLocation(shader_id, "emitterPos"), 1, (float *)dv0);
-        glUniform3fv(
-          glGetUniformLocation(shader_id, "emitterScale"), 1, (float *)dv);
+        glUniform3fv(glGetUniformLocation(shader_id, "emitterScale"),
+                     1,
+                     (float *)emitter_scale);
         glUniform3fv(
           glGetUniformLocation(shader_id, "emitterRot"), 1, (float *)dv0);
         glUniform3fv(glGetUniformLocation(shader_id, "convergencePoint"),
