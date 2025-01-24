@@ -19,10 +19,12 @@
 #include "core/graphics/lighting/lighting.h"
 #include "core/graphics/lighting/skybox.h"
 
+#include "core/graphics/particles/particle_system.h"
 #include "core/graphics/ui/billboard.h"
 #include "core/graphics/ui/gui_canvas.h"
 #include "core/graphics/ui/gui_element.h"
 #include "core/graphics/ui/gui_text.h"
+
 
 #include "entity/ecs.h"
 
@@ -165,6 +167,8 @@ gsk_renderer_init(const char *app_name)
     gsk_lighting_add_light(
       &renderer->lighting_data, (float *)lightPos2, (float *)lightColor2);
 #endif
+
+    // computebuffer_init();
 
     return ret;
 }
@@ -500,6 +504,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 #endif
 
     // computebuffer_draw();
+    gsk_particle_system_render(NULL);
 }
 
 /*

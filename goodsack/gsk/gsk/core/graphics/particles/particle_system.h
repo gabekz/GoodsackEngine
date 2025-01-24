@@ -29,6 +29,9 @@ typedef struct gsk_Particle
 
 #define _GSK_PARTICLE_SIZE 64
 
+#define _GSK_PARTICLE_COUNT 100
+#define _GSK_PARTICLE_AWAY  99999999.0f;
+
 void
 gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
                          gsk_ShaderProgram *p_render_shader);
@@ -36,6 +39,9 @@ gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
 void
 gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
                            gsk_ShaderProgram *p_render_shader);
+
+void
+gsk_particle_system_render(gsk_ShaderProgram *p_render_shader);
 
 #ifdef __cplusplus
 }
