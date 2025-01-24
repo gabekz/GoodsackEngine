@@ -18,7 +18,7 @@
 
 #include <stdlib.h>
 
-#define WARP_SIZE 256.0f
+#define WARP_SIZE 1024.0f
 
 static u32 s_mesh_ssbo_id     = 0;
 static u32 s_particle_ssbo_id = 0;
@@ -33,12 +33,17 @@ static f32 s_curl_E_multiplier = 1.05f;
 static f32 s_curl_E_speed      = 1.0f;
 static f32 s_curl_E            = 0;
 
-static f32 s_smoke_dist = 4.0f;
+static f32 s_smoke_dist = 2.0f;
 
-static f32 s_min_life = 0.1f;
-static f32 s_max_life = 10.0f;
+static f32 s_min_life = 0.2f;
+static f32 s_max_life = 8.0f;
 
-static f32 s_updraft = 0.025f;
+static f32 s_updraft = 0.020f;
+
+static f32 s_size_life_min = 0.05f;
+static f32 s_size_life_max = 0.2f;
+
+static u32 s_num_vert = 2;
 
 void
 _update_curl()
@@ -112,6 +117,8 @@ gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
         triangle_count =
           p_emitter_mesh->mesh_buffers[0].buffer_size / sizeof(float);
 
+        s_num_vert = triangle_count / 3;
+
         u32 triangle_len = 0;
         u32 iters        = 0;
 
@@ -152,17 +159,21 @@ gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
             glm_vec3_copy((float *)&p_buff_vert[i], tri[0]);
             glm_vec3_copy((float *)&p_buff_vert[i + 8], tri[1]);
             glm_vec3_copy((float *)&p_buff_vert[i + 16], tri[2]);
-            iters++;
 
+#if 1
             LOG_INFO("POS: {%f, %f, %f}", tri[0][0], tri[0][1], tri[0][2]);
             LOG_INFO("POS: {%f, %f, %f}", tri[1][0], tri[1][1], tri[1][2]);
             LOG_INFO("POS: {%f, %f, %f}", tri[2][0], tri[2][1], tri[2][2]);
+#endif
 
-            glm_vec3_copy(tri[0], (float *)&buff[i]);
-            buff[i + 3] = 1.0f;
-            glm_vec3_copy(tri[1], (float *)&buff[i + 4]);
-            buff[i + 6] = 1.0f;
-            glm_vec3_copy(tri[2], (float *)&buff[i + 8]);
+            glm_vec3_copy(tri[0], (float *)&buff[iters]);
+            buff[iters + 3] = 1.0f;
+            glm_vec3_copy(tri[1], (float *)&buff[iters + 4]);
+            buff[iters + 7] = 1.0f;
+            glm_vec3_copy(tri[2], (float *)&buff[iters + 8]);
+            buff[iters + 11] = 1.0f;
+
+            iters += 12;
         }
     }
 
@@ -212,15 +223,14 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
     {
         u32 shader_id = p_compute_shader->id;
 
-        vec3 dv  = {1, 1, 0};
         vec3 dv0 = {0, 0, 0};
 
-        vec3 conv_point   = {0.5f, 2, 0.5f};
+        vec3 conv_point   = {0.0f, 4.0f, 0.0f};
         f32 conv_strength = 0.001f;
 
         vec3 emitter_scale = {1, 1, 1};
 
-        int num_vert = 320;
+        int num_vert = s_num_vert;
         int rand_idx = rand() % num_vert + 1;
 
         glUniform1f(glGetUniformLocation(shader_id, "deltaTime"),
@@ -268,7 +278,7 @@ gsk_particle_system_render(gsk_ShaderProgram *p_render_shader)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Default alpha blending
     glBlendEquation(GL_FUNC_ADD);
 
-    glDisable(GL_DEPTH_TEST);
+    // glDisable(GL_DEPTH_TEST);
 
     gsk_Texture *tex_ramp = GSK_ASSET("gsk://textures/gradient3.png");
     texture_bind(tex_ramp, 9);
@@ -289,13 +299,10 @@ gsk_particle_system_render(gsk_ShaderProgram *p_render_shader)
         shader_id = p_render_shader->id;
     }
 
-    GLfloat size_life_min = 0.1f;
-    GLfloat size_life_max = 0.3f;
-
     glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMin"),
-                size_life_min);
+                s_size_life_min);
     glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMax"),
-                size_life_max);
+                s_size_life_max);
 
     glUniform1f(glGetUniformLocation(shader_id, "_TotalSmokeDistance"),
                 s_smoke_dist);
@@ -312,5 +319,5 @@ gsk_particle_system_render(gsk_ShaderProgram *p_render_shader)
     glDrawArraysInstanced(GL_POINTS, 0, 1, _GSK_PARTICLE_COUNT);
 
     glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
+    // glEnable(GL_DEPTH_TEST);
 }
