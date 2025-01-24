@@ -298,7 +298,24 @@ gsk_shader_compute_program_create(const char *path)
     glLinkProgram(program);
     glValidateProgram(program);
 
-    glDeleteShader(csSingle);
+    GLint linkStatus = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+    if (linkStatus == GL_FALSE)
+    {
+        GLint maxLength = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+        // The maxLength includes the NULL character
+        char *infoLog = (char *)malloc(maxLength);
+        glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
+
+        // Log the error
+        LOG_ERROR("Program link error message: %s", infoLog);
+
+        free(infoLog);
+    }
+
+    // glDeleteShader(csSingle);
 
     gsk_ShaderProgram *ret = malloc(sizeof(gsk_ShaderProgram));
     ret->id                = program;
