@@ -77,7 +77,7 @@ gsk_renderer_init(const char *app_name)
     ret->defaultSkybox = NULL;
 
     ret->properties = (gsk_RendererProps) {
-      .tonemapper      = 0,
+      .tonemapper      = 3,
       .exposure        = 9.5f,
       .maxWhite        = 1.0f,
       .gamma           = 2.2f,
@@ -88,9 +88,9 @@ gsk_renderer_init(const char *app_name)
       .vignetteFalloff = 0.5f,
       .vignetteColor   = {0, 0, 0},
 
-      .bloom_intensity = 1.0f,
+      .bloom_intensity = 0.3f,
       .bloom_radius    = 0.01f,
-      .bloom_threshold = 0.8f,
+      .bloom_threshold = 0.0f,
     };
 
     ret->shadowmapOptions = (ShadowmapOptions) {
@@ -104,10 +104,10 @@ gsk_renderer_init(const char *app_name)
     };
 
     ret->ssaoOptions = (SsaoOptions) {
-      .strength   = 1.0f,
-      .bias       = 0.00035f,
-      .radius     = 0.1255f,
-      .kernelSize = 32,
+      .strength   = 2.5f,
+      .bias       = 0.285f,
+      .radius     = 0.45f,
+      .kernelSize = 64,
     };
 
     // Ambient options
@@ -118,7 +118,7 @@ gsk_renderer_init(const char *app_name)
     // Fog options
     ret->fogOptions.fog_start   = -1.0f;
     ret->fogOptions.fog_end     = 100.0f;
-    ret->fogOptions.fog_density = 1.0f;
+    ret->fogOptions.fog_density = 0.1f;
     {
         vec4 fogcol4 = DEFAULT_CLEAR_COLOR;
         glm_vec3_copy(fogcol4, ret->fogOptions.fog_color);

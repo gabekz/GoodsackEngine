@@ -119,7 +119,7 @@ ParseShader(const char *path)
 {
     // File in
     FILE *fptr = NULL;
-    char line[256];
+    char line[1024];
 
     // output stream
     FILE *stream = NULL;

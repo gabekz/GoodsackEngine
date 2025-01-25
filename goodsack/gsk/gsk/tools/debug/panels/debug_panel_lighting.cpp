@@ -19,7 +19,7 @@ gsk::tools::panels::Lighting::draw(void)
                0.1f,
                -3000,
                3000);
-    ColorEdit3("Color", p_renderer->lighting_data.lights[0].color);
+    ColorEdit3("Light Color", p_renderer->lighting_data.lights[0].color);
     DragFloat("Light Strength",
               &p_renderer->lighting_data.lights[0].strength,
               1,
@@ -72,6 +72,7 @@ gsk::tools::panels::Lighting::draw(void)
     Text("Fog");
     DragFloat("Fog Start", &p_renderer->fogOptions.fog_start, 0.1f, -1, 100);
     DragFloat("Fog End", &p_renderer->fogOptions.fog_end, 0.1f, 1, 4096);
-    DragFloat("Density", &p_renderer->fogOptions.fog_density, 0.1f, 0.1f, 100);
-    // ColorEdit3("Color", p_renderer->fogOptions.fog_color);
+    DragFloat(
+      "Fog Density", &p_renderer->fogOptions.fog_density, 0.1f, 0.1f, 100);
+    ColorEdit3("Fog Color", p_renderer->fogOptions.fog_color);
 }

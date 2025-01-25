@@ -43,7 +43,8 @@ main()
     vs_out.fragPos = viewPos.xyz;
 
     mat3 normalMatrix = transpose(inverse(mat3(camera.view * u_Model)));
-    vs_out.normal = normalMatrix * (INVERTED_NORMALS ? -a_Normal : a_Normal);
+    // vs_out.normal = normalMatrix * (INVERTED_NORMALS ? -a_Normal : a_Normal);
+    vs_out.normal = normalize(a_Normal);
 
     gl_Position      = camera.projection * viewPos;
     vs_out.texCoords = a_TexCoords;
@@ -74,12 +75,19 @@ in VS_OUT
 }
 fs_in;
 
+vec3
+calcNormal(float strength)
+{
+    vec3 n = texture(t_NormalMap, fs_in.texCoords).rgb;
+    n      = n * 2.0 - 1.0;
+    n.xy *= strength;
+    n = normalize(fs_in.tbn * n);
+    return n;
+}
+
 void
 main()
 {
     gPosition = fs_in.fragPos;
-    // gNormal   = normalize(fs_in.normal);
-    vec3 nrml =
-      normalize(texture(t_NormalMap, fs_in.texCoords).rgb * 2.0 - 1.0);
-    gNormal = normalize(fs_in.tbn * nrml);
+    gNormal   = calcNormal(1.0f);
 }

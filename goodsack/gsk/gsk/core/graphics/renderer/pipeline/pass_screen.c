@@ -89,6 +89,17 @@ CreateScreenBuffer(u32 width, u32 height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
+#if 0
+    // Texture must be bound first
+    GLint swizzle[4] = {
+      GL_RED,   // Shader Red   channel source = Texture Red
+      GL_GREEN, // Shader Green channel source = Texture Green
+      GL_BLUE,  // Shader Blue  channel source = Texture Blue
+      GL_ONE    // Shader Alpha channel source = One
+    };
+    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+#endif
+
     // Create Framebuffer object
     glGenFramebuffers(1, &sbFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);

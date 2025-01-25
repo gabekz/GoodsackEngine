@@ -30,7 +30,7 @@ static gsk_Particle sp_particles[_GSK_PARTICLE_COUNT];
 static f32 s_curl_E_min        = 0.1f;
 static f32 s_curl_E_max        = 3.3f;
 static f32 s_curl_E_multiplier = 1.05f;
-static f32 s_curl_E_speed      = 1.0f;
+static f32 s_curl_E_speed      = 8.0f;
 static f32 s_curl_E            = 0;
 
 static f32 s_smoke_dist = 2.0f;
@@ -160,7 +160,7 @@ gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
             glm_vec3_copy((float *)&p_buff_vert[i + 8], tri[1]);
             glm_vec3_copy((float *)&p_buff_vert[i + 16], tri[2]);
 
-#if 1
+#if 0
             LOG_INFO("POS: {%f, %f, %f}", tri[0][0], tri[0][1], tri[0][2]);
             LOG_INFO("POS: {%f, %f, %f}", tri[1][0], tri[1][1], tri[1][2]);
             LOG_INFO("POS: {%f, %f, %f}", tri[2][0], tri[2][1], tri[2][2]);
@@ -226,7 +226,7 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
         vec3 dv0 = {0, 0, 0};
 
         vec3 conv_point   = {0.0f, 4.0f, 0.0f};
-        f32 conv_strength = 0.001f;
+        f32 conv_strength = 0.005f;
 
         vec3 emitter_scale = {1, 1, 1};
 
