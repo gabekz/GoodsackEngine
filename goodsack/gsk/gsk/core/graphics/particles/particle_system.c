@@ -25,7 +25,7 @@ static u32 s_particle_ssbo_id = 0;
 
 static gsk_ShaderProgram *s_saved_render_shader;
 
-static gsk_Particle sp_particles[_GSK_PARTICLE_COUNT];
+static gsk_Particle sp_particles[_GSK_MAX_PARTICLE_COUNT];
 
 static f32 s_curl_E_min        = 0.1f;
 static f32 s_curl_E_max        = 3.3f;
@@ -33,10 +33,10 @@ static f32 s_curl_E_multiplier = 1.05f;
 static f32 s_curl_E_speed      = 8.0f;
 static f32 s_curl_E            = 0;
 
-static f32 s_smoke_dist = 2.0f;
+static f32 s_smoke_dist = 3.0f;
 
 static f32 s_min_life = 0.2f;
-static f32 s_max_life = 8.0f;
+static f32 s_max_life = 1.2f;
 
 static f32 s_updraft = 0.020f;
 
@@ -63,7 +63,7 @@ gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
     s_saved_render_shader = p_render_shader;
 
     // initialize the particles
-    const u32 particle_count = _GSK_PARTICLE_COUNT;
+    const u32 particle_count = _GSK_MAX_PARTICLE_COUNT;
 
     for (int i = 0; i < particle_count; i++)
     {
@@ -199,7 +199,7 @@ gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
     glGenBuffers(1, &s_particle_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_particle_ssbo_id);
     glBufferData(GL_SHADER_STORAGE_BUFFER,
-                 ssbo_size * _GSK_PARTICLE_COUNT,
+                 ssbo_size * _GSK_MAX_PARTICLE_COUNT,
                  sp_particles,
                  GL_DYNAMIC_DRAW);
     glBindBufferBase(
@@ -228,7 +228,7 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
         vec3 conv_point   = {0.0f, 4.0f, 0.0f};
         f32 conv_strength = 0.005f;
 
-        vec3 emitter_scale = {1, 1, 1};
+        vec3 emitter_scale = {1.0f, 1.0f, 1.0f};
 
         int num_vert = s_num_vert;
         int rand_idx = rand() % num_vert + 1;
@@ -261,7 +261,7 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
         glUniform1f(glGetUniformLocation(shader_id, "totalSmokeDistance"),
                     s_smoke_dist);
         glUniform1f(glGetUniformLocation(shader_id, "updraft"), s_updraft);
-        glUniform1f(glGetUniformLocation(shader_id, "randseed"), rand_idx);
+        glUniform1f(glGetUniformLocation(shader_id, "randSeed"), rand_idx);
         glUniform1i(glGetUniformLocation(shader_id, "numVertices"),
                     (float)num_vert);
 #endif

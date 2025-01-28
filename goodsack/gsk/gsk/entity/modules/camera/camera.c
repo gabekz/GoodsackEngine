@@ -249,9 +249,10 @@ update(gsk_Entity e)
 
 #if CAMERA_SHAKE
         // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
-        float seed = 255.0f;
-        float shakeCO =
-          0.5f * camera->shake_amount * _noise(seed, glfwGetTime() * 50.0f);
+        float seed    = 255.0f;
+        float shakeCO = camera->shake_amount +
+                        (sin(seed + gsk_device_getTime().time_elapsed) *
+                         camera->shake_amount * 20);
 #endif // CAMERA_SHAKE
 
         // Clamp pitch
@@ -335,12 +336,14 @@ update(gsk_Entity e)
         camera->shake_amount = 0;
     }
 
-#if 0 // manual camera shake test-controls 
-    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_P) == GLFW_PRESS) {
+#if 1 // manual camera shake test-controls
+    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_P) == GLFW_PRESS)
+    {
         camera->shake_amount += 0.165f;
     }
-    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_O) == GLFW_PRESS) {
-        camera->shake_amount = 2;
+    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_O) == GLFW_PRESS)
+    {
+        camera->shake_amount = 20;
     }
 #endif
 #endif // CAMERA_SHAKE

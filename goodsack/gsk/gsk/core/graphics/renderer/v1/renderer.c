@@ -95,7 +95,7 @@ gsk_renderer_init(const char *app_name)
 
     ret->shadowmapOptions = (ShadowmapOptions) {
       .nearPlane = 0.00f,
-      .farPlane  = 20.0f,
+      .farPlane  = 40.0f,
       .camSize   = 20.0f,
 
       .normalBiasMin = 0.0004f,

@@ -13,7 +13,7 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
-#define MIP_LENGTH 6
+#define MIP_LENGTH 4
 
 typedef struct gsk_BloomMip
 {

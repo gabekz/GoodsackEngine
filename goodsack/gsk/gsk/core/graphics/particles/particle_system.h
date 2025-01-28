@@ -30,8 +30,10 @@ typedef struct gsk_Particle
 
 #define _GSK_PARTICLE_SIZE 80
 
-#define _GSK_PARTICLE_COUNT 1000000
-#define _GSK_PARTICLE_AWAY  99999999.0f;
+#define _GSK_MAX_PARTICLE_COUNT 1000000
+#define _GSK_PARTICLE_COUNT     100000
+
+#define _GSK_PARTICLE_AWAY 99999999.0f;
 
 void
 gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
