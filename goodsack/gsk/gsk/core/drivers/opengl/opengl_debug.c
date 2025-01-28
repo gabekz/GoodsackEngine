@@ -14,7 +14,7 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
-#define _BREAK_ON_MSG FALSE
+#define _BREAK_ON_MSG TRUE
 
 void APIENTRY
 _gsk_gl_debug_output(GLenum source,

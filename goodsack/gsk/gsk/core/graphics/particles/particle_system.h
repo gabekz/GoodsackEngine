@@ -53,17 +53,25 @@ typedef struct gsk_ParticleSystem
 
     u32 ssbo_particle_id, ssbo_mesh_id;
 
+    f32 *particles_buff;
+    u32 particles_buff_size;
+    f32 *mesh_buff;
+    u32 mesh_buff_size;
+
 } gsk_ParticleSystem;
 
-#define _GSK_MAX_PARTICLE_COUNT 100000
+#define _GSK_MAX_PARTICLE_COUNT 1000000
 #define _GSK_PARTICLE_COUNT     _GSK_MAX_PARTICLE_COUNT
 
 #define _GSK_PARTICLE_AWAY 99999999.0f;
 
+void
+gsk_particle_system_initialize();
+
 gsk_ParticleSystem
-gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
-                         gsk_ShaderProgram *p_render_shader,
-                         gsk_MeshData *p_emitter_mesh);
+gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
+                           gsk_ShaderProgram *p_render_shader,
+                           gsk_MeshData *p_emitter_mesh);
 
 void
 gsk_particle_system_update(gsk_ParticleSystem *p_particle_system);

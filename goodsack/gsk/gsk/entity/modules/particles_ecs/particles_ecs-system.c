@@ -37,7 +37,7 @@ init(gsk_Entity ent)
       malloc(sizeof(gsk_ParticleSystem));
 
     *(gsk_ParticleSystem *)(ent_emitter->p_particle_system) =
-      gsk_particle_system_init(
+      gsk_particle_system_create(
         cp_shader, dr_shader, p_model_sphere->meshes[0]->meshData);
 }
 

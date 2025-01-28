@@ -255,6 +255,9 @@ gsk_renderer_start(gsk_Renderer *renderer)
         // init bloom
         pass_bloom_init();
 
+        // setup particle system
+        gsk_particle_system_initialize();
+
         // renderer->skybox = gsk_skybox_create(skyboxCubemap);
 
         // glEnable(GL_FRAMEBUFFER_SRGB);
