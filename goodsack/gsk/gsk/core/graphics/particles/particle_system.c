@@ -20,10 +20,8 @@
 
 #define WARP_SIZE 1024.0f
 
-static u32 s_mesh_ssbo_id     = 0;
-static u32 s_particle_ssbo_id = 0;
-
 static gsk_ShaderProgram *s_saved_render_shader;
+static gsk_ShaderProgram *s_saved_compute_shader;
 
 static f32 s_curl_E_min        = 0.1f;
 static f32 s_curl_E_max        = 3.3f;
@@ -55,15 +53,11 @@ _update_curl(f32 curl_min, f32 curl_max, f32 curl_speed)
 void
 gsk_particle_system_initialize()
 {
-    glGenBuffers(1, &s_mesh_ssbo_id);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_mesh_ssbo_id);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s_mesh_ssbo_id);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    s_saved_compute_shader = gsk_shader_compute_program_create(
+      GSK_PATH("zhr://shaders/fire_particles.compute"));
 
-    glGenBuffers(1, &s_particle_ssbo_id);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_particle_ssbo_id);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, s_particle_ssbo_id);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    s_saved_render_shader =
+      GSK_ASSET("zhr://shaders/particles_computed.shader");
 }
 
 gsk_ParticleSystem
@@ -71,7 +65,7 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
                            gsk_ShaderProgram *p_render_shader,
                            gsk_MeshData *p_emitter_mesh)
 {
-    s_saved_render_shader = p_render_shader;
+    // s_saved_render_shader = ;
 
     gsk_Particle *sp_particles =
       malloc(sizeof(gsk_Particle) * _GSK_MAX_PARTICLE_COUNT);
@@ -99,8 +93,6 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
     // s_particle_ssbo_id = 0;
     u32 ssbo_size    = 0;
     u32 ssbo_binding = 0;
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     // Create mesh SSBO
 
@@ -193,15 +185,23 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
 
     LOG_INFO("TRIANGLES: %d", triangle_count);
 
+    u32 s_mesh_ssbo_id     = 0;
+    u32 s_particle_ssbo_id = 0;
+
     ssbo_size    = sizeof(vec4) * 3;
     ssbo_binding = 0;
 
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
 #if 1
+    glGenBuffers(1, &s_mesh_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_mesh_ssbo_id);
     glBufferData(GL_SHADER_STORAGE_BUFFER,
                  ssbo_size * triangle_count,
                  buff,
                  GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s_mesh_ssbo_id);
+
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     // Create particle SSBO
@@ -209,46 +209,53 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
     ssbo_size    = _GSK_PARTICLE_SIZE;
     ssbo_binding = 1;
 
+    glGenBuffers(1, &s_particle_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_particle_ssbo_id);
     glBufferData(GL_SHADER_STORAGE_BUFFER,
                  ssbo_size * _GSK_MAX_PARTICLE_COUNT,
                  sp_particles,
                  GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, s_particle_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 #endif
 
     // return
 
     gsk_ParticleSystem ret = {
-      .noise_min        = s_curl_E_min,
-      .noise_max        = s_curl_E_max,
-      .noise_multiplier = s_curl_E_multiplier,
-      .noise_speed      = s_curl_E_speed,
-      .noise_cnt        = 0,
+        .noise_min        = s_curl_E_min,
+        .noise_max        = s_curl_E_max,
+        .noise_multiplier = s_curl_E_multiplier,
+        .noise_speed      = s_curl_E_speed,
+        .noise_cnt        = 0,
 
-      .ramp_dist = s_smoke_dist,
-      .updraft   = s_updraft,
+        .ramp_dist = 3.0f,
+        .updraft   = s_updraft,
 
-      .min_life = s_min_life,
-      .max_life = s_max_life,
+        .min_life = s_min_life,
+        .max_life = s_max_life,
 
-      .size_life_min = s_size_life_min,
-      .size_life_max = s_size_life_max,
+        .size_life_min = s_size_life_min,
+        .size_life_max = s_size_life_max,
 
-      .world_pos   = {0, 0, 0},
-      .world_rot   = {0, 0, 0},
-      .world_scale = {1, 1, 1},
+        .world_pos   = {0, 0, 0},
+        .world_rot   = {0, 0, 0},
+        .world_scale = {1, 1, 1},
 
-      .p_compute_shader = p_compute_shader,
-      .p_render_shader  = p_render_shader,
+#if 0
+      .p_compute_shader = s_saved_compute_shader,
+      .p_render_shader  = s_saved_render_shader,
+#else
+        .p_compute_shader = p_compute_shader,
+        .p_render_shader  = p_render_shader,
+#endif
 
-      .ssbo_mesh_id     = s_mesh_ssbo_id,
-      .ssbo_particle_id = s_particle_ssbo_id,
+        .ssbo_mesh_id     = s_mesh_ssbo_id,
+        .ssbo_particle_id = s_particle_ssbo_id,
 
-      .particles_buff      = sp_particles,
-      .mesh_buff           = buff,
-      .mesh_buff_size      = (sizeof(vec4) * 3) * triangle_count,
-      .particles_buff_size = _GSK_PARTICLE_SIZE * _GSK_MAX_PARTICLE_COUNT,
+        .particles_buff      = sp_particles,
+        .mesh_buff           = buff,
+        .mesh_buff_size      = (sizeof(vec4) * 3) * triangle_count,
+        .particles_buff_size = _GSK_PARTICLE_SIZE * _GSK_MAX_PARTICLE_COUNT,
     };
 
     return ret;
@@ -324,7 +331,12 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
                     (float)num_vert);
     }
 
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_mesh_ssbo_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_mesh_id);
+    glBindBufferBase(
+      GL_SHADER_STORAGE_BUFFER, 0, p_particle_system->ssbo_mesh_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_particle_id);
+    glBindBufferBase(
+      GL_SHADER_STORAGE_BUFFER, 1, p_particle_system->ssbo_particle_id);
 #if 0
     glBufferSubData(GL_SHADER_STORAGE_BUFFER,
                     0,
@@ -332,7 +344,7 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
                     p_particle_system->mesh_buff);
 #endif
 
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_particle_ssbo_id);
+    // glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_particle_ssbo_id);
 
     // dispatch to update particles
     glDispatchCompute(num_thread_groups, 1, 1);
@@ -384,15 +396,9 @@ gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
                        GL_FALSE,
                        (float *)newModel);
 
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_mesh_ssbo_id);
-#if 0
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                    0,
-                    p_particle_system->mesh_buff_size,
-                    p_particle_system->mesh_buff);
-#endif
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_particle_ssbo_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_particle_id);
+    glBindBufferBase(
+      GL_SHADER_STORAGE_BUFFER, 1, p_particle_system->ssbo_particle_id);
 
     glDrawArraysInstanced(GL_POINTS, 0, 1, _GSK_PARTICLE_COUNT);
 

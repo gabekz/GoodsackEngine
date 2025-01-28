@@ -23,11 +23,13 @@ init(gsk_Entity ent)
 
     // gsk_particle_system_init(NULL, NULL, NULL);
 
+#if 1
     gsk_ShaderProgram *cp_shader = gsk_shader_compute_program_create(
       GSK_PATH("zhr://shaders/fire_particles.compute"));
 
     gsk_ShaderProgram *dr_shader =
       GSK_ASSET("zhr://shaders/particles_computed.shader");
+#endif
 
     gsk_Model *p_model_sphere = GSK_ASSET("gsk://models/suzanne.obj");
 

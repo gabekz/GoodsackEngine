@@ -11,6 +11,7 @@
 #include "core/drivers/alsoft/alsoft.h"
 #include "core/drivers/alsoft/alsoft_debug.h"
 #include "core/graphics/mesh/model.h"
+#include "core/graphics/particles/particle_system.h"
 
 #include "entity/__generated__/components_gen.h"
 
@@ -181,7 +182,13 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
           *(static_cast<struct ComponentParticleEmitter *>(
             gsk_ecs_get(e, C_PARTICLE_EMITTER)));
 
-        // DragFloat("Particle Min Life", &p.min_life, 0.1f, 0.0f, 100.0f);
+        gsk_ParticleSystem *p_particles =
+          (gsk_ParticleSystem *)p.p_particle_system;
+
+        DragFloat(
+          "Particle cutoff", &p_particles->ramp_dist, 0.1f, 0.0f, 100.0f);
+        DragFloat(
+          "Particle updraft", &p_particles->updraft, 0.1f, 0.0f, 100.0f);
         // DragFloat("Particle Max Life", &p.max_life, 0.1f, 0.0f, 100.0f);
     }
 
