@@ -427,8 +427,8 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     renderer->currentPass = REGULAR;
     gsk_ecs_event(ecs, ECS_RENDER);
 
-    // render particles
-    gsk_particle_system_render(NULL);
+    renderer->currentPass = SKYBOX_BEGIN;
+    gsk_ecs_event(ecs, ECS_RENDER);
 
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)

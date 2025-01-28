@@ -45,21 +45,20 @@ static f32 s_size_life_max = 0.2f;
 
 static u32 s_num_vert = 2;
 
-void
-_update_curl()
+f32
+_update_curl(f32 curl_min, f32 curl_max, f32 curl_speed)
 {
-    s_curl_E = glm_lerp(
-      s_curl_E_min,
-      s_curl_E_max,
-      sin(gsk_device_getTime().time_elapsed * s_curl_E_speed) / 2.0f + 0.5f);
+    return glm_lerp(curl_min,
+                    curl_max,
+                    sin(gsk_device_getTime().time_elapsed * curl_speed) / 2.0f +
+                      0.5f);
 }
 
-void
+gsk_ParticleSystem
 gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
                          gsk_ShaderProgram *p_render_shader,
                          gsk_MeshData *p_emitter_mesh)
 {
-
     s_saved_render_shader = p_render_shader;
 
     // initialize the particles
@@ -205,29 +204,61 @@ gsk_particle_system_init(gsk_ShaderProgram *p_compute_shader,
     glBindBufferBase(
       GL_SHADER_STORAGE_BUFFER, ssbo_binding, s_particle_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    // return
+
+    gsk_ParticleSystem ret = {
+      .noise_min        = s_curl_E_min,
+      .noise_max        = s_curl_E_max,
+      .noise_multiplier = s_curl_E_multiplier,
+      .noise_speed      = s_curl_E_speed,
+      .noise_cnt        = 0,
+
+      .ramp_dist = s_smoke_dist,
+      .updraft   = s_updraft,
+
+      .min_life = s_min_life,
+      .max_life = s_max_life,
+
+      .size_life_min = s_size_life_min,
+      .size_life_max = s_size_life_max,
+
+      .world_pos   = {0, 0, 0},
+      .world_rot   = {0, 0, 0},
+      .world_scale = {1, 1, 1},
+
+      .p_compute_shader = p_compute_shader,
+      .p_render_shader  = p_render_shader,
+
+      .ssbo_mesh_id     = s_mesh_ssbo_id,
+      .ssbo_particle_id = s_particle_ssbo_id,
+    };
+
+    return ret;
 }
 
 void
-gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
-                           gsk_ShaderProgram *p_render_shader)
+gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
 {
 
-    _update_curl();
+    p_particle_system->noise_cnt = _update_curl(p_particle_system->noise_min,
+                                                p_particle_system->noise_max,
+                                                p_particle_system->noise_speed);
 
     const u32 num_particles     = _GSK_PARTICLE_COUNT;
     const u32 num_thread_groups = (u32)ceilf((f32)num_particles / WARP_SIZE);
 
-    gsk_shader_use(p_compute_shader);
+    gsk_shader_use(p_particle_system->p_compute_shader);
 
     // pass uniforms to compute shader
     {
-        u32 shader_id = p_compute_shader->id;
-
-        vec3 dv0 = {0, 0, 0};
+        u32 shader_id = p_particle_system->p_compute_shader->id;
 
         vec3 conv_point   = {0.0f, 4.0f, 0.0f};
         f32 conv_strength = 0.005f;
 
+        vec3 dv0           = {0, 0, 0};
+        vec3 emitter_pos   = {0.0f, 0.0f, 0.0f};
         vec3 emitter_scale = {1.0f, 1.0f, 1.0f};
 
         int num_vert = s_num_vert;
@@ -235,22 +266,27 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
 
         glUniform1f(glGetUniformLocation(shader_id, "deltaTime"),
                     gsk_device_getTime().delta_time);
-#if 1
+#if 0
         glUniform1f(glGetUniformLocation(shader_id, "curlE"), s_curl_E);
+
         glUniform1f(glGetUniformLocation(shader_id, "curlMultiplier"),
                     s_curl_E_multiplier);
+
         glUniform1f(glGetUniformLocation(shader_id, "particleMinLife"),
                     s_min_life);
         glUniform1f(glGetUniformLocation(shader_id, "particleMaxLife"),
                     s_max_life);
 
-        glUniform3fv(
-          glGetUniformLocation(shader_id, "emitterPos"), 1, (float *)dv0);
+        glUniform3fv(glGetUniformLocation(shader_id, "emitterPos"),
+                     1,
+                     (float *)emitter_pos);
         glUniform3fv(glGetUniformLocation(shader_id, "emitterScale"),
                      1,
                      (float *)emitter_scale);
+
         glUniform3fv(
           glGetUniformLocation(shader_id, "emitterRot"), 1, (float *)dv0);
+
         glUniform3fv(glGetUniformLocation(shader_id, "convergencePoint"),
                      1,
                      (float *)conv_point);
@@ -260,19 +296,63 @@ gsk_particle_system_update(gsk_ShaderProgram *p_compute_shader,
 
         glUniform1f(glGetUniformLocation(shader_id, "totalSmokeDistance"),
                     s_smoke_dist);
+
         glUniform1f(glGetUniformLocation(shader_id, "updraft"), s_updraft);
+
+        glUniform1f(glGetUniformLocation(shader_id, "randSeed"), rand_idx);
+        glUniform1i(glGetUniformLocation(shader_id, "numVertices"),
+                    (float)num_vert);
+#else
+        glUniform1f(glGetUniformLocation(shader_id, "curlE"),
+                    p_particle_system->noise_cnt);
+
+        glUniform1f(glGetUniformLocation(shader_id, "curlMultiplier"),
+                    p_particle_system->noise_multiplier);
+
+        glUniform1f(glGetUniformLocation(shader_id, "particleMinLife"),
+                    p_particle_system->min_life);
+        glUniform1f(glGetUniformLocation(shader_id, "particleMaxLife"),
+                    p_particle_system->max_life);
+
+        glUniform3fv(glGetUniformLocation(shader_id, "emitterPos"),
+                     1,
+                     (float *)p_particle_system->world_pos);
+        glUniform3fv(glGetUniformLocation(shader_id, "emitterScale"),
+                     1,
+                     (float *)p_particle_system->world_scale);
+
+        glUniform3fv(glGetUniformLocation(shader_id, "emitterRot"),
+                     1,
+                     (float *)p_particle_system->world_rot);
+
+        glUniform3fv(glGetUniformLocation(shader_id, "convergencePoint"),
+                     1,
+                     (float *)conv_point);
+
+        glUniform1f(glGetUniformLocation(shader_id, "convergenceStrength"),
+                    conv_strength);
+
+        glUniform1f(glGetUniformLocation(shader_id, "totalSmokeDistance"),
+                    p_particle_system->ramp_dist);
+
+        glUniform1f(glGetUniformLocation(shader_id, "updraft"),
+                    p_particle_system->updraft);
+
         glUniform1f(glGetUniformLocation(shader_id, "randSeed"), rand_idx);
         glUniform1i(glGetUniformLocation(shader_id, "numVertices"),
                     (float)num_vert);
 #endif
     }
 
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_mesh_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_particle_id);
+
     // dispatch to update particles
     glDispatchCompute(num_thread_groups, 1, 1);
 }
 
 void
-gsk_particle_system_render(gsk_ShaderProgram *p_render_shader)
+gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
 {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Default alpha blending
@@ -288,17 +368,18 @@ gsk_particle_system_render(gsk_ShaderProgram *p_render_shader)
 
     u32 shader_id = 0;
 
-    if (p_render_shader == NULL)
+    if (p_particle_system->p_render_shader == NULL)
     {
 
         gsk_shader_use(s_saved_render_shader);
         shader_id = s_saved_render_shader->id;
     } else
     {
-        gsk_shader_use(p_render_shader);
-        shader_id = p_render_shader->id;
+        gsk_shader_use(p_particle_system->p_render_shader);
+        shader_id = p_particle_system->p_render_shader->id;
     }
 
+#if 0
     glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMin"),
                 s_size_life_min);
     glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMax"),
@@ -306,15 +387,26 @@ gsk_particle_system_render(gsk_ShaderProgram *p_render_shader)
 
     glUniform1f(glGetUniformLocation(shader_id, "_TotalSmokeDistance"),
                 s_smoke_dist);
+#else
+    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMin"),
+                p_particle_system->size_life_min);
+    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMax"),
+                p_particle_system->size_life_max);
+
+    glUniform1f(glGetUniformLocation(shader_id, "_TotalSmokeDistance"),
+                p_particle_system->ramp_dist);
+#endif
 
     mat4 newModel = GLM_MAT4_IDENTITY_INIT;
+    // glm_translate(newModel, p_particle_system->world_pos);
+
     glUniformMatrix4fv(glGetUniformLocation(shader_id, "u_Model"),
                        1,
                        GL_FALSE,
                        (float *)newModel);
 
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_mesh_ssbo_id);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_particle_ssbo_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_mesh_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_particle_id);
 
     glDrawArraysInstanced(GL_POINTS, 0, 1, _GSK_PARTICLE_COUNT);
 

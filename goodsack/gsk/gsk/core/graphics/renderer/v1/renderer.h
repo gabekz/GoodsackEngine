@@ -39,7 +39,12 @@ extern "C" {
 #define MAX_CAMERAS 4
 //#define MAX_LIGHTS  64
 
-typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
+typedef enum renderPass {
+    REGULAR = 0,
+    SKYBOX_BEGIN,
+    DEPTH_PREPASS,
+    SHADOW
+} RenderPass;
 
 typedef struct gsk_Renderer
 {

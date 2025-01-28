@@ -396,7 +396,7 @@ render(gsk_Entity e)
           : DrawModel(
               model, transform, FALSE, renderLayer, cb, e.ecs->renderer);
 
-    } else
+    } else if (pass != SKYBOX_BEGIN)
     {
         (GSK_DEVICE_API_OPENGL)
           ? DrawModel(

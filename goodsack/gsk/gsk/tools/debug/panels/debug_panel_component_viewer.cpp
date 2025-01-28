@@ -35,6 +35,7 @@ _component_type_name(ECSComponentType component_type)
     case C_HEALTH: return "Health";
     case C_LIGHT: return "Light";
     case C_MODEL: return "Model";
+    case C_PARTICLE_EMITTER: return "Particle Emitter";
     case C_PLAYER_CONTROLLER: return "Player Controller";
     case C_RENDERLAYER: return "Render Layer";
     case C_RIGIDBODY: return "Rigidbody";
@@ -172,6 +173,16 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
                 }
             } // GSK_DEVICE_API_OPENGL
         }     // Textures collapsing header
+    }
+
+    else if (cmp_type == C_PARTICLE_EMITTER)
+    {
+        struct ComponentParticleEmitter &p =
+          *(static_cast<struct ComponentParticleEmitter *>(
+            gsk_ecs_get(e, C_PARTICLE_EMITTER)));
+
+        // DragFloat("Particle Min Life", &p.min_life, 0.1f, 0.0f, 100.0f);
+        // DragFloat("Particle Max Life", &p.max_life, 0.1f, 0.0f, 100.0f);
     }
 
     else if (cmp_type == C_PLAYER_CONTROLLER)

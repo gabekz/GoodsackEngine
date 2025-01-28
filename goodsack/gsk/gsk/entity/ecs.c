@@ -29,6 +29,7 @@
 
 // Misc
 #include "entity/modules/misc/health_setup.h"
+#include "entity/modules/particles_ecs/particles_ecs-system.h"
 
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION
@@ -191,6 +192,7 @@ gsk_ecs_init(gsk_Renderer *renderer)
 
     // Misc Systems
     s_health_setup_init(ecs);
+    s_particles_ecs_system_init(ecs);
 
 #if USING_GENERATED_COMPONENTS
     _ecs_init_internal_gen(ecs);

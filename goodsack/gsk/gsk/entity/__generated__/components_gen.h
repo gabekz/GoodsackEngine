@@ -34,6 +34,7 @@ typedef enum ECSComponentType_t {
     C_HEALTH, // TODO: Remove (new package)
     C_LIGHT,
     C_MODEL,
+    C_PARTICLE_EMITTER,
     C_PLAYER_CONTROLLER, // TODO: Remove (new package)
     C_RENDERLAYER,
     C_RIGIDBODY,
@@ -185,6 +186,12 @@ struct ComponentModel
     u8 cast_shadows; // TODO:
 };
 
+struct ComponentParticleEmitter
+{
+    CACHE_ALIGN(void *p_particle_system);
+    CACHE_ALIGN(f32 speed);
+};
+
 struct ComponentPlayerController
 {
     CACHE_ALIGN(f32 speed);
@@ -283,6 +290,8 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(ecs, C_HEALTH, sizeof(struct ComponentHealth));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_LIGHT, sizeof(struct ComponentLight));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_MODEL, sizeof(struct ComponentModel));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_PARTICLE_EMITTER, sizeof(struct ComponentParticleEmitter));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_PLAYER_CONTROLLER, sizeof(struct ComponentPlayerController));
     _ECS_DECL_COMPONENT_INTERN(
