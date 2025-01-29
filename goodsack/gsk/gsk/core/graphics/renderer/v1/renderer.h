@@ -104,6 +104,10 @@ typedef struct gsk_Renderer
     VulkanDeviceContext *vulkanDevice;
     gsk_DebugContext *debugContext;
 
+    // TODO: remove - testing opengl samplers
+    u32 sampler0_id;
+    u32 sampler1_id;
+
 } gsk_Renderer;
 
 /**

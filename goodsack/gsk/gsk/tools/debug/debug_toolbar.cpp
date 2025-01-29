@@ -24,6 +24,7 @@
 #include "tools/debug/panels/debug_panel_entity_viewer.hpp"
 #include "tools/debug/panels/debug_panel_lighting.hpp"
 #include "tools/debug/panels/debug_panel_profiler.hpp"
+#include "tools/debug/panels/debug_panel_renderer.hpp"
 #include "tools/debug/panels/debug_panel_scene_viewer.hpp"
 
 // TODO: thirdparty root-include
@@ -106,6 +107,8 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
         // "Pipeline" Menu
         add_panel((DebugPanel *)(new Assets("Assets")), (int)Menus::Pipeline);
         add_panel((DebugPanel *)(new Profiler("Graphics")),
+                  (int)Menus::Pipeline);
+        add_panel((DebugPanel *)(new RenderInfo("Renderer Info")),
                   (int)Menus::Pipeline);
     }
 

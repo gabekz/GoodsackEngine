@@ -186,10 +186,56 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
           (gsk_ParticleSystem *)p.p_particle_system;
 
         DragFloat(
+          "Particle min life", &p_particles->min_life, 0.1f, 0.0f, 100.0f);
+        DragFloat(
+          "Particle max life", &p_particles->max_life, 0.1f, 0.0f, 100.0f);
+
+        Separator();
+
+        DragFloat(
+          "Particle size min", &p_particles->size_life_min, 0.1f, 0.0f, 100.0f);
+        DragFloat(
+          "Particle size max", &p_particles->size_life_max, 0.1f, 0.0f, 100.0f);
+
+        Separator();
+
+        DragFloat(
           "Particle cutoff", &p_particles->ramp_dist, 0.1f, 0.0f, 100.0f);
         DragFloat(
           "Particle updraft", &p_particles->updraft, 0.1f, 0.0f, 100.0f);
-        // DragFloat("Particle Max Life", &p.max_life, 0.1f, 0.0f, 100.0f);
+
+        Separator();
+
+        InputFloat3("Convergence Point",
+                    p_particles->convergence_point_world_pos);
+        DragFloat("Convergence Strength",
+                  &p_particles->convergence_strength,
+                  0.1f,
+                  0.0f,
+                  100.0f);
+
+        Separator();
+        DragFloat(
+          "Particle noise min", &p_particles->noise_min, 0.1f, 0.0f, 100.0f);
+        DragFloat(
+          "Particle noise max", &p_particles->noise_max, 0.1f, 0.0f, 100.0f);
+        DragFloat("Particle noise multiplier",
+                  &p_particles->noise_multiplier,
+                  0.1f,
+                  0.0f,
+                  100.0f);
+        DragFloat("Particle noise speed",
+                  &p_particles->noise_speed,
+                  0.1f,
+                  0.0f,
+                  100.0f);
+
+        Separator();
+
+        SliderInt("Particle Count",
+                  &p_particles->particle_count,
+                  0,
+                  _GSK_MAX_PARTICLE_COUNT);
     }
 
     else if (cmp_type == C_PLAYER_CONTROLLER)

@@ -89,7 +89,7 @@ CreateScreenBuffer(u32 width, u32 height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
-#if 0
+#if 1
     // Texture must be bound first
     GLint swizzle[4] = {
       GL_RED,   // Shader Red   channel source = Texture Red

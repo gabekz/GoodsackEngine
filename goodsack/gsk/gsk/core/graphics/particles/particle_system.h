@@ -48,6 +48,8 @@ typedef struct gsk_ParticleSystem
     vec3 world_pos, world_rot, world_scale;
     mat4 model_matrix;
 
+    s32 particle_count;
+
     gsk_ShaderProgram *p_compute_shader;
     gsk_ShaderProgram *p_render_shader;
 
@@ -61,7 +63,7 @@ typedef struct gsk_ParticleSystem
 } gsk_ParticleSystem;
 
 #define _GSK_MAX_PARTICLE_COUNT 1000000
-#define _GSK_PARTICLE_COUNT     _GSK_MAX_PARTICLE_COUNT
+#define _GSK_PARTICLE_COUNT     10000
 
 #define _GSK_PARTICLE_AWAY 99999999.0f;
 

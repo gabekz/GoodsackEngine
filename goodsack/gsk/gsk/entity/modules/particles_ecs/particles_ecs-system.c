@@ -23,7 +23,7 @@ init(gsk_Entity ent)
 
     // gsk_particle_system_init(NULL, NULL, NULL);
 
-#if 1
+#if 0
     gsk_ShaderProgram *cp_shader = gsk_shader_compute_program_create(
       GSK_PATH("zhr://shaders/fire_particles.compute"));
 
@@ -31,7 +31,7 @@ init(gsk_Entity ent)
       GSK_ASSET("zhr://shaders/particles_computed.shader");
 #endif
 
-    gsk_Model *p_model_sphere = GSK_ASSET("gsk://models/suzanne.obj");
+    gsk_Model *p_model_sphere = GSK_ASSET("gsk://models/cube.obj");
 
     // setup
 
@@ -40,7 +40,7 @@ init(gsk_Entity ent)
 
     *(gsk_ParticleSystem *)(ent_emitter->p_particle_system) =
       gsk_particle_system_create(
-        cp_shader, dr_shader, p_model_sphere->meshes[0]->meshData);
+        NULL, NULL, p_model_sphere->meshes[0]->meshData);
 }
 
 static void
@@ -60,6 +60,7 @@ fixed_update(gsk_Entity ent)
     glm_vec3_copy(ent_transform->position, p_sys->world_pos);
     glm_vec3_copy(ent_transform->orientation, p_sys->world_rot);
     glm_vec3_copy(ent_transform->scale, p_sys->world_scale);
+    glm_vec3_scale(p_sys->world_scale, 1.05f, p_sys->world_scale);
     gsk_particle_system_update(p_sys);
 }
 

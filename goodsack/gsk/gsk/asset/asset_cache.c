@@ -147,7 +147,7 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     TextureOptions default_tex = {
       .af_range        = 16,
       .internal_format = GL_SRGB_ALPHA,
-      .gen_mips        = FALSE,
+      .gen_mips        = TRUE,
       .flip_vertically = TRUE,
     };
 

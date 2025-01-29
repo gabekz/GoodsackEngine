@@ -228,7 +228,7 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
         .noise_speed      = s_curl_E_speed,
         .noise_cnt        = 0,
 
-        .ramp_dist = 3.0f,
+        .ramp_dist = s_smoke_dist,
         .updraft   = s_updraft,
 
         .min_life = s_min_life,
@@ -237,13 +237,18 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
         .size_life_min = s_size_life_min,
         .size_life_max = s_size_life_max,
 
+        .particle_count = _GSK_PARTICLE_COUNT,
+
         .world_pos   = {0, 0, 0},
         .world_rot   = {0, 0, 0},
         .world_scale = {1, 1, 1},
 
-#if 0
-      .p_compute_shader = s_saved_compute_shader,
-      .p_render_shader  = s_saved_render_shader,
+        .convergence_point_world_pos = {0, 4, 0},
+        .convergence_strength        = 0.005f,
+
+#if 1
+        .p_compute_shader = s_saved_compute_shader,
+        .p_render_shader  = s_saved_render_shader,
 #else
         .p_compute_shader = p_compute_shader,
         .p_render_shader  = p_render_shader,
@@ -269,7 +274,7 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
                                                 p_particle_system->noise_max,
                                                 p_particle_system->noise_speed);
 
-    const u32 num_particles     = _GSK_PARTICLE_COUNT;
+    const u32 num_particles     = p_particle_system->particle_count;
     const u32 num_thread_groups = (u32)ceilf((f32)num_particles / WARP_SIZE);
 
     gsk_shader_use(p_particle_system->p_compute_shader);
@@ -277,13 +282,6 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
     // pass uniforms to compute shader
     {
         u32 shader_id = p_particle_system->p_compute_shader->id;
-
-        vec3 conv_point   = {0.0f, 4.0f, 0.0f};
-        f32 conv_strength = 0.005f;
-
-        vec3 dv0           = {0, 0, 0};
-        vec3 emitter_pos   = {0.0f, 0.0f, 0.0f};
-        vec3 emitter_scale = {1.0f, 1.0f, 1.0f};
 
         int num_vert = s_num_vert;
         int rand_idx = rand() % num_vert + 1;
@@ -315,10 +313,10 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
 
         glUniform3fv(glGetUniformLocation(shader_id, "convergencePoint"),
                      1,
-                     (float *)conv_point);
+                     (float *)p_particle_system->convergence_point_world_pos);
 
         glUniform1f(glGetUniformLocation(shader_id, "convergenceStrength"),
-                    conv_strength);
+                    p_particle_system->convergence_strength);
 
         glUniform1f(glGetUniformLocation(shader_id, "totalSmokeDistance"),
                     p_particle_system->ramp_dist);
@@ -400,7 +398,7 @@ gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
     glBindBufferBase(
       GL_SHADER_STORAGE_BUFFER, 1, p_particle_system->ssbo_particle_id);
 
-    glDrawArraysInstanced(GL_POINTS, 0, 1, _GSK_PARTICLE_COUNT);
+    glDrawArraysInstanced(GL_POINTS, 0, 1, p_particle_system->particle_count);
 
     glDisable(GL_BLEND);
     // glEnable(GL_DEPTH_TEST);

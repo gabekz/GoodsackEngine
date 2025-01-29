@@ -52,9 +52,9 @@ out float FragColor;
 void
 main()
 {
-    vec3 fragPos   = texture(gPosition, texCoords).xyz;
-    vec3 normal    = texture(gNormal, texCoords).rgb;
-    normal         = -normal;
+    vec3 fragPos = texture(gPosition, texCoords).xyz;
+    vec3 normal  = texture(gNormal, texCoords).rgb;
+    // normal         = normal;
     vec3 randomVec = texture(t_Noise, texCoords * NOISE_SCALE).xyz;
     // vec3 randomVec = normalize(vec3(0.1, 0.1, 0));
 
@@ -83,6 +83,7 @@ main()
 
         // get (potential) occluder corresponding to sample pos in screen space
         vec3 occluderPos = texture(gPosition, offset.xy).rgb;
+        if (occluderPos.z >= 0) { occlusion = 0; }
 
         float rangeCheck =
           smoothstep(0.0, 1.0, radius / length(occluderPos - fragPos));

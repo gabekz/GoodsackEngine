@@ -37,8 +37,9 @@
 #include "tools/debug/debug_context.h"
 #include "tools/debug/debug_draw_line.h"
 
-#define TESTING_DRAW_UI   1
-#define TESTING_DRAW_LINE 0
+#define TESTING_DRAW_UI           1
+#define TESTING_DRAW_LINE         0
+#define TESTING_GLSAMPLER_OBJECTS 0
 
 gsk_Renderer *
 gsk_renderer_init(const char *app_name)
@@ -287,6 +288,28 @@ gsk_renderer_start(gsk_Renderer *renderer)
         renderer->camera_data.totalCameras = 2; // TODO: find an alternative
         renderer->camera_data.activeCamera = 0;
 
+// Testing for sampler objects
+#if TESTING_GLSAMPLER_OBJECTS
+        // sampler0
+        glGenSamplers(1, &renderer->sampler0_id);
+        glSamplerParameteri(renderer->sampler0_id,
+                            GL_TEXTURE_MIN_FILTER,
+                            GL_LINEAR_MIPMAP_LINEAR);
+        glSamplerParameteri(
+          renderer->sampler0_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameterf(
+          renderer->sampler0_id, GL_TEXTURE_MAX_ANISOTROPY, 16);
+
+        // sampler1
+        glGenSamplers(1, &renderer->sampler1_id);
+        glSamplerParameteri(
+          renderer->sampler1_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glSamplerParameteri(
+          renderer->sampler1_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glBindSampler(0, renderer->sampler0_id);
+#endif // TESTING_GL_SAMPLER_OBJECTS
+
         // Send ECS event init
         gsk_ecs_event(ecs, ECS_INIT);
 
@@ -426,12 +449,18 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glActiveTexture(GL_TEXTURE9);
     glBindTexture(GL_TEXTURE_2D, pass_ssao_getOutputTextureId());
 
+#if TESTING_GLSAMPLER_OBJECTS
+    glBindSampler(0, renderer->sampler0_id);
+#endif // TESTING_GLSAMPLER_OBJECTS
+
     // Forward-draw Event
     renderer->currentPass = REGULAR;
     gsk_ecs_event(ecs, ECS_RENDER);
 
+    glDepthFunc(GL_LEQUAL);
     renderer->currentPass = SKYBOX_BEGIN;
     gsk_ecs_event(ecs, ECS_RENDER);
+    glDepthFunc(GL_LESS);
 
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
@@ -441,6 +470,11 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
         gsk_skybox_draw(renderer->activeSkybox);
         glDepthFunc(GL_LESS);
     }
+
+#if TESTING_GLSAMPLER_OBJECTS
+    // reset texture unit sampler object
+    glBindSampler(0, 0);
+#endif // TESTING_GLSAMPLER_OBJECTS
 
     glPopDebugGroup();
     /*-------------------------------------------

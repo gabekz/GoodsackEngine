@@ -23,7 +23,8 @@ typedef struct TextureOptions
 {
     float af_range;
     u32 internal_format;
-    u16 gen_mips, flip_vertically; // bool
+    u8 gen_mips;
+    u8 flip_vertically;
 } TextureOptions;
 // TextureOptions_default = {0, GL_RGB, false, 1};
 
