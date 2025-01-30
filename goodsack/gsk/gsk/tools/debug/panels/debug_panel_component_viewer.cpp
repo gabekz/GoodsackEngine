@@ -33,6 +33,7 @@ _component_type_name(ECSComponentType component_type)
     case C_COLLIDER: return "Collider";
     case C_ENEMY: return "Enemy";
     case C_ENTITY_REFERENCE: return "Entity Reference";
+    case C_FLAMMABLE: return "Flammable";
     case C_HEALTH: return "Health";
     case C_LIGHT: return "Light";
     case C_MODEL: return "Model";
@@ -60,7 +61,10 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
           *(static_cast<struct ComponentTransform *>(
             gsk_ecs_get(e, C_TRANSFORM)));
         vec3 t = GLM_VEC3_ZERO_INIT;
-        DragFloat3("Position", p.position, 0.1f, -3000, 3000);
+        DragFloat3("Local Position", p.position, 0.1f, -3000, 3000);
+        BeginDisabled();
+        DragFloat3("World Position", p.world_position, 0.1f, -3000, 3000);
+        EndDisabled();
         // BeginDisabled();
         DragFloat3("Rotation", p.orientation, 0.1f, -3000, 3000);
         // EndDisabled();
@@ -103,6 +107,35 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 
         BeginDisabled();
         Checkbox("is_colliding", (bool *)&p.isColliding);
+        EndDisabled();
+    }
+
+    else if (cmp_type == C_FLAMMABLE)
+    {
+        struct ComponentFlammable &p =
+          *(static_cast<struct ComponentFlammable *>(
+            gsk_ecs_get(e, C_FLAMMABLE)));
+
+        DragFloat("current heat", &p.current_heat);
+        DragFloat("ignition point", &p.ignition_point);
+        DragFloat("max heat", &p.max_heat);
+        DragFloat("cooldown speed", &p.cooldown_speed);
+        BeginDisabled();
+        Checkbox("is_burning", (bool *)&p.is_burning);
+        EndDisabled();
+    }
+
+    else if (cmp_type == C_HEALTH)
+    {
+        struct ComponentHealth &p =
+          *(static_cast<struct ComponentHealth *>(gsk_ecs_get(e, C_HEALTH)));
+
+        DragInt("current health", &p.current_health);
+        DragInt("max health", &p.max_health);
+        BeginDisabled();
+        DragInt("last health", &p.last_health);
+        Checkbox("is_alive", (bool *)&p.is_alive);
+        Checkbox("event_health_change", (bool *)&p.event_health_change);
         EndDisabled();
     }
 
@@ -184,6 +217,8 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 
         gsk_ParticleSystem *p_particles =
           (gsk_ParticleSystem *)p.p_particle_system;
+
+        Checkbox("System is_awake", (bool *)&p.is_awake);
 
         DragFloat(
           "Particle min life", &p_particles->min_life, 0.1f, 0.0f, 100.0f);

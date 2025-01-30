@@ -62,7 +62,7 @@ typedef struct gsk_ParticleSystem
 
 } gsk_ParticleSystem;
 
-#define _GSK_MAX_PARTICLE_COUNT 1000000
+#define _GSK_MAX_PARTICLE_COUNT 100000
 #define _GSK_PARTICLE_COUNT     10000
 
 #define _GSK_PARTICLE_AWAY 99999999.0f;

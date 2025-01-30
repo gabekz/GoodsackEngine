@@ -31,6 +31,7 @@ typedef enum ECSComponentType_t {
     C_COLLIDER,
     C_ENEMY, // TODO: Remove (testing)
     C_ENTITY_REFERENCE,
+    C_FLAMMABLE,
     C_HEALTH, // TODO: Remove (new package)
     C_LIGHT,
     C_MODEL,
@@ -154,12 +155,23 @@ typedef struct ComponentEntityReference
     CACHE_ALIGN(int entity_ref_id);
 } gsk_C_EntityReference;
 
+struct ComponentFlammable
+{
+    CACHE_ALIGN(f32 burn_speed);
+    CACHE_ALIGN(f32 cooldown_speed);
+    CACHE_ALIGN(f32 current_heat);
+    CACHE_ALIGN(f32 ignition_point);
+    CACHE_ALIGN(u8 is_burning);
+    CACHE_ALIGN(f32 max_heat);
+};
+
 struct ComponentHealth
 {
     CACHE_ALIGN(int current_health);
     CACHE_ALIGN(int last_health);
     CACHE_ALIGN(int max_health);
     CACHE_ALIGN(u32 is_alive);
+    CACHE_ALIGN(u32 event_health_change);
 };
 
 struct ComponentLight
@@ -190,6 +202,7 @@ struct ComponentParticleEmitter
 {
     CACHE_ALIGN(void *p_particle_system);
     CACHE_ALIGN(f32 speed);
+    CACHE_ALIGN(u8 is_awake);
 };
 
 struct ComponentPlayerController
@@ -233,6 +246,7 @@ typedef struct ComponentTransform
     CACHE_ALIGN(vec3 orientation);
     CACHE_ALIGN(void *parent);
     CACHE_ALIGN(vec3 position);
+    CACHE_ALIGN(vec3 world_position);
     CACHE_ALIGN(vec3 scale);
 } gsk_C_Transform;
 
@@ -287,6 +301,8 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(ecs, C_ENEMY, sizeof(struct ComponentEnemy));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_ENTITY_REFERENCE, sizeof(struct ComponentEntityReference));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_FLAMMABLE, sizeof(struct ComponentFlammable));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_HEALTH, sizeof(struct ComponentHealth));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_LIGHT, sizeof(struct ComponentLight));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_MODEL, sizeof(struct ComponentModel));

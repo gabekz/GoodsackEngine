@@ -114,6 +114,9 @@ init(gsk_Entity e)
 
     glm_translate(m4i, transform->position);
     glm_mat4_copy(m4i, transform->model);
+    transform->world_position[0] = transform->model[3][0];
+    transform->world_position[1] = transform->model[3][1];
+    transform->world_position[2] = transform->model[3][2];
 
     // stupid hack which basically doesn't allow a zero scale.
     if (!transform->scale[0] && !transform->scale[1] && !transform->scale[2])
@@ -170,6 +173,11 @@ late_update(gsk_Entity e)
     glm_scale(m4i, transform->scale);
 
     glm_mat4_copy(m4i, transform->model);
+
+    // set world position
+    transform->world_position[0] = transform->model[3][0];
+    transform->world_position[1] = transform->model[3][1];
+    transform->world_position[2] = transform->model[3][2];
 
     // get the forward vector from the rotation matrix
     transform->forward[0] = mat_rot[2][2];
