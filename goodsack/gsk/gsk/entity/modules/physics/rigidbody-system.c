@@ -24,7 +24,7 @@
 #define DEBUG_TRACK  1
 #define DEBUG_POINTS 0 // 0 -- OFF | value = entity id
 
-#define CALC_INERTIA 0
+#define CALC_INERTIA 1
 
 // physics default values
 #define DEFAULT_RESTITUION       0.5f
@@ -139,15 +139,15 @@ init(gsk_Entity entity)
 
         // I = 2/5mr^2 -- solid sphere
         inertia = (2.0f / 5.0f) * rigidbody->mass *
-                  ((gsk_SphereCollider *)collider->pCollider)->radius;
+                  pow(((gsk_SphereCollider *)collider->pCollider)->radius, 2);
     }
 
     else if (collider->type == COLLIDER_BOX)
     {
 
         // TODO: get width/height from bounds
-        f32 width  = 2;
-        f32 height = 2;
+        f32 width  = 1;
+        f32 height = 1;
 
         // I_d = 1/12m(w^2 + h^2) -- rectangular cuboid depth
         inertia =
@@ -224,7 +224,8 @@ fixed_update(gsk_Entity entity)
     if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON)
     {
         glm_vec3_zero(rigidbody->force);
-        return;
+        // glm_vec3_zero(rigidbody->angular_velocity);
+        // return;
     }
 
     // --

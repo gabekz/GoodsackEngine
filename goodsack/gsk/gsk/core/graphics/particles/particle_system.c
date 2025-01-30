@@ -29,10 +29,10 @@ static f32 s_curl_E_multiplier = 1.05f;
 static f32 s_curl_E_speed      = 8.0f;
 static f32 s_curl_E            = 0;
 
-static f32 s_smoke_dist = 3.0f;
+static f32 s_smoke_dist = 1.2f;
 
 static f32 s_min_life = 0.2f;
-static f32 s_max_life = 1.2f;
+static f32 s_max_life = 2.0f;
 
 static f32 s_updraft = 0.020f;
 

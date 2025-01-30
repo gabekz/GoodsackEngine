@@ -460,8 +460,16 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(floorEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_PLANE,
+                            .type = COLLIDER_BOX,
                           }));
+#if 0
+    _gsk_ecs_add_internal(floorEntity,
+                          C_RIGIDBODY,
+                          (void *)(&(struct ComponentRigidbody) {
+                            .gravity = {0, 0, 0},
+                            .mass    = 100,
+                          }));
+#endif
 #if 0
     _gsk_ecs_add_internal(floorEntity,
                           C_MODEL,
