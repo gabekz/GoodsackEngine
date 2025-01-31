@@ -12,8 +12,8 @@
 
 #define DEFAULT_RESTITUION 0.2f
 
-#define DEBUG_POINTS    302 // 0 -- OFF | value = entity id
-#define ENABLE_ROTATION 1
+#define DEBUG_POINTS       0 // 0 -- OFF | value = entity id
+#define CALCULATE_ROTATION TRUE
 
 static void
 __calc_relative_velocity(_SolverData solver_data,
@@ -194,14 +194,17 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
         glm_vec3_add(
           rigidbody_a->linear_velocity, impulse, rigidbody_a->linear_velocity);
 
-#if (1)
-        glm_vec3_add(
-          rigidbody_a->angular_velocity, torque, rigidbody_a->angular_velocity);
-
+#if (CALCULATE_ROTATION)
+        if (!rigidbody_a->disable_rotation)
+        {
+            glm_vec3_add(rigidbody_a->angular_velocity,
+                         torque,
+                         rigidbody_a->angular_velocity);
+        }
         // TESTING
-        glm_vec3_sub(body_b_lin_vel, impulse, body_b_lin_vel);
-        glm_vec3_sub(body_b_ang_vel, torque, body_b_ang_vel);
-#endif // (ENABLE_ROTATION)
+        // glm_vec3_sub(body_b_lin_vel, impulse, body_b_lin_vel);
+        // glm_vec3_sub(body_b_ang_vel, torque, body_b_ang_vel);
+#endif // (CALCULATE_ROTATION)
     }
 #endif
 
@@ -230,18 +233,28 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
                        tangent);
         glm_vec3_sub(relative_velocity, tangent, tangent);
 
-        // check tangent for near-zero
+// check tangent for near-zero
+#if 1
         float zerodist = glm_vec3_distance(tangent, GLM_VEC3_ZERO);
-        if (solver_data.entity.id == DEBUG_POINTS)
-        {
-            LOG_INFO("%f ", zerodist);
-        }
         if (zerodist <= 0.00005f)
         {
-            glm_vec3_zero(rigidbody_a->linear_velocity);
-            glm_vec3_zero(rigidbody_a->angular_velocity);
+// glm_vec3_zero(rigidbody_a->linear_velocity);
+// glm_vec3_zero(rigidbody_a->angular_velocity);
+#if 1
+            if (!rigidbody_a->disable_rotation)
+            {
+
+                glm_vec3_scale(rigidbody_a->linear_velocity,
+                               0.9f,
+                               rigidbody_a->linear_velocity);
+                glm_vec3_scale(rigidbody_a->angular_velocity,
+                               0.9f,
+                               rigidbody_a->angular_velocity);
+            }
+#endif
             return;
         }
+#endif
 
         // proceed with calculation for tangent
         glm_vec3_normalize(tangent);
@@ -270,22 +283,19 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
           (rigidbody_a->dynamic_friction + rigidbody_a->dynamic_friction) *
           0.5f;
 
-        if (fabs(Ft) <= F * sf)
-        {
-            glm_vec3_scale(tangent, Ft, friction_impulse);
-        } else
-        {
-            glm_vec3_scale(tangent, -F * df, friction_impulse);
-        }
+        f32 friction_val = (fabs(Ft) <= F * sf) ? Ft : -F * df;
+
+        glm_vec3_scale(tangent, friction_val, friction_impulse);
 
         // NOTE: May need to be done AFTER torque calculation
         // scale impulse by inverse mass
-        glm_vec3_scale(friction_impulse, body_a.inverse_mass, friction_impulse);
 
         //  scale torque by inverse inertia
         glm_vec3_cross(ra, friction_impulse, friction_torque);
         glm_vec3_scale(
           friction_torque, body_a.inverse_inertia, friction_torque);
+
+        glm_vec3_scale(friction_impulse, body_a.inverse_mass, friction_impulse);
     }
 
     // apply friction impulses
@@ -294,11 +304,14 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
                      friction_impulse,
                      rigidbody_a->linear_velocity);
 
-#if (ENABLE_ROTATION)
-        glm_vec3_add(rigidbody_a->angular_velocity,
-                     friction_torque,
-                     rigidbody_a->angular_velocity);
-#endif // (ENABLE_ROTATION)
+#if (CALCULATE_ROTATION)
+        if (!rigidbody_a->disable_rotation)
+        {
+            glm_vec3_add(rigidbody_a->angular_velocity,
+                         friction_torque,
+                         rigidbody_a->angular_velocity);
+        }
+#endif // (CALCULATE_ROTATION)
     }
 
     // --------------

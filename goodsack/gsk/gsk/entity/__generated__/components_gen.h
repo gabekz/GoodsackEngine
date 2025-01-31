@@ -226,6 +226,8 @@ struct ComponentRigidbody
     vec3 angular_velocity, force, gravity, linear_velocity;
     float mass, static_friction, dynamic_friction;
     ResRef solver;
+    u8 is_kinematic;
+    u8 disable_rotation;
 };
 
 struct ComponentSwordController

@@ -175,6 +175,8 @@ fixed_update(gsk_Entity entity)
     struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(entity, C_TRANSFORM);
 
+    if (rigidbody->is_kinematic == TRUE) { return; }
+
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;
@@ -224,8 +226,7 @@ fixed_update(gsk_Entity entity)
     if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON)
     {
         glm_vec3_zero(rigidbody->force);
-        // glm_vec3_zero(rigidbody->angular_velocity);
-        // return;
+        return;
     }
 
     // --
@@ -267,7 +268,7 @@ _position_solver(_SolverData solver_data)
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-#if 1
+#if 0
     // I think these are better settings right now..
     const float percent = 1.0f;
     const float slop    = 0.005f;

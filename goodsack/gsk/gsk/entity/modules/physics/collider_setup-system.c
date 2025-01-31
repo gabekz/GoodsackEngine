@@ -38,12 +38,28 @@ init(gsk_Entity e)
     if (collider->type == COLLIDER_SPHERE)
     {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
-        // NOTE: Default radius is temporarily changed here
-        sphereCollider->radius = 1.0f;
+
+        // default radius
+        sphereCollider->radius = 0.5f;
+
+#if 0
+        if (gsk_ecs_has(e, C_MODEL))
+        {
+            struct ComponentModel *cmp_model = gsk_ecs_get(e, C_MODEL);
+            gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
+
+            f32 dist = glm_aabb_radius(meshdata->boundingBox);
+            LOG_INFO("RADIUS IS %f", dist);
+            sphereCollider->radius = dist / 2;
+#if 0
+            sphereCollider->radius =
+              (dist / 2) * (glm_vec3_norm(transform->scale) / 2);
+#endif
+        }
+#endif
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_SphereCollider *)sphereCollider;
-
     } else if (collider->type == COLLIDER_PLANE)
     {
         gsk_PlaneCollider *planeCollider = malloc(sizeof(gsk_PlaneCollider));
@@ -58,6 +74,10 @@ init(gsk_Entity e)
 
         glm_vec3_copy(transform->position, planeCollider->plane);
 
+        ((gsk_Collider *)collider->pCollider)->collider_data =
+          (gsk_PlaneCollider *)planeCollider;
+
+#if 0
         LOG_INFO("%f\t%f\t%f",
                  planeCollider->plane[0],
                  planeCollider->plane[1],
@@ -70,9 +90,7 @@ init(gsk_Entity e)
                  planeCollider->normal[0],
                  planeCollider->normal[1],
                  planeCollider->normal[2]);
-
-        ((gsk_Collider *)collider->pCollider)->collider_data =
-          (gsk_PlaneCollider *)planeCollider;
+#endif
     }
 
     else if (collider->type == COLLIDER_BOX)
@@ -314,7 +332,7 @@ on_collide(gsk_Entity e)
             inverse_mass_a = (1.0f / rigidbody_a->mass);
 
             // TODO: actually calculate HERE
-            inertia_a         = inertia * mass_a * 1;
+            inertia_a         = inertia * (mass_a * 0.5f);
             inverse_inertia_a = (fabs(inertia_a) > 0.0f) ? 1.0f / inertia_a : 0;
 
             // copy b-values

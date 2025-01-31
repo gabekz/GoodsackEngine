@@ -22,6 +22,9 @@ fixed_update(gsk_Entity entity)
     if (!(gsk_ecs_has(entity, C_RIGIDBODY))) return;
 
     struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
+
+    if (rigidbody->is_kinematic == TRUE) { return; }
+
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;

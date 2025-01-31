@@ -97,7 +97,7 @@ __find_box_sphere_inverse(
     float distance_to_closest = glm_vec3_norm(to_closest);
 
     // Check for collision
-    if (distance_to_closest < b->radius)
+    if (distance_to_closest <= b->radius)
     {
         ret.has_collision = TRUE;
 
