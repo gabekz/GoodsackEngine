@@ -115,7 +115,9 @@ init(gsk_Entity entity)
     struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
     struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
 
-    // glm_vec3_zero(rigidbody->force);
+    glm_vec3_zero(rigidbody->force);
+    glm_vec3_zero(rigidbody->torque);
+
     glm_vec3_zero(rigidbody->linear_velocity);
     glm_vec3_zero(rigidbody->angular_velocity);
 
@@ -222,10 +224,19 @@ fixed_update(gsk_Entity entity)
         gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
     }
 
+    // --
+    // -- Add force to linear velocity
+    glm_vec3_add(
+      rigidbody->force, rigidbody->linear_velocity, rigidbody->linear_velocity);
+
     // Rigidbody sleep threshold
     if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON)
     {
         glm_vec3_zero(rigidbody->force);
+        glm_vec3_zero(rigidbody->torque);
+
+        glm_vec3_zero(rigidbody->angular_velocity);
+        // glm_vec3_zero(rigidbody->linear_velocity);
         return;
     }
 
@@ -236,7 +247,10 @@ fixed_update(gsk_Entity entity)
     vec3 vD = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(rigidbody->linear_velocity, delta, vD);
 
-#if 1
+    // update position
+    glm_vec3_add(transform->position, vD, transform->position);
+
+#if 0
     // calculate : orientation += angular_velocity * delta_time;
     vec3 aVD = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(rigidbody->angular_velocity, delta, aVD);
@@ -244,16 +258,41 @@ fixed_update(gsk_Entity entity)
     aVD[0] = glm_deg(aVD[0]);
     aVD[1] = glm_deg(aVD[1]);
     aVD[2] = glm_deg(aVD[2]);
+
+    // update orientation
+    glm_vec3_add(transform->orientation, aVD, transform->orientation);
+#else
+
+    float rollingFriction = 0.001f;
+    vec3 frictionTorque2;
+
+    glm_vec3_copy(rigidbody->angular_velocity, frictionTorque2);
+    glm_vec3_normalize(frictionTorque2); // direction opposite of spin
+    glm_vec3_scale(frictionTorque2, -rollingFriction, frictionTorque2);
+    glm_vec3_add(rigidbody->torque, frictionTorque2, rigidbody->torque);
+
+    vec3 angularAccel;
+    glm_vec3_copy(rigidbody->torque, angularAccel);
+
+    glm_vec3_add(
+      angularAccel, rigidbody->angular_velocity, rigidbody->angular_velocity);
+
+    vec3 angularDeg; // angularDeg
+    glm_vec3_scale(rigidbody->angular_velocity, delta, angularDeg);
+    angularDeg[0] = glm_deg(angularDeg[0]);
+    angularDeg[1] = glm_deg(angularDeg[1]);
+    angularDeg[2] = glm_deg(angularDeg[2]);
+
+    // update orientation
+    glm_vec3_add(transform->orientation, angularDeg, transform->orientation);
+
 #endif // orientation
 
-    // update positions
-    glm_vec3_add(transform->position, vD, transform->position);
-    glm_vec3_add(transform->orientation, aVD, transform->orientation);
-
     // --
-    // -- Reset net force
+    // -- Reset net forces
 
     glm_vec3_zero(rigidbody->force);
+    glm_vec3_zero(rigidbody->torque);
 }
 //-----------------------------------------------------------------------------
 static void
@@ -268,7 +307,7 @@ _position_solver(_SolverData solver_data)
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-#if 0
+#if 1
     // I think these are better settings right now..
     const float percent = 1.0f;
     const float slop    = 0.005f;

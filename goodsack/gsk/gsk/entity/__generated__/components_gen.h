@@ -223,7 +223,8 @@ struct ComponentRenderLayer
 
 struct ComponentRigidbody
 {
-    vec3 angular_velocity, force, gravity, linear_velocity;
+    vec3 angular_velocity, gravity, linear_velocity;
+    vec3 force, torque;
     float mass, static_friction, dynamic_friction;
     ResRef solver;
     u8 is_kinematic;

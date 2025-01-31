@@ -17,6 +17,16 @@
 // TODO: Add ECS system-dependency : rigidbody-system.c
 
 static void
+init(gsk_Entity entity)
+{
+    if (!(gsk_ecs_has(entity, C_RIGIDBODY))) return;
+
+    struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
+    glm_vec3_zero(rigidbody->force);
+    glm_vec3_zero(rigidbody->torque);
+}
+
+static void
 fixed_update(gsk_Entity entity)
 {
     if (!(gsk_ecs_has(entity, C_RIGIDBODY))) return;
@@ -47,6 +57,9 @@ fixed_update(gsk_Entity entity)
     glm_vec3_divs(rigidbody->force, rigidbody->mass, fDm);
     glm_vec3_scale(fDm, delta, fDm);
     glm_vec3_add(rigidbody->linear_velocity, fDm, rigidbody->linear_velocity);
+
+    glm_vec3_zero(rigidbody->force);
+    glm_vec3_zero(rigidbody->torque);
 }
 
 void
@@ -55,5 +68,6 @@ s_rigidbody_forces_system_init(gsk_ECS *ecs)
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
                               .fixed_update = (gsk_ECSSubscriber)fixed_update,
+                              .init         = (gsk_ECSSubscriber)init,
                             }));
 }

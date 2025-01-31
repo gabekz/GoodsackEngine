@@ -332,7 +332,7 @@ on_collide(gsk_Entity e)
             inverse_mass_a = (1.0f / rigidbody_a->mass);
 
             // TODO: actually calculate HERE
-            inertia_a         = inertia * (mass_a * 0.5f);
+            inertia_a         = inertia * (mass_a * 1.0f);
             inverse_inertia_a = (fabs(inertia_a) > 0.0f) ? 1.0f / inertia_a : 0;
 
             // copy b-values
