@@ -84,7 +84,7 @@ gsk_renderer_init(const char *app_name)
       .gamma           = 2.2f,
       .gammaEnable     = TRUE,
       .msaaEnable      = TRUE,
-      .msaaSamples     = 4,
+      .msaaSamples     = 16,
       .vignetteAmount  = 0.5f,
       .vignetteFalloff = 0.5f,
       .vignetteColor   = {0, 0, 0},
@@ -366,7 +366,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Pass: Depth Prepass");
 
     prepass_bind();
-    renderer->currentPass              = DEPTH_PREPASS;
+    renderer->currentPass              = GskRenderPass_GBuffer;
     renderer->explicitMaterial         = prepass_getMaterial();
     renderer->explicitMaterial_skinned = prepass_getMaterialSkinned();
     gsk_ecs_event(ecs, ECS_RENDER);
@@ -398,7 +398,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     // bind the shadowmap textures & framebuffers
     shadowmap_bind();
 
-    renderer->currentPass              = SHADOW;
+    renderer->currentPass              = GskRenderPass_Shadowmap;
     renderer->explicitMaterial         = shadowmap_getMaterial();
     renderer->explicitMaterial_skinned = shadowmap_getMaterialSkinned();
     // TODO: Clean this up...
@@ -454,11 +454,11 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 #endif // TESTING_GLSAMPLER_OBJECTS
 
     // Forward-draw Event
-    renderer->currentPass = REGULAR;
+    renderer->currentPass = GskRenderPass_Lighting;
     gsk_ecs_event(ecs, ECS_RENDER);
 
     glDepthFunc(GL_LEQUAL);
-    renderer->currentPass = SKYBOX_BEGIN;
+    renderer->currentPass = GskRenderPass_Skybox;
     gsk_ecs_event(ecs, ECS_RENDER);
     glDepthFunc(GL_LESS);
 
@@ -553,7 +553,7 @@ void renderer_tick_VULKAN(gsk_Renderer *renderer, gsk_ECS *ecs) {
     glfwPollEvents();
 
     gsk_ecs_event(ecs, ECS_UPDATE);
-    renderer->currentPass = REGULAR;
+    renderer->currentPass = GskRenderPass_Lighting;
     gsk_ecs_event(ecs, ECS_RENDER);
 
     vulkan_render_draw(renderer->vulkanDevice, renderer->window);

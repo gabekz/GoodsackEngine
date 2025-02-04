@@ -343,7 +343,7 @@ update(gsk_Entity e)
     }
     if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_O) == GLFW_PRESS)
     {
-        camera->shake_amount = 20;
+        camera->shake_amount = 0.02f;
     }
 #endif
 #endif // CAMERA_SHAKE

@@ -35,6 +35,8 @@ extern "C" {
 
 #define QMAP_ALLOC_ITER 1 // default number for realloc'ing bloks
 
+#define QMAP_NOEXPORT_FIELD_STR "_tb_layer_omit_from_export"
+
 /*************************************************************************
  * QMap types
  *************************************************************************/

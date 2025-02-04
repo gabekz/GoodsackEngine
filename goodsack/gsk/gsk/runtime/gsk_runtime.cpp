@@ -479,7 +479,7 @@ gsk::runtime::rt_loop()
             gsk_ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
             vulkan_render_draw_begin(s_runtime.renderer->vulkanDevice,
                                      s_runtime.renderer->window);
-            s_runtime.renderer->currentPass = REGULAR;
+            s_runtime.renderer->currentPass = GskRenderPass_Lighting;
             gsk_ecs_event(s_runtime.ecs, ECS_RENDER);
 
 #if GSK_RUNTIME_USE_DEBUG

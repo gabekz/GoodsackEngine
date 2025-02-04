@@ -81,6 +81,9 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system);
 void
 gsk_particle_system_render(gsk_ParticleSystem *p_particle_system);
 
+void
+gsk_particle_system_cleanup(gsk_ParticleSystem *p_particle_system);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

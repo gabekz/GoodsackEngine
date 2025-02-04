@@ -16,7 +16,8 @@
 #include "physics/physics_collision.h"
 #include "physics/physics_solver.h"
 
-#define MAX_COLLISION_POINTS 128
+#define MAX_COLLISION_POINTS         128
+#define COLLISION_REQUIRES_RIGIDBODY TRUE
 
 static void
 init(gsk_Entity e)
@@ -109,7 +110,6 @@ init(gsk_Entity e)
         // TODO: TESTING
         else if (collider->p_mesh != NULL && collider->p_mesh == 0x32)
         {
-            LOG_INFO("SET HERE");
             glm_vec3_copy(collider->box_bounds_min, box_collider->bounds[0]);
             glm_vec3_copy(collider->box_bounds_max, box_collider->bounds[1]);
 
@@ -159,7 +159,10 @@ on_collide(gsk_Entity e)
     // test for collisions
     if (!(gsk_ecs_has(e, C_COLLIDER))) return;
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
-    // if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
+
+#if COLLISION_REQUIRES_RIGIDBODY
+    if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
+#endif // COLLISION_REQUIRES_RIGIDBODY
 
     struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);

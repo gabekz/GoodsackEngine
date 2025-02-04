@@ -162,28 +162,32 @@ fixed_update(gsk_Entity entity)
 
     // Movement
 
-    if (cmp_controller->walk_direction & WALK_FORWARD)
+    if (!(cmp_controller->walk_direction & (WALK_FORWARD & WALK_BACKWARD)))
     {
-        glm_vec3_add(newvel, direction, newvel);
-    }
-    if (cmp_controller->walk_direction & WALK_BACKWARD)
-    {
-        glm_vec3_sub(newvel, direction, newvel);
+        if (cmp_controller->walk_direction & WALK_FORWARD)
+        {
+            glm_vec3_add(newvel, direction, newvel);
+        } else if (cmp_controller->walk_direction & WALK_BACKWARD)
+        {
+            glm_vec3_sub(newvel, direction, newvel);
+        }
     }
 
-    if (cmp_controller->walk_direction & WALK_LEFT)
+    if (!(cmp_controller->walk_direction & (WALK_LEFT & WALK_RIGHT)))
     {
-        glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
-        glm_vec3_scale(cross, speed, cross);
+        if (cmp_controller->walk_direction & WALK_LEFT)
+        {
+            glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
+            glm_vec3_scale(cross, speed, cross);
 
-        glm_vec3_sub(newvel, cross, newvel);
-    }
-    if (cmp_controller->walk_direction & WALK_RIGHT)
-    {
-        glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
-        glm_vec3_scale(cross, speed, cross);
+            glm_vec3_sub(newvel, cross, newvel);
+        } else if (cmp_controller->walk_direction & WALK_RIGHT)
+        {
+            glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
+            glm_vec3_scale(cross, speed, cross);
 
-        glm_vec3_add(newvel, cross, newvel);
+            glm_vec3_add(newvel, cross, newvel);
+        }
     }
 
 #if 1

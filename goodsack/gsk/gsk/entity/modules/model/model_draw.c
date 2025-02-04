@@ -67,7 +67,7 @@ DrawModel(struct ComponentModel *model,
             } else if (useOverrideMaterial)
             {
                 // Check if shadow-casting is disabled
-                if (renderer->currentPass == SHADOW &&
+                if (renderer->currentPass == GskRenderPass_Shadowmap &&
                     model->cast_shadows == ECS_VAL_DISABLED)
                 {
                     return;
@@ -92,7 +92,7 @@ DrawModel(struct ComponentModel *model,
             // TESTING for normal-map in G-Buffer
             // TODO: Breaks when normal-map doesn't exist
             // TODO: Refactor this block
-            if (renderer->currentPass == DEPTH_PREPASS)
+            if (renderer->currentPass == GskRenderPass_GBuffer)
             {
                 if (mesh->usingImportedMaterial &&
                     mesh->materialImported->texturesCount > 1)
@@ -354,7 +354,7 @@ render(gsk_Entity e)
             ->renderLayer;
     }
 
-    RenderPass pass = e.ecs->renderer->currentPass;
+    GskRenderPass pass = e.ecs->renderer->currentPass;
 
     // TODO: get lightspace matrix
 
@@ -365,7 +365,7 @@ render(gsk_Entity e)
                ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame];
     }
 
-    if (pass == REGULAR)
+    if (pass == GskRenderPass_Lighting)
     {
 #if DEBUG_DRAW_SKELETON
         // draw skeleton
@@ -396,7 +396,7 @@ render(gsk_Entity e)
           : DrawModel(
               model, transform, FALSE, renderLayer, cb, e.ecs->renderer);
 
-    } else if (pass != SKYBOX_BEGIN)
+    } else if (pass != GskRenderPass_Skybox)
     {
         (GSK_DEVICE_API_OPENGL)
           ? DrawModel(

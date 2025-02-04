@@ -414,3 +414,22 @@ gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
     glDisable(GL_BLEND);
     // glEnable(GL_DEPTH_TEST);
 }
+
+void
+gsk_particle_system_cleanup(gsk_ParticleSystem *p_self)
+{
+    if (p_self == NULL) { return; }
+
+    if (p_self->particles_buff_size > 0)
+    {
+        glDeleteBuffers(1, &(p_self->ssbo_particle_id));
+        free(p_self->particles_buff);
+    }
+    if (p_self->mesh_buff > 0)
+    {
+        glDeleteBuffers(1, &(p_self->ssbo_mesh_id));
+        free(p_self->mesh_buff);
+    }
+
+    free(p_self);
+}

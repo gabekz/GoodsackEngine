@@ -103,7 +103,7 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
 
     // get all points
     vec3 ray_vec;
-    glm_vec3_scale(direction, 0.01f, ray_vec);
+    glm_vec3_scale(direction, 0.025f, ray_vec);
     glm_vec3_add(origin, ray_vec, ray_vec);
 
     vec3 base  = {0.0f, 1.255f, 0.0f};

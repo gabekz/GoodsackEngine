@@ -39,12 +39,14 @@ extern "C" {
 #define MAX_CAMERAS 4
 //#define MAX_LIGHTS  64
 
-typedef enum renderPass {
-    REGULAR = 0,
-    SKYBOX_BEGIN,
-    DEPTH_PREPASS,
-    SHADOW
-} RenderPass;
+typedef enum GskRenderPass_ {
+    GskRenderPass_GBuffer = 0,
+    GskRenderPass_Shadowmap,
+    GskRenderPass_Lighting,
+    GskRenderPass_Skybox,
+} GskRenderPass_;
+
+typedef u32 GskRenderPass;
 
 typedef struct gsk_Renderer
 {
@@ -57,7 +59,7 @@ typedef struct gsk_Renderer
     gsk_Scene **sceneL;
     u16 sceneC, activeScene;
 
-    RenderPass currentPass; // TODO: rename -> RenderStage
+    GskRenderPass currentPass; // TODO: rename -> RenderStage
     gsk_Material *explicitMaterial;
     gsk_Material
       *explicitMaterial_skinned; // skinned version of explicit material

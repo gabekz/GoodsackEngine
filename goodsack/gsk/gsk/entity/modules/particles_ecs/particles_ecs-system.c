@@ -75,7 +75,7 @@ fixed_update(gsk_Entity ent)
 static void
 render(gsk_Entity ent)
 {
-    if (ent.ecs->renderer->currentPass != SKYBOX_BEGIN) { return; }
+    if (ent.ecs->renderer->currentPass != GskRenderPass_Skybox) { return; }
 
     if (!(gsk_ecs_has(ent, C_PARTICLE_EMITTER))) return;
     struct ComponentParticleEmitter *ent_emitter =
@@ -90,6 +90,23 @@ render(gsk_Entity ent)
     gsk_particle_system_render(p_sys);
 }
 
+static void
+destroy(gsk_Entity ent)
+{
+    if (!(gsk_ecs_has(ent, C_PARTICLE_EMITTER))) return;
+
+    struct ComponentParticleEmitter *ent_emitter =
+      gsk_ecs_get(ent, C_PARTICLE_EMITTER);
+
+    ent_emitter->is_awake = FALSE;
+
+    gsk_ParticleSystem *p_sys =
+      (gsk_ParticleSystem *)ent_emitter->p_particle_system;
+
+    gsk_particle_system_cleanup(p_sys);
+    p_sys = NULL;
+}
+
 void
 s_particles_ecs_system_init(gsk_ECS *ecs)
 {
@@ -98,5 +115,6 @@ s_particles_ecs_system_init(gsk_ECS *ecs)
                               .init         = (gsk_ECSSubscriber)init,
                               .fixed_update = (gsk_ECSSubscriber)fixed_update,
                               .render       = (gsk_ECSSubscriber)render,
+                              .destroy      = (gsk_ECSSubscriber)destroy,
                             }));
 }

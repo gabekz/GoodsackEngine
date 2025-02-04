@@ -55,6 +55,11 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
         gsk_QMapEntity *ent =
           array_list_get_at_index(&p_container->list_entities, i);
 
+        // omit brush from export based on field
+        gsk_QMapEntityField *field_class =
+          gsk_qmap_util_get_field(ent, QMAP_NOEXPORT_FIELD_STR);
+        if (field_class != NULL) { continue; }
+
         for (int j = 0; j < ent->list_brushes.list_next; j++)
         {
             gsk_QMapBrush *brush =
@@ -127,8 +132,6 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                         minBounds[2] = p_meshdata->boundingBox[0][2];
                     if (p_meshdata->boundingBox[1][2] > maxBounds[2])
                         maxBounds[2] = p_meshdata->boundingBox[1][2];
-
-                    LOG_INFO("UPDATED BOUNDS");
                 }
 
                 //----------------------------------------------------------
