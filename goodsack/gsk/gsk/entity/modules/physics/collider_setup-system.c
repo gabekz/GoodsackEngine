@@ -16,7 +16,7 @@
 #include "physics/physics_collision.h"
 #include "physics/physics_solver.h"
 
-#define MAX_COLLISION_POINTS 32
+#define MAX_COLLISION_POINTS 128
 
 static void
 init(gsk_Entity e)
@@ -106,6 +106,22 @@ init(gsk_Entity e)
             glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
             glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
         }
+        // TODO: TESTING
+        else if (collider->p_mesh != NULL && collider->p_mesh == 0x32)
+        {
+            LOG_INFO("SET HERE");
+            glm_vec3_copy(collider->box_bounds_min, box_collider->bounds[0]);
+            glm_vec3_copy(collider->box_bounds_max, box_collider->bounds[1]);
+
+        }
+        // TODO: TESTING
+        else if (collider->p_mesh != NULL)
+        {
+            gsk_MeshData *meshdata = ((gsk_Mesh *)collider->p_mesh)->meshData;
+            glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
+            glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
+
+        }
         // default BOX bounds
         else
         {
@@ -125,8 +141,8 @@ init(gsk_Entity e)
           malloc(sizeof(gsk_CapsuleCollider));
 
         vec3 base  = {0.0f, 1.255f, 0.0f};
-        vec3 tip   = {0.0f, 1.0f, 0.0f};
-        f32 radius = 0.3f;
+        vec3 tip   = {0.0f, 0.5f, 0.0f};
+        f32 radius = 0.2f;
 
         glm_vec3_copy(base, capsule_collider->base);
         glm_vec3_copy(tip, capsule_collider->tip);
@@ -143,6 +159,7 @@ on_collide(gsk_Entity e)
     // test for collisions
     if (!(gsk_ecs_has(e, C_COLLIDER))) return;
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
+    // if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
 
     struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
@@ -265,7 +282,7 @@ on_collide(gsk_Entity e)
         }
 
         // Collision points
-        if (points.has_collision)
+        if (points.has_collision && points_list_next < MAX_COLLISION_POINTS)
         {
             collider->isColliding = TRUE;
 

@@ -139,6 +139,9 @@ struct ComponentCollider
     CACHE_ALIGN(s32 type);
     CACHE_ALIGN(void *pCollider);
     CACHE_ALIGN(u32 isColliding);
+    CACHE_ALIGN(void *p_mesh);
+    CACHE_ALIGN(vec3 box_bounds_min);
+    CACHE_ALIGN(vec3 box_bounds_max);
 };
 
 struct ComponentEnemy
@@ -223,9 +226,10 @@ struct ComponentRenderLayer
 
 struct ComponentRigidbody
 {
-    vec3 angular_velocity, gravity, linear_velocity;
-    vec3 force, torque;
+    vec3 angular_velocity, linear_velocity, gravity;
+    vec3 force_impulse, force_velocity, torque;
     float mass, static_friction, dynamic_friction;
+    float inverse_mass, inverse_inertia;
     ResRef solver;
     u8 is_kinematic;
     u8 disable_rotation;

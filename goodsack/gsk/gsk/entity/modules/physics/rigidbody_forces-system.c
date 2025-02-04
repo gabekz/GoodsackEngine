@@ -22,8 +22,11 @@ init(gsk_Entity entity)
     if (!(gsk_ecs_has(entity, C_RIGIDBODY))) return;
 
     struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
-    glm_vec3_zero(rigidbody->force);
+#if 0
+    glm_vec3_zero(rigidbody->force_impulse);
+    glm_vec3_zero(rigidbody->force_velocity);
     glm_vec3_zero(rigidbody->torque);
+#endif
 }
 
 static void
@@ -39,7 +42,11 @@ fixed_update(gsk_Entity entity)
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;
 
-    if (delta > 0) { glm_vec3_divs(rigidbody->force, delta, rigidbody->force); }
+    if (delta > 0)
+    {
+        glm_vec3_divs(
+          rigidbody->force_velocity, delta, rigidbody->force_velocity);
+    }
 
     // --
     // -- Add gravity to net force (mass considered)
@@ -47,19 +54,15 @@ fixed_update(gsk_Entity entity)
     // mass * gravity
     vec3 mG = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(rigidbody->gravity, rigidbody->mass, mG);
-    glm_vec3_add(rigidbody->force, mG, rigidbody->force);
+    glm_vec3_add(rigidbody->force_velocity, mG, rigidbody->force_velocity);
 
     // --
     // -- Add net force to velocity (mass considered)
 
     // velocity += force / mass * delta_time;
     vec3 fDm = GLM_VEC3_ZERO_INIT;
-    glm_vec3_divs(rigidbody->force, rigidbody->mass, fDm);
-    glm_vec3_scale(fDm, delta, fDm);
-    glm_vec3_add(rigidbody->linear_velocity, fDm, rigidbody->linear_velocity);
-
-    glm_vec3_zero(rigidbody->force);
-    glm_vec3_zero(rigidbody->torque);
+    glm_vec3_divs(rigidbody->force_velocity, rigidbody->mass, fDm);
+    glm_vec3_scale(fDm, delta, rigidbody->force_velocity);
 }
 
 void

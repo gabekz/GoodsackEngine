@@ -16,7 +16,7 @@
 #define DEFAULT_JUMP_FORCE 160
 
 #define USING_COLLIDE_AND_SLIDE TRUE
-#define COLLIDE_AND_SLIDE_DIST  1.6f
+#define COLLIDE_AND_SLIDE_DIST  1.0f
 #define COLLIDE_AND_SLIDE_DEBUG FALSE
 
 static void
@@ -196,8 +196,8 @@ fixed_update(gsk_Entity entity)
         // cmp_rigidbody->linear_velocity[1] = newvel[1] + 5;
 
         // TODO: Better way to add forces
-        cmp_rigidbody->force[1] =
-          cmp_rigidbody->force[1] + cmp_controller->jump_force;
+        cmp_rigidbody->force_velocity[1] =
+          cmp_rigidbody->force_velocity[1] + cmp_controller->jump_force;
     }
 #endif
 
@@ -219,7 +219,7 @@ fixed_update(gsk_Entity entity)
         offset[1] -= 0.2f;
 
         gsk_mod_RaycastResult result = gsk_mod_physics_capsuletest(
-          entity, cmp_transform->position, newvel, 10);
+          entity, cmp_transform->position, newvel, COLLIDE_AND_SLIDE_DIST);
 
 #if COLLIDE_AND_SLIDE_DEBUG
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,

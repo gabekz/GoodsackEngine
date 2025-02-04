@@ -10,7 +10,7 @@
 #include "util/sysdefs.h"
 #include "util/vec_colors.h"
 
-#define DEFAULT_RESTITUION 0.2f
+#define DEFAULT_RESTITUION 0.0f
 
 #define DEBUG_POINTS       0 // 0 -- OFF | value = entity id
 #define CALCULATE_ROTATION TRUE
@@ -191,7 +191,8 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 #if 1
     // apply impulses
     {
-        glm_vec3_add(rigidbody_a->force, impulse, rigidbody_a->force);
+        glm_vec3_add(
+          rigidbody_a->force_velocity, impulse, rigidbody_a->force_velocity);
 
 #if (CALCULATE_ROTATION)
         if (!rigidbody_a->disable_rotation)
@@ -296,7 +297,9 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     // apply friction impulses
     {
-        glm_vec3_add(rigidbody_a->force, friction_impulse, rigidbody_a->force);
+        glm_vec3_add(rigidbody_a->force_velocity,
+                     friction_impulse,
+                     rigidbody_a->force_velocity);
 
 #if (CALCULATE_ROTATION)
         if (!rigidbody_a->disable_rotation)

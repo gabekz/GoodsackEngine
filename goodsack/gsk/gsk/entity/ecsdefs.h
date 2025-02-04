@@ -47,7 +47,7 @@ typedef enum GskEcsEntityFlag_ {
 #define ECS_ID_FIRST   300
 #define ECS_ID_DELETED 2
 
-#define ECS_ENT_CAPACITY 256
+#define ECS_ENT_CAPACITY 10000
 #define ECS_NAME_LEN_MAX 128
 
 // Should always be True

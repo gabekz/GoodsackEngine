@@ -98,6 +98,7 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
                             float max_distance)
 {
 
+    f32 closest_range         = 6000;
     gsk_mod_RaycastResult ret = {0};
 
     // get all points
@@ -106,8 +107,8 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
     glm_vec3_add(origin, ray_vec, ray_vec);
 
     vec3 base  = {0.0f, 1.255f, 0.0f};
-    vec3 tip   = {0.0f, 1.0f, 0.0f};
-    f32 radius = 0.3f;
+    vec3 tip   = {0.0f, 0.5f, 0.0f};
+    f32 radius = 0.2f;
 
     gsk_CapsuleCollider capsuleCollider = {.radius = radius};
     glm_vec3_copy(base, capsuleCollider.base);
@@ -165,18 +166,21 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
 
         if (points.has_collision)
         {
-            ret = (gsk_mod_RaycastResult) {
-              .entity        = e_compare,
-              .hit_position  = {points.point_b[0],
-                               points.point_b[1],
-                               points.point_b[2]},
-              .hit_normal    = {points.normal[0],
-                             points.normal[1],
-                             points.normal[2]},
-              .has_collision = TRUE,
-            };
-
-            return ret;
+            f32 ray_range = glm_vec3_distance(origin, points.point_a);
+            if (max_distance && ray_range <= max_distance &&
+                max_distance <= closest_range)
+            {
+                ret = (gsk_mod_RaycastResult) {
+                  .entity        = e_compare,
+                  .hit_position  = {points.point_b[0],
+                                   points.point_b[1],
+                                   points.point_b[2]},
+                  .hit_normal    = {points.normal[0],
+                                 points.normal[1],
+                                 points.normal[2]},
+                  .has_collision = TRUE,
+                };
+            }
         }
     };
 

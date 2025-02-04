@@ -13,7 +13,7 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef enum ModelFileType { OBJ = 0, GLTF } ModelFileType;
+typedef enum ModelFileType { OBJ = 0, GLTF, QMAP } ModelFileType;
 
 #if 0
 typedef struct ModelOptions

@@ -560,6 +560,10 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
 #endif
         }
 
+        // setup bounds
+        vec3 minBounds = {10000, 10000, 10000};
+        vec3 maxBounds = {-10000, -10000, -10000};
+
         // Buffers for storing input
         // pos + tex + norm + tan
         s32 buff_count = vL + vnL + vtL + vnL;
@@ -577,6 +581,23 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
             v[iter + 1] = vert->position[1];
             v[iter + 2] = vert->position[2];
             iter += 3;
+
+            {
+                if (vert->position[0] < minBounds[0])
+                    minBounds[0] = vert->position[0];
+                if (vert->position[0] > maxBounds[0])
+                    maxBounds[0] = vert->position[0];
+
+                if (vert->position[1] < minBounds[1])
+                    minBounds[1] = vert->position[1];
+                if (vert->position[1] > maxBounds[1])
+                    maxBounds[1] = vert->position[1];
+
+                if (vert->position[2] < minBounds[2])
+                    minBounds[2] = vert->position[2];
+                if (vert->position[2] > maxBounds[2])
+                    maxBounds[2] = vert->position[2];
+            }
 
             v[iter + 0] = vert->texture[0];
             v[iter + 1] = vert->texture[1];
@@ -615,8 +636,19 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
 
         meshdata->primitive_type = GskMeshPrimitiveType_Fan;
 
-        glm_vec3_zero(meshdata->boundingBox[0]);
-        glm_vec3_zero(meshdata->boundingBox[1]);
+        // glm_vec3_zero(meshdata->boundingBox[0]);
+        // glm_vec3_zero(meshdata->boundingBox[1]);
+
+        glm_vec3_copy(minBounds, meshdata->boundingBox[0]);
+        glm_vec3_copy(maxBounds, meshdata->boundingBox[1]);
+
+// calculate local-space bounds with aabb-center
+#if 0
+        glm_aabb_center(meshdata->boundingBox, meshdata->world_pos);
+
+        glm_vec3_sub(minBounds, meshdata->world_pos, meshdata->boundingBox[0]);
+        glm_vec3_sub(maxBounds, meshdata->world_pos, meshdata->boundingBox[1]);
+#endif
 
         // p_container->mesh_data = meshdata;
     }

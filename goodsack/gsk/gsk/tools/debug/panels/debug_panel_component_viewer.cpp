@@ -86,7 +86,7 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
             gsk_ecs_get(e, C_RIGIDBODY)));
 
         DragFloat3("Gravity", p.gravity, 0.1f, -3000, 3000);
-        DragFloat3("Force", p.force, 0.1f, -3000, 3000);
+        DragFloat3("Force", p.force_velocity, 0.1f, -3000, 3000);
         DragFloat("Mass", &p.mass, 0.45f, 0.1f, 0.1f);
 
         Separator();
@@ -144,6 +144,7 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         // wow, this is ridiculous..
         struct ComponentModel &p =
           *(static_cast<struct ComponentModel *>(gsk_ecs_get(e, C_MODEL)));
+        gsk_Model *p_model = (gsk_Model *)p.pModel;
 
         // Model information
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
@@ -162,6 +163,8 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         Separator();
 
         Text("Meshes: %u", ((gsk_Model *)p.pModel)->meshesCount);
+
+        Separator();
 
         bool shadowVal = true;
         BeginDisabled();

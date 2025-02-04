@@ -115,8 +115,12 @@ init(gsk_Entity entity)
     struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
     struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
 
-    glm_vec3_zero(rigidbody->force);
+#if 0
+    glm_vec3_zero(rigidbody->force_impulse);
+    glm_vec3_zero(rigidbody->force_velocity);
+
     glm_vec3_zero(rigidbody->torque);
+#endif
 
     glm_vec3_zero(rigidbody->linear_velocity);
     glm_vec3_zero(rigidbody->angular_velocity);
@@ -157,8 +161,8 @@ init(gsk_Entity entity)
     }
 
     // inverse mass and inertia
-    f32 inverse_mass    = 1.0f / rigidbody->mass;
-    f32 inverse_inertia = 1.0f / inertia;
+    rigidbody->inverse_mass    = 1.0f / rigidbody->mass;
+    rigidbody->inverse_inertia = 1.0f / inertia;
 #endif
 
     // Initialize the physics solver
@@ -182,6 +186,23 @@ fixed_update(gsk_Entity entity)
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;
+
+#if 0
+    // Add Gravitational force
+
+    glm_vec3_scale(
+      rigidbody->gravity, rigidbody->mass, rigidbody->force_impulse);
+
+    // add impulse force
+    vec3 fDm = GLM_VEC3_ZERO_INIT;
+    glm_vec3_divs(rigidbody->force_impulse, rigidbody->mass, fDm);
+    // glm_vec3_scale(fDm, delta, fDm);
+    glm_vec3_add(fDm, rigidbody->force_impulse, rigidbody->force_impulse);
+
+    glm_vec3_add(rigidbody->force_impulse,
+                 rigidbody->linear_velocity,
+                 rigidbody->linear_velocity);
+#endif
 
     // --
     // -- Check for solvers/collision results
@@ -225,14 +246,16 @@ fixed_update(gsk_Entity entity)
     }
 
     // --
-    // -- Add force to linear velocity
-    glm_vec3_add(
-      rigidbody->force, rigidbody->linear_velocity, rigidbody->linear_velocity);
+    // -- Add force to linear velocity (ignore mass)
+    glm_vec3_add(rigidbody->linear_velocity,
+                 rigidbody->force_velocity,
+                 rigidbody->linear_velocity);
 
     // Rigidbody sleep threshold
     if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON)
     {
-        glm_vec3_zero(rigidbody->force);
+        glm_vec3_zero(rigidbody->force_impulse);
+        glm_vec3_zero(rigidbody->force_velocity);
         glm_vec3_zero(rigidbody->torque);
 
         glm_vec3_zero(rigidbody->angular_velocity);
@@ -291,7 +314,8 @@ fixed_update(gsk_Entity entity)
     // --
     // -- Reset net forces
 
-    glm_vec3_zero(rigidbody->force);
+    glm_vec3_zero(rigidbody->force_velocity);
+    glm_vec3_zero(rigidbody->force_impulse);
     glm_vec3_zero(rigidbody->torque);
 }
 //-----------------------------------------------------------------------------

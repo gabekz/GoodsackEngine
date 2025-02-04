@@ -45,6 +45,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
     qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * 40000);
     qmap_model->meshesCount = 0;
     qmap_model->modelPath   = "NONE";
+    qmap_model->fileType    = QMAP;
 
     /* loop */
 
@@ -58,6 +59,10 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
         {
             gsk_QMapBrush *brush =
               array_list_get_at_index(&ent->list_brushes, j);
+
+            // setup brush-specific bounds
+            vec3 minBounds = {10000, 10000, 10000};
+            vec3 maxBounds = {-10000, -10000, -10000};
 
             for (int k = 0; k < brush->list_planes.list_next; k++)
             {
@@ -106,10 +111,44 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                     LOG_ERROR("Failed to find texture %s", plane->tex_name);
                 }
 
+                gsk_MeshData *p_meshdata = (gsk_MeshData *)poly->p_mesh_data;
+                {
+                    if (p_meshdata->boundingBox[0][0] < minBounds[0])
+                        minBounds[0] = p_meshdata->boundingBox[0][0];
+                    if (p_meshdata->boundingBox[1][0] > maxBounds[0])
+                        maxBounds[0] = p_meshdata->boundingBox[1][0];
+
+                    if (p_meshdata->boundingBox[0][1] < minBounds[1])
+                        minBounds[1] = p_meshdata->boundingBox[0][1];
+                    if (p_meshdata->boundingBox[1][1] > maxBounds[1])
+                        maxBounds[1] = p_meshdata->boundingBox[1][1];
+
+                    if (p_meshdata->boundingBox[0][2] < minBounds[2])
+                        minBounds[2] = p_meshdata->boundingBox[0][2];
+                    if (p_meshdata->boundingBox[1][2] > maxBounds[2])
+                        maxBounds[2] = p_meshdata->boundingBox[1][2];
+
+                    LOG_INFO("UPDATED BOUNDS");
+                }
+
                 //----------------------------------------------------------
 
                 cnt_poly++;
             }
+
+// calculate local-space bounds with aabb-center
+#if 0
+            glm_vec3_copy(minBounds, brush->brush_bounds[0]);
+            glm_vec3_copy(maxBounds, brush->brush_bounds[1]);
+
+            glm_aabb_center(brush->brush_bounds, brush->world_pos);
+
+            glm_vec3_sub(minBounds, brush->world_pos, brush->brush_bounds[0]);
+            glm_vec3_sub(maxBounds, brush->world_pos, brush->brush_bounds[1]);
+#else
+            glm_vec3_copy(minBounds, brush->brush_bounds[0]);
+            glm_vec3_copy(maxBounds, brush->brush_bounds[1]);
+#endif
         }
     }
 

@@ -112,20 +112,33 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
     // emitter mesh
     else
     {
-        if ((p_emitter_mesh->mesh_buffers[0].buffer_flags &
-             GskMeshBufferFlag_Positions) == FALSE)
-        {
-            LOG_CRITICAL("Failed");
-        }
-
         // get triangle positions from meshdata
 
-        triangle_count =
-          p_emitter_mesh->mesh_buffers[0].buffer_size / sizeof(float);
+        gsk_MeshBuffer *p_selected_mesh_buff = NULL;
+        GskMeshBufferFlags flags             = 0;
+
+        for (int i = 0; i < p_emitter_mesh->mesh_buffers_count; i++)
+        {
+            if (p_emitter_mesh->mesh_buffers[i].buffer_flags &
+                GskMeshBufferFlag_Positions)
+            {
+                p_selected_mesh_buff = &(p_emitter_mesh->mesh_buffers[i]);
+                flags                = p_selected_mesh_buff->buffer_flags;
+                break;
+            }
+        }
+
+        if (p_selected_mesh_buff == NULL)
+        {
+            LOG_CRITICAL("Failed to mesh buffer for particle system.");
+        }
+
+        triangle_count = p_selected_mesh_buff->buffer_size / sizeof(float);
 
         s_num_vert = triangle_count / 3;
 
         u32 triangle_len = 0;
+        u32 vertex_len   = 0;
         u32 iters        = 0;
 
         float *p = malloc(triangle_count * (sizeof(vec4) * 3));
@@ -133,22 +146,18 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
 
         // calculate triangle_len
         {
-            u32 vertex_len = 0;
-            if (p_emitter_mesh->combined_flags & GskMeshBufferFlag_Positions)
-            {
-                vertex_len += 3;
-            }
-            if (p_emitter_mesh->combined_flags & GskMeshBufferFlag_Textures)
-            {
-                vertex_len += 2;
-            }
-            if (p_emitter_mesh->combined_flags & GskMeshBufferFlag_Normals)
-            {
-                vertex_len += 3;
-            }
+            if (flags & GskMeshBufferFlag_Positions) { vertex_len += 3; }
+            if (flags & GskMeshBufferFlag_Textures) { vertex_len += 2; }
+            if (flags & GskMeshBufferFlag_Normals) { vertex_len += 3; }
+            if (flags & GskMeshBufferFlag_Tangents) { vertex_len += 3; }
+            if (flags & GskMeshBufferFlag_Bitangents) { vertex_len += 3; }
+            if (flags & GskMeshBufferFlag_Joints) { vertex_len += 4; }
+            if (flags & GskMeshBufferFlag_Weights) { vertex_len += 4; }
+
             if (vertex_len == 0)
             {
-                LOG_CRITICAL("Cannot split on broken mesh.");
+                LOG_CRITICAL(
+                  "Cannot create particle emitter on empty vertex data.");
             }
 
             triangle_len = vertex_len * 3;
@@ -159,12 +168,12 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
             vec3 tri[3] = {
               GLM_VEC3_ZERO_INIT, GLM_VEC3_ZERO_INIT, GLM_VEC3_ZERO_INIT};
 
-            float *p_buff_vert = p_emitter_mesh->mesh_buffers[0].p_buffer;
+            float *p_buff_vert = p_selected_mesh_buff->p_buffer;
 
             // get only the positions
             glm_vec3_copy((float *)&p_buff_vert[i], tri[0]);
-            glm_vec3_copy((float *)&p_buff_vert[i + 8], tri[1]);
-            glm_vec3_copy((float *)&p_buff_vert[i + 16], tri[2]);
+            glm_vec3_copy((float *)&p_buff_vert[i + vertex_len], tri[1]);
+            glm_vec3_copy((float *)&p_buff_vert[i + (vertex_len * 2)], tri[2]);
 
 #if 0
             LOG_INFO("POS: {%f, %f, %f}", tri[0][0], tri[0][1], tri[0][2]);
@@ -183,7 +192,9 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
         }
     }
 
-    LOG_INFO("TRIANGLES: %d", triangle_count);
+#if 0
+    LOG_TRACE("TRIANGLES: %d", triangle_count);
+#endif
 
     u32 s_mesh_ssbo_id     = 0;
     u32 s_particle_ssbo_id = 0;
@@ -244,7 +255,7 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
         .world_scale = {1, 1, 1},
 
         .convergence_point_world_pos = {0, 4, 0},
-        .convergence_strength        = 0.005f,
+        .convergence_strength        = 0.002f,
 
 #if 1
         .p_compute_shader = s_saved_compute_shader,

@@ -43,6 +43,17 @@ typedef enum GskMeshBufferFlag_ {
 } GskMeshBufferFlag_;
 #define GSK_MESH_BUFFER_FLAGS_TOTAL 8
 
+typedef enum GskMeshVertexLength_ {
+    GskMeshVertexLength_Positions  = 3,
+    GskMeshVertexLength_Textures   = 2,
+    GskMeshVertexLength_Normals    = 3,
+    GskMeshVertexLength_Tangents   = 3,
+    GskMeshVertexLength_Bitangents = 3,
+    GskMeshVertexLength_Joints     = 4,
+    GskMeshVertexLength_Weights    = 4,
+    GskMeshVertexLength_Indices    = 1
+} GskMeshVertexLength_;
+
 typedef s32 GskMeshBufferFlags;
 
 typedef struct gsk_MeshBuffer
@@ -72,6 +83,7 @@ typedef struct gsk_MeshData
     gsk_Skeleton *skeleton;
 
     vec3 boundingBox[2];
+    vec3 world_pos;
 
 } gsk_MeshData;
 
