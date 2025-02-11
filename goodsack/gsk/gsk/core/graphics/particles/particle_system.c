@@ -39,8 +39,6 @@ static f32 s_updraft = 0.020f;
 static f32 s_size_life_min = 0.05f;
 static f32 s_size_life_max = 0.2f;
 
-static u32 s_num_vert = 2;
-
 f32
 _update_curl(f32 curl_min, f32 curl_max, f32 curl_speed)
 {
@@ -65,7 +63,7 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
                            gsk_ShaderProgram *p_render_shader,
                            gsk_MeshData *p_emitter_mesh)
 {
-    // s_saved_render_shader = ;
+    u32 numvert = 0;
 
     gsk_Particle *sp_particles =
       malloc(sizeof(gsk_Particle) * _GSK_MAX_PARTICLE_COUNT);
@@ -135,7 +133,7 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
 
         triangle_count = p_selected_mesh_buff->buffer_size / sizeof(float);
 
-        s_num_vert = triangle_count / 3;
+        numvert = triangle_count / 3;
 
         u32 triangle_len = 0;
         u32 vertex_len   = 0;
@@ -272,6 +270,8 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
         .mesh_buff           = buff,
         .mesh_buff_size      = (sizeof(vec4) * 3) * triangle_count,
         .particles_buff_size = _GSK_PARTICLE_SIZE * _GSK_MAX_PARTICLE_COUNT,
+
+        .num_verts = numvert,
     };
 
     return ret;
@@ -294,7 +294,7 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
     {
         u32 shader_id = p_particle_system->p_compute_shader->id;
 
-        int num_vert = s_num_vert;
+        int num_vert = p_particle_system->num_verts;
         int rand_idx = rand() % num_vert + 1;
 
         glUniform1f(glGetUniformLocation(shader_id, "deltaTime"),
@@ -366,6 +366,8 @@ gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Default alpha blending
     glBlendEquation(GL_FUNC_ADD);
 
+    glDepthMask(GL_FALSE);
+
     // glDisable(GL_DEPTH_TEST);
 
     gsk_Texture *tex_ramp = GSK_ASSET("gsk://textures/gradient3.png");
@@ -413,6 +415,7 @@ gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
 
     glDisable(GL_BLEND);
     // glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
 }
 
 void

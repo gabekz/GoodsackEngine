@@ -494,7 +494,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass    = 20.0f,
+                            .mass    = 2.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity,
@@ -527,7 +527,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass    = 20.0f,
+                            .mass    = 2.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,
@@ -562,7 +562,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass    = 10.0f,
+                            .mass    = 4.0f,
                           }));
 
     _gsk_ecs_add_internal(cubeEntity,

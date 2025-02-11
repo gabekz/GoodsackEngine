@@ -20,6 +20,7 @@
 #include "entity/modules/transform/transform.h"
 
 // Physics
+#include "entity/modules/physics/collider_debug_draw-system.h"
 #include "entity/modules/physics/collider_setup-system.h"
 #include "entity/modules/physics/rigidbody-system.h"
 #include "entity/modules/physics/rigidbody_forces-system.h"
@@ -193,6 +194,8 @@ gsk_ecs_init(gsk_Renderer *renderer)
     // Misc Systems
     s_health_setup_init(ecs);
     s_particles_ecs_system_init(ecs);
+
+    // s_collider_debug_draw_system_init(ecs);
 
 #if USING_GENERATED_COMPONENTS
     _ecs_init_internal_gen(ecs);

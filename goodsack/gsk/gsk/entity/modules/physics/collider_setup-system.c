@@ -17,7 +17,7 @@
 #include "physics/physics_solver.h"
 
 #define MAX_COLLISION_POINTS         128
-#define COLLISION_REQUIRES_RIGIDBODY TRUE
+#define COLLISION_REQUIRES_RIGIDBODY FALSE
 
 static void
 init(gsk_Entity e)
@@ -183,6 +183,8 @@ on_collide(gsk_Entity e)
           .index = (gsk_EntityId)i,
           .ecs   = e.ecs,
         };
+
+        if (e.id >= 313 && e_compare.id >= 313) { continue; }
 
         if (!gsk_ecs_has(e_compare, C_COLLIDER)) continue;
         if (!gsk_ecs_has(e_compare, C_TRANSFORM))

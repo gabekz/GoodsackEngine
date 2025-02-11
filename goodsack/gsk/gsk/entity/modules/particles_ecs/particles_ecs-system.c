@@ -31,11 +31,33 @@ init(gsk_Entity ent)
       GSK_ASSET("zhr://shaders/particles_computed.shader");
 #endif
 
-    gsk_Model *p_model_emitter = GSK_ASSET("gsk://models/cube.obj");
-    if (gsk_ecs_has(ent, C_MODEL))
+    gsk_MeshData *p_explicitdata = NULL;
+
+#if 1
+    if (ent_emitter->p_meshdata)
+    {
+        p_explicitdata = (gsk_MeshData *)ent_emitter->p_meshdata;
+    }
+#endif
+
+    else if (gsk_ecs_has(ent, C_MODEL))
     {
         struct ComponentModel *ent_model = gsk_ecs_get(ent, C_MODEL);
-        p_model_emitter                  = ent_model->pModel;
+        gsk_Model *p_model               = (gsk_Model *)(ent_model->pModel);
+        p_explicitdata                   = p_model->meshes[0]->meshData;
+    }
+    // FALLBACK
+    else
+    {
+        LOG_DEBUG("using fallback for particle emitter for entity %d", ent.id);
+
+        gsk_Model *p_model_emitter = GSK_ASSET("gsk://models/cube.obj");
+        p_explicitdata             = p_model_emitter->meshes[0]->meshData;
+    }
+
+    if (p_explicitdata == NULL)
+    {
+        LOG_CRITICAL("failed to get fallback particle emitter mesh");
     }
 
     // setup
@@ -44,8 +66,7 @@ init(gsk_Entity ent)
       malloc(sizeof(gsk_ParticleSystem));
 
     *(gsk_ParticleSystem *)(ent_emitter->p_particle_system) =
-      gsk_particle_system_create(
-        NULL, NULL, p_model_emitter->meshes[0]->meshData);
+      gsk_particle_system_create(NULL, NULL, p_explicitdata);
 }
 
 static void
@@ -68,7 +89,7 @@ fixed_update(gsk_Entity ent)
     glm_vec3_copy(ent_transform->world_position, p_sys->world_pos);
     glm_vec3_copy(ent_transform->orientation, p_sys->world_rot);
     glm_vec3_copy(ent_transform->scale, p_sys->world_scale);
-    glm_vec3_scale(p_sys->world_scale, 1.05f, p_sys->world_scale);
+    // glm_vec3_scale(p_sys->world_scale, 1.005f, p_sys->world_scale);
     gsk_particle_system_update(p_sys);
 }
 

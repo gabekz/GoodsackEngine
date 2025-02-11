@@ -78,6 +78,7 @@ typedef struct gsk_QMapBrush
     s32 brush_index;
     ArrayList list_planes;
     ArrayList list_polygons;
+
     vec3 brush_bounds[2];
     vec3 world_pos;
 

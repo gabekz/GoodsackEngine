@@ -60,12 +60,14 @@ typedef struct gsk_ParticleSystem
     f32 *mesh_buff;
     u32 mesh_buff_size;
 
+    u32 num_verts;
+
 } gsk_ParticleSystem;
 
 #define _GSK_MAX_PARTICLE_COUNT 100000
 #define _GSK_PARTICLE_COUNT     10000
 
-#define _GSK_PARTICLE_AWAY 99999999.0f;
+#define _GSK_PARTICLE_AWAY 99999999.0f
 
 void
 gsk_particle_system_initialize();

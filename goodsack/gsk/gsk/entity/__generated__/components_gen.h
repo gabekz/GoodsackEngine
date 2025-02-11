@@ -206,6 +206,7 @@ struct ComponentParticleEmitter
     CACHE_ALIGN(void *p_particle_system);
     CACHE_ALIGN(f32 speed);
     CACHE_ALIGN(u8 is_awake);
+    CACHE_ALIGN(void *p_meshdata);
 };
 
 struct ComponentPlayerController
