@@ -36,6 +36,7 @@ gsk_lighting_initialize(u32 ubo_binding)
 
         ret.ubo_id       = light_ubo_id;
         ret.ubo_size     = light_ubo_size;
+        ret.ubo_binding  = ubo_binding;
         ret.total_lights = 0;
     }
     return ret;
@@ -69,6 +70,9 @@ gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
           p_lighting_data->total_lights * (p_lighting_data->ubo_size);
 
         glBindBuffer(GL_UNIFORM_BUFFER, p_lighting_data->ubo_id);
+        glBindBufferBase(GL_UNIFORM_BUFFER,
+                         p_lighting_data->ubo_binding,
+                         p_lighting_data->ubo_id);
         glBufferSubData(
           GL_UNIFORM_BUFFER, ubo_offset, sizeof(vec3) + 4, light_position);
         glBufferSubData(GL_UNIFORM_BUFFER,
@@ -94,6 +98,9 @@ gsk_lighting_update(gsk_LightingData *p_lighting_data)
             u32 ubo_offset = i * (p_lighting_data->ubo_size);
 
             glBindBuffer(GL_UNIFORM_BUFFER, p_lighting_data->ubo_id);
+            glBindBufferBase(GL_UNIFORM_BUFFER,
+                             p_lighting_data->ubo_binding,
+                             p_lighting_data->ubo_id);
             glBufferSubData(GL_UNIFORM_BUFFER,
                             ubo_offset,
                             sizeof(vec3) + 4,

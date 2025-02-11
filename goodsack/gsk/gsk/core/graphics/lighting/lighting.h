@@ -35,7 +35,7 @@ typedef struct gsk_Light
 
 typedef struct gsk_LightingData
 {
-    u32 ubo_id, ubo_size;
+    u32 ubo_id, ubo_size, ubo_binding;
     u32 total_lights;
     gsk_Light lights[MAX_LIGHTS];
 } gsk_LightingData;

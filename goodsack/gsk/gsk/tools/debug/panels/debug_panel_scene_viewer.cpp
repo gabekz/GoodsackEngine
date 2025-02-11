@@ -31,9 +31,8 @@ gsk::tools::panels::SceneViewer::draw(void)
             scene_queued = 0;
         } else
         {
-            gsk_renderer_active_scene(p_renderer, scene_queued);
-            // gsk_renderer_start(p_renderer);
-            scene_queued = p_renderer->activeScene;
+            p_renderer->scene_queue_index = scene_queued;
+            scene_queued                  = p_renderer->scene_queue_index;
         }
     }
 }

@@ -68,12 +68,28 @@ gsk_renderer_init(const char *app_name)
     scene->ecs        = gsk_ecs_init(ret);
     scene->has_skybox = FALSE;
 
+    // FIRST Scene Lighting
+    // TODO: Don't initialize the first scene lighting data here
+
+    scene->lighting_data =
+      gsk_lighting_initialize(RENDERER_UBO_BINDING_LIGHTING);
+
+    vec3 lightPos   = {-3.4f, 2.4f, 1.4f};
+    vec4 lightColor = {0.73f, 0.87f, 0.91f, 1.0f};
+
+    // create directional light
+    gsk_lighting_add_light(
+      &scene->lighting_data, (float *)lightPos, (float *)lightColor);
+
+    // Scene list
+
     gsk_Scene **sceneList = malloc(sizeof(gsk_Scene *));
     *(sceneList)          = scene;
 
-    ret->sceneL      = sceneList;
-    ret->sceneC      = 1;
-    ret->activeScene = 0;
+    ret->sceneL            = sceneList;
+    ret->sceneC            = 1;
+    ret->activeScene       = 0;
+    ret->scene_queue_index = 0;
 
     ret->defaultSkybox = NULL;
 
@@ -148,18 +164,6 @@ gsk_renderer_init(const char *app_name)
 
     gsk_gui_canvas_add_element(&ret->canvas, element);
 
-    // Lighting information
-    vec3 lightPos   = {-3.4f, 2.4f, 1.4f};
-    vec4 lightColor = {0.73f, 0.87f, 0.91f, 1.0f};
-
-    // Create lighting Uniform Buffer
-    u32 lighting_ubo_binding = 1;
-    ret->lighting_data       = gsk_lighting_initialize(lighting_ubo_binding);
-
-    // create directional light
-    gsk_lighting_add_light(
-      &ret->lighting_data, (float *)lightPos, (float *)lightColor);
-
 #if 0
     // test light
     vec3 lightPos2   = {7.0f, 6.5f, 1.0f};
@@ -191,6 +195,18 @@ gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex)
         newScene->ecs        = gsk_ecs_init(self);
         newScene->has_skybox = FALSE;
 
+        // Scene Lighting
+
+        newScene->lighting_data =
+          gsk_lighting_initialize(RENDERER_UBO_BINDING_LIGHTING);
+
+        vec3 lightPos   = {-3.4f, 2.4f, 1.4f};
+        vec4 lightColor = {0.73f, 0.87f, 0.91f, 1.0f};
+
+        // create directional light
+        gsk_lighting_add_light(
+          &newScene->lighting_data, (float *)lightPos, (float *)lightColor);
+
         // Update the scene list
         gsk_Scene **p              = self->sceneL;
         self->sceneL               = realloc(p, newCount * sizeof(gsk_Scene *));
@@ -198,7 +214,8 @@ gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex)
         self->sceneC               = newCount;
     }
 
-    self->activeScene = sceneIndex;
+    self->activeScene       = sceneIndex;
+    self->scene_queue_index = sceneIndex;
 
     return self->sceneL[sceneIndex]->ecs;
 
@@ -379,15 +396,11 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glPushDebugGroup(
       GL_DEBUG_SOURCE_APPLICATION, 1, -1, "Pass: Shadowmap Depth");
 
-    // update lighting information
-    gsk_Light directional_light = renderer->lighting_data.lights[0];
+    gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
 
-#if 0
-    gsk_lighting_update(
-      &directional_light, directional_light.position, directional_light.color);
-#else
-    gsk_lighting_update(&renderer->lighting_data);
-#endif
+    // update lighting information
+    gsk_Light directional_light = p_active_scene->lighting_data.lights[0];
+    gsk_lighting_update(&p_active_scene->lighting_data);
 
     // update shadowmap position
     shadowmap_update(directional_light.position, renderer->shadowmapOptions);
@@ -569,6 +582,12 @@ gsk_renderer_tick(gsk_Renderer *renderer)
 {
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
     gsk_ECS *ecs     = scene->ecs;
+
+    if (renderer->scene_queue_index != renderer->activeScene)
+    {
+        LOG_INFO("Switching scene from tick");
+        gsk_renderer_active_scene(renderer, renderer->scene_queue_index);
+    }
 
     if (GSK_DEVICE_API_OPENGL)
     {

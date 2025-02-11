@@ -40,6 +40,7 @@ class DebugToolbar {
     gsk_Renderer *m_renderer;
 
     bool m_debugEnabled;
+    bool m_debugEnableKeyCheck;
 
     enum class Menus { File, Scene, Pipeline, None };
     const char *p_menu_names[DEBUG_MENUS_COUNT] = {"File", "Scene", "Pipeline"};

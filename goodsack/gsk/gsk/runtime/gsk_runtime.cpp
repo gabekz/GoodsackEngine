@@ -468,14 +468,18 @@ gsk::runtime::rt_loop()
             gsk_renderer_tick(s_runtime.renderer);
 
 #if GSK_RUNTIME_USE_DEBUG
+            s_runtime.p_debug_toolbar->update();
             s_runtime.p_debug_toolbar->render();
 #endif // GSK_RUNTIME_USE_DEBUG
 
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
-        } else if (GSK_DEVICE_API_VULKAN)
+        }
+
+        // Vulkan
+        else if (GSK_DEVICE_API_VULKAN)
         {
             glfwPollEvents();
-            // debugGui->Update();
+            // debugGui->update();
             gsk_ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
             vulkan_render_draw_begin(s_runtime.renderer->vulkanDevice,
                                      s_runtime.renderer->window);

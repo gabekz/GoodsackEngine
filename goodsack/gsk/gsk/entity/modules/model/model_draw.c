@@ -177,15 +177,17 @@ DrawModel(struct ComponentModel *model,
                                              "u_ssao_strength"),
                         renderer->ssaoOptions.strength);
 
+            gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
+
             // Total light count
             glUniform1i(glGetUniformLocation(material->shaderProgram->id,
                                              "u_total_lights"),
-                        renderer->lighting_data.total_lights);
+                        p_active_scene->lighting_data.total_lights);
 
             // Light strength (Light 0 a.k.a. directional light)
             glUniform1f(glGetUniformLocation(material->shaderProgram->id,
                                              "u_light_strength"),
-                        renderer->lighting_data.lights[0].strength);
+                        p_active_scene->lighting_data.lights[0].strength);
 
             // Ambient options
             glUniform3fv(

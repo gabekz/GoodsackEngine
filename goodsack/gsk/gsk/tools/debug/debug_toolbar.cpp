@@ -142,9 +142,18 @@ gsk::tools::DebugToolbar::toggle_visibility(void)
 void
 gsk::tools::DebugToolbar::update(void)
 {
-    if (glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS)
+    if (glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS &&
+        glfwGetKey(m_renderer->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS &&
+        m_debugEnableKeyCheck)
     {
         toggle_visibility();
+        m_debugEnableKeyCheck = false;
+    }
+
+    if (glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_RELEASE &&
+        !m_debugEnableKeyCheck)
+    {
+        m_debugEnableKeyCheck = true;
     }
 }
 

@@ -39,6 +39,9 @@ extern "C" {
 #define MAX_CAMERAS 4
 //#define MAX_LIGHTS  64
 
+#define RENDERER_UBO_BINDING_CAMERA   0
+#define RENDERER_UBO_BINDING_LIGHTING 1
+
 typedef enum GskRenderPass_ {
     GskRenderPass_GBuffer = 0,
     GskRenderPass_Shadowmap,
@@ -57,7 +60,7 @@ typedef struct gsk_Renderer
     f32 window_aspect_ratio;       // window aspect ratio
 
     gsk_Scene **sceneL;
-    u16 sceneC, activeScene;
+    u16 sceneC, activeScene, scene_queue_index;
 
     GskRenderPass currentPass; // TODO: rename -> RenderStage
     gsk_Material *explicitMaterial;
@@ -84,7 +87,7 @@ typedef struct gsk_Renderer
         float ambient_strength, prefilter_strength;
     } lightOptions;
 
-    gsk_LightingData lighting_data;
+    // gsk_LightingData lighting_data;
 
     struct
     {
