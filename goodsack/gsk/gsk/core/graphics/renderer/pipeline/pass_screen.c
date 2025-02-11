@@ -223,8 +223,8 @@ postbuffer_bind(int enableMSAA)
     glViewport(0, 0, frameWidth, frameHeight);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    vec4 col = DEFAULT_CLEAR_COLOR;
-    glClearColor(col[0], col[1], col[2], col[3]);
+    // vec4 col = DEFAULT_CLEAR_COLOR;
+    // glClearColor(col[0], col[1], col[2], col[3]);
 }
 
 void

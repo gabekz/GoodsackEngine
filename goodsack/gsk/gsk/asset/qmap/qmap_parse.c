@@ -466,7 +466,22 @@ gsk_qmap_parse_field_from_line(char *line)
         {
             u8 is_valid_token = FALSE;
 
-            if (strlen(split) > 1 && iter <= 2) { is_valid_token = TRUE; }
+            u32 split_len = strlen(split);
+
+            if (iter <= 2)
+            {
+                // single-digit token (for values only, not keys)
+                if (split_len == 1 && (atof(split) != 0 && key_found == TRUE))
+                {
+                    is_valid_token = TRUE;
+                }
+
+                // multi-digit tokane
+                else if (split_len > 1)
+                {
+                    is_valid_token = TRUE;
+                }
+            }
 
             // map - key
             if (is_valid_token && key_found == FALSE)

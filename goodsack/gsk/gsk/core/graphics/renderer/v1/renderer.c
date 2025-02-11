@@ -423,6 +423,10 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     postbuffer_bind(renderer->properties.msaaEnable);
 
+    vec4 clear_col = {0.0f, 0.0f, 0.0f, 1.0f};
+    glm_vec3_copy(renderer->fogOptions.fog_color, clear_col);
+    glClearColor(clear_col[0], clear_col[1], clear_col[2], 1.0f);
+
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
