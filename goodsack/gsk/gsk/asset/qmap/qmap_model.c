@@ -14,6 +14,8 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#define MESH_PTR_LIST_INC 100
+
 gsk_Model *
 gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 {
@@ -41,19 +43,16 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 
     /* data for qmap */
 
-    gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
-    qmap_model->meshes      = malloc(sizeof(gsk_Mesh *) * 40000);
-    qmap_model->meshesCount = 0;
-    qmap_model->modelPath   = "NONE";
-    qmap_model->fileType    = QMAP;
+    // list of mesh pointers
+    ArrayList list_mesh_ptrs = LIST_INIT(sizeof(gsk_Mesh *), MESH_PTR_LIST_INC);
 
     /* loop */
 
-    int cnt_poly = 0;
+    // int cnt_poly = 0;
+
     for (int i = 0; i < p_container->list_entities.list_next; i++)
     {
-        gsk_QMapEntity *ent =
-          array_list_get_at_index(&p_container->list_entities, i);
+        gsk_QMapEntity *ent = LIST_GET(&p_container->list_entities, i);
 
         // omit brush from export based on field
         gsk_QMapEntityField *field_class =
@@ -62,62 +61,41 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 
         for (int j = 0; j < ent->list_brushes.list_next; j++)
         {
-            gsk_QMapBrush *brush =
-              array_list_get_at_index(&ent->list_brushes, j);
+            gsk_QMapBrush *brush = LIST_GET(&ent->list_brushes, j);
 
             // setup brush-specific bounds
             vec3 minBounds = {10000, 10000, 10000};
             vec3 maxBounds = {-10000, -10000, -10000};
 
-            for (int k = 0; k < brush->list_planes.list_next; k++)
+            for (int k = 0; k < brush->list_polygons.list_next; k++)
             {
-                qmap_model->meshesCount++; /* increment mesh count */
+                // Get poly and plane
+                gsk_QMapPolygon *poly = LIST_GET(&brush->list_polygons, k);
+                gsk_QMapPlane *plane  = LIST_GET(&brush->list_planes, k);
 
-                gsk_QMapPolygon *poly =
-                  array_list_get_at_index(&brush->list_polygons, k);
-                gsk_QMapPlane *plane =
-                  array_list_get_at_index(&brush->list_planes, k);
-
-                // Allocate Mesh and immediately push to GPU
-                qmap_model->meshes[cnt_poly] =
+                // Allocate Mesh with poly meshdata, then push to list of ptrs
+                gsk_Mesh *p_mesh =
                   gsk_mesh_allocate((gsk_MeshData *)poly->p_mesh_data);
-                gsk_mesh_assemble(qmap_model->meshes[cnt_poly]);
+
+                LIST_PUSH(&list_mesh_ptrs, &p_mesh);
+
+                // Assemble on the GPU
+                gsk_mesh_assemble(p_mesh);
+
+                // Setup p_mesh properties
 
                 mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
-                glm_mat4_copy(localMatrix,
-                              qmap_model->meshes[cnt_poly]->localMatrix);
+                glm_mat4_copy(localMatrix, p_mesh->localMatrix);
 
-                qmap_model->meshes[cnt_poly]->usingImportedMaterial = TRUE;
-                qmap_model->meshes[cnt_poly]->materialImported = p_material_err;
-
-                poly->p_texture = gsk_texture_set_get_by_name(
-                  p_container->p_texture_set, plane->tex_name);
+                p_mesh->usingImportedMaterial = TRUE;
+                p_mesh->materialImported      = p_material_err;
 
                 //----------------------------------------------------------
-                // create material for poly
-                // TODO: Change this (we don't want duplicated materials)
-                if (poly->p_texture != NULL)
+                // update brush bounds
                 {
-                    LOG_TRACE("Successful loaded texture %s", plane->tex_name);
+                    gsk_MeshData *p_meshdata =
+                      (gsk_MeshData *)poly->p_mesh_data;
 
-                    gsk_Material *material = gsk_material_create(
-                      p_shader,
-                      NULL,
-                      3,
-                      poly->p_texture,
-                      gsk_texture_set_get_by_name(p_container->p_texture_set,
-                                                  "NORM"),
-                      gsk_texture_set_get_by_name(p_container->p_texture_set,
-                                                  "SPEC"));
-
-                    qmap_model->meshes[cnt_poly]->materialImported = material;
-                } else
-                {
-                    LOG_ERROR("Failed to find texture %s", plane->tex_name);
-                }
-
-                gsk_MeshData *p_meshdata = (gsk_MeshData *)poly->p_mesh_data;
-                {
                     if (p_meshdata->boundingBox[0][0] < minBounds[0])
                         minBounds[0] = p_meshdata->boundingBox[0][0];
                     if (p_meshdata->boundingBox[1][0] > maxBounds[0])
@@ -132,15 +110,9 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                         minBounds[2] = p_meshdata->boundingBox[0][2];
                     if (p_meshdata->boundingBox[1][2] > maxBounds[2])
                         maxBounds[2] = p_meshdata->boundingBox[1][2];
-                }
 
-                //----------------------------------------------------------
-
-                cnt_poly++;
-            }
-
-// calculate local-space bounds with aabb-center
 #if 0
+            // calculate local-space bounds with aabb-center
             glm_vec3_copy(minBounds, brush->brush_bounds[0]);
             glm_vec3_copy(maxBounds, brush->brush_bounds[1]);
 
@@ -149,11 +121,55 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
             glm_vec3_sub(minBounds, brush->world_pos, brush->brush_bounds[0]);
             glm_vec3_sub(maxBounds, brush->world_pos, brush->brush_bounds[1]);
 #else
-            glm_vec3_copy(minBounds, brush->brush_bounds[0]);
-            glm_vec3_copy(maxBounds, brush->brush_bounds[1]);
+                    // copy world-space bounds
+                    glm_vec3_copy(minBounds, brush->brush_bounds[0]);
+                    glm_vec3_copy(maxBounds, brush->brush_bounds[1]);
 #endif
+                }
+
+                //----------------------------------------------------------
+                // create material for poly
+                // TODO: Change this (we don't want duplicated materials)
+
+                poly->p_texture = gsk_texture_set_get_by_name(
+                  p_container->p_texture_set, plane->tex_name);
+
+                if (poly->p_texture != NULL)
+                {
+
+                    LOG_TRACE("Successful loaded texture %s", plane->tex_name);
+
+                    gsk_Material *material = gsk_material_create(
+                      p_shader,
+                      NULL,
+                      3,
+                      poly->p_texture,
+                      gsk_texture_set_get_by_name(p_container->p_texture_set,
+                                                  "NORM"),
+                      gsk_texture_set_get_by_name(p_container->p_texture_set,
+                                                  "SPEC"));
+
+                    // updating mesh property
+                    p_mesh->materialImported = material;
+                }
+                // failed to find p_texture
+                else
+                {
+                    LOG_ERROR("Failed to find texture %s", plane->tex_name);
+                }
+
+                //----------------------------------------------------------
+
+                // cnt_poly++;
+            }
         }
     }
+
+    gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
+    qmap_model->meshes      = list_mesh_ptrs.data.buffer;
+    qmap_model->meshesCount = list_mesh_ptrs.list_next - 1;
+    qmap_model->modelPath   = "NONE";
+    qmap_model->fileType    = QMAP;
 
     p_container->is_model_loaded = TRUE;
     p_container->p_model         = qmap_model;

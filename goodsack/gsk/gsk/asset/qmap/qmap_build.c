@@ -30,6 +30,8 @@
 #define _FIX_POINT_FACING TRUE
 #define _FIX_UV_FACING    TRUE
 
+#define EPSILON_ILLEGAL_POINT 0.001f
+
 /**********************************************************************/
 /*   Helper Functions                                                 */
 /**********************************************************************/
@@ -134,7 +136,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                 {
                     f32 term1  = glm_vec3_dot(p_planes[m].normal, vertex);
                     f32 check1 = term1 + p_planes[m].determinant;
-                    if (check1 > 0.1f)
+                    if (check1 > EPSILON_ILLEGAL_POINT)
                     {
                         is_illegal = TRUE;
 #if 0
@@ -195,7 +197,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                       array_list_get_at_index(&poly->list_vertices, n);
 
                     if (gsk_qmap_util_compare_verts(
-                          vert.position, compare->position, 0.001f))
+                          vert.position, compare->position, 0.00001f))
                     {
                         is_duplicate = TRUE;
                         // LOG_TRACE("vertex is duplicate..");

@@ -16,9 +16,15 @@ extern "C" {
 
 #define ARRAY_LIST_RESIZE_EMPTY FALSE
 
+#define LIST_INIT(a, b) array_list_init(a, b)
+#define LIST_PUSH(a, b) array_list_push(a, b)
+#define LIST_GET(a, b)  array_list_get_at_index(a, b)
+#define LIST_COUNT(a)   array_list_count(a)
+
 typedef struct ArrayList
 {
-    u64 list_count, list_next;
+    u64 list_capacity;
+    u64 list_next;
     u32 list_increment; // realloc growth
     byte_t is_list_empty;
     struct
@@ -39,6 +45,9 @@ array_list_pop(ArrayList *self);
 
 void *
 array_list_get_at_index(ArrayList *self, u64 index);
+
+u32
+array_list_count(ArrayList *self);
 
 #ifdef __cplusplus
 }
