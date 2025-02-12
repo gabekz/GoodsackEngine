@@ -14,13 +14,17 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#include <string.h>
+
 #define MESH_PTR_LIST_INC 100
+#define _MESH_BATCHING    TRUE
 
 struct _BatchInfo
 {
     gsk_Material *p_material;
     ArrayList list_meshdata_ptrs;
     u32 total_verts;
+    u32 total_size;
 };
 
 gsk_Model *
@@ -120,6 +124,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 #endif
                 }
 
+#if !(_MESH_BATCHING)
                 //----------------------------------------------------------
                 // create mesh for each plane
 
@@ -138,6 +143,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 
                 p_mesh->usingImportedMaterial = TRUE;
                 p_mesh->materialImported      = p_material_err;
+#endif // !(_MESH_BATCHING)
 
                 //----------------------------------------------------------
                 // create material for poly
@@ -153,8 +159,8 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                 }
 
                 // LOG_TRACE("Successful loaded texture %s", plane->tex_name);
-
                 u8 is_new_material = TRUE;
+#if _MESH_BATCHING
                 for (int m = 0; m < list_batches.list_next; m++)
                 {
                     // break out immediately to start making a new material
@@ -166,17 +172,24 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                     {
                         is_new_material = FALSE;
 
-                        // update batch here
+                        // update batch
+
                         p_batch->total_verts += p_meshdata->vertexCount;
-                        LIST_PUSH(&p_batch->list_meshdata_ptrs, &p_meshdata);
+                        p_batch->total_size +=
+                          p_meshdata->mesh_buffers[0].buffer_size,
+
+                          LIST_PUSH(&p_batch->list_meshdata_ptrs, &p_meshdata);
 
                         break;
                     }
                 }
+#endif //_MESH_BATCHING
 
+#if (!_MESH_BATCHING)
                 // updating mesh property
                 // TODO: CHANGE
                 p_mesh->materialImported = p_material_err;
+#endif // (!_MESH_BATCHING)
 
                 if (is_new_material == TRUE)
                 {
@@ -192,33 +205,122 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 
                     // create meshdata ptr list for upcoming batch
 
+#if _MESH_BATCHING
                     // push new batch info
                     struct _BatchInfo batch = {
                       .p_material  = material,
                       .total_verts = p_meshdata->vertexCount,
+                      .total_size  = p_meshdata->mesh_buffers[0].buffer_size,
                       .list_meshdata_ptrs =
                         LIST_INIT(sizeof(gsk_MeshData *), 1),
                     };
 
                     LIST_PUSH(&list_batches, &batch);
                     LIST_PUSH(&batch.list_meshdata_ptrs, &p_meshdata);
+
+#else
                     p_mesh->materialImported = material;
+#endif // _MESH_BATCHING
                 }
-
-                //----------------------------------------------------------
-
-                // cnt_poly++;
             }
         }
     }
 
+#if _MESH_BATCHING
+
+    list_mesh_ptrs = LIST_INIT(sizeof(gsk_Mesh **), 1);
+
     for (int i = 0; i < list_batches.list_next; i++)
     {
         struct _BatchInfo *p_batch = LIST_GET(&list_batches, i);
-        LOG_INFO(
-          "BATCH %d has %d meshes", i, p_batch->list_meshdata_ptrs.list_next);
-    }
 
+        LOG_INFO("BATCH %d has %d meshes with %d verts (size %d)",
+                 i,
+                 p_batch->list_meshdata_ptrs.list_next,
+                 p_batch->total_verts,
+                 p_batch->total_size);
+
+        u32 num_indices   = (p_batch->total_verts - 2) * 3;
+        f32 *buff_verts   = malloc(p_batch->total_size);
+        u32 *buff_indices = malloc(num_indices * sizeof(u32));
+
+        u32 offset = 0;
+
+        u32 n_origin = 0;
+        u32 k        = 0;
+
+        for (int j = 0; j < p_batch->list_meshdata_ptrs.list_next; j++)
+        {
+            gsk_MeshData **pp_meshdata =
+              LIST_GET(&p_batch->list_meshdata_ptrs, j);
+            gsk_MeshBuffer *p_meshbuff = &((*pp_meshdata)->mesh_buffers[0]);
+
+            // copy over vertices
+            memcpy((char *)buff_verts + offset,
+                   p_meshbuff->p_buffer,
+                   p_meshbuff->buffer_size);
+            offset += p_meshbuff->buffer_size;
+
+            // buffer_size += p_meshbuff->buffer_size;
+
+            for (int n = 1; n < (*pp_meshdata)->vertexCount - 1; n++)
+            {
+                buff_indices[k++] = n_origin;
+                buff_indices[k++] = n_origin + n;
+                buff_indices[k++] = n_origin + n + 1;
+            }
+            n_origin += (*pp_meshdata)->vertexCount;
+        }
+
+        // CREATE NEW MESHDATA
+        gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
+
+        meshdata->mesh_buffers_count = 0;
+
+        meshdata->mesh_buffers_count++;
+        meshdata->mesh_buffers[0] = (gsk_MeshBuffer) {
+          .buffer_flags =
+            (GskMeshBufferFlag_Positions | GskMeshBufferFlag_Textures |
+             GskMeshBufferFlag_Normals | GskMeshBufferFlag_Tangents),
+          .p_buffer    = buff_verts,
+          .buffer_size = p_batch->total_size,
+        };
+
+        meshdata->mesh_buffers_count++;
+        meshdata->mesh_buffers[1] = (gsk_MeshBuffer) {
+          .buffer_flags = (GskMeshBufferFlag_Indices),
+          .p_buffer     = buff_indices,
+          .buffer_size  = num_indices * sizeof(u32),
+        };
+
+        meshdata->vertexCount    = p_batch->total_verts;
+        meshdata->indicesCount   = num_indices;
+        meshdata->primitive_type = GskMeshPrimitiveType_Triangle;
+
+        // copy bounds
+        glm_vec3_one(meshdata->boundingBox[0]);
+        glm_vec3_one(meshdata->boundingBox[1]);
+
+        // ASSEMBLE & ALLOCATE HERE
+
+        gsk_Mesh *p_mesh = gsk_mesh_allocate(meshdata);
+
+        LIST_PUSH(&list_mesh_ptrs, &p_mesh);
+
+        // Assemble on the GPU
+        gsk_mesh_assemble(p_mesh);
+
+        // Setup p_mesh properties
+
+        mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_copy(localMatrix, p_mesh->localMatrix);
+
+        p_mesh->usingImportedMaterial = TRUE;
+        p_mesh->materialImported      = p_batch->p_material;
+    }
+#endif // _MESH_BATCHING
+
+#if !(_MESH_BATCHING)
     gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
     qmap_model->meshes      = list_mesh_ptrs.data.buffer;
     qmap_model->meshesCount = LIST_COUNT(&list_mesh_ptrs) + 1;
@@ -227,5 +329,17 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 
     p_container->is_model_loaded = TRUE;
     p_container->p_model         = qmap_model;
+#else
+    gsk_Model *qmap_model = malloc(sizeof(gsk_Model));
+    qmap_model->meshes = list_mesh_ptrs.data.buffer;
+    qmap_model->meshesCount = LIST_COUNT(&list_mesh_ptrs) + 1;
+    qmap_model->modelPath = "NONE";
+    qmap_model->fileType = QMAP;
+
+    p_container->is_model_loaded = TRUE;
+    p_container->p_model = qmap_model;
+
+#endif
+
     return qmap_model;
 }
