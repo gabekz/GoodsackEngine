@@ -16,6 +16,13 @@
 
 #define MESH_PTR_LIST_INC 100
 
+struct _BatchInfo
+{
+    gsk_Material *p_material;
+    ArrayList list_meshdata_ptrs;
+    u32 total_verts;
+};
+
 gsk_Model *
 gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 {
@@ -40,6 +47,9 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
       gsk_texture_set_get_by_name(p_container->p_texture_set, "MISSING"),
       gsk_texture_set_get_by_name(p_container->p_texture_set, "NORM"),
       gsk_texture_set_get_by_name(p_container->p_texture_set, "SPEC"));
+
+    /* batch group info */
+    ArrayList list_batches = LIST_INIT(sizeof(struct _BatchInfo), 1);
 
     /* data for qmap */
 
@@ -73,11 +83,11 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                 gsk_QMapPolygon *poly = LIST_GET(&brush->list_polygons, k);
                 gsk_QMapPlane *plane  = LIST_GET(&brush->list_planes, k);
 
+                gsk_MeshData *p_meshdata = (gsk_MeshData *)poly->p_mesh_data;
+
                 //----------------------------------------------------------
                 // update brush bounds
                 {
-                    gsk_MeshData *p_meshdata =
-                      (gsk_MeshData *)poly->p_mesh_data;
 
                     if (p_meshdata->boundingBox[0][0] < minBounds[0])
                         minBounds[0] = p_meshdata->boundingBox[0][0];
@@ -136,11 +146,40 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                 poly->p_texture = gsk_texture_set_get_by_name(
                   p_container->p_texture_set, plane->tex_name);
 
-                if (poly->p_texture != NULL)
+                if (poly->p_texture == NULL)
                 {
+                    LOG_ERROR("Failed to find texture %s", plane->tex_name);
+                    // set to first batch (error batch)
+                }
 
-                    LOG_TRACE("Successful loaded texture %s", plane->tex_name);
+                // LOG_TRACE("Successful loaded texture %s", plane->tex_name);
 
+                u8 is_new_material = TRUE;
+                for (int m = 0; m < list_batches.list_next; m++)
+                {
+                    // break out immediately to start making a new material
+                    if (list_batches.is_list_empty) { break; }
+
+                    struct _BatchInfo *p_batch = LIST_GET(&list_batches, m);
+
+                    if (poly->p_texture == p_batch->p_material->textures[0])
+                    {
+                        is_new_material = FALSE;
+
+                        // update batch here
+                        p_batch->total_verts += p_meshdata->vertexCount;
+                        LIST_PUSH(&p_batch->list_meshdata_ptrs, &p_meshdata);
+
+                        break;
+                    }
+                }
+
+                // updating mesh property
+                // TODO: CHANGE
+                p_mesh->materialImported = p_material_err;
+
+                if (is_new_material == TRUE)
+                {
                     gsk_Material *material = gsk_material_create(
                       p_shader,
                       NULL,
@@ -151,13 +190,19 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                       gsk_texture_set_get_by_name(p_container->p_texture_set,
                                                   "SPEC"));
 
-                    // updating mesh property
+                    // create meshdata ptr list for upcoming batch
+
+                    // push new batch info
+                    struct _BatchInfo batch = {
+                      .p_material  = material,
+                      .total_verts = p_meshdata->vertexCount,
+                      .list_meshdata_ptrs =
+                        LIST_INIT(sizeof(gsk_MeshData *), 1),
+                    };
+
+                    LIST_PUSH(&list_batches, &batch);
+                    LIST_PUSH(&batch.list_meshdata_ptrs, &p_meshdata);
                     p_mesh->materialImported = material;
-                }
-                // failed to find p_texture
-                else
-                {
-                    LOG_ERROR("Failed to find texture %s", plane->tex_name);
                 }
 
                 //----------------------------------------------------------
@@ -165,6 +210,13 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                 // cnt_poly++;
             }
         }
+    }
+
+    for (int i = 0; i < list_batches.list_next; i++)
+    {
+        struct _BatchInfo *p_batch = LIST_GET(&list_batches, i);
+        LOG_INFO(
+          "BATCH %d has %d meshes", i, p_batch->list_meshdata_ptrs.list_next);
     }
 
     gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
