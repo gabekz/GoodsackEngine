@@ -26,6 +26,7 @@
 #define _NORMALIZE_UV  FALSE
 #define _USE_CENTER_UV FALSE
 #define _CALCULATE_TBN TRUE
+#define _USING_INDICES TRUE
 
 #define _FIX_POINT_FACING TRUE
 #define _FIX_UV_FACING    TRUE
@@ -527,7 +528,8 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
 #endif
 #endif
 
-        s32 num_vert = poly->list_vertices.list_next;
+        u32 num_vert    = poly->list_vertices.list_next;
+        u32 num_indices = (num_vert - 2) * 3;
 
         // push the center vertex FIRST (Triangle-Fan rendering)
 
@@ -568,9 +570,11 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
 
         // Buffers for storing input
         // pos + tex + norm + tan
-        s32 buff_count = vL + vnL + vtL + vnL;
-        float *v       = malloc(buff_count * (sizeof(float) * 3));
-        // v        = poly->list_vertices.data.buffer;
+        s32 buff_count    = vL + vnL + vtL + vnL;
+        float *buff_verts = malloc(buff_count * (sizeof(float) * 3));
+#if _USING_INDICES
+        u32 *buff_indices = malloc(num_indices * sizeof(u32));
+#endif // _USING_INDICES
 
         // fill V
         s32 iter = 0;
@@ -579,9 +583,9 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
             gsk_QMapPolygonVertex *vert =
               array_list_get_at_index(&poly->list_vertices, m);
 
-            v[iter + 0] = vert->position[0];
-            v[iter + 1] = vert->position[1];
-            v[iter + 2] = vert->position[2];
+            buff_verts[iter + 0] = vert->position[0];
+            buff_verts[iter + 1] = vert->position[1];
+            buff_verts[iter + 2] = vert->position[2];
             iter += 3;
 
             {
@@ -601,18 +605,18 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
                     maxBounds[2] = vert->position[2];
             }
 
-            v[iter + 0] = vert->texture[0];
-            v[iter + 1] = vert->texture[1];
+            buff_verts[iter + 0] = vert->texture[0];
+            buff_verts[iter + 1] = vert->texture[1];
             iter += 2;
 
-            v[iter + 0] = vert->normal[0];
-            v[iter + 1] = vert->normal[1];
-            v[iter + 2] = vert->normal[2];
+            buff_verts[iter + 0] = vert->normal[0];
+            buff_verts[iter + 1] = vert->normal[1];
+            buff_verts[iter + 2] = vert->normal[2];
             iter += 3;
 
-            v[iter + 0] = vert->tangent[0];
-            v[iter + 1] = vert->tangent[1];
-            v[iter + 2] = vert->tangent[2];
+            buff_verts[iter + 0] = vert->tangent[0];
+            buff_verts[iter + 1] = vert->tangent[1];
+            buff_verts[iter + 2] = vert->tangent[2];
             iter += 3;
 
             // glm_vec3_copy(vert->position, v + 0);
@@ -620,48 +624,55 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
             // glm_vec3_copy(vert->normal, v + 5);
         }
 
+#if _USING_INDICES
+        int k = 0;
+        for (int n = 1; n < num_vert - 1; n++)
+        {
+            buff_indices[k++] = 0;
+            buff_indices[k++] = n;
+            buff_indices[k++] = n + 1;
+        }
+#endif // _USING_INDICES
+
         gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
         poly->p_mesh_data      = meshdata;
 
-        meshdata->mesh_buffers_count = 1;
+        meshdata->mesh_buffers_count = 0;
 
+        meshdata->mesh_buffers_count++;
         meshdata->mesh_buffers[0] = (gsk_MeshBuffer) {
           .buffer_flags =
             (GskMeshBufferFlag_Positions | GskMeshBufferFlag_Textures |
              GskMeshBufferFlag_Normals | GskMeshBufferFlag_Tangents),
-          .p_buffer    = v,
+          .p_buffer    = buff_verts,
           .buffer_size = buff_count * sizeof(float),
-
         };
+#if _USING_INDICES
+        meshdata->mesh_buffers_count++;
+        meshdata->mesh_buffers[1] = (gsk_MeshBuffer) {
+          .buffer_flags = (GskMeshBufferFlag_Indices),
+          .p_buffer     = buff_indices,
+          .buffer_size  = num_indices * sizeof(u32),
+        };
+#endif // _USING_INDICES
 
-        meshdata->vertexCount = vL / 3;
+        meshdata->vertexCount    = vL / 3;
+        meshdata->indicesCount   = (_USING_INDICES) ? num_indices : 0;
+        meshdata->primitive_type = (_USING_INDICES)
+                                     ? GskMeshPrimitiveType_Triangle
+                                     : GskMeshPrimitiveType_Fan;
 
-        meshdata->primitive_type = GskMeshPrimitiveType_Fan;
-
-        // glm_vec3_zero(meshdata->boundingBox[0]);
-        // glm_vec3_zero(meshdata->boundingBox[1]);
-
+        // copy bounds
         glm_vec3_copy(minBounds, meshdata->boundingBox[0]);
         glm_vec3_copy(maxBounds, meshdata->boundingBox[1]);
 
-// calculate local-space bounds with aabb-center
 #if 0
+// calculate local-space bounds with aabb-center
         glm_aabb_center(meshdata->boundingBox, meshdata->world_pos);
 
         glm_vec3_sub(minBounds, meshdata->world_pos, meshdata->boundingBox[0]);
         glm_vec3_sub(maxBounds, meshdata->world_pos, meshdata->boundingBox[1]);
 #endif
-
-        // p_container->mesh_data = meshdata;
     }
-
-    /*
-    for (int i = 0; i < p_container->vertices.list_next; i++) {
-        // meshdata->buffers.out[i] = *(float
-        // *)p_container->vertices.data.buffer+i;
-    }
-    */
-
-    // LOG_INFO("iterations: %d", iterations);
 }
 /*--------------------------------------------------------------------*/

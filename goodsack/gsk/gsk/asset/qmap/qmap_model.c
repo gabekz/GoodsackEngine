@@ -67,28 +67,11 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
             vec3 minBounds = {10000, 10000, 10000};
             vec3 maxBounds = {-10000, -10000, -10000};
 
-            for (int k = 0; k < brush->list_polygons.list_next; k++)
+            for (int k = 0; k < brush->list_planes.list_next; k++)
             {
                 // Get poly and plane
                 gsk_QMapPolygon *poly = LIST_GET(&brush->list_polygons, k);
                 gsk_QMapPlane *plane  = LIST_GET(&brush->list_planes, k);
-
-                // Allocate Mesh with poly meshdata, then push to list of ptrs
-                gsk_Mesh *p_mesh =
-                  gsk_mesh_allocate((gsk_MeshData *)poly->p_mesh_data);
-
-                LIST_PUSH(&list_mesh_ptrs, &p_mesh);
-
-                // Assemble on the GPU
-                gsk_mesh_assemble(p_mesh);
-
-                // Setup p_mesh properties
-
-                mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
-                glm_mat4_copy(localMatrix, p_mesh->localMatrix);
-
-                p_mesh->usingImportedMaterial = TRUE;
-                p_mesh->materialImported      = p_material_err;
 
                 //----------------------------------------------------------
                 // update brush bounds
@@ -126,6 +109,25 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                     glm_vec3_copy(maxBounds, brush->brush_bounds[1]);
 #endif
                 }
+
+                //----------------------------------------------------------
+                // create mesh for each plane
+
+                gsk_Mesh *p_mesh =
+                  gsk_mesh_allocate((gsk_MeshData *)poly->p_mesh_data);
+
+                LIST_PUSH(&list_mesh_ptrs, &p_mesh);
+
+                // Assemble on the GPU
+                gsk_mesh_assemble(p_mesh);
+
+                // Setup p_mesh properties
+
+                mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+                glm_mat4_copy(localMatrix, p_mesh->localMatrix);
+
+                p_mesh->usingImportedMaterial = TRUE;
+                p_mesh->materialImported      = p_material_err;
 
                 //----------------------------------------------------------
                 // create material for poly
@@ -167,7 +169,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 
     gsk_Model *qmap_model   = malloc(sizeof(gsk_Model));
     qmap_model->meshes      = list_mesh_ptrs.data.buffer;
-    qmap_model->meshesCount = list_mesh_ptrs.list_next - 1;
+    qmap_model->meshesCount = LIST_COUNT(&list_mesh_ptrs) + 1;
     qmap_model->modelPath   = "NONE";
     qmap_model->fileType    = QMAP;
 
