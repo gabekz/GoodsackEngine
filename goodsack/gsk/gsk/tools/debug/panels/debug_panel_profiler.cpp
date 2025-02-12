@@ -120,6 +120,36 @@ gsk::tools::panels::Profiler::draw(void)
         DragFloat(
           "Threshold", &props->bloom_threshold, 0.01f, 0.0f, 20.0f, "%.4f");
 
+        Separator();
+        Text("Shadowmap");
+        DragFloat("Near Plane",
+                  &p_renderer->shadowmapOptions.nearPlane,
+                  0.1f,
+                  -100,
+                  100);
+        DragFloat(
+          "Far Plane", &p_renderer->shadowmapOptions.farPlane, 0.1f, -100, 100);
+        DragFloat("Projection Size",
+                  &p_renderer->shadowmapOptions.camSize,
+                  0.1f,
+                  0,
+                  100);
+        DragInt(
+          "PCF Samples", &p_renderer->shadowmapOptions.pcfSamples, 1, 0, 10);
+
+        DragFloat("Normal Bias min",
+                  &p_renderer->shadowmapOptions.normalBiasMin,
+                  0.0001f,
+                  0,
+                  2,
+                  "%.5f");
+        DragFloat("Normal Bias max",
+                  &p_renderer->shadowmapOptions.normalBiasMax,
+                  0.0001f,
+                  0,
+                  2,
+                  "%.5f");
+
         /*
         Separator();
         Text("Draw Calls: ");

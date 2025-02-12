@@ -30,6 +30,12 @@ typedef struct gsk_Scene
 
     gsk_LightingData lighting_data;
 
+    struct
+    {
+        f32 fog_start, fog_end, fog_density;
+        vec3 fog_color;
+    } fogOptions;
+
 } gsk_Scene;
 
 #endif // __SCENE_H__

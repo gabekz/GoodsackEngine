@@ -68,9 +68,18 @@ gsk_renderer_init(const char *app_name)
     scene->ecs        = gsk_ecs_init(ret);
     scene->has_skybox = FALSE;
 
+    // Fog options
+    // TODO: Don't initialize the first fog options here
+    scene->fogOptions.fog_start   = -1.0f;
+    scene->fogOptions.fog_end     = 100.0f;
+    scene->fogOptions.fog_density = 0.1f;
+    {
+        vec4 fogcol4 = DEFAULT_CLEAR_COLOR;
+        glm_vec3_copy(fogcol4, scene->fogOptions.fog_color);
+    }
+
     // FIRST Scene Lighting
     // TODO: Don't initialize the first scene lighting data here
-
     scene->lighting_data =
       gsk_lighting_initialize(RENDERER_UBO_BINDING_LIGHTING);
 
@@ -132,15 +141,6 @@ gsk_renderer_init(const char *app_name)
     ret->lightOptions.ambient_strength   = 1.0f;
     ret->lightOptions.prefilter_strength = 1.0f;
 
-    // Fog options
-    ret->fogOptions.fog_start   = -1.0f;
-    ret->fogOptions.fog_end     = 100.0f;
-    ret->fogOptions.fog_density = 0.1f;
-    {
-        vec4 fogcol4 = DEFAULT_CLEAR_COLOR;
-        glm_vec3_copy(fogcol4, ret->fogOptions.fog_color);
-    }
-
     // Billboard test
     vec2 bbsize = {0.01f, 0.01f};
     ret->billboard =
@@ -194,6 +194,15 @@ gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex)
         newScene->id         = newCount;
         newScene->ecs        = gsk_ecs_init(self);
         newScene->has_skybox = FALSE;
+
+        // Fog options
+        newScene->fogOptions.fog_start   = -1.0f;
+        newScene->fogOptions.fog_end     = 100.0f;
+        newScene->fogOptions.fog_density = 0.1f;
+        {
+            vec4 fogcol4 = DEFAULT_CLEAR_COLOR;
+            glm_vec3_copy(fogcol4, newScene->fogOptions.fog_color);
+        }
 
         // Scene Lighting
 
@@ -342,6 +351,8 @@ gsk_renderer_start(gsk_Renderer *renderer)
 static void
 renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 {
+    gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
+
     // Settings
     glfwSwapInterval(gsk_device_getGraphicsSettings().swapInterval);
 
@@ -396,8 +407,6 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glPushDebugGroup(
       GL_DEBUG_SOURCE_APPLICATION, 1, -1, "Pass: Shadowmap Depth");
 
-    gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
-
     // update lighting information
     gsk_Light directional_light = p_active_scene->lighting_data.lights[0];
     gsk_lighting_update(&p_active_scene->lighting_data);
@@ -437,7 +446,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     postbuffer_bind(renderer->properties.msaaEnable);
 
     vec4 clear_col = {0.0f, 0.0f, 0.0f, 1.0f};
-    glm_vec3_copy(renderer->fogOptions.fog_color, clear_col);
+    glm_vec3_copy(p_active_scene->fogOptions.fog_color, clear_col);
     glClearColor(clear_col[0], clear_col[1], clear_col[2], 1.0f);
 
     glEnable(GL_DEPTH_TEST);

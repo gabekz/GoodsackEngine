@@ -399,19 +399,20 @@ gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
                 p_particle_system->ramp_dist);
 #endif
 
-    gsk_Renderer *renderer = gsk_runtime_get_renderer();
+    gsk_Renderer *renderer    = gsk_runtime_get_renderer();
+    gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
 
 // Fog uniforms
 #if 1
     glUniform1f(glGetUniformLocation(shader_id, "u_FogStart"),
-                renderer->fogOptions.fog_start);
+                p_active_scene->fogOptions.fog_start);
     glUniform1f(glGetUniformLocation(shader_id, "u_FogEnd"),
-                renderer->fogOptions.fog_end);
+                p_active_scene->fogOptions.fog_end);
     glUniform1f(glGetUniformLocation(shader_id, "u_FogDensity"),
-                renderer->fogOptions.fog_density);
+                p_active_scene->fogOptions.fog_density);
     glUniform3fv(glGetUniformLocation(shader_id, "u_FogColor"),
                  1,
-                 (float *)renderer->fogOptions.fog_color);
+                 (float *)p_active_scene->fogOptions.fog_color);
 #endif
 
     mat4 newModel = GLM_MAT4_IDENTITY_INIT;

@@ -36,6 +36,9 @@ DrawModel(struct ComponentModel *model,
           VkCommandBuffer commandBuffer,
           gsk_Renderer *renderer)
 {
+    // store the currently active scene
+    gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
+
     if (GSK_DEVICE_API_OPENGL)
     {
 
@@ -159,25 +162,23 @@ DrawModel(struct ComponentModel *model,
 #if 1
             glUniform1f(
               glGetUniformLocation(material->shaderProgram->id, "u_FogStart"),
-              renderer->fogOptions.fog_start);
+              p_active_scene->fogOptions.fog_start);
             glUniform1f(
               glGetUniformLocation(material->shaderProgram->id, "u_FogEnd"),
-              renderer->fogOptions.fog_end);
+              p_active_scene->fogOptions.fog_end);
             glUniform1f(
               glGetUniformLocation(material->shaderProgram->id, "u_FogDensity"),
-              renderer->fogOptions.fog_density);
+              p_active_scene->fogOptions.fog_density);
             glUniform3fv(
               glGetUniformLocation(material->shaderProgram->id, "u_FogColor"),
               1,
-              (float *)renderer->fogOptions.fog_color);
+              (float *)p_active_scene->fogOptions.fog_color);
 #endif
 
             // SSAO Options
             glUniform1f(glGetUniformLocation(material->shaderProgram->id,
                                              "u_ssao_strength"),
                         renderer->ssaoOptions.strength);
-
-            gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
 
             // Total light count
             glUniform1i(glGetUniformLocation(material->shaderProgram->id,

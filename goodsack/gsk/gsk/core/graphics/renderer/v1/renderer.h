@@ -89,12 +89,6 @@ typedef struct gsk_Renderer
 
     // gsk_LightingData lighting_data;
 
-    struct
-    {
-        f32 fog_start, fog_end, fog_density;
-        vec3 fog_color;
-    } fogOptions;
-
     // Camera information
     struct
     {
