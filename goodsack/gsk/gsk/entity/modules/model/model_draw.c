@@ -20,12 +20,96 @@
 #define DEBUG_DRAW_SKELETON  0 // TODO: Does not draw with u_Model
 #define DEBUG_DRAW_BOUNDS    0
 #define CULLING_FOR_IMPORTED 0
+#define CULLING_LOCAL        0
 
 static void
-SetCulling(int bitfield)
+__update_dynamic_uniforms(u32 shader_id,
+                          u32 render_layer,
+                          gsk_Mesh *mesh,
+                          struct ComponentTransform *transform)
 {
-    LOG_INFO("%d", bitfield << 2);
-    LOG_INFO("%d", bitfield << 3);
+    // Skinned Matrix array buffer
+    if (mesh->meshData->isSkinnedMesh)
+    {
+        mat4 skinnedMatrices[MAX_BONES];
+        gsk_Skeleton *pSkeleton = mesh->meshData->skeleton;
+        for (int i = 0; i < pSkeleton->jointsCount; i++)
+        {
+            glm_mat4_copy(pSkeleton->joints[i]->pose.mSkinningMatrix,
+                          skinnedMatrices[i]);
+        }
+
+        glUniformMatrix4fv(glGetUniformLocation(shader_id, "u_SkinnedMatrices"),
+                           pSkeleton->jointsCount,
+                           GL_FALSE,
+                           (float *)*skinnedMatrices);
+    }
+    mat4 newTranslation = GLM_MAT4_ZERO_INIT;
+    glm_mat4_mul(mesh->localMatrix, transform->model, newTranslation);
+    // Transform Uniform
+    glUniformMatrix4fv(glGetUniformLocation(shader_id, "u_Model"),
+                       1,
+                       GL_FALSE,
+                       (float *)newTranslation);
+
+    // Set the correct camera layer
+    glUniform1i(glGetUniformLocation(shader_id, "u_render_layer"),
+                render_layer);
+}
+
+static void
+__update_static_uniforms(u32 shader_id, gsk_Renderer *renderer)
+{
+    gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
+
+    // Light Space Matrix
+    glUniformMatrix4fv(glGetUniformLocation(shader_id, "u_LightSpaceMatrix"),
+                       1,
+                       GL_FALSE,
+                       (float *)renderer->lightSpaceMatrix);
+
+    // Shadow options
+    glUniform1i(glGetUniformLocation(shader_id, "u_pcfSamples"),
+                renderer->shadowmapOptions.pcfSamples);
+    glUniform1f(glGetUniformLocation(shader_id, "u_normalBiasMin"),
+                renderer->shadowmapOptions.normalBiasMin);
+    glUniform1f(glGetUniformLocation(shader_id, "u_normalBiasMax"),
+                renderer->shadowmapOptions.normalBiasMax);
+
+// Fog uniforms
+#if 1
+    glUniform1f(glGetUniformLocation(shader_id, "u_FogStart"),
+                p_active_scene->fogOptions.fog_start);
+    glUniform1f(glGetUniformLocation(shader_id, "u_FogEnd"),
+                p_active_scene->fogOptions.fog_end);
+    glUniform1f(glGetUniformLocation(shader_id, "u_FogDensity"),
+                p_active_scene->fogOptions.fog_density);
+    glUniform3fv(glGetUniformLocation(shader_id, "u_FogColor"),
+                 1,
+                 (float *)p_active_scene->fogOptions.fog_color);
+#endif
+
+    // SSAO Options
+    glUniform1f(glGetUniformLocation(shader_id, "u_ssao_strength"),
+                renderer->ssaoOptions.strength);
+
+    // Total light count
+    glUniform1i(glGetUniformLocation(shader_id, "u_total_lights"),
+                p_active_scene->lighting_data.total_lights);
+
+    // Light strength (Light 0 a.k.a. directional light)
+    glUniform1f(glGetUniformLocation(shader_id, "u_light_strength"),
+                p_active_scene->lighting_data.lights[0].strength);
+
+    // Ambient options
+    glUniform3fv(glGetUniformLocation(shader_id, "u_ambient_color_multiplier"),
+                 1,
+                 (float *)renderer->lightOptions.ambient_color_multiplier);
+
+    glUniform1f(glGetUniformLocation(shader_id, "u_ambient_strength"),
+                renderer->lightOptions.ambient_strength);
+    glUniform1f(glGetUniformLocation(shader_id, "u_prefilter_strength"),
+                renderer->lightOptions.prefilter_strength);
 }
 
 static void
@@ -36,36 +120,33 @@ DrawModel(struct ComponentModel *model,
           VkCommandBuffer commandBuffer,
           gsk_Renderer *renderer)
 {
-    // store the currently active scene
     gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
 
     if (GSK_DEVICE_API_OPENGL)
     {
+#if CULLING_FOR_IMPORTED
+        // TODO: temporary solution for face culling.
+        // This should be handled by a material property.
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        glFrontFace(GL_CW);
+#elif CULLING_LOCAL
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
+#endif // CULLING_FOR_IMPORTED
 
-// Handle culling
-#if 0
-         if((mesh->properties.cullMode | CULL_DISABLED)) {
-            printf("Disable culling");
-        }
-#endif
         gsk_Model *pModel = model->pModel;
         for (int i = 0; i < pModel->meshesCount; i++)
         {
-            gsk_Mesh *mesh = pModel->meshes[i];
+            u8 is_new_material = FALSE; // reset per mesh
+            gsk_Mesh *mesh     = pModel->meshes[i];
             gsk_Material *material;
 
             // Select Material
             if (mesh->usingImportedMaterial && !useOverrideMaterial)
             {
                 material = mesh->materialImported;
-
-#if CULLING_FOR_IMPORTED
-                // TODO: temporary solution for face culling.
-                // This should be handled by a material property.
-                glEnable(GL_CULL_FACE);
-                glCullFace(GL_FRONT);
-                glFrontFace(GL_CW);
-#endif
 
             } else if (useOverrideMaterial)
             {
@@ -90,7 +171,14 @@ DrawModel(struct ComponentModel *model,
                 material = model->material;
             }
 
-            gsk_material_use(material);
+            if (material != renderer->p_prev_material)
+            {
+                gsk_material_use(material);
+                renderer->p_prev_material = material;
+                is_new_material           = TRUE;
+                // update dynamic uniforms
+            }
+            // update static uniforms
 
             // TESTING for normal-map in G-Buffer
             // TODO: Breaks when normal-map doesn't exist
@@ -113,102 +201,17 @@ DrawModel(struct ComponentModel *model,
                 }
             }
 
-            // Skinned Matrix array buffer
-            if (mesh->meshData->isSkinnedMesh)
+            u32 shader_id = material->shaderProgram->id;
+
+            __update_dynamic_uniforms(shader_id, renderLayer, mesh, transform);
+
+            if (is_new_material == TRUE)
             {
-                mat4 skinnedMatrices[MAX_BONES];
-                gsk_Skeleton *pSkeleton = mesh->meshData->skeleton;
-                for (int i = 0; i < pSkeleton->jointsCount; i++)
-                {
-                    glm_mat4_copy(pSkeleton->joints[i]->pose.mSkinningMatrix,
-                                  skinnedMatrices[i]);
-                }
-
-                glUniformMatrix4fv(
-                  glGetUniformLocation(material->shaderProgram->id,
-                                       "u_SkinnedMatrices"),
-                  pSkeleton->jointsCount,
-                  GL_FALSE,
-                  (float *)*skinnedMatrices);
+                __update_static_uniforms(shader_id, renderer);
+                //__update_culling();
             }
-            mat4 newTranslation = GLM_MAT4_ZERO_INIT;
-            glm_mat4_mul(mesh->localMatrix, transform->model, newTranslation);
-            // Transform Uniform
-            glUniformMatrix4fv(
-              glGetUniformLocation(material->shaderProgram->id, "u_Model"),
-              1,
-              GL_FALSE,
-              (float *)newTranslation);
 
-            // Light Space Matrix
-            glUniformMatrix4fv(glGetUniformLocation(material->shaderProgram->id,
-                                                    "u_LightSpaceMatrix"),
-                               1,
-                               GL_FALSE,
-                               (float *)renderer->lightSpaceMatrix);
-
-            // Shadow options
-            glUniform1i(
-              glGetUniformLocation(material->shaderProgram->id, "u_pcfSamples"),
-              renderer->shadowmapOptions.pcfSamples);
-            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
-                                             "u_normalBiasMin"),
-                        renderer->shadowmapOptions.normalBiasMin);
-            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
-                                             "u_normalBiasMax"),
-                        renderer->shadowmapOptions.normalBiasMax);
-
-// Fog uniforms
-#if 1
-            glUniform1f(
-              glGetUniformLocation(material->shaderProgram->id, "u_FogStart"),
-              p_active_scene->fogOptions.fog_start);
-            glUniform1f(
-              glGetUniformLocation(material->shaderProgram->id, "u_FogEnd"),
-              p_active_scene->fogOptions.fog_end);
-            glUniform1f(
-              glGetUniformLocation(material->shaderProgram->id, "u_FogDensity"),
-              p_active_scene->fogOptions.fog_density);
-            glUniform3fv(
-              glGetUniformLocation(material->shaderProgram->id, "u_FogColor"),
-              1,
-              (float *)p_active_scene->fogOptions.fog_color);
-#endif
-
-            // SSAO Options
-            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
-                                             "u_ssao_strength"),
-                        renderer->ssaoOptions.strength);
-
-            // Total light count
-            glUniform1i(glGetUniformLocation(material->shaderProgram->id,
-                                             "u_total_lights"),
-                        p_active_scene->lighting_data.total_lights);
-
-            // Light strength (Light 0 a.k.a. directional light)
-            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
-                                             "u_light_strength"),
-                        p_active_scene->lighting_data.lights[0].strength);
-
-            // Ambient options
-            glUniform3fv(
-              glGetUniformLocation(material->shaderProgram->id,
-                                   "u_ambient_color_multiplier"),
-              1,
-              (float *)renderer->lightOptions.ambient_color_multiplier);
-
-            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
-                                             "u_ambient_strength"),
-                        renderer->lightOptions.ambient_strength);
-            glUniform1f(glGetUniformLocation(material->shaderProgram->id,
-                                             "u_prefilter_strength"),
-                        renderer->lightOptions.prefilter_strength);
-
-            // Set the correct camera layer
-            glUniform1i(glGetUniformLocation(material->shaderProgram->id,
-                                             "u_render_layer"),
-                        renderLayer);
-
+            // bind VAO
             gsk_gl_vertex_array_bind(mesh->vao);
 
             gsk_MeshData *data = mesh->meshData;
@@ -229,10 +232,7 @@ DrawModel(struct ComponentModel *model,
             default: break;
             }
 
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-            glFrontFace(GL_CCW);
-            // glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+            if (is_new_material == TRUE) {}
 
             if (data->has_indices)
             {
@@ -241,21 +241,12 @@ DrawModel(struct ComponentModel *model,
             {
                 glDrawArrays(gl_prim, 0, vertices);
             }
-
-// TODO: Add wireframe options
-#if 0
-            switch (drawMode) {
-            case DRAW_ARRAYS: glDrawArrays(GL_TRIANGLES, 0, vertices); break;
-            case DRAW_ELEMENTS:
-                glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, NULL);
-                break;
-            case DRAW_ELEMENTS_WIREFRAME:
-                glDrawElements(GL_LINES, indices, GL_UNSIGNED_INT, NULL);
-            }
-#endif
         }
 
+#if CULLING_LOCAL
+        // Handle model-draw end | culling
         glDisable(GL_CULL_FACE);
+#endif
 
     } else if (GSK_DEVICE_API_VULKAN)
     {

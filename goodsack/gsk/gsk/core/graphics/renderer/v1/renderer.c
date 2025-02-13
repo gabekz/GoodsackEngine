@@ -40,6 +40,7 @@
 #define TESTING_DRAW_UI           1
 #define TESTING_DRAW_LINE         0
 #define TESTING_GLSAMPLER_OBJECTS 0
+#define LIGHTING_CULL_GLOBAL      1
 
 gsk_Renderer *
 gsk_renderer_init(const char *app_name)
@@ -57,6 +58,7 @@ gsk_renderer_init(const char *app_name)
     ret->windowWidth         = winWidth;
     ret->windowHeight        = winHeight;
     ret->window_aspect_ratio = (f32)winWidth / (f32)winHeight;
+    ret->p_prev_material     = NULL;
 
     // Set Render Resolution
     ret->renderWidth  = (RENDER_RESOLUTION_OVERRIDE) ? PSX_WIDTH : winWidth;
@@ -479,9 +481,19 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glBindSampler(0, renderer->sampler0_id);
 #endif // TESTING_GLSAMPLER_OBJECTS
 
+#if LIGHTING_CULL_GLOBAL
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+#endif
+
     // Forward-draw Event
     renderer->currentPass = GskRenderPass_Lighting;
     gsk_ecs_event(ecs, ECS_RENDER);
+
+#if LIGHTING_CULL_GLOBAL
+    glDisable(GL_CULL_FACE);
+#endif
 
     glDepthFunc(GL_LEQUAL);
     renderer->currentPass = GskRenderPass_Skybox;
