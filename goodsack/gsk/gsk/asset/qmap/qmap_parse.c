@@ -62,6 +62,7 @@ __qmap_container_add_entity(gsk_QMapContainer *p_container)
     ent.list_brushes = array_list_init(sizeof(gsk_QMapBrush), 1);
     ent.list_fields  = array_list_init(sizeof(gsk_QMapEntityField), 1);
     ent.ent_index    = p_container->total_entities;
+    ent.layer_id     = 0;
 
     // push to Container
     array_list_push(&p_container->list_entities, (void *)&ent);
@@ -577,6 +578,7 @@ gsk_qmap_parse_map_file(const char *map_path, gsk_TextureSet *p_textureset)
     ret.total_brushes  = 0;
     ret.total_planes   = 0;
     ret.list_entities  = array_list_init(sizeof(gsk_QMapEntity), 12);
+    ret.list_layers    = array_list_init(sizeof(gsk_QMapLayer), 2);
 
     ret.is_map_compiled = FALSE;
     ret.is_model_loaded = FALSE;
@@ -584,6 +586,14 @@ gsk_qmap_parse_map_file(const char *map_path, gsk_TextureSet *p_textureset)
     // attach textureset
     ret.p_texture_set = p_textureset;
 
+    // create first layer
+    gsk_QMapLayer layer0 = {
+      .is_visible = TRUE,
+      .layer_id   = 0,
+    };
+    LIST_PUSH(&ret.list_layers, &layer0);
+
+    // file streaming
     FILE *stream = NULL;
     char line[256]; // 256 = MAX line_length
 

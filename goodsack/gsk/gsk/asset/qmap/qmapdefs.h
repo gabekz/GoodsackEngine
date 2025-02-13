@@ -95,13 +95,21 @@ typedef struct gsk_QMapEntityField
 typedef struct gsk_QMapEntity
 {
     s32 ent_index;
+    u32 layer_id;
     ArrayList list_brushes;
     ArrayList list_fields;
 } gsk_QMapEntity;
 
+typedef struct gsk_QMapLayer
+{
+    u32 layer_id;
+    u8 is_visible;
+} gsk_QMapLayer;
+
 typedef struct gsk_QMapContainer
 {
     ArrayList list_entities;
+    ArrayList list_layers;
 
     gsk_QMapEntity *p_cnt_entity;
     gsk_QMapBrush *p_cnt_brush;

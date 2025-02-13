@@ -48,12 +48,20 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
       p_shader,
       NULL,
       3,
-      gsk_texture_set_get_by_name(p_container->p_texture_set, "MISSING"),
+      gsk_texture_set_get_by_name(p_container->p_texture_set,
+                                  "textures/dev/GRIDF_B"),
       gsk_texture_set_get_by_name(p_container->p_texture_set, "NORM"),
       gsk_texture_set_get_by_name(p_container->p_texture_set, "SPEC"));
 
-    /* batch group info */
-    ArrayList list_batches = LIST_INIT(sizeof(struct _BatchInfo), 1);
+    /* error batch */
+    ArrayList list_batches      = LIST_INIT(sizeof(struct _BatchInfo), 1);
+    struct _BatchInfo batch_err = {
+      .p_material         = p_material_err,
+      .total_verts        = 0,
+      .total_size         = 0,
+      .list_meshdata_ptrs = LIST_INIT(sizeof(gsk_MeshData *), 1),
+    };
+    LIST_PUSH(&list_batches, &batch_err);
 
     /* data for qmap */
 
@@ -155,6 +163,16 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                 if (poly->p_texture == NULL)
                 {
                     LOG_ERROR("Failed to find texture %s", plane->tex_name);
+
+                    struct _BatchInfo *p_batch = LIST_GET(&list_batches, 0);
+
+                    p_batch->total_verts += p_meshdata->vertexCount;
+                    p_batch->total_size +=
+                      p_meshdata->mesh_buffers[0].buffer_size,
+
+                      LIST_PUSH(&p_batch->list_meshdata_ptrs, &p_meshdata);
+
+                    continue;
                     // set to first batch (error batch)
                 }
 
@@ -190,7 +208,6 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                 // TODO: CHANGE
                 p_mesh->materialImported = p_material_err;
 #endif // (!_MESH_BATCHING)
-
                 if (is_new_material == TRUE)
                 {
                     gsk_Material *material = gsk_material_create(
@@ -234,11 +251,19 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
     {
         struct _BatchInfo *p_batch = LIST_GET(&list_batches, i);
 
-        LOG_INFO("BATCH %d has %d meshes with %d verts (size %d)",
-                 i,
-                 p_batch->list_meshdata_ptrs.list_next,
-                 p_batch->total_verts,
-                 p_batch->total_size);
+        LOG_TRACE("Batch %d has %d meshes with %d verts (size %d)",
+                  i,
+                  p_batch->list_meshdata_ptrs.list_next,
+                  p_batch->total_verts,
+                  p_batch->total_size);
+
+        // break out of this batch early if it is empy. This is only really
+        // possible with the default material_err batch.
+        if (p_batch->total_verts <= 0 || p_batch->total_size <= 0)
+        {
+            LOG_TRACE("Batch %d has no mesh data. Skipping.", i);
+            continue;
+        }
 
         u32 num_indices   = (p_batch->total_verts - 2) * 3;
         f32 *buff_verts   = malloc(p_batch->total_size);

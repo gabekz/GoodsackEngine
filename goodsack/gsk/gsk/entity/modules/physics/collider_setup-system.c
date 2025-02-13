@@ -184,6 +184,7 @@ on_collide(gsk_Entity e)
           .ecs   = e.ecs,
         };
 
+        // TODO: Add collision masks
         if (e.id >= 313 && e_compare.id >= 313) { continue; }
 
         if (!gsk_ecs_has(e_compare, C_COLLIDER)) continue;
