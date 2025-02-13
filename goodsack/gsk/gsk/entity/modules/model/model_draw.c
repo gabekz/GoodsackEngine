@@ -139,8 +139,11 @@ DrawModel(struct ComponentModel *model,
         gsk_Model *pModel = model->pModel;
         for (int i = 0; i < pModel->meshesCount; i++)
         {
-            u8 is_new_material = FALSE; // reset per mesh
-            gsk_Mesh *mesh     = pModel->meshes[i];
+            // caching
+            u8 is_new_material = FALSE;
+            u8 is_new_shader   = FALSE;
+
+            gsk_Mesh *mesh = pModel->meshes[i];
             gsk_Material *material;
 
             // Select Material
@@ -171,14 +174,20 @@ DrawModel(struct ComponentModel *model,
                 material = model->material;
             }
 
+            // Check Material caching (for texture loading)
             if (material != renderer->p_prev_material)
             {
-                gsk_material_use(material);
+                gsk_material_load_textures(material);
                 renderer->p_prev_material = material;
                 is_new_material           = TRUE;
-                // update dynamic uniforms
             }
-            // update static uniforms
+            // Check Shader caching (for uniform updating)
+            if (material->shaderProgram->id != renderer->prev_shader_id)
+            {
+                gsk_shader_use(material->shaderProgram);
+                renderer->prev_shader_id = material->shaderProgram->id;
+                is_new_shader            = TRUE;
+            }
 
             // TESTING for normal-map in G-Buffer
             // TODO: Breaks when normal-map doesn't exist
@@ -188,14 +197,12 @@ DrawModel(struct ComponentModel *model,
                 if (mesh->usingImportedMaterial &&
                     mesh->materialImported->texturesCount > 1)
                 {
-                    glActiveTexture(GL_TEXTURE10);
                     texture_bind(mesh->materialImported->textures[1], 10);
                 } else if (!mesh->usingImportedMaterial)
                 {
                     gsk_Material *mat = model->material;
                     if (mat->texturesCount >= 2)
                     {
-                        glActiveTexture(GL_TEXTURE10);
                         texture_bind(mat->textures[1], 10);
                     }
                 }
@@ -205,7 +212,7 @@ DrawModel(struct ComponentModel *model,
 
             __update_dynamic_uniforms(shader_id, renderLayer, mesh, transform);
 
-            if (is_new_material == TRUE)
+            if (is_new_shader == TRUE)
             {
                 __update_static_uniforms(shader_id, renderer);
                 //__update_culling();
@@ -231,8 +238,6 @@ DrawModel(struct ComponentModel *model,
             case GskMeshPrimitiveType_Fan: gl_prim = GL_TRIANGLE_FAN; break;
             default: break;
             }
-
-            if (is_new_material == TRUE) {}
 
             if (data->has_indices)
             {

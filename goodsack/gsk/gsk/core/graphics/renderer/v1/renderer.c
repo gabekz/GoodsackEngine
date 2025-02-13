@@ -59,6 +59,7 @@ gsk_renderer_init(const char *app_name)
     ret->windowHeight        = winHeight;
     ret->window_aspect_ratio = (f32)winWidth / (f32)winHeight;
     ret->p_prev_material     = NULL;
+    ret->prev_shader_id      = 0;
 
     // Set Render Resolution
     ret->renderWidth  = (RENDER_RESOLUTION_OVERRIDE) ? PSX_WIDTH : winWidth;

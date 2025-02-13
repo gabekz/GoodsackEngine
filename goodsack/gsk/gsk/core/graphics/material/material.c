@@ -118,7 +118,7 @@ gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg)
 }
 
 void
-gsk_material_use(gsk_Material *self)
+gsk_material_load_textures(gsk_Material *self)
 {
     if (GSK_DEVICE_API_OPENGL)
     {
@@ -129,7 +129,7 @@ gsk_material_use(gsk_Material *self)
                 texture_bind(self->textures[i], i);
             }
         }
-        gsk_shader_use(self->shaderProgram);
+
     } else if (GSK_DEVICE_API_VULKAN)
     {
         LOG_DEBUG("Material not implemented for Vulkan");
@@ -137,6 +137,13 @@ gsk_material_use(gsk_Material *self)
         // Bind Pipeline here? Probably.
         // TODO: Bind image descriptor set HERE
     }
+}
+
+void
+gsk_material_use(gsk_Material *self)
+{
+    gsk_material_load_textures(self);
+    if (GSK_DEVICE_API_OPENGL) { gsk_shader_use(self->shaderProgram); }
 }
 
 void

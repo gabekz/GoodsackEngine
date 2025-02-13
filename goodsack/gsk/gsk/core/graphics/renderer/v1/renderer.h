@@ -66,7 +66,9 @@ typedef struct gsk_Renderer
     gsk_Material *explicitMaterial;
     gsk_Material
       *explicitMaterial_skinned; // skinned version of explicit material
+
     gsk_Material *p_prev_material;
+    u32 prev_shader_id;
 
     gsk_Billboard2D *billboard; // Billboard testing
     gsk_GuiCanvas canvas;       // Canvas test

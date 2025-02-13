@@ -34,6 +34,9 @@ gsk_Material *
 gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg);
 
 void
+gsk_material_load_textures(gsk_Material *self);
+
+void
 gsk_material_use(gsk_Material *self);
 
 void
