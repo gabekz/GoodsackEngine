@@ -33,11 +33,13 @@ gsk_skybox_create(gsk_Texture *cubemap)
     ret->vao               = vao;
 
     gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
-      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
+      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_array_add_buffer(vao, vbo);
-    gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
-      PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
+    gsk_GlIndexBuffer *ibo =
+      gsk_gl_index_buffer_create(PRIM_ARR_I_CUBE,
+                                 PRIM_SIZ_I_CUBE * sizeof(unsigned int),
+                                 GskOglUsageType_Static);
     gsk_gl_index_buffer_bind(ibo);
     free(vbo);
     gsk_ShaderProgram *shader = GSK_ASSET("gsk://shaders/skybox.shader");
@@ -178,12 +180,14 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     gsk_GlVertexArray *vao = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vao);
     gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
-      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
+      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_bind(vbo);
     gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_array_add_buffer(vao, vbo);
-    gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
-      PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
+    gsk_GlIndexBuffer *ibo =
+      gsk_gl_index_buffer_create(PRIM_ARR_I_CUBE,
+                                 PRIM_SIZ_I_CUBE * sizeof(unsigned int),
+                                 GskOglUsageType_Static);
     gsk_gl_index_buffer_bind(ibo);
     cubemapProjectionVAO = vao;
 
@@ -404,9 +408,9 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
     // Create Rectangle
     gsk_GlVertexArray *vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vaoRect);
-    float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect =
-      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    float *rectPositions        = prim_vert_rect();
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(
+      rectPositions, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);

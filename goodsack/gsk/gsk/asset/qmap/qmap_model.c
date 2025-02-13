@@ -215,8 +215,8 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                         LIST_INIT(sizeof(gsk_MeshData *), 1),
                     };
 
-                    LIST_PUSH(&list_batches, &batch);
                     LIST_PUSH(&batch.list_meshdata_ptrs, &p_meshdata);
+                    LIST_PUSH(&list_batches, &batch);
 
 #else
                     p_mesh->materialImported = material;
@@ -261,8 +261,6 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                    p_meshbuff->buffer_size);
             offset += p_meshbuff->buffer_size;
 
-            // buffer_size += p_meshbuff->buffer_size;
-
             for (int n = 1; n < (*pp_meshdata)->vertexCount - 1; n++)
             {
                 buff_indices[k++] = n_origin;
@@ -274,6 +272,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 
         // CREATE NEW MESHDATA
         gsk_MeshData *meshdata = malloc(sizeof(gsk_MeshData));
+        meshdata->usage_draw   = GskOglUsageType_Static;
 
         meshdata->mesh_buffers_count = 0;
 

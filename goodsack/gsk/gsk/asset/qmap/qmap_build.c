@@ -638,6 +638,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
         poly->p_mesh_data      = meshdata;
 
         meshdata->mesh_buffers_count = 0;
+        meshdata->usage_draw         = GskOglUsageType_Static;
 
         meshdata->mesh_buffers_count++;
         meshdata->mesh_buffers[0] = (gsk_MeshBuffer) {

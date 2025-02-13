@@ -260,6 +260,7 @@ gsk_load_obj(const char *path, float scale)
     ret->vertexCount    = total_verts;
 
     ret->primitive_type = GskMeshPrimitiveType_Triangle;
+    ret->usage_draw     = GskOglUsageType_Dynamic;
 
     ret->mesh_buffers_count = 2;
 

@@ -190,9 +190,9 @@ postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties)
     // Create Rectangle
     vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vaoRect);
-    float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect =
-      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    float *rectPositions        = prim_vert_rect();
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(
+      rectPositions, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
@@ -221,10 +221,6 @@ postbuffer_bind(int enableMSAA)
 
     // Prime
     glViewport(0, 0, frameWidth, frameHeight);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // vec4 col = DEFAULT_CLEAR_COLOR;
-    // glClearColor(col[0], col[1], col[2], col[3]);
 }
 
 void

@@ -72,6 +72,7 @@ typedef struct gsk_MeshData
     u32 trianglesCount;
 
     GskMeshPrimitiveType_ primitive_type;
+    GskOglUsageType usage_draw;
     u8 has_indices;
     u8 isSkinnedMesh;
 

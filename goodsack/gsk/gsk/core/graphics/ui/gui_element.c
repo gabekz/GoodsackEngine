@@ -81,7 +81,7 @@ gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size,
         -size_x_off ,  size_y_off, t_neg_x, t_pos_y,
     };
 
-    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float));
+    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Dynamic);
     gsk_gl_vertex_buffer_bind(vbo);
     gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);

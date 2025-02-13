@@ -73,7 +73,8 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
         {
             gsk_GlVertexBuffer *vbo =
               gsk_gl_vertex_buffer_create(data->mesh_buffers[i].p_buffer,
-                                          data->mesh_buffers[i].buffer_size);
+                                          data->mesh_buffers[i].buffer_size,
+                                          data->usage_draw);
 
             for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
             {
@@ -122,7 +123,8 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
             {
                 gsk_GlIndexBuffer *ibo =
                   gsk_gl_index_buffer_create(data->mesh_buffers[i].p_buffer,
-                                             data->mesh_buffers[i].buffer_size);
+                                             data->mesh_buffers[i].buffer_size,
+                                             data->usage_draw);
 
                 used_flags |= GskMeshBufferFlag_Indices;
             }
@@ -146,6 +148,17 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
     // BoneId's and weights
     gsk_gl_vertex_array_add_buffer(vao, vboSkinnedMesh);
 #endif
+
+    if (data->usage_draw == GskOglUsageType_Static)
+    {
+        for (int i = 0; i < data->mesh_buffers_count; i++)
+        {
+            if (data->mesh_buffers[i].p_buffer)
+            {
+                free(data->mesh_buffers[i].p_buffer);
+            }
+        }
+    }
 
     // return mesh;
     return 1;

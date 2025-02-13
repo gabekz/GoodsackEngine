@@ -11,35 +11,44 @@
 #define __OPENGL_BUFFER_H__
 
 #include "util/gfx.h"
+#include "util/sysdefs.h"
+
+typedef enum GskOglUsageType_ {
+    GskOglUsageType_Static  = GL_STATIC_DRAW,
+    GskOglUsageType_Dynamic = GL_DYNAMIC_DRAW,
+    GskOglUsageType_Stream  = GL_STREAM_DRAW,
+} GskOglUsageType_;
+
+typedef s32 GskOglUsageType;
 
 typedef struct gsk_GlBufferElement
 {
-    unsigned int count;
-    unsigned int type;
-    unsigned int normalized;
+    u32 count;
+    u32 type;
+    u32 normalized;
 } gsk_GlBufferElement;
 
 typedef struct gsk_GlVertexArray
 {
-    unsigned int id;
+    u32 id;
     gsk_GlBufferElement *elements;
-    unsigned int elementsCount;
+    u32 elementsCount;
 } gsk_GlVertexArray;
 
 typedef struct gsk_GlVertexBuffer
 {
-    unsigned int id;
-    unsigned int type;
+    u32 id;
+    u32 type;
 
-    unsigned int stride;
-    unsigned int elementsSize;
+    u32 stride;
+    u32 elementsSize;
     gsk_GlBufferElement *elements;
 } gsk_GlVertexBuffer;
 
 typedef struct gsk_GlIndexBuffer
 {
-    unsigned int id;
-    unsigned int count;
+    u32 id;
+    u32 count;
 } gsk_GlIndexBuffer;
 
 // gsk_GlVertexArray
@@ -57,7 +66,7 @@ gsk_gl_vertex_array_add_buffer(gsk_GlVertexArray *self,
 // VBO
 
 gsk_GlVertexBuffer *
-gsk_gl_vertex_buffer_create(const void *data, unsigned int size);
+gsk_gl_vertex_buffer_create(const void *data, u32 size, GskOglUsageType usage);
 
 void
 gsk_gl_vertex_buffer_bind(gsk_GlVertexBuffer *self);
@@ -79,7 +88,7 @@ gsk_gl_get_element_type_size(GLuint type);
 
 // IBO
 gsk_GlIndexBuffer *
-gsk_gl_index_buffer_create(const void *data, unsigned int size);
+gsk_gl_index_buffer_create(const void *data, u32 size, GskOglUsageType usage);
 
 void
 gsk_gl_index_buffer_bind(gsk_GlIndexBuffer *self);
