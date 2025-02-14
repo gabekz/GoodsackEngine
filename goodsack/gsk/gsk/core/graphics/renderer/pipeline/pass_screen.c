@@ -18,6 +18,8 @@
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/shader/shader.h"
 
+#include "core/graphics/renderer/pipeline/pass_ssao.h"
+
 #include "asset/asset.h"
 
 static u32 msFBO, sbFBO;

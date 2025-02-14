@@ -14,7 +14,8 @@ layout(location = 3) in vec3 a_Tangent;
 layout(location = 4) in vec4 a_Joints;
 layout(location = 5) in vec4 a_Weights;
 
-const bool INVERTED_NORMALS = false;
+const bool INVERTED_NORMALS    = false;
+uniform bool u_InvertedNormals = false;
 
 uniform mat4 u_Model;
 uniform mat4 u_SkinnedMatrices[MAX_BONES];
@@ -67,8 +68,8 @@ main()
     vs_out.fragPos = viewPos.xyz;
 
     mat3 normalMatrix = transpose(inverse(mat3(camera.view * u_Model)));
-    // vs_out.normal = normalMatrix * (INVERTED_NORMALS ? -a_Normal : a_Normal);
-    vs_out.normal = normalize(a_Normal);
+    vs_out.normal = normalMatrix * (u_InvertedNormals ? -a_Normal : a_Normal);
+    vs_out.normal = normalize(vs_out.normal);
 
     gl_Position      = camera.projection * viewPos;
     vs_out.texCoords = a_TexCoords;

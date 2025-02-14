@@ -93,5 +93,5 @@ main()
           (occluderPos.z >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;
     }
     // FragColor = 1.0 - (occlusion / kernelSize);
-    FragColor = clamp(1.0 - (occlusion / kernelSize), 0.0, 1.0);
+    FragColor = clamp(1.0 - (occlusion / kernelSize), 0.0, 10.0);
 }

@@ -147,4 +147,6 @@ main()
 
     // Output
     FragColor.rgb = pixel_rgb;
+    // vec3 col_rgb  = texture(u_ScreenTexture, texCoords).rgb;
+    // FragColor.rgb = vec3(col_rgb.r);
 }

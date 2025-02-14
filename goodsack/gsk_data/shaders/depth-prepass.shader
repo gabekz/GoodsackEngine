@@ -9,6 +9,7 @@ layout(location = 3) in vec3 a_Tangent;
 const bool INVERTED_NORMALS = false;
 
 uniform mat4 u_Model;
+uniform bool u_InvertedNormals = false;
 
 struct CameraData
 {
@@ -43,8 +44,9 @@ main()
     vs_out.fragPos = viewPos.xyz;
 
     mat3 normalMatrix = transpose(inverse(mat3(camera.view * u_Model)));
-    // vs_out.normal = normalMatrix * (INVERTED_NORMALS ? -a_Normal : a_Normal);
-    vs_out.normal = normalize(a_Normal);
+    vs_out.normal = normalMatrix * (u_InvertedNormals ? -a_Normal : a_Normal);
+    vs_out.normal = normalize(vs_out.normal);
+    // vs_out.normal = normalize(a_Normal);
 
     gl_Position      = camera.projection * viewPos;
     vs_out.texCoords = a_TexCoords;

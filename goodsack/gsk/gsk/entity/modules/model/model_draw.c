@@ -55,6 +55,11 @@ __update_dynamic_uniforms(u32 shader_id,
     // Set the correct camera layer
     glUniform1i(glGetUniformLocation(shader_id, "u_render_layer"),
                 render_layer);
+
+#if 0
+    glUniform1i(glGetUniformLocation(shader_id, "u_InvertedNormals"),
+                render_layer);
+#endif
 }
 
 static void
@@ -352,10 +357,9 @@ render(gsk_Entity e)
           (u32)((struct ComponentRenderLayer *)gsk_ecs_get(e, C_RENDERLAYER))
             ->renderLayer;
     }
+    // TODO: Depth for renderlayer
 
     GskRenderPass pass = e.ecs->renderer->currentPass;
-
-    // TODO: get lightspace matrix
 
     VkCommandBuffer cb;
     if (GSK_DEVICE_API_VULKAN)
