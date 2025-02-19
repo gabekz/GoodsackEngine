@@ -89,6 +89,16 @@ fixed_update(gsk_Entity ent)
     glm_vec3_copy(ent_transform->world_position, p_sys->world_pos);
     glm_vec3_copy(ent_transform->orientation, p_sys->world_rot);
     glm_vec3_copy(ent_transform->scale, p_sys->world_scale);
+
+#if 0
+    if (gsk_ecs_has(ent, C_BONE_ATTACHMENT))
+    {
+        f32 oldz            = -p_sys->world_rot[2];
+        p_sys->world_rot[2] = -p_sys->world_rot[1];
+        p_sys->world_rot[1] = oldz;
+    }
+#endif
+
     // glm_vec3_scale(p_sys->world_scale, 1.005f, p_sys->world_scale);
     gsk_particle_system_update(p_sys);
 }

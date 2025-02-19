@@ -151,6 +151,11 @@ DrawModel(struct ComponentModel *model,
             gsk_Mesh *mesh = pModel->meshes[i];
             gsk_Material *material;
 
+            if (mesh->usingImportedMaterial == FALSE & model->material == NULL)
+            {
+                continue;
+            }
+
             // Select Material
             if (mesh->usingImportedMaterial && !useOverrideMaterial)
             {

@@ -31,7 +31,7 @@ static f32 s_curl_E            = 0;
 
 static f32 s_smoke_dist = 1.2f;
 
-static f32 s_min_life = 1.0f;
+static f32 s_min_life = 0.1f;
 static f32 s_max_life = 2.0f;
 
 static f32 s_updraft = 0.020f;
