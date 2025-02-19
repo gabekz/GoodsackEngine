@@ -58,22 +58,23 @@ gsk::tools::panels::Profiler::draw(void)
         const char *items[] = {"Reinhard",
                                "Reinhard (Jodie)",
                                "Reinhard (Extended)",
+                               "Filmic",
                                "ACES (Approximate)",
-                               "Uncharted 2 Filmic"};
-        static int item_current_idx =
-          0; // Here we store our selection data as an index.
+                               "ACES (Fitted)"};
+
         const char *combo_preview_value =
-          items[item_current_idx]; // Pass in the preview value visible
-                                   // before opening the combo (it could be
-                                   // anything)
+          items[props->tonemapper]; // Pass in the preview value visible
+                                    // before opening the combo (it could be
+                                    // anything)
+
         if (BeginCombo("Tonemapping", combo_preview_value, flags))
         {
             for (int n = 0; n < IM_ARRAYSIZE(items); n++)
             {
-                const bool is_selected = (item_current_idx == n);
+                const bool is_selected = (props->tonemapper == n);
                 if (Selectable(items[n], is_selected))
                 {
-                    item_current_idx  = n;
+                    // item_current_idx  = n;
                     props->tonemapper = n;
                 }
 
@@ -83,7 +84,7 @@ gsk::tools::panels::Profiler::draw(void)
             }
             EndCombo();
         }
-        if (item_current_idx == 2)
+        if (props->tonemapper == 2)
         { // Reinhard Extended
             SliderFloat("Max White", &props->maxWhite, 0.0f, 20.0f);
         }

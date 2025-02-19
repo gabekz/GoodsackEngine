@@ -106,8 +106,8 @@ gsk_renderer_init(const char *app_name)
     ret->defaultSkybox = NULL;
 
     ret->properties = (gsk_RendererProps) {
-      .tonemapper      = 3,
-      .exposure        = 9.5f,
+      .tonemapper      = 5,
+      .exposure        = 2.2f,
       .maxWhite        = 1.0f,
       .gamma           = 2.2f,
       .gammaEnable     = TRUE,
@@ -117,9 +117,12 @@ gsk_renderer_init(const char *app_name)
       .vignetteFalloff = 0.5f,
       .vignetteColor   = {0, 0, 0},
 
-      .bloom_intensity = 0.3f,
-      .bloom_radius    = 0.01f,
-      .bloom_threshold = 0.0f,
+      //.bloom_intensity = 0.2f,
+      //.bloom_radius    = 0.02f,
+      //.bloom_threshold = 0.06f,
+      .bloom_intensity = 1.0f,
+      .bloom_radius    = 0.00f,
+      .bloom_threshold = 0.25f,
     };
 
     ret->shadowmapOptions = (ShadowmapOptions) {
@@ -133,8 +136,8 @@ gsk_renderer_init(const char *app_name)
     };
 
     ret->ssaoOptions = (SsaoOptions) {
-      .strength   = 2.5f,
-      .bias       = 0.285f,
+      .strength   = 5.0f,
+      .bias       = 0.08f,
       .radius     = 0.45f,
       .kernelSize = 64,
     };

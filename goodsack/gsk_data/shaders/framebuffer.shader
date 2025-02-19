@@ -35,6 +35,58 @@ uniform float u_BloomIntensity = 1.0;
 
 out vec4 FragColor;
 
+// -- ACES TESTING
+const mat3 ACESInputMat = mat3(
+  // Row0 => (0.59719, 0.35458, 0.04823)
+  0.59719,
+  0.07600,
+  0.02840, // <-- these will end up as column0
+  0.35458,
+  0.90834,
+  0.13383, // <-- column1
+  0.04823,
+  0.01566,
+  0.83777 // <-- column2
+);
+
+// ACES Output matrix (ODT_SAT => XYZ => D60_2_D65 => sRGB)
+const mat3 ACESOutputMat = mat3(
+  // Row0 => ( 1.60475, -0.53108, -0.07367)
+  1.60475,
+  -0.10208,
+  -0.00327,
+  -0.53108,
+  1.10813,
+  -0.07276,
+  -0.07367,
+  -0.00605,
+  1.07602);
+
+vec3
+RRTAndODTFit(vec3 v)
+{
+    vec3 a = v * (v + 0.0245786) - 0.000090537;
+    vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
+    return a / b;
+}
+
+vec3
+aces_fitted(vec3 color)
+{
+    // Matrix multiply
+    color = ACESInputMat * color;
+
+    // Apply RRT and ODT
+    color = RRTAndODTFit(color);
+
+    // Output matrix multiply
+    color = ACESOutputMat * color;
+
+    color = clamp(color, 0.0, 1.0);
+
+    return color;
+}
+
 // -- Tonemappers
 
 float
@@ -76,7 +128,7 @@ aces_approx(vec3 x)
 }
 
 vec3
-uncharted2_tonemap_partial(vec3 x)
+filmic_partial(vec3 x)
 {
     float A = 0.15f;
     float B = 0.50f;
@@ -88,21 +140,22 @@ uncharted2_tonemap_partial(vec3 x)
 }
 
 vec3
-uncharted2_filmic(vec3 v)
+filmic_full(vec3 v)
 {
     float exposure_bias = 2.0f;
-    vec3 curr           = uncharted2_tonemap_partial(v * exposure_bias);
+    vec3 curr           = filmic_partial(v * exposure_bias);
 
     vec3 W           = vec3(11.2f);
-    vec3 white_scale = vec3(1.0f) / uncharted2_tonemap_partial(W);
+    vec3 white_scale = vec3(1.0f) / filmic_partial(W);
     return curr * white_scale;
 }
 
 //----------------------
 vec3
-sample_tonemap_gamma(sampler2D tex_in)
+sample_tonemap_gamma(vec3 col_in)
 {
-    vec3 col_rgb = texture(tex_in, texCoords).rgb;
+    // vec3 col_rgb = texture(tex_in, texCoords).rgb;
+    vec3 col_rgb = col_in;
     vec3 ret     = col_rgb;
 
     switch (u_Tonemapper)
@@ -110,8 +163,9 @@ sample_tonemap_gamma(sampler2D tex_in)
     case 0: ret = reinhard(col_rgb); break;
     case 1: ret = reinhard_jodie(col_rgb); break;
     case 2: ret = reinhard_extended(col_rgb, u_MaxWhite); break;
-    case 3: ret = aces_approx(col_rgb); break;
-    case 4: ret = uncharted2_filmic(col_rgb); break;
+    case 3: ret = filmic_full(col_rgb); break;
+    case 4: ret = aces_approx(col_rgb); break;
+    case 5: ret = aces_fitted(col_rgb); break;
     default: break;
     }
 
@@ -126,9 +180,14 @@ sample_tonemap_gamma(sampler2D tex_in)
 void
 main()
 {
+    // vec3 pixel_rgb
+    //  (sample_tonemap_gamma(u_ScreenTexture) +
+    //   (sample_tonemap_gamma(u_BloomTexture) * u_BloomIntensity));
     vec3 pixel_rgb =
-      (sample_tonemap_gamma(u_ScreenTexture) +
-       (sample_tonemap_gamma(u_BloomTexture) * u_BloomIntensity));
+      (texture(u_ScreenTexture, texCoords).rgb +
+       (texture(u_BloomTexture, texCoords).rgb * u_BloomIntensity));
+
+    pixel_rgb = sample_tonemap_gamma(pixel_rgb);
 
     // Vignette
     float vignette_factor = smoothstep(
