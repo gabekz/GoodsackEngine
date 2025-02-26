@@ -212,6 +212,7 @@ struct ComponentParticleEmitter
 struct ComponentPlayerController
 {
     CACHE_ALIGN(f32 speed);
+    CACHE_ALIGN(f32 sprint_timer);
     CACHE_ALIGN(int entity_camera);
     CACHE_ALIGN(int walk_direction);
     CACHE_ALIGN(u8 can_jump);
@@ -268,6 +269,7 @@ struct ComponentWeapon
 
 struct ComponentWeaponSway
 {
+    CACHE_ALIGN(float move_step_time);
     CACHE_ALIGN(float sway_amount);
 };
 

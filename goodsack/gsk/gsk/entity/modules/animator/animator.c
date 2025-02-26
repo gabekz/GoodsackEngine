@@ -12,6 +12,7 @@
 #include "entity/__generated__/components_gen.h"
 
 #define ANIMATOR_REWIND 0 // TODO: Move to component as a setting
+#define ENABLE_LERP     1
 
 static void
 init(gsk_Entity e)
@@ -100,7 +101,7 @@ update(gsk_Entity e)
         animator->force_replay)
     {
         animator->timerNow         = 0;
-        animator->cntKeyframeIndex = 1;
+        animator->cntKeyframeIndex = 0;
 
         animator->is_playing =
           (animator->force_replay) || (animator->is_looping || 0);
@@ -127,10 +128,19 @@ update(gsk_Entity e)
     float ratio = (animator->timerNow - cntKeyframe->frameTime) /
                   (nxtKeyframe->frameTime - cntKeyframe->frameTime);
 
+#if ENABLE_LERP
+    gsk_animation_set_keyframe_lerp(
+      animator->cntAnimation, cntKeyframeIndex, nxtKeyframeIndex, ratio);
+#endif // ENABLE_LERP
+
     if (ratio >= nxtKeyframe->frameTime)
     {
-        gsk_animation_set_keyframe_lerp(
-          animator->cntAnimation, nxtKeyframeIndex, ratio);
+
+#if !(ENABLE_LERP)
+        gsk_animation_set_keyframe(
+          animator->cntAnimation, cntKeyframeIndex, ratio);
+#endif // !(ENABLE_LERP)
+
         animator->cntKeyframeIndex = nxtKeyframeIndex;
     }
 }

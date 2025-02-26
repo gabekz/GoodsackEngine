@@ -38,6 +38,7 @@ struct gsk_Pose
 struct gsk_Joint
 {
     char *name;
+    u8 override;
     u16 id;
 
     gsk_Joint *parent;
@@ -92,7 +93,8 @@ gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe);
 
 void
 gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
-                                u32 keyframe,
+                                u32 k0,
+                                u32 k1,
                                 float ratio);
 
 void

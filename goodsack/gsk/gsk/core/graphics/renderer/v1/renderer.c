@@ -114,7 +114,7 @@ gsk_renderer_init(const char *app_name)
       .msaaEnable      = TRUE,
       .msaaSamples     = 16,
       .vignetteAmount  = 0.5f,
-      .vignetteFalloff = 0.5f,
+      .vignetteFalloff = 0.3f,
       .vignetteColor   = {0, 0, 0},
 
       //.bloom_intensity = 0.2f,

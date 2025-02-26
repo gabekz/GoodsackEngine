@@ -220,6 +220,7 @@ _create_joint_recurse(gsk_Skeleton *skeleton,
     joint.parent         = parent;
     joint.childrenCount  = jointsNode[id]->children_count;
     joint.pose.hasMatrix = 0;
+    joint.override       = FALSE;
 
     // inverse bind pose matrix
     mat4 inverseBindPose = GLM_MAT4_ZERO_INIT;

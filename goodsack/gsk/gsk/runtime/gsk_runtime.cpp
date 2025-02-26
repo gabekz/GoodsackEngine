@@ -569,6 +569,12 @@ gsk::runtime::rt_get_asset_cache(const char *uri_str)
     return NULL;
 }
 
+void *
+gsk::runtime::rt_get_debug_toolbar()
+{
+    return s_runtime.p_debug_toolbar;
+}
+
 gsk_AssetRef *
 gsk::runtime::rt_get_fallback_asset(GskAssetType type)
 {

@@ -51,6 +51,9 @@ rt_get_renderer();
 gsk_AssetCache *
 rt_get_asset_cache(const char *uri_str);
 
+void *
+rt_get_debug_toolbar();
+
 gsk_AssetRef *
 rt_get_fallback_asset(GskAssetType type);
 

@@ -133,6 +133,8 @@ find_package(imgui CONFIG QUIET)
 if(imgui_FOUND)
     message(STATUS "(ImGui) Found package with auto-locate")
     target_link_libraries(ThirdParty_imgui INTERFACE imgui::imgui) 
+    #target_compile_definitions(imgui::imgui INTERFACE "IMGUI_IMPL_API=__declspec(dllexport)")
+    #target_compile_definitions(imgui::imgui INTERFACE "IMGUI_API=__declspec(dllexport)")
 else()
     set(IMGUI_DIR "${LIB_DIR}/imgui")
     message(STATUS "(ImGui) Using manual specified path: ${IMGUI_DIR}")
@@ -148,16 +150,21 @@ else()
                       "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
                       "${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp")
     if(UNIX)
-        target_compile_options(imgui PRIVATE "-fPIC")
+        target_compile_options(imgui INTERFACE "-fPIC")
     endif(UNIX)
 
-    target_include_directories(imgui PRIVATE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
-    target_link_libraries(imgui PRIVATE ThirdParty_glfw ThirdParty_vulkan "${CMAKE_DL_LIBS}")
+    target_include_directories(imgui INTERFACE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
+    target_link_libraries(imgui INTERFACE ThirdParty_glfw ThirdParty_vulkan "${CMAKE_DL_LIBS}")
     #target_include_directories(imgui PRIVATE "${VULKAN_PATH}/include")
 
     target_include_directories(ThirdParty_imgui INTERFACE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
     target_link_libraries(ThirdParty_imgui INTERFACE imgui "${CMAKE_DL_LIBS}")
+
+
 endif()
+
+#target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_IMPL_API=__declspec(dllexport)")
+#target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_API=__declspec(dllexport)")
 
 #################################################################
 # Library: Lua

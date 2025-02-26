@@ -83,7 +83,7 @@
     },
 
     "PlayerController": {
-        "float": ["speed", "jump_force"],
+        "float": ["speed", "jump_force", "sprint_timer"],
         "int": ["walk_direction"],
         "bool": ["is_grounded", "is_jumping", "can_jump"]
     },
@@ -118,7 +118,8 @@
     },
 
     "WeaponSway": {
-        "float": ["sway_amount"]
+        "float": ["sway_amount"],
+        "float": ["move_step_time"]
     }
 
 }
