@@ -36,6 +36,9 @@
 
 #include "core/drivers/alsoft/alsoft.h"
 
+// included here for activating core ECS systems
+#include "entity/modules/modules_systems.h"
+
 #if GSK_USING_COMPOSER
 #include "core/audio/music_composer.h"
 #include "core/audio/music_composer_loader.hpp"
@@ -540,11 +543,52 @@ gsk::runtime::rt_loop()
     glfwTerminate();
 }
 
+void
+gsk::runtime::rt_activate_ecs_systems(gsk_ECS *p_ecs)
+{
+    // Activate ECS Systems
+
+    s_transform_init(p_ecs);
+
+    s_camera_init(p_ecs);
+    s_model_draw_init(p_ecs);
+    s_audio_listener_init(p_ecs);
+    s_audio_source_init(p_ecs);
+    s_animator_init(p_ecs);
+
+    // Physics Systems
+    // order is important here..
+    s_rigidbody_forces_system_init(p_ecs); // apply external forces
+    s_collider_setup_system_init(p_ecs);   // check for collisions
+    s_rigidbody_system_init(p_ecs); // run solvers on collisions. integrate
+
+    // Player Controller
+    s_player_controller_system_init(p_ecs);
+
+    // Misc Systems
+    s_health_setup_init(p_ecs);
+    s_particles_ecs_system_init(p_ecs);
+
+    // s_collider_debug_draw_system_init(ecs);
+}
+
+void
+gsk::runtime::rt_set_scene(u16 scene_index)
+{
+    s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, scene_index);
+
+    if (s_runtime.ecs->systems_size <= 0)
+    {
+        gsk::runtime::rt_activate_ecs_systems(s_runtime.ecs);
+    }
+}
+
 gsk_ECS *
 gsk::runtime::rt_get_ecs()
 {
     return s_runtime.ecs;
 }
+
 gsk_Renderer *
 gsk::runtime::rt_get_renderer()
 {
@@ -588,12 +632,6 @@ gsk::runtime::rt_get_fallback_asset(GskAssetType type)
     }
 
     return p_ret;
-}
-
-void
-gsk::runtime::rt_set_scene(u16 sceneIndex)
-{
-    s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, sceneIndex);
 }
 
 char *

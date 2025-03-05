@@ -42,6 +42,12 @@ rt_setup(const char *root_dir,
 void
 rt_loop();
 
+void
+rt_activate_ecs_systems(gsk_ECS *p_ecs);
+
+void
+rt_set_scene(u16 scene_index);
+
 gsk_ECS *
 rt_get_ecs();
 
@@ -56,9 +62,6 @@ rt_get_debug_toolbar();
 
 gsk_AssetRef *
 rt_get_fallback_asset(GskAssetType type);
-
-void
-rt_set_scene(u16 sceneIndex);
 
 char *
 rt_get_startup_map();

@@ -174,29 +174,6 @@ gsk_ecs_init(gsk_Renderer *renderer)
     ecs->systems_size = 0;
     ecs->systems      = malloc(sizeof(gsk_ECSSystem));
 
-    s_transform_init(ecs);
-
-    s_camera_init(ecs);
-    s_model_draw_init(ecs);
-    s_audio_listener_init(ecs);
-    s_audio_source_init(ecs);
-    s_animator_init(ecs);
-
-    // Physics Systems
-    // order is important here..
-    s_rigidbody_forces_system_init(ecs); // apply external forces
-    s_collider_setup_system_init(ecs);   // check for collisions
-    s_rigidbody_system_init(ecs);        // run solvers on collisions. integrate
-
-    // Player Controller
-    s_player_controller_system_init(ecs);
-
-    // Misc Systems
-    s_health_setup_init(ecs);
-    s_particles_ecs_system_init(ecs);
-
-    // s_collider_debug_draw_system_init(ecs);
-
 #if USING_GENERATED_COMPONENTS
     _ecs_init_internal_gen(ecs);
 #endif

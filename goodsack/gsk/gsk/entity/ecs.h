@@ -62,37 +62,7 @@ typedef void (*gsk_ECSSubscriber)(gsk_Entity);
 // TODO: Fix this placement (dep-cyclical issue)
 #include <core/graphics/renderer/v1/renderer.h>
 
-#if USING_GENERATED_COMPONENTS
-
 #include <entity/__generated__/components_gen.h>
-
-#else
-
-#define ECSCOMPONENT_LAST C_MODEL
-enum _ecs_component {
-    C_TRANSFORM = 0,
-    C_CAMERA,
-    C_AUDIO_LISTENER,
-    C_AUDIO_SOURCE,
-    C_ANIMATOR,
-    C_MODEL,
-};
-typedef enum _ecs_component ECSComponentType;
-
-#endif
-
-/*-------------------------------------------*/
-
-/*
-// Declare systems here
-inline void _ecs_init_internal(ECS *ecs) {
-    _ECS_DECL_SYSTEM(s_transform);
-    _ECS_DECL_SYSTEM(s_camera);
-    _ECS_DECL_SYSTEM(s_draw_mesh);
-}
-*/
-
-/*-------------------------------------------*/
 
 struct gsk_Entity
 {
