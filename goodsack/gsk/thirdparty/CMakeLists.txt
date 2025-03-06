@@ -3,7 +3,7 @@
 function(setup_thirdparty_lib LIBNAME)
     add_library(ThirdParty_${LIBNAME} INTERFACE)
     set_target_properties(ThirdParty_${LIBNAME} PROPERTIES FOLDER ${LIB_FOLDER_PATH}/${LIBNAME})
-endfunction(set_library_folder)
+endfunction(setup_thirdparty_lib)
 
 add_library(ThirdParty INTERFACE)
 
@@ -150,11 +150,11 @@ else()
                       "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
                       "${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp")
     if(UNIX)
-        target_compile_options(imgui INTERFACE "-fPIC")
+        target_compile_options(imgui PRIVATE "-fPIC")
     endif(UNIX)
 
-    target_include_directories(imgui INTERFACE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
-    target_link_libraries(imgui INTERFACE ThirdParty_glfw ThirdParty_vulkan "${CMAKE_DL_LIBS}")
+    target_include_directories(imgui PRIVATE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
+    target_link_libraries(imgui PRIVATE ThirdParty_glfw ThirdParty_vulkan "${CMAKE_DL_LIBS}")
     #target_include_directories(imgui PRIVATE "${VULKAN_PATH}/include")
 
     target_include_directories(ThirdParty_imgui INTERFACE ${IMGUI_DIR} "${IMGUI_DIR}/backends")

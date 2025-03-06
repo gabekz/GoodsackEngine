@@ -60,13 +60,12 @@ init(gsk_Entity ent)
         LOG_CRITICAL("failed to get fallback particle emitter mesh");
     }
 
-    // setup
+    // create new particle system
 
-    (gsk_ParticleSystem *)ent_emitter->p_particle_system =
-      malloc(sizeof(gsk_ParticleSystem));
+    gsk_ParticleSystem *p_sys_new = malloc(sizeof(gsk_ParticleSystem));
+    *p_sys_new = gsk_particle_system_create(NULL, NULL, p_explicitdata);
 
-    *(gsk_ParticleSystem *)(ent_emitter->p_particle_system) =
-      gsk_particle_system_create(NULL, NULL, p_explicitdata);
+    (gsk_ParticleSystem *)(ent_emitter->p_particle_system) = p_sys_new;
 }
 
 static void

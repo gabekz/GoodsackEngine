@@ -2,6 +2,7 @@
 # Goodsack Game Engine - CMake Configuration
 # https://www.github.com/gabekz/GoodsackEngine
 
+
 cmake_minimum_required(VERSION 3.20)
 project(
     GoodsackEngine
@@ -113,20 +114,20 @@ set(TEST_SUBDIR_REGEX ".*__tests__.*")
 # All Sources
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${SRC_DIR}/*.c"
-    "${SRC_DIR}/*.cpp")
+    "${SRC_DIR}/*.cpp"
+)
 
 # REMOVE MAIN FILES
 list(REMOVE_ITEM SOURCES
     "${SRC_DIR}/runtime/gsk_runtime_main.cpp"
-    "${SRC_DIR}/prog/test/gsk_test_main.cpp")
+    "${SRC_DIR}/prog/test/gsk_test_main.cpp"
+)
 
 # Lua API-only sources
 file(GLOB_RECURSE API_SOURCES CONFIGURE_DEPENDS
-    "${API_DIR}/common.h"
-    "${API_DIR}/llib_goodsack.c"
-    "${API_DIR}/llib_vector.c"
-    "${API_DIR}/goodsack/llib_time.c"
-    "${API_DIR}/goodsack/llib_input.cpp")
+    "${API_DIR}/*.c"
+    "${API_DIR}/*.cpp"
+)
 
 # For each item in our list
 foreach (item ${SOURCES})
@@ -161,9 +162,20 @@ set_target_properties(GoodsackEngine_runtime PROPERTIES
     endif(GOODSACK_API_OMIT_PREFIX)
     FOLDER "GoodsackEngine"
     DESCRIPTION "GoodsackEngine Runtime Library"
+    ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
+    RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
+    RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
 )
 
-target_include_directories(GoodsackEngine_runtime PUBLIC ${SRC_DIR} ${PROJECT_BINARY_DIR})
+target_include_directories(GoodsackEngine_runtime PUBLIC 
+    ${SRC_DIR}
+    ${PROJECT_BINARY_DIR}
+)
+
+target_include_directories(GoodsackEngine_runtime PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk"
+)
 
 target_compile_options(GoodsackEngine_runtime PUBLIC ${PROJECT_EXE_OPTIONS})
 
@@ -183,40 +195,21 @@ target_link_libraries(GoodsackEngine_runtime PRIVATE
     ThirdParty_cgltf
 )
 
-target_include_directories(GoodsackEngine_runtime PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk")
-
-# set output directories
-set_target_properties(GoodsackEngine_runtime
-PROPERTIES
-ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
-LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
-RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
-RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
-)
-
-
-#if(GOODSACK_TEST)
-#    target_link_libraries(GoodsackEngine_runtime PRIVATE ThirdParty_gtest)
-#endif()
 
 #################################################################
-# GoodsackEngine Lua-API Library
+# GoodsackEngine Lua API Library
 #################################################################
 add_library(GoodsackEngine_api SHARED ${API_SOURCES})
+
 set_target_properties(GoodsackEngine_api PROPERTIES
     PREFIX ""
     FOLDER "GoodsackEngine"
     DESCRIPTION "GoodsackEngine API"
     OUTPUT_NAME "goodsack"
-)
-
-# set output directories
-set_target_properties(GoodsackEngine_api
-PROPERTIES
-ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
-LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
-RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
-RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
+    ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
+    RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
+    RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
 )
 
 # Link the include directory to the main project
@@ -254,7 +247,7 @@ if(GOODSACK_TEST)
             "${GTEST_DIR}/googletest/include"
             "${GTEST_DIR}/googlemock"
             "${GTEST_DIR}/googlemock/include")
-    endif()
+    endif(GTest_FOUND)
     ######################################################
 
     #target_include_directories(GoodsackEngine_Test PRIVATE "${SRC_DIR}")
@@ -290,7 +283,7 @@ if(GOODSACK_TEST)
         RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
 )
     endif(UNIX)
-endif()
+endif(GOODSACK_TEST)
 
 #################################################################
 # Set configure_file
