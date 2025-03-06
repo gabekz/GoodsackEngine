@@ -48,6 +48,7 @@ _update_curl(f32 curl_min, f32 curl_max, f32 curl_speed)
                       0.5f);
 }
 
+#if 0
 void
 gsk_particle_system_initialize()
 {
@@ -57,12 +58,18 @@ gsk_particle_system_initialize()
     s_saved_render_shader =
       GSK_ASSET("zhr://shaders/particles_computed.shader");
 }
+#endif
 
 gsk_ParticleSystem
 gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
                            gsk_ShaderProgram *p_render_shader,
                            gsk_MeshData *p_emitter_mesh)
 {
+    if (p_compute_shader == NULL || p_render_shader == NULL)
+    {
+        LOG_ERROR("passed in NULL shaders to particle system.");
+        return (gsk_ParticleSystem) {0};
+    }
     u32 numvert = 0;
 
     gsk_Particle *sp_particles =
@@ -103,6 +110,7 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
                         {2, 0, 2, 8},
                         {2, 0, 0, 9},
                         {0, 0, 2, 10}};
+
     if (p_emitter_mesh == NULL)
     {
         LOG_WARN("Using default particle triangles");
@@ -256,8 +264,8 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
         .convergence_strength        = 0.002f,
 
 #if 1
-        .p_compute_shader = s_saved_compute_shader,
-        .p_render_shader  = s_saved_render_shader,
+        .p_compute_shader = p_compute_shader,
+        .p_render_shader  = p_render_shader,
 #else
         .p_compute_shader = p_compute_shader,
         .p_render_shader  = p_render_shader,
@@ -272,6 +280,8 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
         .particles_buff_size = _GSK_PARTICLE_SIZE * _GSK_MAX_PARTICLE_COUNT,
 
         .num_verts = numvert,
+
+        .is_initialized = TRUE,
     };
 
     return ret;
@@ -280,6 +290,8 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
 void
 gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
 {
+
+    if (p_particle_system->is_initialized != TRUE) { return; }
 
     p_particle_system->noise_cnt = _update_curl(p_particle_system->noise_min,
                                                 p_particle_system->noise_max,

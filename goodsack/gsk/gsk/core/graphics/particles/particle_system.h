@@ -62,6 +62,8 @@ typedef struct gsk_ParticleSystem
 
     u32 num_verts;
 
+    u8 is_initialized;
+
 } gsk_ParticleSystem;
 
 #define _GSK_MAX_PARTICLE_COUNT 10000
@@ -69,8 +71,10 @@ typedef struct gsk_ParticleSystem
 
 #define _GSK_PARTICLE_AWAY 99999999.0f
 
+#if 0
 void
 gsk_particle_system_initialize();
+#endif
 
 gsk_ParticleSystem
 gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,

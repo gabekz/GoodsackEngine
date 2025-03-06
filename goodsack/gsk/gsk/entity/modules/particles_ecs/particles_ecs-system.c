@@ -62,8 +62,15 @@ init(gsk_Entity ent)
 
     // create new particle system
 
+    gsk_ShaderProgram *p_shader_com =
+      GSK_ASSET("zhr://shaders/fire_particles.compute");
+
+    gsk_ShaderProgram *p_shader_ren =
+      GSK_ASSET("zhr://shaders/particles_computed.shader");
+
     gsk_ParticleSystem *p_sys_new = malloc(sizeof(gsk_ParticleSystem));
-    *p_sys_new = gsk_particle_system_create(NULL, NULL, p_explicitdata);
+    *p_sys_new =
+      gsk_particle_system_create(p_shader_com, p_shader_ren, p_explicitdata);
 
     (gsk_ParticleSystem *)(ent_emitter->p_particle_system) = p_sys_new;
 }

@@ -19,7 +19,6 @@
 #include "core/graphics/lighting/lighting.h"
 #include "core/graphics/lighting/skybox.h"
 
-#include "core/graphics/particles/particle_system.h"
 #include "core/graphics/ui/billboard.h"
 #include "core/graphics/ui/gui_canvas.h"
 #include "core/graphics/ui/gui_element.h"
@@ -287,11 +286,6 @@ gsk_renderer_start(gsk_Renderer *renderer)
 
         // init bloom
         pass_bloom_init();
-
-        // setup particle system
-        gsk_particle_system_initialize();
-
-        // renderer->skybox = gsk_skybox_create(skyboxCubemap);
 
         // glEnable(GL_FRAMEBUFFER_SRGB);
         clearGLState();

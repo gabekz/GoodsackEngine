@@ -237,19 +237,25 @@ gsk_shader_program_create(const char *path)
         gsk_ShaderSource ss = ParseShader(path);
 
         u32 program = glCreateProgram();
-        u32 vs      = CompileSingleShader(GL_VERTEX_SHADER, ss.shaderVertex);
-        u32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss.shaderFragment);
-        u32 gs = 0;
 
-        if (ss.shaderGeometry != NULL)
-        {
-            gs = CompileSingleShader(GL_GEOMETRY_SHADER, ss.shaderGeometry);
-        }
+        u32 vs = (ss.shaderVertex)
+                   ? CompileSingleShader(GL_VERTEX_SHADER, ss.shaderVertex)
+                   : 0;
+        u32 fs = (ss.shaderFragment)
+                   ? CompileSingleShader(GL_FRAGMENT_SHADER, ss.shaderFragment)
+                   : 0;
+        u32 gs = (ss.shaderGeometry)
+                   ? CompileSingleShader(GL_GEOMETRY_SHADER, ss.shaderGeometry)
+                   : 0;
+        u32 cs = (ss.shaderCompute)
+                   ? CompileSingleShader(GL_COMPUTE_SHADER, ss.shaderCompute)
+                   : 0;
 
-        // TODO: Read documentation on these functions
-        glAttachShader(program, vs);
-        glAttachShader(program, fs);
-        if (gs != 0) { glAttachShader(program, gs); }
+        if (vs) { glAttachShader(program, vs); }
+        if (fs) { glAttachShader(program, fs); }
+        if (gs) { glAttachShader(program, gs); }
+        if (cs) { glAttachShader(program, cs); }
+
         glLinkProgram(program);
 
         GLint linkStatus = 0;
@@ -271,9 +277,10 @@ gsk_shader_program_create(const char *path)
 
         glValidateProgram(program);
 
-        glDeleteShader(vs);
-        glDeleteShader(fs);
-        if (gs != 0) { glDeleteShader(gs); }
+        if (vs) { glDeleteShader(vs); }
+        if (fs) { glDeleteShader(fs); }
+        if (gs) { glDeleteShader(gs); }
+        if (cs) { glDeleteShader(cs); }
 
         gsk_ShaderProgram ret = {.id = program, .shaderSource = ss};
 
@@ -285,42 +292,6 @@ gsk_shader_program_create(const char *path)
         return;
     }
     return;
-}
-
-gsk_ShaderProgram *
-gsk_shader_compute_program_create(const char *path)
-{
-    gsk_ShaderSource ss = ParseShader(path);
-    u32 program         = glCreateProgram();
-    u32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss.shaderCompute);
-
-    glAttachShader(program, csSingle);
-    glLinkProgram(program);
-    glValidateProgram(program);
-
-    GLint linkStatus = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
-    if (linkStatus == GL_FALSE)
-    {
-        GLint maxLength = 0;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-        // The maxLength includes the NULL character
-        char *infoLog = (char *)malloc(maxLength);
-        glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
-
-        // Log the error
-        LOG_ERROR("Program link error message: %s", infoLog);
-
-        free(infoLog);
-    }
-
-    // glDeleteShader(csSingle);
-
-    gsk_ShaderProgram *ret = malloc(sizeof(gsk_ShaderProgram));
-    ret->id                = program;
-    ret->shaderSource      = ss;
-    return ret;
 }
 
 void

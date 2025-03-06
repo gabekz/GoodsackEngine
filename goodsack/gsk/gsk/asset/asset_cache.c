@@ -205,7 +205,7 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
         list_type = GskAssetType_Material;
     }
     // shader
-    else if (!strcmp(ext, ".shader"))
+    else if (!strcmp(ext, ".shader") || !strcmp(ext, ".compute"))
     {
         list_type = GskAssetType_Shader;
     }

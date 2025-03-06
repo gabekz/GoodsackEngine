@@ -59,9 +59,6 @@ typedef struct gsk_ShaderProgram
 gsk_ShaderProgram
 gsk_shader_program_create(const char *path);
 
-gsk_ShaderProgram *
-gsk_shader_compute_program_create(const char *path);
-
 void
 gsk_shader_use(gsk_ShaderProgram *shader);
 
