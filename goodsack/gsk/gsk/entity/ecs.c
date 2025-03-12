@@ -340,12 +340,6 @@ gsk_ecs_component_register(gsk_ECS *self, u32 component_id, u64 size)
 
     self->component_lists[component_id].components =
       calloc(self->capacity, aSize);
-
-    // printf("\n%d size", aSize);
-
-    // unsigned char *tag = (unsigned char
-    // *)(self->component_lists[component_id].components+size); *tag =
-    // ECS_TAG_UNUSED;
 }
 
 gsk_Entity

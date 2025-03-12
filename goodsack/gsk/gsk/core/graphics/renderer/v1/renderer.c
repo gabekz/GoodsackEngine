@@ -119,7 +119,7 @@ gsk_renderer_init(const char *app_name)
       //.bloom_intensity = 0.2f,
       //.bloom_radius    = 0.02f,
       //.bloom_threshold = 0.06f,
-      .bloom_intensity = 1.0f,
+      .bloom_intensity = 0.3f,
       .bloom_radius    = 0.00f,
       .bloom_threshold = 0.25f,
     };

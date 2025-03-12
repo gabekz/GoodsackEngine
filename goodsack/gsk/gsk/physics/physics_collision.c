@@ -731,7 +731,7 @@ gsk_physics_collision_find_capsule_capsule(gsk_CapsuleCollider *a,
 
         glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
         glm_vec3_normalize(ret.normal);
-        ret.depth = glm_vec3_distance(ret.point_a, ret.point_b);
+        ret.depth = -glm_vec3_distance(ret.point_a, ret.point_b);
     }
 
     return ret;

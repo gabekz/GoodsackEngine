@@ -31,8 +31,8 @@ typedef enum ECSComponentType_t {
     C_COLLIDER,
     C_ENEMY, // TODO: Remove (testing)
     C_ENTITY_REFERENCE,
-    C_FLAMMABLE,
-    C_HEALTH, // TODO: Remove (new package)
+    C_FLAMMABLE, // TODO: Remove (new package)
+    C_HEALTH,    // TODO: Remove (new package)
     C_LIGHT,
     C_MODEL,
     C_PARTICLE_EMITTER,

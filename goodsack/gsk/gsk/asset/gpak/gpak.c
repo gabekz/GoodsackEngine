@@ -116,7 +116,7 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer)
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
     {
         // TODO: Temporarily only checking Textures
-        if (i != GskAssetType_Texture) { continue; }
+        if (i != GskAssetType_Texture && i != GskAssetType_Model) { continue; }
 
         // TODO: update asset-type container block
 
@@ -205,6 +205,8 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer)
 
             gsk_URI suri = gsk_filesystem_uri(uri);
             s32 suri_len = strlen(suri.path);
+
+            LOG_DEBUG("writing asset: %s", uri);
 
             fwrite(&suri_len, 1, sizeof(s32), p_writer->file_ptr);
             fwrite(suri.path, suri_len, 1, p_writer->file_ptr);

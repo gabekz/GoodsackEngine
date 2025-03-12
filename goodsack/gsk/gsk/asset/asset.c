@@ -48,6 +48,7 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
       &(p_cache->asset_lists[asset_type].list_data_import), asset_index - 1);
 
     p_blob->asset_type = (GskAssetType)asset_type;
+    // p_blob->is_serialized = FALSE;
 
     // pre-allocated options data
     void *p_options = array_list_get_at_index(
@@ -71,7 +72,7 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
         if (asset_type == GskAssetType_Texture)
         {
             *p_blob               = parse_image(GSK_PATH(str_uri));
-            p_blob->is_serialized = FALSE;
+            p_blob->is_serialized = TRUE;
         }
 
         // Model import
@@ -291,6 +292,13 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     if (p_ref->is_utilized == TRUE) { return p_ref; }
 
     LOG_DEBUG("loading asset (%s)", str_uri);
+    if (fetch_mode != GSK_ASSET_FETCH_ALL)
+    {
+        LOG_TRACE("%s - fetch mode: %s",
+                  str_uri,
+                  (fetch_mode == GSK_ASSET_FETCH_IMPORT) ? "IMPORT"
+                                                         : "VALIDATE");
+    }
 
     gsk_CreateAssetFptr p_create_func = NULL;
     gsk_LoadAssetFptr p_load_func     = NULL;
@@ -353,7 +361,7 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
 
     if (fetch_mode == GSK_ASSET_FETCH_IMPORT)
     {
-        LOG_DEBUG("Asset (%s) fetched import.", str_uri);
+        LOG_TRACE("asset (%s) fetched import.", str_uri);
         return p_ref;
     }
 

@@ -25,6 +25,8 @@
 #define IMPORT_MATERIALS         0
 #define STARTING_ANIMATION_INDEX 0
 
+#define _DEBUG_GLTF 0
+
 struct AttributeInfo
 {
     s32 idxPos;
@@ -118,13 +120,15 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
         }
     }
 
+#if _DEBUG_GLTF
     LOG_TRACE("Animation duration: %f\nTotal Keyframes:%d",
               frameTimes[inputsCount - 1],
               inputsCount);
+#endif // _DEBUG_GLTF
 
     for (int i = 0; i < gltfAnimation->channels_count; i++)
     {
-        u32 boneIndex = -1;
+        s32 boneIndex = -1;
         // Go through each bone and find ID by target_node of channel
         // TODO: very, very slow. Fix this later.
         for (int j = 0; j < skeleton->jointsCount; j++)
@@ -138,7 +142,14 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
                 break;
             }
         }
-        if (boneIndex == -1) LOG_ERROR("Failed to find bone index");
+        if (boneIndex == -1)
+        {
+            LOG_ERROR(
+              "Failed to find bone index for animation: \'%s\'. Skipping "
+              "fill for this animation.",
+              gltfAnimation->name);
+            return NULL;
+        };
 
         // Set parameters
         switch (gltfAnimation->channels[i].target_path)
@@ -383,9 +394,12 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
         // Skeleton name from node
         skeleton->name = strdup(armatureNode->name);
+
+#if _DEBUG_GLTF
         LOG_TRACE("Skeleton name: %s\nSkeleton children: %d",
                   skeleton->name,
                   armatureNode->children_count);
+#endif _DEBUG_GLTF
 
         // List of all joints in skeleton
         skeleton->joints =
@@ -440,7 +454,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         int animationsCount             = data->animations_count;
         cgltf_animation *gltfAnimations = data->animations;
 
-        LOG_TRACE("Animations: %d", animationsCount);
+        // LOG_TRACE("Animations: %d", animationsCount);
 
         // Allocate animations
         skeleton->animations_count = animationsCount;
@@ -451,11 +465,13 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
         for (int i = 0; i < animationsCount; i++)
         {
+#if _DEBUG_GLTF
             LOG_TRACE(
               "Animation: \"%s\"\nSamplers count: %d\nChannels count: %d",
               gltfAnimations[i].name,
               gltfAnimations[i].samplers_count,
               gltfAnimations[i].channels_count);
+#endif // _DEBUG_GLTF
 
             gsk_Animation *animation =
               __fill_animation_data(&gltfAnimations[i], skeleton);
@@ -463,12 +479,19 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
             // increment so that we can pass the animation index to the actual
             // animation data as well.
-            skeleton->animations_count++;
+            if (skeleton->p_animations[i] != NULL) skeleton->animations_count++;
         }
 
         if (skeleton->animations_count != animationsCount)
         {
-            LOG_ERROR("uh oh");
+            LOG_WARN("skinned-mesh skeleton (%s) has incorrect animation count",
+                     skeleton->name);
+        }
+
+        if (skeleton->animations_count == 0 || animationsCount == 0)
+        {
+            LOG_WARN("skinned-mesh skeleton (%s) has no animation data",
+                     skeleton->name);
         }
 
         // set current animation to the first one in the list
@@ -618,24 +641,28 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
     }
 
     int indicesBufferViewIndex = 0;
-    LOG_TRACE("Meshes Count: %d", data->meshes_count);
+    // LOG_TRACE("Meshes Count: %d", data->meshes_count);
 
     for (int i = 0; i < data->meshes_count; i++)
     {
-        LOG_TRACE("Mesh name: %s", data->meshes[i].name);
+        // LOG_TRACE("Mesh name: %s", data->meshes[i].name);
 
         int attributesCount = data->meshes[i].primitives->attributes_count;
-        LOG_TRACE("Total attributes: %d", attributesCount);
+        // LOG_TRACE("Total attributes: %d", attributesCount);
 
         for (int j = 0; j < attributesCount; j++)
         {
             cgltf_attribute attribute =
               data->meshes[i].primitives->attributes[j];
+
+            indicesBufferViewIndex++;
+
+#if _DEBUG_GLTF
             LOG_TRACE("%d\tAttribute: %s - buffer index: %d",
                       j,
                       attribute.name,
                       attribute.index);
-            indicesBufferViewIndex++;
+#endif // _DEBUG_GLTF
         }
 
         cgltf_accessor *indices = data->meshes[i].primitives->indices;
@@ -727,7 +754,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
     ret->modelPath   = path;
     ret->meshesCount = totalObjects;
 
-    LOG_TRACE("Loaded textures: %d", s_loaded_textures_count);
+    // LOG_TRACE("loaded textures: %d", s_loaded_textures_count);
 
     // Cleanup
     cgltf_free(data);

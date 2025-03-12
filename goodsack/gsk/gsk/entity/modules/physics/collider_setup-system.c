@@ -144,6 +144,12 @@ init(gsk_Entity e)
         vec3 tip   = {0.0f, 0.5f, 0.0f};
         f32 radius = 0.2f;
 
+        if (e.id >= 313)
+        {
+            vec3 new_base = {0.0f, -0.2f, 0.0f};
+            glm_vec3_copy(new_base, base);
+        }
+
         glm_vec3_copy(base, capsule_collider->base);
         glm_vec3_copy(tip, capsule_collider->tip);
         capsule_collider->radius = radius;
@@ -185,7 +191,7 @@ on_collide(gsk_Entity e)
         };
 
         // TODO: Add collision masks
-        if (e.id >= 313 && e_compare.id >= 313) { continue; }
+        // if (e.id >= 313 && e_compare.id >= 313) { continue; }
 
         if (!gsk_ecs_has(e_compare, C_COLLIDER)) continue;
         if (!gsk_ecs_has(e_compare, C_TRANSFORM))
