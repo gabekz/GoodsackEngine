@@ -36,7 +36,7 @@
 #include "tools/debug/debug_context.h"
 #include "tools/debug/debug_draw_line.h"
 
-#define TESTING_DRAW_UI           1
+#define TESTING_DRAW_UI           0
 #define TESTING_DRAW_LINE         0
 #define TESTING_GLSAMPLER_OBJECTS 0
 #define LIGHTING_CULL_GLOBAL      1
@@ -346,23 +346,10 @@ gsk_renderer_start(gsk_Renderer *renderer)
     }
 }
 
-/* Render Functions for the pipeline */
-
+/* Shared Functions for the pipeline */
 static void
-renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
+_poll_update_events(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 {
-    gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
-
-    // Settings
-    glfwSwapInterval(gsk_device_getGraphicsSettings().swapInterval);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    /*-------------------------------------------
-        gsk_Scene Logic/Data update
-    */
-
     gsk_device_setInput(
       gsk_device_getInput()); // TODO: Weird hack to reset for axis
 
@@ -387,6 +374,26 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     // Update all camera UBO's
     //__update_camera_ubo(renderer);
+}
+
+/* Render Functions for the pipeline */
+
+static void
+renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
+{
+    gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
+
+    // Settings
+    glfwSwapInterval(gsk_device_getGraphicsSettings().swapInterval);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    /*-------------------------------------------
+        gsk_Scene Logic/Data update
+    */
+
+    _poll_update_events(renderer, scene, ecs);
 
     /*-------------------------------------------
         Pass #0 - Depth Prepass
@@ -581,20 +588,17 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     // computebuffer_draw();
 }
 
-/*
-void renderer_tick_VULKAN(gsk_Renderer *renderer, gsk_ECS *ecs) {
+static void
+renderer_tick_VULKAN(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
+{
+    _poll_update_events(renderer, scene, ecs);
 
-// Update Analytics Data
+    vulkan_render_draw_begin(renderer->vulkanDevice, renderer->window);
 
-    glfwPollEvents();
-
-    gsk_ecs_event(ecs, ECS_UPDATE);
     renderer->currentPass = GskRenderPass_Lighting;
-    gsk_ecs_event(ecs, ECS_RENDER);
 
-    vulkan_render_draw(renderer->vulkanDevice, renderer->window);
+    gsk_ecs_event(ecs, ECS_RENDER);
 }
-*/
 
 void
 gsk_renderer_tick(gsk_Renderer *renderer)
@@ -613,7 +617,7 @@ gsk_renderer_tick(gsk_Renderer *renderer)
         renderer_tick_OPENGL(renderer, scene, ecs);
     } else if (GSK_DEVICE_API_VULKAN)
     {
-        // renderer_tick_VULKAN(renderer, ecs);
+        renderer_tick_VULKAN(renderer, scene, ecs);
     }
 }
 

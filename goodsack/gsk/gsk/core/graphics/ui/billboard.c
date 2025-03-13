@@ -9,6 +9,7 @@
 #include "util/gfx.h"
 #include "util/maths.h"
 
+#include "core/device/device.h"
 #include "core/drivers/opengl/opengl.h"
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/primitives.h"
@@ -16,7 +17,17 @@
 gsk_Billboard2D *
 gsk_billboard_create(const char *texturePath, vec2 size)
 {
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_WARN("billboard creation not implemented for vulkan");
+        return NULL;
+    }
+
     gsk_Billboard2D *ret = malloc(sizeof(gsk_Billboard2D));
+    if (ret == NULL)
+    {
+        LOG_CRITICAL("failed to allocate memory for billboard");
+    }
 
     ret->vao       = gsk_gl_vertex_array_create();
     float *rectPos = prim_vert_rect();
@@ -40,6 +51,8 @@ gsk_billboard_create(const char *texturePath, vec2 size)
 void
 gsk_billboard_draw(gsk_Billboard2D *self, vec3 position)
 {
+    if (GSK_DEVICE_API_VULKAN) { return NULL; }
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

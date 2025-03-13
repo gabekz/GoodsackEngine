@@ -112,14 +112,15 @@ _upload_shader_data(gsk_Entity e,
     } else if (GSK_DEVICE_API_VULKAN)
     {
         // TEST (while we don't have direct descriptor sets for objects)
-        mat4 p = GLM_MAT4_IDENTITY_INIT;
-        // glm_mat4_copy(p, camera->uniform.model);
-        // glm_mat4_copy(p, camera->model);
-        // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1,
-        // 0}); glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1,
-        // 0, 1});
         camera->proj[1][1] *= -1;
-        // camera->uniform.proj[1][1] *= -1;
+
+#if 1
+        mat4 identity = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_copy(identity, e.ecs->renderer->vk_ubo_test.model);
+#endif
+
+        glm_mat4_copy(camera->view, e.ecs->renderer->vk_ubo_test.view);
+        glm_mat4_copy(camera->proj, e.ecs->renderer->vk_ubo_test.proj);
     }
 #endif
 }

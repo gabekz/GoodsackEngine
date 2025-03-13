@@ -7,6 +7,7 @@
 
 #include "util/filesystem.h"
 
+#include "core/device/device.h"
 #include "core/drivers/opengl/opengl.h"
 #include "core/graphics/mesh/mesh.h"
 #include "core/graphics/mesh/primitives.h"
@@ -26,6 +27,12 @@ static gsk_ShaderProgram *cubemapBrdfShader;
 gsk_Skybox *
 gsk_skybox_create(gsk_Texture *cubemap)
 {
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_WARN("Skybox not implemented for Vulkan");
+        return NULL;
+    }
+
     gsk_Skybox *ret = malloc(sizeof(gsk_Skybox));
     ret->cubemap    = cubemap;
 
@@ -51,6 +58,8 @@ gsk_skybox_create(gsk_Texture *cubemap)
 void
 gsk_skybox_draw(gsk_Skybox *self)
 {
+    if (GSK_DEVICE_API_VULKAN) { return; }
+
     // glDepthMask(GL_FALSE);
     // glDisable(GL_CULL_FACE); -- TODO: Needed for skybox rendering
     gsk_shader_use(self->shader);
@@ -74,6 +83,12 @@ gsk_skybox_draw(gsk_Skybox *self)
 gsk_Skybox *
 gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
 {
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_WARN("Skybox (HDR) not implemented for Vulkan");
+        return NULL;
+    }
+
     clearGLState();
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);

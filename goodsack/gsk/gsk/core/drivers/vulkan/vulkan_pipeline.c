@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 
+#include "util/filesystem.h"
 #include "util/logger.h"
 
 #include "core/drivers/vulkan/vulkan_depth.h"
@@ -76,9 +77,9 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
     VulkanPipelineDetails *details = malloc(sizeof(VulkanPipelineDetails));
 
     details->vertShaderModule = _createShaderModule(
-      device, "../res/shaders/vulkan/std/compiled/white_vert.spv");
+      device, GSK_PATH("gsk://shaders/vulkan/std/compiled/white_vert.spv"));
     details->fragShaderModule = _createShaderModule(
-      device, "../res/shaders/vulkan/std/compiled/white_frag.spv");
+      device, GSK_PATH("gsk://shaders/vulkan/std/compiled/white_frag.spv"));
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {
       .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,

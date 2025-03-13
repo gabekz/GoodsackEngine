@@ -69,7 +69,6 @@ gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size,
         t_neg_y = tex_coords[3];
     }
 
-    ret->vao = gsk_gl_vertex_array_create();
     float *rectPos = 
     (float[])
     {
@@ -81,11 +80,18 @@ gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size,
         -size_x_off ,  size_y_off, t_neg_x, t_pos_y,
     };
 
+    if(GSK_DEVICE_API_OPENGL) {
+
+    ret->vao = gsk_gl_vertex_array_create();
     gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Dynamic);
     gsk_gl_vertex_buffer_bind(vbo);
     gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_array_add_buffer(ret->vao, vbo);
+    }
+    else if(GSK_DEVICE_API_VULKAN) {
+      ret->vao = NULL;
+    }
 
     ret->using_texture = (p_texture != NULL) ? TRUE : FALSE;
 
@@ -165,7 +171,8 @@ gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
 #endif
 
 
-  gsk_gl_vertex_array_bind(self->vao);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
-
+  if(GSK_DEVICE_API_OPENGL) {
+    gsk_gl_vertex_array_bind(self->vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+  }
 }

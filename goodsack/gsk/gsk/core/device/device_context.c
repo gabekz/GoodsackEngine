@@ -204,6 +204,8 @@ gsk_window_create(int win_width,
           glfwCreateWindow(win_width, win_height, "Title", NULL, NULL);
 
         glfwSetKeyCallback(window, _key_callback);
+        glfwSetCursorPosCallback(window, _cursor_callback);
+        glfwSetMouseButtonCallback(window, _mouse_callback);
 
         VulkanDeviceContext *vulkanDevice = vulkan_device_create();
         *vkd                              = vulkanDevice;

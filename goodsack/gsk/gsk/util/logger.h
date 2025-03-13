@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 
+#include "util/sysdefs.h"
 #include <stdio.h>
 
 #ifndef __FILE_NAME__
@@ -31,7 +32,7 @@ extern "C" {
 #define LOG_CRITICAL(fmt, ...)                                         \
     logger_log(                                                        \
       LogLevel_CRITICAL, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__); \
-    exit(1)
+    _BRK()
 
 typedef enum {
     LogLevel_NONE,

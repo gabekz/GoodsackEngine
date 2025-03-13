@@ -13,7 +13,7 @@
 gsk_LightingData
 gsk_lighting_initialize(u32 ubo_binding)
 {
-    gsk_LightingData ret;
+    gsk_LightingData ret = {0};
 
     u32 light_ubo_id;
     if (GSK_DEVICE_API_OPENGL)

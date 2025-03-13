@@ -102,6 +102,15 @@ typedef struct gsk_Renderer
         u32 activeCamera;
     } camera_data;
 
+    // TODO: remove this shit
+    struct
+    {
+        mat4 proj;
+        mat4 view;
+        mat4 model;
+
+    } vk_ubo_test;
+
     // TODO: still hacky shit
     VulkanDeviceContext *vulkanDevice;
     gsk_DebugContext *debugContext;

@@ -26,7 +26,7 @@ _gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
                              TextureOptions *p_options)
 {
     gsk_Texture ret = {0};
-    ret.id          = 0;
+    ret.is_valid    = FALSE;
 
     unsigned char *localBuffer = NULL;
 
@@ -176,6 +176,7 @@ _gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
 
     if (localBuffer) { stbi_image_free(localBuffer); }
 
+    ret.is_valid = TRUE;
     return ret;
 }
 
@@ -203,6 +204,7 @@ texture_create_cubemap(u32 faceCount, ...)
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
 
     gsk_Texture *tex = malloc(sizeof(gsk_Texture));
+    tex->is_valid    = FALSE;
     tex->id          = textureId;
 
     va_list ap;
@@ -237,6 +239,7 @@ texture_create_cubemap(u32 faceCount, ...)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
+    tex->is_valid = TRUE;
     return tex;
 }
 
@@ -246,35 +249,41 @@ texture_create_hdr(const char *path)
     LOG_DEBUG("Loading HDR Image at path: %s", path);
 
     gsk_Texture *tex = malloc(sizeof(gsk_Texture));
+    tex->is_valid    = FALSE;
 
     stbi_set_flip_vertically_on_load(TRUE);
     float *data = stbi_loadf(path, &tex->width, &tex->height, &tex->bpp, 0);
 
     assert(data != NULL);
 
-    u32 textureId;
-    glGenTextures(1, &textureId);
-    glBindTexture(GL_TEXTURE_2D, textureId);
+    u32 textureId = 0;
 
-    for (int i = 0; i < 1; i++)
+    if (GSK_DEVICE_API_OPENGL)
     {
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_RGB16F,
-                     tex->width,
-                     tex->height,
-                     0,
-                     GL_RGB,
-                     GL_FLOAT,
-                     data);
+        glGenTextures(1, &textureId);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+
+        for (int i = 0; i < 1; i++)
+        {
+            glTexImage2D(GL_TEXTURE_2D,
+                         0,
+                         GL_RGB16F,
+                         tex->width,
+                         tex->height,
+                         0,
+                         GL_RGB,
+                         GL_FLOAT,
+                         data);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+    tex->is_valid = TRUE;
     tex->id       = textureId;
     tex->filePath = path;
 
@@ -285,16 +294,22 @@ texture_create_hdr(const char *path)
 void
 texture_bind(gsk_Texture *self, u32 slot)
 {
-    self->activeSlot = slot;
-    glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, self->id);
+    if (GSK_DEVICE_API_OPENGL)
+    {
+        self->activeSlot = slot;
+        glActiveTexture(GL_TEXTURE0 + slot);
+        glBindTexture(GL_TEXTURE_2D, self->id);
+    }
 }
 
 void
 texture_unbind()
 {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    if (GSK_DEVICE_API_OPENGL)
+    {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 }
 
 void

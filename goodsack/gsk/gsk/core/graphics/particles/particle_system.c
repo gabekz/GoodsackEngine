@@ -70,6 +70,13 @@ gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
         LOG_ERROR("passed in NULL shaders to particle system.");
         return (gsk_ParticleSystem) {0};
     }
+
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_WARN("Particle System currently not supported on Vulkan");
+        return (gsk_ParticleSystem) {0};
+    }
+
     u32 numvert = 0;
 
     gsk_Particle *sp_particles =
@@ -374,6 +381,8 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
 void
 gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
 {
+    if (p_particle_system->is_initialized == FALSE) { return; }
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Default alpha blending
     glBlendEquation(GL_FUNC_ADD);
@@ -449,6 +458,12 @@ gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
 void
 gsk_particle_system_cleanup(gsk_ParticleSystem *p_self)
 {
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_WARN("Particle System CLEANUP currently not supported on Vulkan");
+        return;
+    }
+
     if (p_self == NULL) { return; }
 
     if (p_self->particles_buff_size > 0)

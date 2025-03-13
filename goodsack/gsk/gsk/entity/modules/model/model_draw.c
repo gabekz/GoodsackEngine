@@ -26,8 +26,20 @@ static void
 __update_dynamic_uniforms(u32 shader_id,
                           u32 render_layer,
                           gsk_Mesh *mesh,
-                          struct ComponentTransform *transform)
+                          struct ComponentTransform *transform,
+                          gsk_Renderer *p_renderer)
 {
+
+    // TODO: temp
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        mat4 newTranslation = GLM_MAT4_ZERO_INIT;
+        glm_mat4_mul(mesh->localMatrix, transform->model, newTranslation);
+        glm_mat4_copy(newTranslation, p_renderer->vk_ubo_test.model);
+
+        return;
+    }
+
     // Skinned Matrix array buffer
     if (mesh->meshData->isSkinnedMesh)
     {
@@ -220,7 +232,8 @@ DrawModel(struct ComponentModel *model,
 
             u32 shader_id = material->shaderProgram->id;
 
-            __update_dynamic_uniforms(shader_id, renderLayer, mesh, transform);
+            __update_dynamic_uniforms(
+              shader_id, renderLayer, mesh, transform, renderer);
 
             if (is_new_shader == TRUE)
             {
@@ -285,6 +298,9 @@ DrawModel(struct ComponentModel *model,
         // Draw command
         vkCmdDraw(commandBuffer, context->vertexBuffer->size, 1, 0, 0);
 #endif
+        __update_dynamic_uniforms(
+          0, renderLayer, model->mesh, transform, renderer);
+
         // Bind Vertex/Index buffers
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffer,
@@ -308,28 +324,31 @@ init(gsk_Entity e)
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
     struct ComponentModel *model         = gsk_ecs_get(e, C_MODEL);
 
-    // TODO: stupid hack grabbing only scale.x...
-    // mesh->model = gsk_load_obj(mesh->modelPath, transform->scale[0]);
-
-    if (GSK_DEVICE_API_OPENGL)
+#if 1
+    // loading mesh from system init
+    if (!(gsk_Model *)model->pModel)
     {
-        if (!(gsk_Model *)model->pModel)
-        {
-            model->pModel = gsk_model_load_from_file(
-              model->modelPath, transform->scale[0], FALSE);
-        }
+        LOG_WARN("ComponentModel does not contain pointer to model. "
+                 "Loading from model_draw");
 
-        // TODO: Duplicate model here (for skinned-mesh / animator)
-        // TODO: we probably dont want model->mesh. Maybe model->skinned_mesh?
-        model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
+        model->pModel = gsk_model_load_from_file(
+          model->modelPath, transform->scale[0], FALSE);
+    }
+#endif
 
-        // TODO: rework defaults
-        if (model->cast_shadows && model->cast_shadows != 2)
-        {
-            model->cast_shadows = 1;
-        }
+    // TODO: Duplicate model here (for skinned-mesh / animator)
+    // TODO: we probably dont want model->mesh. Maybe model->skinned_mesh?
 
-    } else if (GSK_DEVICE_API_VULKAN)
+    model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
+
+    // TODO: rework defaults
+    if (model->cast_shadows && model->cast_shadows != 2)
+    {
+        model->cast_shadows = 1;
+    }
+
+#if 0
+    if (GSK_DEVICE_API_VULKAN)
     {
         model->mesh = malloc(sizeof(gsk_Mesh));
         ((gsk_Mesh *)(model->mesh))->meshData =
@@ -345,6 +364,7 @@ init(gsk_Entity e)
           ((gsk_Mesh *)model->mesh)->meshData->mesh_buffers[0].p_buffer,
           ((gsk_Mesh *)model->mesh)->meshData->mesh_buffers[0].buffer_size);
     }
+#endif
 }
 
 static void

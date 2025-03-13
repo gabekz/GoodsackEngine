@@ -13,6 +13,7 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#include "core/device/device.h"
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/model.h"
 #include "core/graphics/shader/shader.h"
@@ -132,12 +133,15 @@ __create_material(const char *str_uri, void *p_options, void *p_dest)
 static u8
 __load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
+    void *p_vk_device =
+      (GSK_DEVICE_API_VULKAN) ? gsk_runtime_get_renderer()->vulkanDevice : NULL;
+
     gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
 
     gsk_Texture tex =
-      _gsk_texture_create_internal(p_blob, NULL, NULL, p_options);
+      _gsk_texture_create_internal(p_blob, NULL, p_vk_device, p_options);
 
-    if (tex.id == 0) { return 0; }
+    if (tex.is_valid != TRUE) { return 0; }
 
     *((gsk_Texture *)p_dest) = tex;
 
@@ -168,7 +172,7 @@ __load_model(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
             u8 status = gsk_mesh_assemble(p_model->meshes[i]);
             if (status == 0 || p_model->meshes[i]->is_gpu_loaded != TRUE)
             {
-                LOG_CRITICAL("Failed to upload");
+                LOG_ERROR("Failed to upload mesh");
                 return 0;
             }
         }

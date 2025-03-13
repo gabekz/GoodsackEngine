@@ -339,26 +339,29 @@ gsk::runtime::rt_setup(const char *root_dir,
     openal_init();
 
 #if USING_RUNTIME_LOADING_SCREEN
-    glfwSwapInterval(0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    vec2 text_pos   = {0.0f, 0.0f};
-    vec3 text_color = {1.0f, 1.0f, 1.0f};
-
-    gsk_GuiText *loading_text =
-      gsk_gui_text_create("Loading", text_pos, text_color);
-
-    const u32 canvas_shader_id =
-      s_runtime.renderer->canvas.p_material->shaderProgram->id;
-
-    for (int i = 0; i < 2; i++)
+    if (GSK_DEVICE_API_OPENGL)
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glfwSwapInterval(0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        vec2 text_pos   = {0.0f, 0.0f};
+        vec3 text_color = {1.0f, 1.0f, 1.0f};
+
+        gsk_GuiText *loading_text =
+          gsk_gui_text_create("Loading", text_pos, text_color);
+
+        const u32 canvas_shader_id =
+          s_runtime.renderer->canvas.p_material->shaderProgram->id;
+
+        for (int i = 0; i < 2; i++)
+        {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 #if RUNTIME_LOADING_TEXT
-        gsk_gui_text_draw(loading_text, canvas_shader_id);
+            gsk_gui_text_draw(loading_text, canvas_shader_id);
 #endif // RUNTIME_LOADING_TEXT
-        glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
+            glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
+        }
     }
 #endif // RUNTIME_LOADING_SCREEN
 
@@ -481,13 +484,7 @@ gsk::runtime::rt_loop()
         // Vulkan
         else if (GSK_DEVICE_API_VULKAN)
         {
-            glfwPollEvents();
-            // debugGui->update();
-            gsk_ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
-            vulkan_render_draw_begin(s_runtime.renderer->vulkanDevice,
-                                     s_runtime.renderer->window);
-            s_runtime.renderer->currentPass = GskRenderPass_Lighting;
-            gsk_ecs_event(s_runtime.ecs, ECS_RENDER);
+            gsk_renderer_tick(s_runtime.renderer);
 
 #if GSK_RUNTIME_USE_DEBUG
             s_runtime.p_debug_toolbar->render();

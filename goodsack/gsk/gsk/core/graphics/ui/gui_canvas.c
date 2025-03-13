@@ -5,6 +5,7 @@
 
 #include "gui_canvas.h"
 
+#include "core/device/device.h"
 #include "core/graphics/material/material.h"
 #include "core/graphics/ui/gui_element.h"
 #include "runtime/gsk_runtime_wrapper.h"
@@ -54,6 +55,8 @@ gsk_gui_canvas_add_text(gsk_GuiCanvas *p_self, gsk_GuiText *p_text)
 void
 gsk_gui_canvas_draw(gsk_GuiCanvas *p_self)
 {
+    if (GSK_DEVICE_API_VULKAN) { return; }
+
     const gsk_Renderer *p_renderer = gsk_runtime_get_renderer();
     const u32 shader_id            = p_self->p_material->shaderProgram->id;
 

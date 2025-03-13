@@ -10,6 +10,7 @@
 #include "asset/import/loader_gltf.h"
 #include "asset/import/loader_obj.h"
 #include "core/device/device.h"
+#include "runtime/gsk_runtime_wrapper.h"
 
 gsk_Mesh *
 gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
@@ -139,7 +140,26 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
 
     } else if (GSK_DEVICE_API_VULKAN)
     {
-        LOG_WARN("gsk_mesh_assemble() not implemented for Vulkan!");
+        // LOG_WARN("gsk_mesh_assemble() not implemented for Vulkan!");
+
+        data->has_indices   = FALSE;
+        data->isSkinnedMesh = FALSE;
+        data->combined_flags =
+          (GskMeshBufferFlag_Positions | GskMeshBufferFlag_Textures);
+
+        VulkanDeviceContext *p_vk_device =
+          gsk_runtime_get_renderer()->vulkanDevice;
+
+        mesh->vkVBO =
+          vulkan_vertex_buffer_create(p_vk_device->physicalDevice,
+                                      p_vk_device->device,
+                                      p_vk_device->graphicsQueue,
+                                      p_vk_device->commandPool,
+                                      data->mesh_buffers[0].p_buffer,
+                                      data->mesh_buffers[0].buffer_size);
+
+        if (mesh->vkVBO == NULL) { LOG_ERROR("Failed to load VK mesh buffer"); }
+        mesh->is_gpu_loaded = (mesh->vkVBO != NULL);
     }
 
 #if 0 // USE_SKINNED_MESH

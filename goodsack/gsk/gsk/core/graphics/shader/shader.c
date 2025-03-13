@@ -289,9 +289,11 @@ gsk_shader_program_create(const char *path)
     } else if (GSK_DEVICE_API_VULKAN)
     {
         LOG_DEBUG("Shader not implemented for Vulkan");
-        return;
+        gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
+        return ret;
     }
-    return;
+    gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
+    return ret;
 }
 
 void

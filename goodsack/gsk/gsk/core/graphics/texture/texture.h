@@ -30,6 +30,7 @@ typedef struct TextureOptions
 
 typedef struct gsk_Texture
 {
+    u8 is_valid;
     const char *filePath;
     s32 bpp;
     s32 width, height;

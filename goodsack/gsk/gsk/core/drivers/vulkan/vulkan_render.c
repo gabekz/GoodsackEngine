@@ -5,6 +5,7 @@
 
 #include "vulkan_render.h"
 
+#include "util/filesystem.h"
 #include "util/gfx.h"
 
 #include "core/drivers/vulkan/vulkan_command.h"
@@ -82,10 +83,10 @@ vulkan_render_setup(VulkanDeviceContext *context)
 
     // Create a texture
     LOG_DEBUG("Create a test texture");
-    gsk_Texture *texture = texture_create(
-      "../demo/demo_hot/Resources/textures/pbr/cerberus/Cerberus_A.tga",
-      context,
-      (TextureOptions) {16, GL_SRGB_ALPHA, true, true});
+    gsk_Texture *texture =
+      texture_create(GSK_PATH("gsk://textures/prototype/uv_checker.png"),
+                     context,
+                     (TextureOptions) {16, GL_SRGB_ALPHA, true, true});
 
     // Create Descriptor Sets
     LOG_DEBUG("Create descriptor sets");
@@ -271,11 +272,9 @@ vulkan_render_draw_end(VulkanDeviceContext *context, GLFWwindow *window)
 
     // Update UBO data
     // LOG_DEBUG("update uniform buffers");
-    /*
     vulkan_uniform_buffer_update(context->currentFrame,
-            context->uniformBuffersMapped,
-            context->swapChainDetails->swapchainExtent);
-    */
+                                 context->uniformBuffersMapped,
+                                 context->swapChainDetails->swapchainExtent);
 
     VkSubmitInfo submitInfo = {
       .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
