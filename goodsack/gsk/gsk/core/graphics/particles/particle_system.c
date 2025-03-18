@@ -391,10 +391,10 @@ gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
 
     // glDisable(GL_DEPTH_TEST);
 
-    gsk_Texture *tex_ramp = GSK_ASSET("gsk://textures/gradient3.png");
+    gsk_Texture *tex_ramp = GSK_ASSET("zhr://textures/particles/gradient.png");
     texture_bind(tex_ramp, 9);
 
-    gsk_Texture *tex_main = GSK_ASSET("gsk://textures/particle_fire3.png");
+    gsk_Texture *tex_main = GSK_ASSET("zhr://textures/particles/fire.png");
     texture_bind(tex_main, 10);
 
     u32 shader_id = 0;
