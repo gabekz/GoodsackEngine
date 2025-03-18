@@ -119,6 +119,9 @@ typedef struct gsk_Renderer
     u32 sampler0_id;
     u32 sampler1_id;
 
+    // object picker
+    u32 hovered_entity_index; // true index is offset -1 | 0 == NONE
+
 } gsk_Renderer;
 
 /**

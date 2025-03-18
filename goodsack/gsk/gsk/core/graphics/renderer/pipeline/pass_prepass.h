@@ -28,9 +28,16 @@ gsk_Material *
 prepass_getMaterialSkinned();
 
 u32
+prepass_getFBO();
+
+u32
 prepass_getPosition();
+
 u32
 prepass_getNormal();
+
+u32
+prepass_getPicker();
 
 #ifdef __cplusplus
 }

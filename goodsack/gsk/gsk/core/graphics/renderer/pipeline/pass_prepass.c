@@ -27,6 +27,7 @@ static u32 s_depthPrepassTextureId;
 // GBuffer information
 static u32 s_gPosition;
 static u32 s_gNormal;
+static u32 s_gPicker;
 
 static gsk_GlVertexArray *s_vaoRect;
 
@@ -62,6 +63,23 @@ prepass_init()
     glFramebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, s_gNormal, 0);
 
+    // - Picker texture - TODO: width/height
+    glGenTextures(1, &s_gPicker);
+    glBindTexture(GL_TEXTURE_2D, s_gPicker);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB32UI,
+                 1280,
+                 720,
+                 0,
+                 GL_RGB_INTEGER,
+                 GL_UNSIGNED_INT,
+                 NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, s_gPicker, 0);
+
     // Renderbuffer
     unsigned int rbo;
     glGenRenderbuffers(1, &rbo);
@@ -71,37 +89,10 @@ prepass_init()
       GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    // Texture
-    /*
-    glGenTextures(1, &s_depthPrepassTextureId);
-    glBindTexture(GL_TEXTURE_2D, s_depthPrepassTextureId);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_DEPTH_COMPONENT,
-                 1280, // TODO: WIDTH
-                 720,  // TODO: HEIGHT
-                 0,
-                 GL_DEPTH_COMPONENT,
-                 GL_FLOAT,
-                 NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    unsigned int attachments[3] = {
+      GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    */
-
-    unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-
-    /*
-    glFramebufferTexture2D(GL_FRAMEBUFFER,
-                           // GL_DEPTH_ATTACHMENT,
-                           attachments,
-                           GL_TEXTURE_2D,
-                           s_depthPrepassTextureId,
-                           0);
-                           */
-    glDrawBuffers(2, attachments);
+    glDrawBuffers(3, attachments);
 
     // create shader and material
     s_depthPrepassShader   = GSK_ASSET("gsk://shaders/depth-prepass.shader");
@@ -142,6 +133,8 @@ prepass_bindTextures(u32 startingSlot)
     glBindTexture(GL_TEXTURE_2D, s_gPosition);
     glActiveTexture(GL_TEXTURE1 + startingSlot);
     glBindTexture(GL_TEXTURE_2D, s_gNormal);
+    glActiveTexture(GL_TEXTURE2 + startingSlot);
+    glBindTexture(GL_TEXTURE_2D, s_gPicker);
 }
 
 void
@@ -183,12 +176,25 @@ prepass_getMaterialSkinned()
 }
 
 u32
+prepass_getFBO()
+{
+    return s_depthPrepassFBO;
+}
+
+u32
 prepass_getPosition()
 {
     return s_gPosition;
 }
+
 u32
 prepass_getNormal()
 {
     return s_gNormal;
+}
+
+u32
+prepass_getPicker()
+{
+    return s_gPicker;
 }

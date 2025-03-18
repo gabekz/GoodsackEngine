@@ -65,8 +65,11 @@ main()
 
 layout(location = 0) out vec3 gPosition;
 layout(location = 1) out vec3 gNormal;
+layout(location = 2) out uvec3 gPicker;
 
 layout(binding = 10) uniform sampler2D t_NormalMap;
+
+uniform uint u_entity_index = 0;
 
 in VS_OUT
 {
@@ -92,4 +95,5 @@ main()
 {
     gPosition = fs_in.fragPos;
     gNormal   = calcNormal(1.0f);
+    gPicker   = uvec3(u_entity_index, 0, gl_PrimitiveID);
 }

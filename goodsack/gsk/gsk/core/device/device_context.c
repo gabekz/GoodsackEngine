@@ -68,7 +68,10 @@ _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 static void
 _mouse_callback(GLFWwindow *window, int button, int action, int mods)
 {
-    // Nothing here for now!
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        // set selected entity here.
+    }
 }
 
 static void

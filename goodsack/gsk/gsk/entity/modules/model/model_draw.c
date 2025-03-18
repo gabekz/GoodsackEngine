@@ -25,6 +25,7 @@
 static void
 __update_dynamic_uniforms(u32 shader_id,
                           u32 render_layer,
+                          u32 entity_index,
                           gsk_Mesh *mesh,
                           struct ComponentTransform *transform,
                           gsk_Renderer *p_renderer)
@@ -67,6 +68,23 @@ __update_dynamic_uniforms(u32 shader_id,
     // Set the correct camera layer
     glUniform1i(glGetUniformLocation(shader_id, "u_render_layer"),
                 render_layer);
+
+    // Set the entity_index
+    glUniform1ui(glGetUniformLocation(shader_id, "u_entity_index"),
+                 entity_index + 1);
+
+    vec4 wireframe_color = {0, 0, 0, 0}; // default to empty
+    if (p_renderer->hovered_entity_index > 0 &&
+        p_renderer->hovered_entity_index - 1 == entity_index)
+    {
+        vec4 newcol = {0.2f, 0.2f, 0.0f, 0.2f};
+        glm_vec4_copy(newcol, wireframe_color);
+    }
+
+    // Set u_WireframeColor
+    glUniform4fv(glGetUniformLocation(shader_id, "u_WireframeColor"),
+                 1,
+                 (float *)wireframe_color);
 
 #if 0
     glUniform1i(glGetUniformLocation(shader_id, "u_InvertedNormals"),
@@ -137,6 +155,7 @@ DrawModel(struct ComponentModel *model,
           struct ComponentTransform *transform,
           u16 useOverrideMaterial, // Material from renderer
           u32 renderLayer,
+          u32 entity_index,
           VkCommandBuffer commandBuffer,
           gsk_Renderer *renderer)
 {
@@ -234,7 +253,7 @@ DrawModel(struct ComponentModel *model,
         u32 shader_id = material->shaderProgram->id;
 
         __update_dynamic_uniforms(
-          shader_id, renderLayer, mesh, transform, renderer);
+          shader_id, renderLayer, entity_index, mesh, transform, renderer);
 
         if (is_new_shader == TRUE)
         {
@@ -301,7 +320,7 @@ DrawModel(struct ComponentModel *model,
         vkCmdDraw(commandBuffer, context->vertexBuffer->size, 1, 0, 0);
 #endif
             __update_dynamic_uniforms(
-              0, renderLayer, mesh, transform, renderer);
+              0, renderLayer, entity_index, mesh, transform, renderer);
 
             // Bind Vertex/Index buffers
             VkDeviceSize offsets[] = {0};
@@ -430,18 +449,37 @@ render(gsk_Entity e)
 #endif
 
         // Regular Render
-        (GSK_DEVICE_API_OPENGL)
-          ? DrawModel(
-              model, transform, FALSE, renderLayer, NULL, e.ecs->renderer)
-          : DrawModel(
-              model, transform, FALSE, renderLayer, cb, e.ecs->renderer);
+        (GSK_DEVICE_API_OPENGL) ? DrawModel(model,
+                                            transform,
+                                            FALSE,
+                                            renderLayer,
+                                            e.index,
+                                            NULL,
+                                            e.ecs->renderer)
+                                : DrawModel(model,
+                                            transform,
+                                            FALSE,
+                                            renderLayer,
+                                            e.index,
+                                            cb,
+                                            e.ecs->renderer);
 
     } else if (pass != GskRenderPass_Skybox)
     {
-        (GSK_DEVICE_API_OPENGL)
-          ? DrawModel(
-              model, transform, TRUE, renderLayer, NULL, e.ecs->renderer)
-          : DrawModel(model, transform, TRUE, renderLayer, cb, e.ecs->renderer);
+        (GSK_DEVICE_API_OPENGL) ? DrawModel(model,
+                                            transform,
+                                            TRUE,
+                                            renderLayer,
+                                            e.index,
+                                            NULL,
+                                            e.ecs->renderer)
+                                : DrawModel(model,
+                                            transform,
+                                            TRUE,
+                                            renderLayer,
+                                            e.index,
+                                            cb,
+                                            e.ecs->renderer);
     }
 }
 
