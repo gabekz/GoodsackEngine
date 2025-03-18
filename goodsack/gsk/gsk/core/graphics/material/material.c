@@ -132,7 +132,7 @@ gsk_material_load_textures(gsk_Material *self)
 
     } else if (GSK_DEVICE_API_VULKAN)
     {
-        LOG_DEBUG("Material not implemented for Vulkan");
+        // LOG_DEBUG("Material not implemented for Vulkan");
 
         // Bind Pipeline here? Probably.
         // TODO: Bind image descriptor set HERE

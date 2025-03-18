@@ -53,6 +53,8 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
 {
     if (mesh == NULL) { LOG_CRITICAL("Passing NULL Mesh to assemble."); }
 
+    VulkanDeviceContext *p_vk_device = gsk_runtime_get_renderer()->vulkanDevice;
+
     if (mesh->is_gpu_loaded == TRUE)
     {
         LOG_WARN("Trying to upload an already gpu-loaded Mesh.");
@@ -61,106 +63,141 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
 
     gsk_MeshData *data = mesh->meshData;
 
+    // GL
+    gsk_GlVertexArray *vao = NULL;
+
+    // TODO: Remove
+    u8 has_vulkan_vbo = FALSE;
+
     if (GSK_DEVICE_API_OPENGL)
     {
-        // Create the VAO
-        gsk_GlVertexArray *vao = gsk_gl_vertex_array_create();
+        // Create the GL VAO
+        vao = gsk_gl_vertex_array_create();
         gsk_gl_vertex_array_bind(vao);
         mesh->vao = vao;
+    }
 
-        GskMeshBufferFlags used_flags = 0; // overall flags of mesh
+    GskMeshBufferFlags used_flags = 0; // overall flags of mesh
 
-        for (int i = 0; i < data->mesh_buffers_count; i++)
+    for (int i = 0; i < data->mesh_buffers_count; i++)
+    {
+        // GL
+        gsk_GlVertexBuffer *vbo = NULL;
+
+        if (GSK_DEVICE_API_OPENGL)
         {
-            gsk_GlVertexBuffer *vbo =
-              gsk_gl_vertex_buffer_create(data->mesh_buffers[i].p_buffer,
-                                          data->mesh_buffers[i].buffer_size,
-                                          data->usage_draw);
+            vbo = gsk_gl_vertex_buffer_create(data->mesh_buffers[i].p_buffer,
+                                              data->mesh_buffers[i].buffer_size,
+                                              data->usage_draw);
+        }
 
-            for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
+        for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
+        {
+            s32 flag = (1 << j);
+
+            // get number of vals
+            s32 n_vals  = 3;
+            u32 gl_type = GL_FLOAT;
+
+            if (flag == GskMeshBufferFlag_Textures)
             {
-                s32 flag = (1 << j);
-
-                // get number of vals
-                s32 n_vals  = 3;
-                u32 gl_type = GL_FLOAT;
-
-                if (flag == GskMeshBufferFlag_Textures)
-                {
-                    n_vals = 2;
-                } else if ((flag == GskMeshBufferFlag_Joints) ||
-                           (flag == GskMeshBufferFlag_Weights))
-                {
-                    n_vals = 4;
-                }
-
-                gl_type = (flag == GskMeshBufferFlag_Joints) ? GL_UNSIGNED_INT
-                                                             : GL_FLOAT;
-
-                // skip IBO for now. Done later.
-                if (flag == GskMeshBufferFlag_Indices) { continue; }
-
-                if (data->mesh_buffers[i].buffer_flags & flag)
-                {
-                    if (used_flags & flag)
-                    {
-                        LOG_ERROR("Duplicate mesh vertex data.");
-                        return 0;
-                    }
-
-                    gsk_gl_vertex_buffer_push(vbo, n_vals, gl_type, GL_FALSE);
-
-                    used_flags |= flag;
-                }
+                n_vals = 2;
+            } else if ((flag == GskMeshBufferFlag_Joints) ||
+                       (flag == GskMeshBufferFlag_Weights))
+            {
+                n_vals = 4;
             }
 
+            gl_type =
+              (flag == GskMeshBufferFlag_Joints) ? GL_UNSIGNED_INT : GL_FLOAT;
+
+            // skip IBO for now. Done later.
+            if (flag == GskMeshBufferFlag_Indices) { continue; }
+
+            if (data->mesh_buffers[i].buffer_flags & flag)
+            {
+                if (used_flags & flag)
+                {
+                    LOG_ERROR("Duplicate mesh vertex data.");
+                    return 0;
+                }
+
+                if (GSK_DEVICE_API_OPENGL)
+                {
+                    gsk_gl_vertex_buffer_push(vbo, n_vals, gl_type, GL_FALSE);
+                }
+
+                used_flags |= flag;
+            }
+        }
+
+        if (GSK_DEVICE_API_OPENGL)
+        {
             gsk_gl_vertex_array_add_buffer(vao, vbo); // VBO push -> VAO
         }
 
-        // Check if we have IBO
-        for (int i = 0; i < data->mesh_buffers_count; i++)
+        else if (GSK_DEVICE_API_VULKAN && has_vulkan_vbo == FALSE)
         {
-            if (data->mesh_buffers[i].buffer_flags & GskMeshBufferFlag_Indices)
+            mesh->vkVBO =
+              vulkan_vertex_buffer_create(p_vk_device->physicalDevice,
+                                          p_vk_device->device,
+                                          p_vk_device->graphicsQueue,
+                                          p_vk_device->commandPool,
+                                          data->mesh_buffers[i].p_buffer,
+                                          data->mesh_buffers[i].buffer_size);
+
+            has_vulkan_vbo = TRUE;
+
+            if (mesh->vkVBO == NULL)
             {
-                gsk_GlIndexBuffer *ibo =
+                LOG_ERROR("Failed to load VK mesh buffer");
+            }
+        }
+    }
+
+    // Check if we have IBO
+    for (int i = 0; i < data->mesh_buffers_count; i++)
+    {
+        if (data->mesh_buffers[i].buffer_flags & GskMeshBufferFlag_Indices)
+        {
+            gsk_GlIndexBuffer *ibo = NULL;
+
+            if (GSK_DEVICE_API_OPENGL)
+            {
+                ibo =
                   gsk_gl_index_buffer_create(data->mesh_buffers[i].p_buffer,
                                              data->mesh_buffers[i].buffer_size,
                                              data->usage_draw);
-
-                used_flags |= GskMeshBufferFlag_Indices;
             }
+
+            else if (GSK_DEVICE_API_VULKAN)
+            {
+                mesh->vkIBO =
+                  vulkan_index_buffer_create(p_vk_device->physicalDevice,
+                                             p_vk_device->device,
+                                             p_vk_device->graphicsQueue,
+                                             p_vk_device->commandPool,
+                                             data->mesh_buffers[i].p_buffer,
+                                             (u16)data->indicesCount);
+
+                if (mesh->vkVBO == NULL)
+                {
+                    LOG_ERROR("Failed to load VK mesh buffer");
+                }
+            }
+
+            used_flags |= GskMeshBufferFlag_Indices;
         }
-
-        data->has_indices   = (used_flags & GskMeshBufferFlag_Indices);
-        data->isSkinnedMesh = ((used_flags & GskMeshBufferFlag_Joints) ||
-                               (used_flags & GskMeshBufferFlag_Weights));
-
-        data->combined_flags = used_flags;
-        mesh->is_gpu_loaded  = TRUE;
-
-    } else if (GSK_DEVICE_API_VULKAN)
-    {
-        // LOG_WARN("gsk_mesh_assemble() not implemented for Vulkan!");
-
-        data->has_indices   = FALSE;
-        data->isSkinnedMesh = FALSE;
-        data->combined_flags =
-          (GskMeshBufferFlag_Positions | GskMeshBufferFlag_Textures);
-
-        VulkanDeviceContext *p_vk_device =
-          gsk_runtime_get_renderer()->vulkanDevice;
-
-        mesh->vkVBO =
-          vulkan_vertex_buffer_create(p_vk_device->physicalDevice,
-                                      p_vk_device->device,
-                                      p_vk_device->graphicsQueue,
-                                      p_vk_device->commandPool,
-                                      data->mesh_buffers[0].p_buffer,
-                                      data->mesh_buffers[0].buffer_size);
-
-        if (mesh->vkVBO == NULL) { LOG_ERROR("Failed to load VK mesh buffer"); }
-        mesh->is_gpu_loaded = (mesh->vkVBO != NULL);
     }
+
+    data->has_indices   = (used_flags & GskMeshBufferFlag_Indices);
+    data->isSkinnedMesh = ((used_flags & GskMeshBufferFlag_Joints) ||
+                           (used_flags & GskMeshBufferFlag_Weights));
+
+    data->combined_flags = used_flags;
+    mesh->is_gpu_loaded  = TRUE;
+
+    // if (GSK_DEVICE_API_VULKAN) { data->isSkinnedMesh = FALSE; }
 
 #if 0 // USE_SKINNED_MESH
     // Skinned Mesh buffer

@@ -36,7 +36,7 @@
 #include "tools/debug/debug_context.h"
 #include "tools/debug/debug_draw_line.h"
 
-#define TESTING_DRAW_UI           0
+#define TESTING_DRAW_UI           1
 #define TESTING_DRAW_LINE         0
 #define TESTING_GLSAMPLER_OBJECTS 0
 #define LIGHTING_CULL_GLOBAL      1

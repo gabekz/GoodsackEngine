@@ -99,6 +99,7 @@ typedef struct gsk_Mesh
     // Mesh GPU buffers
     gsk_GlVertexArray *vao;
     VulkanVertexBuffer *vkVBO;
+    VulkanIndexBuffer *vkIBO;
 
     // Imported material data
     u32 usingImportedMaterial;

@@ -11,16 +11,23 @@
 #include "util/gfx.h"
 
 #include "core/drivers/vulkan/vulkan_buffer.h"
+#include "core/drivers/vulkan/vulkan_support.h"
 
 VulkanIndexBuffer *
 vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
                            VkDevice device,
-                           VkCommandPool commandPool,
                            VkQueue graphicsQueue,
-                           u16 *indices,
+                           VkCommandPool commandPool,
+                           void *data,
                            u16 indicesCount)
 {
-    VkDeviceSize bufferSize = indicesCount * sizeof(u16);
+    VulkanIndexBuffer *ret = malloc(sizeof(VulkanIndexBuffer));
+
+    VkDeviceSize bufferSize = indicesCount * sizeof(u32);
+
+    ret->data = data;
+    ret->size = bufferSize;
+    void *pData;
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -34,12 +41,10 @@ vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
                          &stagingBuffer,
                          &stagingBufferMemory);
 
-    void *data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices, bufferSize);
+    VK_CHECK(
+      vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &pData));
+    memcpy(pData, ret->data, bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
-
-    VulkanIndexBuffer *ret = malloc(sizeof(VulkanIndexBuffer));
 
     vulkan_buffer_create(physicalDevice,
                          device,
@@ -55,7 +60,7 @@ vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
                        commandPool,
                        stagingBuffer,
                        ret->buffer,
-                       (u32)bufferSize);
+                       bufferSize);
 
     vkDestroyBuffer(device, stagingBuffer, NULL);
     vkFreeMemory(device, stagingBufferMemory, NULL);

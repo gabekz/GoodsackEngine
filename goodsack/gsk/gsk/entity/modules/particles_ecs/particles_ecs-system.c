@@ -72,7 +72,7 @@ init(gsk_Entity ent)
     *p_sys_new =
       gsk_particle_system_create(p_shader_com, p_shader_ren, p_explicitdata);
 
-    (gsk_ParticleSystem *)(ent_emitter->p_particle_system) = p_sys_new;
+    ent_emitter->p_particle_system = p_sys_new;
 }
 
 static void

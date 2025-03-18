@@ -127,7 +127,7 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .vertexBindingDescriptionCount = 1,
       .pVertexBindingDescriptions    = &bindingDescription,
 
-      .vertexAttributeDescriptionCount = 3,
+      .vertexAttributeDescriptionCount = 4,
       .pVertexAttributeDescriptions    = attributeDescriptions,
     };
 #endif

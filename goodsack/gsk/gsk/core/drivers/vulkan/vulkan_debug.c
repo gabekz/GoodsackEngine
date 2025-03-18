@@ -20,7 +20,7 @@ vulkan_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         LOG_WARN("[Validation Layer] %s", pCallbackData->pMessage);
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-    default: LOG_CRITICAL("[Validation Layer] %s", pCallbackData->pMessage);
+    default: LOG_ERROR("[Validation Layer] %s", pCallbackData->pMessage);
     }
     return VK_FALSE;
 }

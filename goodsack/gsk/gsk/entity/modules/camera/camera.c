@@ -114,7 +114,7 @@ _upload_shader_data(gsk_Entity e,
         // TEST (while we don't have direct descriptor sets for objects)
         camera->proj[1][1] *= -1;
 
-#if 1
+#if 0
         mat4 identity = GLM_MAT4_IDENTITY_INIT;
         glm_mat4_copy(identity, e.ecs->renderer->vk_ubo_test.model);
 #endif

@@ -1028,3 +1028,12 @@ gsk_physics_collision_find_ray_plane(gsk_Raycast *ray,
 
     return ret;
 }
+
+// gsk_Raycast v. Capsule
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_capsule(gsk_Raycast *ray,
+                                       gsk_CapsuleCollider *capsule,
+                                       vec3 pos_capsule)
+{
+    return (gsk_CollisionPoints) {0};
+}

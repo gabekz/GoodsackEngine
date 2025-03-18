@@ -162,7 +162,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     int logStat = logger_initConsoleLogger(NULL);
     // logger_initFileLogger(exe_path.c_str(), 0, 0);
 
-    logger_setLevel(LogLevel_TRACE);
+    logger_setLevel(LogLevel_DEBUG);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
@@ -566,7 +566,7 @@ gsk::runtime::rt_activate_ecs_systems(gsk_ECS *p_ecs)
     s_health_setup_init(p_ecs);
     s_particles_ecs_system_init(p_ecs);
 
-    // s_collider_debug_draw_system_init(ecs);
+    // s_collider_debug_draw_system_init(p_ecs);
 }
 
 void

@@ -77,6 +77,9 @@ __update_dynamic_uniforms(u32 shader_id,
 static void
 __update_static_uniforms(u32 shader_id, gsk_Renderer *renderer)
 {
+    // TODO: Currently not working with Vulkan Pipeline
+    if (GSK_DEVICE_API_VULKAN) { return; }
+
     gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
 
     // Light Space Matrix
@@ -139,108 +142,108 @@ DrawModel(struct ComponentModel *model,
 {
     gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
 
-    if (GSK_DEVICE_API_OPENGL)
-    {
 #if CULLING_FOR_IMPORTED
-        // TODO: temporary solution for face culling.
-        // This should be handled by a material property.
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-        glFrontFace(GL_CW);
+    // TODO: temporary solution for face culling.
+    // This should be handled by a material property.
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
 #elif CULLING_LOCAL
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        glFrontFace(GL_CCW);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
 #endif // CULLING_FOR_IMPORTED
 
-        gsk_Model *pModel = model->pModel;
-        for (int i = 0; i < pModel->meshesCount; i++)
+    gsk_Model *pModel = model->pModel;
+    for (int i = 0; i < pModel->meshesCount; i++)
+    {
+        // caching
+        u8 is_new_material = FALSE;
+        u8 is_new_shader   = FALSE;
+
+        gsk_Mesh *mesh = pModel->meshes[i];
+        gsk_Material *material;
+
+        if (mesh->usingImportedMaterial == FALSE & model->material == NULL)
         {
-            // caching
-            u8 is_new_material = FALSE;
-            u8 is_new_shader   = FALSE;
+            continue;
+        }
 
-            gsk_Mesh *mesh = pModel->meshes[i];
-            gsk_Material *material;
+        // Select Material
+        if (mesh->usingImportedMaterial && !useOverrideMaterial)
+        {
+            material = mesh->materialImported;
 
-            if (mesh->usingImportedMaterial == FALSE & model->material == NULL)
+        } else if (useOverrideMaterial)
+        {
+            // Check if shadow-casting is disabled
+            if (renderer->currentPass == GskRenderPass_Shadowmap &&
+                model->cast_shadows == ECS_VAL_DISABLED)
             {
-                continue;
+                return;
             }
 
-            // Select Material
-            if (mesh->usingImportedMaterial && !useOverrideMaterial)
+            if (mesh->meshData->isSkinnedMesh)
             {
-                material = mesh->materialImported;
-
-            } else if (useOverrideMaterial)
+                material = renderer->explicitMaterial_skinned;
+            } else
             {
-                // Check if shadow-casting is disabled
-                if (renderer->currentPass == GskRenderPass_Shadowmap &&
-                    model->cast_shadows == ECS_VAL_DISABLED)
-                {
-                    return;
-                }
-
-                if (mesh->meshData->isSkinnedMesh)
-                {
-                    material = renderer->explicitMaterial_skinned;
-                } else
-                {
-                    material = renderer->explicitMaterial;
-                }
+                material = renderer->explicitMaterial;
             }
+        }
 
-            else
-            {
-                material = model->material;
-            }
+        else
+        {
+            material = model->material;
+        }
 
-            // Check Material caching (for texture loading)
-            if (material != renderer->p_prev_material)
-            {
-                gsk_material_load_textures(material);
-                renderer->p_prev_material = material;
-                is_new_material           = TRUE;
-            }
-            // Check Shader caching (for uniform updating)
-            if (material->shaderProgram->id != renderer->prev_shader_id)
-            {
-                gsk_shader_use(material->shaderProgram);
-                renderer->prev_shader_id = material->shaderProgram->id;
-                is_new_shader            = TRUE;
-            }
+        // Check Material caching (for texture loading)
+        if (material != renderer->p_prev_material)
+        {
+            gsk_material_load_textures(material);
+            renderer->p_prev_material = material;
+            is_new_material           = TRUE;
+        }
+        // Check Shader caching (for uniform updating)
+        if (material->shaderProgram->id != renderer->prev_shader_id)
+        {
+            gsk_shader_use(material->shaderProgram);
+            renderer->prev_shader_id = material->shaderProgram->id;
+            is_new_shader            = TRUE;
+        }
 
-            // TESTING for normal-map in G-Buffer
-            // TODO: Breaks when normal-map doesn't exist
-            // TODO: Refactor this block
-            if (renderer->currentPass == GskRenderPass_GBuffer)
+        // TESTING for normal-map in G-Buffer
+        // TODO: Breaks when normal-map doesn't exist
+        // TODO: Refactor this block
+        if (renderer->currentPass == GskRenderPass_GBuffer)
+        {
+            if (mesh->usingImportedMaterial &&
+                mesh->materialImported->texturesCount > 1)
             {
-                if (mesh->usingImportedMaterial &&
-                    mesh->materialImported->texturesCount > 1)
+                texture_bind(mesh->materialImported->textures[1], 10);
+            } else if (!mesh->usingImportedMaterial)
+            {
+                gsk_Material *mat = model->material;
+                if (mat->texturesCount >= 2)
                 {
-                    texture_bind(mesh->materialImported->textures[1], 10);
-                } else if (!mesh->usingImportedMaterial)
-                {
-                    gsk_Material *mat = model->material;
-                    if (mat->texturesCount >= 2)
-                    {
-                        texture_bind(mat->textures[1], 10);
-                    }
+                    texture_bind(mat->textures[1], 10);
                 }
             }
+        }
 
-            u32 shader_id = material->shaderProgram->id;
+        u32 shader_id = material->shaderProgram->id;
 
-            __update_dynamic_uniforms(
-              shader_id, renderLayer, mesh, transform, renderer);
+        __update_dynamic_uniforms(
+          shader_id, renderLayer, mesh, transform, renderer);
 
-            if (is_new_shader == TRUE)
-            {
-                __update_static_uniforms(shader_id, renderer);
-                //__update_culling();
-            }
+        if (is_new_shader == TRUE)
+        {
+            __update_static_uniforms(shader_id, renderer);
+            //__update_culling();
+        }
 
+        if (GSK_DEVICE_API_OPENGL)
+        {
             // bind VAO
             gsk_gl_vertex_array_bind(mesh->vao);
 
@@ -269,16 +272,15 @@ DrawModel(struct ComponentModel *model,
             {
                 glDrawArrays(gl_prim, 0, vertices);
             }
-        }
 
 #if CULLING_LOCAL
-        // Handle model-draw end | culling
-        glDisable(GL_CULL_FACE);
+            // Handle model-draw end | culling
+            glDisable(GL_CULL_FACE);
 #endif
+        }
 
-    } else if (GSK_DEVICE_API_VULKAN)
-    {
-
+        else if (GSK_DEVICE_API_VULKAN)
+        {
 #if 0
         // Bind transform Model (MVP) and Position (vec3) descriptor set
         vkCmdBindDescriptorSets(
@@ -298,20 +300,30 @@ DrawModel(struct ComponentModel *model,
         // Draw command
         vkCmdDraw(commandBuffer, context->vertexBuffer->size, 1, 0, 0);
 #endif
-        __update_dynamic_uniforms(
-          0, renderLayer, model->mesh, transform, renderer);
+            __update_dynamic_uniforms(
+              0, renderLayer, mesh, transform, renderer);
 
-        // Bind Vertex/Index buffers
-        VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(commandBuffer,
-                               0,
-                               1,
-                               &((gsk_Mesh *)model->mesh)->vkVBO->buffer,
-                               offsets);
+            // Bind Vertex/Index buffers
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(
+              commandBuffer, 0, 1, &mesh->vkVBO->buffer, offsets);
 
-        // Draw command
-        vkCmdDraw(
-          commandBuffer, ((gsk_Mesh *)model->mesh)->vkVBO->size, 1, 0, 0);
+            if (mesh->meshData->has_indices)
+            {
+                vkCmdBindIndexBuffer(
+                  commandBuffer, mesh->vkIBO->buffer, 0, VK_INDEX_TYPE_UINT32);
+
+                // Draw command (indexed)
+                vkCmdDrawIndexed(
+                  commandBuffer, mesh->meshData->indicesCount, 1, 0, 0, 0);
+            }
+
+            else
+            {
+                // Draw command (no indices)
+                vkCmdDraw(commandBuffer, mesh->meshData->vertexCount, 1, 0, 0);
+            }
+        }
     }
 }
 
