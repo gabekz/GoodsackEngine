@@ -29,7 +29,7 @@
 #ifdef SYS_ENV_WIN
 
 static FILE *
-open_memstream(char **buffer, int bufferLen)
+open_memstream(char **buffer, int *buffer_check)
 {
 
     FILE *stream;
@@ -39,10 +39,10 @@ open_memstream(char **buffer, int bufferLen)
     stream = tmpfile();
     fd     = fileno(stream);
 
-#ifdef WIN32
     HANDLE fm;
     HANDLE h = (HANDLE)_get_osfhandle(fd);
 
+    // TODO: max buffer size here
     fm =
       CreateFileMapping(h, NULL, PAGE_READWRITE | SEC_RESERVE, 0, 16384, NULL);
     if (fm == NULL)
@@ -60,7 +60,7 @@ open_memstream(char **buffer, int bufferLen)
                 strerror(GetLastError()));
         exit(GetLastError());
     }
-#else
+#if 0
     bp =
       mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
     if (bp == MAP_FAILED)
@@ -71,23 +71,34 @@ open_memstream(char **buffer, int bufferLen)
                 strerror(errno));
         exit(errno);
     }
-#endif
+#endif // disable
 
+    // TODO: Temporary fix to get strdup working
+    *buffer_check = 1;
     /* return stream that is now buffer-mapped */
     return stream;
 }
 
-#endif
+#endif // SYS_ENV_WIN
 
 /* Compile single shader type (vertex, fragment, geometry, etc.) and return
  * the id from OpenGL.
  */
 static unsigned int
-CompileSingleShader(unsigned int type, const char *path)
+CompileSingleShader(unsigned int type, const char *raw_shader_text)
 {
+    u8 skinned = FALSE;
+
+    const char *versionLine = "#version 460 core\n";
+    const char *defineLine =
+      skinned ? "#define SKINNED 1\n" : "#define SKINNED 0\n";
+
+    const char *sources[] = {versionLine, defineLine, raw_shader_text};
+
     unsigned int id = glCreateShader(type);
-    // const char* src = &source[0];
-    glShaderSource(id, 1, &path, NULL);
+
+    glShaderSource(id, 3, sources, NULL);
+
     glCompileShader(id);
 
     /* Error handling */
@@ -159,58 +170,40 @@ ParseShader(const char *path)
             // Begin vertex
             if (strstr(line, "vertex") != NULL)
             {
-                mode = 0;
-#ifdef WIN32
-                stream  = open_memstream(&vertOut, vertLen);
-                vertLen = 1;
-#else
+                mode   = 0;
                 stream = open_memstream(&vertOut, &vertLen);
-#endif
             }
             // Begin fragment
             else if (strstr(line, "fragment") != NULL)
             {
-                mode = 1;
-#ifdef WIN32
-                stream  = open_memstream(&fragOut, fragLen);
-                fragLen = 1;
-#else
+                mode   = 1;
                 stream = open_memstream(&fragOut, &fragLen);
-#endif
             }
             // Begin Geometry
             else if (strstr(line, "geometry") != NULL)
             {
-                mode = 2;
-#ifdef WIN32
-                stream  = open_memstream(&geomOut, geomLen);
-                geomLen = 1;
-#else
+                mode   = 2;
                 stream = open_memstream(&geomOut, &geomLen);
-#endif
             }
             // Begin Compute
             else if (strstr(line, "compute") != NULL)
             {
-                mode = 3;
-#ifdef WIN32
-                stream  = open_memstream(&compOut, compLen);
-                compLen = 1;
-#else
+                mode   = 3;
                 stream = open_memstream(&compOut, &compLen);
-#endif
-                // compLen = 1;
             } else
             {
                 mode = -1;
-            } // Currently no other modes
-        } else
-        {
-            if (mode > -1)
-            {
-                // fread(vertOut, ftell(fptr), 1, fptr);
-                fprintf(stream, line);
             }
+        }
+        // skip "#version" lines to fill in our own
+        else if (strstr(line, "#version") != NULL)
+        {
+            continue;
+        }
+        // write line
+        else
+        {
+            if (mode > -1) { fprintf(stream, line); }
         }
     }
 
