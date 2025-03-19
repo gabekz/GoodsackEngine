@@ -1,15 +1,22 @@
+// ---------------------- Vertex -----------------
 #shader vertex
-#version 420 core
+
+const int MAX_BONES   = 50; // max joints allowed in a skeleton
+const int MAX_WEIGHTS = 4;  // max weights allowed
+const int MAX_CAMERAS = 4;
+
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec2 a_TexCoords;
 
 layout(location = 2) in vec3 a_Normal;
 layout(location = 3) in vec3 a_Tangent;
 
-const bool INVERTED_NORMALS = false;
+layout(location = 4) in vec4 a_Joints;
+layout(location = 5) in vec4 a_Weights;
 
-uniform mat4 u_Model;
 uniform bool u_InvertedNormals = false;
+uniform mat4 u_Model;
+uniform mat4 u_SkinnedMatrices[MAX_BONES];
 
 struct CameraData
 {
@@ -17,8 +24,6 @@ struct CameraData
     mat4 projection;
     mat4 view;
 };
-
-const int MAX_CAMERAS = 4;
 
 layout(std140, binding = 0) uniform Camera { CameraData cameras[MAX_CAMERAS]; }
 s_Camera;
@@ -35,12 +40,32 @@ out VS_OUT
 }
 vs_out;
 
+//-----------------------------------------------------------------------------
+vec4
+_calculate_vertex_skinning()
+{
+#if SKINNED
+    vec4 totalLocalPos = vec4(0.0);
+    for (int i = 0; i < MAX_WEIGHTS; i++)
+    {
+        mat4 skinnedTransform = u_SkinnedMatrices[int(a_Joints[i])];
+        vec4 posePos          = skinnedTransform * vec4(a_Position, 1.0);
+        totalLocalPos += posePos * a_Weights[i];
+    }
+    return totalLocalPos;
+#else
+    return vec4(a_Position, 1.0);
+#endif // SKINNED
+}
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
 void
 main()
 {
     CameraData camera = s_Camera.cameras[u_render_layer];
 
-    vec4 viewPos   = camera.view * u_Model * vec4(a_Position, 1.0);
+    vec4 viewPos   = camera.view * u_Model * _calculate_vertex_skinning();
     vs_out.fragPos = viewPos.xyz;
 
     mat3 normalMatrix = transpose(inverse(mat3(camera.view * u_Model)));
@@ -59,9 +84,10 @@ main()
 
     vs_out.tbn = mat3(t, b, n);
 }
+//-----------------------------------------------------------------------------
 
+// ---------------------- Fragment -----------------
 #shader fragment
-#version 420 core
 
 layout(location = 0) out vec3 gPosition;
 layout(location = 1) out vec3 gNormal;

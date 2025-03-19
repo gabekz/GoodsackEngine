@@ -202,13 +202,7 @@ DrawModel(struct ComponentModel *model,
                 return;
             }
 
-            if (mesh->meshData->isSkinnedMesh)
-            {
-                material = renderer->explicitMaterial_skinned;
-            } else
-            {
-                material = renderer->explicitMaterial;
-            }
+            material = renderer->explicitMaterial;
         }
 
         else
@@ -223,11 +217,16 @@ DrawModel(struct ComponentModel *model,
             renderer->p_prev_material = material;
             is_new_material           = TRUE;
         }
+
+        u32 selected_program = (mesh->meshData->isSkinnedMesh == FALSE)
+                                 ? material->shaderProgram->id
+                                 : material->shaderProgram->id_skinned;
+
         // Check Shader caching (for uniform updating)
-        if (material->shaderProgram->id != renderer->prev_shader_id)
+        if (selected_program != renderer->prev_shader_id)
         {
-            gsk_shader_use(material->shaderProgram);
-            renderer->prev_shader_id = material->shaderProgram->id;
+            _gsk_shader_use_program(selected_program);
+            renderer->prev_shader_id = selected_program;
             is_new_shader            = TRUE;
         }
 
@@ -250,14 +249,16 @@ DrawModel(struct ComponentModel *model,
             }
         }
 
-        u32 shader_id = material->shaderProgram->id;
-
-        __update_dynamic_uniforms(
-          shader_id, renderLayer, entity_index, mesh, transform, renderer);
+        __update_dynamic_uniforms(selected_program,
+                                  renderLayer,
+                                  entity_index,
+                                  mesh,
+                                  transform,
+                                  renderer);
 
         if (is_new_shader == TRUE)
         {
-            __update_static_uniforms(shader_id, renderer);
+            __update_static_uniforms(selected_program, renderer);
             //__update_culling();
         }
 

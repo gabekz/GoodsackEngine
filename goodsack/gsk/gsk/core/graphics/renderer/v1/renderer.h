@@ -64,8 +64,6 @@ typedef struct gsk_Renderer
 
     GskRenderPass currentPass; // TODO: rename -> RenderStage
     gsk_Material *explicitMaterial;
-    gsk_Material
-      *explicitMaterial_skinned; // skinned version of explicit material
 
     gsk_Material *p_prev_material;
     u32 prev_shader_id;

@@ -23,9 +23,6 @@
 static gsk_ShaderProgram *shaderDepthMap;
 static gsk_Material *materialDepthMap;
 
-static gsk_ShaderProgram *shaderDepthMap_skinned;
-static gsk_Material *materialDepthMap_skinned;
-
 static u32 depthMapFBO;
 static u32 depthMapTexture;
 static mat4 lightSpaceMatrix;
@@ -84,11 +81,6 @@ shadowmap_init()
 
     shaderDepthMap   = GSK_ASSET("gsk://shaders/depth-map.shader");
     materialDepthMap = gsk_material_create(shaderDepthMap, NULL, 0);
-
-    shaderDepthMap_skinned =
-      GSK_ASSET("gsk://shaders/depth-map-skinned.shader");
-    materialDepthMap_skinned =
-      gsk_material_create(shaderDepthMap_skinned, NULL, 0);
 }
 
 void
@@ -145,12 +137,6 @@ gsk_Material *
 shadowmap_getMaterial()
 {
     return materialDepthMap;
-}
-
-gsk_Material *
-shadowmap_getMaterialSkinned()
-{
-    return materialDepthMap_skinned;
 }
 
 u32

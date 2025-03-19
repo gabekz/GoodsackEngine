@@ -85,13 +85,13 @@ open_memstream(char **buffer, int *buffer_check)
  * the id from OpenGL.
  */
 static unsigned int
-CompileSingleShader(unsigned int type, const char *raw_shader_text)
+CompileSingleShader(unsigned int type,
+                    const char *raw_shader_text,
+                    u8 is_skinned)
 {
-    u8 skinned = FALSE;
-
     const char *versionLine = "#version 460 core\n";
     const char *defineLine =
-      skinned ? "#define SKINNED 1\n" : "#define SKINNED 0\n";
+      is_skinned ? "#define SKINNED 1\n" : "#define SKINNED 0\n";
 
     const char *sources[] = {versionLine, defineLine, raw_shader_text};
 
@@ -225,23 +225,33 @@ ParseShader(const char *path)
 gsk_ShaderProgram
 gsk_shader_program_create(const char *path)
 {
-    if (GSK_DEVICE_API_OPENGL)
+    if (GSK_DEVICE_API_VULKAN)
     {
-        gsk_ShaderSource ss = ParseShader(path);
+        LOG_DEBUG("Shader not implemented for Vulkan");
+        gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
+        return ret;
+    }
 
+    gsk_ShaderSource ss   = ParseShader(path);
+    gsk_ShaderProgram ret = {.id = 0, .id_skinned = 0, .shaderSource = ss};
+
+    for (int i = 0; i < 2; i++)
+    {
         u32 program = glCreateProgram();
 
         u32 vs = (ss.shaderVertex)
-                   ? CompileSingleShader(GL_VERTEX_SHADER, ss.shaderVertex)
+                   ? CompileSingleShader(GL_VERTEX_SHADER, ss.shaderVertex, i)
                    : 0;
-        u32 fs = (ss.shaderFragment)
-                   ? CompileSingleShader(GL_FRAGMENT_SHADER, ss.shaderFragment)
-                   : 0;
-        u32 gs = (ss.shaderGeometry)
-                   ? CompileSingleShader(GL_GEOMETRY_SHADER, ss.shaderGeometry)
-                   : 0;
+        u32 fs =
+          (ss.shaderFragment)
+            ? CompileSingleShader(GL_FRAGMENT_SHADER, ss.shaderFragment, i)
+            : 0;
+        u32 gs =
+          (ss.shaderGeometry)
+            ? CompileSingleShader(GL_GEOMETRY_SHADER, ss.shaderGeometry, i)
+            : 0;
         u32 cs = (ss.shaderCompute)
-                   ? CompileSingleShader(GL_COMPUTE_SHADER, ss.shaderCompute)
+                   ? CompileSingleShader(GL_COMPUTE_SHADER, ss.shaderCompute, i)
                    : 0;
 
         if (vs) { glAttachShader(program, vs); }
@@ -275,24 +285,31 @@ gsk_shader_program_create(const char *path)
         if (gs) { glDeleteShader(gs); }
         if (cs) { glDeleteShader(cs); }
 
-        gsk_ShaderProgram ret = {.id = program, .shaderSource = ss};
-
-        return ret;
-
-    } else if (GSK_DEVICE_API_VULKAN)
-    {
-        LOG_DEBUG("Shader not implemented for Vulkan");
-        gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
-        return ret;
+        if (i == 0)
+        {
+            ret.id = program;
+        } else if (i == 1)
+        {
+            ret.id_skinned = program;
+        }
     }
-    gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
+
     return ret;
+
+    // gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
+    // return ret;
 }
 
 void
 gsk_shader_use(gsk_ShaderProgram *shader)
 {
     glUseProgram(shader->id);
+}
+
+u32
+_gsk_shader_use_program(u32 shader_program_id)
+{
+    glUseProgram(shader_program_id);
 }
 
 #if _GSK_SHADER_EASY_UNIFORMS

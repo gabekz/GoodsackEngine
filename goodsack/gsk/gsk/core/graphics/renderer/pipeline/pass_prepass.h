@@ -24,9 +24,6 @@ prepass_bind();
 gsk_Material *
 prepass_getMaterial();
 
-gsk_Material *
-prepass_getMaterialSkinned();
-
 u32
 prepass_getFBO();
 
