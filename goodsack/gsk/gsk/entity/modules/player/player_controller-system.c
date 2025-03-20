@@ -253,7 +253,7 @@ fixed_update(gsk_Entity entity)
                                327125,
                                offset,
                                newvel,
-                               newvel_mag,
+                               newvel_mag * 0.1f,
                                VCOL_BLUE,
                                FALSE);
 #endif // COLLIDE_AND_SLIDE_DEBUG
@@ -298,9 +298,18 @@ fixed_update(gsk_Entity entity)
                 }
 #endif
 
+                // get dot for slide slowdown
+                // vec3 init_hor = {newvel[0], 0, newvel[2]};
+                // glm_vec3_normalize(init_hor);
+                // vec3 init_hit = {
+                //  -result.hit_normal[0], 0, -result.hit_normal[2]};
+                // f32 slide_scale = 1 - glm_dot(init_hor, init_hit);
+
                 glm_vec3_normalize(slide);
                 glm_vec3_scale(slide, newvel_mag, slide);
                 glm_vec3_copy(slide, newvel);
+
+                // glm_vec3_scale(newvel, slide_scale, newvel);
             }
 
 #if COLLIDE_AND_SLIDE_DEBUG
@@ -309,9 +318,10 @@ fixed_update(gsk_Entity entity)
                                    327128,
                                    result.hit_position,
                                    slide,
-                                   5,
+                                   newvel_mag * 0.1f,
                                    VCOL_RED,
                                    FALSE);
+
             gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                    MARKER_POINT,
                                    327122,
@@ -320,6 +330,7 @@ fixed_update(gsk_Entity entity)
                                    5,
                                    VCOL_BLUE,
                                    FALSE);
+
             gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                    MARKER_POINT,
                                    327129,

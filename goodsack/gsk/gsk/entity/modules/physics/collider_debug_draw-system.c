@@ -24,7 +24,7 @@ render(gsk_Entity entity)
     struct ComponentTransform *transform = gsk_ecs_get(entity, C_TRANSFORM);
 
     gsk_Collider *p_col = ((gsk_Collider *)collider->pCollider)->collider_data;
-    if (collider->isColliding == FALSE) { return; }
+    // if (collider->isColliding == FALSE) { return; }
 
     if (collider->type == COLLIDER_BOX)
     {

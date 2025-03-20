@@ -105,20 +105,25 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
 {
 
     f32 closest_range         = 6000;
+    u32 closest_id            = 0;
     gsk_mod_RaycastResult ret = {0};
 
     // get all points
     vec3 ray_vec;
+    // glm_vec3_normalize_to(direction, ray_vec);
     glm_vec3_scale(direction, 0.025f, ray_vec);
     glm_vec3_add(origin, ray_vec, ray_vec);
 
     vec3 base  = {0.0f, 1.255f, 0.0f};
     vec3 tip   = {0.0f, 0.5f, 0.0f};
-    f32 radius = 0.25f;
+    f32 radius = 0.22f;
 
     gsk_CapsuleCollider capsuleCollider = {.radius = radius};
     glm_vec3_copy(base, capsuleCollider.base);
     glm_vec3_copy(tip, capsuleCollider.tip);
+
+    // gsk_CollisionPoints points_ret;
+    // points_ret.has_collision = FALSE;
 
     for (int i = 0; i < entity_caller.ecs->nextIndex; i++)
     {
@@ -172,8 +177,8 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
 
         if (points.has_collision && points.point_a[1] > 0.1f)
         {
-            f32 ray_range = glm_vec3_distance(origin, points.point_a);
-            if (ray_range <= closest_range && max_distance <= closest_range)
+            f32 ray_range = glm_vec3_distance(origin, points.point_b);
+            if (ray_range < closest_range && max_distance <= closest_range)
             {
                 ret = (gsk_mod_RaycastResult) {
                   .entity        = e_compare,
@@ -187,9 +192,10 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
                 };
 
                 closest_range = ray_range;
+                closest_id    = e_compare.id;
             }
         }
-    };
+    }
 
     return ret;
 }

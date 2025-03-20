@@ -245,6 +245,13 @@ fixed_update(gsk_Entity entity)
         gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
     }
 
+    if (total_solvers > 0)
+    {
+        glm_vec3_divs(
+          rigidbody->force_velocity, total_solvers, rigidbody->force_velocity);
+        glm_vec3_divs(rigidbody->torque, total_solvers, rigidbody->torque);
+    }
+
     // --
     // -- Add force to linear velocity (ignore mass)
     glm_vec3_add(rigidbody->linear_velocity,
