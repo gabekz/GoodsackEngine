@@ -68,6 +68,7 @@ static struct
     {
         u8 fs_mode;    // 0 = gpak; 1 = hot
         u8 build_gpak; // 0 = FALSE; 1 = TRUE
+        u8 using_lua;  // 0 = FALSE; 1 = TRUE
     } options;
 
     struct
@@ -126,18 +127,29 @@ _gsk_check_args(int argc, char *argv[])
         // Check flags without values
         else
         {
+            // errlevel switch
             if (arg == "--errlevel")
             {
                 logger_setLevel(LogLevel_ERROR);
-            } else if (arg == "--hot")
+            }
+            // hot switch
+            else if (arg == "--hot")
             {
                 LOG_INFO("Set FS Mode to RunHot");
                 s_runtime.options.fs_mode = 1;
-            } else if (arg == "--testgpak")
+            }
+            // gpak switch
+            else if (arg == "--testgpak")
             {
                 LOG_INFO("Testing GPAK (overriding FS Mode to RunHot)");
                 s_runtime.options.build_gpak = 1;
                 s_runtime.options.fs_mode    = 1;
+            }
+            // lua-disable switch
+            else if (arg == "--no-lua")
+            {
+                LOG_INFO("Lua disabled (--no-lua switch passed)");
+                s_runtime.options.using_lua = 0;
             }
         }
     }
@@ -171,6 +183,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     s_runtime.cache_cnt          = 0; // TODO: Change this.
     s_runtime.options.fs_mode    = 0; // TODO: Change this.
     s_runtime.options.build_gpak = 0; // TODO: Change this.
+    s_runtime.options.using_lua  = 1; // TODO: Change this.
 
     s_runtime.map_setup.map_from_runtime = 0; // TODO: Change this.
 
@@ -365,14 +378,15 @@ gsk::runtime::rt_setup(const char *root_dir,
     }
 #endif // RUNTIME_LOADING_SCREEN
 
-#if USING_LUA
-    // Main Lua entry
-    // TODO: possibly refactor this path (make mutable)
-    char path[GSK_FS_MAX_PATH];
-    strcpy(path, root_scheme);
-    strcat(path, "://scripts/main.lua");
-    LuaInit(GSK_PATH(path), s_runtime.ecs);
-#endif
+    if (s_runtime.options.using_lua)
+    {
+        // Main Lua entry
+        // TODO: possibly refactor this path (make mutable)
+        char path[GSK_FS_MAX_PATH];
+        strcpy(path, root_scheme);
+        strcat(path, "://scripts/main.lua");
+        LuaInit(GSK_PATH(path), s_runtime.ecs);
+    }
 
     // const char *info =
     //  ("Goodsack Engine | " GOODSACK_VERSION_MAJOR "."
@@ -403,29 +417,30 @@ gsk::runtime::rt_loop()
     gsk_renderer_start(
       s_runtime.renderer); // Initialization for the render loop
 
-#if USING_LUA
+    // TODO: should not be handled in runtime
+    if (s_runtime.options.using_lua)
+    {
+        // Register components in Lua ECS
+        // TODO: automate
 
-    // Register components in Lua ECS
-    // TODO: automate
+        entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
 
-    entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
+        entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERA,
+                                                                   "Camera");
+        entity::LuaEventStore::GetInstance().RegisterComponentList(
+          C_CAMERALOOK, "CameraLook");
+        entity::LuaEventStore::GetInstance().RegisterComponentList(
+          C_CAMERAMOVEMENT, "CameraMovement");
+        entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
+                                                                   "Transform");
+        entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
+                                                                   "Weapon");
+        entity::LuaEventStore::GetInstance().RegisterComponentList(
+          C_WEAPONSWAY, "WeaponSway");
 
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERA,
-                                                               "Camera");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERALOOK,
-                                                               "CameraLook");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(
-      C_CAMERAMOVEMENT, "CameraMovement");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
-                                                               "Transform");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
-                                                               "Weapon");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPONSWAY,
-                                                               "WeaponSway");
-
-    // ECS Lua Init
-    entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
-#endif
+        // ECS Lua Init
+        entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
+    }
 
 #if GSK_USING_COMPOSER
     gsk_MusicComposer composer = gsk_music_composer_create();
@@ -467,9 +482,10 @@ gsk::runtime::rt_loop()
         if (GSK_DEVICE_API_OPENGL)
         {
 
-#if USING_LUA
-            entity::LuaEventStore::ECSEvent(ECS_UPDATE);
-#endif // USING_LUA
+            if (s_runtime.options.using_lua)
+            {
+                entity::LuaEventStore::ECSEvent(ECS_UPDATE);
+            }
 
             gsk_renderer_tick(s_runtime.renderer);
 

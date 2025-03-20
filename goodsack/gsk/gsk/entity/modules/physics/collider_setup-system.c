@@ -215,7 +215,7 @@ on_collide(gsk_Entity e)
 #define __clsn_prm                                                 \
     ((gsk_Collider *)collider->pCollider)->collider_data,          \
       ((gsk_Collider *)compareCollider->pCollider)->collider_data, \
-      transform->position, compareTransform->position
+      transform->world_position, compareTransform->world_position
 
         //
         // determine which collision-test function to use

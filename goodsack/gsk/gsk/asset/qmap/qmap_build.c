@@ -668,7 +668,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
         glm_vec3_copy(maxBounds, meshdata->boundingBox[1]);
 
 #if 0
-// calculate local-space bounds with aabb-center
+        // calculate local-space bounds with aabb-center
         glm_aabb_center(meshdata->boundingBox, meshdata->world_pos);
 
         glm_vec3_sub(minBounds, meshdata->world_pos, meshdata->boundingBox[0]);

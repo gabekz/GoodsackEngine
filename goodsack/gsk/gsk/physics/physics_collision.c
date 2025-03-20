@@ -269,8 +269,14 @@ __find_box_capsule_inverse(gsk_BoxCollider *box,
     // Compute the center of the box
     // (Even if the box is large/offset, this is the actual midpoint.)
     vec3 boxCenter;
-    glm_vec3_add(boxMin, boxMax, boxCenter);
-    glm_vec3_scale(boxCenter, 0.5f, boxCenter);
+    // glm_vec3_add(boxMin, boxMax, boxCenter);
+    // glm_vec3_sub(boxMax, boxMin, boxCenter);
+    // glm_vec3_scale(boxCenter, 2.0f, boxCenter);
+
+    vec3 bounds[2];
+    glm_vec3_copy(boxMin, bounds[0]);
+    glm_vec3_copy(boxMax, bounds[1]);
+    glm_aabb_center(bounds, boxCenter);
 
     // Find the closest point on the capsule line segment to the box's center
     vec3 closest_on_segment;

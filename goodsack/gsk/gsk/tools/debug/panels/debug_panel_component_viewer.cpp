@@ -284,7 +284,9 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 
         DragFloat("Walk Speed", &p.speed, 0.1f, 0.0f, 100.0f);
         DragFloat("Jump Force", &p.jump_force, 1.0f, 0.0f, 1000.0f);
+        Separator();
         BeginDisabled();
+        DragFloat2("Move Axes", p.move_axes, 0.1f, -3000, 3000);
         Checkbox("is_grounded", (bool *)&p.is_grounded);
         Checkbox("is_jumping", (bool *)&p.is_jumping);
         Checkbox("can_jump", (bool *)&p.can_jump);

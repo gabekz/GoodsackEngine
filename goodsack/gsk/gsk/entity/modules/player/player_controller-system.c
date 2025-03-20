@@ -16,7 +16,7 @@
 #define DEFAULT_JUMP_FORCE 160
 
 #define USING_COLLIDE_AND_SLIDE TRUE
-#define COLLIDE_AND_SLIDE_DIST  1.0f
+#define COLLIDE_AND_SLIDE_DIST  1.4f
 #define COLLIDE_AND_SLIDE_DEBUG FALSE
 
 static void
@@ -34,9 +34,12 @@ init(gsk_Entity entity)
       gsk_ecs_get(entity, C_PLAYER_CONTROLLER);
 
     cmp_controller->is_grounded = FALSE;
-    cmp_controller->is_jumping  = FALSE;
-    cmp_controller->can_jump    = TRUE;
     cmp_controller->jump_force  = DEFAULT_JUMP_FORCE;
+
+    cmp_controller->is_jumping = FALSE;
+    cmp_controller->can_jump   = TRUE; // trigger that allows single jump input
+
+    glm_vec2_zero(cmp_controller->move_axes);
 }
 
 static void
@@ -49,14 +52,6 @@ update(gsk_Entity entity)
 
     // store *window for input
     GLFWwindow *window = entity.ecs->renderer->window;
-
-    // 1. zero-out walk direction, 2. check for input
-    cmp_controller->walk_direction = 0;
-
-    int input_up    = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS;
-    int input_down  = glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS;
-    int input_left  = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
-    int input_right = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
 
     int input_jump = glfwGetKey(window, GLFW_KEY_SPACE);
 
@@ -74,7 +69,13 @@ update(gsk_Entity entity)
         cmp_controller->is_jumping = FALSE;
     }
 
-    if (cmp_controller->is_jumping) { return; }
+    // zero-out walk direction, 2. check for input
+    cmp_controller->walk_direction = 0;
+
+    int input_up    = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS;
+    int input_down  = glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS;
+    int input_left  = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
+    int input_right = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
 
     if (!(input_up && input_down))
     {
@@ -96,6 +97,25 @@ update(gsk_Entity entity)
             cmp_controller->walk_direction |= WALK_RIGHT;
         }
     }
+
+    // update move_axes
+    cmp_controller->move_axes[0] = 0;
+    cmp_controller->move_axes[1] = 0;
+    if (cmp_controller->walk_direction & WALK_FORWARD)
+    {
+        cmp_controller->move_axes[1] = 1.0f;
+    } else if (cmp_controller->walk_direction & WALK_BACKWARD)
+    {
+        cmp_controller->move_axes[1] = -1.0f;
+    }
+
+    if (cmp_controller->walk_direction & WALK_LEFT)
+    {
+        cmp_controller->move_axes[0] = -1.0f;
+    } else if (cmp_controller->walk_direction & WALK_RIGHT)
+    {
+        cmp_controller->move_axes[0] = 1.0f;
+    }
 }
 
 static void
@@ -110,7 +130,6 @@ fixed_update(gsk_Entity entity)
       gsk_ecs_get(entity, C_PLAYER_CONTROLLER);
 
     struct ComponentTransform *cmp_transform = gsk_ecs_get(entity, C_TRANSFORM);
-
     struct ComponentRigidbody *cmp_rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
     struct ComponentCollider *cmp_collider   = gsk_ecs_get(entity, C_COLLIDER);
 
@@ -140,9 +159,7 @@ fixed_update(gsk_Entity entity)
 
     // --------- logic ---------
 
-    u8 is_moving = FALSE;
-
-    vec3 direction, cross, newvel = GLM_VEC3_ZERO_INIT;
+    vec3 direction = GLM_VEC3_ZERO_INIT, newvel = GLM_VEC3_ZERO_INIT;
 
     glm_vec3_copy(cmp_camera->front, direction);
     direction[1] = 0.0f;
@@ -157,42 +174,30 @@ fixed_update(gsk_Entity entity)
     const f32 speed = cmp_controller->speed;
     glm_vec3_scale(direction, cmp_controller->speed, direction);
 
-    // no mid-air movement
-    if (!cmp_controller->is_grounded && !cmp_collider->isColliding) return;
+    f32 move_axes_norm = glm_vec2_norm(cmp_controller->move_axes);
 
-    // Movement
+    u8 is_gliding = (cmp_controller->is_grounded == FALSE &&
+                     cmp_collider->isColliding == FALSE);
 
-    if (!(cmp_controller->walk_direction & (WALK_FORWARD & WALK_BACKWARD)))
-    {
-        if (cmp_controller->walk_direction & WALK_FORWARD)
-        {
-            glm_vec3_add(newvel, direction, newvel);
-        } else if (cmp_controller->walk_direction & WALK_BACKWARD)
-        {
-            glm_vec3_sub(newvel, direction, newvel);
-        }
-    }
+    // Calculate movement based on move_axes
 
-    if (!(cmp_controller->walk_direction & (WALK_LEFT & WALK_RIGHT)))
-    {
-        if (cmp_controller->walk_direction & WALK_LEFT)
-        {
-            glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
-            glm_vec3_scale(cross, speed, cross);
+    vec3 dir_horizontal, dir_vertical;
+    glm_vec3_scale(direction, cmp_controller->move_axes[1], dir_vertical);
+    glm_vec3_add(newvel, dir_vertical, newvel);
 
-            glm_vec3_sub(newvel, cross, newvel);
-        } else if (cmp_controller->walk_direction & WALK_RIGHT)
-        {
-            glm_vec3_crossn(direction, cmp_camera->axisUp, cross);
-            glm_vec3_scale(cross, speed, cross);
+    f32 hor_speed = (is_gliding) ? speed * 0.25f : speed;
 
-            glm_vec3_add(newvel, cross, newvel);
-        }
-    }
+    glm_vec3_crossn(direction, cmp_camera->axisUp, dir_horizontal);
+    glm_vec3_scale(
+      dir_horizontal, hor_speed * cmp_controller->move_axes[0], dir_horizontal);
+    glm_vec3_add(newvel, dir_horizontal, newvel);
+
+    // set is_moving based on magnitude
+    f32 newvel_mag = glm_vec3_norm(newvel);
+    u8 is_moving   = (newvel_mag > 0.1f) ? 1 : 0;
 
 #if 1
-    // TODO: needs to be fixed by single-input check. Currently being called
-    // several times.
+    // handle jump event (send force)
     if (cmp_controller->is_grounded && cmp_controller->is_jumping)
     {
         cmp_controller->is_grounded = FALSE;
@@ -205,11 +210,28 @@ fixed_update(gsk_Entity entity)
     }
 #endif
 
-    f32 newvel_mag = glm_vec3_norm(newvel);
+    if (is_gliding)
+    {
+        vec3 jump_vel = GLM_VEC3_ZERO_INIT;
+        glm_vec3_copy(newvel, jump_vel);
 
-    is_moving = (newvel_mag > 0);
+        if (move_axes_norm > 0)
+        {
+            cmp_rigidbody->linear_velocity[0] = jump_vel[0];
+            cmp_rigidbody->linear_velocity[2] = jump_vel[2];
+        }
+    }
 
-    if (is_moving == FALSE) { return; }
+    // if (cmp_controller->is_grounded == FALSE &&
+    //    cmp_collider->isColliding == FALSE)
+    // if (is_moving == FALSE) { return; }
+    // if (cmp_controller->is_grounded == FALSE) { return; }
+
+    if (is_gliding || is_moving == FALSE ||
+        cmp_controller->is_grounded == FALSE)
+    {
+        return;
+    }
 
     // --------- Collide And Slide -----------------
 #if USING_COLLIDE_AND_SLIDE

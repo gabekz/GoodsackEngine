@@ -15,7 +15,6 @@
 #include "entity/ecs.h"
 
 // #define RENDERER_2
-#define USING_LUA                    1
 #define USING_RUNTIME_LOADING_SCREEN 1
 #define RUNTIME_LOADING_TEXT         0
 #define USING_JOYSTICK_CONTROLLER    0

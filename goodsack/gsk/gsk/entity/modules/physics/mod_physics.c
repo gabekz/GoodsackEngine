@@ -114,7 +114,7 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
 
     vec3 base  = {0.0f, 1.255f, 0.0f};
     vec3 tip   = {0.0f, 0.5f, 0.0f};
-    f32 radius = 0.2f;
+    f32 radius = 0.25f;
 
     gsk_CapsuleCollider capsuleCollider = {.radius = radius};
     glm_vec3_copy(base, capsuleCollider.base);
@@ -170,11 +170,10 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
               compareTransform->position);
         }
 
-        if (points.has_collision)
+        if (points.has_collision && points.point_a[1] > 0.1f)
         {
             f32 ray_range = glm_vec3_distance(origin, points.point_a);
-            if (max_distance && ray_range <= max_distance &&
-                max_distance <= closest_range)
+            if (ray_range <= closest_range && max_distance <= closest_range)
             {
                 ret = (gsk_mod_RaycastResult) {
                   .entity        = e_compare,
@@ -186,6 +185,8 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
                                  points.normal[2]},
                   .has_collision = TRUE,
                 };
+
+                closest_range = ray_range;
             }
         }
     };
