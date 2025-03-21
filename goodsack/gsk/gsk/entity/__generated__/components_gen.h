@@ -36,7 +36,8 @@ typedef enum ECSComponentType_t {
     C_LIGHT,
     C_MODEL,
     C_PARTICLE_EMITTER,
-    C_PLAYER_CONTROLLER, // TODO: Remove (new package)
+    C_PLAYER_CONTROLLER,  // TODO: Remove (new package)
+    C_PROJECTILE_SPAWNER, // TODO: Remove (new package)
     C_RENDERLAYER,
     C_RIGIDBODY,
     C_SWORD_CONTROLLER, // TODO: Remove (testing)
@@ -149,8 +150,6 @@ struct ComponentEnemy
     CACHE_ALIGN(int enemy_type);
     CACHE_ALIGN(vec3 hit_position);
     CACHE_ALIGN(u8 is_wep_loaded);
-    CACHE_ALIGN(ResRef projectile_material);
-    CACHE_ALIGN(ResRef projectile_model);
 };
 
 typedef struct ComponentEntityReference
@@ -220,6 +219,12 @@ struct ComponentPlayerController
     CACHE_ALIGN(u8 is_grounded);
     CACHE_ALIGN(u8 is_jumping);
     CACHE_ALIGN(f32 jump_force);
+};
+struct ComponentProjectileSpawner
+{
+    CACHE_ALIGN(ResRef projectile_material);
+    CACHE_ALIGN(ResRef projectile_model);
+    CACHE_ALIGN(ResRef projectile_sound);
 };
 
 struct ComponentRenderLayer
@@ -321,6 +326,8 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_PARTICLE_EMITTER, sizeof(struct ComponentParticleEmitter));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_PLAYER_CONTROLLER, sizeof(struct ComponentPlayerController));
+    _ECS_DECL_COMPONENT_INTERN(
+      ecs, C_PROJECTILE_SPAWNER, sizeof(struct ComponentProjectileSpawner));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_RENDERLAYER, sizeof(struct ComponentRenderLayer));
     _ECS_DECL_COMPONENT_INTERN(

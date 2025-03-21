@@ -20,9 +20,10 @@ gsk_mod_audio_set_clip(struct ComponentAudioSource *p_audio_source,
     if (p_audio_source->buffer_audio)
     {
         // stop source buffer
-        AL_CHECK(alSourceStop(p_audio_source->buffer_audio));
+        AL_CHECK(alSourceStop(p_audio_source->buffer_source));
         // detach audio buffer
         AL_CHECK(alSourcei(p_audio_source->buffer_source, AL_BUFFER, 0));
+
         // delete audio buffer
         openal_buffer_cleanup(p_audio_source->buffer_audio);
     }
