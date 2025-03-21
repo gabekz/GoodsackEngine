@@ -130,7 +130,7 @@ init(gsk_Entity entity)
     rigidbody->static_friction  = DEFAULT_STATIC_FRICTION;
     rigidbody->dynamic_friction = DEFAULT_DYNAMIC_FRICTION;
 
-    if (rigidbody->mass <= 0)
+    if (rigidbody->mass <= 0 && rigidbody->is_kinematic == FALSE)
     {
         LOG_WARN("mass was <= 0 - setting mass to 1");
         rigidbody->mass = 1.0f;
@@ -229,8 +229,11 @@ fixed_update(gsk_Entity entity)
         // --
         // Run Solvers
 
-        _position_solver(solver_data);
-        impulse_solver_with_rotation_friction(solver_data);
+        if (solver_data.p_collision_result->is_trigger_response == FALSE)
+        {
+            _position_solver(solver_data);
+            impulse_solver_with_rotation_friction(solver_data);
+        }
 
         // --
         // Run debug markers

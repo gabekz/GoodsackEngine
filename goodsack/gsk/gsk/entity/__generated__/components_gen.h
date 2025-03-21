@@ -140,6 +140,7 @@ struct ComponentCollider
     CACHE_ALIGN(s32 type);
     CACHE_ALIGN(void *pCollider);
     CACHE_ALIGN(u32 isColliding);
+    CACHE_ALIGN(u8 is_trigger);
     CACHE_ALIGN(void *p_mesh);
     CACHE_ALIGN(vec3 box_bounds_min);
     CACHE_ALIGN(vec3 box_bounds_max);

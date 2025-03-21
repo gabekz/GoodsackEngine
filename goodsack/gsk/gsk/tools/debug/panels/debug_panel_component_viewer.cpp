@@ -107,6 +107,7 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 
         BeginDisabled();
         Checkbox("is_colliding", (bool *)&p.isColliding);
+        Checkbox("is_trigger", (bool *)&p.is_trigger);
         EndDisabled();
     }
 

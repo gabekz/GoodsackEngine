@@ -56,6 +56,7 @@ typedef struct gsk_CollisionResult
     gsk_CollisionPoints points;
     gsk_PhysicsMark physics_mark;
     u64 ent_a_id, ent_b_id;
+    u8 is_trigger_response;
 } gsk_CollisionResult;
 
 typedef struct gsk_Collider

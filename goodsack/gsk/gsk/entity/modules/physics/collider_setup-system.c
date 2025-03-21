@@ -191,7 +191,7 @@ on_collide(gsk_Entity e)
         };
 
         // TODO: Add collision masks
-        // if (e.id >= 314 && e_compare.id >= 314) { continue; }
+        if (e.id >= 307 && e_compare.id >= 307) { continue; }
 
         if (!gsk_ecs_has(e_compare, C_COLLIDER)) continue;
         if (!gsk_ecs_has(e_compare, C_TRANSFORM))
@@ -298,6 +298,15 @@ on_collide(gsk_Entity e)
         {
             collider->isColliding = TRUE;
 
+#if 1
+            // skip this entity if it is a trigger
+            if (compareCollider->is_trigger == TRUE)
+            {
+                LOG_INFO("TRIGGER");
+                continue;
+            }
+#endif
+
             points_list[points_list_next] = points;
             id_point_list[points_list_next] =
               (gsk_EntityId)i; // TODO: Should be ID
@@ -307,7 +316,6 @@ on_collide(gsk_Entity e)
 
     for (int i = 0; i < points_list_next; i++)
     {
-
         // TODO: AGAIN - fix look-up
         gsk_Entity e_compare = {
           .id    = e.ecs->ids[id_point_list[i]],
@@ -318,12 +326,33 @@ on_collide(gsk_Entity e)
         // push collision to rigidbody solver
         if (gsk_ecs_has(e, C_RIGIDBODY))
         {
-
             struct ComponentRigidbody *rigidbody_a =
               gsk_ecs_get(e, C_RIGIDBODY);
 
             struct ComponentRigidbody *rigidbody_b = NULL;
             struct ComponentTransform *transform_b = NULL;
+
+            if (collider->is_trigger == TRUE)
+            {
+                // Create a new collision result using our points
+                gsk_CollisionResult result = {
+                  .points              = points_list[i],
+                  .physics_mark        = (gsk_PhysicsMark) {0},
+                  .ent_a_id            = e.id,
+                  .ent_b_id            = e_compare.id,
+                  .is_trigger_response = TRUE,
+                };
+
+                if (points_list_next >= MAX_COLLISION_POINTS)
+                {
+                    LOG_CRITICAL("Max collision points exceeded");
+                }
+                // Send that over to the rigidbody solver list
+                gsk_physics_solver_push(
+                  (gsk_PhysicsSolver *)rigidbody_a->solver, result);
+
+                continue;
+            }
 
             //
             // TODO: Refactor this section to separate function
@@ -419,10 +448,11 @@ on_collide(gsk_Entity e)
 
             // Create a new collision result using our points
             gsk_CollisionResult result = {
-              .points       = points_list[i],
-              .physics_mark = mark,
-              .ent_a_id     = e.id,
-              .ent_b_id     = e_compare.id,
+              .points              = points_list[i],
+              .physics_mark        = mark,
+              .ent_a_id            = e.id,
+              .ent_b_id            = e_compare.id,
+              .is_trigger_response = (collider->is_trigger),
             };
 
             if (points_list_next >= MAX_COLLISION_POINTS)

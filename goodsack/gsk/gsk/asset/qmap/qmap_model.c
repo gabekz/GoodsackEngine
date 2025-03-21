@@ -10,6 +10,8 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture_set.h"
 
+#include "qmap_util.h"
+
 #include "util/array_list.h"
 #include "util/maths.h"
 #include "util/sysdefs.h"
@@ -75,11 +77,23 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
     for (int i = 0; i < p_container->list_entities.list_next; i++)
     {
         gsk_QMapEntity *ent = LIST_GET(&p_container->list_entities, i);
+        u8 no_render        = FALSE;
 
         // omit brush from export based on field
         gsk_QMapEntityField *field_class =
           gsk_qmap_util_get_field(ent, QMAP_NOEXPORT_FIELD_STR);
         if (field_class != NULL) { continue; }
+
+        field_class = gsk_qmap_util_get_field(ent, "classname");
+
+        if (field_class != NULL)
+        {
+            if (strstr(field_class->value, QMAP_TRIGGER_CONT_STR))
+            {
+                LOG_DEBUG("ent is trigger - skipping render");
+                no_render = TRUE;
+            }
+        }
 
         for (int j = 0; j < ent->list_brushes.list_next; j++)
         {
@@ -154,8 +168,12 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 #endif // !(_MESH_BATCHING)
 
                 //----------------------------------------------------------
+                // skip rendering
+
+                if (no_render == TRUE) { continue; }
+
+                //----------------------------------------------------------
                 // create material for poly
-                // TODO: Change this (we don't want duplicated materials)
 
                 poly->p_texture = gsk_texture_set_get_by_name(
                   p_container->p_texture_set, plane->tex_name);
@@ -178,6 +196,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
 
                 // LOG_TRACE("Successful loaded texture %s", plane->tex_name);
                 u8 is_new_material = TRUE;
+
 #if _MESH_BATCHING
                 for (int m = 0; m < list_batches.list_next; m++)
                 {
