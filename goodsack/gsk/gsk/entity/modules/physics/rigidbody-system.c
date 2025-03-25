@@ -130,7 +130,7 @@ init(gsk_Entity entity)
     rigidbody->static_friction  = DEFAULT_STATIC_FRICTION;
     rigidbody->dynamic_friction = DEFAULT_DYNAMIC_FRICTION;
 
-    if (rigidbody->mass <= 0 && rigidbody->is_kinematic == FALSE)
+    if (rigidbody->mass <= 0)
     {
         LOG_WARN("mass was <= 0 - setting mass to 1");
         rigidbody->mass = 1.0f;
@@ -181,7 +181,7 @@ fixed_update(gsk_Entity entity)
     struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(entity, C_TRANSFORM);
 
-    if (rigidbody->is_kinematic == TRUE) { return; }
+    // if (rigidbody->is_kinematic == TRUE) { return; }
 
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();
@@ -209,12 +209,13 @@ fixed_update(gsk_Entity entity)
 
     gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
     int total_solvers          = (int)pSolver->solvers_list->list_next;
+    int total_impulses         = 0;
 
 #if DEBUG_TRACK
     s_dbg_instance = s_dbg_instance_begin;
 #endif
 
-    for (int i = 0; i < total_solvers; i++)
+    for (int i = total_solvers - 1; i >= 0; i--)
     {
         gsk_CollisionResult *pResult = &pSolver->solvers[i];
 
@@ -229,10 +230,13 @@ fixed_update(gsk_Entity entity)
         // --
         // Run Solvers
 
-        if (solver_data.p_collision_result->is_trigger_response == FALSE)
+        if (rigidbody->is_kinematic == FALSE &&
+            solver_data.p_collision_result->is_trigger_response == FALSE)
         {
             _position_solver(solver_data);
             impulse_solver_with_rotation_friction(solver_data);
+
+            total_impulses += 1;
         }
 
         // --
@@ -248,11 +252,21 @@ fixed_update(gsk_Entity entity)
         gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
     }
 
-    if (total_solvers > 0)
+    if (pSolver->solvers_list->is_list_empty == FALSE)
+    {
+        LOG_ERROR("solver list failed to clear on entity %d", entity.id);
+    }
+
+    if (rigidbody->is_kinematic == TRUE || collider->is_trigger == TRUE)
+    {
+        return;
+    }
+
+    if (total_impulses > 0)
     {
         glm_vec3_divs(
-          rigidbody->force_velocity, total_solvers, rigidbody->force_velocity);
-        glm_vec3_divs(rigidbody->torque, total_solvers, rigidbody->torque);
+          rigidbody->force_velocity, total_impulses, rigidbody->force_velocity);
+        glm_vec3_divs(rigidbody->torque, total_impulses, rigidbody->torque);
     }
 
     // --
