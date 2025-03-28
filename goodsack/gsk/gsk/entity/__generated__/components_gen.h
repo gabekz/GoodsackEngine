@@ -257,10 +257,10 @@ struct ComponentSwordController
 typedef struct ComponentTransform
 {
     CACHE_ALIGN(vec3 forward);
-    CACHE_ALIGN(u16 hasParent);
+    CACHE_ALIGN(u8 has_parent);
     CACHE_ALIGN(mat4 model);
     CACHE_ALIGN(vec3 orientation);
-    CACHE_ALIGN(void *parent);
+    CACHE_ALIGN(int parent_entity_id);
     CACHE_ALIGN(vec3 position);
     CACHE_ALIGN(vec3 world_position);
     CACHE_ALIGN(vec3 scale);

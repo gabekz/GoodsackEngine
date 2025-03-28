@@ -107,17 +107,17 @@ init(gsk_Entity e)
 {
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
-    transform->hasParent                 = false; // if not already set..
+    transform->has_parent                = false; // if not already set..
 
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
 
     // Get parent transform (if exists)
-    if (transform->parent)
+    if (transform->parent_entity_id >= ECS_ID_FIRST)
     {
-        transform->hasParent = true;
-        struct ComponentTransform *parentTransform =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
-        glm_mat4_copy(transform->parent, m4i);
+        transform->has_parent                      = true;
+        struct ComponentTransform *parentTransform = gsk_ecs_get(
+          gsk_ecs_ent(e.ecs, transform->parent_entity_id), C_TRANSFORM);
+        glm_mat4_copy(parentTransform->model, m4i);
     }
 
     glm_translate(m4i, transform->position);
@@ -159,11 +159,11 @@ late_update(gsk_Entity e)
         return;
     }
 
-    if (transform->hasParent)
+    if (transform->has_parent)
     {
-        struct ComponentTransform *parent =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
-        glm_mat4_copy(parent->model, m4i);
+        struct ComponentTransform *parentTransform = gsk_ecs_get(
+          gsk_ecs_ent(e.ecs, transform->parent_entity_id), C_TRANSFORM);
+        glm_mat4_copy(parentTransform->model, m4i);
     }
 
     glm_mat4_mul(m4i, skinned, m4i);

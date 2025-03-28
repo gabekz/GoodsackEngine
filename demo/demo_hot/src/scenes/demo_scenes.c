@@ -21,7 +21,7 @@ gsk_Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
 gsk_Skybox *skyboxMain;
 
 static gsk_Entity
-__create_camera_entity(gsk_ECS *ecs, vec3 position, void *parent)
+__create_camera_entity(gsk_ECS *ecs, vec3 position)
 {
     gsk_Entity camera = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(
@@ -45,7 +45,6 @@ __create_camera_entity(gsk_ECS *ecs, vec3 position, void *parent)
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
                             .position = {position[0], position[1], position[2]},
-                            .parent   = parent,
                           }));
     return camera;
 }
@@ -68,8 +67,7 @@ _scene0(gsk_ECS *ecs, gsk_Renderer *renderer)
                           texEarthNorm,
                           texDefSpec);
 
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f}, NULL);
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
     gsk_Entity suzanneObject = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(suzanneObject, C_TRANSFORM, NULL);
@@ -111,8 +109,7 @@ _scene1(gsk_ECS *ecs, gsk_Renderer *renderer)
                           texDefNorm,
                           texContSpec);
 
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f}, NULL);
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
     gsk_Entity floorEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(floorEntity,
@@ -226,8 +223,7 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
                                                 texGoldSpecular,
                                                 texPbrAo);
 
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f}, NULL);
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
     gsk_Entity sphereEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(sphereEntity,
@@ -341,8 +337,7 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
       GSK_ASSET("data://textures/pbr/cerberus/cerberus.material");
 #endif
 
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f}, NULL);
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
 
     gsk_Model *model_cerb = GSK_ASSET("data://models/cerberus-triang.obj");
 
@@ -372,8 +367,7 @@ _scene4(gsk_ECS *ecs, gsk_Renderer *renderer)
     gsk_Model *modelCharacter = gsk_model_load_from_file(
       GSK_PATH("data://models/character-anim.gltf"), 1, FALSE);
 
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f}, NULL);
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
 
     gsk_Entity characterEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(characterEntity,
@@ -404,7 +398,7 @@ _scene5(gsk_ECS *ecs, gsk_Renderer *renderer)
       gsk_material_create(GSK_ASSET("gsk://shaders/wireframe.shader"), NULL, 0);
 
     gsk_Entity e_camera =
-      __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f}, NULL);
+      __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
 
     gsk_Model *modelSponza = GSK_ASSET("data://models/sponza.glb");
 
@@ -441,7 +435,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
 
     gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
 
-    *pCamera = __create_camera_entity(ecs, (vec3) {-2.0f, 5.0f, 8.0f}, NULL);
+    *pCamera          = __create_camera_entity(ecs, (vec3) {-2.0f, 5.0f, 8.0f});
     gsk_Entity camera = *pCamera;
 
     // Testing entity on heap memory

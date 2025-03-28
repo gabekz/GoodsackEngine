@@ -139,10 +139,10 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(camera2,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position    = {0.0f, 0.2f, 0.0f},
-                            .orientation = {0.0f, 0.0f, 0.0f},
-                            .scale       = {1.0f, 1.0f, 1.0f},
-                            .parent      = pCamera,
+                            .position         = {0.0f, 0.2f, 0.0f},
+                            .orientation      = {0.0f, 0.0f, 0.0f},
+                            .scale            = {1.0f, 1.0f, 1.0f},
+                            .parent_entity_id = pCamera->id,
                           }));
 #endif
 
@@ -167,13 +167,12 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .gravity = {0, -30.0f, 0},
                             .mass    = 20.0f,
                           }));
-    _gsk_ecs_add_internal(
-      ent_player,
-      C_PLAYER_CONTROLLER,
-      (void *)(&(struct ComponentPlayerController) {
-        .speed = 10.0f,
-        .entity_camera = pCamera->id,
-      }));
+    _gsk_ecs_add_internal(ent_player,
+                          C_PLAYER_CONTROLLER,
+                          (void *)(&(struct ComponentPlayerController) {
+                            .speed         = 10.0f,
+                            .entity_camera = pCamera->id,
+                          }));
 
     /*
       Camera Entity
@@ -195,8 +194,8 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(camera,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0, 0, 0},
-                            .parent   = p_ent_player,
+                            .position         = {0, 0, 0},
+                            .parent_entity_id = p_ent_player->id,
                           }));
 
     /*
@@ -209,10 +208,10 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(weaponParent,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position    = {0.0f, 0.0f, 0.0f},
-                            .orientation = {0.0f, 0.0f, 0.0f},
-                            .scale       = {1.0f, 1.0f, 1.0f},
-                            .parent      = pCamera,
+                            .position         = {0.0f, 0.0f, 0.0f},
+                            .orientation      = {0.0f, 0.0f, 0.0f},
+                            .scale            = {1.0f, 1.0f, 1.0f},
+                            .parent_entity_id = pCamera->id,
                           }));
     _gsk_ecs_add_internal(weaponParent,
                           C_WEAPONSWAY,
@@ -228,10 +227,10 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(attachedEntity,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position    = {-0.1f, -0.22f, -0.4340f},
-                            .orientation = {0.0f, 0.0f, -180.0f},
-                            .scale       = {-0.02f, 0.02f, 0.02f},
-                            .parent      = pWeaponParent,
+                            .position         = {-0.1f, -0.22f, -0.4340f},
+                            .orientation      = {0.0f, 0.0f, -180.0f},
+                            .scale            = {-0.02f, 0.02f, 0.02f},
+                            .parent_entity_id = pWeaponParent->id,
                           }));
 
     _gsk_ecs_add_internal(
@@ -254,13 +253,12 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                           }));
 #endif
 
-    _gsk_ecs_add_internal(
-      attachedEntity,
-      C_WEAPON,
-      (void *)(&(struct ComponentWeapon) {
-        .damage       = 25,
-        .pos_starting = {0, 0, 0},
-        .rot_starting = {0, 0, 0},
-        .entity_camera = pCamera->id,
-      }));
+    _gsk_ecs_add_internal(attachedEntity,
+                          C_WEAPON,
+                          (void *)(&(struct ComponentWeapon) {
+                            .damage        = 25,
+                            .pos_starting  = {0, 0, 0},
+                            .rot_starting  = {0, 0, 0},
+                            .entity_camera = pCamera->id,
+                          }));
 };

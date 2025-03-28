@@ -71,10 +71,9 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         DragFloat3("Scale", p.scale, -1, 1);
         Separator();
         Text("Parent Entity");
-        if (p.hasParent)
+        if (p.has_parent)
         {
-            Text("index: %i", ((gsk_Entity *)p.parent)->index);
-            Text("id: %i", ((gsk_Entity *)p.parent)->id);
+            Text("id: %i", p.parent_entity_id);
         } else
         {
             Text("None");

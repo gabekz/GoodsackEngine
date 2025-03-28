@@ -176,20 +176,21 @@ update(gsk_Entity e)
     struct ComponentCamera *camera       = gsk_ecs_get(e, C_CAMERA);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
-    if (transform->hasParent)
+    if (transform->has_parent)
     {
+        gsk_Entity ent_parent = gsk_ecs_ent(e.ecs, transform->parent_entity_id);
 
         struct ComponentTransform *parent =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
+          gsk_ecs_get(ent_parent, C_TRANSFORM);
 
         glm_vec3_copy(parent->position, transform->position);
-        if (gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA))
+
+        if (gsk_ecs_has(ent_parent, C_CAMERA))
         {
+            struct ComponentCamera *parent_cam =
+              gsk_ecs_get(ent_parent, C_CAMERA);
 
-            struct ComponentCamera *parentCam =
-              gsk_ecs_get(*(gsk_Entity *)transform->parent, C_CAMERA);
-
-            glm_mat4_copy(parentCam->view, camera->view);
+            glm_mat4_copy(parent_cam->view, camera->view);
         }
     }
 
@@ -302,14 +303,15 @@ update(gsk_Entity e)
     // have a Parent, and the parent is a Camera. This will allow
     // child-camera's with separate render-layers to share a view with
     // the main camera
-    if (transform->hasParent &&
-        gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA))
+    if (transform->has_parent &&
+        gsk_ecs_has(gsk_ecs_ent(e.ecs, transform->parent_entity_id), C_CAMERA))
     {
 
+        gsk_Entity ent_parent = gsk_ecs_ent(e.ecs, transform->parent_entity_id);
+
         struct ComponentTransform *parent =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
-        struct ComponentCamera *parentCam =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_CAMERA);
+          gsk_ecs_get(ent_parent, C_TRANSFORM);
+        struct ComponentCamera *parentCam = gsk_ecs_get(ent_parent, C_CAMERA);
 
         glm_vec3_copy(parent->position, transform->position);
         glm_mat4_copy(parentCam->view, camera->view);
