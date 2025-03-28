@@ -95,6 +95,14 @@ _set_to_joint_matrix(gsk_Entity e, mat4 *m4i, mat4 *skinned)
 }
 
 static void
+__update_world_position(struct ComponentTransform *cmp_transform)
+{
+    cmp_transform->world_position[0] = cmp_transform->model[3][0];
+    cmp_transform->world_position[1] = cmp_transform->model[3][1];
+    cmp_transform->world_position[2] = cmp_transform->model[3][2];
+}
+
+static void
 init(gsk_Entity e)
 {
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
@@ -114,9 +122,7 @@ init(gsk_Entity e)
 
     glm_translate(m4i, transform->position);
     glm_mat4_copy(m4i, transform->model);
-    transform->world_position[0] = transform->model[3][0];
-    transform->world_position[1] = transform->model[3][1];
-    transform->world_position[2] = transform->model[3][2];
+    __update_world_position(transform);
 
     // stupid hack which basically doesn't allow a zero scale.
     if (!transform->scale[0] && !transform->scale[1] && !transform->scale[2])
@@ -149,6 +155,7 @@ late_update(gsk_Entity e)
     {
         struct ComponentCamera *camera = gsk_ecs_get(e, C_CAMERA);
         glm_mat4_inv(camera->view, transform->model);
+        __update_world_position(transform);
         return;
     }
 
@@ -175,9 +182,7 @@ late_update(gsk_Entity e)
     glm_mat4_copy(m4i, transform->model);
 
     // set world position
-    transform->world_position[0] = transform->model[3][0];
-    transform->world_position[1] = transform->model[3][1];
-    transform->world_position[2] = transform->model[3][2];
+    __update_world_position(transform);
 
     // get the forward vector from the rotation matrix
     transform->forward[0] = mat_rot[2][2];

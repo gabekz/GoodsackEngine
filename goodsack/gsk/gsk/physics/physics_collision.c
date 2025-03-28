@@ -35,14 +35,11 @@ _aabb_clamped_point(vec3 bounds[2], vec3 point_a, vec3 point_b, float *dest)
 }
 static void
 
-_aabb_clamped_in(const vec3 boxMin,
-                 const vec3 boxMax,
-                 const vec3 point_in,
-                 vec3 out_clamped)
+_aabb_clamped_in(const vec3 bounds[2], const vec3 point_in, vec3 out_clamped)
 {
-    out_clamped[0] = clampf(point_in[0], boxMin[0], boxMax[0]);
-    out_clamped[1] = clampf(point_in[1], boxMin[1], boxMax[1]);
-    out_clamped[2] = clampf(point_in[2], boxMin[2], boxMax[2]);
+    out_clamped[0] = clampf(point_in[0], bounds[0][0], bounds[1][0]);
+    out_clamped[1] = clampf(point_in[1], bounds[0][1], bounds[1][1]);
+    out_clamped[2] = clampf(point_in[2], bounds[0][2], bounds[1][2]);
 }
 
 static void
@@ -89,7 +86,7 @@ __find_box_sphere_inverse(
 
     // Find the closest point on AABB to sphere center
     vec3 closest_point;
-    _aabb_clamped_in(bounds[0], bounds[1], pos_b, closest_point);
+    _aabb_clamped_in(bounds, pos_b, closest_point);
 
     // Calculate the vector from the sphere center to this closest point
     vec3 to_closest;
@@ -169,7 +166,7 @@ __find_box_capsule_inverse(gsk_BoxCollider *box,
 
     // clamp that "capsule-closest" point onto the AABB
     vec3 closest_on_box;
-    _aabb_clamped_in(boxMin, boxMax, closest_on_segment, closest_on_box);
+    _aabb_clamped_in(bounds, closest_on_segment, closest_on_box);
 
     // measure the distance. If < capsule.radius => collision
     vec3 diff;
@@ -460,11 +457,16 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
     gsk_CollisionPoints ret = {.has_collision = 0};
 
     vec3 bounds_a[2], bounds_b[2];
+    vec3 center_a, center_b;
     glm_vec3_add(pos_a, a->bounds[0], bounds_a[0]);
     glm_vec3_add(pos_a, a->bounds[1], bounds_a[1]);
+    // glm_aabb_center(bounds_a, center_a);
+    glm_vec3_copy(pos_a, center_a);
 
     glm_vec3_add(pos_b, b->bounds[0], bounds_b[0]);
     glm_vec3_add(pos_b, b->bounds[1], bounds_b[1]);
+    glm_aabb_center(bounds_b, center_b);
+    // glm_vec3_copy(pos_b, center_b);
 
     if (glm_aabb_aabb(bounds_a, bounds_b))
     {
@@ -472,7 +474,7 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
 
         // calculate normal
         vec3 normal = GLM_VEC3_ZERO_INIT;
-        glm_vec3_sub(pos_b, pos_a, normal);
+        glm_vec3_sub(center_b, center_a, normal);
         glm_normalize(normal);
         glm_vec3_copy(normal, ret.normal);
 
@@ -489,16 +491,17 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
 #endif
 
         // calculate point a
-        _aabb_clamped_point(bounds_a, pos_a, pos_b, ret.point_a);
+        _aabb_clamped_in(bounds_a, center_b, ret.point_a);
 
         // calculate point b
-        glm_vec3_sub(pos_b, ret.point_a, normal);
+        glm_vec3_sub(center_b, ret.point_a, normal);
         glm_vec3_normalize(normal);
 
-        float dist = glm_vec3_distance(pos_a, ret.point_a);
+        float dist = glm_vec3_distance(center_a, ret.point_a);
         glm_vec3_scale(normal, dist, ret.point_b);
-        glm_vec3_sub(pos_b, ret.point_b, ret.point_b);
-        _aabb_clamped_point(bounds_b, pos_b, ret.point_b, ret.point_b);
+        glm_vec3_sub(center_b, ret.point_b, ret.point_b);
+        //_aabb_clamped_point(bounds_b, center_b, ret.point_b, ret.point_b);
+        _aabb_clamped_in(bounds_b, ret.point_b, ret.point_b);
 
         glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
         glm_vec3_normalize(ret.normal);

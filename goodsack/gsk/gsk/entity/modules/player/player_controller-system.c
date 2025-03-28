@@ -198,15 +198,15 @@ fixed_update(gsk_Entity entity)
 
 #if 1
     // handle jump event (send force)
-    if (cmp_controller->is_grounded && cmp_controller->is_jumping)
+    if (cmp_controller->is_grounded && cmp_controller->is_jumping &&
+        cmp_rigidbody->linear_velocity[1] <= 0.0f)
     {
         cmp_controller->is_grounded = FALSE;
         cmp_controller->is_jumping  = FALSE;
         // cmp_rigidbody->linear_velocity[1] = newvel[1] + 5;
 
         // TODO: Better way to add forces
-        cmp_rigidbody->force_velocity[1] =
-          cmp_rigidbody->force_velocity[1] + cmp_controller->jump_force;
+        cmp_rigidbody->force_velocity[1] += cmp_controller->jump_force;
     }
 #endif
 

@@ -108,7 +108,7 @@ init(gsk_Entity e)
             glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
         }
         // TODO: TESTING
-        else if (collider->p_mesh != NULL && collider->p_mesh == 0x32)
+        else if (collider->p_mesh == 0x32)
         {
             glm_vec3_copy(collider->box_bounds_min, box_collider->bounds[0]);
             glm_vec3_copy(collider->box_bounds_max, box_collider->bounds[1]);
@@ -125,8 +125,12 @@ init(gsk_Entity e)
         // default BOX bounds
         else
         {
-            vec3 bounds_min = {-20.0f, -1.0f, -20.0f};
-            vec3 bounds_max = {20.0f, 1.0f, 20.0f};
+            LOG_WARN("no mesh found found box collider on entity %d. Setting "
+                     "default bounds",
+                     e.id);
+
+            vec3 bounds_min = {-1.0f, -1.0f, -1.0f};
+            vec3 bounds_max = {1.0f, 1.0f, 1.0f};
             glm_vec3_copy(bounds_min, box_collider->bounds[0]);
             glm_vec3_copy(bounds_max, box_collider->bounds[1]);
         }
@@ -410,7 +414,13 @@ on_collide(gsk_Entity e)
             inverse_inertia_a = (fabs(inertia_a) > 0.0f) ? 1.0f / inertia_a : 0;
 
             // copy b-values
-            if (rigidbody_b)
+            if (rigidbody_b == NULL)
+            {
+                glm_vec3_copy(linear_velocity_a, relative_velocity);
+
+            }
+            // copy b-values for standard rigidbodies
+            else if (rigidbody_b->is_kinematic == FALSE)
             {
                 glm_vec3_copy(rigidbody_b->linear_velocity, linear_velocity_b);
                 mass_b         = rigidbody_b->mass;
@@ -424,10 +434,6 @@ on_collide(gsk_Entity e)
                 // calculate relative velocity
                 glm_vec3_sub(
                   linear_velocity_a, linear_velocity_b, relative_velocity);
-
-            } else
-            {
-                glm_vec3_copy(linear_velocity_a, relative_velocity);
             }
 
             gsk_PhysicsMark mark = {
@@ -459,8 +465,8 @@ on_collide(gsk_Entity e)
             glm_vec3_copy(relative_velocity, mark.relative_velocity);
 
             // copy world-positions
-            glm_vec3_copy(transform->position, mark.body_a.position);
-            glm_vec3_copy(transform_b->position, mark.body_b.position);
+            glm_vec3_copy(transform->world_position, mark.body_a.position);
+            glm_vec3_copy(transform_b->world_position, mark.body_b.position);
 
             // Create a new collision result using our points
             gsk_CollisionResult result = {
