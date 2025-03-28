@@ -91,6 +91,7 @@ struct ComponentAudioSource
 typedef struct ComponentBane
 {
     CACHE_ALIGN(s32 damage);
+    CACHE_ALIGN(u8 is_instant_kill);
 } gsk_C_Bane;
 
 typedef struct ComponentBoneAttachment

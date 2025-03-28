@@ -19,7 +19,8 @@
     },
 
     "Bane": {
-        "int": ["damage"]
+        "int": ["damage"],
+        "bool": ["is_instant_kill"]
     },
 
     "BoneAttachment": {

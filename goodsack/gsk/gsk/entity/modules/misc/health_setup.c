@@ -36,8 +36,7 @@ update(gsk_Entity entity)
 
     cmp_health->event_health_change = FALSE;
 
-    if (cmp_health->is_alive == TRUE &&
-        cmp_health->current_health != cmp_health->last_health)
+    if (cmp_health->current_health != cmp_health->last_health)
     {
         cmp_health->event_health_change = TRUE;
         cmp_health->last_health         = cmp_health->current_health;
