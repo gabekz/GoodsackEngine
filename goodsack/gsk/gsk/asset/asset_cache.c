@@ -16,6 +16,7 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#include "core/audio/audio_clip.h"
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/model.h"
 #include "core/graphics/shader/shader.h"
@@ -39,12 +40,14 @@ gsk_asset_cache_init(const char *cache_scheme)
     sizes_data[GskAssetType_Texture]  = sizeof(gsk_Texture);
     sizes_data[GskAssetType_Material] = sizeof(gsk_Material);
     sizes_data[GskAssetType_Shader]   = sizeof(gsk_ShaderProgram);
+    sizes_data[GskAssetType_Audio]    = sizeof(gsk_AudioClip);
     sizes_data[GskAssetType_Model]    = sizeof(gsk_Model);
 
     sizes_ops[GskAssetType_GCFG]     = 1;
     sizes_ops[GskAssetType_Texture]  = sizeof(TextureOptions);
     sizes_ops[GskAssetType_Material] = 1;
     sizes_ops[GskAssetType_Shader]   = 1;
+    sizes_ops[GskAssetType_Audio]    = 1;
     sizes_ops[GskAssetType_Model]    = sizeof(gsk_AssetModelOptions);
 
     // setup hash table
@@ -208,6 +211,11 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
     else if (!strcmp(ext, ".shader") || !strcmp(ext, ".compute"))
     {
         list_type = GskAssetType_Shader;
+    }
+    // audio
+    else if (!strcmp(ext, ".wav"))
+    {
+        list_type = GskAssetType_Audio;
     }
     // model
     else if (!strcmp(ext, ".obj") || !strcmp(ext, ".gltf") ||

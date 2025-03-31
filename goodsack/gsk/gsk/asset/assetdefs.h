@@ -17,6 +17,7 @@ typedef enum GskAssetType_ {
     GskAssetType_Texture,
     GskAssetType_Material,
     GskAssetType_Shader,
+    GskAssetType_Audio,
     GskAssetType_Model,
 } GskAssetType_;
 

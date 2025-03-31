@@ -13,6 +13,7 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#include "core/audio/audio_clip.h"
 #include "core/device/device.h"
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/model.h"
@@ -74,6 +75,14 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
         {
             *p_blob               = parse_image(GSK_PATH(str_uri));
             p_blob->is_serialized = TRUE;
+        }
+        // Audio import
+        else if (asset_type == GskAssetType_Audio)
+        {
+            p_blob->p_buffer      = gsk_audio_clip_load_from_file(str_uri);
+            p_blob->asset_type    = GskAssetType_Audio;
+            p_blob->buffer_len    = sizeof(gsk_AudioClip);
+            p_blob->is_serialized = FALSE;
         }
 
         // Model import
@@ -148,6 +157,14 @@ __load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
     free(p_blob->p_buffer);
 
     return 1;
+}
+
+static u8
+__load_audio(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
+{
+    gsk_AssetBlob *p_blob      = (gsk_AssetBlob *)p_ref->p_data_import;
+    *((gsk_AudioClip *)p_dest) = *(gsk_AudioClip *)p_blob->p_buffer;
+    return (p_blob->p_buffer != NULL) ? 1 : 0;
 }
 
 static u8
@@ -315,6 +332,7 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     case GskAssetType_Shader: p_create_func = __create_shader; break;
     // load-functions
     case GskAssetType_Texture: p_load_func = __load_texture; break;
+    case GskAssetType_Audio: p_load_func = __load_audio; break;
     case GskAssetType_Model: p_load_func = __load_model; break;
     // failed
     default:

@@ -58,6 +58,7 @@ static struct
     char proj_scheme[GSK_FS_MAX_SCHEME];
 
     gsk_AssetRef *p_default_texture;
+    gsk_AssetRef *p_default_audio;
     gsk_AssetRef *p_default_model;
 
 #if GSK_RUNTIME_USE_DEBUG
@@ -255,6 +256,11 @@ gsk::runtime::rt_setup(const char *root_dir,
         s_runtime.p_default_texture =
           _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
                                   "gsk://textures/defaults/missing.jpg",
+                                  GSK_ASSET_FETCH_IMPORT);
+
+        s_runtime.p_default_audio =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://audio/boing.wav",
                                   GSK_ASSET_FETCH_IMPORT);
 
         s_runtime.p_default_model =
@@ -645,6 +651,7 @@ gsk::runtime::rt_get_fallback_asset(GskAssetType type)
     switch (type)
     {
     case GskAssetType_Texture: p_ret = s_runtime.p_default_texture; break;
+    case GskAssetType_Audio: p_ret = s_runtime.p_default_audio; break;
     case GskAssetType_Model: p_ret = s_runtime.p_default_model; break;
     default: p_ret = NULL; break;
     }
