@@ -54,6 +54,7 @@ typedef struct gsk_ECSComponentList gsk_ECSComponentList;
 
 typedef u64 gsk_EntityId;
 typedef s32 gsk_EntityFlags;
+typedef s32 gsk_EntityLayer;
 
 typedef struct gsk_ECS gsk_ECS;
 
@@ -88,6 +89,7 @@ struct gsk_ECS
 
     gsk_EntityId *p_ent_ids, nextId;
     gsk_EntityFlags *p_ent_flags;
+    gsk_EntityLayer *p_ent_layers;
 
     char **entity_names;
 
@@ -130,6 +132,9 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name);
 
 void
 gsk_ecs_ent_set_active(gsk_Entity entity, u8 is_active);
+
+void
+gsk_ecs_ent_set_layer(gsk_Entity entity, gsk_EntityLayer layer);
 
 void
 gsk_ecs_ent_destroy(gsk_Entity entity);

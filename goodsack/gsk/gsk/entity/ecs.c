@@ -67,18 +67,29 @@ __check_reallocate_ecs(gsk_ECS *self)
 
     /*==== Resize *p_ent_ids =========================================*/
 
-    self->p_ent_ids =
-      __safe_realloc(self->p_ent_ids, newsize * sizeof(gsk_EntityId), "ids");
+    self->p_ent_ids = __safe_realloc(
+      self->p_ent_ids, newsize * sizeof(gsk_EntityId), "p_ent_ids");
 
     /*==== Resize *p_ent_flags =======================================*/
 
     self->p_ent_flags = __safe_realloc(
-      self->p_ent_flags, newsize * sizeof(gsk_EntityFlags), "ids_init");
+      self->p_ent_flags, newsize * sizeof(gsk_EntityFlags), "p_ent_flags");
 
     for (int i = self->nextIndex; i < newsize; i++)
     {
         // default entity flags
         self->p_ent_flags[i] = GskEcsEntityFlag_None;
+    }
+
+    /*==== Resize *p_ent_layers ======================================*/
+
+    self->p_ent_layers = __safe_realloc(
+      self->p_ent_layers, newsize * sizeof(gsk_EntityLayer), "p_ent_layers");
+
+    for (int i = self->nextIndex; i < newsize; i++)
+    {
+        // default entity flags
+        self->p_ent_layers[i] = 0;
     }
 
     /*==== Resize *entity_names ======================================*/
@@ -129,8 +140,9 @@ __ent_mark_deleted(gsk_ECS *self, gsk_Entity entity)
     {
         _gsk_ecs_set_internal(entity, i, FALSE);
     }
-    self->p_ent_flags[entity.index] = GskEcsEntityFlag_None;
-    self->p_ent_ids[entity.index]   = ECS_ID_DELETED;
+    self->p_ent_ids[entity.index]    = ECS_ID_DELETED;
+    self->p_ent_flags[entity.index]  = GskEcsEntityFlag_None;
+    self->p_ent_layers[entity.index] = 0;
 }
 
 gsk_ECS *
@@ -148,11 +160,15 @@ gsk_ecs_init(gsk_Renderer *renderer)
     ecs->nextIndex = 0;
 
     // initialize init list (list of entities with initialization flag)
-    ecs->p_ent_flags = malloc(capacity * sizeof(gsk_EntityFlags));
+    ecs->p_ent_flags  = malloc(capacity * sizeof(gsk_EntityFlags));
+    ecs->p_ent_layers = malloc(capacity * sizeof(gsk_EntityLayer));
     for (int i = 0; i < capacity; i++)
     {
         // default entity flags
         ecs->p_ent_flags[i] = GskEcsEntityFlag_None;
+
+        // default entity layer
+        ecs->p_ent_layers[i] = 0;
     }
 
     // Create Entity names cache
@@ -231,6 +247,12 @@ gsk_ecs_ent_set_active(gsk_Entity entity, u8 is_active)
     }
 
     *p_flags &= ~GskEcsEntityFlag_Enabled;
+}
+
+void
+gsk_ecs_ent_set_layer(gsk_Entity entity, gsk_EntityLayer layer)
+{
+    entity.ecs->p_ent_layers[entity.index] = layer;
 }
 
 void

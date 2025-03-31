@@ -207,8 +207,16 @@ on_collide(gsk_Entity e)
           .ecs   = e.ecs,
         };
 
-        // TODO: Add collision masks
-        // if (e.id >= 307 && e_compare.id >= 307) { continue; }
+        // TODO: add functionptr to validate collision-layer matrix
+        if ((e.ecs->p_ent_layers[e.index] == 1 &&
+             e.ecs->p_ent_layers[e_compare.index] == 2) ||
+            (e.ecs->p_ent_layers[e.index] == 2 &&
+             e.ecs->p_ent_layers[e_compare.index] == 1) ||
+            (e.ecs->p_ent_layers[e.index] == 3) &&
+              e.ecs->p_ent_layers[e_compare.index] == 3)
+        {
+            continue;
+        }
 
         if (!gsk_ecs_has(e_compare, C_COLLIDER)) continue;
         if (!gsk_ecs_has(e_compare, C_TRANSFORM))

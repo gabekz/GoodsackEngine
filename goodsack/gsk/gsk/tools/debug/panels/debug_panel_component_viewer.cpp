@@ -447,6 +447,7 @@ gsk::tools::panels::ComponentViewer::draw(void)
 
     PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
     Text("entity %d", e.id);
+    Text("layer %d", e.ecs->p_ent_layers[e.index]);
     PopStyleColor();
 
     for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
