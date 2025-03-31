@@ -40,8 +40,13 @@ init(gsk_Entity e)
     {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
 
-        // default radius
-        sphereCollider->radius = 0.5f;
+        if (collider->radius <= 0)
+        {
+            // default radius
+            collider->radius = 0.5f;
+        }
+
+        sphereCollider->radius = collider->radius;
 
 #if 0
         if (gsk_ecs_has(e, C_MODEL))

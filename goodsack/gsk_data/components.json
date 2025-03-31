@@ -49,7 +49,8 @@
     "Collider": {
         "int": ["type"],
         "Resource": ["p_collider"],
-        "bool": ["is_colliding"]
+        "bool": ["is_colliding"],
+        "f32": ["radius"]
     },
 
     "Enemy": {

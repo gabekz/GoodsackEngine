@@ -145,6 +145,7 @@ struct ComponentCollider
     CACHE_ALIGN(void *p_mesh);
     CACHE_ALIGN(vec3 box_bounds_min);
     CACHE_ALIGN(vec3 box_bounds_max);
+    CACHE_ALIGN(f32 radius);
 };
 
 struct ComponentEnemy
