@@ -29,6 +29,12 @@ gsk_runtime_get_fallback_asset(GskAssetType type);
 char *
 gsk_runtime_get_startup_map();
 
+gsk_EntityId
+gsk_runtime_get_hovered_entity_id();
+
+void
+gsk_runtime_set_debug_entity_id(gsk_EntityId entity_id);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

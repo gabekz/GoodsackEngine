@@ -68,10 +68,15 @@ _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 static void
 _mouse_callback(GLFWwindow *window, int button, int action, int mods)
 {
+#if SYS_DEBUG
+    gsk_Input deviceInput = gsk_device_getInput();
+    if (deviceInput.cursor_state.is_visible == FALSE) { return; }
+
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
-        // set selected entity here.
+        gsk_runtime_set_debug_entity_id(gsk_runtime_get_hovered_entity_id());
     }
+#endif // SYS_DEBUG
 }
 
 static void

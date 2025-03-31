@@ -62,6 +62,7 @@ static struct
 
 #if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
+    gsk_EntityId selected_entity_id;
 #endif // GSK_RUNTIME_DEBUG
 
     struct
@@ -335,6 +336,8 @@ gsk::runtime::rt_setup(const char *root_dir,
     s_runtime.p_debug_toolbar =
       new gsk::tools::DebugToolbar(s_runtime.renderer);
 
+    s_runtime.selected_entity_id = 0;
+
 #endif // GSK_RUNTIME_USE_DEBUG
 
     /*==== Runtime setup =============================================*/
@@ -561,6 +564,8 @@ gsk::runtime::rt_activate_ecs_systems(gsk_ECS *p_ecs)
 {
     // Activate ECS Systems
 
+    LOG_DEBUG("Activating built-in ECS Systems");
+
     s_transform_init(p_ecs);
 
     s_camera_init(p_ecs);
@@ -599,7 +604,7 @@ gsk::runtime::rt_set_scene(u16 scene_index)
 gsk_ECS *
 gsk::runtime::rt_get_ecs()
 {
-    return s_runtime.ecs;
+    return s_runtime.renderer->sceneL[s_runtime.renderer->activeScene]->ecs;
 }
 
 gsk_Renderer *
@@ -652,4 +657,38 @@ gsk::runtime::rt_get_startup_map()
 {
     if (s_runtime.map_setup.map_from_runtime == 0) { return NULL; }
     return s_runtime.map_setup.map_uri;
+}
+
+gsk_EntityId
+gsk::runtime::rt_get_hovered_entity_id()
+{
+    if (s_runtime.renderer->hovered_entity_index == 0 ||
+        s_runtime.p_debug_toolbar->is_focused())
+    {
+        return 0;
+    }
+
+    u32 index = s_runtime.renderer->hovered_entity_index - 1;
+
+    gsk_ECS *p_ecs  = gsk::runtime::rt_get_ecs();
+    gsk_EntityId id = p_ecs->ids[index];
+
+    return id;
+}
+
+gsk_EntityId
+gsk::runtime::rt_get_debug_entity_id()
+{
+    return s_runtime.selected_entity_id;
+}
+
+void
+gsk::runtime::rt_set_debug_entity_id(gsk_EntityId entity_id)
+{
+    if (entity_id >= ECS_ID_FIRST)
+    {
+        s_runtime.selected_entity_id = entity_id;
+        LOG_TRACE("set RT debug entity_id to: %d",
+                  s_runtime.selected_entity_id);
+    }
 }

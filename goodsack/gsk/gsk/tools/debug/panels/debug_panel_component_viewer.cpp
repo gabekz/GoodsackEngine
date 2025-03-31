@@ -13,6 +13,8 @@
 #include "core/graphics/mesh/model.h"
 #include "core/graphics/particles/particle_system.h"
 
+#include <runtime/gsk_runtime.hpp>
+
 #include "entity/__generated__/components_gen.h"
 
 #include <imgui.h>
@@ -419,8 +421,10 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 void
 gsk::tools::panels::ComponentViewer::show_for_entity(gsk_Entity entity)
 {
+    gsk::runtime::rt_set_debug_entity_id(entity.id);
     selected_entity = entity;
-    visible         = true;
+
+    visible = true;
 }
 
 void
@@ -429,6 +433,17 @@ gsk::tools::panels::ComponentViewer::draw(void)
     using namespace ImGui;
 
     gsk_Entity e = this->selected_entity;
+
+#if 1
+    {
+        gsk_EntityId hovered_ent_id = gsk::runtime::rt_get_debug_entity_id();
+        if (hovered_ent_id != e.id && hovered_ent_id != 0)
+        {
+            this->selected_entity =
+              gsk_ecs_ent(this->selected_entity.ecs, hovered_ent_id);
+        }
+    }
+#endif
 
     PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
     Text("entity %d", e.id);

@@ -32,6 +32,8 @@ class DebugToolbar {
     void update(void);
     void render(void);
 
+    bool is_focused(void);
+
 #if 0
     void set_style(void);
 #endif

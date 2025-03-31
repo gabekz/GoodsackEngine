@@ -265,3 +265,9 @@ gsk::tools::DebugToolbar::render(void)
 #endif
     }
 }
+
+bool
+gsk::tools::DebugToolbar::is_focused(void)
+{
+    return (ImGui::GetIO().WantCaptureMouse);
+}

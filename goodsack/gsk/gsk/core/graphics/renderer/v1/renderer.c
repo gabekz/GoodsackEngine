@@ -588,47 +588,46 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     gsk_debug_markers_render(renderer->debugContext);
 #endif
 
-// computebuffer_draw();
-
-// TESTING PICKER
-#if 1
-
-    u32 hovered_entity = 0;
-
-    // TODO: currently, the cursor_position doesn't really work correctly
-    // when the cursor is locked. Will need to change in device_context.
-
-    gsk_Input input = gsk_device_getInput();
-    if (input.cursor_state.is_locked == FALSE)
+    /*-------------------------------------------
+        Hovered entity picker
+    */
     {
-        u32 picker_texture_id = prepass_getPicker();
+        u32 hovered_entity = 0;
 
-        GLuint pixel[3] = {0, 0, 0};
+        // TODO: currently, the cursor_position doesn't really work correctly
+        // when the cursor is locked. Will need to change in device_context.
 
-        // get cursor position from top-right (0, 0)
-        u32 read_pos[2] = {input.cursor_position[0],
-                           renderer->windowHeight - input.cursor_position[1]};
+        gsk_Input input = gsk_device_getInput();
+        if (input.cursor_state.is_locked == FALSE)
+        {
+            u32 picker_texture_id = prepass_getPicker();
 
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, prepass_getFBO());
-        glReadBuffer(GL_COLOR_ATTACHMENT2);
+            GLuint pixel[3] = {0, 0, 0};
 
-        glReadPixels(read_pos[0],
-                     read_pos[1],
-                     1,
-                     1,
-                     GL_RGB_INTEGER,
-                     GL_UNSIGNED_INT,
-                     pixel);
+            // get cursor position from top-right (0, 0)
+            u32 read_pos[2] = {input.cursor_position[0],
+                               renderer->windowHeight -
+                                 input.cursor_position[1]};
 
-        glReadBuffer(GL_NONE);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, prepass_getFBO());
+            glReadBuffer(GL_COLOR_ATTACHMENT2);
 
-        if (pixel[0] > 0) { hovered_entity = pixel[0]; }
+            glReadPixels(read_pos[0],
+                         read_pos[1],
+                         1,
+                         1,
+                         GL_RGB_INTEGER,
+                         GL_UNSIGNED_INT,
+                         pixel);
+
+            glReadBuffer(GL_NONE);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+            if (pixel[0] > 0) { hovered_entity = pixel[0]; }
+        }
+
+        renderer->hovered_entity_index = hovered_entity;
     }
-
-    renderer->hovered_entity_index = hovered_entity;
-
-#endif // _TESTING_PICKER
 }
 
 static void

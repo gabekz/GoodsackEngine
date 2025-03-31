@@ -65,6 +65,15 @@ rt_get_fallback_asset(GskAssetType type);
 char *
 rt_get_startup_map();
 
+gsk_EntityId
+rt_get_hovered_entity_id();
+
+gsk_EntityId
+rt_get_debug_entity_id();
+
+void
+rt_set_debug_entity_id(gsk_EntityId entity_id);
+
 } // namespace runtime
 } // namespace gsk
 
