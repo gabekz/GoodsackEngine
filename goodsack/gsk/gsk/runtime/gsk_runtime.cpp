@@ -533,7 +533,7 @@ gsk::runtime::rt_loop()
         // mark each entity for deletion
         for (int j = 0; j < p_ecs->nextIndex; j++)
         {
-            gsk_ecs_ent_destroy(gsk_ecs_ent(p_ecs, p_ecs->ids[j]));
+            gsk_ecs_ent_destroy(gsk_ecs_ent(p_ecs, p_ecs->p_ent_ids[j]));
         }
 
         // call ECS_DESTROY for each ECS handler
@@ -671,7 +671,7 @@ gsk::runtime::rt_get_hovered_entity_id()
     u32 index = s_runtime.renderer->hovered_entity_index - 1;
 
     gsk_ECS *p_ecs  = gsk::runtime::rt_get_ecs();
-    gsk_EntityId id = p_ecs->ids[index];
+    gsk_EntityId id = p_ecs->p_ent_ids[index];
 
     return id;
 }

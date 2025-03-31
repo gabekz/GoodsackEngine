@@ -202,7 +202,7 @@ on_collide(gsk_Entity e)
 
         // TODO: fix look-up
         gsk_Entity e_compare = {
-          .id    = e.ecs->ids[i],
+          .id    = e.ecs->p_ent_ids[i],
           .index = (gsk_EntityId)i,
           .ecs   = e.ecs,
         };
@@ -337,7 +337,7 @@ on_collide(gsk_Entity e)
     {
         // TODO: AGAIN - fix look-up
         gsk_Entity e_compare = {
-          .id    = e.ecs->ids[id_point_list[i]],
+          .id    = e.ecs->p_ent_ids[id_point_list[i]],
           .index = (gsk_EntityId)id_point_list[i],
           .ecs   = e.ecs,
         };

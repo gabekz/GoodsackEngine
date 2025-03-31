@@ -83,11 +83,11 @@ struct gsk_ECSComponentList
 
 struct gsk_ECS
 {
-    gsk_EntityId *ids, nextId;
     u32 nextIndex;
     u32 capacity;
 
-    gsk_EntityFlags *ids_init;
+    gsk_EntityId *p_ent_ids, nextId;
+    gsk_EntityFlags *p_ent_flags;
 
     char **entity_names;
 

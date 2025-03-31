@@ -118,13 +118,13 @@ gsk::tools::panels::EntityViewer::draw(void)
             {
                 // TODO: This menu breaks when we have no initialized
                 // entities
-                if (!(ecs->ids_init[row_n] & GskEcsEntityFlag_Initialized))
+                if (!(ecs->p_ent_flags[row_n] & GskEcsEntityFlag_Initialized))
                 {
                     continue;
                 }
 
                 u8 is_disabled =
-                  !(ecs->ids_init[row_n] & GskEcsEntityFlag_Enabled);
+                  !(ecs->p_ent_flags[row_n] & GskEcsEntityFlag_Enabled);
 
                 if (is_disabled)
                 {
@@ -138,7 +138,7 @@ gsk::tools::panels::EntityViewer::draw(void)
                 TableNextColumn();
                 Text("%04d", row_n);
                 TableNextColumn();
-                Text("%04d", (int)ecs->ids[(int)row_n]);
+                Text("%04d", (int)ecs->p_ent_ids[(int)row_n]);
                 TableNextColumn();
                 TextUnformatted(ecs->entity_names[(int)row_n]);
                 if (is_disabled) { PopStyleColor(); }
@@ -146,8 +146,10 @@ gsk::tools::panels::EntityViewer::draw(void)
                 TableNextColumn();
                 if (SmallButton("Inspect"))
                 {
-                    gsk_Entity entity = (gsk_Entity {
-                      .id = ecs->ids[row_n], .index = (u64)row_n, .ecs = ecs});
+                    gsk_Entity entity =
+                      (gsk_Entity {.id    = ecs->p_ent_ids[row_n],
+                                   .index = (u64)row_n,
+                                   .ecs   = ecs});
 
                     // display the component viewer panel
                     p_component_viewer->show_for_entity(entity);

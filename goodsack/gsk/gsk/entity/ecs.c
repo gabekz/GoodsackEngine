@@ -65,20 +65,20 @@ __check_reallocate_ecs(gsk_ECS *self)
 
     LOG_DEBUG("Resizing ECS Data cap from %d to %d", self->capacity, newsize);
 
-    /*==== Resize state data =========================================*/
+    /*==== Resize *p_ent_ids =========================================*/
 
-    self->ids =
-      __safe_realloc(self->ids, newsize * sizeof(gsk_EntityId), "ids");
+    self->p_ent_ids =
+      __safe_realloc(self->p_ent_ids, newsize * sizeof(gsk_EntityId), "ids");
 
-    /*==== Resize *ids_init ==========================================*/
+    /*==== Resize *p_ent_flags =======================================*/
 
-    self->ids_init = __safe_realloc(
-      self->ids_init, newsize * sizeof(gsk_EntityFlags), "ids_init");
+    self->p_ent_flags = __safe_realloc(
+      self->p_ent_flags, newsize * sizeof(gsk_EntityFlags), "ids_init");
 
     for (int i = self->nextIndex; i < newsize; i++)
     {
         // default entity flags
-        self->ids_init[i] = GskEcsEntityFlag_None;
+        self->p_ent_flags[i] = GskEcsEntityFlag_None;
     }
 
     /*==== Resize *entity_names ======================================*/
@@ -129,8 +129,8 @@ __ent_mark_deleted(gsk_ECS *self, gsk_Entity entity)
     {
         _gsk_ecs_set_internal(entity, i, FALSE);
     }
-    self->ids_init[entity.index] = GskEcsEntityFlag_None;
-    self->ids[entity.index]      = ECS_ID_DELETED;
+    self->p_ent_flags[entity.index] = GskEcsEntityFlag_None;
+    self->p_ent_ids[entity.index]   = ECS_ID_DELETED;
 }
 
 gsk_ECS *
@@ -143,18 +143,16 @@ gsk_ecs_init(gsk_Renderer *renderer)
     ecs->capacity = capacity;
 
     // initialize id list
-    ecs->ids       = malloc(capacity * sizeof(gsk_EntityId));
+    ecs->p_ent_ids = malloc(capacity * sizeof(gsk_EntityId));
     ecs->nextId    = ECS_ID_FIRST;
     ecs->nextIndex = 0;
 
     // initialize init list (list of entities with initialization flag)
-    // TODO: gsk_EntityFlag *p_ent_flags
-    // TODO: gsk_EntityId *p_ent_ids
-    ecs->ids_init = malloc(capacity * sizeof(gsk_EntityFlags));
+    ecs->p_ent_flags = malloc(capacity * sizeof(gsk_EntityFlags));
     for (int i = 0; i < capacity; i++)
     {
         // default entity flags
-        ecs->ids_init[i] = GskEcsEntityFlag_None;
+        ecs->p_ent_flags[i] = GskEcsEntityFlag_None;
     }
 
     // Create Entity names cache
@@ -192,7 +190,7 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
     // TODO: optimize by not going through each entity, just a "delete-list"
     for (int i = 0; i < self->nextIndex; i++)
     {
-        if (self->ids[i] == ECS_ID_DELETED)
+        if (self->p_ent_ids[i] == ECS_ID_DELETED)
         {
             next_index   = (u64)i;
             is_replacing = TRUE;
@@ -206,8 +204,8 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
       (gsk_Entity) {.id = self->nextId, .index = next_index, .ecs = self};
 
     // Enable the entity
-    self->ids[entity.index] = entity.id;
-    self->ids_init[entity.index] |= GskEcsEntityFlag_Enabled;
+    self->p_ent_ids[entity.index] = entity.id;
+    self->p_ent_flags[entity.index] |= GskEcsEntityFlag_Enabled;
 
     // only iterate nextIndex if we did not replace an old entity
     if (is_replacing == FALSE) { self->nextIndex++; }
@@ -224,7 +222,7 @@ _gsk_ecs_new_internal(gsk_ECS *self, char *name)
 void
 gsk_ecs_ent_set_active(gsk_Entity entity, u8 is_active)
 {
-    gsk_EntityFlags *p_flags = &(entity.ecs->ids_init[entity.index]);
+    gsk_EntityFlags *p_flags = &(entity.ecs->p_ent_flags[entity.index]);
 
     if (is_active == TRUE)
     {
@@ -238,7 +236,7 @@ gsk_ecs_ent_set_active(gsk_Entity entity, u8 is_active)
 void
 gsk_ecs_ent_destroy(gsk_Entity entity)
 {
-    entity.ecs->ids_init[entity.index] |= GskEcsEntityFlag_Delete;
+    entity.ecs->p_ent_flags[entity.index] |= GskEcsEntityFlag_Delete;
 }
 
 void
@@ -246,7 +244,7 @@ _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
 {
     gsk_ECS *ecs = entity.ecs;
 
-    if (ecs->ids_init[entity.index] & GskEcsEntityFlag_Initialized)
+    if (ecs->p_ent_flags[entity.index] & GskEcsEntityFlag_Initialized)
     {
         LOG_WARN("Cannot add components (yet) to an already initialized entity "
                  "(id: %d).",
@@ -347,12 +345,12 @@ gsk_ecs_ent(gsk_ECS *self, gsk_EntityId id)
 {
     for (int i = 0; i < self->nextIndex; i++)
     {
-        if (self->ids[i] == id)
+        if (self->p_ent_ids[i] == id)
         {
             // LOG_INFO("got\t id: %d\t index: %d", self->ids[i], i);
 
             return (gsk_Entity) {
-              .id    = self->ids[i],
+              .id    = self->p_ent_ids[i],
               .index = i,
               .ecs   = self,
             };
@@ -374,9 +372,9 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
     for (int i = 0; i < self->nextIndex; i++)
     {
         gsk_Entity ent =
-          (gsk_Entity) {.id = self->ids[i], .index = i, .ecs = self};
+          (gsk_Entity) {.id = self->p_ent_ids[i], .index = i, .ecs = self};
 
-        gsk_EntityFlags *p_flags = &self->ids_init[i];
+        gsk_EntityFlags *p_flags = &self->p_ent_flags[i];
 
         u8 is_ent_enabled     = (*p_flags & GskEcsEntityFlag_Enabled);
         u8 is_ent_delete      = (*p_flags & GskEcsEntityFlag_Delete);

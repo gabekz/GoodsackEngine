@@ -101,8 +101,7 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
         add_panel((DebugPanel *)(new Lighting("Lighting")), (int)Menus::Scene);
 
         add_panel(p_entity_viewer, (int)Menus::Scene);
-        add_panel(p_component_viewer,
-                  (int)Menus::None); // Don't show this in the toolbar
+        add_panel(p_component_viewer, (int)Menus::None);
 
         // "Pipeline" Menu
         add_panel((DebugPanel *)(new Assets("Assets")), (int)Menus::Pipeline);

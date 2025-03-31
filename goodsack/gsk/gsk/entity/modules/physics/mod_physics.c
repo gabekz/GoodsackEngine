@@ -28,7 +28,7 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
 
         // TODO: fix look-up
         gsk_Entity e_compare = {
-          .id    = entity_caller.ecs->ids[i],
+          .id    = entity_caller.ecs->p_ent_ids[i],
           .index = (gsk_EntityId)i,
           .ecs   = entity_caller.ecs,
         };
@@ -132,7 +132,7 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
 
         // TODO: fix look-up
         gsk_Entity e_compare = {
-          .id    = entity_caller.ecs->ids[i],
+          .id    = entity_caller.ecs->p_ent_ids[i],
           .index = (gsk_EntityId)i,
           .ecs   = entity_caller.ecs,
         };
