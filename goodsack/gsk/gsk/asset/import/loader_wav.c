@@ -35,7 +35,12 @@ gsk_load_wav(const char *filepath)
     magic[4] = '\0';
 
     filePtr = fopen(filepath, "rb");
-    if (filePtr == NULL) { LOG_ERROR("Failed to open file: %s", filepath); }
+
+    if (filePtr == NULL)
+    {
+        LOG_ERROR("Failed to open file: %s", filepath);
+        return NULL;
+    }
 
     fread(magic, strlen("RIFF"), 1, filePtr);
     if (strcmp(magic, "RIFF"))

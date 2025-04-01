@@ -12,7 +12,7 @@
 
     "AudioSource": {
         "uint": ["buffer_audio", "buffer_source"],
-        "float": ["min_distance, max_distance"],
+        "float": ["min_distance, max_distance", "pitch"],
         "string": ["filePath"],
         "bool": ["is_looping", "is_playing", "play_on_start"],
         "Resource": ["audio_clip"]

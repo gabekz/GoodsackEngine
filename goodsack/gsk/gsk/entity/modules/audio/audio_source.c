@@ -11,11 +11,13 @@
 
 #include "entity/modules/camera/camera.h"
 #include "entity/modules/transform/transform.h"
+#include "gsk/core/device/device.h"
 
 // audio module
 #include "entity/modules/audio/mod_audio.h"
 
 #include "util/filesystem.h"
+#include "util/maths.h"
 
 #define DEFAULT_MIN 8
 #define DEFAULT_MAX 15
@@ -65,6 +67,9 @@ init(gsk_Entity e)
     {
         alSourcePlay(cmp_audio_source->buffer_source);
     }
+
+    // default pitch to 1.0f
+    if (cmp_audio_source->pitch == 0) { cmp_audio_source->pitch = 1.0f; }
 }
 
 static void
@@ -113,6 +118,10 @@ update(gsk_Entity e)
     AL_CHECK(alSourcef(cmp_audio_source->buffer_source,
                        AL_MAX_DISTANCE,
                        cmp_audio_source->max_distance));
+
+    // update pitch
+    AL_CHECK(alSourcef(
+      cmp_audio_source->buffer_source, AL_PITCH, cmp_audio_source->pitch));
 
     // get the Audio Source state
     ALint source_state;

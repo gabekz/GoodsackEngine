@@ -86,6 +86,7 @@ struct ComponentAudioSource
     CACHE_ALIGN(f32 max_distance);
     CACHE_ALIGN(f32 min_distance);
     CACHE_ALIGN(u8 play_on_start);
+    CACHE_ALIGN(f32 pitch);
 };
 
 typedef struct ComponentBane

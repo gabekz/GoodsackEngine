@@ -162,9 +162,11 @@ __load_texture(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 static u8
 __load_audio(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
-    gsk_AssetBlob *p_blob      = (gsk_AssetBlob *)p_ref->p_data_import;
+    gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
+    if (p_blob->p_buffer == NULL) { return 0; }
     *((gsk_AudioClip *)p_dest) = *(gsk_AudioClip *)p_blob->p_buffer;
-    return (p_blob->p_buffer != NULL) ? 1 : 0;
+    free(p_blob->p_buffer);
+    return 1;
 }
 
 static u8
@@ -312,7 +314,8 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
 
     if (p_ref->is_utilized == TRUE) { return p_ref; }
 
-    LOG_DEBUG("loading asset (%s)", str_uri);
+    if (is_fallback == FALSE) { LOG_DEBUG("loading asset (%s)", str_uri); }
+
     if (fetch_mode != GSK_ASSET_FETCH_ALL)
     {
         LOG_TRACE("%s - fetch mode: %s",

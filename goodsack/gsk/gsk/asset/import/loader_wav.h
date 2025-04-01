@@ -21,7 +21,7 @@ gsk_AudioData *
 gsk_load_wav(const char *filepath);
 
 #ifdef __cplusplus
-extern "C" {
+}
 #endif // __cplusplus
 
 #endif // __LOADER_WAV_H__
