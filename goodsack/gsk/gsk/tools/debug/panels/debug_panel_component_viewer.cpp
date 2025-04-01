@@ -225,47 +225,71 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 
         Checkbox("System is_awake", (bool *)&p.is_awake);
 
-        DragFloat(
-          "Particle min life", &p_particles->min_life, 0.1f, 0.0f, 100.0f);
-        DragFloat(
-          "Particle max life", &p_particles->max_life, 0.1f, 0.0f, 100.0f);
+        DragFloat("Particle min life",
+                  &p_particles->settings.min_life,
+                  0.1f,
+                  0.0f,
+                  100.0f);
+        DragFloat("Particle max life",
+                  &p_particles->settings.max_life,
+                  0.1f,
+                  0.0f,
+                  100.0f);
 
         Separator();
 
-        DragFloat(
-          "Particle size min", &p_particles->size_life_min, 0.1f, 0.0f, 100.0f);
-        DragFloat(
-          "Particle size max", &p_particles->size_life_max, 0.1f, 0.0f, 100.0f);
+        DragFloat("Particle size min",
+                  &p_particles->settings.size_life_min,
+                  0.1f,
+                  0.0f,
+                  100.0f);
+        DragFloat("Particle size max",
+                  &p_particles->settings.size_life_max,
+                  0.1f,
+                  0.0f,
+                  100.0f);
 
         Separator();
 
-        DragFloat(
-          "Particle cutoff", &p_particles->ramp_dist, 0.1f, 0.0f, 100.0f);
-        DragFloat(
-          "Particle updraft", &p_particles->updraft, 0.1f, 0.0f, 100.0f);
+        DragFloat("Particle cutoff",
+                  &p_particles->settings.ramp_dist,
+                  0.1f,
+                  0.0f,
+                  100.0f);
+        DragFloat("Particle updraft",
+                  &p_particles->settings.updraft,
+                  0.1f,
+                  0.0f,
+                  100.0f);
 
         Separator();
 
         InputFloat3("Convergence Point",
-                    p_particles->convergence_point_world_pos);
+                    p_particles->settings.convergence_point_world_pos);
         DragFloat("Convergence Strength",
-                  &p_particles->convergence_strength,
+                  &p_particles->settings.convergence_strength,
                   0.1f,
                   0.0f,
                   100.0f);
 
         Separator();
-        DragFloat(
-          "Particle noise min", &p_particles->noise_min, 0.1f, 0.0f, 100.0f);
-        DragFloat(
-          "Particle noise max", &p_particles->noise_max, 0.1f, 0.0f, 100.0f);
+        DragFloat("Particle noise min",
+                  &p_particles->settings.noise_min,
+                  0.1f,
+                  0.0f,
+                  100.0f);
+        DragFloat("Particle noise max",
+                  &p_particles->settings.noise_max,
+                  0.1f,
+                  0.0f,
+                  100.0f);
         DragFloat("Particle noise multiplier",
-                  &p_particles->noise_multiplier,
+                  &p_particles->settings.noise_multiplier,
                   0.1f,
                   0.0f,
                   100.0f);
         DragFloat("Particle noise speed",
-                  &p_particles->noise_speed,
+                  &p_particles->settings.noise_speed,
                   0.1f,
                   0.0f,
                   100.0f);

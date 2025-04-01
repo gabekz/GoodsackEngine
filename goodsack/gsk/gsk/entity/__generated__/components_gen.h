@@ -168,6 +168,7 @@ struct ComponentFlammable
     CACHE_ALIGN(f32 current_heat);
     CACHE_ALIGN(f32 ignition_point);
     CACHE_ALIGN(u8 is_burning);
+    CACHE_ALIGN(int entity_emitter_id);
     CACHE_ALIGN(f32 max_heat);
 };
 
@@ -206,6 +207,7 @@ struct ComponentModel
 
 struct ComponentParticleEmitter
 {
+    CACHE_ALIGN(ResRef p_settings);
     CACHE_ALIGN(void *p_particle_system);
     CACHE_ALIGN(f32 speed);
     CACHE_ALIGN(u8 is_awake);

@@ -11,6 +11,21 @@
 #include "util/filesystem.h"
 #include "util/logger.h"
 
+static f32 s_curl_E_min        = 0.1f;
+static f32 s_curl_E_max        = 3.3f;
+static f32 s_curl_E_multiplier = 1.05f;
+static f32 s_curl_E_speed      = 8.0f;
+
+static f32 s_smoke_dist = 1.2f;
+
+static f32 s_min_life = 0.1f;
+static f32 s_max_life = 2.0f;
+
+static f32 s_updraft = 0.020f;
+
+static f32 s_size_life_min = 0.05f;
+static f32 s_size_life_max = 0.2f;
+
 static void
 init(gsk_Entity ent)
 {
@@ -68,9 +83,11 @@ init(gsk_Entity ent)
     gsk_ShaderProgram *p_shader_ren =
       GSK_ASSET("zhr://shaders/particles_computed.shader");
 
+    gsk_ParticleSystemSettings *settings = ent_emitter->p_settings;
+
     gsk_ParticleSystem *p_sys_new = malloc(sizeof(gsk_ParticleSystem));
-    *p_sys_new =
-      gsk_particle_system_create(p_shader_com, p_shader_ren, p_explicitdata);
+    *p_sys_new                    = gsk_particle_system_create(
+      settings, p_shader_com, p_shader_ren, p_explicitdata);
 
     ent_emitter->p_particle_system = p_sys_new;
 }
@@ -94,7 +111,22 @@ fixed_update(gsk_Entity ent)
 
     glm_vec3_copy(ent_transform->world_position, p_sys->world_pos);
     glm_vec3_copy(ent_transform->orientation, p_sys->world_rot);
-    glm_vec3_copy(ent_transform->scale, p_sys->world_scale);
+
+    // TODO: Transform - get world_scale
+    if (ent_transform->has_parent)
+    {
+        gsk_Entity ent_parent =
+          gsk_ecs_ent(ent.ecs, ent_transform->parent_entity_id);
+        struct ComponentTransform *cmp_transform_parent =
+          gsk_ecs_get(ent_parent, C_TRANSFORM);
+
+        glm_vec3_copy(cmp_transform_parent->scale, p_sys->world_scale);
+    }
+
+    else
+    {
+        glm_vec3_copy(ent_transform->scale, p_sys->world_scale);
+    }
 
 #if 0
     if (gsk_ecs_has(ent, C_BONE_ATTACHMENT))
@@ -136,6 +168,8 @@ destroy(gsk_Entity ent)
       gsk_ecs_get(ent, C_PARTICLE_EMITTER);
 
     ent_emitter->is_awake = FALSE;
+
+    if (ent_emitter->p_settings) { free(ent_emitter->p_settings); }
 
     gsk_ParticleSystem *p_sys =
       (gsk_ParticleSystem *)ent_emitter->p_particle_system;

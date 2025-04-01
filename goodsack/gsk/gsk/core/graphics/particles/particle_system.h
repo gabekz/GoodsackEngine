@@ -16,6 +16,34 @@
 extern "C" {
 #endif // __cplusplus
 
+#define GSK_DEFAULT_PARTICLE_SETTINGS             \
+    (gsk_ParticleSystemSettings)                  \
+    {                                             \
+        .noise_min = 0.1f,                        \
+                                                  \
+        .noise_max = 3.3f,                        \
+                                                  \
+        .noise_multiplier = 1.05f,                \
+                                                  \
+        .noise_speed = 8.0f,                      \
+                                                  \
+        .ramp_dist = 0.8f,                        \
+                                                  \
+        .updraft = 0.02f,                         \
+                                                  \
+        .min_life = 0.1f,                         \
+                                                  \
+        .max_life = 2.0f,                         \
+                                                  \
+        .size_life_min = 0.05f,                   \
+                                                  \
+        .size_life_max = 0.2f,                    \
+                                                  \
+        .convergence_point_world_pos = {0, 4, 0}, \
+                                                  \
+        .convergence_strength = 0.002f,           \
+    }
+
 typedef struct gsk_Particle
 {
     vec4 startPos;
@@ -29,12 +57,11 @@ typedef struct gsk_Particle
 } gsk_Particle;
 #define _GSK_PARTICLE_SIZE 80
 
-typedef struct gsk_ParticleSystem
+typedef struct gsk_ParticleSystemSettings
 {
     f32 noise_min, noise_max;
     f32 noise_multiplier;
     f32 noise_speed;
-    f32 noise_cnt;
 
     f32 ramp_dist;
     f32 updraft;
@@ -42,19 +69,26 @@ typedef struct gsk_ParticleSystem
     f32 min_life, max_life;
     f32 size_life_min, size_life_max;
 
-    vec3 convergence_point_world_pos;
     f32 convergence_strength;
+    vec3 convergence_point_world_pos;
+
+    gsk_Texture *p_ramp_tex, *p_main_tex;
+
+} gsk_ParticleSystemSettings;
+
+typedef struct gsk_ParticleSystem
+{
+    gsk_ParticleSystemSettings settings;
+    gsk_ShaderProgram *p_compute_shader, *p_render_shader;
 
     vec3 world_pos, world_rot, world_scale;
     mat4 model_matrix;
 
     s32 particle_count;
 
-    gsk_ShaderProgram *p_compute_shader;
-    gsk_ShaderProgram *p_render_shader;
-
     u32 ssbo_particle_id, ssbo_mesh_id;
 
+    f32 noise_cnt;
     f32 *particles_buff;
     u32 particles_buff_size;
     f32 *mesh_buff;
@@ -77,7 +111,8 @@ gsk_particle_system_initialize();
 #endif
 
 gsk_ParticleSystem
-gsk_particle_system_create(gsk_ShaderProgram *p_compute_shader,
+gsk_particle_system_create(gsk_ParticleSystemSettings *p_settings,
+                           gsk_ShaderProgram *p_compute_shader,
                            gsk_ShaderProgram *p_render_shader,
                            gsk_MeshData *p_emitter_mesh);
 
