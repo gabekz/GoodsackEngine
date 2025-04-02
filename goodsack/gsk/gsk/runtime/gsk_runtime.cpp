@@ -593,6 +593,9 @@ gsk::runtime::rt_activate_ecs_systems(gsk_ECS *p_ecs)
     s_health_setup_init(p_ecs);
     s_particles_ecs_system_init(p_ecs);
 
+    // Light System
+    s_light_setup_system_init(p_ecs);
+
     // s_collider_debug_draw_system_init(p_ecs);
 }
 

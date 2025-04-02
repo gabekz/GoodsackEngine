@@ -32,6 +32,8 @@ extern "C" {
 
 #include "entity/modules/particles_ecs/particles_ecs-system.h"
 
+#include "entity/modules/light/light_setup-system.h"
+
 #ifdef __cplusplus
 }
 #endif

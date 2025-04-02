@@ -43,7 +43,7 @@ typedef struct gsk_LightingData
 gsk_LightingData
 gsk_lighting_initialize(u32 ubo_binding);
 
-void
+u32
 gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
                        vec3 light_position,
                        vec4 light_color);

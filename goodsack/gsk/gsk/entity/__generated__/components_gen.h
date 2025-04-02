@@ -183,8 +183,10 @@ struct ComponentHealth
 
 struct ComponentLight
 {
-    vec4 color;
-    u32 type;
+    CACHE_ALIGN(u32 type);
+    CACHE_ALIGN(u32 light_index);
+    CACHE_ALIGN(vec4 color);
+    CACHE_ALIGN(f32 intensity);
 };
 
 struct ComponentModel

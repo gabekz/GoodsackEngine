@@ -42,7 +42,7 @@ gsk_lighting_initialize(u32 ubo_binding)
     return ret;
 }
 
-void
+u32
 gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
                        vec3 light_position,
                        vec4 light_color)
@@ -83,7 +83,8 @@ gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
     }
 #endif
 
-    p_lighting_data->total_lights++; // update total
+    p_lighting_data->total_lights++;          // update total
+    return p_lighting_data->total_lights - 1; // return index to cnt light
 }
 
 #if 1

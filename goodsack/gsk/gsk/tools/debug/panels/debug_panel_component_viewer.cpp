@@ -141,6 +141,16 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         EndDisabled();
     }
 
+    else if (cmp_type == C_LIGHT)
+    {
+        struct ComponentLight &p =
+          *(static_cast<struct ComponentLight *>(gsk_ecs_get(e, C_LIGHT)));
+
+        ColorEdit3("Point Light Color", p.color);
+        DragFloat("Point Light Intensity", &p.intensity);
+
+    }
+
     else if (cmp_type == C_MODEL)
     {
         // wow, this is ridiculous..
