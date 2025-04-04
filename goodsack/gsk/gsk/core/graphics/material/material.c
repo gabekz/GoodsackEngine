@@ -16,6 +16,8 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
+#include "runtime/gsk_runtime_wrapper.h"
+
 #include "asset/asset.h"
 #include "asset/asset_cache.h"
 #include "asset/asset_gcfg.h"
@@ -144,6 +146,9 @@ gsk_material_use(gsk_Material *self)
 {
     gsk_material_load_textures(self);
     if (GSK_DEVICE_API_OPENGL) { gsk_shader_use(self->shaderProgram); }
+
+    // update previous material on renderer
+    gsk_runtime_get_renderer()->p_prev_material = self;
 }
 
 void

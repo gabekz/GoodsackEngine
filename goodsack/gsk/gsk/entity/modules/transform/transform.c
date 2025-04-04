@@ -107,14 +107,14 @@ init(gsk_Entity e)
 {
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
-    transform->has_parent                = false; // if not already set..
+    transform->has_parent =
+      (transform->parent_entity_id >= ECS_ID_FIRST) ? TRUE : FALSE;
 
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
 
     // Get parent transform (if exists)
-    if (transform->parent_entity_id >= ECS_ID_FIRST)
+    if (transform->has_parent)
     {
-        transform->has_parent                      = true;
         struct ComponentTransform *parentTransform = gsk_ecs_get(
           gsk_ecs_ent(e.ecs, transform->parent_entity_id), C_TRANSFORM);
         glm_mat4_copy(parentTransform->model, m4i);

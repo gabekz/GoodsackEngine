@@ -226,8 +226,7 @@ DrawModel(struct ComponentModel *model,
         if (selected_program != renderer->prev_shader_id)
         {
             _gsk_shader_use_program(selected_program);
-            renderer->prev_shader_id = selected_program;
-            is_new_shader            = TRUE;
+            is_new_shader = TRUE;
         }
 
         // TESTING for normal-map in G-Buffer
@@ -427,28 +426,6 @@ render(gsk_Entity e)
 
     if (pass == GskRenderPass_Lighting)
     {
-#if DEBUG_DRAW_SKELETON
-        // draw skeleton
-        if (((gsk_Mesh *)model->mesh)->meshData->isSkinnedMesh)
-        {
-            gsk_debug_draw_skeleton(
-              e.ecs->renderer->debugContext,
-              ((gsk_Mesh *)model->mesh)->meshData->skeleton);
-        }
-#endif
-
-#if DEBUG_DRAW_BOUNDS
-
-        gsk_Model *pModel = model->pModel;
-        for (int i = 0; i < pModel->meshesCount; i++)
-        {
-            gsk_Mesh *mesh = pModel->meshes[i];
-            gsk_debug_draw_bounds(e.ecs->renderer->debugContext,
-                                  mesh->meshData->boundingBox,
-                                  transform->model);
-        }
-#endif
-
         // Regular Render
         (GSK_DEVICE_API_OPENGL) ? DrawModel(model,
                                             transform,
@@ -464,6 +441,29 @@ render(gsk_Entity e)
                                             e.index,
                                             cb,
                                             e.ecs->renderer);
+
+        // store the pointer to gsk_Model for later use
+        gsk_Model *pModel = model->pModel;
+
+        for (int i = 0; i < pModel->meshesCount; i++)
+        {
+            gsk_Mesh *mesh = pModel->meshes[i];
+
+#if DEBUG_DRAW_BOUNDS
+            gsk_debug_draw_bounds(e.ecs->renderer->debugContext,
+                                  mesh->meshData->boundingBox,
+                                  transform->model);
+#endif // DEBUG_DRAW_BOUNDS
+
+#if DEBUG_DRAW_SKELETON
+            if (mesh->meshData->isSkinnedMesh)
+            {
+                gsk_debug_draw_skeleton(e.ecs->renderer->debugContext,
+                                        mesh->meshData->skeleton,
+                                        transform->model);
+            }
+#endif // DEBUG_DRAW_SKELETON
+        }
 
     } else if (pass != GskRenderPass_Skybox)
     {

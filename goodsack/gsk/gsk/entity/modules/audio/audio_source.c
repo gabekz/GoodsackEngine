@@ -86,9 +86,9 @@ update(gsk_Entity e)
         struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
         AL_CHECK(alSource3f(cmp_audio_source->buffer_source,
                             AL_POSITION,
-                            transform->position[0],
-                            transform->position[1],
-                            transform->position[2]));
+                            transform->world_position[0],
+                            transform->world_position[1],
+                            transform->world_position[2]));
     }
 #endif
 
@@ -118,6 +118,11 @@ update(gsk_Entity e)
     AL_CHECK(alSourcef(cmp_audio_source->buffer_source,
                        AL_MAX_DISTANCE,
                        cmp_audio_source->max_distance));
+
+// TODO: audio gain
+#if 0
+    AL_CHECK(alSourcef(cmp_audio_source->buffer_source, AL_GAIN, cmp_audio_source->gain));
+#endif
 
     // update pitch
     AL_CHECK(alSourcef(

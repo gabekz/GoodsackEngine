@@ -14,6 +14,7 @@
 #include "util/sysdefs.h"
 
 #include "core/device/device.h"
+#include "runtime/gsk_runtime_wrapper.h"
 
 #ifdef SYS_ENV_WIN
 #include <fcntl.h>
@@ -303,13 +304,16 @@ gsk_shader_program_create(const char *path)
 void
 gsk_shader_use(gsk_ShaderProgram *shader)
 {
-    glUseProgram(shader->id);
+    _gsk_shader_use_program(shader->id);
 }
 
 u32
 _gsk_shader_use_program(u32 shader_program_id)
 {
     glUseProgram(shader_program_id);
+
+    // update previous shader_id on renderer
+    gsk_runtime_get_renderer()->prev_shader_id = shader_program_id;
 }
 
 #if _GSK_SHADER_EASY_UNIFORMS
