@@ -30,7 +30,7 @@ LuaEventStore::LuaEventStore() {};
 LuaEventStore LuaEventStore::s_Instance;
 
 static void
-pushEntity(lua_State *L, int entityId);
+pushEntity(lua_State *L, u64 entity_index);
 
 #if EVENTSTORE_LUA_VEC3_CLASS
 
@@ -237,22 +237,26 @@ __create_table_for_entity_component(lua_State *L,
 }
 
 // TODO: handle read/write access +
-// TODO: change from Id to Index (or vice-versa)
 static void
-pushEntity(lua_State *L, int entityId)
+pushEntity(lua_State *L, u64 entity_index)
 {
+    gsk_ECS *p_ecs = LuaEventStore::GetInstance().m_ecs;
 
-    gsk_Entity entityCompare = {.id    = (gsk_EntityId)entityId,
-                                .index = (u64)entityId,
-                                .ecs   = LuaEventStore::GetInstance().m_ecs};
+    gsk_EntityId entity_id = p_ecs->p_ent_ids[entity_index];
 
-    std::string a = std::to_string(entityId);
+    gsk_Entity entityCompare = {.id    = p_ecs->p_ent_ids[entity_index],
+                                .index = entity_index,
+                                .ecs   = p_ecs};
+
+    std::string a = std::to_string(entity_id);
 
     // Create "entity" as container-table
     lua_newtable(L);
     LUA_DUMP("newtable");
     lua_pushstring(L, "id");
-    lua_pushnumber(L, entityId);
+    lua_pushnumber(L, entity_id);
+    // lua_pushstring(L, "index");
+    // lua_pushnumber(L, entity_index);
     LUA_DUMP("pushstring and pushnumber");
     lua_settable(L, -3);
     LUA_DUMP("settable -3");
@@ -351,7 +355,7 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
                 // lua_pop(L, 1);
                 // lua_rawgeti(L, (int)j - 1,
                 // store.m_functionList[event]->functions[i]);
-                pushEntity(L, (int)j);
+                pushEntity(L, (u64)j);
                 LUA_DUMP("Pushed Entity (Table)");
                 //  call event function
                 (CheckLua(L, lua_pcall(L, 1, 0, 0)));

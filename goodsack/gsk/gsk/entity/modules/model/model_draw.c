@@ -14,6 +14,9 @@
 #include "core/graphics/mesh/mesh.h"
 #include "core/graphics/shader/shader.h"
 
+#include "util/sysdefs.h"
+#include "util/vec_colors.h"
+
 #include "tools/debug/debug_draw_bounds.h"
 #include "tools/debug/debug_draw_skeleton.h"
 
@@ -452,7 +455,8 @@ render(gsk_Entity e)
 #if DEBUG_DRAW_BOUNDS
             gsk_debug_draw_bounds(e.ecs->renderer->debugContext,
                                   mesh->meshData->boundingBox,
-                                  transform->model);
+                                  transform->model,
+                                  VCOL_ORANGE);
 #endif // DEBUG_DRAW_BOUNDS
 
 #if DEBUG_DRAW_SKELETON

@@ -9,6 +9,8 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#include <string.h>
+
 static volatile gsk_GraphicsAPI s_graphics_api = GRAPHICS_API_OPENGL;
 static volatile gsk_GraphicsSettings s_device_settings;
 static volatile gsk_Input s_input;
@@ -186,4 +188,6 @@ device_updateCursorState(GLFWwindow *window)
                      GLFW_CURSOR,
                      (s_input.cursor_state.is_visible) ? GLFW_CURSOR_NORMAL
                                                        : GLFW_CURSOR_DISABLED);
+
+    // TODO: set cursor here
 }

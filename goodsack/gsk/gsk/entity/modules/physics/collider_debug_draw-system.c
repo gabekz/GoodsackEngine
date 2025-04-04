@@ -7,6 +7,7 @@
 
 #include "util/maths.h"
 #include "util/sysdefs.h"
+#include "util/vec_colors.h"
 
 #include "entity/ecs.h"
 #include "physics/physics_types.h"
@@ -30,10 +31,15 @@ render(gsk_Entity entity)
     {
         gsk_BoxCollider *p_box = (gsk_BoxCollider *)p_col;
 
-        // gsk_Mesh *mesh         = pModel->meshes[i];
+#if 0
+        vec4 bounds_color = {
+          0.0f, 1.0f, 0.0f, (collider->isColliding) ? 1.0f : 0.5f};
+#endif
 
-        gsk_debug_draw_bounds(
-          entity.ecs->renderer->debugContext, p_box->bounds, transform->model);
+        gsk_debug_draw_bounds(entity.ecs->renderer->debugContext,
+                              p_box->bounds,
+                              transform->model,
+                              (collider->isColliding) ? VCOL_BLUE : VCOL_GREEN);
     }
 }
 

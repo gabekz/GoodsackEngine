@@ -51,7 +51,8 @@ _draw_aabb(BoundingBox *box, mat4 *modelMatrix)
 void
 gsk_debug_draw_bounds(gsk_DebugContext *debugContext,
                       vec3 corners[2],
-                      mat4 modelMatrix)
+                      mat4 modelMatrix,
+                      vec4 color)
 {
     gsk_gl_vertex_array_bind(debugContext->vaoBoundingBox);
     gsk_material_use(debugContext->material);
@@ -80,7 +81,6 @@ gsk_debug_draw_bounds(gsk_DebugContext *debugContext,
     glUniformMatrix4fv(
       glGetUniformLocation(shaderId, "u_Model"), 1, GL_FALSE, (float *)bbMat4);
 
-    vec4 color = {0, 1, 0, 1};
     glUniform4fv(glGetUniformLocation(shaderId, "u_Color"), 1, color);
 
     // glDisable(GL_DEPTH_TEST);
