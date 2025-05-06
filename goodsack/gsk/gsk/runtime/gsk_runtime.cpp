@@ -60,6 +60,8 @@ static struct
     gsk_AssetRef *p_default_texture;
     gsk_AssetRef *p_default_audio;
     gsk_AssetRef *p_default_model;
+    gsk_AssetRef *p_default_material;
+    gsk_AssetRef *p_default_shader;
 
 #if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
@@ -255,7 +257,7 @@ gsk::runtime::rt_setup(const char *root_dir,
 
         s_runtime.p_default_texture =
           _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
-                                  "gsk://textures/defaults/missing.jpg",
+                                  "gsk://textures/defaults/missing_1.png",
                                   GSK_ASSET_FETCH_IMPORT);
 
         s_runtime.p_default_audio =
@@ -266,6 +268,16 @@ gsk::runtime::rt_setup(const char *root_dir,
         s_runtime.p_default_model =
           _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
                                   "gsk://models/cube.obj",
+                                  GSK_ASSET_FETCH_IMPORT);
+
+        s_runtime.p_default_material =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://fallback/fallback.material",
+                                  GSK_ASSET_FETCH_IMPORT);
+
+        s_runtime.p_default_shader =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://shaders/basic_unlit.shader",
                                   GSK_ASSET_FETCH_IMPORT);
 
         // NOTE: test build_gpak requires hot-loading
@@ -656,6 +668,8 @@ gsk::runtime::rt_get_fallback_asset(GskAssetType type)
     case GskAssetType_Texture: p_ret = s_runtime.p_default_texture; break;
     case GskAssetType_Audio: p_ret = s_runtime.p_default_audio; break;
     case GskAssetType_Model: p_ret = s_runtime.p_default_model; break;
+    case GskAssetType_Material: p_ret = s_runtime.p_default_material; break;
+    case GskAssetType_Shader: p_ret = s_runtime.p_default_shader; break;
     default: p_ret = NULL; break;
     }
 

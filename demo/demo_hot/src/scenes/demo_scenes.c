@@ -591,7 +591,7 @@ demo_scenes_create(gsk_ECS *ecs,
       texture_create_n(GSK_PATH("gsk://textures/defaults/normal.png"));
     texPbrAo = texture_create_n(GSK_PATH("gsk://textures/defaults/white.png"));
     texMissing =
-      texture_create_n(GSK_PATH("gsk://textures/defaults/missing.jpg"));
+      texture_create_n(GSK_PATH("gsk://textures/defaults/missing_1.png"));
 #endif
 
     skyboxMain = gsk_skybox_hdr_create(
@@ -601,7 +601,7 @@ demo_scenes_create(gsk_ECS *ecs,
     texDefSpec = GSK_ASSET("gsk://textures/defaults/black.png");
     texDefNorm = GSK_ASSET("gsk://textures/defaults/normal.png");
     texPbrAo   = GSK_ASSET("gsk://textures/defaults/white.png");
-    texMissing = GSK_ASSET("gsk://textures/defaults/missing.jpg");
+    texMissing = GSK_ASSET("gsk://textures/defaults/missing_1.png");
 
 // NOTE: asset cache now handled by runtime
 #if 0

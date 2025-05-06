@@ -186,7 +186,7 @@ DrawModel(struct ComponentModel *model,
         gsk_Mesh *mesh = pModel->meshes[i];
         gsk_Material *material;
 
-        if (mesh->usingImportedMaterial == FALSE & model->material == NULL)
+        if (mesh->usingImportedMaterial == FALSE && model->material == NULL)
         {
             continue;
         }
@@ -261,7 +261,7 @@ DrawModel(struct ComponentModel *model,
         if (is_new_shader == TRUE)
         {
             __update_static_uniforms(selected_program, renderer);
-            //__update_culling();
+            // TODO: __update_culling();
         }
 
         if (GSK_DEVICE_API_OPENGL)

@@ -44,9 +44,10 @@
 gsk_Renderer *
 gsk_renderer_init(const char *app_name)
 {
-    int winWidth             = DEFAULT_WINDOW_WIDTH;
-    int winHeight            = DEFAULT_WINDOW_HEIGHT;
-    const char *winImagePath = GSK_PATH("gsk://textures/defaults/missing.jpg");
+    int winWidth  = DEFAULT_WINDOW_WIDTH;
+    int winHeight = DEFAULT_WINDOW_HEIGHT;
+    const char *winImagePath =
+      GSK_PATH("gsk://textures/defaults/missing_1.png");
 
     gsk_Renderer *ret = malloc(sizeof(gsk_Renderer));
     GLFWwindow *window =

@@ -1,6 +1,5 @@
 // ---------------------- Vertex -----------------
 #shader vertex
-#version 420 core
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec2 a_TexCoords;
@@ -93,7 +92,6 @@ main()
 
 // ---------------------- Fragment -----------------
 #shader fragment
-#version 420 core
 
 layout(binding = 0) uniform sampler2D t_Albedo;
 layout(binding = 1) uniform sampler2D t_Normal;
@@ -224,10 +222,13 @@ calcShadow(vec4 lightWorldSpace, vec3 lightDir, bool pcf)
       max(biasMin * (1.0 - dot(normalize(fs_in.normal), lightDir)), biasMax);
     float shadow = 0;
 
-    if (pcf) {
+    if (pcf)
+    {
         vec2 texelSize = 1.0 / textureSize(t_shadowMap, 0);
-        for (int x = -pcfSamples; x <= pcfSamples; ++x) {
-            for (int y = -pcfSamples; y <= pcfSamples; ++y) {
+        for (int x = -pcfSamples; x <= pcfSamples; ++x)
+        {
+            for (int y = -pcfSamples; y <= pcfSamples; ++y)
+            {
                 float pcfDepth =
                   texture(t_shadowMap, projCoords.xy + vec2(x, y) * texelSize)
                     .r;
@@ -237,7 +238,8 @@ calcShadow(vec4 lightWorldSpace, vec3 lightDir, bool pcf)
         shadow /= pow((pcfSamples * 2 + 1), 2);
         return shadow;
 
-    } else {
+    } else
+    {
         shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
     }
 
@@ -305,7 +307,8 @@ main()
     // start of lighting equation
     const int N_LIGHTS   = 1;
     const int LIGHT_TYPE = 0; // 0 = directional
-    for (int i = 0; i < N_LIGHTS; i++) {
+    for (int i = 0; i < N_LIGHTS; i++)
+    {
         // Calcuate per-light radiance
         vec3 L            = normalize(fs_in.lightPos - fs_in.position);
         vec3 H            = normalize(V + L);
@@ -318,7 +321,8 @@ main()
           (fs_in.lightColor * u_light_strength * (1 - sV)) * attenuation;
 
         // TODO: Quick hack for directional lighting
-        if (LIGHT_TYPE == 0) {
+        if (LIGHT_TYPE == 0)
+        {
             L        = normalize(fs_in.lightPos);
             H        = normalize(V + L);
             radiance = fs_in.lightColor * u_light_strength * (1 - sV);

@@ -10,7 +10,6 @@
 #include "asset/asset.h"
 #include "asset/import/loader_qmap.h"
 
-
 /*----------------------
  |  Scene 8
  |  Description: Map Test
@@ -27,7 +26,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     def_norm = texture_create_n(GSK_PATH("gsk://textures/defaults/normal.png"));
     def_ao   = texture_create_n(GSK_PATH("gsk://textures/defaults/white.png"));
     def_missing =
-      texture_create_d(GSK_PATH("gsk://textures/defaults/missing.jpg"));
+      texture_create_d(GSK_PATH("gsk://textures/defaults/missing_1.png"));
 
 #if 0
     def_skybox = gsk_skybox_hdr_create(texture_create_hdr(
