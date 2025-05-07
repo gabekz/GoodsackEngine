@@ -66,5 +66,9 @@ gsk_texture_set_get_by_name(gsk_TextureSet *p_self, const char *lookup_name)
             return desc->p_texture;
         }
     }
+
+    LOG_ERROR("Failed to find texture from texture_set lookup: %s",
+              lookup_name);
+
     return NULL;
 }

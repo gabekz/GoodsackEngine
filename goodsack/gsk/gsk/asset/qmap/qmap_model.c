@@ -50,8 +50,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
       p_shader,
       NULL,
       3,
-      gsk_texture_set_get_by_name(p_container->p_texture_set,
-                                  "textures/dev/GRIDF_B"),
+      gsk_texture_set_get_by_name(p_container->p_texture_set, "MISSING"),
       gsk_texture_set_get_by_name(p_container->p_texture_set, "NORM"),
       gsk_texture_set_get_by_name(p_container->p_texture_set, "SPEC"));
 

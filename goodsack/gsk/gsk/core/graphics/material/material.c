@@ -22,6 +22,8 @@
 #include "asset/asset_cache.h"
 #include "asset/asset_gcfg.h"
 
+#define FALLBACK_TEXTURE_URI "gsk://textures/defaults/missing_1.png"
+
 gsk_Material *
 gsk_material_create(gsk_ShaderProgram *shader,
                     const char *shaderPath,
@@ -59,7 +61,18 @@ gsk_material_create(gsk_ShaderProgram *shader,
     gsk_Texture **textures = malloc(textureCount * sizeof(gsk_Texture *));
     for (int i = 0; i < textureCount; i++)
     {
-        *(textures + i) = va_arg(ap, gsk_Texture *);
+        gsk_Texture *p_tex = va_arg(ap, gsk_Texture *);
+
+        if (p_tex == NULL)
+        {
+            LOG_WARN("texture (%d) on material %p is invalid - using fallback",
+                     i,
+                     ret);
+
+            p_tex = GSK_ASSET(FALLBACK_TEXTURE_URI);
+        }
+
+        *(textures + i) = p_tex;
     }
     ret->textures      = textures;
     ret->texturesCount = textureCount;
