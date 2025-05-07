@@ -153,33 +153,8 @@ gsk_renderer_init(const char *app_name)
     ret->billboard =
       gsk_billboard_create(GSK_PATH("gsk://textures/gizmo/light.png"), bbsize);
 
-    // GUI test
-    gsk_Texture *guiTexture =
-      texture_create(GSK_PATH("gsk://textures/gizmo/crosshair2.png"),
-                     NULL,
-                     (TextureOptions) {0, GL_RGBA, TRUE, TRUE});
-
+    // create GUI canvas
     ret->canvas = gsk_gui_canvas_create();
-
-    gsk_GuiElement *element =
-      gsk_gui_element_create(GskGuiElementAnchorType_Center,
-                             (vec2) {0, 0},
-                             (vec2) {10, 10},
-                             (vec3) {1, 1, 1},
-                             guiTexture,
-                             NULL);
-
-    gsk_gui_canvas_add_element(&ret->canvas, element);
-
-#if 0
-    // test light
-    vec3 lightPos2   = {7.0f, 6.5f, 1.0f};
-    vec4 lightColor2 = {1.0f, 0.0f, 0.0f, 1.0f};
-    gsk_lighting_add_light(
-      &renderer->lighting_data, (float *)lightPos2, (float *)lightColor2);
-#endif
-
-    // computebuffer_init();
 
     return ret;
 }

@@ -89,10 +89,11 @@ logger_getLevel();
 void
 logger_setDetail(LogDetail detail);
 LogDetail
-logger_SetDetail();
+logger_getDetail();
 
 void
 logger_flush();
+
 int
 logger_isEnabled(LogLevel level);
 

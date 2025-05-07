@@ -53,8 +53,7 @@
 
 #endif // SYS_ENV_WIN
 
-// -- C Specific boolean definitions //
-#ifndef __cplusplus
+// -- boolean definitions //
 
 #ifdef TRUE
 #undef TRUE
@@ -65,8 +64,6 @@
 #undef FALSE
 #endif
 #define FALSE 0
-
-#endif // __cplusplus
 
 // -- Result //
 
