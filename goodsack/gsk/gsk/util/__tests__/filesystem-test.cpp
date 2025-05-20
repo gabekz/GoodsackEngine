@@ -8,6 +8,8 @@
 #include "util/filesystem.h"
 #include "util/sysdefs.h"
 
+#include <GoodsackEngineConfig.h>
+
 // TODO: replace with thirdparty root-include
 #include <gtest/gtest.h>
 
@@ -30,20 +32,14 @@ TEST(Util_Filesystem, URI_Parse)
     EXPECT_EQ(uri3.path[0], NULL);
 }
 
-// TODO: Windows-only test
-#if defined(SYS_ENV_WIN)
 TEST(Util_Filesystem, Path_Checking)
 {
     gsk_filesystem_initialize("test", "test2");
 
     gsk_Path p1 = gsk_filesystem_uri_to_path("gsk://textures/white.jpg");
-    ASSERT_STREQ(
-      p1.path,
-      "D:/Projects/GoodsackEngine/goodsack/gsk_data/textures/white.jpg");
+    ASSERT_STREQ(p1.path, _GOODSACK_FS_DIR_DATA "/textures/white.jpg");
 
     char p2[GSK_FS_MAX_PATH];
-    gsk_filesystem_path_to_uri(
-      "D:/Projects/GoodsackEngine/goodsack/gsk_data/textures/black.png", p2);
+    gsk_filesystem_path_to_uri(_GOODSACK_FS_DIR_DATA "/textures/black.png", p2);
     ASSERT_STREQ(p2, "gsk://textures/black.png");
 }
-#endif // SYS_ENV_WIN

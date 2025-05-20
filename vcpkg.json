@@ -17,5 +17,13 @@
     },
     "openal-soft"
   ],
-  "builtin-baseline": "421579b6e6cac42d9a5a5935e53e218ce94a347f"
+
+  "builtin-baseline": "d9ccd77bb554e67137f3f754a2e2f11f4188c82c",
+
+  "overrides": [
+    {
+      "name": "imgui",
+      "version": "1.89.9"
+    }
+  ]
 }

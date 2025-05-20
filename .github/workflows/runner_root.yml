@@ -9,4 +9,10 @@ jobs:
 
   linux-build:
     name: 🐧 Linux
+    needs: static-analysis
     uses: ./.github/workflows/linux_builds.yml
+
+  windows-build:
+    name: 💻 Windows
+    needs: static-analysis
+    uses: ./.github/workflows/windows_builds.yml
