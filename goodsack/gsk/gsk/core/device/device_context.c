@@ -184,19 +184,26 @@ gsk_window_create(int win_width,
         GLFWcursor *cursor = glfwCreateCursor(image, 0, 0);
         if (cursor != NULL) { glfwSetCursor(window, cursor); }
 
-        // OpenGL Info
+        // OpenGL Compatibility Info
         {
-            int max_tex = 0, max_coords = 0, max_size = 0;
-            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_tex);
-            glGetIntegerv(GL_MAX_TEXTURE_COORDS, &max_coords);
-            glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+            gsk_GraphicsCompatibility compat_info = {0};
+
+            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &compat_info.max_tex);
+            glGetIntegerv(GL_MAX_TEXTURE_COORDS, &compat_info.max_coords);
+            glGetIntegerv(GL_MAX_TEXTURE_SIZE, &compat_info.max_size);
+            glGetIntegerv(GL_MAX_SAMPLES, &compat_info.max_msaa_samples);
 
             LOG_INFO("---- OpenGL Info\n%s\nmax_tex: %d\nmax_coords: "
-                     "%d\nmax_size: %dpx\n----",
+                     "%d\nmax_size: %dpx\nmax_mssa_samples: %d\n----",
                      glGetString(GL_VERSION),
-                     max_tex,
-                     max_coords,
-                     max_size);
+                     compat_info.max_tex,
+                     compat_info.max_coords,
+                     compat_info.max_size,
+                     compat_info.max_msaa_samples);
+
+            // update compatibility info on global device
+            // TODO: should be updated on gsk_WindowContext in the future
+            gsk_device_setGraphicsCompatibility(compat_info);
         }
 
         return window;

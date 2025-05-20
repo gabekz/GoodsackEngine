@@ -13,6 +13,7 @@
 
 static volatile gsk_GraphicsAPI s_graphics_api = GRAPHICS_API_OPENGL;
 static volatile gsk_GraphicsSettings s_device_settings;
+static volatile gsk_GraphicsCompatibility s_device_compatibility;
 static volatile gsk_Input s_input;
 ;
 static volatile int s_initialized = 0; // false
@@ -51,6 +52,21 @@ void
 gsk_device_setGraphicsSettings(gsk_GraphicsSettings settings)
 {
     s_device_settings = settings;
+}
+
+// GPU Compatibility
+
+gsk_GraphicsCompatibility
+gsk_device_getGraphicsCompatibility()
+{
+    return s_device_compatibility;
+}
+
+void
+gsk_device_setGraphicsCompatibility(
+  gsk_GraphicsCompatibility compatibility_info)
+{
+    s_device_compatibility = compatibility_info;
 }
 
 // Time

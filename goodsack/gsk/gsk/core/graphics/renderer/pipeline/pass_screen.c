@@ -14,6 +14,7 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#include "core/device/device.h"
 #include "core/drivers/opengl/opengl.h"
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/shader/shader.h"
@@ -35,7 +36,20 @@ static u32 ms_samples = 4;
 static void
 CreateMultisampleBuffer(u32 samples, u32 width, u32 height)
 {
-    ms_samples = samples;
+    u32 max_samples =
+      (u32)(gsk_device_getGraphicsCompatibility().max_msaa_samples);
+
+    if (samples > max_samples)
+    {
+        ms_samples = max_samples;
+        LOG_WARN("Requested MSAA sample count (%d) is larger than the maximum "
+                 "allowed (%d)",
+                 samples,
+                 max_samples);
+    } else
+    {
+        ms_samples = samples;
+    }
 
     // Create texture
     glGenTextures(1, &msTexture);

@@ -31,6 +31,16 @@ typedef struct gsk_GraphicsSettings
     int swapInterval; // VSync
 } gsk_GraphicsSettings;
 
+// GPU Compatibility Info
+// TODO: move to gsk_WindowContext
+typedef struct gsk_GraphicsCompatibility
+{
+    s32 max_tex;
+    s32 max_coords;
+    s32 max_size;
+    s32 max_msaa_samples;
+} gsk_GraphicsCompatibility;
+
 // Time
 
 typedef struct gsk_Time
@@ -77,6 +87,13 @@ gsk_device_getGraphicsSettings();
 
 void
 gsk_device_setGraphicsSettings(gsk_GraphicsSettings settings);
+
+gsk_GraphicsCompatibility
+gsk_device_getGraphicsCompatibility();
+
+void
+gsk_device_setGraphicsCompatibility(
+  gsk_GraphicsCompatibility compatibility_info);
 
 gsk_Time
 gsk_device_getTime();
