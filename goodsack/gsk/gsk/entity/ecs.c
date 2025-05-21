@@ -12,30 +12,10 @@
 
 #include "util/sysdefs.h"
 
-#include "entity/modules/animator/animator.h"
-#include "entity/modules/audio/audio_listener.h"
-#include "entity/modules/audio/audio_source.h"
-#include "entity/modules/camera/camera.h"
-#include "entity/modules/model/model_draw.h"
-#include "entity/modules/transform/transform.h"
-
-// Physics
-#include "entity/modules/physics/collider_debug_draw-system.h"
-#include "entity/modules/physics/collider_setup-system.h"
-#include "entity/modules/physics/rigidbody-system.h"
-#include "entity/modules/physics/rigidbody_forces-system.h"
-
-// Player
-#include "entity/modules/player/player_controller-system.h"
-
-// Misc
-#include "entity/modules/misc/health_setup.h"
-#include "entity/modules/particles_ecs/particles_ecs-system.h"
-
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION
 #include "entity/__generated__/components_gen.h"
-#endif
+#endif // USING_GENERATED_COMPONENTS
 
 // subroutine to safely reallocate data to new_size
 static void *
