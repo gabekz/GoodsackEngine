@@ -77,10 +77,9 @@ main()
     vs_out.texCoords = a_TexCoords;
 
     // TBN
-    vec3 t = normalize(vec3(u_Model * vec4(a_Tangent, 0.0)));
-    vec3 b =
-      normalize(vec3(u_Model * vec4(cross(a_Tangent, vs_out.normal), 0.0)));
-    vec3 n = normalize(vec3(u_Model * vec4(vs_out.normal, 0.0)));
+    vec3 t = vec3(u_Model * vec4(a_Tangent, 0.0));
+    vec3 b = vec3(u_Model * vec4(cross(a_Tangent, vs_out.normal), 0.0));
+    vec3 n = vec3(u_Model * vec4(vs_out.normal, 0.0));
 
     vs_out.tbn = mat3(t, b, n);
 }
