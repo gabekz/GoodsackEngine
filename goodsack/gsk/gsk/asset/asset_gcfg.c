@@ -75,6 +75,12 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
             // get the asset ref
             p_ref = gsk_asset_cache_get(p_cache, p_item->value);
 
+            if (p_ref == NULL)
+            {
+                LOG_ERROR("GCFG - Failed to get path (%s)", p_item->key);
+                return;
+            }
+
             asset_list  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
             asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
 

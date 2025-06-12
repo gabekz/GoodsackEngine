@@ -275,7 +275,7 @@ gsk_qmap_load_model(gsk_QMapContainer *p_container, gsk_ShaderProgram *p_shader)
                   p_batch->total_verts,
                   p_batch->total_size);
 
-        // break out of this batch early if it is empy. This is only really
+        // break out of this batch early if it is empty. This is only really
         // possible with the default material_err batch.
         if (p_batch->total_verts <= 0 || p_batch->total_size <= 0)
         {

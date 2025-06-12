@@ -37,11 +37,16 @@ _vector__OPERATOR(lua_State *L, int lua_operation)
     Vector *vec_b = *(Vector **)luaL_checkudata(L, 2, VECTOR_LIB);
 
     Vector *ret = malloc(sizeof(Vector));
+    if (ret == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
 
     switch (lua_operation)
     {
-    case (LUA_OPADD): glm_vec3_add(vec_a, vec_b, ret->float3); break;
-    case (LUA_OPSUB): glm_vec3_sub(vec_a, vec_b, ret->float3); break;
+    case (LUA_OPADD):
+        glm_vec3_add(vec_a->float3, vec_b->float3, ret->float3);
+        break;
+    case (LUA_OPSUB):
+        glm_vec3_sub(vec_a->float3, vec_b->float3, ret->float3);
+        break;
     default: LOG_ERROR("Unknown Operation");
     }
 
@@ -108,7 +113,9 @@ vector_Cross(lua_State *L)
     Vector *vec_b = *(Vector **)luaL_checkudata(L, 2, VECTOR_LIB);
 
     Vector *ret = malloc(sizeof(Vector));
-    glm_vec3_cross(vec_a, vec_b, ret->float3);
+    if (ret == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
+
+    glm_vec3_cross(vec_a->float3, vec_b->float3, ret->float3);
 
     *(Vector **)lua_newuserdata(L, sizeof(Vector *)) = ret;
     luaL_setmetatable(L, VECTOR_LIB);
@@ -120,17 +127,20 @@ static int
 vector_new(lua_State *L)
 {
     LOG_TRACE("## new\n");
-    Vector *foo = malloc(sizeof(Vector));
+
+    Vector *new_vec = malloc(sizeof(Vector));
+    if (new_vec == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
 
     int iter = 1 + lua_istable(L, 1);
 
     for (int i = 0; i < 3 /*vec3 values*/; i++)
     {
-        int j          = iter + i;
-        foo->float3[i] = !lua_isnoneornil(L, j) ? luaL_checkinteger(L, j) : 0;
+        int j = iter + i;
+        new_vec->float3[i] =
+          !lua_isnoneornil(L, j) ? luaL_checkinteger(L, j) : 0;
     }
 
-    *(Vector **)lua_newuserdata(L, sizeof(Vector *)) = foo;
+    *(Vector **)lua_newuserdata(L, sizeof(Vector *)) = new_vec;
     luaL_setmetatable(L, VECTOR_LIB);
     return 1;
 }
