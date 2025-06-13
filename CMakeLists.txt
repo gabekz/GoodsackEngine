@@ -4,6 +4,8 @@
 
 
 cmake_minimum_required(VERSION 3.20)
+cmake_policy(SET CMP0077 OLD)
+
 project(
     GoodsackEngine
     DESCRIPTION "Realtime 3D Rendering Engine"
@@ -148,9 +150,9 @@ file(GLOB_RECURSE GSKGEN_SOURCES CONFIGURE_DEPENDS
 
 # For each item in our list
 foreach (item ${SOURCES})
-    # Check if our items matches our regular expression
+    # Check item in SOURCES matches pattern TEST_SUBDIR_REGEX
     if ("${item}" MATCHES ${TEST_SUBDIR_REGEX})
-        # Remove current item from our list
+        # current file from SOURCES to TEST_SOURCES
         list (REMOVE_ITEM SOURCES "${item}")
         list (APPEND TEST_SOURCES "${item}")
     endif ()
@@ -158,15 +160,18 @@ endforeach()
 
 ######## EXECUTABLES ############################################
 
-option(GOODSACK_BUILD_EXAMPLES "Build eaxmple projects" ON)
+option(GOODSACK_BUILD_EXAMPLES "Build example projects" ON)
 option(GOODSACK_TEST "Build the TestRunner executable" ON)
 option(GOODSACK_TEST_COVERAGE "Collect test coverage files" OFF)
 option(GOODSACK_DEV "Development Mode" OFF)
 option(GOODSACK_API_OMIT_PREFIX "Prefix" OFF)
 
+option(GSKRT_USE_IO "Using the IO Runtime Library" ON)
+
 ######## subdirectories #########################################
 
 add_subdirectory(goodsack/gsk/thirdparty)
+add_subdirectory(goodsack/gsk/gsk)
 
 #################################################################
 # GoodsackEngine Runtime Library
