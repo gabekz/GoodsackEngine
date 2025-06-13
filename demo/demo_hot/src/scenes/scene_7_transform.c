@@ -5,6 +5,8 @@
 #include "entity/ecs.h"
 #include "entity/modules/modules_systems.h"
 
+#include "asset/asset.h"
+
 #include "physics/physics_types.h"
 
 /*----------------------
@@ -48,28 +50,26 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     const char *pbr_shader_path = GSK_PATH("gsk://shaders/pbr.shader");
 
     gsk_Texture *tex_prototype =
-      texture_create_d(GSK_PATH("gsk://textures/prototype/128_64.png"));
+      GSK_ASSET("gsk://textures/prototype/128_64.png");
 
     gsk_Material *matFloor = gsk_material_create(
       NULL, standard_shader_path, 3, tex_prototype, def_norm, def_spec);
 
-    gsk_Model *modelPlane =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 100, FALSE);
+    gsk_Model *modelPlane = GSK_ASSET("gsk://models/plane.obj");
 
     gsk_Texture *texCerbA =
-      texture_create_d(GSK_PATH("data://textures/pbr/cerberus/Cerberus_A.tga"));
+      GSK_ASSET("data://textures/pbr/cerberus/Cerberus_A.tga");
     gsk_Texture *texCerbN =
-      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_N.tga"));
+      GSK_ASSET("data://textures/pbr/cerberus/Cerberus_N.tga");
     gsk_Texture *texCerbM =
-      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_M.tga"));
+      GSK_ASSET("data://textures/pbr/cerberus/Cerberus_M.tga");
     gsk_Texture *texCerbS =
-      texture_create_n(GSK_PATH("data://textures/pbr/cerberus/Cerberus_R.tga"));
+      GSK_ASSET("data://textures/pbr/cerberus/Cerberus_R.tga");
 
     gsk_Material *matWeapon = gsk_material_create(
       NULL, pbr_shader_path, 5, texCerbA, texCerbN, texCerbM, texCerbS, def_ao);
 
-    gsk_Model *modelWeapon =
-      gsk_model_load_from_file(GSK_PATH("data://models/AK2.glb"), 1, FALSE);
+    gsk_Model *modelWeapon = GSK_ASSET("data://models/AK2.glb");
 
     /*----------------------
      |  Entities

@@ -75,7 +75,6 @@ entity::component::parse_components_from_json(std::string path, u32 rawData)
     // Loop through every component
     for (auto &cmp : JSON.items())
     {
-
         // Component Layout
         ECSComponentLayout *component =
           new ECSComponentLayout(cmp.key().c_str());
@@ -93,7 +92,6 @@ entity::component::parse_components_from_json(std::string path, u32 rawData)
             // Every variable of 'type' in the component
             for (int i = 0; i < JData.size(); i++)
             {
-
                 if (!strcmp(type.first.c_str(), "string"))
                 {
                     // TODO: handle
@@ -195,14 +193,14 @@ extern "C" {
                                             : lastPosition == 0);
             lastPosition = accessor.position;
 
-            std::cout << "\t";
+            std::cout << "\tCACHE_ALIGN(";
             // TODO: change to inline converter
             switch (accessor.type /* accessor.type */)
             {
             case EcsDataType::INT: std::cout << "s32 "; break;
             case EcsDataType::UINT: std::cout << "u32 "; break;
             case EcsDataType::FLOAT: std::cout << "f32 "; break;
-            case EcsDataType::BOOL: std::cout << "ui16 "; break;
+            case EcsDataType::BOOL: std::cout << "u16 "; break;
             case EcsDataType::VEC2: std::cout << "vec2 "; break;
             case EcsDataType::VEC3: std::cout << "vec3 "; break;
             case EcsDataType::VEC4: std::cout << "vec4 "; break;
@@ -216,7 +214,7 @@ extern "C" {
             case EcsDataType::ENTITY: std::cout << "int "; break;
             default: break;
             }
-            std::cout << q.first << ";" << std::endl;
+            std::cout << q.first << ");" << std::endl;
         }
 
 // Close struct

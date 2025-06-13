@@ -145,7 +145,7 @@ CreateScreenBuffer(u32 width, u32 height)
 void
 postbuffer_resize(u32 winWidth, u32 winHeight)
 {
-    LOG_INFO("Resizing window to %d x %d", winWidth, winHeight);
+    LOG_TRACE("Resizing window to %d x %d", winWidth, winHeight);
 
     GLenum err = NULL;
 
