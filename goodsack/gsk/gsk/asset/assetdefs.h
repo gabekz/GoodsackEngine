@@ -36,6 +36,7 @@ typedef struct gsk_AssetBlocInfo
 typedef struct gsk_AssetRef
 {
     u64 asset_handle;
+    u64 asset_epoch;
     u32 asset_uri_index; // index to uri in cache uri-array
     u8 is_imported;      // is asset-data imported
     u8 is_utilized;      // is asset-data utilized by the runtime

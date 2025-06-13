@@ -128,6 +128,7 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
 
     gsk_AssetRef item = {
       .asset_handle    = new_handle,
+      .asset_epoch     = 0,
       .asset_uri_index = p_cache->asset_uri_list.list_next - 1,
       .is_imported     = FALSE,
       .is_utilized     = FALSE,
@@ -136,7 +137,14 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       .p_data_active   = NULL,
       .p_fallback      = NULL,
     };
-    if (item.is_baked == TRUE) { item.bloc_info = *p_bloc_info; }
+
+    if (item.is_baked == TRUE)
+    {
+        item.bloc_info = *p_bloc_info;
+    } else
+    {
+        item.asset_epoch = gsk_filesystem_check_time(GSK_PATH(str_uri));
+    }
 
     array_list_push(&(p_cache->asset_lists[asset_type].list_state), &item);
 
@@ -243,6 +251,12 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
 gsk_AssetRef *
 gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
 {
+    if (p_cache == NULL)
+    {
+        LOG_ERROR("Invalid Asset Cache! Failed to get asset (%s)");
+        return NULL;
+    }
+
     /* TODO: Change hashmap so we don't have to truncate from 1 (WTF)
     we have to currently grab (asset_index - 1)
     */
@@ -267,12 +281,16 @@ gsk_asset_cache_get(gsk_AssetCache *p_cache, const char *str_uri)
 
     gsk_AssetRef *p_ref; // fetched cache state
 
-#if ASSET_CACHE_GET_AT
-    p_ref = gsk_asset_cache_get_at(p_cache, asset_type, handle);
-#else
     p_ref = (gsk_AssetRef *)array_list_get_at_index(
       &(p_cache->asset_lists[asset_type].list_state), asset_index - 1);
-#endif
+
+    u64 epoch = gsk_filesystem_check_time(GSK_PATH(str_uri));
+    if (p_ref->asset_epoch != epoch)
+    {
+        LOG_INFO("UPDATED");
+        p_ref->asset_epoch = epoch;
+    }
+
     return p_ref;
 }
 /*--------------------------------------------------------------------*/

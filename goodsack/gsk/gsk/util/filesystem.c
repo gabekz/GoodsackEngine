@@ -13,7 +13,10 @@
 #include "util/sysdefs.h"
 
 #if defined(SYS_ENV_WIN)
+#include <time.h>
 #include <windows.h>
+
+#define stat _stat
 #else
 #include <dirent.h>
 #include <sys/stat.h>
@@ -53,6 +56,60 @@ gsk_filesystem_get_extension(const char *path)
 {
     char *ext = strrchr(path, '.');
     return ext;
+}
+
+u64
+gsk_filesystem_check_time(const char *path)
+{
+#if defined(SYS_ENV_WIN)
+
+    HANDLE hFile = CreateFile(path,
+                              GENERIC_READ,
+                              FILE_SHARE_READ,
+                              NULL,
+                              OPEN_EXISTING,
+                              FILE_ATTRIBUTE_NORMAL,
+                              NULL);
+
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        LOG_ERROR("Error opening file: %d\n", GetLastError());
+        return 0;
+    }
+
+    FILETIME creationTime, lastAccessTime, lastWriteTime;
+    SYSTEMTIME systemTime;
+    if (GetFileTime(hFile, &creationTime, &lastAccessTime, &lastWriteTime))
+    {
+        FileTimeToSystemTime(&lastWriteTime, &systemTime);
+    } else
+    {
+        LOG_ERROR("Error getting file time: %d\n", GetLastError());
+    }
+
+    CloseHandle(hFile);
+
+#endif // defined(SYS_ENV_WIN)
+
+    struct tm timeinfo;
+
+    timeinfo.tm_year  = systemTime.wYear - 1900;
+    timeinfo.tm_mon   = systemTime.wMonth - 1;
+    timeinfo.tm_mday  = systemTime.wDay;
+    timeinfo.tm_hour  = systemTime.wHour;
+    timeinfo.tm_min   = systemTime.wMinute;
+    timeinfo.tm_sec   = systemTime.wSecond;
+    timeinfo.tm_isdst = -1;
+
+    time_t epoch_time = mktime(&timeinfo);
+
+    if (epoch_time == -1)
+    {
+        LOG_ERROR("mktime failed");
+        return 0;
+    }
+
+    return (u64)epoch_time;
 }
 
 void

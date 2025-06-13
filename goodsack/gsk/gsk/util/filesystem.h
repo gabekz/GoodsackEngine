@@ -6,6 +6,8 @@
 #ifndef __FILESYSTEM_H__
 #define __FILESYSTEM_H__
 
+#include <util/sysdefs.h>
+
 #define GSK_FS_MAX_PATH    256
 #define GSK_FS_MAX_SCHEME  16
 #define GSK_FS_MAX_SEG_LEN 256
@@ -56,6 +58,9 @@ gsk_filesystem_strip_filename(char *buffer);
 
 char *
 gsk_filesystem_get_extension(const char *path);
+
+u64
+gsk_filesystem_check_time(const char *path);
 
 gsk_URI
 gsk_filesystem_uri(const char *uri_path);
