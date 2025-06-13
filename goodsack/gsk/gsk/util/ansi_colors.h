@@ -9,9 +9,7 @@
 #ifdef WIN32
 #define __COL_OPT(c, b) "\x1B[" #b ";" #c "m"
 #else
-#define __COL_OPT(c, b) \
-    "\e[" #b "";        \
-    " #x " m "
+#define __COL_OPT(c, b) "\e[" #b ";" #c "m"
 #endif // WIN32
 
 #define __COL(c) __COL_OPT(c, 0)
