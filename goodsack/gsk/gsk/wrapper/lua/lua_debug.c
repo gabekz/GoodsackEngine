@@ -5,18 +5,17 @@
 
 #include "lua_debug.h"
 
+#include "util/ansi_colors.h"
 #include "util/logger.h"
 
 int
 CheckLua(lua_State *L, int r)
 {
-    if (r != LUA_OK)
-    {
-        const char *err = lua_tostring(L, -1);
-        LOG_ERROR("[Lua] %s", err);
-        return 0;
-    }
-    return 1;
+    if (r == LUA_OK) { return 1; }
+
+    const char *err = lua_tostring(L, -1);
+    LOG_PRINT(BRED "[Lua] (error): %s" COLOR_RESET, err);
+    return 0;
 }
 
 void

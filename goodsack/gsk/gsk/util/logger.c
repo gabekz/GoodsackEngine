@@ -28,6 +28,8 @@
 #endif
 #endif // SYS_ENV_WIN
 
+#define _LOG_THREAD_ID 0
+
 enum {
     /* Logger type */
     kConsoleLogger = 1 << 0,
@@ -290,11 +292,15 @@ vflog(FILE *fp,
     int size       = 0;
     long totalsize = 0;
 
+#define MSG_P_TIME GRY "%s" COLOR_RESET " "
+#define MSG_P_FILE YEL "%s:%d" COLOR_RESET " "
+
     if (s_logDetail == LogDetail_SIMPLE)
     {
-        size = fprintf(fp, "%s [%s] ", timestamp, levelStr);
+        size = fprintf(fp, MSG_P_TIME "[%s] ", timestamp, levelStr);
     } else if (s_logDetail == LogDetail_EXTENDED)
     {
+#if _LOG_THREAD_ID
         size = fprintf(fp,
                        "%s [%s] %ld %s:%d: ",
                        timestamp,
@@ -302,6 +308,14 @@ vflog(FILE *fp,
                        threadID,
                        getFileName(file),
                        line);
+#else
+        size = fprintf(fp,
+                       MSG_P_TIME "[%s] " MSG_P_FILE,
+                       timestamp,
+                       levelStr,
+                       getFileName(file),
+                       line);
+#endif // _LOG_THREAD_ID
     } else if (s_logDetail == LogDetail_MSG)
     {
         size = 0;
@@ -410,7 +424,7 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
 
     switch (level)
     {
-    case LogLevel_INFO: logger_setDetail(LogDetail_SIMPLE); break;
+    // case LogLevel_INFO: logger_setDetail(LogDetail_SIMPLE); break;
     case LogLevel_NONE: logger_setDetail(LogDetail_MSG); break;
     default: logger_setDetail(LogDetail_EXTENDED); break;
     }

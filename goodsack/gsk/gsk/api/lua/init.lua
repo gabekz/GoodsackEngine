@@ -6,17 +6,19 @@
 require('goodsack')
 
 -- local include_dir = [[/home/gmk/gksrc/projects/GoodsackEngine/src/api/lua/include/]]
--- require('goodsack.util').GetFullPath([[gsk:api//lua/include]], 'dir')
+-- require('goodsack.fs').GetFullPath([[gsk:api//lua/include]], 'dir')
+-- require('goodsack.fs').GetFullPath([[gsk:api//lua/include]], 'dir')
 
 -- TODO: Move this
-local include_dir = [[E:/Projects/GoodsackEngine/goodsack/gsk/gsk/api/lua/include/]]
+local include_dir = [[D:/Projects/GoodsackEngine/goodsack/gsk/gsk/api/lua/include/]]
 --local include_dir = [[/home/gmk/gksrc/projects/GoodsackEngine/goodsack/gsk/gsk/api/lua/include/]]
 
 -- dofile() alias for specified directory
 --
 ---@param path string
 include = function(path)
-    dofile(include_dir .. path)
+    str = include_dir .. path
+    dofile(str)
 end
 
 --
@@ -31,6 +33,7 @@ end
 -----------------------------------------------------------]]
 input       = require('goodsack.input')
 time        = require('goodsack.time')
+--goodsack.fs = require('goodsack.fs')
 
 Vector = require('goodsack.vector')
 

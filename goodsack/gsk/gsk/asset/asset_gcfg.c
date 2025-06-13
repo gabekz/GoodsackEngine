@@ -77,7 +77,7 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
 
             if (p_ref == NULL)
             {
-                LOG_ERROR("GCFG - Failed to get path (%s)", p_item->key);
+                LOG_ERROR("GCFG - Failed to get path (%s)", p_item->value);
                 return;
             }
 

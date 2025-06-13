@@ -81,6 +81,11 @@ static struct
         u8 map_from_runtime;
     } map_setup;
 
+    struct
+    {
+        u8 is_lua_running;
+    } status;
+
 } s_runtime;
 } // extern "C"
 
@@ -190,6 +195,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     s_runtime.options.using_lua  = 1; // TODO: Change this.
 
     s_runtime.map_setup.map_from_runtime = 0; // TODO: Change this.
+    s_runtime.status.is_lua_running      = 0; // TODO: Change this.
 
     _gsk_check_args(argc, argv);
 
@@ -406,7 +412,14 @@ gsk::runtime::rt_setup(const char *root_dir,
         char path[GSK_FS_MAX_PATH];
         strcpy(path, root_scheme);
         strcat(path, "://scripts/main.lua");
-        LuaInit(GSK_PATH(path), s_runtime.ecs);
+
+        s_runtime.status.is_lua_running =
+          LuaInit(GSK_PATH(path), s_runtime.ecs);
+
+        if (s_runtime.status.is_lua_running == false)
+        {
+            LOG_ERROR("Failed to initialize lua");
+        }
     }
 
     // const char *info =
@@ -439,7 +452,7 @@ gsk::runtime::rt_loop()
       s_runtime.renderer); // Initialization for the render loop
 
     // TODO: should not be handled in runtime
-    if (s_runtime.options.using_lua)
+    if (s_runtime.status.is_lua_running)
     {
         // Register components in Lua ECS
         // TODO: automate
@@ -503,7 +516,7 @@ gsk::runtime::rt_loop()
         if (GSK_DEVICE_API_OPENGL)
         {
 
-            if (s_runtime.options.using_lua)
+            if (s_runtime.status.is_lua_running)
             {
                 entity::LuaEventStore::ECSEvent(ECS_UPDATE);
             }
@@ -568,6 +581,9 @@ gsk::runtime::rt_loop()
 #if GSK_RUNTIME_USE_DEBUG
     delete (s_runtime.p_debug_toolbar);
 #endif // GSK_RUNTIME_USE_DEBUG
+
+    // cleanup Lua handler
+    if (s_runtime.status.is_lua_running) { entity::LuaEventStore::Cleanup(); }
 
     // TODO: asset_cache cleanup
 
