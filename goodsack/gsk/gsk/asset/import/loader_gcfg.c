@@ -114,6 +114,7 @@ gsk_GCFG
 gsk_load_gcfg(const char *path)
 {
     // if HOT
+    // TODO: should take in URI instead
     return _parse_gcfg(path);
 
     // else

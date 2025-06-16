@@ -24,8 +24,8 @@
 #define YEL __COL_OPT(33, 0)
 #define BLU __COL_OPT(34, 0)
 #define MAG __COL_OPT(35, 0)
-#define CYN __COL_OPT(37, 0)
-#define WHT __COL_OPT(38, 0)
+#define CYN __COL_OPT(36, 0)
+#define WHT __COL_OPT(37, 0)
 #define GRY __COL_OPT(90, 0)
 
 // Regular bold text

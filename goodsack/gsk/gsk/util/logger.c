@@ -30,6 +30,12 @@
 
 #define _LOG_THREAD_ID 0
 
+#define _MSG_SIMPLE     "%s [%s] "
+#define _MSG_SIMPLE_COL GRY "%s" COLOR_RESET "[%s] "
+
+#define _MSG_EXTENDED     _MSG_SIMPLE "%s:%d "
+#define _MSG_EXTENDED_COL _MSG_SIMPLE_COL YEL "%s:%d" COLOR_RESET " "
+
 enum {
     /* Logger type */
     kConsoleLogger = 1 << 0,
@@ -292,15 +298,22 @@ vflog(FILE *fp,
     int size       = 0;
     long totalsize = 0;
 
-#define MSG_P_TIME GRY "%s" COLOR_RESET " "
-#define MSG_P_FILE YEL "%s:%d" COLOR_RESET " "
+    u8 is_console = (fp == s_clog.output) ? TRUE : FALSE;
 
+    // simple message
     if (s_logDetail == LogDetail_SIMPLE)
     {
-        size = fprintf(fp, MSG_P_TIME "[%s] ", timestamp, levelStr);
-    } else if (s_logDetail == LogDetail_EXTENDED)
+        size = fprintf(fp,
+                       (is_console == TRUE) ? _MSG_SIMPLE_COL : _MSG_EXTENDED,
+                       timestamp,
+                       levelStr);
+    }
+    // extended (verbose) message
+    else if (s_logDetail == LogDetail_EXTENDED)
     {
+
 #if _LOG_THREAD_ID
+        // TODO: update to work with colored messages
         size = fprintf(fp,
                        "%s [%s] %ld %s:%d: ",
                        timestamp,
@@ -310,12 +323,13 @@ vflog(FILE *fp,
                        line);
 #else
         size = fprintf(fp,
-                       MSG_P_TIME "[%s] " MSG_P_FILE,
+                       (is_console == TRUE) ? _MSG_EXTENDED_COL : _MSG_EXTENDED,
                        timestamp,
                        levelStr,
                        getFileName(file),
                        line);
 #endif // _LOG_THREAD_ID
+
     } else if (s_logDetail == LogDetail_MSG)
     {
         size = 0;
