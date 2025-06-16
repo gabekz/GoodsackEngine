@@ -67,7 +67,7 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
 
         if (!strcmp(p_item->key, "path"))
         {
-            LOG_DEBUG("GCFG - Setting config for: %s", p_item->value);
+            LOG_TRACE("GCFG - Setting config for: %s", p_item->value);
 
             gsk_AssetCache *p_cache =
               gsk_runtime_get_asset_cache(p_item->value);
@@ -77,7 +77,7 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
 
             if (p_ref == NULL)
             {
-                LOG_ERROR("GCFG - Failed to get path (%s)", p_item->key);
+                LOG_ERROR("GCFG - Failed to get path (%s)", p_item->value);
                 return;
             }
 

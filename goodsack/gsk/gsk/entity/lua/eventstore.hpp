@@ -25,6 +25,7 @@ class LuaEventStore {
 
     static LuaEventStore &GetInstance();
     static void Initialize(lua_State *L, gsk_ECS *ecs);
+    static void Cleanup();
     static void ECSEvent(enum ECSEvent event);
 
     static ECSComponentLayout &getLayout(const char *layout)

@@ -28,6 +28,14 @@
 #endif
 #endif // SYS_ENV_WIN
 
+#define _LOG_THREAD_ID 0
+
+#define _MSG_SIMPLE     "%s [%s] "
+#define _MSG_SIMPLE_COL GRY "%s" COLOR_RESET "[%s] "
+
+#define _MSG_EXTENDED     _MSG_SIMPLE "%s:%d "
+#define _MSG_EXTENDED_COL _MSG_SIMPLE_COL YEL "%s:%d" COLOR_RESET " "
+
 enum {
     /* Logger type */
     kConsoleLogger = 1 << 0,
@@ -290,11 +298,22 @@ vflog(FILE *fp,
     int size       = 0;
     long totalsize = 0;
 
+    u8 is_console = (fp == s_clog.output) ? TRUE : FALSE;
+
+    // simple message
     if (s_logDetail == LogDetail_SIMPLE)
     {
-        size = fprintf(fp, "%s [%s] ", timestamp, levelStr);
-    } else if (s_logDetail == LogDetail_EXTENDED)
+        size = fprintf(fp,
+                       (is_console == TRUE) ? _MSG_SIMPLE_COL : _MSG_EXTENDED,
+                       timestamp,
+                       levelStr);
+    }
+    // extended (verbose) message
+    else if (s_logDetail == LogDetail_EXTENDED)
     {
+
+#if _LOG_THREAD_ID
+        // TODO: update to work with colored messages
         size = fprintf(fp,
                        "%s [%s] %ld %s:%d: ",
                        timestamp,
@@ -302,6 +321,15 @@ vflog(FILE *fp,
                        threadID,
                        getFileName(file),
                        line);
+#else
+        size = fprintf(fp,
+                       (is_console == TRUE) ? _MSG_EXTENDED_COL : _MSG_EXTENDED,
+                       timestamp,
+                       levelStr,
+                       getFileName(file),
+                       line);
+#endif // _LOG_THREAD_ID
+
     } else if (s_logDetail == LogDetail_MSG)
     {
         size = 0;
@@ -410,7 +438,7 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
 
     switch (level)
     {
-    case LogLevel_INFO: logger_setDetail(LogDetail_SIMPLE); break;
+    // case LogLevel_INFO: logger_setDetail(LogDetail_SIMPLE); break;
     case LogLevel_NONE: logger_setDetail(LogDetail_MSG); break;
     default: logger_setDetail(LogDetail_EXTENDED); break;
     }

@@ -5,18 +5,27 @@
 
 require('goodsack')
 
--- local include_dir = [[/home/gmk/gksrc/projects/GoodsackEngine/src/api/lua/include/]]
--- require('goodsack.util').GetFullPath([[gsk:api//lua/include]], 'dir')
+--[[---------------------------------------------------------
+	Shared Modules
+-----------------------------------------------------------]]
+input       = require('goodsack.input')
+time        = require('goodsack.time')
+fs          = require('goodsack.filesystem')
 
--- TODO: Move this
-local include_dir = [[E:/Projects/GoodsackEngine/goodsack/gsk/gsk/api/lua/include/]]
---local include_dir = [[/home/gmk/gksrc/projects/GoodsackEngine/goodsack/gsk/gsk/api/lua/include/]]
+Vector = require('goodsack.vector')
+
+--[[---------------------------------------------------------
+	Aliases
+-----------------------------------------------------------]]
+
+local include_dir = fs.URI([[gsk://../gsk/gsk/api/lua/include/]])
 
 -- dofile() alias for specified directory
 --
 ---@param path string
 include = function(path)
-    dofile(include_dir .. path)
+    str = include_dir .. path
+    dofile(str)
 end
 
 --
@@ -26,13 +35,6 @@ SYSTEM_RUN = function(name)
     require(name).run()
 end
 
---[[---------------------------------------------------------
-	Shared Modules
------------------------------------------------------------]]
-input       = require('goodsack.input')
-time        = require('goodsack.time')
-
-Vector = require('goodsack.vector')
 
 
 --[[---------------------------------------------------------

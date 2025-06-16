@@ -79,6 +79,14 @@ LuaEventStore::Initialize(lua_State *L, gsk_ECS *ecs)
 }
 
 void
+LuaEventStore::Cleanup()
+{
+    LOG_DEBUG("cleaning up");
+    if (s_Instance.m_Lua) { lua_close(s_Instance.m_Lua); }
+    // TODO: cleanup ECS related stuff
+}
+
+void
 LuaEventStore::RegisterComponentList(ECSComponentType componentIndex,
                                      ECSComponentLayout &layout)
 {
@@ -131,11 +139,10 @@ _meta_Component_newindex(lua_State *L)
         var = luaL_checknumber(L, -1);
         c->SetVariable(k, &var);
         return 0;
-    } else
-    {
-        return luaL_argerror(
-          L, -2, lua_pushfstring(L, "component does not contain '%s'", k));
     }
+
+    return luaL_argerror(
+      L, -2, lua_pushfstring(L, "component does not contain '%s'", k));
 }
 
 // NOTE: Return value is number of args pushed to stack
@@ -343,8 +350,14 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
     {
         // retreive function
         LUA_DUMP("Before rawgeti"); /* stack: <[-1] Table> <[-2] Table> */
-        // lua_pop(L, 1);
         lua_rawgeti(L, -1, store.m_functionList[event]->functions[i]);
+
+#if 0
+        if(!lua_isfunction(L, -1)) {
+            continue;
+        }
+#endif
+
         if (lua_isfunction(L, -1))
         {
             // send data to function
@@ -352,14 +365,16 @@ LuaEventStore::ECSEvent(enum ECSEvent event)
             {
                 // Push entity onto stack
                 LUA_DUMP("dump");
-                // lua_pop(L, 1);
-                // lua_rawgeti(L, (int)j - 1,
-                // store.m_functionList[event]->functions[i]);
+
                 pushEntity(L, (u64)j);
                 LUA_DUMP("Pushed Entity (Table)");
+
                 //  call event function
-                (CheckLua(L, lua_pcall(L, 1, 0, 0)));
+                bool status = CheckLua(L, lua_pcall(L, 1, 0, 0));
                 LUA_DUMP("lua_pcall");
+
+                if (status == false) { break; }
+
                 // push same function for next entity
                 if (j + 1 < store.m_ecs->nextIndex)
                 {

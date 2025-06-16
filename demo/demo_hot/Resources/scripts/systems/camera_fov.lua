@@ -1,6 +1,6 @@
 local system = {}
 
-Time = require('GoodsackAPI.Time')
+Time = time
 Keycode = require("keycodes")
 
 function system.start(e)
@@ -23,10 +23,10 @@ function system.update(entity)
     end
 
     if (Input:GetKeyDown(Keycode.Q)) then
-        entity.Camera.fov = entity.Camera.fov - 10 * Time.get_delta_time();
+        entity.Camera.fov = entity.Camera.fov - 10 * Time.DeltaTime();
     end
     if (Input:GetKeyDown(Keycode.E)) then
-        entity.Camera.fov = entity.Camera.fov + 10 * Time.get_delta_time();
+        entity.Camera.fov = entity.Camera.fov + 10 * Time.DeltaTime();
     end
     if (Input:GetKeyDown(Keycode.Z)) then
         print(entity.Camera.speed)
