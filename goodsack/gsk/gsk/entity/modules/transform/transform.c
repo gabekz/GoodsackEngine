@@ -52,18 +52,23 @@ _validate_bone_matrix(gsk_Entity e)
         LOG_ERROR("ent_skeleton does not have a Mesh component!");
         return;
     }
-    gsk_Model *pmdl =
-      ((struct ComponentModel *)gsk_ecs_get(ent_skeleton, C_MODEL))->pModel;
-    gsk_Mesh *pmsh = pmdl->meshes[0];
+    struct ComponentModel *cmp_model = gsk_ecs_get(ent_skeleton, C_MODEL);
+    gsk_Model *pmdl                  = cmp_model->pModel;
+    gsk_Mesh *pmsh                   = pmdl->meshes[0];
 
+    // TODO: should check skeleton on component instead
     if (!pmsh->meshData->isSkinnedMesh)
     {
         LOG_ERROR("Attempting to attach to non skinned-mesh!");
         return;
     }
 
-    gsk_Joint *joint =
-      pmsh->meshData->skeleton->joints[c_bone_attachment->bone_id];
+    gsk_Joint *joint = NULL;
+    if (cmp_model->_skeleton)
+    {
+        joint = ((gsk_Skeleton *)(cmp_model->_skeleton))
+                  ->joints[c_bone_attachment->bone_id];
+    }
 
     if (joint == NULL)
     {

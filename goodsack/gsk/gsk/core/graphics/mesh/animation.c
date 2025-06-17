@@ -13,9 +13,13 @@
 #include "core/graphics/mesh/mesh_helpers.inl"
 
 void
-gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe)
+gsk_animation_set_keyframe(gsk_Skeleton *p_skeleton,
+                           gsk_Animation *animation,
+                           u32 keyframe)
 {
-    gsk_Skeleton *skeleton = animation->pSkeleton;
+    // TODO: remove
+    gsk_Skeleton *skeleton = p_skeleton;
+
     for (int i = 0; i < skeleton->jointsCount; i++)
     {
 
@@ -47,14 +51,16 @@ gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe)
 }
 
 void
-gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
+gsk_animation_set_keyframe_lerp(gsk_Skeleton *p_skeleton,
+                                gsk_Animation *animation,
                                 u32 k0,     // previous keyframe index
                                 u32 k1,     // next keyframe index
                                 float ratio // in [0, 1]
 )
 {
 
-    gsk_Skeleton *skeleton = animation->pSkeleton;
+    // TODO: remove
+    gsk_Skeleton *skeleton = p_skeleton;
 
     for (int i = 0; i < skeleton->jointsCount; i++)
     {
@@ -65,7 +71,7 @@ gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
         // TODO: CLEAN THIS UP ASAP
         if (skeleton->joints[i]->override == TRUE)
         {
-            gsk_animation_set_keyframe(animation, k0);
+            gsk_animation_set_keyframe(p_skeleton, animation, k0);
             continue;
         }
 #endif
@@ -98,20 +104,4 @@ gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
                      skeleton->joints[i]->mInvBindPose,
                      skeleton->joints[i]->pose.mSkinningMatrix);
     }
-}
-
-void
-gsk_skeleton_set_animation(gsk_Skeleton *p_skeleton, u32 index)
-{
-    if (index > p_skeleton->animations_count - 1)
-    {
-        LOG_ERROR("Failed to set animation on skeleton %s. Index %d is out "
-                  "of range.",
-                  p_skeleton->name,
-                  index);
-        return;
-    }
-
-    p_skeleton->animation           = p_skeleton->p_animations[index];
-    p_skeleton->cnt_animation_index = index;
 }

@@ -31,6 +31,7 @@ __update_dynamic_uniforms(u32 shader_id,
                           u32 entity_index,
                           gsk_Mesh *mesh,
                           struct ComponentTransform *transform,
+                          struct ComponentModel *model,
                           gsk_Renderer *p_renderer)
 {
 
@@ -48,7 +49,7 @@ __update_dynamic_uniforms(u32 shader_id,
     if (mesh->meshData->isSkinnedMesh)
     {
         mat4 skinnedMatrices[MAX_BONES];
-        gsk_Skeleton *pSkeleton = mesh->meshData->skeleton;
+        gsk_Skeleton *pSkeleton = (gsk_Skeleton *)model->_skeleton;
         for (int i = 0; i < pSkeleton->jointsCount; i++)
         {
             glm_mat4_copy(pSkeleton->joints[i]->pose.mSkinningMatrix,
@@ -256,6 +257,7 @@ DrawModel(struct ComponentModel *model,
                                   entity_index,
                                   mesh,
                                   transform,
+                                  model,
                                   renderer);
 
         if (is_new_shader == TRUE)
@@ -323,7 +325,7 @@ DrawModel(struct ComponentModel *model,
         vkCmdDraw(commandBuffer, context->vertexBuffer->size, 1, 0, 0);
 #endif
             __update_dynamic_uniforms(
-              0, renderLayer, entity_index, mesh, transform, renderer);
+              0, renderLayer, entity_index, mesh, transform, model, renderer);
 
             // Bind Vertex/Index buffers
             VkDeviceSize offsets[] = {0};
@@ -373,6 +375,7 @@ init(gsk_Entity e)
     // TODO: Duplicate model here (for skinned-mesh / animator)
     // TODO: we probably dont want model->mesh. Maybe model->skinned_mesh?
 
+    // TODO: probably get rid of this now that we are working on animator stuff
     model->mesh = ((gsk_Model *)model->pModel)->meshes[0];
 
     // TODO: rework defaults

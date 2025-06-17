@@ -42,26 +42,11 @@ struct gsk_Joint
     u16 id;
 
     gsk_Joint *parent;
+    s32 parent_id;
     u16 childrenCount;
 
     gsk_Pose pose; // current pose
     mat4 mInvBindPose;
-};
-
-struct gsk_Skeleton
-{
-    gsk_Joint **joints;
-    u16 jointsCount;
-
-    gsk_Animation **p_animations;
-    u32 animations_count;
-    u32 cnt_animation_index;
-
-    gsk_Animation *animation; // change to list
-
-    mat4 rootMatrix;
-
-    char *name;
 };
 
 struct gsk_Keyframe
@@ -73,32 +58,45 @@ struct gsk_Keyframe
     u32 posesCount;
 };
 
+struct gsk_Skeleton
+{
+    char *name;
+    gsk_Joint **joints;
+    u16 jointsCount;
+    mat4 rootMatrix;
+};
+
 struct gsk_Animation
 {
     char *name;     // animation name
     float duration; // animation time
 
-    gsk_Skeleton *pSkeleton; // reference to associated skeleton
-    u32 index;               // animation-index relative to the parent-skeleton
+    u32 index; // animation-index relative to the Animation Set
 
     gsk_Keyframe **keyframes;
     u32 keyframesCount;
 };
 
-// void
-// animation_play(Animation *animation, u32 index);
+typedef struct gsk_AnimationSet
+{
+    gsk_Animation **p_animations;
+    u32 animations_count;
+    u32 cnt_animation_index;
+
+    gsk_Skeleton *p_skeleton_ref;
+} gsk_AnimationSet;
 
 void
-gsk_animation_set_keyframe(gsk_Animation *animation, u32 keyframe);
+gsk_animation_set_keyframe(gsk_Skeleton *p_skeleton,
+                           gsk_Animation *animation,
+                           u32 keyframe);
 
 void
-gsk_animation_set_keyframe_lerp(gsk_Animation *animation,
+gsk_animation_set_keyframe_lerp(gsk_Skeleton *p_skeleton,
+                                gsk_Animation *animation,
                                 u32 k0,
                                 u32 k1,
                                 float ratio);
-
-void
-gsk_skeleton_set_animation(gsk_Skeleton *p_skeleton, u32 index);
 
 #ifdef __cplusplus
 }

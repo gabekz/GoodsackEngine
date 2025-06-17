@@ -56,6 +56,7 @@ typedef enum ECSComponentType_t {
 
 struct ComponentAnimator
 {
+    ResRef p_animation_set;
     ResRef cntAnimation;
     s32 cntKeyframeIndex;
     s32 cntTime;
@@ -63,9 +64,12 @@ struct ComponentAnimator
     f32 timerNow;
     f32 timerStart;
 
+    u32 animation_index;
+
     u16 is_transition_delayed;
     u16 is_looping;
     u16 is_playing;
+    u16 is_holding_end_frame;
 
     u16 force_replay;
 };
@@ -197,6 +201,7 @@ struct ComponentModel
     ResRef pModel;
     u32 vbo;
     ResRef vkVBO;
+    ResRef _skeleton;
     struct
     {
         u16 renderMode : 1;

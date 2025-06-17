@@ -382,16 +382,23 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 
     else if (cmp_type == C_ANIMATOR)
     {
+        // TODO: FIX THIS SHIT BITCH
 
         struct ComponentAnimator &a = *(
           static_cast<struct ComponentAnimator *>(gsk_ecs_get(e, C_ANIMATOR)));
 
-        gsk_Skeleton *p_skeleton = ((gsk_Animation *)a.cntAnimation)->pSkeleton;
+        gsk_AnimationSet *p_animation_set =
+          (gsk_AnimationSet *)a.p_animation_set;
 
-        Text("Total Animations: %d",
-             ((gsk_Animation *)a.cntAnimation)->pSkeleton->animations_count);
+        // gsk_Skeleton *p_skeleton = ((gsk_Animation
+        // *)a.cntAnimation)->pSkeleton;
+        // TODO: FIX THIS MOTHERFUCKER
+        gsk_Skeleton *p_skeleton = NULL;
 
-        Text("Keyframes: %d",
+        Text("Total Animations: %d", p_animation_set->animations_count);
+
+        Text("Keyframes: %d/%d",
+             a.cntKeyframeIndex,
              ((gsk_Animation *)a.cntAnimation)->keyframesCount);
 
         Separator();
@@ -417,21 +424,29 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         }
         EndDisabled();
 
+// TODO: should probably be like the former
+#if 0
         int item_current_idx =
           (int)p_skeleton->cnt_animation_index; // selection
+#else
+        int item_current_idx = (int)((gsk_Animation *)a.cntAnimation)->index;
+#endif
+
         const char *combo_preview_value =
-          p_skeleton->p_animations[item_current_idx]->name;
+          p_animation_set->p_animations[item_current_idx]->name;
 
         if (ImGui::BeginCombo("Animations", combo_preview_value))
         {
-            for (int i = 0; i < p_skeleton->animations_count; i++)
+            for (int i = 0; i < p_animation_set->animations_count; i++)
             {
                 const bool is_selected = (item_current_idx == i);
-                if (ImGui::Selectable(p_skeleton->p_animations[i]->name,
+                if (ImGui::Selectable(p_animation_set->p_animations[i]->name,
                                       is_selected))
                 {
-                    item_current_idx = i;
-                    gsk_skeleton_set_animation(p_skeleton, i);
+                    LOG_INFO("setting animation from toolbar");
+
+                    item_current_idx  = i;
+                    a.animation_index = item_current_idx;
                 }
 
                 // Set the initial focus when opening the combo (scrolling +

@@ -197,10 +197,13 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
     animation->duration       = frameTimes[inputsCount - 1];
     animation->keyframes      = keyframes;
     animation->keyframesCount = inputsCount;
-    animation->pSkeleton      = skeleton;
     animation->name           = strdup(gltfAnimation->name);
-    animation->index =
-      skeleton->animations_count; // current count as opposed to full count
+
+    // TODO: ANIMATION SET
+    // animation->pSkeleton      = skeleton;
+    // TODO: ANIMATION SET INDEX
+    // animation->index =
+    //  skeleton->animations_count; // current count as opposed to full count
 
 #if 0
 #define TEST_BONE 2
@@ -228,7 +231,8 @@ _create_joint_recurse(gsk_Skeleton *skeleton,
     gsk_Joint joint;
     joint.id             = id;
     joint.name           = jointsNode[id]->name;
-    joint.parent         = parent;
+    joint.parent         = (parent == NULL) ? NULL : parent;
+    joint.parent_id      = (parent == NULL) ? -1 : (s32)parent->id;
     joint.childrenCount  = jointsNode[id]->children_count;
     joint.pose.hasMatrix = 0;
     joint.override       = FALSE;
@@ -383,17 +387,16 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     // If we have a skinned mesh
     if (is_skinned)
     {
-        gsk_Skeleton *skeleton = malloc(sizeof(gsk_Skeleton));
-        ret->skeleton          = skeleton;
+        cgltf_node *armatureNode = data->scenes[0].nodes[0];
+
+        ret->skeleton = (gsk_Skeleton) {0};
 
         // Skeleton information //
 
-        skeleton->jointsCount = data->skins->joints_count;
-
-        cgltf_node *armatureNode = data->scenes[0].nodes[0];
+        ret->skeleton.jointsCount = data->skins->joints_count;
 
         // Skeleton name from node
-        skeleton->name = strdup(armatureNode->name);
+        ret->skeleton.name = strdup(armatureNode->name);
 
 #if _DEBUG_GLTF
         LOG_TRACE("Skeleton name: %s\nSkeleton children: %d",
@@ -402,12 +405,13 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 #endif _DEBUG_GLTF
 
         // List of all joints in skeleton
-        skeleton->joints =
+        // TODO: should not be on heap
+        ret->skeleton.joints =
           malloc(sizeof(gsk_Joint *) * data->skins->joints_count);
 
         // Create skeleton recursively
         _create_joint_recurse(
-          skeleton, 0, NULL, data->skins->joints, &data->skins[0]);
+          &ret->skeleton, 0, NULL, data->skins->joints, &data->skins[0]);
         //_create_joint_recurse(skeleton, 0, NULL, &armatureNode->children[1]);
 
         // Skinning information //
@@ -454,15 +458,24 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         int animationsCount             = data->animations_count;
         cgltf_animation *gltfAnimations = data->animations;
 
+        if (animationsCount > 0)
+        {
+            // Create AnimationSet
+
+            ret->animations = (gsk_AnimationSet) {
+              .animations_count = animationsCount,
+              .p_skeleton_ref   = &ret->skeleton,
+              .p_animations = malloc(sizeof(gsk_Animation *) * animationsCount),
+              .cnt_animation_index = STARTING_ANIMATION_INDEX,
+            };
+
+            // NOTE: incremented in loop for reasons
+            ret->animations.cnt_animation_index = 0;
+        }
+
         // LOG_TRACE("Animations: %d", animationsCount);
 
-        // Allocate animations
-        skeleton->animations_count = animationsCount;
-        skeleton->p_animations =
-          malloc(sizeof(gsk_Skeleton *) * animationsCount);
-        skeleton->cnt_animation_index = STARTING_ANIMATION_INDEX;
-        skeleton->animations_count = 0; // NOTE: incremented in loop for reasons
-
+        u32 nxt_anim_index = 0;
         for (int i = 0; i < animationsCount; i++)
         {
 #if _DEBUG_GLTF
@@ -474,29 +487,37 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 #endif // _DEBUG_GLTF
 
             gsk_Animation *animation =
-              __fill_animation_data(&gltfAnimations[i], skeleton);
-            skeleton->p_animations[i] = animation;
+              __fill_animation_data(&gltfAnimations[i], &ret->skeleton);
+
+            animation->index = nxt_anim_index;
+
+            // TODO: fix the logic here - should not be set to 'i' if faled
+            ret->animations.p_animations[i] = animation;
 
             // increment so that we can pass the animation index to the actual
             // animation data as well.
-            if (skeleton->p_animations[i] != NULL) skeleton->animations_count++;
+            // TODO: error handling
+            if (ret->animations.p_animations[i] != NULL) { nxt_anim_index++; }
         }
 
-        if (skeleton->animations_count != animationsCount)
+        if (ret->animations.animations_count != animationsCount)
         {
             LOG_WARN("skinned-mesh skeleton (%s) has incorrect animation count",
-                     skeleton->name);
+                     ret->animations.p_skeleton_ref->name);
         }
 
-        if (skeleton->animations_count == 0 || animationsCount == 0)
+        if (ret->animations.animations_count == 0 || animationsCount == 0)
         {
             LOG_WARN("skinned-mesh skeleton (%s) has no animation data",
-                     skeleton->name);
+                     ret->animations.p_skeleton_ref->name);
         }
 
-        // set current animation to the first one in the list
+// set current animation to the first one in the list
+// TODO: FIX THIS SHIT NOW FUCKER
+#if 0
         skeleton->animation =
-          skeleton->p_animations[skeleton->cnt_animation_index];
+          ret->animations.p_animations[skeleton->cnt_animation_index];
+#endif
     }
     return ret;
 }
@@ -710,42 +731,40 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
     u32 cntMesh = 0;
     for (int i = 0; i < data->nodes_count; i++)
     {
-        // if this node is a Mesh Node
-        if (data->nodes[i].mesh != 0)
+        // we only want to operate on mesh nodes
+        if (data->nodes[i].mesh == 0) { continue; }
+
+        // Each primitive in the mesh
+        for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++)
         {
-            // Each primitive in the mesh
-            for (int j = 0; j < data->nodes[i].mesh->primitives_count; j++)
+            gsk_MeshData *meshData =
+              _load_mesh_vertex_data(&data->nodes[i].mesh->primitives[j], data);
+            ret->meshes[cntMesh] = gsk_mesh_allocate(meshData);
+
+            mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
+            glm_translate(localMatrix, data->nodes[i].translation);
+            glm_mat4_copy(localMatrix, ret->meshes[cntMesh]->localMatrix);
+
+            // Add textures to material pools
+            if (importMaterials)
             {
-                gsk_MeshData *meshData = _load_mesh_vertex_data(
-                  &data->nodes[i].mesh->primitives[j], data);
-                ret->meshes[cntMesh] = gsk_mesh_allocate(meshData);
-
-                mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
-                glm_translate(localMatrix, data->nodes[i].translation);
-                glm_mat4_copy(localMatrix, ret->meshes[cntMesh]->localMatrix);
-
-                // Add textures to material pools
-                if (importMaterials)
+                // Check for material
+                cgltf_material *gltfMaterial =
+                  data->nodes[i].mesh->primitives[j].material;
+                if (gltfMaterial != NULL || gltfMaterial != 0x00)
                 {
+                    gsk_Material *mat = _create_material(
+                      gltfMaterial, materialsPool, materialsCount);
 
-                    // Check for material
-                    cgltf_material *gltfMaterial =
-                      data->nodes[i].mesh->primitives[j].material;
-                    if (gltfMaterial != NULL || gltfMaterial != 0x00)
-                    {
-                        gsk_Material *mat = _create_material(
-                          gltfMaterial, materialsPool, materialsCount);
-
-                        ret->meshes[cntMesh]->materialImported      = mat;
-                        ret->meshes[cntMesh]->usingImportedMaterial = TRUE;
-                    }
-                } else
-                {
-                    ret->meshes[cntMesh]->usingImportedMaterial = FALSE;
+                    ret->meshes[cntMesh]->materialImported      = mat;
+                    ret->meshes[cntMesh]->usingImportedMaterial = TRUE;
                 }
-
-                cntMesh++;
+            } else
+            {
+                ret->meshes[cntMesh]->usingImportedMaterial = FALSE;
             }
+
+            cntMesh++;
         }
     }
 

@@ -80,8 +80,8 @@ typedef struct gsk_MeshData
     u32 mesh_buffers_count;
     GskMeshBufferFlags combined_flags; // flags used by every buff
 
-    // TODO: Move to model
-    gsk_Skeleton *skeleton;
+    gsk_Skeleton skeleton;       // reference to skeleton
+    gsk_AnimationSet animations; // list of animations
 
     vec3 boundingBox[2];
     vec3 world_pos;
