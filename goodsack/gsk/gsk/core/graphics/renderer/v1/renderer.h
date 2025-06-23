@@ -42,6 +42,8 @@ extern "C" {
 #define RENDERER_UBO_BINDING_CAMERA   0
 #define RENDERER_UBO_BINDING_LIGHTING 1
 
+#define RENDERER_MAX_SCENES 32
+
 typedef enum GskRenderPass_ {
     GskRenderPass_GBuffer = 0,
     GskRenderPass_Shadowmap,
@@ -61,6 +63,7 @@ typedef struct gsk_Renderer
 
     gsk_Scene **sceneL;
     u16 sceneC, activeScene, scene_queue_index;
+    s32 scene_tracker[RENDERER_MAX_SCENES];
 
     GskRenderPass currentPass; // TODO: rename -> RenderStage
     gsk_Material *explicitMaterial;

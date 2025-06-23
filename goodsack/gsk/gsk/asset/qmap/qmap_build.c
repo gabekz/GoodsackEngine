@@ -565,6 +565,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
         }
 
         // setup bounds
+        // TODO: float minmax
         vec3 minBounds = {10000, 10000, 10000};
         vec3 maxBounds = {-10000, -10000, -10000};
 

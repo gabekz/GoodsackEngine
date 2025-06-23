@@ -314,7 +314,13 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
 
     if (p_ref->is_utilized == TRUE) { return p_ref; }
 
-    if (is_fallback == FALSE) { LOG_DEBUG("loading asset (%s)", str_uri); }
+    if (is_fallback == FALSE)
+    {
+        LOG_DEBUG("loading asset (%s)", str_uri);
+    } else
+    {
+        LOG_DEBUG("loading FALLBACK asset for type: %d", asset_type);
+    }
 
     if (fetch_mode != GSK_ASSET_FETCH_ALL)
     {

@@ -28,10 +28,10 @@
 #endif
 #endif // SYS_ENV_WIN
 
-#define _LOG_THREAD_ID 0
+#define _LOG_THREAD_ID FALSE
 
 #define _MSG_SIMPLE     "%s [%s] "
-#define _MSG_SIMPLE_COL GRY "%s" COLOR_RESET "[%s] "
+#define _MSG_SIMPLE_COL GRY "%s " COLOR_RESET "[%s] "
 
 #define _MSG_EXTENDED     _MSG_SIMPLE "%s:%d "
 #define _MSG_EXTENDED_COL _MSG_SIMPLE_COL YEL "%s:%d" COLOR_RESET " "
