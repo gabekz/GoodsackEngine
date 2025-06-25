@@ -16,6 +16,8 @@
 
 #include "entity/lua/eventstore.hpp"
 
+#include "entity/ecs.h"
+
 #if GET_TAG
 // #include <entity/ecsdefs.h>
 #endif
@@ -63,7 +65,6 @@ entity::ECSComponentLayout::SetData(std::map<std::string, Accessor> data)
     m_SizeReq   = sizeReq;
 }
 
-#include <entity/ecs.h>
 entity::ECSComponentList::ECSComponentList(ECSComponentType componentTypeIndex,
                                            ECSComponentLayout &layout)
     : m_componentLayout(layout)

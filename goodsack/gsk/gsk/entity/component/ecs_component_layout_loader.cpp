@@ -54,6 +54,8 @@ _pascal_to_snake_upper(const std::string &input)
     return result;
 }
 
+// TODO: take in a map rather than creating one here
+// TODO: check if this is a file rather that rawData param
 entity::component::ComponentLayoutMap
 entity::component::parse_components_from_json(std::string path, u32 rawData)
 {
@@ -148,6 +150,8 @@ int
 entity::component::generate_cpp_types(std::string path,
                                       entity::component::ComponentLayoutMap map)
 {
+    std::ostringstream buff;
+
     // Setup file for writing
     // freopen(path.c_str(), "w", stdout);
 
@@ -171,10 +175,11 @@ extern "C" {
         )";
 
     // Write header
-    std::cout << header << std::endl;
+    buff << header << "\n";
 
     // Create ECS Component ENUM
-    std::cout << "typedef enum ECSComponentType_t {" << std::endl;
+    buff << "typedef enum ECSComponentType_t {\n";
+
     int lastComponentIndex = -1;
     for (const auto &p : map)
     {
@@ -187,27 +192,25 @@ extern "C" {
         std::string componentName = _pascal_to_snake_upper(p.first);
 #endif
 
-        std::cout << "C_" << componentName << "," << std::endl;
+        buff << "C_" << componentName << ",\n";
         lastComponentIndex++;
     }
-    std::cout << "} ECSComponentType;\n" << std::endl;
+    buff << "} ECSComponentType;\n\n";
 
     // store last component index
-    std::cout << "#define ECSCOMPONENT_LAST " << lastComponentIndex << std::endl
-              << std::endl;
+    buff << "#define ECSCOMPONENT_LAST " << lastComponentIndex << "\n\n";
 
     // Create struct for each ECS Component Type
     for (const auto &p : map)
     {
-
         std::string componentName = _pascal_to_snake_upper(p.first);
 
 #if GEN_USING_TYPEDEF
-        std::cout << "typedef struct "
-                  << "Component" << p.first << " { " << std::endl;
+        buff << "typedef struct "
+             << "Component" << p.first << " { \n";
 #else
-        std::cout << "struct "
-                  << "Component" << p.first << " {" << std::endl;
+        buff << "struct "
+             << "Component" << p.first << " {\n";
 #endif
 
         ECSComponentLayout *layout = map[p.first];
@@ -224,37 +227,37 @@ extern "C" {
                                             : lastPosition == 0);
             lastPosition = accessor.position;
 
-            std::cout << "\tCACHE_ALIGN(";
+            buff << "\tCACHE_ALIGN(";
+
             // TODO: change to inline converter
             switch (accessor.type /* accessor.type */)
             {
-            case EcsDataType::INT: std::cout << "s32 "; break;
-            case EcsDataType::UINT: std::cout << "u32 "; break;
-            case EcsDataType::FLOAT: std::cout << "f32 "; break;
-            case EcsDataType::BOOL: std::cout << "u16 "; break;
-            case EcsDataType::VEC2: std::cout << "vec2 "; break;
-            case EcsDataType::VEC3: std::cout << "vec3 "; break;
-            case EcsDataType::VEC4: std::cout << "vec4 "; break;
-            case EcsDataType::MAT3: std::cout << "mat3 "; break;
-            case EcsDataType::MAT4: std::cout << "mat4 "; break;
+            case EcsDataType::INT: buff << "s32 "; break;
+            case EcsDataType::UINT: buff << "u32 "; break;
+            case EcsDataType::FLOAT: buff << "f32 "; break;
+            case EcsDataType::BOOL: buff << "u16 "; break;
+            case EcsDataType::VEC2: buff << "vec2 "; break;
+            case EcsDataType::VEC3: buff << "vec3 "; break;
+            case EcsDataType::VEC4: buff << "vec4 "; break;
+            case EcsDataType::MAT3: buff << "mat3 "; break;
+            case EcsDataType::MAT4: buff << "mat4 "; break;
 
             // TODO: implement strings correctly
-            case EcsDataType::STRING: std::cout << "const char *"; break;
+            case EcsDataType::STRING: buff << "const char *"; break;
 
-            case EcsDataType::RESOURCE: std::cout << "ResRef "; break;
-            case EcsDataType::ENTITY: std::cout << "int "; break;
+            case EcsDataType::RESOURCE: buff << "ResRef "; break;
+            case EcsDataType::ENTITY: buff << "int "; break;
             default: break;
             }
-            std::cout << q.first << ");" << std::endl;
+            buff << q.first << ");\n";
         }
 
 // Close struct
 #if GEN_USING_TYPEDEF
-        std::cout << "} "
-                  << "gsk_C_" << p.first << ";\n"
-                  << std::endl;
+        buff << "} "
+             << "gsk_C_" << p.first << ";\n\n";
 #else
-        std::cout << "};\n" << std::endl;
+        buff << "};\n\n";
 #endif
     }
     // Footer
@@ -269,7 +272,7 @@ extern "C" {
 )";
 
     // Write footer
-    std::cout << footer << std::endl;
+    buff << footer << "\n";
 
     // PART 2 - components_gen_register.h
     // Header2
@@ -283,20 +286,19 @@ extern "C" {
         )";
 
     // Write header
-    std::cout << header2 << std::endl;
+    buff << header2 << "\n";
 
     // Create initializer Component Register
-    std::cout << "static inline void\n_ecs_init_internal_gen(gsk_ECS *ecs) {"
-              << std::endl;
+    buff << "static inline void\n_ecs_init_internal_gen(gsk_ECS *ecs) {\n";
+
     for (const auto &p : map)
     {
         std::string componentName = _pascal_to_snake_upper(p.first);
 
-        std::cout << "\t_ECS_DECL_COMPONENT_INTERN(ecs, C_" << componentName
-                  << ", sizeof(struct Component" << p.first << "));"
-                  << std::endl;
+        buff << "\t_ECS_DECL_COMPONENT_INTERN(ecs, C_" << componentName
+             << ", sizeof(struct Component" << p.first << "));\n";
     }
-    std::cout << "}" << std::endl;
+    buff << "}\n";
 
 #if 0
     // Lua Component Register - TODO: Rework
@@ -319,7 +321,16 @@ extern "C" {
 
         )";
     // Write footer
-    std::cout << footer2 << std::endl;
+    buff << footer2;
+
+    std::ofstream out(path, std::ios::out | std::ios::trunc);
+    if (!out)
+    {
+        LOG_CRITICAL("Failed to open %s", path.c_str());
+        return 0;
+    }
+
+    out << buff.str();
 
     return 1;
 }
