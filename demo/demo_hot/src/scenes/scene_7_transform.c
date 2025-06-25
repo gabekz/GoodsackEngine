@@ -98,15 +98,12 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                           (void *)(&(struct ComponentCollider) {
                             .type = COLLIDER_PLANE,
                           }));
-    _gsk_ecs_add_internal(
-      floorEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matFloor,
-                                         .pModel     = modelPlane,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(floorEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matFloor,
+                            .pModel   = modelPlane,
+                          }));
 
     /*
       (Root) initialization (entity references)
@@ -233,16 +230,13 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .parent_entity_id = pWeaponParent->id,
                           }));
 
-    _gsk_ecs_add_internal(
-      attachedEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matWeapon,
-                                         .pModel     = modelWeapon,
-                                         .modelPath  = NULL,
-                                         .properties = {
-                                           .drawMode = DRAW_ELEMENTS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(attachedEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material  = matWeapon,
+                            .pModel    = modelWeapon,
+                            .modelPath = NULL,
+                          }));
 
 #if DEMO_USING_MULTIPLE_CAMERAS
     // Render layer (only render on camera with specified layer)

@@ -6,15 +6,9 @@
 #include <util/maths.h>
 #include <util/sysdefs.h>
 
-#include <entity/ecsdefs.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif //__cplusplus
-
-#ifndef CACHE_LINE
-#define CACHE_LINE ECS_COMPONENTS_ALIGN_BYTES
-#endif // CACHE_LINE
 
 // typedef (void *)(ResRef)
 #define ResRef void *
@@ -26,57 +20,48 @@ typedef enum ECSComponentType_t {
     C_BANE,
     C_BONE_ATTACHMENT,
     C_CAMERA,
-    C_CAMERALOOK,     // TODO: Remove (new package)
-    C_CAMERAMOVEMENT, // TODO: Remove (new package)
+    C_CAMERALOOK,
+    C_CAMERAMOVEMENT,
     C_COLLIDER,
-    C_ENEMY, // TODO: Remove (testing)
+    C_ENEMY,
     C_ENTITY_REFERENCE,
-    C_FLAMMABLE, // TODO: Remove (new package)
-    C_HEALTH,    // TODO: Remove (new package)
+    C_FLAMMABLE,
+    C_HEALTH,
     C_LIGHT,
     C_MODEL,
     C_PARTICLE_EMITTER,
-    C_PLAYER_CONTROLLER,  // TODO: Remove (new package)
-    C_PROJECTILE_SPAWNER, // TODO: Remove (new package)
+    C_PLAYER_CONTROLLER,
+    C_PROJECTILE_SPAWNER,
     C_RENDERLAYER,
     C_RIGIDBODY,
-    C_SWORD_CONTROLLER, // TODO: Remove (testing)
+    C_SWORD_CONTROLLER,
     C_TRANSFORM,
-    C_WEAPON,     // TODO: Remove (new package)
-    C_WEAPONSWAY, // TODO: Remove (new package)
+    C_WEAPON,
+    C_WEAPONSWAY,
 } ECSComponentType;
 
-#define ECSCOMPONENT_LAST C_WEAPONSWAY
-
-#if ECS_COMPONENTS_PACKED
-#pragma pack(push, 1)
-// #else
-//  pragma pack(push, ECS_COMPONENTS_ALIGN_BYTES)
-#endif // ECS_COMPONENTS_PACKED
+#define ECSCOMPONENT_LAST 23
 
 struct ComponentAnimator
 {
-    ResRef p_animation_set;
-    ResRef cntAnimation;
-    s32 cntKeyframeIndex;
-    s32 cntTime;
-    s32 nxtKeyframeIndex;
-    f32 timerNow;
-    f32 timerStart;
-
-    u32 animation_index;
-
-    u16 is_transition_delayed;
-    u16 is_looping;
-    u16 is_playing;
-    u16 is_holding_end_frame;
-
-    u16 force_replay;
+    CACHE_ALIGN(u32 animation_index);
+    CACHE_ALIGN(ResRef cntAnimation);
+    CACHE_ALIGN(s32 cntKeyframeIndex);
+    CACHE_ALIGN(s32 cntTime);
+    CACHE_ALIGN(u16 force_replay);
+    CACHE_ALIGN(u16 is_holding_end_frame);
+    CACHE_ALIGN(u16 is_looping);
+    CACHE_ALIGN(u16 is_playing);
+    CACHE_ALIGN(u16 is_transition_delayed);
+    CACHE_ALIGN(s32 nxtKeyframeIndex);
+    CACHE_ALIGN(ResRef p_animation_set);
+    CACHE_ALIGN(f32 timerNow);
+    CACHE_ALIGN(f32 timerStart);
 };
 
 struct ComponentAudioListener
 {
-    s32 a;
+    CACHE_ALIGN(s32 a);
 };
 
 struct ComponentAudioSource
@@ -84,20 +69,19 @@ struct ComponentAudioSource
     CACHE_ALIGN(ResRef audio_clip);
     CACHE_ALIGN(u32 buffer_audio);
     CACHE_ALIGN(u32 buffer_source);
-    CACHE_ALIGN(char filePath[256]);
-    CACHE_ALIGN(u8 is_looping);
-    CACHE_ALIGN(u8 is_playing);
-    CACHE_ALIGN(f32 max_distance);
-    CACHE_ALIGN(f32 min_distance);
-    CACHE_ALIGN(u8 play_on_start);
+    CACHE_ALIGN(const char *filePath);
+    CACHE_ALIGN(u16 is_looping);
+    CACHE_ALIGN(u16 is_playing);
+    CACHE_ALIGN(f32 min_distance, max_distance);
     CACHE_ALIGN(f32 pitch);
+    CACHE_ALIGN(u16 play_on_start);
 };
 
-typedef struct ComponentBane
+struct ComponentBane
 {
     CACHE_ALIGN(s32 damage);
-    CACHE_ALIGN(u8 is_instant_kill);
-} gsk_C_Bane;
+    CACHE_ALIGN(u16 is_instant_kill);
+};
 
 typedef struct ComponentBoneAttachment
 {
@@ -136,28 +120,28 @@ typedef struct ComponentCameraLook
     CACHE_ALIGN(f32 yaw);
 } gsk_C_CameraLook;
 
-typedef struct ComponentCameraMovement
+struct ComponentCameraMovement
 {
     CACHE_ALIGN(f32 speed);
-} gsk_C_CameraMovement;
+};
 
 struct ComponentCollider
 {
-    CACHE_ALIGN(s32 type);
-    CACHE_ALIGN(void *pCollider);
-    CACHE_ALIGN(u32 isColliding);
-    CACHE_ALIGN(u8 is_trigger);
-    CACHE_ALIGN(void *p_mesh);
-    CACHE_ALIGN(vec3 box_bounds_min);
     CACHE_ALIGN(vec3 box_bounds_max);
+    CACHE_ALIGN(vec3 box_bounds_min);
+    CACHE_ALIGN(u16 isColliding);
+    CACHE_ALIGN(u16 is_trigger);
+    CACHE_ALIGN(ResRef pCollider);
+    CACHE_ALIGN(ResRef p_mesh);
     CACHE_ALIGN(f32 radius);
+    CACHE_ALIGN(s32 type);
 };
 
 struct ComponentEnemy
 {
-    CACHE_ALIGN(int enemy_type);
+    CACHE_ALIGN(s32 enemy_type);
     CACHE_ALIGN(vec3 hit_position);
-    CACHE_ALIGN(u8 is_wep_loaded);
+    CACHE_ALIGN(u16 is_wep_loaded);
 };
 
 typedef struct ComponentEntityReference
@@ -170,69 +154,63 @@ struct ComponentFlammable
     CACHE_ALIGN(f32 burn_speed);
     CACHE_ALIGN(f32 cooldown_speed);
     CACHE_ALIGN(f32 current_heat);
-    CACHE_ALIGN(f32 ignition_point);
-    CACHE_ALIGN(u8 is_burning);
     CACHE_ALIGN(int entity_emitter_id);
+    CACHE_ALIGN(f32 ignition_point);
+    CACHE_ALIGN(u16 is_burning);
     CACHE_ALIGN(f32 max_heat);
 };
 
 struct ComponentHealth
 {
-    CACHE_ALIGN(int current_health);
-    CACHE_ALIGN(int last_health);
-    CACHE_ALIGN(int max_health);
-    CACHE_ALIGN(u32 is_alive);
-    CACHE_ALIGN(u32 event_health_change);
+    CACHE_ALIGN(s32 current_health);
+    CACHE_ALIGN(u16 event_health_change);
+    CACHE_ALIGN(u16 is_alive);
+    CACHE_ALIGN(s32 last_health);
+    CACHE_ALIGN(s32 max_health);
 };
 
 struct ComponentLight
 {
-    CACHE_ALIGN(u32 type);
-    CACHE_ALIGN(u32 light_index);
     CACHE_ALIGN(vec4 color);
     CACHE_ALIGN(f32 intensity);
+    CACHE_ALIGN(u32 light_index);
+    CACHE_ALIGN(u32 type);
 };
 
 struct ComponentModel
 {
-    ResRef material;
-    ResRef mesh;
-    char modelPath[256];
-    ResRef pModel;
-    u32 vbo;
-    ResRef vkVBO;
-    ResRef _skeleton;
-    struct
-    {
-        u16 renderMode : 1;
-        u16 drawMode : 2;
-        u16 cullMode : 3;
-    } properties;
-
-    u8 cast_shadows; // TODO:
+    CACHE_ALIGN(ResRef _skeleton);
+    CACHE_ALIGN(u16 cast_shadows);
+    CACHE_ALIGN(ResRef material);
+    CACHE_ALIGN(ResRef mesh);
+    CACHE_ALIGN(const char *modelPath);
+    CACHE_ALIGN(ResRef pModel);
+    CACHE_ALIGN(u32 vbo);
+    CACHE_ALIGN(ResRef vkVBO);
 };
 
 struct ComponentParticleEmitter
 {
+    CACHE_ALIGN(u16 is_awake);
+    CACHE_ALIGN(ResRef p_meshdata);
+    CACHE_ALIGN(ResRef p_particle_system);
     CACHE_ALIGN(ResRef p_settings);
-    CACHE_ALIGN(void *p_particle_system);
     CACHE_ALIGN(f32 speed);
-    CACHE_ALIGN(u8 is_awake);
-    CACHE_ALIGN(void *p_meshdata);
 };
 
 struct ComponentPlayerController
 {
+    CACHE_ALIGN(u16 can_jump);
+    CACHE_ALIGN(int entity_camera);
+    CACHE_ALIGN(u16 is_grounded);
+    CACHE_ALIGN(u16 is_jumping);
+    CACHE_ALIGN(f32 jump_force);
+    CACHE_ALIGN(vec2 move_axes);
     CACHE_ALIGN(f32 speed);
     CACHE_ALIGN(f32 sprint_timer);
-    CACHE_ALIGN(int entity_camera);
-    CACHE_ALIGN(int walk_direction);
-    CACHE_ALIGN(vec2 move_axes);
-    CACHE_ALIGN(u8 can_jump);
-    CACHE_ALIGN(u8 is_grounded);
-    CACHE_ALIGN(u8 is_jumping);
-    CACHE_ALIGN(f32 jump_force);
+    CACHE_ALIGN(s32 walk_direction);
 };
+
 struct ComponentProjectileSpawner
 {
     CACHE_ALIGN(ResRef projectile_material);
@@ -242,45 +220,52 @@ struct ComponentProjectileSpawner
 
 struct ComponentRenderLayer
 {
-    u32 renderLayer;
+    CACHE_ALIGN(u32 renderLayer);
 };
 
 struct ComponentRigidbody
 {
-    vec3 angular_velocity, linear_velocity, gravity;
-    vec3 force_impulse, force_velocity, torque;
-    float mass, static_friction, dynamic_friction;
-    float inverse_mass, inverse_inertia;
-    ResRef solver;
-    u8 is_kinematic;
-    u8 disable_rotation;
+    CACHE_ALIGN(vec3 angular_velocity);
+    CACHE_ALIGN(u16 disable_rotation);
+    CACHE_ALIGN(f32 dynamic_friction);
+    CACHE_ALIGN(vec3 force_impulse);
+    CACHE_ALIGN(vec3 force_velocity);
+    CACHE_ALIGN(vec3 gravity);
+    CACHE_ALIGN(f32 inverse_inertia);
+    CACHE_ALIGN(f32 inverse_mass);
+    CACHE_ALIGN(u16 is_kinematic);
+    CACHE_ALIGN(vec3 linear_velocity);
+    CACHE_ALIGN(f32 mass);
+    CACHE_ALIGN(ResRef solver);
+    CACHE_ALIGN(f32 static_friction);
+    CACHE_ALIGN(vec3 torque);
 };
 
 struct ComponentSwordController
 {
+    CACHE_ALIGN(f32 charge_time);
     CACHE_ALIGN(int entity_camera);
     CACHE_ALIGN(int entity_flock);
-    CACHE_ALIGN(int weapon_state);
-    CACHE_ALIGN(int last_direction);
-    CACHE_ALIGN(float state_timer);
-    CACHE_ALIGN(float charge_time);
+    CACHE_ALIGN(s32 last_direction);
+    CACHE_ALIGN(f32 state_timer);
+    CACHE_ALIGN(s32 weapon_state);
 };
 
 typedef struct ComponentTransform
 {
     CACHE_ALIGN(vec3 forward);
-    CACHE_ALIGN(u8 has_parent);
+    CACHE_ALIGN(u16 has_parent);
     CACHE_ALIGN(mat4 model);
     CACHE_ALIGN(vec3 orientation);
     CACHE_ALIGN(int parent_entity_id);
     CACHE_ALIGN(vec3 position);
-    CACHE_ALIGN(vec3 world_position);
     CACHE_ALIGN(vec3 scale);
+    CACHE_ALIGN(vec3 world_position);
 } gsk_C_Transform;
 
 struct ComponentWeapon
 {
-    CACHE_ALIGN(float damage);
+    CACHE_ALIGN(f32 damage);
     CACHE_ALIGN(int entity_camera);
     CACHE_ALIGN(vec3 pos_starting);
     CACHE_ALIGN(vec3 rot_starting);
@@ -288,13 +273,9 @@ struct ComponentWeapon
 
 struct ComponentWeaponSway
 {
-    CACHE_ALIGN(float move_step_time);
-    CACHE_ALIGN(float sway_amount);
+    CACHE_ALIGN(f32 move_step_time);
+    CACHE_ALIGN(f32 sway_amount);
 };
-
-#if ECS_COMPONENTS_PACKED
-#pragma pack(pop)
-#endif // ECS_COMPONENTS_PACKED
 
 #ifdef __cplusplus
 }

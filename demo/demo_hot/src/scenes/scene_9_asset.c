@@ -91,14 +91,11 @@ _scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache)
                           (void *)(&(struct ComponentTransform) {
                             .position = {0.0f, 0.1f, 0.0f},
                           }));
-    _gsk_ecs_add_internal(
-      cubeEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = mat_box,
-                                         .pModel     = model_cube,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(cubeEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = mat_box,
+                            .pModel   = model_cube,
+                          }));
 #endif
 };

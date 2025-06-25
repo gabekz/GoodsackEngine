@@ -15,7 +15,8 @@
 #include "core/graphics/renderer/v1/renderer.h"
 
 #if USING_GENERATED_COMPONENTS
-#include "entity/__generated__/components_gen.h"
+//#include "entity/__generated__/components_gen.h"
+#include "gsk_generated/ecs_components_gen.h"
 
 #define _ECS_DECL_COMPONENT(_self, _id, _size) void()
 

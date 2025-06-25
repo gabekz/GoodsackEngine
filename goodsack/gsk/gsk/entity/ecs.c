@@ -14,7 +14,8 @@
 
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION
-#include "entity/__generated__/components_gen.h"
+//#include "entity/__generated__/components_gen.h"
+#include "gsk_generated/ecs_components_gen.h"
 #endif // USING_GENERATED_COMPONENTS
 
 // subroutine to safely reallocate data to new_size

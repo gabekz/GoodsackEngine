@@ -28,6 +28,32 @@
 
 using json = nlohmann::json;
 
+static std::string
+_pascal_to_snake_upper(const std::string &input)
+{
+    std::string result;
+    result.reserve(input.size() +
+                   5); // rough reserve to avoid frequent reallocs
+
+    for (size_t i = 0; i < input.size(); ++i)
+    {
+        char c       = input[i];
+        bool isUpper = std::isupper(static_cast<unsigned char>(c));
+        bool prevIsLower =
+          (i > 0 && std::islower(static_cast<unsigned char>(input[i - 1])));
+        bool nextIsLower =
+          (i + 1 < input.size() &&
+           std::islower(static_cast<unsigned char>(input[i + 1])));
+
+        if (isUpper && i > 0 && (prevIsLower || nextIsLower)) { result += '_'; }
+
+        result +=
+          static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+    }
+
+    return result;
+}
+
 entity::component::ComponentLayoutMap
 entity::component::parse_components_from_json(std::string path, u32 rawData)
 {
@@ -112,11 +138,11 @@ entity::component::parse_components_from_json(std::string path, u32 rawData)
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
 
-    // generate_cpp_types("test.h", layouts);
+    generate_cpp_types("test.h", layouts);
     return layouts;
 }
 
-#define GEN_USING_TYPEDEF 0
+#define GEN_USING_TYPEDEF 1
 
 int
 entity::component::generate_cpp_types(std::string path,
@@ -152,10 +178,15 @@ extern "C" {
     int lastComponentIndex = -1;
     for (const auto &p : map)
     {
+#if 0
         std::string componentName = p.first;
         std::for_each(componentName.begin(), componentName.end(), [](char &c) {
             c = ::toupper(c);
         });
+#else
+        std::string componentName = _pascal_to_snake_upper(p.first);
+#endif
+
         std::cout << "C_" << componentName << "," << std::endl;
         lastComponentIndex++;
     }
@@ -169,17 +200,17 @@ extern "C" {
     for (const auto &p : map)
     {
 
-        std::string componentName = p.first;
+        std::string componentName = _pascal_to_snake_upper(p.first);
 
 #if GEN_USING_TYPEDEF
         std::cout << "typedef struct "
-                  << "Component" << componentName << "_t { " << std::endl;
+                  << "Component" << p.first << " { " << std::endl;
 #else
         std::cout << "struct "
-                  << "Component" << componentName << " {" << std::endl;
+                  << "Component" << p.first << " {" << std::endl;
 #endif
 
-        ECSComponentLayout *layout = map[componentName];
+        ECSComponentLayout *layout = map[p.first];
         int lastPosition           = 0;
 
         // Create struct data
@@ -220,7 +251,7 @@ extern "C" {
 // Close struct
 #if GEN_USING_TYPEDEF
         std::cout << "} "
-                  << "Component" << componentName << ";\n"
+                  << "gsk_C_" << p.first << ";\n"
                   << std::endl;
 #else
         std::cout << "};\n" << std::endl;
@@ -259,11 +290,9 @@ extern "C" {
               << std::endl;
     for (const auto &p : map)
     {
-        std::string nameUpper = p.first;
-        std::for_each(nameUpper.begin(), nameUpper.end(), [](char &c) {
-            c = ::toupper(c);
-        });
-        std::cout << "\t_ECS_DECL_COMPONENT_INTERN(ecs, C_" << nameUpper
+        std::string componentName = _pascal_to_snake_upper(p.first);
+
+        std::cout << "\t_ECS_DECL_COMPONENT_INTERN(ecs, C_" << componentName
                   << ", sizeof(struct Component" << p.first << "));"
                   << std::endl;
     }

@@ -118,15 +118,12 @@ _scene1(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .position = {0.0f, -0.3f, 0.0f},
                             .scale    = {10.0f, 10.0f, 10.0f},
                           }));
-    _gsk_ecs_add_internal(
-      floorEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material  = matFloor,
-                                         .modelPath = "../res/models/plane.obj",
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(floorEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material  = matFloor,
+                            .modelPath = "../res/models/plane.obj",
+                          }));
 
     gsk_Entity boxEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(boxEntity,
@@ -134,15 +131,12 @@ _scene1(gsk_ECS *ecs, gsk_Renderer *renderer)
                           (void *)(&(struct ComponentTransform) {
                             .position = {0.0f, -0.085f, 0.0f},
                           }));
-    _gsk_ecs_add_internal(
-      boxEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .modelPath  = "../res/models/cube.obj",
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(boxEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material  = matBox,
+                            .modelPath = "../res/models/cube.obj",
+                          }));
 }
 
 static void
@@ -234,12 +228,9 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matGranite,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material  = matGranite,
+                            .modelPath = "../res/models/sphere.obj",
+                          }));
     gsk_Entity sphereEntity2 = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(sphereEntity2,
                           C_TRANSFORM,
@@ -249,12 +240,9 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity2,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matRust,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material  = matRust,
+                            .modelPath = "../res/models/sphere.obj",
+                          }));
 
     gsk_Entity sphereEntity3 = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(sphereEntity3,
@@ -265,12 +253,9 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity3,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matBrass,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material  = matBrass,
+                            .modelPath = "../res/models/sphere.obj",
+                          }));
     gsk_Entity sphereEntity4 = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(sphereEntity4,
                           C_TRANSFORM,
@@ -280,12 +265,9 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity4,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matGold,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material  = matGold,
+                            .modelPath = "../res/models/sphere.obj",
+                          }));
 
 #if 0
     gsk_Entity floorEntity2 = gsk_ecs_new(ecs);
@@ -299,10 +281,7 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
             C_MODEL,
             (void *)(&(struct ComponentModel) {.material   = matFloor,
                                      .modelPath  = "../demo/demo_hot/Resources/models/plane.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
+                                     }));
 #endif
 }
 
@@ -376,15 +355,12 @@ _scene4(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .position = {0.0f, 0.0f, 0.0f},
                             //.scale = {0.001f, 0.001f, 0.001f},
                           }));
-    _gsk_ecs_add_internal(
-      characterEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matCharacter,
-                                         .pModel     = modelCharacter,
-                                         .properties = {
-                                           .drawMode = DRAW_ELEMENTS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(characterEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matCharacter,
+                            .pModel   = modelCharacter,
+                          }));
     _gsk_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
@@ -530,15 +506,12 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .type = COLLIDER_SPHERE,
                           }));
 
-    _gsk_ecs_add_internal(
-      sphereEntity2,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_sphere,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(sphereEntity2,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matBox,
+                            .pModel   = model_sphere,
+                          }));
 #endif
 
 // Cube
@@ -565,15 +538,12 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .type = COLLIDER_BOX,
                           }));
 
-    _gsk_ecs_add_internal(
-      cubeEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_cube,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(cubeEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matBox,
+                            .pModel   = model_cube,
+                          }));
 
 #endif
 }
