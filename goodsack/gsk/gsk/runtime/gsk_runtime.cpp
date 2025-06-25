@@ -18,7 +18,7 @@
 #include "entity/lua/eventstore.hpp"
 #include "wrapper/lua/lua_init.hpp"
 
-#include <GoodsackEngineConfig.h> // TODO: change this
+#include "gsk_generated/GoodsackEngineConfig.h"
 
 #if GSK_RUNTIME_USE_DEBUG
 #include "tools/debug/debug_toolbar.hpp"

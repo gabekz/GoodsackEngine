@@ -5,8 +5,7 @@
 
 #include "common.h"
 
-// TODO: Move this
-#include "GoodsackEngineConfig.h"
+#include "gsk_generated/GoodsackEngineConfig.h"
 
 #define GOODSACK_LIB            "goodsack"
 #define LLIB_GOODSACK_IS_GLOBAL 1

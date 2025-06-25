@@ -101,10 +101,12 @@ set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk_data")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk/thirdparty")
 set(API_DIR "${SRC_DIR}/api/llib")
 
-set(GSK_ARCHIVE_OUT_DIR "${CMAKE_BINARY_DIR}/output/lib/archive")
+set(GSK_ARCHIVE_OUT_DIR "${CMAKE_BINARY_DIR}/output/lib_archive")
 set(GSK_LIBRARY_OUT_DIR "${CMAKE_BINARY_DIR}/output/lib")
 set(GSK_RUNTIME_OUT_DIR "${CMAKE_BINARY_DIR}/output/bin")
 set(GSK_RESOURCES_OUT_DIR "${CMAKE_BINARY_DIR}")
+
+set(GSK_GEN_OUT_DIR "${GSK_LIBRARY_OUT_DIR}/gsk_generated")
 
 set(LIB_FOLDER_PATH "GoodsackEngine/ThirdParty")
 
@@ -171,6 +173,7 @@ set_target_properties(GoodsackEngine_runtime PROPERTIES
 target_include_directories(GoodsackEngine_runtime PUBLIC 
     ${SRC_DIR}
     ${PROJECT_BINARY_DIR}
+    ${GSK_LIBRARY_OUT_DIR}
 )
 
 target_include_directories(GoodsackEngine_runtime PRIVATE
@@ -290,4 +293,4 @@ endif(GOODSACK_TEST)
 # NOTE: Should always be the last thing in our main CMakeLists.txt
 #################################################################
 
-configure_file(GoodsackEngineConfig.h.in GoodsackEngineConfig.h)
+configure_file(GoodsackEngineConfig.h.in "${GSK_GEN_OUT_DIR}/GoodsackEngineConfig.h")

@@ -7,7 +7,7 @@
 
 #include <string.h>
 
-#include <GoodsackEngineConfig.h> // We need build info
+#include "gsk_generated/GoodsackEngineConfig.h" // We need build info
 
 #include "util/logger.h"
 #include "util/sysdefs.h"

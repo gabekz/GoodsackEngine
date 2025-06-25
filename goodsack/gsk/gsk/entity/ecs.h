@@ -11,16 +11,25 @@
 #include "entity/ecsdefs.h"
 #include "util/sysdefs.h"
 
-#define _ECS_DECL_SYSTEM(_name) extern void _name##_init();
+// TODO: Fix this placement (dep-cyclical issue)
+#include "core/graphics/renderer/v1/renderer.h"
 
 #if USING_GENERATED_COMPONENTS
+#include "entity/__generated__/components_gen.h"
+
 #define _ECS_DECL_COMPONENT(_self, _id, _size) void()
+
 #define _ECS_DECL_COMPONENT_INTERN(_self, _id, _size) \
     gsk_ecs_component_register(_self, _id, _size)
+
 #else
+
 #define _ECS_DECL_COMPONENT(_self, _id, _size) \
     gsk_ecs_component_register(_self, _id, _size)
-#endif
+
+#endif // USING_GENERATED_COMPONENTS
+
+#define _ECS_DECL_SYSTEM(_name) extern void _name##_init();
 
 #define _ecs_add3(e, c, v)                    \
     ({                                        \
@@ -59,11 +68,6 @@ typedef s32 gsk_EntityLayer;
 typedef struct gsk_ECS gsk_ECS;
 
 typedef void (*gsk_ECSSubscriber)(gsk_Entity);
-
-// TODO: Fix this placement (dep-cyclical issue)
-#include <core/graphics/renderer/v1/renderer.h>
-
-#include <entity/__generated__/components_gen.h>
 
 struct gsk_Entity
 {

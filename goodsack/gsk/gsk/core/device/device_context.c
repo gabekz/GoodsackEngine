@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TODO: Move this
-#include <GoodsackEngineConfig.h>
+// TODO: possibly move this out of here
+#include "gsk_generated/GoodsackEngineConfig.h"
 
 #include "stb_image.h"
 

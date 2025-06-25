@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <GoodsackEngineConfig.h> // TODO: change this
+#include "gsk_generated/GoodsackEngineConfig.h"
 
 #include "util/array_list.h"
 #include "util/filesystem.h"
