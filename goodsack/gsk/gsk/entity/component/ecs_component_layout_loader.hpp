@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-#include "entity/component/ecs_component.hpp"
+#include "entity/component/ecs_component_layout.hpp"
 #include "util/sysdefs.h"
 
 namespace entity {

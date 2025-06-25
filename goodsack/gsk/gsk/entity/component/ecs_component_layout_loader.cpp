@@ -21,8 +21,6 @@
 #include "util/logger.h"
 #include "util/maths.h"
 
-#include "entity/component/ecs_component.hpp"
-
 // TODO: Move to thirdparty directive - gabekz/GoodsackEngine#19
 #include <nlohmann/json.hpp>
 
@@ -140,7 +138,6 @@ entity::component::parse_components_from_json(std::string path, u32 rawData)
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
 
-    generate_cpp_types("test.h", layouts);
     return layouts;
 }
 

@@ -123,12 +123,21 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 list(REMOVE_ITEM SOURCES
     "${SRC_DIR}/runtime/gsk_runtime_main.cpp"
     "${SRC_DIR}/prog/test/gsk_test_main.cpp"
+    "${SRC_DIR}/prog/test/gsk_gen_main.cpp"
 )
 
 # Lua API-only sources
 file(GLOB_RECURSE API_SOURCES CONFIGURE_DEPENDS
     "${API_DIR}/*.c"
     "${API_DIR}/*.cpp"
+)
+
+# Lua API-only sources
+file(GLOB_RECURSE GSKGEN_SOURCES CONFIGURE_DEPENDS
+    "${SRC_DIR}/prog/gsk_gen_main.cpp"
+    "${SRC_DIR}/util/logger.c"
+    "${SRC_DIR}/entity/component/ecs_component_layout.cpp"
+    "${SRC_DIR}/entity/component/ecs_component_layout_loader.cpp"
 )
 
 # For each item in our list
@@ -287,6 +296,40 @@ if(GOODSACK_TEST)
 )
     endif(UNIX)
 endif(GOODSACK_TEST)
+
+#################################################################
+# GSKGen Executable
+#################################################################
+    add_executable(GoodsackEngine_Gen ${GSKGEN_SOURCES} )
+
+    #target_include_directories(GoodsackEngine_Test PRIVATE "${SRC_DIR}")
+    target_link_libraries(GoodsackEngine_Gen
+        ThirdParty_json
+        ThirdParty_cglm
+    )
+    # TODO: May need to rework this
+    target_sources(GoodsackEngine_Gen PRIVATE "${SRC_DIR}/prog/test/gsk_gen_main.cpp")
+    target_include_directories(GoodsackEngine_Gen PRIVATE ${SRC_DIR} ${PROJECT_BINARY_DIR} ${GSK_LIBRARY_OUT_DIR})
+
+    set_target_properties(GoodsackEngine_Gen PROPERTIES FOLDER "GoodsackEngine/internal")
+    target_compile_options(GoodsackEngine_Gen PUBLIC ${GSKGEN_EXE_OPTIONS})
+
+    if(UNIX)
+        set_target_properties(GoodsackEngine_Gen
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        )
+    else()
+        set_target_properties(GoodsackEngine_Gen
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
+        LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
+        RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
+        )
+    endif(UNIX)
 
 #################################################################
 # Set configure_file
