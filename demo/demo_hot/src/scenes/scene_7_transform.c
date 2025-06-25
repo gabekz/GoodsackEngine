@@ -87,7 +87,7 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                           }));
 #if DEMO_USING_AUDIO
     _gsk_ecs_add_internal(floorEntity,
-                          C_AUDIOSOURCE,
+                          C_AUDIO_SOURCE,
                           (void *)(&(struct ComponentAudioSource) {
                             .filePath = "../res/audio/test.wav",
                             .looping  = 0,
@@ -118,7 +118,7 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
     *p_ent_player            = gsk_ecs_new(ecs);
 
 #if DEMO_USING_AUDIO
-    _gsk_ecs_add_internal(camera, C_AUDIOLISTENER, NULL);
+    _gsk_ecs_add_internal(camera, C_AUDIO_LISTENER, NULL);
 #endif // DEMO_USING_AUDIO
 
     /*
@@ -184,7 +184,7 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
         .renderLayer = 0, // DEFAULT RENDER LAYER (camera-zero)
       }));
     _gsk_ecs_add_internal(camera,
-                          C_CAMERALOOK,
+                          C_CAMERA_LOOK,
                           (void *)(&(struct ComponentCameraLook) {
                             .sensitivity = 1.0f,
                           }));
@@ -211,7 +211,7 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .parent_entity_id = pCamera->id,
                           }));
     _gsk_ecs_add_internal(weaponParent,
-                          C_WEAPONSWAY,
+                          C_WEAPON_SWAY,
                           (void *)(&(struct ComponentWeaponSway) {
                             .sway_amount = 5,
                           }));
@@ -241,7 +241,7 @@ _scene7(gsk_ECS *ecs, gsk_Renderer *renderer)
 #if DEMO_USING_MULTIPLE_CAMERAS
     // Render layer (only render on camera with specified layer)
     _gsk_ecs_add_internal(attachedEntity,
-                          C_RENDERLAYER,
+                          C_RENDER_LAYER,
                           (void *)(&(struct ComponentRenderLayer) {
                             .renderLayer = 1,
                           }));

@@ -156,8 +156,8 @@ init(gsk_Entity e)
 
     // Camera Look //
 
-    if (!(gsk_ecs_has(e, C_CAMERALOOK))) return;
-    struct ComponentCameraLook *cameraLook = gsk_ecs_get(e, C_CAMERALOOK);
+    if (!(gsk_ecs_has(e, C_CAMERA_LOOK))) return;
+    struct ComponentCameraLook *cameraLook = gsk_ecs_get(e, C_CAMERA_LOOK);
 
     cameraLook->lastX = e.ecs->renderer->windowWidth / 2;
     cameraLook->lastY = e.ecs->renderer->windowHeight / 2;
@@ -194,11 +194,11 @@ update(gsk_Entity e)
         }
     }
 
-    if (gsk_ecs_has(e, C_CAMERALOOK))
+    if (gsk_ecs_has(e, C_CAMERA_LOOK))
     {
 
         struct ComponentCameraLook *cameraLook =
-          gsk_ecs_get(e, C_CAMERALOOK); // TODO: Move away
+          gsk_ecs_get(e, C_CAMERA_LOOK); // TODO: Move away
 
         gsk_Input input = gsk_device_getInput();
         double cntX, cntY;

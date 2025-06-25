@@ -276,15 +276,15 @@ pushEntity(lua_State *L, u64 entity_index)
         __create_table_for_entity_component(
           L, "Camera", C_CAMERA, entityCompare);
     }
-    if (gsk_ecs_has(entityCompare, C_CAMERALOOK))
+    if (gsk_ecs_has(entityCompare, C_CAMERA_LOOK))
     {
         __create_table_for_entity_component(
-          L, "CameraLook", C_CAMERALOOK, entityCompare);
+          L, "CameraLook", C_CAMERA_LOOK, entityCompare);
     }
-    if (gsk_ecs_has(entityCompare, C_CAMERAMOVEMENT))
+    if (gsk_ecs_has(entityCompare, C_CAMERA_MOVEMENT))
     {
         __create_table_for_entity_component(
-          L, "CameraMovement", C_CAMERAMOVEMENT, entityCompare);
+          L, "CameraMovement", C_CAMERA_MOVEMENT, entityCompare);
     }
     if (gsk_ecs_has(entityCompare, C_TRANSFORM))
     {
@@ -296,10 +296,10 @@ pushEntity(lua_State *L, u64 entity_index)
         __create_table_for_entity_component(
           L, "Weapon", C_WEAPON, entityCompare);
     }
-    if (gsk_ecs_has(entityCompare, C_WEAPONSWAY))
+    if (gsk_ecs_has(entityCompare, C_WEAPON_SWAY))
     {
         __create_table_for_entity_component(
-          L, "WeaponSway", C_WEAPONSWAY, entityCompare);
+          L, "WeaponSway", C_WEAPON_SWAY, entityCompare);
     }
 
 #if 0

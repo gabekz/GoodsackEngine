@@ -16,7 +16,7 @@
 static void
 update(gsk_Entity e)
 {
-    if (!(gsk_ecs_has(e, C_AUDIOLISTENER))) return;
+    if (!(gsk_ecs_has(e, C_AUDIO_LISTENER))) return;
 
     // AL_CHECK(alListener3f(AL_POSITION, 0, 0, 1.0f));
     // AL_CHECK(alListener3f(AL_VELOCITY, 0, 0, 0));

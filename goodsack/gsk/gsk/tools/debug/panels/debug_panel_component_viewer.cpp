@@ -25,13 +25,13 @@ _component_type_name(ECSComponentType component_type)
     switch (component_type)
     {
     case C_ANIMATOR: return "Animator";
-    case C_AUDIOLISTENER: return "Audio Listener";
-    case C_AUDIOSOURCE: return "Audio Source";
+    case C_AUDIO_LISTENER: return "Audio Listener";
+    case C_AUDIO_SOURCE: return "Audio Source";
     case C_BANE: return "Bane";
     case C_BONE_ATTACHMENT: return "Bone Attachment";
     case C_CAMERA: return "Camera";
-    case C_CAMERALOOK: return "Camera Look";
-    case C_CAMERAMOVEMENT: return "Camera Movement";
+    case C_CAMERA_LOOK: return "Camera Look";
+    case C_CAMERA_MOVEMENT: return "Camera Movement";
     case C_COLLIDER: return "Collider";
     case C_ENEMY: return "Enemy";
     case C_ENTITY_REFERENCE: return "Entity Reference";
@@ -41,12 +41,12 @@ _component_type_name(ECSComponentType component_type)
     case C_MODEL: return "Model";
     case C_PARTICLE_EMITTER: return "Particle Emitter";
     case C_PLAYER_CONTROLLER: return "Player Controller";
-    case C_RENDERLAYER: return "Render Layer";
+    case C_RENDER_LAYER: return "Render Layer";
     case C_RIGIDBODY: return "Rigidbody";
     case C_SWORD_CONTROLLER: return "Sword Controller";
     case C_TRANSFORM: return "Transform";
     case C_WEAPON: return "Weapon";
-    case C_WEAPONSWAY: return "Weapon Sway";
+    case C_WEAPON_SWAY: return "Weapon Sway";
     default: return "None";
     }
 }
@@ -342,28 +342,28 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         DragFloat("Far", &p.farZ, 1, 0, 1000);
     }
 
-    else if (cmp_type == C_CAMERALOOK)
+    else if (cmp_type == C_CAMERA_LOOK)
     {
         struct ComponentCameraLook &p =
           *(static_cast<struct ComponentCameraLook *>(
-            gsk_ecs_get(e, C_CAMERALOOK)));
+            gsk_ecs_get(e, C_CAMERA_LOOK)));
         DragFloat("Sensitivity", &p.sensitivity, 0.45f, 0.9f);
     }
 
-    else if (cmp_type == C_CAMERAMOVEMENT)
+    else if (cmp_type == C_CAMERA_MOVEMENT)
     {
         struct ComponentCameraMovement &p =
           *(static_cast<struct ComponentCameraMovement *>(
-            gsk_ecs_get(e, C_CAMERAMOVEMENT)));
+            gsk_ecs_get(e, C_CAMERA_MOVEMENT)));
         DragFloat("Speed ", &p.speed, 0.45f, 0.9f);
     }
 
-    else if (cmp_type == C_AUDIOSOURCE)
+    else if (cmp_type == C_AUDIO_SOURCE)
     {
         // wow, this is ridiculous..
         struct ComponentAudioSource &a =
           *(static_cast<struct ComponentAudioSource *>(
-            gsk_ecs_get(e, C_AUDIOSOURCE)));
+            gsk_ecs_get(e, C_AUDIO_SOURCE)));
         // DragFloat("FOV", &a.volume, 0.45f, 0.9f);
         // DragFloat("Gain", a.gain, 0.1f, -3000, 3000);
         // DragFloat("Pitch", a.pitch, 0.1f, -3000, 3000);

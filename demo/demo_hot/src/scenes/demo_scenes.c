@@ -32,12 +32,12 @@ __create_camera_entity(gsk_ECS *ecs, vec3 position)
         .renderLayer = 0, // DEFAULT RENDER LAYER (camera-zero)
       }));
     _gsk_ecs_add_internal(camera,
-                          C_CAMERALOOK,
+                          C_CAMERA_LOOK,
                           (void *)(&(struct ComponentCameraLook) {
                             .sensitivity = 1.0f,
                           }));
     _gsk_ecs_add_internal(camera,
-                          C_CAMERAMOVEMENT,
+                          C_CAMERA_MOVEMENT,
                           (void *)(&(struct ComponentCameraMovement) {
                             .speed = 5.0f,
                           }));

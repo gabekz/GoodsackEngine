@@ -413,10 +413,10 @@ render(gsk_Entity e)
     struct ComponentModel *model         = gsk_ecs_get(e, C_MODEL);
 
     u32 renderLayer = 0; // DEFAULT RENDER LAYER when not specified.
-    if (gsk_ecs_has(e, C_RENDERLAYER))
+    if (gsk_ecs_has(e, C_RENDER_LAYER))
     {
         renderLayer =
-          (u32)((struct ComponentRenderLayer *)gsk_ecs_get(e, C_RENDERLAYER))
+          (u32)((struct ComponentRenderLayer *)gsk_ecs_get(e, C_RENDER_LAYER))
             ->renderLayer;
     }
     // TODO: Depth for renderlayer

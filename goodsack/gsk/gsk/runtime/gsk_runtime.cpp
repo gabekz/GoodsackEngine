@@ -462,15 +462,15 @@ gsk::runtime::rt_loop()
         entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERA,
                                                                    "Camera");
         entity::LuaEventStore::GetInstance().RegisterComponentList(
-          C_CAMERALOOK, "CameraLook");
+          C_CAMERA_LOOK, "CameraLook");
         entity::LuaEventStore::GetInstance().RegisterComponentList(
-          C_CAMERAMOVEMENT, "CameraMovement");
+          C_CAMERA_MOVEMENT, "CameraMovement");
         entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
                                                                    "Transform");
         entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
                                                                    "Weapon");
         entity::LuaEventStore::GetInstance().RegisterComponentList(
-          C_WEAPONSWAY, "WeaponSway");
+          C_WEAPON_SWAY, "WeaponSway");
 
         // ECS Lua Init
         entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE

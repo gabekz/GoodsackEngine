@@ -28,10 +28,10 @@
 static void
 init(gsk_Entity e)
 {
-    if (!(gsk_ecs_has(e, C_AUDIOSOURCE))) return;
+    if (!(gsk_ecs_has(e, C_AUDIO_SOURCE))) return;
 
     struct ComponentAudioSource *cmp_audio_source =
-      gsk_ecs_get(e, C_AUDIOSOURCE);
+      gsk_ecs_get(e, C_AUDIO_SOURCE);
 
     cmp_audio_source->buffer_source = openal_generate_source();
 
@@ -75,9 +75,9 @@ init(gsk_Entity e)
 static void
 update(gsk_Entity e)
 {
-    if (!(gsk_ecs_has(e, C_AUDIOSOURCE))) return;
+    if (!(gsk_ecs_has(e, C_AUDIO_SOURCE))) return;
     struct ComponentAudioSource *cmp_audio_source =
-      gsk_ecs_get(e, C_AUDIOSOURCE);
+      gsk_ecs_get(e, C_AUDIO_SOURCE);
 
 // Update position relative to transform
 #if 1
@@ -140,7 +140,7 @@ update(gsk_Entity e)
 static void
 destroy(gsk_Entity entity)
 {
-    if (!(gsk_ecs_has(entity, C_AUDIOSOURCE))) return;
+    if (!(gsk_ecs_has(entity, C_AUDIO_SOURCE))) return;
     // LOG_INFO("Destroy");
 }
 

@@ -15,13 +15,13 @@ extern "C" {
 
 typedef enum ECSComponentType_t {
     C_ANIMATOR,
-    C_AUDIOLISTENER,
-    C_AUDIOSOURCE,
+    C_AUDIO_LISTENER,
+    C_AUDIO_SOURCE,
     C_BANE,
     C_BONE_ATTACHMENT,
     C_CAMERA,
-    C_CAMERALOOK,
-    C_CAMERAMOVEMENT,
+    C_CAMERA_LOOK,
+    C_CAMERA_MOVEMENT,
     C_COLLIDER,
     C_ENEMY,
     C_ENTITY_REFERENCE,
@@ -32,12 +32,12 @@ typedef enum ECSComponentType_t {
     C_PARTICLE_EMITTER,
     C_PLAYER_CONTROLLER,
     C_PROJECTILE_SPAWNER,
-    C_RENDERLAYER,
+    C_RENDER_LAYER,
     C_RIGIDBODY,
     C_SWORD_CONTROLLER,
     C_TRANSFORM,
     C_WEAPON,
-    C_WEAPONSWAY,
+    C_WEAPON_SWAY,
 } ECSComponentType;
 
 #define ECSCOMPONENT_LAST 23
@@ -295,17 +295,17 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_ANIMATOR, sizeof(struct ComponentAnimator));
     _ECS_DECL_COMPONENT_INTERN(
-      ecs, C_AUDIOLISTENER, sizeof(struct ComponentAudioListener));
+      ecs, C_AUDIO_LISTENER, sizeof(struct ComponentAudioListener));
     _ECS_DECL_COMPONENT_INTERN(
-      ecs, C_AUDIOSOURCE, sizeof(struct ComponentAudioSource));
+      ecs, C_AUDIO_SOURCE, sizeof(struct ComponentAudioSource));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_BANE, sizeof(struct ComponentBane));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_BONE_ATTACHMENT, sizeof(struct ComponentBoneAttachment));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_CAMERA, sizeof(struct ComponentCamera));
     _ECS_DECL_COMPONENT_INTERN(
-      ecs, C_CAMERALOOK, sizeof(struct ComponentCameraLook));
+      ecs, C_CAMERA_LOOK, sizeof(struct ComponentCameraLook));
     _ECS_DECL_COMPONENT_INTERN(
-      ecs, C_CAMERAMOVEMENT, sizeof(struct ComponentCameraMovement));
+      ecs, C_CAMERA_MOVEMENT, sizeof(struct ComponentCameraMovement));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_COLLIDER, sizeof(struct ComponentCollider));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_ENEMY, sizeof(struct ComponentEnemy));
@@ -323,7 +323,7 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_PROJECTILE_SPAWNER, sizeof(struct ComponentProjectileSpawner));
     _ECS_DECL_COMPONENT_INTERN(
-      ecs, C_RENDERLAYER, sizeof(struct ComponentRenderLayer));
+      ecs, C_RENDER_LAYER, sizeof(struct ComponentRenderLayer));
     _ECS_DECL_COMPONENT_INTERN(
       ecs, C_RIGIDBODY, sizeof(struct ComponentRigidbody));
     _ECS_DECL_COMPONENT_INTERN(
@@ -332,7 +332,7 @@ _ecs_init_internal_gen(gsk_ECS *ecs)
       ecs, C_TRANSFORM, sizeof(struct ComponentTransform));
     _ECS_DECL_COMPONENT_INTERN(ecs, C_WEAPON, sizeof(struct ComponentWeapon));
     _ECS_DECL_COMPONENT_INTERN(
-      ecs, C_WEAPONSWAY, sizeof(struct ComponentWeaponSway));
+      ecs, C_WEAPON_SWAY, sizeof(struct ComponentWeaponSway));
 }
 
 #ifdef __cplusplus
