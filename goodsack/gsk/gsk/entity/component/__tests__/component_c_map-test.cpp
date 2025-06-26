@@ -60,8 +60,8 @@ struct ComponentCMapTest : testing::Test
 
     ComponentCMapTest()
     {
-        m_Layouts =
-          entity::component::parse_components_from_json(rawComponentData, 1);
+        entity::component::parse_components_from_json(
+          m_Layouts, rawComponentData, 1);
     }
     virtual ~ComponentCMapTest() { m_Layouts.clear(); }
 };

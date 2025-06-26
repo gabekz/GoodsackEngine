@@ -71,8 +71,8 @@ LuaEventStore::Initialize(lua_State *L, gsk_ECS *ecs)
     s_Instance.m_tableId = luaL_ref(L, LUA_REGISTRYINDEX);
     s_Instance.m_Lua     = L;
 
-    s_Instance.m_Layouts = entity::component::parse_components_from_json(
-      GSK_PATH("gsk://components.json"));
+    entity::component::parse_components_from_json(
+      s_Instance.m_Layouts, GSK_PATH("gsk://components.json"));
 
     // TODO: More testing
     s_Instance.m_ecs = ecs;

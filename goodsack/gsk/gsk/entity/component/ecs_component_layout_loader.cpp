@@ -52,10 +52,10 @@ _pascal_to_snake_upper(const std::string &input)
     return result;
 }
 
-// TODO: take in a map rather than creating one here
 // TODO: check if this is a file rather that rawData param
-entity::component::ComponentLayoutMap
-entity::component::parse_components_from_json(std::string path, u32 rawData)
+void
+entity::component::parse_components_from_json(
+  entity::component::ComponentLayoutMap &layouts, std::string path, u32 rawData)
 {
     json JSON;
 
@@ -96,8 +96,6 @@ entity::component::parse_components_from_json(std::string path, u32 rawData)
 
     // ----------------------------------------------------------
 
-    std::map<std::string, ECSComponentLayout *> layouts;
-
     // Loop through every component
     for (auto &cmp : JSON.items())
     {
@@ -137,13 +135,11 @@ entity::component::parse_components_from_json(std::string path, u32 rawData)
         component->SetData(data);
         layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
     }
-
-    return layouts;
 }
 
 #define GEN_USING_TYPEDEF 1
 
-int
+bool
 entity::component::generate_cpp_types(std::string path,
                                       entity::component::ComponentLayoutMap map)
 {
@@ -324,10 +320,10 @@ extern "C" {
     if (!out)
     {
         LOG_CRITICAL("Failed to open %s", path.c_str());
-        return 0;
+        return false;
     }
 
     out << buff.str();
 
-    return 1;
+    return true;
 }

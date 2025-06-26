@@ -86,6 +86,8 @@ static struct
         u8 is_lua_running;
     } status;
 
+    char bin_directory[256] = "";
+
 } s_runtime;
 } // extern "C"
 
@@ -178,16 +180,28 @@ gsk::runtime::rt_setup(const char *root_dir,
                        int argc,
                        char *argv[])
 {
+    /*==== Get binary directory + log path ===========================*/
+
+    strcpy(s_runtime.bin_directory, argv[0]);
+    gsk_filesystem_str_to_forward_slash(s_runtime.bin_directory);
+    gsk_filesystem_strip_filename(s_runtime.bin_directory);
+
+    char log_path[256] = "";
+    sprintf(log_path, "%s/log.txt", s_runtime.bin_directory);
+
     /*==== Initialize Logger =========================================*/
 
     int logStat = logger_initConsoleLogger(NULL);
-    // logger_initFileLogger(exe_path.c_str(), 0, 0);
+    logger_initFileLogger(log_path, 0, 0);
 
     logger_setLevel(LogLevel_DEBUG);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
     LOG_INFO("Root directory: %s", root_dir);
+
+    LOG_INFO("PATH: %s", s_runtime.bin_directory);
+    LOG_INFO("LOG_PATH: %s", log_path);
 
     s_runtime.cache_cnt          = 0; // TODO: Change this.
     s_runtime.options.fs_mode    = 0; // TODO: Change this.
@@ -545,7 +559,7 @@ gsk::runtime::rt_loop()
         }
     }
 
-    LOG_TRACE("Closing Application");
+    LOG_INFO("Closing Application");
 
 //
 // Cleanup

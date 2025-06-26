@@ -17,10 +17,12 @@ namespace component {
 
 typedef std::map<std::string, ECSComponentLayout *> ComponentLayoutMap;
 
-ComponentLayoutMap
-parse_components_from_json(std::string path, u32 rawData = 0);
+void
+parse_components_from_json(ComponentLayoutMap &layouts,
+                           std::string path,
+                           u32 rawData = 0);
 
-int
+bool
 generate_cpp_types(std::string path, ComponentLayoutMap map);
 
 }; // namespace component

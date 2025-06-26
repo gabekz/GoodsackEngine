@@ -101,9 +101,15 @@ set(RES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk_data")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/goodsack/gsk/thirdparty")
 set(API_DIR "${SRC_DIR}/api/llib")
 
-set(GSK_ARCHIVE_OUT_DIR "${CMAKE_BINARY_DIR}/output/lib_archive")
-set(GSK_LIBRARY_OUT_DIR "${CMAKE_BINARY_DIR}/output/lib")
-set(GSK_RUNTIME_OUT_DIR "${CMAKE_BINARY_DIR}/output/bin")
+if(UNIX)
+set(_GSK_BUILD_OUT_DIR "${CMAKE_BINARY_DIR}")
+else()
+set(_GSK_BUILD_OUT_DIR "${CMAKE_BINARY_DIR}/output")
+endif(UNIX)
+
+set(GSK_ARCHIVE_OUT_DIR "${_GSK_BUILD_OUT_DIR}/lib_archive")
+set(GSK_LIBRARY_OUT_DIR "${_GSK_BUILD_OUT_DIR}/lib")
+set(GSK_RUNTIME_OUT_DIR "${_GSK_BUILD_OUT_DIR}/bin")
 set(GSK_RESOURCES_OUT_DIR "${CMAKE_BINARY_DIR}")
 
 set(GSK_GEN_OUT_DIR "${GSK_LIBRARY_OUT_DIR}/gsk_generated")
@@ -279,22 +285,13 @@ if(GOODSACK_TEST)
     set_tests_properties(GoodsackEngine_Test PROPERTIES
         WORKING_DIRECTORY "${SRC_DIR}")
 
-    if(UNIX)
-        set_target_properties(GoodsackEngine_Test
-        PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-        )
-    else()
-        set_target_properties(GoodsackEngine_Test
-        PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
-        LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
-        RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
-        RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
-)
-    endif(UNIX)
+    set_target_properties(GoodsackEngine_Test
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
+    RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
+    RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR})
+
 endif(GOODSACK_TEST)
 
 #################################################################
@@ -314,22 +311,12 @@ endif(GOODSACK_TEST)
     set_target_properties(GoodsackEngine_Gen PROPERTIES FOLDER "GoodsackEngine/internal")
     target_compile_options(GoodsackEngine_Gen PUBLIC ${GSKGEN_EXE_OPTIONS})
 
-    if(UNIX)
-        set_target_properties(GoodsackEngine_Gen
-        PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-        )
-    else()
-        set_target_properties(GoodsackEngine_Gen
-        PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
-        LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
-        RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
-        RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR}
-        )
-    endif(UNIX)
+    set_target_properties(GoodsackEngine_Gen
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${GSK_ARCHIVE_OUT_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${GSK_LIBRARY_OUT_DIR}
+    RUNTIME_OUTPUT_DIRECTORY ${GSK_RUNTIME_OUT_DIR}
+    RESOURCES_OUTPUT_DIRECTORY ${GSK_RESOURCES_OUT_DIR})
 
 #################################################################
 # Set configure_file

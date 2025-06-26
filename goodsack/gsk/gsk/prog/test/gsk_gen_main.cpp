@@ -11,7 +11,6 @@
 int
 main(int argc, char **argv)
 {
-
     int logStat = logger_initConsoleLogger(NULL);
 
     logger_setLevel(LogLevel_TRACE);
@@ -20,14 +19,24 @@ main(int argc, char **argv)
     if (logStat == 0) { exit(1); }
 
     LOG_INFO("Initialized Console Logger");
-    LOG_INFO("Begin Test Application");
+    LOG_INFO("Begin GSK_GEN Application");
 
-    using namespace entity::component;
+    // Generate ECS Types
+    {
+        using namespace entity::component;
 
-    ComponentLayoutMap map =
-      parse_components_from_json(_GOODSACK_FS_DIR_DATA "/components.json", 0);
+        ComponentLayoutMap map;
 
-    generate_cpp_types(_GOODSACK_FS_DIR_GEN "/ecs_components_gen.h", map);
+        parse_components_from_json(map,
+                                   _GOODSACK_FS_DIR_DATA "/components.json");
+
+        // TODO: parse_components for arg path passed in
+
+        bool result =
+          generate_cpp_types(_GOODSACK_FS_DIR_GEN "/ecs_components_gen.h", map);
+
+        if (!result) { LOG_ERROR("Failed to generate ECS types!"); }
+    }
 
     return 0;
 }
