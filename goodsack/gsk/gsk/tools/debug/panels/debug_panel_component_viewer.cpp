@@ -15,7 +15,7 @@
 
 #include <runtime/gsk_runtime.hpp>
 
-#include "entity/__generated__/components_gen.h"
+#include "gsk_generated/ecs_components_gen.h"
 
 #include <imgui.h>
 
