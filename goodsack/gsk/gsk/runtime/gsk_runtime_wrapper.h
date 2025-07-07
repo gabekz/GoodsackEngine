@@ -35,6 +35,9 @@ gsk_runtime_get_hovered_entity_id();
 void
 gsk_runtime_set_debug_entity_id(gsk_EntityId entity_id);
 
+void *
+gsk_runtime_get_lua_state();
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

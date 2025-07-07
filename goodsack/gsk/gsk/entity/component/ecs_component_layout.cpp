@@ -11,9 +11,11 @@
 
 #include "entity/ecsdefs.h"
 
-entity::ECSComponentLayout::ECSComponentLayout(const char *name)
+entity::ECSComponentLayout::ECSComponentLayout(const char *name,
+                                               const char *scheme)
 {
     strcpy(m_Name, name);
+    strcpy(m_Scheme, scheme);
 
 #if 0
     char newNameType[256];

@@ -44,6 +44,8 @@
 #include "core/audio/music_composer_loader.hpp"
 #endif // GSK_USING_COMPOSER
 
+#include "entity/ecs.h"
+
 #define _TOTAL_ASSET_CACHES 2
 #define _TEST_WRITE_PNG     0
 
@@ -192,7 +194,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     /*==== Initialize Logger =========================================*/
 
     int logStat = logger_initConsoleLogger(NULL);
-    logger_initFileLogger(log_path, 0, 0);
+    // logger_initFileLogger(log_path, 0, 0);
 
     logger_setLevel(LogLevel_DEBUG);
     logger_setDetail(LogDetail_SIMPLE);
@@ -469,22 +471,15 @@ gsk::runtime::rt_loop()
     if (s_runtime.status.is_lua_running)
     {
         // Register components in Lua ECS
-        // TODO: automate
+        // TODO: automate (for each component and grab name)
 
         entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
-
-        entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERA,
-                                                                   "Camera");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(
-          C_CAMERA_LOOK, "CameraLook");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(
-          C_CAMERA_MOVEMENT, "CameraMovement");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
-                                                                   "Transform");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
-                                                                   "Weapon");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(
-          C_WEAPON_SWAY, "WeaponSway");
+        for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
+        {
+            ECSComponentType type = (ECSComponentType)(i);
+            entity::LuaEventStore::GetInstance().RegisterComponentList(
+              type, gsk_ecs_get_component_name(type));
+        }
 
         // ECS Lua Init
         entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
@@ -745,4 +740,12 @@ gsk::runtime::rt_set_debug_entity_id(gsk_EntityId entity_id)
         LOG_TRACE("set RT debug entity_id to: %d",
                   s_runtime.selected_entity_id);
     }
+}
+
+void *
+gsk::runtime::rt_get_lua_state()
+{
+    if (!s_runtime.status.is_lua_running) { return NULL; }
+
+    return entity::LuaEventStore::getLuaState();
 }

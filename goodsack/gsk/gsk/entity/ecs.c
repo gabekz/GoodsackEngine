@@ -416,3 +416,9 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
     // TODO: determine whether or not there is a required component.
     // Go through that list instead of every entity.
 }
+
+const char *
+gsk_ecs_get_component_name(ECSComponentType component_id)
+{
+    return _ECSCOMPONENT_NAMES[component_id];
+}

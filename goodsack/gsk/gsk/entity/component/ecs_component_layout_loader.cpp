@@ -17,6 +17,7 @@
 #include <string>
 
 #include <stdlib.h>
+#include <vector>
 
 #include "util/logger.h"
 #include "util/maths.h"
@@ -55,7 +56,11 @@ _pascal_to_snake_upper(const std::string &input)
 // TODO: check if this is a file rather that rawData param
 void
 entity::component::parse_components_from_json(
-  entity::component::ComponentLayoutMap &layouts, std::string path, u32 rawData)
+  entity::component::ComponentLayoutMap &layouts_map,
+  entity::component::ComponentLayoutsContainer &layouts_container,
+  std::string path,
+  std::string scheme,
+  u32 rawData)
 {
     json JSON;
 
@@ -99,9 +104,8 @@ entity::component::parse_components_from_json(
     // Loop through every component
     for (auto &cmp : JSON.items())
     {
-        // Component Layout
-        ECSComponentLayout *component =
-          new ECSComponentLayout(cmp.key().c_str());
+        layouts_container.push_back(
+          new ECSComponentLayout(cmp.key().c_str(), scheme.c_str()));
 
         // Component Layout Data
         std::map<std::string, Accessor> data;
@@ -132,16 +136,22 @@ entity::component::parse_components_from_json(
             }
         }
 
-        component->SetData(data);
-        layouts[cmp.key()] = component; // i.e, layouts["ComponentTransform"]
+        int layout_index = layouts_container.size() - 1;
+
+        ECSComponentLayout *p_layout = layouts_container.at(layout_index);
+        p_layout->SetData(data);
+
+        layouts_map[cmp.key()] =
+          layout_index; // i.e, layouts["ComponentTransform"]
     }
 }
 
 #define GEN_USING_TYPEDEF 1
 
 bool
-entity::component::generate_cpp_types(std::string path,
-                                      entity::component::ComponentLayoutMap map)
+entity::component::generate_cpp_types(
+  std::string path,
+  entity::component::ComponentLayoutsContainer layouts_container)
 {
     std::ostringstream buff;
 
@@ -164,8 +174,7 @@ extern "C" {
 
 //typedef (void *)(ResRef)
 #define ResRef void *
-
-        )";
+)";
 
     // Write header
     buff << header << "\n";
@@ -174,7 +183,7 @@ extern "C" {
     buff << "typedef enum ECSComponentType_t {\n";
 
     int lastComponentIndex = -1;
-    for (const auto &p : map)
+    for (const auto &p : layouts_container)
     {
 #if 0
         std::string componentName = p.first;
@@ -182,7 +191,7 @@ extern "C" {
             c = ::toupper(c);
         });
 #else
-        std::string componentName = _pascal_to_snake_upper(p.first);
+        std::string componentName = _pascal_to_snake_upper(p->getName());
 #endif
 
         buff << "C_" << componentName << ",\n";
@@ -194,19 +203,19 @@ extern "C" {
     buff << "#define ECSCOMPONENT_LAST " << lastComponentIndex << "\n\n";
 
     // Create struct for each ECS Component Type
-    for (const auto &p : map)
+    for (const auto &p : layouts_container)
     {
-        std::string componentName = _pascal_to_snake_upper(p.first);
+        std::string componentName = _pascal_to_snake_upper(p->getName());
 
 #if GEN_USING_TYPEDEF
         buff << "typedef struct "
-             << "Component" << p.first << " { \n";
+             << "Component" << p->getName() << " { \n";
 #else
         buff << "struct "
              << "Component" << p.first << " {\n";
 #endif
 
-        ECSComponentLayout *layout = map[p.first];
+        ECSComponentLayout *layout = p;
         int lastPosition           = 0;
 
         // Create struct data
@@ -247,25 +256,23 @@ extern "C" {
 
 // Close struct
 #if GEN_USING_TYPEDEF
-        buff << "} "
-             << "gsk_C_" << p.first << ";\n\n";
+        buff << "} " << layout->getScheme() << "_C_" << p->getName() << ";\n\n";
 #else
         buff << "};\n\n";
 #endif
     }
+
     // Footer
     std::string footer = R"(
-
 #ifdef __cplusplus
 }
 #endif //__cplusplus
 
 #endif //H_COMPONENTS_GEN
-
 )";
 
     // Write footer
-    buff << footer << "\n";
+    buff << footer;
 
     // PART 2 - components_gen_register.h
     // Header2
@@ -275,21 +282,32 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif //__cplusplus
-
-        )";
+)";
 
     // Write header
-    buff << header2 << "\n";
+    buff << header2;
+
+    // create static _ECSCOMPONENT_NAMES[]
+    {
+        buff << "static const char *_ECSCOMPONENT_NAMES[] = {\n";
+        for (const auto &p : layouts_container)
+        {
+            std::string componentName = p->getName();
+
+            buff << "\"" << componentName << "\",\n";
+        }
+        buff << "};\n\n";
+    }
 
     // Create initializer Component Register
     buff << "static inline void\n_ecs_init_internal_gen(gsk_ECS *ecs) {\n";
 
-    for (const auto &p : map)
+    for (const auto &p : layouts_container)
     {
-        std::string componentName = _pascal_to_snake_upper(p.first);
+        std::string componentName = _pascal_to_snake_upper(p->getName());
 
         buff << "\t_ECS_DECL_COMPONENT_INTERN(ecs, C_" << componentName
-             << ", sizeof(struct Component" << p.first << "));\n";
+             << ", sizeof(struct Component" << p->getName() << "));\n";
     }
     buff << "}\n";
 
@@ -305,14 +323,12 @@ extern "C" {
 
     // Footer2
     std::string footer2 = R"(
-
 #ifdef __cplusplus
 }
 #endif //__cplusplus
 
 #endif //COMPONENTS_GEN_IMPLEMENTATION
-
-        )";
+)";
     // Write footer
     buff << footer2;
 

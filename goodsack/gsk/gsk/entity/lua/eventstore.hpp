@@ -30,7 +30,13 @@ class LuaEventStore {
 
     static ECSComponentLayout &getLayout(const char *layout)
     {
-        return *LuaEventStore::GetInstance().m_Layouts[layout];
+        LuaEventStore &p_instance = LuaEventStore::GetInstance();
+        return *p_instance.m_LayoutsContainer.at(p_instance.m_Layouts[layout]);
+    };
+
+    static lua_State *getLuaState()
+    {
+        return LuaEventStore::GetInstance().m_Lua;
     };
 
     // TEST
@@ -64,7 +70,8 @@ class LuaEventStore {
    private:
     LuaEventStore();
     static LuaEventStore s_Instance;
-    std::map<std::string, ECSComponentLayout *> m_Layouts;
+    entity::component::ComponentLayoutMap m_Layouts;
+    entity::component::ComponentLayoutsContainer m_LayoutsContainer;
 
     int m_tableId;
     lua_State *m_Lua;

@@ -8,6 +8,8 @@
 #include "entity/component/ecs_component_layout_loader.hpp"
 #include "util/logger.h"
 
+#include <string>
+
 int
 main(int argc, char **argv)
 {
@@ -21,19 +23,36 @@ main(int argc, char **argv)
     LOG_INFO("Initialized Console Logger");
     LOG_INFO("Begin GSK_GEN Application");
 
+    char path_proj_components[256] = "";
+    bool path_proj                 = false;
+    {
+        if (argc > 1)
+        {
+            sprintf(path_proj_components, "%s", argv[1]);
+            path_proj = true;
+        }
+    }
+
     // Generate ECS Types
     {
         using namespace entity::component;
 
         ComponentLayoutMap map;
+        ComponentLayoutsContainer container;
 
-        parse_components_from_json(map,
-                                   _GOODSACK_FS_DIR_DATA "/components.json");
+        parse_components_from_json(
+          map, container, _GOODSACK_FS_DIR_DATA "/components.json", "gsk");
+
+        if (path_proj)
+        {
+            parse_components_from_json(
+              map, container, path_proj_components, "zhr");
+        }
 
         // TODO: parse_components for arg path passed in
 
-        bool result =
-          generate_cpp_types(_GOODSACK_FS_DIR_GEN "/ecs_components_gen.h", map);
+        bool result = generate_cpp_types(
+          _GOODSACK_FS_DIR_GEN "/ecs_components_gen.h", container);
 
         if (!result) { LOG_ERROR("Failed to generate ECS types!"); }
     }

@@ -159,6 +159,9 @@ gsk_ecs_component_register(gsk_ECS *self, u32 component_id, u64 size);
 void
 gsk_ecs_event(gsk_ECS *self, enum ECSEvent event);
 
+const char *
+gsk_ecs_get_component_name(ECSComponentType component_id);
+
 #ifdef __cplusplus
 }
 #endif

@@ -43,7 +43,7 @@ typedef struct Accessor_t
 
 class ECSComponentLayout {
    public:
-    ECSComponentLayout(const char *name);
+    ECSComponentLayout(const char *name, const char *scheme);
     ~ECSComponentLayout();
 
     void SetData(std::map<std::string, Accessor> data);
@@ -52,12 +52,14 @@ class ECSComponentLayout {
     Accessor getAccessor(std::string var) { return m_Variables[var]; };
     ulong getSizeReq() { return m_SizeReq; };
     const char *getName() { return m_Name; };
+    const char *getScheme() { return m_Scheme; };
 
    private:
     std::map<std::string, Accessor> m_Variables;
     ulong m_SizeReq;
     char m_Name[256];
     char m_NameType[256];
+    char m_Scheme[256];
 };
 
 }; // namespace entity

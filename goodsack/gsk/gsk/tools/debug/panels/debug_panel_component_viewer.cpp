@@ -19,38 +19,6 @@
 
 #include <imgui.h>
 
-static std::string
-_component_type_name(ECSComponentType component_type)
-{
-    switch (component_type)
-    {
-    case C_ANIMATOR: return "Animator";
-    case C_AUDIO_LISTENER: return "Audio Listener";
-    case C_AUDIO_SOURCE: return "Audio Source";
-    case C_BANE: return "Bane";
-    case C_BONE_ATTACHMENT: return "Bone Attachment";
-    case C_CAMERA: return "Camera";
-    case C_CAMERA_LOOK: return "Camera Look";
-    case C_CAMERA_MOVEMENT: return "Camera Movement";
-    case C_COLLIDER: return "Collider";
-    case C_ENEMY: return "Enemy";
-    case C_ENTITY_REFERENCE: return "Entity Reference";
-    case C_FLAMMABLE: return "Flammable";
-    case C_HEALTH: return "Health";
-    case C_LIGHT: return "Light";
-    case C_MODEL: return "Model";
-    case C_PARTICLE_EMITTER: return "Particle Emitter";
-    case C_PLAYER_CONTROLLER: return "Player Controller";
-    case C_RENDER_LAYER: return "Render Layer";
-    case C_RIGIDBODY: return "Rigidbody";
-    case C_SWORD_CONTROLLER: return "Sword Controller";
-    case C_TRANSFORM: return "Transform";
-    case C_WEAPON: return "Weapon";
-    case C_WEAPON_SWAY: return "Weapon Sway";
-    default: return "None";
-    }
-}
-
 static void
 _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 {
@@ -112,6 +80,7 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         EndDisabled();
     }
 
+#if 0
     else if (cmp_type == C_FLAMMABLE)
     {
         struct ComponentFlammable &p =
@@ -126,6 +95,7 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         Checkbox("is_burning", (bool *)&p.is_burning);
         EndDisabled();
     }
+#endif
 
     else if (cmp_type == C_HEALTH)
     {
@@ -164,9 +134,9 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         PopStyleColor();
         Separator();
 
-        BeginDisabled();
-        InputText("Model Path", (char *)p.modelPath, 128);
-        EndDisabled();
+        // BeginDisabled();
+        // InputText("Model Path", (char *)p.modelPath, 128);
+        // EndDisabled();
 
         // Mesh information
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
@@ -518,7 +488,7 @@ gsk::tools::panels::ComponentViewer::draw(void)
         // skip if entity does not have component
         if (!(gsk_ecs_has(e, cmp_type))) continue;
 
-        std::string _cmp_name = _component_type_name(cmp_type);
+        std::string _cmp_name = gsk_ecs_get_component_name(cmp_type);
 
         if (CollapsingHeader(_cmp_name.c_str()))
         {

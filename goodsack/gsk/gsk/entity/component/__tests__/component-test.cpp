@@ -25,6 +25,8 @@
 
 #include <gtest/gtest.h>
 
+#define _GET_CMP(x) *m_LayoutsContainer.at(m_Layouts[x])
+
 using namespace entity;
 
 struct ComponentLoaderTest : testing::Test
@@ -64,20 +66,21 @@ struct ComponentLoaderTest : testing::Test
 }
 )";
 
-    std::map<std::string, ECSComponentLayout *> m_Layouts;
+    std::map<std::string, int> m_Layouts;
+    std::vector<ECSComponentLayout *> m_LayoutsContainer;
 
     ComponentLoaderTest()
     {
         entity::component::parse_components_from_json(
-          m_Layouts, rawComponentData, 1);
+          m_Layouts, m_LayoutsContainer, rawComponentData, "gsk", 1);
     }
     virtual ~ComponentLoaderTest() { m_Layouts.clear(); }
 };
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Numeric)
 {
-    ECSComponent *p  = new ECSComponent(*m_Layouts["ComponentTransform"]);
-    ECSComponent *p2 = new ECSComponent(*m_Layouts["ComponentCamera"]);
+    ECSComponent *p  = new ECSComponent(_GET_CMP("ComponentTransform"));
+    ECSComponent *p2 = new ECSComponent(_GET_CMP("ComponentCamera"));
 
     int value, newValue = 70;
     ASSERT_TRUE(p->SetVariable("uboId", &newValue));
@@ -95,7 +98,7 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Numeric)
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Vec3)
 {
-    ECSComponent *p = new ECSComponent(*m_Layouts["ComponentCamera"]);
+    ECSComponent *p = new ECSComponent(_GET_CMP("ComponentCamera"));
 
     vec3 vectorA = {0.25f, 5.8f, 1.0f};
     vec3 vectorB = GLM_VEC3_ZERO_INIT;
@@ -111,7 +114,7 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Vec3)
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Vec3_Exp)
 {
-    ECSComponent *p = new ECSComponent(*m_Layouts["ComponentCameraExpanded"]);
+    ECSComponent *p = new ECSComponent(_GET_CMP("ComponentCameraExpanded"));
 
     vec3 vectorA = {0.25f, 5.8f, 1.0f};
     vec3 vectorB = GLM_VEC3_ZERO_INIT;
@@ -127,7 +130,7 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Vec3_Exp)
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_3x3_Data)
 {
-    ECSComponent *p = new ECSComponent(*m_Layouts["ComponentMat3Test"]);
+    ECSComponent *p = new ECSComponent(_GET_CMP("ComponentMat3Test"));
 
     mat3 matrixA = GLM_MAT3_IDENTITY_INIT;
     mat3 matrixB = GLM_MAT3_ZERO_INIT;
@@ -149,7 +152,7 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_3x3_Data)
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_4x4_Data)
 {
-    ECSComponent *q = new ECSComponent(*m_Layouts["ComponentCamera"]);
+    ECSComponent *q = new ECSComponent(_GET_CMP("ComponentCamera"));
 
     mat4 matrixA = GLM_MAT4_IDENTITY_INIT;
     mat4 matrixB = GLM_MAT4_ZERO_INIT;
@@ -184,7 +187,7 @@ TEST_F(ComponentLoaderTest, Reads_Writes_Matrix_4x4_Data)
 
 TEST_F(ComponentLoaderTest, Reads_Writes_Mixed)
 {
-    ECSComponent *cmp = new ECSComponent(*m_Layouts["ComponentCameraExpanded"]);
+    ECSComponent *cmp = new ECSComponent(_GET_CMP("ComponentCameraExpanded"));
 
     mat4 matrixA = GLM_MAT4_IDENTITY_INIT;
     mat4 matrixB = GLM_MAT4_ZERO_INIT;
@@ -221,7 +224,7 @@ TEST_F(ComponentLoaderTest, Maps_To_C_Struct)
       (C_ComponentSingle *)malloc(sizeof(C_ComponentSingle));
     cStruct->view = 32;
 
-    ECSComponent *p = new ECSComponent(cStruct, *m_Layouts["ComponentSingle"]);
+    ECSComponent *p = new ECSComponent(cStruct, _GET_CMP("ComponentSingle"));
 // p->MapFromExisting(cStruct, *m_Layouts["ComponentSingle"]);
 
 // Check size of C Struct against generated component
@@ -250,7 +253,7 @@ TEST_F(ComponentLoaderTest, Reads_Writes_voidResource)
         float value2;
     };
 
-    ECSComponent *q = new ECSComponent(*m_Layouts["ComponentWithResource"]);
+    ECSComponent *q = new ECSComponent(_GET_CMP("ComponentWithResource"));
 
     FooResource *foo = (FooResource *)malloc(sizeof(FooResource));
     foo->value       = 100;

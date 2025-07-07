@@ -55,20 +55,8 @@
         "vec3": ["box_bounds_min", "box_bounds_max"]
     },
 
-    "Enemy": {
-        "int": ["enemy_type"],
-        "bool": ["is_wep_loaded"],
-        "vec3": ["hit_position"]
-    },
-
     "EntityReference": {
         "entity": ["entity_ref_id"]
-    },
-
-    "Flammable": {
-        "float": ["burn_speed", "cooldown_speed", "current_heat", "ignition_point", "max_heat"],
-        "bool": ["is_burning"],
-        "entity": ["entity_emitter_id"]
     },
 
     "Health": {
@@ -107,10 +95,6 @@
         "entity": ["entity_camera"]
     },
 
-    "ProjectileSpawner": {
-        "Resource": ["projectile_material", "projectile_model", "projectile_sound"]
-    },
-
     "RenderLayer": {
         "uint": ["renderLayer"]
     },
@@ -120,12 +104,6 @@
         "vec3": [ "gravity", "angular_velocity", "linear_velocity", "force_impulse", "force_velocity", "torque" ],
         "float": [ "mass", "static_friction", "dynamic_friction", "inverse_mass", "inverse_inertia" ],
         "bool": ["is_kinematic", "disable_rotation"]
-    },
-
-    "SwordController": {
-        "int": ["last_direction", "weapon_state"],
-        "float": ["state_timer", "charge_time"],
-        "entity": [ "entity_camera", "entity_flock" ]
     },
 
     "Transform": {

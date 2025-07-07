@@ -37,6 +37,11 @@ pushEntity(lua_State *L, u64 entity_index);
 static void
 pushVector(lua_State *L);
 
+static int
+_meta_Component_index(lua_State *L);
+static int
+_meta_Component_newindex(lua_State *L);
+
 #endif
 
 LuaEventStore &
@@ -72,10 +77,29 @@ LuaEventStore::Initialize(lua_State *L, gsk_ECS *ecs)
     s_Instance.m_Lua     = L;
 
     entity::component::parse_components_from_json(
-      s_Instance.m_Layouts, GSK_PATH("gsk://components.json"));
+      s_Instance.m_Layouts,
+      s_Instance.m_LayoutsContainer,
+      GSK_PATH("gsk://components.json"),
+      "gsk");
 
     // TODO: More testing
     s_Instance.m_ecs = ecs;
+
+    // lua_State *L = s_Instance.getLuaState();
+    // luaL_newmetatable will only create the table the first time;
+    // on later calls it just pushes the existing one.
+    luaL_newmetatable(L, "ECSComponent");
+
+    // __index
+    lua_pushcfunction(L, _meta_Component_index);
+    lua_setfield(L, -2, "__index");
+
+    // __newindex
+    lua_pushcfunction(L, _meta_Component_newindex);
+    lua_setfield(L, -2, "__newindex");
+
+    // pop the metatable off the stack
+    lua_pop(L, 1);
 }
 
 void
@@ -103,7 +127,7 @@ LuaEventStore::RegisterComponentList(ECSComponentType componentIndex,
                                    entity::LuaEventStore::getLayout(layoutKey));
 }
 
-int
+static int
 _meta_Component_newindex(lua_State *L)
 {
     entity::ECSComponent *c;
@@ -146,7 +170,7 @@ _meta_Component_newindex(lua_State *L)
 }
 
 // NOTE: Return value is number of args pushed to stack
-int
+static int
 _meta_Component_index(lua_State *L)
 {
     entity::ECSComponent *c;
@@ -157,8 +181,10 @@ _meta_Component_index(lua_State *L)
 
     const char *k = luaL_checkstring(L, -1);
 
+    EcsDataType var_type = c->GetVariableType(k);
+
     // get variable type
-    if (c->GetVariableType(k) == EcsDataType::VEC3)
+    if (var_type == EcsDataType::VEC3)
     {
         // LOG_DEBUG("We have a vec3");
         vec3 vec = GLM_VEC3_ONE_INIT;
@@ -190,11 +216,17 @@ _meta_Component_index(lua_State *L)
         lua_rawset(L, -3);
         return 1; // return table
 
-    } else if (c->GetVariableType(k) == EcsDataType::ENTITY)
+    } else if (var_type == EcsDataType::ENTITY)
     {
         int entityId = -1;
         c->GetVariable(k, &entityId);
         pushEntity(L, (int)entityId);
+        return 1;
+    } else if (var_type == EcsDataType::UINT)
+    {
+        u32 var = 0;
+        c->GetVariable(k, &var);
+        lua_pushinteger(L, var);
         return 1;
     }
 
@@ -210,6 +242,7 @@ _meta_Component_index(lua_State *L)
     }
 }
 
+#if 0
 static void
 __create_table_for_entity_component(lua_State *L,
                                     const char *componentName,
@@ -242,6 +275,30 @@ __create_table_for_entity_component(lua_State *L,
     lua_settable(L, -3);
     LUA_DUMP("After settable -3");
 }
+#else
+static void
+__create_table_for_entity_component(lua_State *L,
+                                    const char *componentName,
+                                    ECSComponentType componentType,
+                                    gsk_Entity entity)
+{
+    // Push the key under which this component lives:
+    lua_pushstring(L, componentName);
+
+    // Push the light‑userdata pointer:
+    lua_pushlightuserdata(L,
+                          LuaEventStore::GetInstance()
+                            .m_componentsList[componentType]
+                            ->m_components[entity.index]);
+
+    // Grab the already‑registered metatable:
+    luaL_setmetatable(L, "ECSComponent");
+
+    // entityTable[ componentName ] = lightuserdata
+    lua_settable(L, -3);
+}
+
+#endif
 
 // TODO: handle read/write access +
 static void
@@ -251,55 +308,29 @@ pushEntity(lua_State *L, u64 entity_index)
 
     gsk_EntityId entity_id = p_ecs->p_ent_ids[entity_index];
 
-    gsk_Entity entityCompare = {.id    = p_ecs->p_ent_ids[entity_index],
-                                .index = entity_index,
-                                .ecs   = p_ecs};
+    gsk_Entity entityCompare = {
+      .id = entity_id, .index = entity_index, .ecs = p_ecs};
 
     std::string a = std::to_string(entity_id);
 
     // Create "entity" as container-table
     lua_newtable(L);
-    LUA_DUMP("newtable");
-    lua_pushstring(L, "id");
     lua_pushnumber(L, entity_id);
-    // lua_pushstring(L, "index");
-    // lua_pushnumber(L, entity_index);
-    LUA_DUMP("pushstring and pushnumber");
-    lua_settable(L, -3);
-    LUA_DUMP("settable -3");
+    lua_setfield(L, -2, "id"); // table["id"] = entity_id
+    lua_pushnumber(L, entity_index);
+    lua_setfield(L, -2, "index"); // table["index"] = entity_index
 
     // TODO: Move create to separate function (per Component?)
     // use luaL_getmetatable(L, const char *tname)
 
-    if (gsk_ecs_has(entityCompare, C_CAMERA))
+    for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
     {
-        __create_table_for_entity_component(
-          L, "Camera", C_CAMERA, entityCompare);
-    }
-    if (gsk_ecs_has(entityCompare, C_CAMERA_LOOK))
-    {
-        __create_table_for_entity_component(
-          L, "CameraLook", C_CAMERA_LOOK, entityCompare);
-    }
-    if (gsk_ecs_has(entityCompare, C_CAMERA_MOVEMENT))
-    {
-        __create_table_for_entity_component(
-          L, "CameraMovement", C_CAMERA_MOVEMENT, entityCompare);
-    }
-    if (gsk_ecs_has(entityCompare, C_TRANSFORM))
-    {
-        __create_table_for_entity_component(
-          L, "Transform", C_TRANSFORM, entityCompare);
-    }
-    if (gsk_ecs_has(entityCompare, C_WEAPON))
-    {
-        __create_table_for_entity_component(
-          L, "Weapon", C_WEAPON, entityCompare);
-    }
-    if (gsk_ecs_has(entityCompare, C_WEAPON_SWAY))
-    {
-        __create_table_for_entity_component(
-          L, "WeaponSway", C_WEAPON_SWAY, entityCompare);
+        ECSComponentType type = (ECSComponentType)(i);
+        if (gsk_ecs_has(entityCompare, type))
+        {
+            __create_table_for_entity_component(
+              L, gsk_ecs_get_component_name(type), type, entityCompare);
+        }
     }
 
 #if 0

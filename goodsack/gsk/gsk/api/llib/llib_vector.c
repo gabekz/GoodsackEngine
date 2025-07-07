@@ -34,20 +34,49 @@ static int
 _vector__OPERATOR(lua_State *L, int lua_operation)
 {
     Vector *vec_a = *(Vector **)luaL_checkudata(L, 1, VECTOR_LIB);
-    Vector *vec_b = *(Vector **)luaL_checkudata(L, 2, VECTOR_LIB);
+
+    Vector *vec_b = NULL;
+    f32 b_number  = 0;
+
+    u8 is_b_scalar = (!lua_isuserdata(L, 2));
+
+    if (is_b_scalar)
+    {
+        b_number = luaL_checknumber(L, 2);
+    }
+    // grab number
+    else
+    {
+        vec_b = *(Vector **)luaL_checkudata(L, 2, VECTOR_LIB);
+    }
 
     Vector *ret = malloc(sizeof(Vector));
     if (ret == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
 
-    switch (lua_operation)
+    if (is_b_scalar)
     {
-    case (LUA_OPADD):
-        glm_vec3_add(vec_a->float3, vec_b->float3, ret->float3);
-        break;
-    case (LUA_OPSUB):
-        glm_vec3_sub(vec_a->float3, vec_b->float3, ret->float3);
-        break;
-    default: LOG_ERROR("Unknown Operation");
+        switch (lua_operation)
+        {
+        case (LUA_OPADD):
+            glm_vec3_adds(vec_a->float3, b_number, ret->float3);
+            break;
+        case (LUA_OPSUB):
+            glm_vec3_subs(vec_a->float3, b_number, ret->float3);
+            break;
+        default: LOG_ERROR("Unknown Operation");
+        }
+    } else
+    {
+        switch (lua_operation)
+        {
+        case (LUA_OPADD):
+            glm_vec3_add(vec_a->float3, vec_b->float3, ret->float3);
+            break;
+        case (LUA_OPSUB):
+            glm_vec3_sub(vec_a->float3, vec_b->float3, ret->float3);
+            break;
+        default: LOG_ERROR("Unknown Operation");
+        }
     }
 
     *(Vector **)lua_newuserdata(L, sizeof(Vector *)) = ret;

@@ -46,7 +46,8 @@ struct ComponentCMapTest : testing::Test
 }
 )";
 
-    std::map<std::string, ECSComponentLayout *> m_Layouts;
+    std::map<std::string, int> m_Layouts;
+    std::vector<ECSComponentLayout *> m_LayoutsContainer;
 
     typedef struct CmpTransform
     {
@@ -61,7 +62,7 @@ struct ComponentCMapTest : testing::Test
     ComponentCMapTest()
     {
         entity::component::parse_components_from_json(
-          m_Layouts, rawComponentData, 1);
+          m_Layouts, m_LayoutsContainer, rawComponentData, "gsk", 1);
     }
     virtual ~ComponentCMapTest() { m_Layouts.clear(); }
 };
@@ -70,8 +71,8 @@ TEST_F(ComponentCMapTest, Reads_Writes_Stuff)
 {
     CmpTransform *transform = (CmpTransform *)malloc(sizeof(CmpTransform));
 
-    ECSComponent *cmp =
-      new ECSComponent(transform, *m_Layouts["ComponentTransform"]);
+    ECSComponent *cmp = new ECSComponent(
+      transform, *m_LayoutsContainer.at(m_Layouts["ComponentTransform"]));
 
     // Check hasParent
     transform->hasParent = 0;

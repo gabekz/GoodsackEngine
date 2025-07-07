@@ -9,6 +9,8 @@
 #include "gsk/entity/modules/physics/mod_physics.h"
 #include "player.h"
 
+#include "gsk/wrapper/lua/lua_hook.h"
+
 #include "util/logger.h"
 #include "util/sysdefs.h"
 #include "util/vec_colors.h"
@@ -61,6 +63,9 @@ update(gsk_Entity entity)
         cmp_controller->is_jumping =
           (cmp_controller->is_grounded && input_jump);
         cmp_controller->can_jump = FALSE;
+
+        // LUA_HOOK_RUN("ZHR_Player_Jump", "i", entity.id);
+        LUA_HOOK_RUN("ZHR_Player_Jump", "i", entity.id);
     }
     // jump release
     else if (input_jump == GLFW_RELEASE && cmp_controller->is_grounded)
