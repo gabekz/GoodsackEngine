@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -11,11 +11,13 @@
 
 #include "entity/modules/camera/camera.h"
 #include "entity/modules/transform/transform.h"
+#include "gsk/core/device/device.h"
 
 // audio module
 #include "entity/modules/audio/mod_audio.h"
 
 #include "util/filesystem.h"
+#include "util/maths.h"
 
 #define DEFAULT_MIN 8
 #define DEFAULT_MAX 15
@@ -26,10 +28,10 @@
 static void
 init(gsk_Entity e)
 {
-    if (!(gsk_ecs_has(e, C_AUDIOSOURCE))) return;
+    if (!(gsk_ecs_has(e, C_AUDIO_SOURCE))) return;
 
     struct ComponentAudioSource *cmp_audio_source =
-      gsk_ecs_get(e, C_AUDIOSOURCE);
+      gsk_ecs_get(e, C_AUDIO_SOURCE);
 
     cmp_audio_source->buffer_source = openal_generate_source();
 
@@ -65,14 +67,17 @@ init(gsk_Entity e)
     {
         alSourcePlay(cmp_audio_source->buffer_source);
     }
+
+    // default pitch to 1.0f
+    if (cmp_audio_source->pitch == 0) { cmp_audio_source->pitch = 1.0f; }
 }
 
 static void
 update(gsk_Entity e)
 {
-    if (!(gsk_ecs_has(e, C_AUDIOSOURCE))) return;
+    if (!(gsk_ecs_has(e, C_AUDIO_SOURCE))) return;
     struct ComponentAudioSource *cmp_audio_source =
-      gsk_ecs_get(e, C_AUDIOSOURCE);
+      gsk_ecs_get(e, C_AUDIO_SOURCE);
 
 // Update position relative to transform
 #if 1
@@ -81,9 +86,9 @@ update(gsk_Entity e)
         struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
         AL_CHECK(alSource3f(cmp_audio_source->buffer_source,
                             AL_POSITION,
-                            transform->position[0],
-                            transform->position[1],
-                            transform->position[2]));
+                            transform->world_position[0],
+                            transform->world_position[1],
+                            transform->world_position[2]));
     }
 #endif
 
@@ -114,6 +119,15 @@ update(gsk_Entity e)
                        AL_MAX_DISTANCE,
                        cmp_audio_source->max_distance));
 
+// TODO: audio gain
+#if 0
+    AL_CHECK(alSourcef(cmp_audio_source->buffer_source, AL_GAIN, cmp_audio_source->gain));
+#endif
+
+    // update pitch
+    AL_CHECK(alSourcef(
+      cmp_audio_source->buffer_source, AL_PITCH, cmp_audio_source->pitch));
+
     // get the Audio Source state
     ALint source_state;
     AL_CHECK(alGetSourcei(
@@ -123,6 +137,13 @@ update(gsk_Entity e)
     cmp_audio_source->is_playing = (source_state == AL_PLAYING) ? TRUE : FALSE;
 }
 
+static void
+destroy(gsk_Entity entity)
+{
+    if (!(gsk_ecs_has(entity, C_AUDIO_SOURCE))) return;
+    // LOG_INFO("Destroy");
+}
+
 void
 s_audio_source_init(gsk_ECS *ecs)
 {
@@ -130,7 +151,8 @@ s_audio_source_init(gsk_ECS *ecs)
     //  ecs, C_AUDIO_SOURCE, sizeof(struct ComponentAudioSource));
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
-                              .init   = (gsk_ECSSubscriber)init,
-                              .update = (gsk_ECSSubscriber)update,
+                              .init    = (gsk_ECSSubscriber)init,
+                              .update  = (gsk_ECSSubscriber)update,
+                              .destroy = (gsk_ECSSubscriber)destroy,
                             }));
 }

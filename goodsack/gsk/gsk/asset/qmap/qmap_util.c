@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2024, Gabriel Kutuzov
+ * Copyright (c) 2024-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -25,7 +25,7 @@ gsk_qmap_util_get_intersection(
 
     if (denom >= -0.1f && denom <= 0.1f)
     {
-        LOG_TRACE("NO intersection: denom %f", denom);
+        // LOG_TRACE("NO intersection: denom %f", denom);
         return FALSE; // No intersection, the planes are parallel or
         // coincident
     }
@@ -41,7 +41,7 @@ gsk_qmap_util_get_intersection(
 
     glm_vec3_divs(result, denom, output);
 
-    LOG_TRACE("HAS intersection: denom %f", denom);
+    // LOG_TRACE("HAS intersection: denom %f", denom);
     return TRUE;
 }
 /*--------------------------------------------------------------------*/

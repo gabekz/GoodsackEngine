@@ -8,6 +8,7 @@ env:
   BUILD_TYPE: Release
   BUILD_CONFIG_FNAME: GoodsackEngineConfig.h
   TEST_EXECUTABLE: GoodsackEngine_Test
+  GEN_EXECUTABLE: GoodsackEngine_Gen
 
 jobs:
 # Linux Release Build
@@ -20,9 +21,8 @@ jobs:
       matrix:
         include:
           - name: Runtime and API
-            tests: true
+            run_tests: true
             artifact: false
-
 
     steps:
     - name: Checkout
@@ -38,13 +38,20 @@ jobs:
     - name: Setup CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
-    - name: Build
+    - name: Build (GoodsackEngine_Gen)
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target GoodsackEngine_Gen
+
+    - name: Run GoodsackEngine_Gen
+      run: ${{github.workspace}}/build/bin/${{env.GEN_EXECUTABLE}}
+
+    - name: Build (all targets)
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Show configuration
       run: |
-        cat ${{github.workspace}}/build/${{env.BUILD_CONFIG_FNAME}}
+        cat ${{github.workspace}}/build/lib/gsk_generated/${{env.BUILD_CONFIG_FNAME}}
 
     - name: Setup Tests
       run: |
@@ -53,5 +60,5 @@ jobs:
         ldd ${{github.workspace}}/build/bin/${{env.TEST_EXECUTABLE}}
 
     - name: Run Tests
-      if: ${{ matrix.tests }}
+      if: ${{ matrix.run_tests }}
       run: ${{github.workspace}}/build/bin/${{env.TEST_EXECUTABLE}}

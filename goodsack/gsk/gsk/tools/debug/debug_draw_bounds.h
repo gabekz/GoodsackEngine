@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -12,6 +12,7 @@
 void
 gsk_debug_draw_bounds(gsk_DebugContext *debugContext,
                       vec3 corners[2],
-                      mat4 modelMatrix);
+                      mat4 modelMatrix,
+                      vec4 color);
 
 #endif // __DEBUG_DRAW_BOUNDS_H__

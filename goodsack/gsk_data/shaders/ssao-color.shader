@@ -52,8 +52,9 @@ out float FragColor;
 void
 main()
 {
-    vec3 fragPos   = texture(gPosition, texCoords).xyz;
-    vec3 normal    = texture(gNormal, texCoords).rgb;
+    vec3 fragPos = texture(gPosition, texCoords).xyz;
+    vec3 normal  = texture(gNormal, texCoords).rgb;
+    // normal         = normal;
     vec3 randomVec = texture(t_Noise, texCoords * NOISE_SCALE).xyz;
     // vec3 randomVec = normalize(vec3(0.1, 0.1, 0));
 
@@ -68,8 +69,8 @@ main()
 
     // iterate over the sample kernel and calc occlusion factor
     float occlusion = 0.0;
-    for (int i = 0; i < kernelSize; i++) {
-
+    for (int i = 0; i < kernelSize; i++)
+    {
         // sample position (view space)
         vec3 samplePos = tbn * u_samples[i];
         samplePos      = fragPos + samplePos * radius;
@@ -82,13 +83,15 @@ main()
 
         // get (potential) occluder corresponding to sample pos in screen space
         vec3 occluderPos = texture(gPosition, offset.xy).rgb;
+        if (occluderPos.z >= 0) { occlusion = 0; }
 
         float rangeCheck =
-          smoothstep(0.0, 1.0, radius / length(fragPos - occluderPos));
+          smoothstep(0.0, 1.0, radius / length(occluderPos - fragPos));
 
         // in view space, greater z values are closer to camera
         occlusion +=
           (occluderPos.z >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;
     }
-    FragColor = 1.0 - (occlusion / kernelSize);
+    // FragColor = 1.0 - (occlusion / kernelSize);
+    FragColor = clamp(1.0 - (occlusion / kernelSize), 0.0, 10.0);
 }

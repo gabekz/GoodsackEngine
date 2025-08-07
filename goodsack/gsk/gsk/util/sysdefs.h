@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -53,8 +53,7 @@
 
 #endif // SYS_ENV_WIN
 
-// -- C Specific boolean definitions //
-#ifndef __cplusplus
+// -- boolean definitions //
 
 #ifdef TRUE
 #undef TRUE
@@ -66,8 +65,6 @@
 #endif
 #define FALSE 0
 
-#endif // __cplusplus
-
 // -- Result //
 
 #define SYS_SUCCESS 1
@@ -76,12 +73,7 @@
 #define SYS_ENABLED  1
 #define SYS_DISABLED 0
 
-#define SYS_LOG_LEVEL 0
-#define SYS_DEBUG     SYS_ENABLED
-
-#ifndef SYS_DEBUG
-#define SYS_DEBUG SYS_DISABLED
-#endif
+#define SYS_DEBUG SYS_ENABLED
 
 // -- Cache/Memory Alignment //
 
@@ -114,6 +106,8 @@
 
 #define GLUE_HELPER(x, y) x##y
 #define GLUE(x, y)        GLUE_HELPER(x, y)
+
+#define _EXPAND(x) x
 
 // -- Types //
 

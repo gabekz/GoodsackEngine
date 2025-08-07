@@ -1,0 +1,47 @@
+type Texture
+path_pattern gsk://textures/**
+
+texture_range: 0
+
+{
+    "type": "texture"
+    "path_pattern": "gsk://textures/**"
+
+    "Texture_Options": {
+        "af_range": 1
+        "internal_format": "SRGB"
+        "gen_mips": False
+    }
+    
+    "Model_Options": {
+        "Scale": 0.1
+    }
+
+}
+
+// slap a prefab on an entity to populate it's components??
+{
+    "type": "Prefab"
+    "path_pattern" // NOT ALLOWED
+
+    "Components": {
+        {
+            "Model": {
+                "material": "//materials/cube.material"
+                "pModel": "//models/cube.gltf"
+            }
+
+        }
+
+
+    "Texture_Options": {
+        "af_range": 1
+        "internal_format": "SRGB"
+        "gen_mips": False
+    }
+    
+    "Model_Options": {
+        "Scale": 0.1
+    }
+
+}

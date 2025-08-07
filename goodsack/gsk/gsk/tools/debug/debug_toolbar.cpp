@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -24,6 +24,7 @@
 #include "tools/debug/panels/debug_panel_entity_viewer.hpp"
 #include "tools/debug/panels/debug_panel_lighting.hpp"
 #include "tools/debug/panels/debug_panel_profiler.hpp"
+#include "tools/debug/panels/debug_panel_renderer.hpp"
 #include "tools/debug/panels/debug_panel_scene_viewer.hpp"
 
 // TODO: thirdparty root-include
@@ -100,12 +101,13 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
         add_panel((DebugPanel *)(new Lighting("Lighting")), (int)Menus::Scene);
 
         add_panel(p_entity_viewer, (int)Menus::Scene);
-        add_panel(p_component_viewer,
-                  (int)Menus::None); // Don't show this in the toolbar
+        add_panel(p_component_viewer, (int)Menus::None);
 
         // "Pipeline" Menu
         add_panel((DebugPanel *)(new Assets("Assets")), (int)Menus::Pipeline);
         add_panel((DebugPanel *)(new Profiler("Graphics")),
+                  (int)Menus::Pipeline);
+        add_panel((DebugPanel *)(new RenderInfo("Renderer Info")),
                   (int)Menus::Pipeline);
     }
 
@@ -139,9 +141,18 @@ gsk::tools::DebugToolbar::toggle_visibility(void)
 void
 gsk::tools::DebugToolbar::update(void)
 {
-    if (glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS)
+    if (glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS &&
+        glfwGetKey(m_renderer->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS &&
+        m_debugEnableKeyCheck)
     {
         toggle_visibility();
+        m_debugEnableKeyCheck = false;
+    }
+
+    if (glfwGetKey(m_renderer->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_RELEASE &&
+        !m_debugEnableKeyCheck)
+    {
+        m_debugEnableKeyCheck = true;
     }
 }
 
@@ -252,4 +263,10 @@ gsk::tools::DebugToolbar::render(void)
           vkDevice->commandBuffers[vkDevice->currentFrame]);
 #endif
     }
+}
+
+bool
+gsk::tools::DebugToolbar::is_focused(void)
+{
+    return (ImGui::GetIO().WantCaptureMouse);
 }

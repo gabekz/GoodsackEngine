@@ -1,10 +1,14 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #ifndef __ECSDEFS_H__
 #define __ECSDEFS_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 enum ECSEvent {
     ECS_INIT = 0,
@@ -15,6 +19,14 @@ enum ECSEvent {
     ECS_UPDATE,
     ECS_LATE_UPDATE
 };
+
+typedef enum GskEcsEntityFlag_ {
+    GskEcsEntityFlag_None        = 0,
+    GskEcsEntityFlag_Initialized = 1 << 0,
+    GskEcsEntityFlag_Enabled     = 1 << 1,
+    GskEcsEntityFlag_Delete      = 1 << 2,
+} GskEcsEntityFlag_;
+#define GSK_ECS_ENTITY_FLAGS_TOTAL 4
 
 #define ECSEVENT_FIRST ECS_INIT
 #define ECSEVENT_LAST  ECS_LATE_UPDATE
@@ -28,16 +40,14 @@ enum ECSEvent {
 #define ECS_TAG_UNUSED 0b00000000
 #define ECS_TAG_USED   0b00110000
 
-#define ECS_ENT_FLAG_INITIALIZED 0x01
-#define ECS_ENT_FLAG_PENDING     0x00
-
 #define ECS_VAL_NAN      0 // TODO: could be disabled
 #define ECS_VAL_ENABLED  1
 #define ECS_VAL_DISABLED 2
 
-#define ECS_FIRST_ID 300
+#define ECS_ID_FIRST   300
+#define ECS_ID_DELETED 2
 
-#define ECS_ENT_CAPACITY 128
+#define ECS_ENT_CAPACITY 10000
 #define ECS_NAME_LEN_MAX 128
 
 // Should always be True
@@ -80,4 +90,8 @@ _gsk_ecs_EventToString(int event)
 // #define ECS_SYSTEM_DECLARE(_name) static
 #endif
 
-#endif // H_ECSDEFS
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // __ECSDEFS_H__

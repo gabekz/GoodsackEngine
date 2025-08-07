@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Gabriel Kutuzov
+ * Copyright (c) 2024-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -34,6 +34,9 @@ extern "C" {
 #define QMAP_DEFAULT_TEXTURE_SIZE 512.0f
 
 #define QMAP_ALLOC_ITER 1 // default number for realloc'ing bloks
+
+#define QMAP_NOEXPORT_FIELD_STR "_tb_layer_omit_from_export"
+#define QMAP_TRIGGER_CONT_STR   "trigger_"
 
 /*************************************************************************
  * QMap types
@@ -77,6 +80,9 @@ typedef struct gsk_QMapBrush
     ArrayList list_planes;
     ArrayList list_polygons;
 
+    vec3 brush_bounds[2];
+    vec3 world_pos;
+
 } gsk_QMapBrush;
 
 typedef struct gsk_QMapEntityField
@@ -90,13 +96,21 @@ typedef struct gsk_QMapEntityField
 typedef struct gsk_QMapEntity
 {
     s32 ent_index;
+    u32 layer_id;
     ArrayList list_brushes;
     ArrayList list_fields;
 } gsk_QMapEntity;
 
+typedef struct gsk_QMapLayer
+{
+    u32 layer_id;
+    u8 is_visible;
+} gsk_QMapLayer;
+
 typedef struct gsk_QMapContainer
 {
     ArrayList list_entities;
+    ArrayList list_layers;
 
     gsk_QMapEntity *p_cnt_entity;
     gsk_QMapBrush *p_cnt_brush;

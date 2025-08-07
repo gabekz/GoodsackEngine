@@ -3,7 +3,7 @@
 function(setup_thirdparty_lib LIBNAME)
     add_library(ThirdParty_${LIBNAME} INTERFACE)
     set_target_properties(ThirdParty_${LIBNAME} PROPERTIES FOLDER ${LIB_FOLDER_PATH}/${LIBNAME})
-endfunction(set_library_folder)
+endfunction(setup_thirdparty_lib)
 
 add_library(ThirdParty INTERFACE)
 
@@ -133,6 +133,8 @@ find_package(imgui CONFIG QUIET)
 if(imgui_FOUND)
     message(STATUS "(ImGui) Found package with auto-locate")
     target_link_libraries(ThirdParty_imgui INTERFACE imgui::imgui) 
+    #target_compile_definitions(imgui::imgui INTERFACE "IMGUI_IMPL_API=__declspec(dllexport)")
+    #target_compile_definitions(imgui::imgui INTERFACE "IMGUI_API=__declspec(dllexport)")
 else()
     set(IMGUI_DIR "${LIB_DIR}/imgui")
     message(STATUS "(ImGui) Using manual specified path: ${IMGUI_DIR}")
@@ -157,7 +159,12 @@ else()
 
     target_include_directories(ThirdParty_imgui INTERFACE ${IMGUI_DIR} "${IMGUI_DIR}/backends")
     target_link_libraries(ThirdParty_imgui INTERFACE imgui "${CMAKE_DL_LIBS}")
+
+
 endif()
+
+#target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_IMPL_API=__declspec(dllexport)")
+#target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_API=__declspec(dllexport)")
 
 #################################################################
 # Library: Lua

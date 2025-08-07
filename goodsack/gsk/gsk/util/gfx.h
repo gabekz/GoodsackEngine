@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -37,7 +37,7 @@
 
 #define DEFAULT_CLEAR_COLOR    \
     {                          \
-        0.1f, 0.1f, 0.8f, 1.0f \
+        0.1f, 0.1f, 0.4f, 1.0f \
     }
 
 // Drawing modes

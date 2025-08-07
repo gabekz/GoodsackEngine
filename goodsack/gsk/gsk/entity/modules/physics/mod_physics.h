@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2024, Gabriel Kutuzov
+ * Copyright (c) 2024-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #ifndef __MOD_PHYSICS_H__
 #define __MOD_PHYSICS_H__
 
+#include "util/maths.h"
 #include "util/sysdefs.h"
 
 #include "entity/ecs.h"
@@ -18,6 +19,8 @@ extern "C" {
 typedef struct gsk_mod_RaycastResult
 {
     gsk_Entity entity;
+    vec3 hit_position;
+    vec3 hit_normal;
     u8 has_collision;
 
 } gsk_mod_RaycastResult;
@@ -26,6 +29,12 @@ gsk_mod_RaycastResult
 gsk_mod_physics_raycast(gsk_Entity entity_caller,
                         gsk_Raycast *raycast,
                         float range);
+
+gsk_mod_RaycastResult
+gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
+                            vec3 origin,
+                            vec3 direction,
+                            float max_distance);
 
 #ifdef __cplusplus
 }

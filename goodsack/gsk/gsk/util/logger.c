@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -27,6 +27,14 @@
 #include <unistd.h>
 #endif
 #endif // SYS_ENV_WIN
+
+#define _LOG_THREAD_ID FALSE
+
+#define _MSG_SIMPLE     "%s [%s] "
+#define _MSG_SIMPLE_COL GRY "%s " COLOR_RESET "[%s] "
+
+#define _MSG_EXTENDED     _MSG_SIMPLE "%s:%d "
+#define _MSG_EXTENDED_COL _MSG_SIMPLE_COL YEL "%s:%d" COLOR_RESET " "
 
 enum {
     /* Logger type */
@@ -137,20 +145,6 @@ hasFlag(int flags, int flag)
     return (flags & flag) == flag;
 }
 
-static char
-getLevelChar(LogLevel level)
-{
-    switch (level)
-    {
-    case LogLevel_TRACE: return 'T';
-    case LogLevel_DEBUG: return 'D';
-    case LogLevel_INFO: return 'I';
-    case LogLevel_WARN: return 'W';
-    case LogLevel_ERROR: return 'E';
-    case LogLevel_CRITICAL: return 'C';
-    default: return ' ';
-    }
-}
 static void
 setLevelStr(LogLevel level, int colored, char *dest)
 {
@@ -177,22 +171,25 @@ setLevelStr(LogLevel level, int colored, char *dest)
         break;
     case LogLevel_ERROR:
         levelStr = "Error";
-        levelCol = MAG;
+        levelCol = RED;
         break;
     case LogLevel_CRITICAL:
         levelStr = "Critical";
-        levelCol = RED;
+        levelCol = MAG;
         break;
     default: return;
     }
 
+    dest[0] = '\0';
     if (colored)
     {
-        dest[0] = '\0';
+        // dest[0] = '\0';
         strncpy(dest, levelCol, 32);
         strncat(dest, levelStr, 32);
         strncat(dest, COLOR_RESET, 32);
+        return;
     }
+    strncat(dest, levelStr, 32);
 }
 
 static void
@@ -301,11 +298,22 @@ vflog(FILE *fp,
     int size       = 0;
     long totalsize = 0;
 
+    u8 is_console = (fp == s_clog.output) ? TRUE : FALSE;
+
+    // simple message
     if (s_logDetail == LogDetail_SIMPLE)
     {
-        size = fprintf(fp, "%s [%s] ", timestamp, levelStr);
-    } else if (s_logDetail == LogDetail_EXTENDED)
+        size = fprintf(fp,
+                       (is_console == TRUE) ? _MSG_SIMPLE_COL : _MSG_EXTENDED,
+                       timestamp,
+                       levelStr);
+    }
+    // extended (verbose) message
+    else if (s_logDetail == LogDetail_EXTENDED)
     {
+
+#if _LOG_THREAD_ID
+        // TODO: update to work with colored messages
         size = fprintf(fp,
                        "%s [%s] %ld %s:%d: ",
                        timestamp,
@@ -313,6 +321,15 @@ vflog(FILE *fp,
                        threadID,
                        getFileName(file),
                        line);
+#else
+        size = fprintf(fp,
+                       (is_console == TRUE) ? _MSG_EXTENDED_COL : _MSG_EXTENDED,
+                       timestamp,
+                       levelStr,
+                       getFileName(file),
+                       line);
+#endif // _LOG_THREAD_ID
+
     } else if (s_logDetail == LogDetail_MSG)
     {
         size = 0;
@@ -383,6 +400,7 @@ rotateLogFiles(void)
 int
 logger_isEnabled(LogLevel level)
 {
+    if (level == LogLevel_NONE) return 1;
     return s_logLevel <= level;
 }
 
@@ -404,8 +422,8 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
 {
     struct timeval now;
     unsigned long long currentTime; /* milliseconds */
-    char levelStr[32];
-    char levelc;
+    char levelStr_col[32];          /* colored levelStr */
+    char levelStr[32];              /* non-colored levelStr */
     char timestamp[32];
     long threadID;
     va_list carg, farg;
@@ -420,17 +438,20 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
 
     switch (level)
     {
-    case LogLevel_INFO: logger_setDetail(LogDetail_SIMPLE); break;
+    // case LogLevel_INFO: logger_setDetail(LogDetail_SIMPLE); break;
     case LogLevel_NONE: logger_setDetail(LogDetail_MSG); break;
     default: logger_setDetail(LogDetail_EXTENDED); break;
     }
 
     gettimeofday(&now, NULL);
     currentTime = now.tv_sec * 1000 + now.tv_usec / 1000;
-    levelc      = getLevelChar(level);
     threadID    = getCurrentThreadID();
 
-    if (level != LogLevel_NONE) { setLevelStr(level, TRUE, levelStr); }
+    if (level != LogLevel_NONE)
+    {
+        setLevelStr(level, FALSE, levelStr);
+        setLevelStr(level, TRUE, levelStr_col);
+    }
 
     getTimestamp(&now, timestamp, sizeof(timestamp));
 
@@ -440,7 +461,7 @@ logger_log(LogLevel level, const char *file, int line, const char *fmt, ...)
     {
         va_start(carg, fmt);
         vflog(s_clog.output,
-              levelStr,
+              levelStr_col,
               timestamp,
               threadID,
               file,

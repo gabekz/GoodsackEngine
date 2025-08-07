@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -19,7 +19,7 @@
 #include "wrapper/lua/lua_debug.h"
 #include "wrapper/lua/lua_reg_print.h"
 
-void
+bool
 LuaInit(const char *file, gsk_ECS *ecs)
 {
     lua_State *L = luaL_newstate();
@@ -34,14 +34,20 @@ LuaInit(const char *file, gsk_ECS *ecs)
 
     if (!CheckLua(L, luaL_dofile(L, GSK_PATH(LUA_INIT_FILE_PATH))))
     {
-        LOG_CRITICAL("Failed to read engine lua entry: %s",
-                     GSK_PATH(LUA_INIT_FILE_PATH));
+        LOG_ERROR("Failed to read engine lua entry: %s",
+                  GSK_PATH(LUA_INIT_FILE_PATH));
+
+        entity::LuaEventStore::Cleanup();
+        return false;
     }
 
     if (!CheckLua(L, luaL_dofile(L, file)))
     {
-        LOG_CRITICAL("Failed to read lua entry: %s", file);
+        LOG_ERROR("Failed to read lua entry: %s", file);
+
+        entity::LuaEventStore::Cleanup();
+        return false;
     }
 
-    // lua_close(L);
+    return true;
 }

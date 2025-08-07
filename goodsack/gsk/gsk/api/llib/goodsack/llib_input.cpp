@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -9,7 +9,7 @@
 #include "util/gfx.h"
 
 #include "core/device/device.h"
-#include "runtime/gsk_runtime.hpp"
+#include "runtime/gsk_runtime_wrapper.h"
 
 extern "C" {
 

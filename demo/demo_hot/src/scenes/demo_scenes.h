@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #ifndef __DEMO_SCENES_H__
 #define __DEMO_SCENES_H__
 
+#include "asset/asset_cache.h"
 #include "core/graphics/renderer/v1/renderer.h"
 #include "entity/ecs.h"
 #include "util/sysdefs.h"
@@ -23,10 +24,11 @@ extern "C" {
 #define SCENE_PHYSICS        6
 #define SCENE_TRANSFORM_TEST 7
 #define SCENE_MAP_TEST       8
-#define DEMO_SCENES_TOTAL    SCENE_MAP_TEST
+#define SCENE_ASSET_TEST     9
+#define DEMO_SCENES_TOTAL    SCENE_ASSET_TEST
 
 #define LOAD_ALL_SCENES 0
-#define INITIAL_SCENE   SCENE_MAP_TEST
+#define INITIAL_SCENE   SCENE_EARTH
 
 #define DEMO_USING_AUDIO            0
 #define DEMO_USING_MULTIPLE_CAMERAS 1
@@ -46,7 +48,9 @@ extern "C" {
 
 // Creates and loads every demo scene in this project.
 void
-demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer);
+demo_scenes_create(gsk_ECS *ecs,
+                   gsk_Renderer *renderer,
+                   gsk_AssetCache *asset_cache);
 
 inline void
 __set_active_scene_skybox(gsk_Renderer *renderer, gsk_Skybox *skybox)
@@ -61,9 +65,11 @@ __set_active_scene_skybox(gsk_Renderer *renderer, gsk_Skybox *skybox)
 void
 _scene7(gsk_ECS *ecs, gsk_Renderer *renderer);
 
-// outside scene declarations
 void
 _scene8(gsk_ECS *ecs, gsk_Renderer *renderer);
+
+void
+_scene9(gsk_ECS *ecs, gsk_Renderer *renderer, gsk_AssetCache *p_asset_cache);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -43,6 +43,7 @@ typedef struct gsk_DebugContext
     gsk_Model *model_sphere;
 
     gsk_GlVertexArray *vaoLine; // VAO for debug draw line
+    u32 vboLineId;              // Line VBO ID
 
     ArrayList *markers_list;
 

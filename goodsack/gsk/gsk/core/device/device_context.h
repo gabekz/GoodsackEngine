@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -10,6 +10,10 @@
 #include "util/sysdefs.h"
 
 #include "core/drivers/vulkan/vulkan_device.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 typedef struct gsk_ApplicationProperties
 {
@@ -24,7 +28,14 @@ typedef struct gsk_ApplicationProperties
 } gsk_ApplicationProperties;
 
 GLFWwindow *
-gsk_window_create(int winWidth, int winHeight, VulkanDeviceContext **vkd);
-// void cleanup(ContextProperties *contextProperties);
+gsk_window_create(int win_width,
+                  int win_height,
+                  const char *win_image_path,
+                  const char *win_app_title,
+                  VulkanDeviceContext **vkd);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __DEVICE_CONTEXT_H__

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -116,6 +116,21 @@ gsk::tools::panels::EntityViewer::draw(void)
             for (int row_n = clipper.DisplayStart; row_n < clipper.DisplayEnd;
                  row_n++)
             {
+                // TODO: This menu breaks when we have no initialized
+                // entities
+                if (!(ecs->p_ent_flags[row_n] & GskEcsEntityFlag_Initialized))
+                {
+                    continue;
+                }
+
+                u8 is_disabled =
+                  !(ecs->p_ent_flags[row_n] & GskEcsEntityFlag_Enabled);
+
+                if (is_disabled)
+                {
+                    PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+                }
+
                 // Display a data item
                 // MyItem* item = &items[row_n];
                 PushID(row_n);
@@ -123,14 +138,18 @@ gsk::tools::panels::EntityViewer::draw(void)
                 TableNextColumn();
                 Text("%04d", row_n);
                 TableNextColumn();
-                Text("%04d", (int)ecs->ids[(int)row_n]);
+                Text("%04d", (int)ecs->p_ent_ids[(int)row_n]);
                 TableNextColumn();
                 TextUnformatted(ecs->entity_names[(int)row_n]);
+                if (is_disabled) { PopStyleColor(); }
+
                 TableNextColumn();
                 if (SmallButton("Inspect"))
                 {
-                    gsk_Entity entity = (gsk_Entity {
-                      .id = ecs->ids[row_n], .index = (u64)row_n, .ecs = ecs});
+                    gsk_Entity entity =
+                      (gsk_Entity {.id    = ecs->p_ent_ids[row_n],
+                                   .index = (u64)row_n,
+                                   .ecs   = ecs});
 
                     // display the component viewer panel
                     p_component_viewer->show_for_entity(entity);

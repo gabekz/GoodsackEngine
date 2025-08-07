@@ -1,14 +1,15 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #ifndef __RENDERER_PROPS_INL__
 #define __RENDERER_PROPS_INL__
 
+#include "util/maths.h"
 #include "util/sysdefs.h"
 
-//enum Tonemappers { Reinhard = 0, ACES };
+// enum Tonemappers { Reinhard = 0, ACES };
 
 // Renderer Properties
 typedef struct gsk_RendererProps
@@ -26,6 +27,11 @@ typedef struct gsk_RendererProps
 
     float vignetteAmount;
     float vignetteFalloff;
+    vec3 vignetteColor;
+
+    float bloom_intensity;
+    float bloom_threshold;
+    float bloom_radius;
 
 } gsk_RendererProps;
 

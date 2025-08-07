@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -39,7 +39,19 @@ extern "C" {
 #define MAX_CAMERAS 4
 //#define MAX_LIGHTS  64
 
-typedef enum renderPass { REGULAR = 0, DEPTH_PREPASS, SHADOW } RenderPass;
+#define RENDERER_UBO_BINDING_CAMERA   0
+#define RENDERER_UBO_BINDING_LIGHTING 1
+
+#define RENDERER_MAX_SCENES 32
+
+typedef enum GskRenderPass_ {
+    GskRenderPass_GBuffer = 0,
+    GskRenderPass_Shadowmap,
+    GskRenderPass_Lighting,
+    GskRenderPass_Skybox,
+} GskRenderPass_;
+
+typedef u32 GskRenderPass;
 
 typedef struct gsk_Renderer
 {
@@ -47,18 +59,20 @@ typedef struct gsk_Renderer
     gsk_RendererProps properties;  // Frame properties/configuration
     int windowWidth, windowHeight; // window resolution
     int renderWidth, renderHeight; // render resolution
+    f32 window_aspect_ratio;       // window aspect ratio
 
     gsk_Scene **sceneL;
-    u16 sceneC, activeScene;
+    u16 sceneC, activeScene, scene_queue_index;
+    s32 scene_tracker[RENDERER_MAX_SCENES];
 
-    RenderPass currentPass; // TODO: rename -> RenderStage
+    GskRenderPass currentPass; // TODO: rename -> RenderStage
     gsk_Material *explicitMaterial;
-    gsk_Material
-      *explicitMaterial_skinned; // skinned version of explicit material
+
+    gsk_Material *p_prev_material;
+    u32 prev_shader_id;
 
     gsk_Billboard2D *billboard; // Billboard testing
-
-    gsk_GuiCanvas canvas; // Canvas test
+    gsk_GuiCanvas canvas;       // Canvas test
 
     gsk_Skybox *activeSkybox;  // Active skybox that is being rendered
     gsk_Skybox *defaultSkybox; // Default skybox set for each scene on creation
@@ -66,32 +80,18 @@ typedef struct gsk_Renderer
     // Hacky shit for temporary shadowmap values
     gsk_ShaderProgram *shaderDepthMap;
     gsk_Material *materialDepthMap;
-    u32 depthMapFBO;
-    u32 depthMapTexture;
     mat4 lightSpaceMatrix;
 
-    u32 drawCalls;
-    u32 faces;
-    u32 totalVertices;
-
-    // TODO: Fix this shit as well.
-
-    gsk_LightingData lighting_data;
-
+    // Options
     ShadowmapOptions shadowmapOptions;
     SsaoOptions ssaoOptions;
-
     struct
     {
         vec3 ambient_color_multiplier;
         float ambient_strength, prefilter_strength;
     } lightOptions;
 
-    // TODO: still hacky shit
-    VulkanDeviceContext *vulkanDevice;
-    u32 hdrTextureId;
-
-    gsk_DebugContext *debugContext;
+    // gsk_LightingData lighting_data;
 
     // Camera information
     struct
@@ -103,6 +103,26 @@ typedef struct gsk_Renderer
         u32 activeCamera;
     } camera_data;
 
+    // TODO: remove this shit
+    struct
+    {
+        mat4 proj;
+        mat4 view;
+        mat4 model;
+
+    } vk_ubo_test;
+
+    // TODO: still hacky shit
+    VulkanDeviceContext *vulkanDevice;
+    gsk_DebugContext *debugContext;
+
+    // TODO: remove - testing opengl samplers
+    u32 sampler0_id;
+    u32 sampler1_id;
+
+    // object picker
+    u32 hovered_entity_index; // true index is offset -1 | 0 == NONE
+
 } gsk_Renderer;
 
 /**
@@ -110,15 +130,7 @@ typedef struct gsk_Renderer
  * @return allocated Renderer structure
  */
 gsk_Renderer *
-gsk_renderer_init();
-
-// Rendering Loop
-void
-gsk_renderer_start(gsk_Renderer *renderer);
-void
-gsk_renderer_tick(gsk_Renderer *renderer);
-
-/* scene management */
+gsk_renderer_init(const char *app_name);
 
 /**
  * Sets the active scene for the renderer. Will create a new scene
@@ -130,6 +142,19 @@ gsk_renderer_tick(gsk_Renderer *renderer);
  */
 struct gsk_ECS *
 gsk_renderer_active_scene(gsk_Renderer *self, u16 sceneIndex);
+
+// Rendering Loop
+void
+gsk_renderer_start(gsk_Renderer *renderer);
+void
+gsk_renderer_tick(gsk_Renderer *renderer);
+
+/**
+ * Utility function to handle window resizing
+ */
+void
+gsk_renderer_resize(gsk_Renderer *p_self, int new_width, int new_height);
+
 //-------------------------------
 
 // #endif // __cplusplus

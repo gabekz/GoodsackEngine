@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -8,20 +8,27 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
-#include "entity/component/ecs_component.hpp"
+#include "entity/component/ecs_component_layout.hpp"
 #include "util/sysdefs.h"
 
 namespace entity {
 namespace component {
 
-typedef std::map<std::string, ECSComponentLayout *> ComponentLayoutMap;
+typedef std::map<std::string, int> ComponentLayoutMap;
+typedef std::vector<ECSComponentLayout *> ComponentLayoutsContainer;
 
-ComponentLayoutMap
-parse_components_from_json(std::string path, u32 rawData = 0);
+void
+parse_components_from_json(ComponentLayoutMap &layouts_map,
+                           ComponentLayoutsContainer &layouts_container,
+                           std::string path,
+                           std::string scheme,
+                           u32 rawData = 0);
 
-int
-generate_cpp_types(std::string path, ComponentLayoutMap map);
+bool
+generate_cpp_types(std::string path,
+                   ComponentLayoutsContainer layouts_container);
 
 }; // namespace component
 

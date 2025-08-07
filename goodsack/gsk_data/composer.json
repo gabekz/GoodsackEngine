@@ -1,0 +1,55 @@
+{
+    "Tracks": [
+        {"name": "melody", "path": "gsk://audio/comp/melody.wav"},
+        {"name": "melody_ambience", "path": "gsk://audio/comp/melody_ambience.wav"},
+        {"name": "bass", "path": "gsk://audio/comp/bass.wav"},
+        {"name": "drums", "path": "gsk://audio/comp/drums.wav"}
+    ],
+
+    "Sequences": {
+
+        "Riff_Melody": [
+            {
+                "track": "gsk://audio/comp/melody.wav"
+            },
+            {
+                "track": "gsk://audio/comp/melody_ambience.wav",
+                "start_time": 30
+            }
+        ],
+
+        "Riff_Bass": [
+            {
+                "track": "gsk://audio/comp/bass.wav",
+
+                "enter_volume": 100,
+                "enter_phrase": 1,
+                "enter_beat": 4
+            }
+        ],
+
+        "Riff_Drums": [
+            {
+                "track": "gsk://audio/comp/drums.wav"
+            }
+        ]
+    },
+
+    "Stages": [
+        {
+            "bpm": 120,
+
+            "beats_per_bar": 4,
+            "bars_per_phrase": 4,
+
+            "composition": ["Riff_Melody"]
+
+        },
+        {
+            "composition": ["Riff_Melody", "Riff_Bass"]
+        },
+        {
+            "composition": ["Riff_Melody", "Riff_Bass", "Riff_Drums"]
+        }
+    ]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -14,6 +14,7 @@
 #include "util/sysdefs.h"
 
 #include "core/device/device.h"
+#include "runtime/gsk_runtime_wrapper.h"
 
 #ifdef SYS_ENV_WIN
 #include <fcntl.h>
@@ -29,7 +30,7 @@
 #ifdef SYS_ENV_WIN
 
 static FILE *
-open_memstream(char **buffer, int bufferLen)
+open_memstream(char **buffer, int *buffer_check)
 {
 
     FILE *stream;
@@ -39,10 +40,10 @@ open_memstream(char **buffer, int bufferLen)
     stream = tmpfile();
     fd     = fileno(stream);
 
-#ifdef WIN32
     HANDLE fm;
     HANDLE h = (HANDLE)_get_osfhandle(fd);
 
+    // TODO: max buffer size here
     fm =
       CreateFileMapping(h, NULL, PAGE_READWRITE | SEC_RESERVE, 0, 16384, NULL);
     if (fm == NULL)
@@ -60,7 +61,7 @@ open_memstream(char **buffer, int bufferLen)
                 strerror(GetLastError()));
         exit(GetLastError());
     }
-#else
+#if 0
     bp =
       mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
     if (bp == MAP_FAILED)
@@ -71,29 +72,40 @@ open_memstream(char **buffer, int bufferLen)
                 strerror(errno));
         exit(errno);
     }
-#endif
+#endif // disable
 
+    // TODO: Temporary fix to get strdup working
+    *buffer_check = 1;
     /* return stream that is now buffer-mapped */
     return stream;
 }
 
-#endif
+#endif // SYS_ENV_WIN
 
-/* Compile single shader type (vertex, fragment, etc.) and return
+/* Compile single shader type (vertex, fragment, geometry, etc.) and return
  * the id from OpenGL.
  */
 static unsigned int
-CompileSingleShader(unsigned int type, const char *path)
+CompileSingleShader(unsigned int type,
+                    const char *raw_shader_text,
+                    u8 is_skinned)
 {
+    const char *versionLine = "#version 460 core\n";
+    const char *defineLine =
+      is_skinned ? "#define SKINNED 1\n" : "#define SKINNED 0\n";
+
+    const char *sources[] = {versionLine, defineLine, raw_shader_text};
+
     unsigned int id = glCreateShader(type);
-    // const char* src = &source[0];
-    glShaderSource(id, 1, &path, NULL);
+
+    glShaderSource(id, 3, sources, NULL);
+
     glCompileShader(id);
 
     /* Error handling */
     int result;
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-    const char *typeStr = (type == GL_VERTEX_SHADER) ? "Vertex" : "Fragment";
+
     if (result == GL_FALSE)
     {
         int length;
@@ -101,9 +113,9 @@ CompileSingleShader(unsigned int type, const char *path)
         char *message = (char *)alloca(length * sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
         // printf("Error at: %s\n", path);
-        printf("Failed to compile %s shader.\n Error output: %s\n",
-               typeStr,
-               message);
+        LOG_ERROR("Failed to compile shader (type: %d).\n Error output: %s\n",
+                  type,
+                  message);
         glDeleteShader(id);
         return 0;
     }
@@ -114,19 +126,20 @@ CompileSingleShader(unsigned int type, const char *path)
  * and fragment shaders in one file.
  * Returns the source object containing id's and compiled sources.
  */
-static gsk_ShaderSource *
+static gsk_ShaderSource
 ParseShader(const char *path)
 {
     // File in
     FILE *fptr = NULL;
-    char line[256];
+    char line[1024];
 
     // output stream
     FILE *stream = NULL;
-    char *vertOut, *fragOut, *compOut;
-    size_t vertLen = 0, fragLen = 0, compLen = 0;
+    char *vertOut, *fragOut, *compOut, *geomOut;
+    size_t vertLen = 0, fragLen = 0, geomLen = 0, compLen = 0;
 
-    short mode = -1; /* -1: NONE | 0: Vert | 1: Frag */
+    short mode =
+      -1; /* -1: NONE | 0: Vert | 1: Frag | 2: Geometry | 3: Compute */
 
     if ((fptr = fopen(path, "rb")) == NULL)
     {
@@ -158,47 +171,40 @@ ParseShader(const char *path)
             // Begin vertex
             if (strstr(line, "vertex") != NULL)
             {
-                mode = 0;
-#ifdef WIN32
-                stream  = open_memstream(&vertOut, vertLen);
-                vertLen = 1;
-#else
+                mode   = 0;
                 stream = open_memstream(&vertOut, &vertLen);
-#endif
             }
             // Begin fragment
             else if (strstr(line, "fragment") != NULL)
             {
-                mode = 1;
-#ifdef WIN32
-                stream  = open_memstream(&fragOut, fragLen);
-                fragLen = 1;
-#else
+                mode   = 1;
                 stream = open_memstream(&fragOut, &fragLen);
-#endif
+            }
+            // Begin Geometry
+            else if (strstr(line, "geometry") != NULL)
+            {
+                mode   = 2;
+                stream = open_memstream(&geomOut, &geomLen);
             }
             // Begin Compute
             else if (strstr(line, "compute") != NULL)
             {
-                mode = 2;
-#ifdef WIN32
-                stream  = open_memstream(&compOut, compLen);
-                compLen = 1;
-#else
+                mode   = 3;
                 stream = open_memstream(&compOut, &compLen);
-#endif
-                // compLen = 1;
             } else
             {
                 mode = -1;
-            } // Currently no other modes
-        } else
-        {
-            if (mode > -1)
-            {
-                // fread(vertOut, ftell(fptr), 1, fptr);
-                fprintf(stream, line);
             }
+        }
+        // skip "#version" lines to fill in our own
+        else if (strstr(line, "#version") != NULL)
+        {
+            continue;
+        }
+        // write line
+        else
+        {
+            if (mode > -1) { fprintf(stream, line); }
         }
     }
 
@@ -207,72 +213,107 @@ ParseShader(const char *path)
 
     /* TODO: Report 'NULL' declaration bug */
 
-    gsk_ShaderSource *ss = malloc(sizeof(gsk_ShaderSource));
+    gsk_ShaderSource ss = {0};
 
-    // TODO: Is this malloc'd?
-    if (vertLen > 0) { ss->shaderVertex = strdup(vertOut); }
-    if (fragLen > 0) { ss->shaderFragment = strdup(fragOut); }
-    if (compLen > 0) { ss->shaderCompute = strdup(compOut); }
+    if (vertLen > 0) { ss.shaderVertex = strdup(vertOut); }
+    if (fragLen > 0) { ss.shaderFragment = strdup(fragOut); }
+    if (geomLen > 0) { ss.shaderGeometry = strdup(geomOut); }
+    if (compLen > 0) { ss.shaderCompute = strdup(compOut); }
 
     return ss;
 }
 
-gsk_ShaderProgram *
+gsk_ShaderProgram
 gsk_shader_program_create(const char *path)
 {
-    if (GSK_DEVICE_API_OPENGL)
-    {
-        gsk_ShaderSource *ss = ParseShader(path);
-
-        u32 program = glCreateProgram();
-        u32 vs      = CompileSingleShader(GL_VERTEX_SHADER, ss->shaderVertex);
-        u32 fs = CompileSingleShader(GL_FRAGMENT_SHADER, ss->shaderFragment);
-
-        // TODO: Read documentation on these functions
-        glAttachShader(program, vs);
-        glAttachShader(program, fs);
-        glLinkProgram(program);
-        glValidateProgram(program);
-
-        glDeleteShader(vs);
-        glDeleteShader(fs);
-
-        gsk_ShaderProgram *ret = malloc(sizeof(gsk_ShaderProgram));
-        ret->id                = program;
-        ret->shaderSource      = ss;
-        return ret;
-
-    } else if (GSK_DEVICE_API_VULKAN)
+    if (GSK_DEVICE_API_VULKAN)
     {
         LOG_DEBUG("Shader not implemented for Vulkan");
-        return NULL;
+        gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
+        return ret;
     }
-    return NULL;
-}
 
-gsk_ShaderProgram *
-gsk_shader_compute_program_create(const char *path)
-{
-    gsk_ShaderSource *ss = ParseShader(path);
-    u32 program          = glCreateProgram();
-    u32 csSingle = CompileSingleShader(GL_COMPUTE_SHADER, ss->shaderCompute);
+    gsk_ShaderSource ss   = ParseShader(path);
+    gsk_ShaderProgram ret = {.id = 0, .id_skinned = 0, .shaderSource = ss};
 
-    glAttachShader(program, csSingle);
-    glLinkProgram(program);
-    glValidateProgram(program);
+    for (int i = 0; i < 2; i++)
+    {
+        u32 program = glCreateProgram();
 
-    glDeleteShader(csSingle);
+        u32 vs = (ss.shaderVertex)
+                   ? CompileSingleShader(GL_VERTEX_SHADER, ss.shaderVertex, i)
+                   : 0;
+        u32 fs =
+          (ss.shaderFragment)
+            ? CompileSingleShader(GL_FRAGMENT_SHADER, ss.shaderFragment, i)
+            : 0;
+        u32 gs =
+          (ss.shaderGeometry)
+            ? CompileSingleShader(GL_GEOMETRY_SHADER, ss.shaderGeometry, i)
+            : 0;
+        u32 cs = (ss.shaderCompute)
+                   ? CompileSingleShader(GL_COMPUTE_SHADER, ss.shaderCompute, i)
+                   : 0;
 
-    gsk_ShaderProgram *ret = malloc(sizeof(gsk_ShaderProgram));
-    ret->id                = program;
-    ret->shaderSource      = ss;
+        if (vs) { glAttachShader(program, vs); }
+        if (fs) { glAttachShader(program, fs); }
+        if (gs) { glAttachShader(program, gs); }
+        if (cs) { glAttachShader(program, cs); }
+
+        glLinkProgram(program);
+
+        GLint linkStatus = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+        if (linkStatus == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+            // The maxLength includes the NULL character
+            char *infoLog = (char *)malloc(maxLength);
+            glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
+
+            // Log the error
+            LOG_ERROR("Program link error message: %s", infoLog);
+
+            free(infoLog);
+        }
+
+        glValidateProgram(program);
+
+        if (vs) { glDeleteShader(vs); }
+        if (fs) { glDeleteShader(fs); }
+        if (gs) { glDeleteShader(gs); }
+        if (cs) { glDeleteShader(cs); }
+
+        if (i == 0)
+        {
+            ret.id = program;
+        } else if (i == 1)
+        {
+            ret.id_skinned = program;
+        }
+    }
+
     return ret;
+
+    // gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
+    // return ret;
 }
 
 void
 gsk_shader_use(gsk_ShaderProgram *shader)
 {
-    glUseProgram(shader->id);
+    _gsk_shader_use_program(shader->id);
+}
+
+u32
+_gsk_shader_use_program(u32 shader_program_id)
+{
+    glUseProgram(shader_program_id);
+
+    // update previous shader_id on renderer
+    gsk_runtime_get_renderer()->prev_shader_id = shader_program_id;
 }
 
 #if _GSK_SHADER_EASY_UNIFORMS

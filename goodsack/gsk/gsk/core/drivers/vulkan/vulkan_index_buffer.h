@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -18,14 +18,17 @@ typedef struct VulkanIndexBuffer
     VkBuffer buffer;
     VkDeviceMemory bufferMemory;
     u16 indicesCount;
+
+    void *data;
+    u32 size;
 } VulkanIndexBuffer;
 
 VulkanIndexBuffer *
 vulkan_index_buffer_create(VkPhysicalDevice physicalDevice,
                            VkDevice device,
-                           VkCommandPool commandPool,
                            VkQueue graphicsQueue,
-                           u16 *indices,
+                           VkCommandPool commandPool,
+                           void *data,
                            u16 indicesCount);
 
 #ifdef __cplusplus

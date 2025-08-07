@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -7,10 +7,14 @@
 
 #include "util/filesystem.h"
 
+#include "core/device/device.h"
 #include "core/drivers/opengl/opengl.h"
 #include "core/graphics/mesh/mesh.h"
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/shader/shader.h"
+
+#include "asset/asset.h"
+#include "runtime/gsk_runtime_wrapper.h"
 
 static u32 cubemapProjectionFBO;
 static u32 cubemapProjectionRBO;
@@ -23,6 +27,12 @@ static gsk_ShaderProgram *cubemapBrdfShader;
 gsk_Skybox *
 gsk_skybox_create(gsk_Texture *cubemap)
 {
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_WARN("Skybox not implemented for Vulkan");
+        return NULL;
+    }
+
     gsk_Skybox *ret = malloc(sizeof(gsk_Skybox));
     ret->cubemap    = cubemap;
 
@@ -30,16 +40,17 @@ gsk_skybox_create(gsk_Texture *cubemap)
     ret->vao               = vao;
 
     gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
-      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
+      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_array_add_buffer(vao, vbo);
-    gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
-      PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
+    gsk_GlIndexBuffer *ibo =
+      gsk_gl_index_buffer_create(PRIM_ARR_I_CUBE,
+                                 PRIM_SIZ_I_CUBE * sizeof(unsigned int),
+                                 GskOglUsageType_Static);
     gsk_gl_index_buffer_bind(ibo);
     free(vbo);
-    gsk_ShaderProgram *shader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/skybox.shader"));
-    ret->shader = shader;
+    gsk_ShaderProgram *shader = GSK_ASSET("gsk://shaders/skybox.shader");
+    ret->shader               = shader;
 
     return ret;
 }
@@ -47,6 +58,8 @@ gsk_skybox_create(gsk_Texture *cubemap)
 void
 gsk_skybox_draw(gsk_Skybox *self)
 {
+    if (GSK_DEVICE_API_VULKAN) { return; }
+
     // glDepthMask(GL_FALSE);
     // glDisable(GL_CULL_FACE); -- TODO: Needed for skybox rendering
     gsk_shader_use(self->shader);
@@ -70,6 +83,12 @@ gsk_skybox_draw(gsk_Skybox *self)
 gsk_Skybox *
 gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
 {
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_WARN("Skybox (HDR) not implemented for Vulkan");
+        return NULL;
+    }
+
     clearGLState();
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -176,34 +195,33 @@ gsk_skybox_hdr_create(gsk_Texture *hdrTexture)
     gsk_GlVertexArray *vao = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vao);
     gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(
-      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float));
+      PRIM_ARR_V_CUBE, PRIM_SIZ_V_CUBE * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_bind(vbo);
     gsk_gl_vertex_buffer_push(vbo, 3, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_array_add_buffer(vao, vbo);
-    gsk_GlIndexBuffer *ibo = gsk_gl_index_buffer_create(
-      PRIM_ARR_I_CUBE, PRIM_SIZ_I_CUBE * sizeof(unsigned int));
+    gsk_GlIndexBuffer *ibo =
+      gsk_gl_index_buffer_create(PRIM_ARR_I_CUBE,
+                                 PRIM_SIZ_I_CUBE * sizeof(unsigned int),
+                                 GskOglUsageType_Static);
     gsk_gl_index_buffer_bind(ibo);
     cubemapProjectionVAO = vao;
 
-    gsk_ShaderProgram *shaderP =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-cubemap.shader"));
-    cubemapProjectionShader = shaderP;
+    gsk_ShaderProgram *shaderP = GSK_ASSET("gsk://shaders/hdr-cubemap.shader");
+    cubemapProjectionShader    = shaderP;
 
     gsk_ShaderProgram *shaderConvolute =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-convolute.shader"));
+      GSK_ASSET("gsk://shaders/hdr-convolute.shader");
     cubemapShaderConvolute = shaderConvolute;
 
     gsk_ShaderProgram *shaderPrefilter =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-prefilter.shader"));
+      GSK_ASSET("gsk://shaders/hdr-prefilter.shader");
     cubemapShaderPrefilter = shaderPrefilter;
 
-    gsk_ShaderProgram *brdfShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/hdr-brdf.shader"));
-    cubemapBrdfShader = brdfShader;
+    gsk_ShaderProgram *brdfShader = GSK_ASSET("gsk://shaders/hdr-brdf.shader");
+    cubemapBrdfShader             = brdfShader;
 
     // Base skybox-render shader
-    gsk_ShaderProgram *baseShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/skybox.shader"));
+    gsk_ShaderProgram *baseShader = GSK_ASSET("gsk://shaders/skybox.shader");
 
     cubemapProjectionFBO = captureFBO;
     cubemapProjectionRBO = captureRBO;
@@ -405,9 +423,9 @@ gsk_skybox_hdr_projection(gsk_Skybox *skybox)
     // Create Rectangle
     gsk_GlVertexArray *vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vaoRect);
-    float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect =
-      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    float *rectPositions        = prim_vert_rect();
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(
+      rectPositions, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);

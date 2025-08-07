@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Gabriel Kutuzov
+ * Copyright (c) 2024-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -22,7 +22,7 @@ TEST(Util_Array_list, Teardown)
 
     EXPECT_EQ(array.is_list_empty, 1);
     EXPECT_EQ(array.list_next, 0);
-    EXPECT_EQ(array.list_count, inc_size);
+    EXPECT_EQ(array.list_capacity, inc_size);
     EXPECT_EQ(array.list_increment, inc_size);
 
     u32 start_val  = 8;

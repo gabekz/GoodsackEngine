@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -7,6 +7,10 @@
 #define __PASS_PREPASS_H__
 
 #include "core/graphics/material/material.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 void
 prepass_init();
@@ -20,12 +24,20 @@ prepass_bind();
 gsk_Material *
 prepass_getMaterial();
 
-gsk_Material *
-prepass_getMaterialSkinned();
+u32
+prepass_getFBO();
 
 u32
 prepass_getPosition();
+
 u32
 prepass_getNormal();
+
+u32
+prepass_getPicker();
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __PASS_PREPASS_H__

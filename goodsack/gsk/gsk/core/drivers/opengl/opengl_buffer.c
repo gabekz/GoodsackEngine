@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #include "opengl_buffer.h"
+
+#include "util/sysdefs.h"
 
 #include <stdlib.h>
 
@@ -30,13 +32,13 @@ gsk_gl_vertex_array_add_buffer(gsk_GlVertexArray *self, gsk_GlVertexBuffer *vbo)
     gsk_gl_vertex_buffer_bind(vbo);
     gsk_GlBufferElement *elements = vbo->elements;
 
-    unsigned int offset      = 0;
-    unsigned int newElements = 0;
+    u32 offset      = 0;
+    u32 newElements = 0;
     for (int i = 0; i < vbo->elementsSize; i++)
     {
 
         // The offset for any existing VBO's inside this VAO
-        unsigned int j = i + self->elementsCount;
+        u32 j = i + self->elementsCount;
 
 #ifdef LOGGING
         printf("\nvbo:elementsSize: %d\n", vbo->elementsSize);
@@ -75,7 +77,7 @@ gsk_gl_get_element_type_size(GLuint type)
 }
 
 gsk_GlVertexBuffer *
-gsk_gl_vertex_buffer_create(const void *data, unsigned int size)
+gsk_gl_vertex_buffer_create(const void *data, u32 size, GskOglUsageType usage)
 {
     gsk_GlVertexBuffer *vbo = malloc(sizeof(gsk_GlVertexBuffer));
     vbo->elements           = calloc(0, sizeof(gsk_GlBufferElement));
@@ -86,7 +88,7 @@ gsk_gl_vertex_buffer_create(const void *data, unsigned int size)
     glGenBuffers(1, &vbo->id);
     glBindBuffer(GL_ARRAY_BUFFER, vbo->id);
     // DOCS: glBufferData: GL type of buffer, size, data, GL draw-type
-    glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, size, data, usage);
 
     return vbo;
 }
@@ -116,7 +118,7 @@ gsk_gl_vertex_buffer_push(gsk_GlVertexBuffer *self,
                           GLuint normalized)
 {
 
-    unsigned int size = self->elementsSize + 1;
+    u32 size = self->elementsSize + 1;
 
     void *p        = (void *)self->elements;
     self->elements = realloc(p, size * sizeof(gsk_GlBufferElement));
@@ -136,13 +138,13 @@ gsk_gl_vertex_buffer_push(gsk_GlVertexBuffer *self,
 }
 
 gsk_GlIndexBuffer *
-gsk_gl_index_buffer_create(const void *data, unsigned int size)
+gsk_gl_index_buffer_create(const void *data, u32 size, GskOglUsageType usage)
 {
     gsk_GlIndexBuffer *ibo = malloc(sizeof(gsk_GlIndexBuffer));
 
     glGenBuffers(1, &ibo->id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
 
     return ibo;
 }

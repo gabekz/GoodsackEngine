@@ -7,6 +7,7 @@
 
 #include "core/graphics/texture/texture_set.h"
 
+#include "asset/asset.h"
 #include "asset/import/loader_qmap.h"
 
 /*----------------------
@@ -25,7 +26,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
     def_norm = texture_create_n(GSK_PATH("gsk://textures/defaults/normal.png"));
     def_ao   = texture_create_n(GSK_PATH("gsk://textures/defaults/white.png"));
     def_missing =
-      texture_create_d(GSK_PATH("gsk://textures/defaults/missing.jpg"));
+      texture_create_d(GSK_PATH("gsk://textures/defaults/missing_1.png"));
 
 #if 0
     def_skybox = gsk_skybox_hdr_create(texture_create_hdr(
@@ -92,7 +93,7 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
      |  Import QMap
      -----------------------*/
     gsk_ShaderProgram *p_shader_qmap =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/lit-diffuse.shader"));
+      GSK_ASSET("gsk://shaders/lit-diffuse.shader");
 
     gsk_QMapContainer qmap = gsk_qmap_load(
       GSK_PATH("gsk://map/cube_valve.map"), &texture_set, p_shader_qmap);
@@ -130,12 +131,12 @@ _scene8(gsk_ECS *ecs, gsk_Renderer *renderer)
         .renderLayer = 0, // DEFAULT RENDER LAYER (camera-zero)
       }));
     _gsk_ecs_add_internal(camera,
-                          C_CAMERALOOK,
+                          C_CAMERA_LOOK,
                           (void *)(&(struct ComponentCameraLook) {
                             .sensitivity = 1.0f,
                           }));
     _gsk_ecs_add_internal(camera,
-                          C_CAMERAMOVEMENT,
+                          C_CAMERA_MOVEMENT,
                           (void *)(&(struct ComponentCameraMovement) {
                             .speed = 5.0f,
                           }));

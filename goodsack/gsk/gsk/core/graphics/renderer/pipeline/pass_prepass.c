@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -13,11 +13,10 @@
 
 #include "core/drivers/opengl/opengl.h"
 
+#include "asset/asset.h"
+
 static gsk_ShaderProgram *s_depthPrepassShader;
 static gsk_Material *s_depthPrepassMaterial;
-
-static gsk_ShaderProgram *s_depthPrepassShader_skinned;
-static gsk_Material *s_depthPrepassMaterial_skinned;
 
 static u32 s_depthPrepassFBO;
 static u32 s_depthPrepassTextureId;
@@ -25,6 +24,7 @@ static u32 s_depthPrepassTextureId;
 // GBuffer information
 static u32 s_gPosition;
 static u32 s_gNormal;
+static u32 s_gPicker;
 
 static gsk_GlVertexArray *s_vaoRect;
 
@@ -52,13 +52,30 @@ prepass_init()
     glGenTextures(1, &s_gNormal);
     glBindTexture(GL_TEXTURE_2D, s_gNormal);
     glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+      GL_TEXTURE_2D, 0, GL_RGB16F, 1280, 720, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, s_gNormal, 0);
+
+    // - Picker texture - TODO: width/height
+    glGenTextures(1, &s_gPicker);
+    glBindTexture(GL_TEXTURE_2D, s_gPicker);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB32UI,
+                 1280,
+                 720,
+                 0,
+                 GL_RGB_INTEGER,
+                 GL_UNSIGNED_INT,
+                 NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, s_gPicker, 0);
 
     // Renderbuffer
     unsigned int rbo;
@@ -69,54 +86,21 @@ prepass_init()
       GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    // Texture
-    /*
-    glGenTextures(1, &s_depthPrepassTextureId);
-    glBindTexture(GL_TEXTURE_2D, s_depthPrepassTextureId);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_DEPTH_COMPONENT,
-                 1280, // TODO: WIDTH
-                 720,  // TODO: HEIGHT
-                 0,
-                 GL_DEPTH_COMPONENT,
-                 GL_FLOAT,
-                 NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    unsigned int attachments[3] = {
+      GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    */
-
-    unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-
-    /*
-    glFramebufferTexture2D(GL_FRAMEBUFFER,
-                           // GL_DEPTH_ATTACHMENT,
-                           attachments,
-                           GL_TEXTURE_2D,
-                           s_depthPrepassTextureId,
-                           0);
-                           */
-    glDrawBuffers(2, attachments);
+    glDrawBuffers(3, attachments);
 
     // create shader and material
-    s_depthPrepassShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/depth-prepass.shader"));
+    s_depthPrepassShader   = GSK_ASSET("gsk://shaders/depth-prepass.shader");
     s_depthPrepassMaterial = gsk_material_create(s_depthPrepassShader, NULL, 0);
-
-    s_depthPrepassShader_skinned = gsk_shader_program_create(
-      GSK_PATH("gsk://shaders/depth-prepass-skinned.shader"));
-    s_depthPrepassMaterial_skinned =
-      gsk_material_create(s_depthPrepassShader_skinned, NULL, 0);
 
     // Create Rectangle
     s_vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(s_vaoRect);
-    float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect =
-      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    float *rectPositions        = prim_vert_rect();
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(
+      rectPositions, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
@@ -141,6 +125,8 @@ prepass_bindTextures(u32 startingSlot)
     glBindTexture(GL_TEXTURE_2D, s_gPosition);
     glActiveTexture(GL_TEXTURE1 + startingSlot);
     glBindTexture(GL_TEXTURE_2D, s_gNormal);
+    glActiveTexture(GL_TEXTURE2 + startingSlot);
+    glBindTexture(GL_TEXTURE_2D, s_gPicker);
 }
 
 void
@@ -175,10 +161,10 @@ prepass_getMaterial()
     return s_depthPrepassMaterial;
 }
 
-gsk_Material *
-prepass_getMaterialSkinned()
+u32
+prepass_getFBO()
 {
-    return s_depthPrepassMaterial_skinned;
+    return s_depthPrepassFBO;
 }
 
 u32
@@ -186,8 +172,15 @@ prepass_getPosition()
 {
     return s_gPosition;
 }
+
 u32
 prepass_getNormal()
 {
     return s_gNormal;
+}
+
+u32
+prepass_getPicker()
+{
+    return s_gPicker;
 }

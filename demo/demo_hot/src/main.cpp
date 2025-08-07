@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -15,8 +15,9 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#include "gsk_generated/GoodsackEngineConfig.h"
+
 #include "scenes/demo_scenes.h"
-#include <GoodsackEngineConfig.h> // TODO: Change this
 
 #include "runtime/gsk_runtime.hpp"
 
@@ -35,12 +36,15 @@ main(int argc, char *argv[])
     STATIC_ASSERT((_PROJ_DIR_ROOT), "project path-root definition required");
     STATIC_ASSERT((_GOODSACK_FS_DIR_ROOT), "GSK path-root definition required");
 #endif
-    gsk_runtime_setup((_PROJ_DIR_DATA "/"), _PROJ_DIR_SCHEME, argc, argv);
+    gsk::runtime::rt_setup(
+      _PROJ_DIR_DATA, _PROJ_DIR_SCHEME, "GSK_Demo", argc, argv);
 
-    demo_scenes_create(gsk_runtime_get_ecs(), gsk_runtime_get_renderer());
-    gsk_runtime_set_scene(INITIAL_SCENE);
+    demo_scenes_create(gsk::runtime::rt_get_ecs(),
+                       gsk::runtime::rt_get_renderer(),
+                       gsk::runtime::rt_get_asset_cache("data://demo.test"));
+    gsk::runtime::rt_set_scene(INITIAL_SCENE);
 
-    gsk_runtime_loop();
+    gsk::runtime::rt_loop();
 
     return 0;
 }

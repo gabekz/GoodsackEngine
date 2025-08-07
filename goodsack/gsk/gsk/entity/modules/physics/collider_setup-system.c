@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #include "collider_setup-system.h"
+
+#include <stdlib.h>
 
 #include "util/maths.h"
 #include "util/sysdefs.h"
@@ -14,7 +16,8 @@
 #include "physics/physics_collision.h"
 #include "physics/physics_solver.h"
 
-#define MAX_COLLISION_POINTS 32
+#define MAX_COLLISION_POINTS         128
+#define COLLISION_REQUIRES_RIGIDBODY FALSE
 
 static void
 init(gsk_Entity e)
@@ -36,12 +39,33 @@ init(gsk_Entity e)
     if (collider->type == COLLIDER_SPHERE)
     {
         gsk_SphereCollider *sphereCollider = malloc(sizeof(gsk_SphereCollider));
-        // NOTE: Default radius is temporarily changed here
-        sphereCollider->radius = 0.2f;
+
+        if (collider->radius <= 0)
+        {
+            // default radius
+            collider->radius = 0.5f;
+        }
+
+        sphereCollider->radius = collider->radius;
+
+#if 0
+        if (gsk_ecs_has(e, C_MODEL))
+        {
+            struct ComponentModel *cmp_model = gsk_ecs_get(e, C_MODEL);
+            gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
+
+            f32 dist = glm_aabb_radius(meshdata->boundingBox);
+            LOG_INFO("RADIUS IS %f", dist);
+            sphereCollider->radius = dist / 2;
+#if 0
+            sphereCollider->radius =
+              (dist / 2) * (glm_vec3_norm(transform->scale) / 2);
+#endif
+        }
+#endif
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_SphereCollider *)sphereCollider;
-
     } else if (collider->type == COLLIDER_PLANE)
     {
         gsk_PlaneCollider *planeCollider = malloc(sizeof(gsk_PlaneCollider));
@@ -56,6 +80,10 @@ init(gsk_Entity e)
 
         glm_vec3_copy(transform->position, planeCollider->plane);
 
+        ((gsk_Collider *)collider->pCollider)->collider_data =
+          (gsk_PlaneCollider *)planeCollider;
+
+#if 0
         LOG_INFO("%f\t%f\t%f",
                  planeCollider->plane[0],
                  planeCollider->plane[1],
@@ -68,16 +96,14 @@ init(gsk_Entity e)
                  planeCollider->normal[0],
                  planeCollider->normal[1],
                  planeCollider->normal[2]);
-
-        ((gsk_Collider *)collider->pCollider)->collider_data =
-          (gsk_PlaneCollider *)planeCollider;
+#endif
     }
 
     else if (collider->type == COLLIDER_BOX)
     {
         gsk_BoxCollider *box_collider = malloc(sizeof(gsk_BoxCollider));
-        // glm_vec3_zero(box_collider->bounds[0]);
-        // glm_vec3_zero(box_collider->bounds[1]);
+        glm_vec3_zero(box_collider->bounds[0]);
+        glm_vec3_zero(box_collider->bounds[1]);
 
         if (gsk_ecs_has(e, C_MODEL))
         {
@@ -85,18 +111,34 @@ init(gsk_Entity e)
             gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
             glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
             glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
-#if 0
-            LOG_INFO("Box collider min-bounds: %f\t%f\t%f",
-                     box_collider->bounds[0][0],
-                     box_collider->bounds[0][1],
-                     box_collider->bounds[0][2]);
-            LOG_INFO("Box collider max-bounds: %f\t%f\t%f",
-                     box_collider->bounds[1][0],
-                     box_collider->bounds[1][1],
-                     box_collider->bounds[1][2]);
-#endif
         }
-        // TODO: Add default BOX bounds
+        // TODO: TESTING
+        else if (collider->p_mesh == 0x32)
+        {
+            glm_vec3_copy(collider->box_bounds_min, box_collider->bounds[0]);
+            glm_vec3_copy(collider->box_bounds_max, box_collider->bounds[1]);
+
+        }
+        // TODO: TESTING
+        else if (collider->p_mesh != NULL)
+        {
+            gsk_MeshData *meshdata = ((gsk_Mesh *)collider->p_mesh)->meshData;
+            glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
+            glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
+
+        }
+        // default BOX bounds
+        else
+        {
+            LOG_WARN("no mesh found found box collider on entity %d. Setting "
+                     "default bounds",
+                     e.id);
+
+            vec3 bounds_min = {-1.0f, -1.0f, -1.0f};
+            vec3 bounds_max = {1.0f, 1.0f, 1.0f};
+            glm_vec3_copy(bounds_min, box_collider->bounds[0]);
+            glm_vec3_copy(bounds_max, box_collider->bounds[1]);
+        }
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_BoxCollider *)box_collider;
@@ -108,8 +150,15 @@ init(gsk_Entity e)
           malloc(sizeof(gsk_CapsuleCollider));
 
         vec3 base  = {0.0f, 1.255f, 0.0f};
-        vec3 tip   = {0.0f, 1.0f, 0.0f};
-        f32 radius = 1.0f;
+        vec3 tip   = {0.0f, 0.5f, 0.0f};
+        f32 radius = 0.2f;
+
+        // TODO: CHANGE THIS - temp for secondary capsule test
+        if (e.id >= 304)
+        {
+            vec3 new_base = {0.0f, -0.2f, 0.0f};
+            glm_vec3_copy(new_base, base);
+        }
 
         glm_vec3_copy(base, capsule_collider->base);
         glm_vec3_copy(tip, capsule_collider->tip);
@@ -127,6 +176,10 @@ on_collide(gsk_Entity e)
     if (!(gsk_ecs_has(e, C_COLLIDER))) return;
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
 
+#if COLLISION_REQUIRES_RIGIDBODY
+    if (!(gsk_ecs_has(e, C_RIGIDBODY))) return;
+#endif // COLLISION_REQUIRES_RIGIDBODY
+
     struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
@@ -136,16 +189,39 @@ on_collide(gsk_Entity e)
     gsk_EntityId id_point_list[MAX_COLLISION_POINTS];
     u32 points_list_next = 0;
 
+#if 0
+    if (gsk_ecs_has(e, C_RIGIDBODY))
+    {
+        struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
+
+        gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
+        int total_solvers          = (int)pSolver->solvers_list->list_next;
+
+        if (total_solvers > 0) { LOG_ERROR("HAS MORE THAN 1"); }
+    }
+#endif
+
     for (int i = 0; i < e.ecs->nextIndex; i++)
     {
         if (e.index == (gsk_EntityId)i) continue; // do not check self
 
         // TODO: fix look-up
         gsk_Entity e_compare = {
-          .id    = e.ecs->ids[i],
+          .id    = e.ecs->p_ent_ids[i],
           .index = (gsk_EntityId)i,
           .ecs   = e.ecs,
         };
+
+        // TODO: add functionptr to validate collision-layer matrix
+        if ((e.ecs->p_ent_layers[e.index] == 1 &&
+             e.ecs->p_ent_layers[e_compare.index] == 2) ||
+            (e.ecs->p_ent_layers[e.index] == 2 &&
+             e.ecs->p_ent_layers[e_compare.index] == 1) ||
+            (e.ecs->p_ent_layers[e.index] == 3) &&
+              e.ecs->p_ent_layers[e_compare.index] == 3)
+        {
+            continue;
+        }
 
         if (!gsk_ecs_has(e_compare, C_COLLIDER)) continue;
         if (!gsk_ecs_has(e_compare, C_TRANSFORM))
@@ -169,7 +245,7 @@ on_collide(gsk_Entity e)
 #define __clsn_prm                                                 \
     ((gsk_Collider *)collider->pCollider)->collider_data,          \
       ((gsk_Collider *)compareCollider->pCollider)->collider_data, \
-      transform->position, compareTransform->position
+      transform->world_position, compareTransform->world_position
 
         //
         // determine which collision-test function to use
@@ -218,11 +294,9 @@ on_collide(gsk_Entity e)
             case COLLIDER_BOX:
                 points = gsk_physics_collision_find_box_box(__clsn_prm);
                 break;
-#if 0
             case COLLIDER_CAPSULE:
                 points = gsk_physics_collision_find_box_capsule(__clsn_prm);
                 break;
-#endif
             default: break;
             };
         } else if (collider->type == COLLIDER_CAPSULE)
@@ -238,19 +312,37 @@ on_collide(gsk_Entity e)
             case COLLIDER_SPHERE:
                 points = gsk_physics_collision_find_capsule_sphere(__clsn_prm);
                 break;
-#if 0
             case COLLIDER_BOX:
                 points = gsk_physics_collision_find_capsule_box(__clsn_prm);
                 break;
-#endif
             default: break;
             }
         }
 
-        // Collision points
-        if (points.has_collision)
+        if (points.has_collision && points_list_next >= MAX_COLLISION_POINTS)
         {
+            LOG_ERROR("MAX COLLISION POINTS");
+        }
+
+        // Collision points
+        if (points.has_collision && points_list_next < MAX_COLLISION_POINTS)
+        {
+
             collider->isColliding = TRUE;
+
+#if 0
+            const char *luaCode = "hook.Run(\"PerformMultiplication\", 6, 4)";
+            luaL_dostring(L, luaCode);
+#endif
+
+#if 1
+            // skip this entity if it is a trigger
+            if (collider->is_trigger == TRUE)
+            {
+                // LOG_INFO("TRIGGER");
+                continue;
+            }
+#endif
 
             points_list[points_list_next] = points;
             id_point_list[points_list_next] =
@@ -261,27 +353,24 @@ on_collide(gsk_Entity e)
 
     for (int i = 0; i < points_list_next; i++)
     {
-
         // TODO: AGAIN - fix look-up
         gsk_Entity e_compare = {
-          .id    = e.ecs->ids[id_point_list[i]],
+          .id    = e.ecs->p_ent_ids[id_point_list[i]],
           .index = (gsk_EntityId)id_point_list[i],
           .ecs   = e.ecs,
         };
 
+        struct ComponentCollider *compareCollider =
+          gsk_ecs_get(e_compare, C_COLLIDER);
+
         // push collision to rigidbody solver
         if (gsk_ecs_has(e, C_RIGIDBODY))
         {
-
             struct ComponentRigidbody *rigidbody_a =
               gsk_ecs_get(e, C_RIGIDBODY);
 
             struct ComponentRigidbody *rigidbody_b = NULL;
             struct ComponentTransform *transform_b = NULL;
-
-            //
-            // TODO: Refactor this section to separate function
-            //
 
             // Get body_b Rigidbody
             if (gsk_ecs_has(e_compare, C_RIGIDBODY))
@@ -294,6 +383,30 @@ on_collide(gsk_Entity e)
             {
                 transform_b = gsk_ecs_get(e_compare, C_TRANSFORM);
             }
+
+#if 1
+            if (compareCollider->is_trigger == TRUE && rigidbody_b != NULL)
+            {
+                // Create a new collision result using our points
+                gsk_CollisionResult result = {
+                  .points              = points_list[i], // TODO: invert points
+                  .physics_mark        = (gsk_PhysicsMark) {0},
+                  .ent_a_id            = e_compare.id,
+                  .ent_b_id            = e.id,
+                  .is_trigger_response = TRUE,
+                };
+
+                // Send that over to rigidbody (B) solver list
+                gsk_physics_solver_push(
+                  (gsk_PhysicsSolver *)rigidbody_b->solver, result);
+
+                continue;
+            }
+#endif
+
+            //
+            // TODO: Refactor this section to separate function
+            //
 
             // calculate inertia
             // TODO: Improve
@@ -315,11 +428,17 @@ on_collide(gsk_Entity e)
             inverse_mass_a = (1.0f / rigidbody_a->mass);
 
             // TODO: actually calculate HERE
-            inertia_a         = inertia * mass_a * 1;
+            inertia_a         = inertia * (mass_a * 1.0f);
             inverse_inertia_a = (fabs(inertia_a) > 0.0f) ? 1.0f / inertia_a : 0;
 
             // copy b-values
-            if (rigidbody_b)
+            if (rigidbody_b == NULL)
+            {
+                glm_vec3_copy(linear_velocity_a, relative_velocity);
+
+            }
+            // copy b-values for standard rigidbodies
+            else if (rigidbody_b->is_kinematic == FALSE)
             {
                 glm_vec3_copy(rigidbody_b->linear_velocity, linear_velocity_b);
                 mass_b         = rigidbody_b->mass;
@@ -333,10 +452,6 @@ on_collide(gsk_Entity e)
                 // calculate relative velocity
                 glm_vec3_sub(
                   linear_velocity_a, linear_velocity_b, relative_velocity);
-
-            } else
-            {
-                glm_vec3_copy(linear_velocity_a, relative_velocity);
             }
 
             gsk_PhysicsMark mark = {
@@ -368,15 +483,16 @@ on_collide(gsk_Entity e)
             glm_vec3_copy(relative_velocity, mark.relative_velocity);
 
             // copy world-positions
-            glm_vec3_copy(transform->position, mark.body_a.position);
-            glm_vec3_copy(transform_b->position, mark.body_b.position);
+            glm_vec3_copy(transform->world_position, mark.body_a.position);
+            glm_vec3_copy(transform_b->world_position, mark.body_b.position);
 
             // Create a new collision result using our points
             gsk_CollisionResult result = {
-              .points       = points_list[i],
-              .physics_mark = mark,
-              .ent_a_id     = e.id,
-              .ent_b_id     = e_compare.id,
+              .points              = points_list[i],
+              .physics_mark        = mark,
+              .ent_a_id            = e.id,
+              .ent_b_id            = e_compare.id,
+              .is_trigger_response = FALSE,
             };
 
             if (points_list_next >= MAX_COLLISION_POINTS)
@@ -390,6 +506,20 @@ on_collide(gsk_Entity e)
     }
 }
 
+static void
+destroy(gsk_Entity entity)
+{
+    if (!(gsk_ecs_has(entity, C_COLLIDER))) return;
+    struct ComponentCollider *collider = gsk_ecs_get(entity, C_COLLIDER);
+
+    if (collider->pCollider == NULL) { return; }
+    gsk_Collider *p_col = (gsk_Collider *)collider->pCollider;
+
+    if (p_col->collider_data) { free(p_col->collider_data); }
+
+    free(p_col);
+}
+
 void
 s_collider_setup_system_init(gsk_ECS *ecs)
 {
@@ -397,5 +527,6 @@ s_collider_setup_system_init(gsk_ECS *ecs)
                             ((gsk_ECSSystem) {
                               .init       = (gsk_ECSSubscriber)init,
                               .on_collide = (gsk_ECSSubscriber)on_collide,
+                              .destroy    = (gsk_ECSSubscriber)destroy,
                             }));
 }

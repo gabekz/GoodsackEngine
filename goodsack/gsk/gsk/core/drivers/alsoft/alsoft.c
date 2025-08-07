@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -28,10 +28,10 @@ ListAudioDevices(const ALCchar *devices)
     const ALCchar *device = devices, *next = devices + 1;
     size_t len = 0;
 
-    LOG_INFO("Audio Devices List:");
+    LOG_DEBUG("Audio Devices List:");
     while (devices && *device != '\0' && next && *next != '\0')
     {
-        LOG_INFO("Device: %s", device);
+        LOG_DEBUG("Device: %s", device);
         len = strlen(device);
         device += (len + 1);
         next += (len + 2);

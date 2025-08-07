@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #ifndef __MODEL_H__
 #define __MODEL_H__
 
+#include "core/graphics/mesh/animation.h"
 #include "core/graphics/mesh/mesh.h"
 #include "util/sysdefs.h"
 
@@ -13,7 +14,7 @@
 extern "C" {
 #endif // __cplusplus
 
-typedef enum ModelFileType { OBJ = 0, GLTF } ModelFileType;
+typedef enum ModelFileType { OBJ = 0, GLTF, QMAP } ModelFileType;
 
 #if 0
 typedef struct ModelOptions
@@ -25,11 +26,15 @@ typedef struct ModelOptions
 
 typedef struct gsk_Model
 {
-
     const char *modelPath;
 
     gsk_Mesh **meshes;
     u32 meshesCount;
+
+    // TODO: should have skeleton here, AnimationComponent should have
+    // AnimationSet reference.
+    // OR the AnimationComponent should just have it all..
+    // gsk_Skeleton *p_skeleton;
 
     ModelFileType fileType;
 

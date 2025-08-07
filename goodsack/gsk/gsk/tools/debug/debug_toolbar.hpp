@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -32,6 +32,8 @@ class DebugToolbar {
     void update(void);
     void render(void);
 
+    bool is_focused(void);
+
 #if 0
     void set_style(void);
 #endif
@@ -40,6 +42,7 @@ class DebugToolbar {
     gsk_Renderer *m_renderer;
 
     bool m_debugEnabled;
+    bool m_debugEnableKeyCheck;
 
     enum class Menus { File, Scene, Pipeline, None };
     const char *p_menu_names[DEBUG_MENUS_COUNT] = {"File", "Scene", "Pipeline"};

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -89,7 +89,7 @@ gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
                                      vec3 pos_a,
                                      vec3 pos_b);
 
-#if 0
+#if 1
 // Box v. Capsule
 gsk_CollisionPoints
 gsk_physics_collision_find_box_capsule(gsk_BoxCollider *a,
@@ -123,7 +123,7 @@ gsk_physics_collision_find_capsule_sphere(gsk_CapsuleCollider *a,
                                           vec3 pos_a,
                                           vec3 pos_b);
 
-#if 0
+#if 1
 // Capsule v. Box
 gsk_CollisionPoints
 gsk_physics_collision_find_capsule_box(gsk_CapsuleCollider *a,
@@ -147,6 +147,18 @@ gsk_CollisionPoints
 gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
                                    gsk_BoxCollider *box,
                                    vec3 pos_box);
+
+// gsk_Raycast v. Plane
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_plane(gsk_Raycast *ray,
+                                     gsk_PlaneCollider *plane,
+                                     vec3 pos_plane);
+
+// gsk_Raycast v. Capsule
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_capsule(gsk_Raycast *ray,
+                                       gsk_CapsuleCollider *capsule,
+                                       vec3 pos_capsule);
 
 #ifdef __cplusplus
 }

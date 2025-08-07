@@ -1,0 +1,4 @@
+shader gsk://shaders/lit-diffuse.shader
+texture data://textures/brickwall/diffuse.png
+texture data://textures/brickwall/normal.png
+texture data://textures/container/specular.png

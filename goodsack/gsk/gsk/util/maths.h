@@ -1,36 +1,30 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #ifndef __MATHS_H__
 #define __MATHS_H__
 
+#include <math.h>
+
+#include "cglm/cglm.h"
+#include <cglm/struct.h>
+
 #ifdef MIN
 #undef MIN
-#endif
+#endif // MIN
 
 #ifdef MAX
 #undef MAX
-#endif
+#endif // MAX
 
 #ifdef CLAMP
 #undef CLAMP
-#endif
+#endif // CLAMP
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-
+#define MAX(a, b)      (((a) > (b)) ? (a) : (b))
+#define MIN(a, b)      (((a) < (b)) ? (a) : (b))
 #define CLAMP(c, m, n) c = (MIN(MAX(c, m), n))
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include "cglm/cglm.h"
-#include <cglm/struct.h>
-#ifdef __cplusplus
-}
-#endif
-#include "math.h"
 
 #endif // __MATHS_H__

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -13,6 +13,8 @@
 
 #include "core/drivers/vulkan/vulkan.h"
 
+#include "asset/assetdefs.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -21,12 +23,14 @@ typedef struct TextureOptions
 {
     float af_range;
     u32 internal_format;
-    u16 gen_mips, flip_vertically; // bool
+    u8 gen_mips;
+    u8 flip_vertically;
 } TextureOptions;
 // TextureOptions_default = {0, GL_RGB, false, 1};
 
 typedef struct gsk_Texture
 {
+    u8 is_valid;
     const char *filePath;
     s32 bpp;
     s32 width, height;
@@ -42,6 +46,12 @@ typedef struct gsk_Texture
         VkSampler textureSampler;
     } vulkan;
 } gsk_Texture;
+
+gsk_Texture
+_gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
+                             const char *path,
+                             VulkanDeviceContext *vkDevice,
+                             TextureOptions *p_options);
 
 gsk_Texture *
 texture_create(const char *path,

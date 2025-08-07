@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -8,6 +8,8 @@
 
 #include "core/graphics/texture/texture.h"
 #include "core/graphics/ui/gui_element.h"
+
+#include "util/sysdefs.h"
 
 #define GUI_FONT_MAX_CHARS    256 // maximum characters allowed in a font bitmap
 #define GUI_FONT_BASE_SPACING 17
@@ -28,10 +30,10 @@ typedef struct gsk_GuiText
 } gsk_GuiText;
 
 gsk_GuiText *
-gsk_gui_text_create(const char *text_string);
+gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color);
 
 void
-gsk_gui_text_draw(gsk_GuiText *self);
+gsk_gui_text_draw(gsk_GuiText *self, u32 shader_id);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -15,7 +15,7 @@ camera_input(gsk_Entity cameraEntity, GLFWwindow *window)
 {
 
     if (!gsk_ecs_has(cameraEntity, C_CAMERA) ||
-        !gsk_ecs_has(cameraEntity, C_CAMERAMOVEMENT) ||
+        !gsk_ecs_has(cameraEntity, C_CAMERA_MOVEMENT) ||
         !gsk_ecs_has(cameraEntity, C_TRANSFORM))
     {
         return;
@@ -23,7 +23,7 @@ camera_input(gsk_Entity cameraEntity, GLFWwindow *window)
 
     struct ComponentCamera *camera = gsk_ecs_get(cameraEntity, C_CAMERA);
     struct ComponentCameraMovement *cameraMovement =
-      gsk_ecs_get(cameraEntity, C_CAMERAMOVEMENT);
+      gsk_ecs_get(cameraEntity, C_CAMERA_MOVEMENT);
     struct ComponentTransform *transform =
       gsk_ecs_get(cameraEntity, C_TRANSFORM);
 

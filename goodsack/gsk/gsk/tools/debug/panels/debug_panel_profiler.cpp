@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -7,6 +7,11 @@
 
 #include "core/device/device.h"
 #include <imgui.h>
+
+#include "core/graphics/renderer/pipeline/pass_bloom.h"
+#include "core/graphics/renderer/pipeline/pass_prepass.h"
+#include "core/graphics/renderer/pipeline/pass_screen.h"
+#include "core/graphics/renderer/pipeline/pass_ssao.h"
 
 void
 gsk::tools::panels::Profiler::draw(void)
@@ -53,22 +58,23 @@ gsk::tools::panels::Profiler::draw(void)
         const char *items[] = {"Reinhard",
                                "Reinhard (Jodie)",
                                "Reinhard (Extended)",
+                               "Filmic",
                                "ACES (Approximate)",
-                               "Uncharted 2 Filmic"};
-        static int item_current_idx =
-          0; // Here we store our selection data as an index.
+                               "ACES (Fitted)"};
+
         const char *combo_preview_value =
-          items[item_current_idx]; // Pass in the preview value visible
-                                   // before opening the combo (it could be
-                                   // anything)
+          items[props->tonemapper]; // Pass in the preview value visible
+                                    // before opening the combo (it could be
+                                    // anything)
+
         if (BeginCombo("Tonemapping", combo_preview_value, flags))
         {
             for (int n = 0; n < IM_ARRAYSIZE(items); n++)
             {
-                const bool is_selected = (item_current_idx == n);
+                const bool is_selected = (props->tonemapper == n);
                 if (Selectable(items[n], is_selected))
                 {
-                    item_current_idx  = n;
+                    // item_current_idx  = n;
                     props->tonemapper = n;
                 }
 
@@ -78,7 +84,7 @@ gsk::tools::panels::Profiler::draw(void)
             }
             EndCombo();
         }
-        if (item_current_idx == 2)
+        if (props->tonemapper == 2)
         { // Reinhard Extended
             SliderFloat("Max White", &props->maxWhite, 0.0f, 20.0f);
         }
@@ -95,6 +101,7 @@ gsk::tools::panels::Profiler::draw(void)
         DragFloat("Amount", &props->vignetteAmount, 0.1f, 0.0f, 2.0f, "%.01f");
         DragFloat(
           "Falloff", &props->vignetteFalloff, 0.1f, 0.0f, 1.0f, "%.01f");
+        ColorEdit3("Color", p_renderer->properties.vignetteColor);
 
         Separator();
         Text("Anti Aliasing");
@@ -104,6 +111,45 @@ gsk::tools::panels::Profiler::draw(void)
         BeginDisabled();
         DragInt("Samples", &samples, 2, 0, 4);
         EndDisabled();
+
+        Separator();
+        Text("Bloom");
+        DragFloat(
+          "Intensity", &props->bloom_intensity, 0.1f, 0.0f, 20.0f, "%.1f");
+        DragFloat(
+          "Filter Radius", &props->bloom_radius, 0.001f, 0.0f, 1.0f, "%.4f");
+        DragFloat(
+          "Threshold", &props->bloom_threshold, 0.01f, 0.0f, 20.0f, "%.4f");
+
+        Separator();
+        Text("Shadowmap");
+        DragFloat("Near Plane",
+                  &p_renderer->shadowmapOptions.nearPlane,
+                  0.1f,
+                  -100,
+                  100);
+        DragFloat(
+          "Far Plane", &p_renderer->shadowmapOptions.farPlane, 0.1f, -100, 100);
+        DragFloat("Projection Size",
+                  &p_renderer->shadowmapOptions.camSize,
+                  0.1f,
+                  0,
+                  100);
+        DragInt(
+          "PCF Samples", &p_renderer->shadowmapOptions.pcfSamples, 1, 0, 10);
+
+        DragFloat("Normal Bias min",
+                  &p_renderer->shadowmapOptions.normalBiasMin,
+                  0.0001f,
+                  0,
+                  2,
+                  "%.5f");
+        DragFloat("Normal Bias max",
+                  &p_renderer->shadowmapOptions.normalBiasMax,
+                  0.0001f,
+                  0,
+                  2,
+                  "%.5f");
 
         /*
         Separator();

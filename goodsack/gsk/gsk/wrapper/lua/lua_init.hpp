@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -12,7 +12,7 @@
 // TODO: replace hardcoded path
 #define LUA_INIT_FILE_PATH "gsk://../gsk/gsk/api/lua/init.lua"
 
-void
+bool
 LuaInit(const char *file, gsk_ECS *ecs);
 
 #endif // __LUA_INIT_H__

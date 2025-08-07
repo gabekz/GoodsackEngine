@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -24,7 +24,7 @@
 #define DEBUG_TRACK  1
 #define DEBUG_POINTS 0 // 0 -- OFF | value = entity id
 
-#define CALC_INERTIA 0
+#define CALC_INERTIA 1
 
 // physics default values
 #define DEFAULT_RESTITUION       0.5f
@@ -32,16 +32,10 @@
 #define DEFAULT_DYNAMIC_FRICTION 0.4f
 
 // constant for putting dynamic objects to sleep
-#define SLEEP_EPSILON 0.001f
+#define SLEEP_EPSILON 0.5f
 
 static void
 _position_solver(_SolverData solver_data);
-
-static void
-_impulse_solver_with_rotation(_SolverData solver_data);
-
-static void
-_impulse_solver_with_rotation_friction(_SolverData solver_data);
 
 //-----------------------------------------------------------------------------
 #if DEBUG_TRACK
@@ -121,7 +115,13 @@ init(gsk_Entity entity)
     struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
     struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
 
-    // glm_vec3_zero(rigidbody->force);
+#if 0
+    glm_vec3_zero(rigidbody->force_impulse);
+    glm_vec3_zero(rigidbody->force_velocity);
+
+    glm_vec3_zero(rigidbody->torque);
+#endif
+
     glm_vec3_zero(rigidbody->linear_velocity);
     glm_vec3_zero(rigidbody->angular_velocity);
 
@@ -129,6 +129,12 @@ init(gsk_Entity entity)
     // todo: add restitution here
     rigidbody->static_friction  = DEFAULT_STATIC_FRICTION;
     rigidbody->dynamic_friction = DEFAULT_DYNAMIC_FRICTION;
+
+    if (rigidbody->mass <= 0)
+    {
+        LOG_WARN("mass was <= 0 - setting mass to 1");
+        rigidbody->mass = 1.0f;
+    }
 
 #if CALC_INERTIA
     // calculate rotational inertia
@@ -139,15 +145,15 @@ init(gsk_Entity entity)
 
         // I = 2/5mr^2 -- solid sphere
         inertia = (2.0f / 5.0f) * rigidbody->mass *
-                  ((gsk_SphereCollider *)collider->pCollider)->radius;
+                  pow(((gsk_SphereCollider *)collider->pCollider)->radius, 2);
     }
 
     else if (collider->type == COLLIDER_BOX)
     {
 
         // TODO: get width/height from bounds
-        f32 width  = 2;
-        f32 height = 2;
+        f32 width  = 1;
+        f32 height = 1;
 
         // I_d = 1/12m(w^2 + h^2) -- rectangular cuboid depth
         inertia =
@@ -155,8 +161,8 @@ init(gsk_Entity entity)
     }
 
     // inverse mass and inertia
-    f32 inverse_mass    = 1.0f / rigidbody->mass;
-    f32 inverse_inertia = 1.0f / inertia;
+    rigidbody->inverse_mass    = 1.0f / rigidbody->mass;
+    rigidbody->inverse_inertia = 1.0f / inertia;
 #endif
 
     // Initialize the physics solver
@@ -175,21 +181,41 @@ fixed_update(gsk_Entity entity)
     struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(entity, C_TRANSFORM);
 
+    // if (rigidbody->is_kinematic == TRUE) { return; }
+
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;
+
+#if 0
+    // Add Gravitational force
+
+    glm_vec3_scale(
+      rigidbody->gravity, rigidbody->mass, rigidbody->force_impulse);
+
+    // add impulse force
+    vec3 fDm = GLM_VEC3_ZERO_INIT;
+    glm_vec3_divs(rigidbody->force_impulse, rigidbody->mass, fDm);
+    // glm_vec3_scale(fDm, delta, fDm);
+    glm_vec3_add(fDm, rigidbody->force_impulse, rigidbody->force_impulse);
+
+    glm_vec3_add(rigidbody->force_impulse,
+                 rigidbody->linear_velocity,
+                 rigidbody->linear_velocity);
+#endif
 
     // --
     // -- Check for solvers/collision results
 
     gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
     int total_solvers          = (int)pSolver->solvers_list->list_next;
+    int total_impulses         = 0;
 
 #if DEBUG_TRACK
     s_dbg_instance = s_dbg_instance_begin;
 #endif
 
-    for (int i = 0; i < total_solvers; i++)
+    for (int i = total_solvers - 1; i >= 0; i--)
     {
         gsk_CollisionResult *pResult = &pSolver->solvers[i];
 
@@ -204,8 +230,14 @@ fixed_update(gsk_Entity entity)
         // --
         // Run Solvers
 
-        _position_solver(solver_data);
-        impulse_solver_with_rotation_friction(solver_data);
+        if (rigidbody->is_kinematic == FALSE &&
+            solver_data.p_collision_result->is_trigger_response == FALSE)
+        {
+            _position_solver(solver_data);
+            impulse_solver_with_rotation_friction(solver_data);
+
+            total_impulses += 1;
+        }
 
         // --
         // Run debug markers
@@ -220,6 +252,41 @@ fixed_update(gsk_Entity entity)
         gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
     }
 
+    if (pSolver->solvers_list->is_list_empty == FALSE)
+    {
+        LOG_ERROR("solver list failed to clear on entity %d", entity.id);
+    }
+
+    if (rigidbody->is_kinematic == TRUE || collider->is_trigger == TRUE)
+    {
+        return;
+    }
+
+    if (total_impulses > 0)
+    {
+        glm_vec3_divs(
+          rigidbody->force_velocity, total_impulses, rigidbody->force_velocity);
+        glm_vec3_divs(rigidbody->torque, total_impulses, rigidbody->torque);
+    }
+
+    // --
+    // -- Add force to linear velocity (ignore mass)
+    glm_vec3_add(rigidbody->linear_velocity,
+                 rigidbody->force_velocity,
+                 rigidbody->linear_velocity);
+
+    // Rigidbody sleep threshold
+    if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON)
+    {
+        glm_vec3_zero(rigidbody->force_impulse);
+        glm_vec3_zero(rigidbody->force_velocity);
+        glm_vec3_zero(rigidbody->torque);
+
+        glm_vec3_zero(rigidbody->angular_velocity);
+        // glm_vec3_zero(rigidbody->linear_velocity);
+        return;
+    }
+
     // --
     // -- Integrate velocities
 
@@ -227,7 +294,10 @@ fixed_update(gsk_Entity entity)
     vec3 vD = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(rigidbody->linear_velocity, delta, vD);
 
-#if 1
+    // update position
+    glm_vec3_add(transform->position, vD, transform->position);
+
+#if 0
     // calculate : orientation += angular_velocity * delta_time;
     vec3 aVD = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(rigidbody->angular_velocity, delta, aVD);
@@ -235,20 +305,42 @@ fixed_update(gsk_Entity entity)
     aVD[0] = glm_deg(aVD[0]);
     aVD[1] = glm_deg(aVD[1]);
     aVD[2] = glm_deg(aVD[2]);
+
+    // update orientation
+    glm_vec3_add(transform->orientation, aVD, transform->orientation);
+#else
+
+    float rollingFriction = 0.001f;
+    vec3 frictionTorque2;
+
+    glm_vec3_copy(rigidbody->angular_velocity, frictionTorque2);
+    glm_vec3_normalize(frictionTorque2); // direction opposite of spin
+    glm_vec3_scale(frictionTorque2, -rollingFriction, frictionTorque2);
+    glm_vec3_add(rigidbody->torque, frictionTorque2, rigidbody->torque);
+
+    vec3 angularAccel;
+    glm_vec3_copy(rigidbody->torque, angularAccel);
+
+    glm_vec3_add(
+      angularAccel, rigidbody->angular_velocity, rigidbody->angular_velocity);
+
+    vec3 angularDeg; // angularDeg
+    glm_vec3_scale(rigidbody->angular_velocity, delta, angularDeg);
+    angularDeg[0] = glm_deg(angularDeg[0]);
+    angularDeg[1] = glm_deg(angularDeg[1]);
+    angularDeg[2] = glm_deg(angularDeg[2]);
+
+    // update orientation
+    glm_vec3_add(transform->orientation, angularDeg, transform->orientation);
+
 #endif // orientation
 
-    // TODO: Optimization - Put object to sleep
-    // TODO: check aVD with epsilon
-    if (glm_vec3_norm(vD) > 0.001)
-    {
-        glm_vec3_add(transform->position, vD, transform->position);
-        glm_vec3_add(transform->orientation, aVD, transform->orientation);
-    }
-
     // --
-    // -- Reset net force
+    // -- Reset net forces
 
-    glm_vec3_zero(rigidbody->force);
+    glm_vec3_zero(rigidbody->force_velocity);
+    glm_vec3_zero(rigidbody->force_impulse);
+    glm_vec3_zero(rigidbody->torque);
 }
 //-----------------------------------------------------------------------------
 static void
@@ -263,8 +355,6 @@ _position_solver(_SolverData solver_data)
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(collision_result->points.normal, collision_normal);
 
-    f32 inverse_scalar = body_a.inverse_mass + body_b.inverse_mass;
-
 #if 1
     // I think these are better settings right now..
     const float percent = 1.0f;
@@ -278,7 +368,6 @@ _position_solver(_SolverData solver_data)
     f32 c_weight = fmax((collision_result->points.depth - slop), 0);
     glm_vec3_scale(collision_normal, percent, correction);
     glm_vec3_scale(correction, c_weight, correction);
-    // glm_vec3_scale(correction, inverse_scalar, correction);
 
     // integrate new position
     glm_vec3_add(transform->position, correction, transform->position);

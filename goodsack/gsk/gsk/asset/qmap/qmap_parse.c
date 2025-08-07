@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Gabriel Kutuzov
+ * Copyright (c) 2024-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -62,6 +62,7 @@ __qmap_container_add_entity(gsk_QMapContainer *p_container)
     ent.list_brushes = array_list_init(sizeof(gsk_QMapBrush), 1);
     ent.list_fields  = array_list_init(sizeof(gsk_QMapEntityField), 1);
     ent.ent_index    = p_container->total_entities;
+    ent.layer_id     = 0;
 
     // push to Container
     array_list_push(&p_container->list_entities, (void *)&ent);
@@ -93,10 +94,11 @@ __qmap_container_add_brush(gsk_QMapContainer *p_container)
     array_list_push(&p_container->p_cnt_entity->list_brushes, (void *)&brush);
     p_container->total_brushes++; // increment total
 
-    if ((int)p_container->total_brushes !=
+    if ((int)p_container->total_brushes <
         (int)p_container->p_cnt_entity->list_brushes.list_next)
     {
-        LOG_ERROR("Failed to allocate correct number of brushes");
+        LOG_CRITICAL(
+          "QMap memory: failed to allocate correct number of brushes.");
     }
 
     // set the current buffer view in Container to entity's Brush
@@ -115,7 +117,7 @@ __qmap_container_add_brush(gsk_QMapContainer *p_container)
 gsk_QMapPlane
 gsk_qmap_parse_plane_from_line(char *line, gsk_TextureSet *p_texture_set)
 {
-    LOG_DEBUG("Parsing plane..");
+    // LOG_DEBUG("Parsing plane..");
 
     gsk_QMapPlane ret;
 
@@ -465,7 +467,22 @@ gsk_qmap_parse_field_from_line(char *line)
         {
             u8 is_valid_token = FALSE;
 
-            if (strlen(split) > 1 && iter <= 2) { is_valid_token = TRUE; }
+            u32 split_len = strlen(split);
+
+            if (iter <= 2)
+            {
+                // single-digit token (for values only, not keys)
+                if (split_len == 1 && (atof(split) != 0 && key_found == TRUE))
+                {
+                    is_valid_token = TRUE;
+                }
+
+                // multi-digit tokane
+                else if (split_len > 1)
+                {
+                    is_valid_token = TRUE;
+                }
+            }
 
             // map - key
             if (is_valid_token && key_found == FALSE)
@@ -525,7 +542,7 @@ gsk_qmap_parse_field_from_line(char *line)
             total_values++;
         }
     }
-    LOG_DEBUG("Total values in key-value pair: %d. Type is: %d",
+    LOG_TRACE("Total values in key-value pair: %d. Type is: %d",
               total_values,
               value_type);
 
@@ -561,6 +578,7 @@ gsk_qmap_parse_map_file(const char *map_path, gsk_TextureSet *p_textureset)
     ret.total_brushes  = 0;
     ret.total_planes   = 0;
     ret.list_entities  = array_list_init(sizeof(gsk_QMapEntity), 12);
+    ret.list_layers    = array_list_init(sizeof(gsk_QMapLayer), 2);
 
     ret.is_map_compiled = FALSE;
     ret.is_model_loaded = FALSE;
@@ -568,6 +586,14 @@ gsk_qmap_parse_map_file(const char *map_path, gsk_TextureSet *p_textureset)
     // attach textureset
     ret.p_texture_set = p_textureset;
 
+    // create first layer
+    gsk_QMapLayer layer0 = {
+      .is_visible = TRUE,
+      .layer_id   = 0,
+    };
+    LIST_PUSH(&ret.list_layers, &layer0);
+
+    // file streaming
     FILE *stream = NULL;
     char line[256]; // 256 = MAX line_length
 
@@ -604,11 +630,11 @@ gsk_qmap_parse_map_file(const char *map_path, gsk_TextureSet *p_textureset)
 
             if (current_mode == QM_MODE_FILL_ENT)
             {
-                LOG_DEBUG("Creating new entity");
+                // LOG_DEBUG("Creating new entity");
                 __qmap_container_add_entity(&ret);
             } else if (current_mode == QM_MODE_FILL_BSH)
             {
-                LOG_DEBUG("Creating new brush");
+                // LOG_DEBUG("Creating new brush");
                 __qmap_container_add_brush(&ret);
             }
         }
@@ -619,7 +645,7 @@ gsk_qmap_parse_map_file(const char *map_path, gsk_TextureSet *p_textureset)
             // entity field
             if (current_mode == QM_MODE_FILL_ENT)
             {
-                LOG_DEBUG("Fill entity member");
+                // LOG_DEBUG("Fill entity member");
                 gsk_QMapEntityField field =
                   gsk_qmap_parse_field_from_line(line);
                 array_list_push(&ret.p_cnt_entity->list_fields, &field);

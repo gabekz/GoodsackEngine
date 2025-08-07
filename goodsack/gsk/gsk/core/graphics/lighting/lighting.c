@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -13,7 +13,7 @@
 gsk_LightingData
 gsk_lighting_initialize(u32 ubo_binding)
 {
-    gsk_LightingData ret;
+    gsk_LightingData ret = {0};
 
     u32 light_ubo_id;
     if (GSK_DEVICE_API_OPENGL)
@@ -36,12 +36,13 @@ gsk_lighting_initialize(u32 ubo_binding)
 
         ret.ubo_id       = light_ubo_id;
         ret.ubo_size     = light_ubo_size;
+        ret.ubo_binding  = ubo_binding;
         ret.total_lights = 0;
     }
     return ret;
 }
 
-void
+u32
 gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
                        vec3 light_position,
                        vec4 light_color)
@@ -59,6 +60,7 @@ gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
     glm_vec3_copy(light_position, p_light->position);
     glm_vec4_copy(light_color, p_light->color);
     p_light->strength = 1;
+    p_light->is_awake = (p_lighting_data->total_lights > 0) ? FALSE : TRUE;
 
 #if 1 // send call to update UBO
     if (GSK_DEVICE_API_OPENGL)
@@ -68,6 +70,9 @@ gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
           p_lighting_data->total_lights * (p_lighting_data->ubo_size);
 
         glBindBuffer(GL_UNIFORM_BUFFER, p_lighting_data->ubo_id);
+        glBindBufferBase(GL_UNIFORM_BUFFER,
+                         p_lighting_data->ubo_binding,
+                         p_lighting_data->ubo_id);
         glBufferSubData(
           GL_UNIFORM_BUFFER, ubo_offset, sizeof(vec3) + 4, light_position);
         glBufferSubData(GL_UNIFORM_BUFFER,
@@ -78,7 +83,8 @@ gsk_lighting_add_light(gsk_LightingData *p_lighting_data,
     }
 #endif
 
-    p_lighting_data->total_lights++; // update total
+    p_lighting_data->total_lights++;          // update total
+    return p_lighting_data->total_lights - 1; // return index to cnt light
 }
 
 #if 1
@@ -93,6 +99,9 @@ gsk_lighting_update(gsk_LightingData *p_lighting_data)
             u32 ubo_offset = i * (p_lighting_data->ubo_size);
 
             glBindBuffer(GL_UNIFORM_BUFFER, p_lighting_data->ubo_id);
+            glBindBufferBase(GL_UNIFORM_BUFFER,
+                             p_lighting_data->ubo_binding,
+                             p_lighting_data->ubo_id);
             glBufferSubData(GL_UNIFORM_BUFFER,
                             ubo_offset,
                             sizeof(vec3) + 4,

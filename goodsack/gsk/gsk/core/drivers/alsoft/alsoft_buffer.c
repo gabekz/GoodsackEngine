@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -20,7 +20,7 @@ FileToEnum(u16 channels, u16 samples)
     {
     case 16: return (stereo) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
     case 8: return (stereo) ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
-    default: return -1;
+    default: return (stereo) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
     }
 }
 

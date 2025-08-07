@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -16,8 +16,9 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/primitives.h"
 
+#include "core/device/device.h"
+
 #define USING_SPRITE_SHEET FALSE
-#define USING_BLENDING     TRUE
 
 #define S_X 1.0f
 #define S_Y 3.0f
@@ -42,12 +43,13 @@
 #endif
 
 gsk_GuiElement *
-gsk_gui_element_create(vec2 position, vec2 size, gsk_Texture *p_texture, vec4 tex_coords)
+gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size, vec3 color, gsk_Texture *p_texture, vec4 tex_coords)
 {
     gsk_GuiElement *ret = malloc(sizeof(gsk_GuiElement));
 
     glm_vec2_copy(position, ret->position);
     glm_vec2_copy(size, ret->size);
+    glm_vec3_copy(color, ret->color_rgb);
 
     float pos_x = position[0];
     float pos_y = position[1];
@@ -67,7 +69,6 @@ gsk_gui_element_create(vec2 position, vec2 size, gsk_Texture *p_texture, vec4 te
         t_neg_y = tex_coords[3];
     }
 
-    ret->vao = gsk_gl_vertex_array_create();
     float *rectPos = 
     (float[])
     {
@@ -79,50 +80,99 @@ gsk_gui_element_create(vec2 position, vec2 size, gsk_Texture *p_texture, vec4 te
         -size_x_off ,  size_y_off, t_neg_x, t_pos_y,
     };
 
-    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float));
+    if(GSK_DEVICE_API_OPENGL) {
+
+    ret->vao = gsk_gl_vertex_array_create();
+    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Dynamic);
     gsk_gl_vertex_buffer_bind(vbo);
     gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_array_add_buffer(ret->vao, vbo);
+    }
+    else if(GSK_DEVICE_API_VULKAN) {
+      ret->vao = NULL;
+    }
 
     ret->using_texture = (p_texture != NULL) ? TRUE : FALSE;
 
+#if 0
     ret->material =
       gsk_material_create(NULL, GSK_PATH("gsk://shaders/canvas2d.shader"), 0, NULL);
+#else
+      ret->material = NULL;
+#endif
 
-    if(ret->using_texture) {
+    if(ret->using_texture)
+    {
         ret->texture = p_texture;
-        gsk_material_add_texture(ret->material, ret->texture);
+
+        if(ret->material) {
+          gsk_material_add_texture(ret->material, ret->texture);
+        }
     }
+
+    ret->anchor_type = anchor;
 
     return ret;
 }
 
 void
-gsk_gui_element_draw(gsk_GuiElement *self)
+gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
 {
-#if USING_BLENDING
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+#if 0
+    if(self->material != NULL) {
+      gsk_material_use(self->material);
+    }
 #endif
 
-    gsk_material_use(self->material);
+  if(self->using_texture == TRUE && self->texture != NULL) {
+    texture_bind(self->texture, 0);
+  }
 
-    // send position to shader
-    glUniform2fv(
-      glGetUniformLocation(self->material->shaderProgram->id, "u_position"),
+  // send texture info
+  glUniform1i(
+    glGetUniformLocation(shader_id, "u_using_texture"),
+    self->using_texture);
+
+  // send color info
+  glUniform3fv(
+    glGetUniformLocation(shader_id, "u_color"),
+    1,
+    (float *)self->color_rgb);
+
+#if 0
+  if(self->size[0] == 10 && self->size[1] == 10) {
+  
+    double x_bounds[2] = {self->position[0] - self->size[0],
+                          self->position[0] + self->size[0]};
+  
+    double y_bounds[2] = {self->position[1] - self->size[1],
+                          self->position[1] + self->size[1]};
+  
+    const gsk_Input input = gsk_device_getInput();
+    const double cursor_pos[2] = {
+      input.cursor_position[0],
+      input.cursor_position[1]
+      };
+  
+    if((cursor_pos[0] > x_bounds[0] && cursor_pos[0] < x_bounds[1]) &&
+      (cursor_pos[1] > y_bounds[0] && cursor_pos[1] < y_bounds[1])) {
+
+        vec3 col = {0, 1, 0};
+
+    glUniform3fv(
+      glGetUniformLocation(self->material->shaderProgram->id, "u_color"),
       1,
-      (float *)self->position);
+      (float *)col);
 
-    // send texture info
-    glUniform1i(
-      glGetUniformLocation(self->material->shaderProgram->id, "u_using_texture"),
-      self->using_texture);
+    }
+  }
+#endif
 
+
+  if(GSK_DEVICE_API_OPENGL) {
     gsk_gl_vertex_array_bind(self->vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-#if USING_BLENDING
-    glDisable(GL_BLEND);
-#endif
+  }
 }

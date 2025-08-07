@@ -1,0 +1,448 @@
+/*
+ * Copyright (c) 2025-present, Gabriel Kutuzov
+ * SPDX-License-Identifier: MIT
+ */
+
+#include "particle_system.h"
+
+#include "util/filesystem.h"
+#include "util/gfx.h"
+#include "util/logger.h"
+#include "util/maths.h"
+#include "util/sysdefs.h"
+
+#include "asset/asset.h"
+#include "core/device/device.h"
+#include "core/drivers/opengl/opengl.h"
+#include "core/graphics/shader/shader.h"
+
+#include <stdlib.h>
+
+#define WARP_SIZE 1024.0f
+
+static f32
+_update_curl(f32 curl_min, f32 curl_max, f32 curl_speed)
+{
+    return glm_lerp(curl_min,
+                    curl_max,
+                    sin(gsk_device_getTime().time_elapsed * curl_speed) / 2.0f +
+                      0.5f);
+}
+
+gsk_ParticleSystem
+gsk_particle_system_create(gsk_ParticleSystemSettings *p_settings,
+                           gsk_ShaderProgram *p_compute_shader,
+                           gsk_ShaderProgram *p_render_shader,
+                           gsk_MeshData *p_emitter_mesh)
+{
+    if (p_compute_shader == NULL || p_render_shader == NULL)
+    {
+        LOG_ERROR("passed in NULL shaders to particle system.");
+        return (gsk_ParticleSystem) {0};
+    }
+
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_WARN("Particle System currently not supported on Vulkan");
+        return (gsk_ParticleSystem) {0};
+    }
+
+    u32 numvert = 0;
+
+    gsk_Particle *sp_particles =
+      malloc(sizeof(gsk_Particle) * _GSK_MAX_PARTICLE_COUNT);
+
+    // initialize the particles
+    const u32 particle_count = _GSK_MAX_PARTICLE_COUNT;
+
+    for (int i = 0; i < particle_count; i++)
+    {
+        sp_particles[i].position[0] = _GSK_PARTICLE_AWAY;
+        sp_particles[i].position[1] = _GSK_PARTICLE_AWAY;
+        sp_particles[i].position[2] = _GSK_PARTICLE_AWAY;
+
+        sp_particles[i].velocity[0] = 0;
+        sp_particles[i].velocity[1] = 0;
+        sp_particles[i].velocity[2] = 0;
+
+        // Initial life value
+        sp_particles[i].life = ((double)rand() / (double)RAND_MAX);
+    }
+
+    // create SSBO's
+
+    // s_mesh_ssbo_id     = 0;
+    // s_particle_ssbo_id = 0;
+    u32 ssbo_size    = 0;
+    u32 ssbo_binding = 0;
+
+    // Create mesh SSBO
+
+    float *buff;
+
+    u32 triangle_count = 2;
+    vec4 triangle[6]   = {{0, 0, 0, 8},
+                        {0, 0, 1, 9},
+                        {1, 0, 1, 10},
+                        {2, 0, 2, 8},
+                        {2, 0, 0, 9},
+                        {0, 0, 2, 10}};
+
+    if (p_emitter_mesh == NULL)
+    {
+        LOG_WARN("Using default particle triangles");
+    }
+    // emitter mesh
+    else
+    {
+        // get triangle positions from meshdata
+
+        gsk_MeshBuffer *p_selected_mesh_buff = NULL;
+        GskMeshBufferFlags flags             = 0;
+
+        for (int i = 0; i < p_emitter_mesh->mesh_buffers_count; i++)
+        {
+            if (p_emitter_mesh->mesh_buffers[i].buffer_flags &
+                GskMeshBufferFlag_Positions)
+            {
+                p_selected_mesh_buff = &(p_emitter_mesh->mesh_buffers[i]);
+                flags                = p_selected_mesh_buff->buffer_flags;
+                break;
+            }
+        }
+
+        if (p_selected_mesh_buff == NULL)
+        {
+            LOG_CRITICAL("Failed to mesh buffer for particle system.");
+        }
+
+        triangle_count = p_selected_mesh_buff->buffer_size / sizeof(float);
+
+        numvert = triangle_count / 3;
+
+        u32 triangle_len = 0;
+        u32 vertex_len   = 0;
+        u32 iters        = 0;
+
+        float *p = malloc(triangle_count * (sizeof(vec4) * 3));
+        buff     = p;
+
+        // calculate triangle_len
+        {
+            if (flags & GskMeshBufferFlag_Positions) { vertex_len += 3; }
+            if (flags & GskMeshBufferFlag_Textures) { vertex_len += 2; }
+            if (flags & GskMeshBufferFlag_Normals) { vertex_len += 3; }
+            if (flags & GskMeshBufferFlag_Tangents) { vertex_len += 3; }
+            if (flags & GskMeshBufferFlag_Bitangents) { vertex_len += 3; }
+            if (flags & GskMeshBufferFlag_Joints) { vertex_len += 4; }
+            if (flags & GskMeshBufferFlag_Weights) { vertex_len += 4; }
+
+            if (vertex_len == 0)
+            {
+                LOG_CRITICAL(
+                  "Cannot create particle emitter on empty vertex data.");
+            }
+
+            triangle_len = vertex_len * 3;
+        }
+
+        for (int i = 0; i < triangle_count; i += triangle_len)
+        {
+            vec3 tri[3] = {
+              GLM_VEC3_ZERO_INIT, GLM_VEC3_ZERO_INIT, GLM_VEC3_ZERO_INIT};
+
+            float *p_buff_vert = p_selected_mesh_buff->p_buffer;
+
+            // get only the positions
+            glm_vec3_copy((float *)&p_buff_vert[i], tri[0]);
+            glm_vec3_copy((float *)&p_buff_vert[i + vertex_len], tri[1]);
+            glm_vec3_copy((float *)&p_buff_vert[i + (vertex_len * 2)], tri[2]);
+
+#if 0
+            LOG_INFO("POS: {%f, %f, %f}", tri[0][0], tri[0][1], tri[0][2]);
+            LOG_INFO("POS: {%f, %f, %f}", tri[1][0], tri[1][1], tri[1][2]);
+            LOG_INFO("POS: {%f, %f, %f}", tri[2][0], tri[2][1], tri[2][2]);
+#endif
+
+            glm_vec3_copy(tri[0], (float *)&buff[iters]);
+            buff[iters + 3] = 1.0f;
+            glm_vec3_copy(tri[1], (float *)&buff[iters + 4]);
+            buff[iters + 7] = 1.0f;
+            glm_vec3_copy(tri[2], (float *)&buff[iters + 8]);
+            buff[iters + 11] = 1.0f;
+
+            iters += 12;
+        }
+    }
+
+#if 0
+    LOG_TRACE("TRIANGLES: %d", triangle_count);
+#endif
+
+    u32 s_mesh_ssbo_id     = 0;
+    u32 s_particle_ssbo_id = 0;
+
+    ssbo_size    = sizeof(vec4) * 3;
+    ssbo_binding = 0;
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+#if 1
+    glGenBuffers(1, &s_mesh_ssbo_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_mesh_ssbo_id);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,
+                 ssbo_size * triangle_count,
+                 buff,
+                 GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s_mesh_ssbo_id);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    // Create particle SSBO
+
+    ssbo_size    = _GSK_PARTICLE_SIZE;
+    ssbo_binding = 1;
+
+    glGenBuffers(1, &s_particle_ssbo_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_particle_ssbo_id);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,
+                 ssbo_size * _GSK_MAX_PARTICLE_COUNT,
+                 sp_particles,
+                 GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, s_particle_ssbo_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+#endif
+
+    // return
+
+    gsk_ParticleSystem ret = {
+        .settings =
+          (p_settings != NULL) ? *p_settings : GSK_DEFAULT_PARTICLE_SETTINGS,
+
+        .particle_count = _GSK_PARTICLE_COUNT,
+        .noise_cnt      = 0,
+
+        .world_pos   = {0, 0, 0},
+        .world_rot   = {0, 0, 0},
+        .world_scale = {1, 1, 1},
+
+#if 1
+        .p_compute_shader = p_compute_shader,
+        .p_render_shader  = p_render_shader,
+#else
+        .p_compute_shader = p_compute_shader,
+        .p_render_shader  = p_render_shader,
+#endif
+
+        .ssbo_mesh_id     = s_mesh_ssbo_id,
+        .ssbo_particle_id = s_particle_ssbo_id,
+
+        .particles_buff      = sp_particles,
+        .mesh_buff           = buff,
+        .mesh_buff_size      = (sizeof(vec4) * 3) * triangle_count,
+        .particles_buff_size = _GSK_PARTICLE_SIZE * _GSK_MAX_PARTICLE_COUNT,
+
+        .num_verts = numvert,
+
+        .is_initialized = TRUE,
+    };
+
+    return ret;
+}
+
+void
+gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
+{
+
+    if (p_particle_system->is_initialized != TRUE) { return; }
+
+    gsk_ParticleSystemSettings *p_settings = &p_particle_system->settings;
+
+    p_particle_system->noise_cnt = _update_curl(
+      p_settings->noise_min, p_settings->noise_max, p_settings->noise_speed);
+
+    const u32 num_particles     = p_particle_system->particle_count;
+    const u32 num_thread_groups = (u32)ceilf((f32)num_particles / WARP_SIZE);
+
+    gsk_shader_use(p_particle_system->p_compute_shader);
+
+    // pass uniforms to compute shader
+    {
+        u32 shader_id = p_particle_system->p_compute_shader->id;
+
+        int num_vert = p_particle_system->num_verts;
+        int rand_idx = rand() % num_vert + 1;
+
+        glUniform1f(glGetUniformLocation(shader_id, "deltaTime"),
+                    gsk_device_getTime().delta_time);
+
+        glUniform1f(glGetUniformLocation(shader_id, "curlE"),
+                    p_particle_system->noise_cnt);
+
+        glUniform1f(glGetUniformLocation(shader_id, "curlMultiplier"),
+                    p_settings->noise_multiplier);
+
+        glUniform1f(glGetUniformLocation(shader_id, "particleMinLife"),
+                    p_settings->min_life);
+        glUniform1f(glGetUniformLocation(shader_id, "particleMaxLife"),
+                    p_settings->max_life);
+
+        glUniform3fv(glGetUniformLocation(shader_id, "emitterPos"),
+                     1,
+                     (float *)p_particle_system->world_pos);
+        glUniform3fv(glGetUniformLocation(shader_id, "emitterScale"),
+                     1,
+                     (float *)p_particle_system->world_scale);
+
+        glUniform3fv(glGetUniformLocation(shader_id, "emitterRot"),
+                     1,
+                     (float *)p_particle_system->world_rot);
+
+        glUniform3fv(glGetUniformLocation(shader_id, "convergencePoint"),
+                     1,
+                     (float *)p_settings->convergence_point_world_pos);
+
+        glUniform1f(glGetUniformLocation(shader_id, "convergenceStrength"),
+                    p_settings->convergence_strength);
+
+        glUniform1f(glGetUniformLocation(shader_id, "totalSmokeDistance"),
+                    p_settings->ramp_dist);
+
+        glUniform1f(glGetUniformLocation(shader_id, "updraft"),
+                    p_settings->updraft);
+
+        glUniform1f(glGetUniformLocation(shader_id, "randSeed"), rand_idx);
+        glUniform1i(glGetUniformLocation(shader_id, "numVertices"),
+                    (float)num_vert);
+    }
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_mesh_id);
+    glBindBufferBase(
+      GL_SHADER_STORAGE_BUFFER, 0, p_particle_system->ssbo_mesh_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_particle_id);
+    glBindBufferBase(
+      GL_SHADER_STORAGE_BUFFER, 1, p_particle_system->ssbo_particle_id);
+#if 0
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER,
+                    0,
+                    p_particle_system->mesh_buff_size,
+                    p_particle_system->mesh_buff);
+#endif
+
+    // glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_particle_ssbo_id);
+
+    // dispatch to update particles
+    glDispatchCompute(num_thread_groups, 1, 1);
+}
+
+void
+gsk_particle_system_render(gsk_ParticleSystem *p_particle_system)
+{
+    if (p_particle_system->is_initialized == FALSE) { return; }
+
+    gsk_ParticleSystemSettings *p_settings = &p_particle_system->settings;
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Default alpha blending
+    glBlendEquation(GL_FUNC_ADD);
+
+    glDepthMask(GL_FALSE);
+
+    // glDisable(GL_DEPTH_TEST);
+
+#if 1
+    gsk_Texture *tex_ramp = GSK_ASSET("zhr://textures/particles/gradient.png");
+    texture_bind(tex_ramp, 9);
+
+    gsk_Texture *tex_main = GSK_ASSET("zhr://textures/particles/fire.png");
+    texture_bind(tex_main, 10);
+#else
+    gsk_Texture *tex_ramp = p_settings->p_ramp_tex;
+    texture_bind(tex_ramp, 9);
+
+    gsk_Texture *tex_main = p_settings->p_main_tex;
+    texture_bind(tex_main, 10);
+#endif
+
+    u32 shader_id = 0;
+
+    gsk_shader_use(p_particle_system->p_render_shader);
+    shader_id = p_particle_system->p_render_shader->id;
+
+#if 0
+    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMin"),
+                s_size_life_min);
+    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMax"),
+                s_size_life_max);
+
+    glUniform1f(glGetUniformLocation(shader_id, "_TotalSmokeDistance"),
+                s_smoke_dist);
+#else
+    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMin"),
+                p_settings->size_life_min);
+    glUniform1f(glGetUniformLocation(shader_id, "_SizeByLifeMax"),
+                p_settings->size_life_max);
+
+    glUniform1f(glGetUniformLocation(shader_id, "_TotalSmokeDistance"),
+                p_settings->ramp_dist);
+#endif
+
+    gsk_Renderer *renderer    = gsk_runtime_get_renderer();
+    gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
+
+// Fog uniforms
+#if 1
+    glUniform1f(glGetUniformLocation(shader_id, "u_FogStart"),
+                p_active_scene->fogOptions.fog_start);
+    glUniform1f(glGetUniformLocation(shader_id, "u_FogEnd"),
+                p_active_scene->fogOptions.fog_end);
+    glUniform1f(glGetUniformLocation(shader_id, "u_FogDensity"),
+                p_active_scene->fogOptions.fog_density);
+    glUniform3fv(glGetUniformLocation(shader_id, "u_FogColor"),
+                 1,
+                 (float *)p_active_scene->fogOptions.fog_color);
+#endif
+
+    mat4 newModel = GLM_MAT4_IDENTITY_INIT;
+    // glm_translate(newModel, p_particle_system->world_pos);
+
+    glUniformMatrix4fv(glGetUniformLocation(shader_id, "u_Model"),
+                       1,
+                       GL_FALSE,
+                       (float *)newModel);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_particle_id);
+    glBindBufferBase(
+      GL_SHADER_STORAGE_BUFFER, 1, p_particle_system->ssbo_particle_id);
+
+    glDrawArraysInstanced(GL_POINTS, 0, 1, p_particle_system->particle_count);
+
+    glDisable(GL_BLEND);
+    // glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+}
+
+void
+gsk_particle_system_cleanup(gsk_ParticleSystem *p_self)
+{
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_WARN("Particle System CLEANUP currently not supported on Vulkan");
+        return;
+    }
+
+    if (p_self == NULL) { return; }
+
+    if (p_self->particles_buff_size > 0)
+    {
+        glDeleteBuffers(1, &(p_self->ssbo_particle_id));
+        free(p_self->particles_buff);
+    }
+    if (p_self->mesh_buff > 0)
+    {
+        glDeleteBuffers(1, &(p_self->ssbo_mesh_id));
+        free(p_self->mesh_buff);
+    }
+
+    free(p_self);
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -10,12 +10,16 @@
 #define GSK_FS_MAX_SCHEME  16
 #define GSK_FS_MAX_SEG_LEN 256
 
+#define GSK_FS_GSK_SCHEME "gsk"
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 // absolute path from the provided uri
-#define GSK_PATH(uri) (gsk_filesystem_path_from_uri(uri).path)
+#define GSK_PATH(uri) (gsk_filesystem_uri_to_path(uri).path)
+
+typedef void (*FileUriHandler)(const char *uri);
 
 typedef struct gsk_URI
 {
@@ -44,6 +48,12 @@ static void filesystem_flush(BUFFER);
 void
 gsk_filesystem_initialize(const char *project_root, const char *project_scheme);
 
+void
+gsk_filesystem_str_to_forward_slash(char *buffer);
+
+void
+gsk_filesystem_strip_filename(char *buffer);
+
 char *
 gsk_filesystem_get_extension(const char *path);
 
@@ -51,7 +61,13 @@ gsk_URI
 gsk_filesystem_uri(const char *uri_path);
 
 gsk_Path
-gsk_filesystem_path_from_uri(const char *uri_path);
+gsk_filesystem_uri_to_path(const char *uri_path);
+
+char *
+gsk_filesystem_path_to_uri(const char *file_path, char *output_uri);
+
+void
+gsk_filesystem_traverse(const char *dirpath, FileUriHandler process_fn);
 
 #ifdef __cplusplus
 }

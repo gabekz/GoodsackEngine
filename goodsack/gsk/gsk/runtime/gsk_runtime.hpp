@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -10,35 +10,74 @@
 
 #include "util/sysdefs.h"
 
+#include "asset/asset_cache.h"
 #include "core/graphics/renderer/v1/renderer.h"
 #include "entity/ecs.h"
 
 // #define RENDERER_2
-#define USING_LUA                    1
 #define USING_RUNTIME_LOADING_SCREEN 1
+#define RUNTIME_LOADING_TEXT         0
 #define USING_JOYSTICK_CONTROLLER    0
 
 // Starting cursor state
 #define INIT_CURSOR_LOCKED  1
 #define INIT_CURSOR_VISIBLE 0
 
-#define GSK_RUNTIME_USE_DEBUG 1
+#define GSK_RUNTIME_USE_DEBUG SYS_DEBUG
+
+#define GSK_USING_COMPOSER 0
+#define GSK_TESTGPAK_EXIT  1
+
+namespace gsk {
+namespace runtime {
 
 u32
-gsk_runtime_setup(const char *root_dir,
-                  const char *root_scheme,
-                  int argc,
-                  char *argv[]);
+rt_setup(const char *root_dir,
+         const char *root_scheme,
+         const char *app_name,
+         int argc,
+         char *argv[]);
 
 void
-gsk_runtime_loop();
+rt_loop();
+
+void
+rt_activate_ecs_systems(gsk_ECS *p_ecs);
+
+void
+rt_set_scene(u16 scene_index);
 
 gsk_ECS *
-gsk_runtime_get_ecs();
+rt_get_ecs();
+
 gsk_Renderer *
-gsk_runtime_get_renderer();
+rt_get_renderer();
+
+gsk_AssetCache *
+rt_get_asset_cache(const char *uri_str);
+
+void *
+rt_get_debug_toolbar();
+
+gsk_AssetRef *
+rt_get_fallback_asset(GskAssetType type);
+
+char *
+rt_get_startup_map();
+
+gsk_EntityId
+rt_get_hovered_entity_id();
+
+gsk_EntityId
+rt_get_debug_entity_id();
 
 void
-gsk_runtime_set_scene(u16 sceneIndex);
+rt_set_debug_entity_id(gsk_EntityId entity_id);
+
+void *
+rt_get_lua_state();
+
+} // namespace runtime
+} // namespace gsk
 
 #endif // __GSK_RUNTIME_HPP__

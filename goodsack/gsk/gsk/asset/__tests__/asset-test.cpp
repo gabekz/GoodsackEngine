@@ -1,25 +1,36 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2024-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #include <stdlib.h>
 
-#include "asset/asset.hpp"
-#include "asset/types/texture_asset.hpp"
+#include "asset/asset_cache.h"
+#include "asset/assetdefs.h"
+#include "util/sysdefs.h"
+
+// #include "core/graphics/texture/texture.h"
 
 #include <gtest/gtest.h>
 
-using namespace goodsack::asset;
+#define ASSET_NAME "gsk://textures/texture0.png"
+#define ASSET_TYPE 0
 
-TEST(AssetTestSuite, ReferenceInherited)
+TEST(AssetTestSuite, HashTest)
 {
-    /*
-    //TextureAsset texture = TextureAsset((TextureProperties) {.bpp = 4});
+    gsk_AssetCache cache = gsk_asset_cache_init("gsk");
 
-    Asset *p = &texture;
-    EXPECT_EQ(p->IsLoaded(), false);
-    p->Load();
-    EXPECT_EQ(p->IsLoaded(), true);
-    */
+    gsk_asset_cache_add(&cache, ASSET_TYPE, ASSET_NAME, NULL);
+    EXPECT_EQ(hash_table_has(&cache.asset_table, ASSET_NAME), true);
+
+    u32 expected_list  = 0; // table reference
+    u32 expected_index = 1; // index reference
+    u64 handle         = hash_table_get(&cache.asset_table, ASSET_NAME);
+
+    EXPECT_EQ(GSK_ASSET_HANDLE_LIST_NUM(handle), expected_list);
+    EXPECT_EQ(GSK_ASSET_HANDLE_INDEX_NUM(handle), expected_index);
+
+    gsk_AssetRef *p_ref = gsk_asset_cache_get(&cache, ASSET_NAME);
+    EXPECT_EQ(p_ref->is_imported, false);
+    EXPECT_EQ(p_ref->is_utilized, false);
 }

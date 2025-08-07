@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -112,14 +112,15 @@ _upload_shader_data(gsk_Entity e,
     } else if (GSK_DEVICE_API_VULKAN)
     {
         // TEST (while we don't have direct descriptor sets for objects)
-        mat4 p = GLM_MAT4_IDENTITY_INIT;
-        // glm_mat4_copy(p, camera->uniform.model);
-        // glm_mat4_copy(p, camera->model);
-        // glm_rotate(camera->uniform.model, glm_rad(180.0f), (vec3){0, 1,
-        // 0}); glm_rotate(camera->uniform.model, glm_rad(45.0f), (vec3){1,
-        // 0, 1});
         camera->proj[1][1] *= -1;
-        // camera->uniform.proj[1][1] *= -1;
+
+#if 0
+        mat4 identity = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_copy(identity, e.ecs->renderer->vk_ubo_test.model);
+#endif
+
+        glm_mat4_copy(camera->view, e.ecs->renderer->vk_ubo_test.view);
+        glm_mat4_copy(camera->proj, e.ecs->renderer->vk_ubo_test.proj);
     }
 #endif
 }
@@ -155,8 +156,8 @@ init(gsk_Entity e)
 
     // Camera Look //
 
-    if (!(gsk_ecs_has(e, C_CAMERALOOK))) return;
-    struct ComponentCameraLook *cameraLook = gsk_ecs_get(e, C_CAMERALOOK);
+    if (!(gsk_ecs_has(e, C_CAMERA_LOOK))) return;
+    struct ComponentCameraLook *cameraLook = gsk_ecs_get(e, C_CAMERA_LOOK);
 
     cameraLook->lastX = e.ecs->renderer->windowWidth / 2;
     cameraLook->lastY = e.ecs->renderer->windowHeight / 2;
@@ -175,28 +176,29 @@ update(gsk_Entity e)
     struct ComponentCamera *camera       = gsk_ecs_get(e, C_CAMERA);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
-    if (transform->hasParent)
+    if (transform->has_parent)
     {
+        gsk_Entity ent_parent = gsk_ecs_ent(e.ecs, transform->parent_entity_id);
 
         struct ComponentTransform *parent =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
+          gsk_ecs_get(ent_parent, C_TRANSFORM);
 
         glm_vec3_copy(parent->position, transform->position);
-        if (gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA))
+
+        if (gsk_ecs_has(ent_parent, C_CAMERA))
         {
+            struct ComponentCamera *parent_cam =
+              gsk_ecs_get(ent_parent, C_CAMERA);
 
-            struct ComponentCamera *parentCam =
-              gsk_ecs_get(*(gsk_Entity *)transform->parent, C_CAMERA);
-
-            glm_mat4_copy(parentCam->view, camera->view);
+            glm_mat4_copy(parent_cam->view, camera->view);
         }
     }
 
-    if (gsk_ecs_has(e, C_CAMERALOOK))
+    if (gsk_ecs_has(e, C_CAMERA_LOOK))
     {
 
         struct ComponentCameraLook *cameraLook =
-          gsk_ecs_get(e, C_CAMERALOOK); // TODO: Move away
+          gsk_ecs_get(e, C_CAMERA_LOOK); // TODO: Move away
 
         gsk_Input input = gsk_device_getInput();
         double cntX, cntY;
@@ -249,9 +251,10 @@ update(gsk_Entity e)
 
 #if CAMERA_SHAKE
         // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
-        float seed = 255.0f;
-        float shakeCO =
-          0.5f * camera->shake_amount * _noise(seed, glfwGetTime() * 50.0f);
+        float seed    = 255.0f;
+        float shakeCO = camera->shake_amount +
+                        (sin(seed + gsk_device_getTime().time_elapsed) *
+                         camera->shake_amount * 20);
 #endif // CAMERA_SHAKE
 
         // Clamp pitch
@@ -300,14 +303,15 @@ update(gsk_Entity e)
     // have a Parent, and the parent is a Camera. This will allow
     // child-camera's with separate render-layers to share a view with
     // the main camera
-    if (transform->hasParent &&
-        gsk_ecs_has(*(gsk_Entity *)transform->parent, C_CAMERA))
+    if (transform->has_parent &&
+        gsk_ecs_has(gsk_ecs_ent(e.ecs, transform->parent_entity_id), C_CAMERA))
     {
 
+        gsk_Entity ent_parent = gsk_ecs_ent(e.ecs, transform->parent_entity_id);
+
         struct ComponentTransform *parent =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_TRANSFORM);
-        struct ComponentCamera *parentCam =
-          gsk_ecs_get(*(gsk_Entity *)transform->parent, C_CAMERA);
+          gsk_ecs_get(ent_parent, C_TRANSFORM);
+        struct ComponentCamera *parentCam = gsk_ecs_get(ent_parent, C_CAMERA);
 
         glm_vec3_copy(parent->position, transform->position);
         glm_mat4_copy(parentCam->view, camera->view);
@@ -335,12 +339,14 @@ update(gsk_Entity e)
         camera->shake_amount = 0;
     }
 
-#if 0 // manual camera shake test-controls 
-    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_P) == GLFW_PRESS) {
+#if 1 // manual camera shake test-controls
+    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_P) == GLFW_PRESS)
+    {
         camera->shake_amount += 0.165f;
     }
-    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_O) == GLFW_PRESS) {
-        camera->shake_amount = 2;
+    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_O) == GLFW_PRESS)
+    {
+        camera->shake_amount = 0.02f;
     }
 #endif
 #endif // CAMERA_SHAKE

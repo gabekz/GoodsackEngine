@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -9,15 +9,25 @@
 #include "core/graphics/renderer/renderer_props.inl"
 #include "util/sysdefs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 void
 postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties);
 void
 postbuffer_bind(int enableMSAA);
 void
-postbuffer_draw(gsk_RendererProps *properties);
+postbuffer_draw(gsk_RendererProps *properties, u32 bloom_texture_id);
 void
 postbuffer_resize(u32 winWidth, u32 winHeight);
 void
 postbuffer_cleanup();
+u32
+postbuffer_get_id();
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // __PASS_SCREEN_H__

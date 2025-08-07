@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 
+#include "util/sysdefs.h"
 #include <stdio.h>
 
 #ifndef __FILE_NAME__
@@ -31,7 +32,7 @@ extern "C" {
 #define LOG_CRITICAL(fmt, ...)                                         \
     logger_log(                                                        \
       LogLevel_CRITICAL, __FILE_NAME__, __LINE__, fmt, ##__VA_ARGS__); \
-    exit(1)
+    _BRK()
 
 typedef enum {
     LogLevel_NONE,
@@ -88,10 +89,11 @@ logger_getLevel();
 void
 logger_setDetail(LogDetail detail);
 LogDetail
-logger_SetDetail();
+logger_getDetail();
 
 void
 logger_flush();
+
 int
 logger_isEnabled(LogLevel level);
 

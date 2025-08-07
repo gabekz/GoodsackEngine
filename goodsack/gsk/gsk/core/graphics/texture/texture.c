@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -19,48 +19,54 @@
 
 #define TEXTURE_WRAPPING GL_REPEAT
 
-gsk_Texture *
-texture_create(const char *path,
-               VulkanDeviceContext *vkDevice,
-               TextureOptions options)
+gsk_Texture
+_gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
+                             const char *path,
+                             VulkanDeviceContext *vkDevice,
+                             TextureOptions *p_options)
 {
-    gsk_Texture *tex = malloc(sizeof(gsk_Texture));
-    tex->filePath    = path;
+    gsk_Texture ret = {0};
+    ret.is_valid    = FALSE;
 
-    // TODO: create parameter
-    stbi_set_flip_vertically_on_load(options.flip_vertically);
-    unsigned char *localBuffer;
-    if (path != NULL)
+    unsigned char *localBuffer = NULL;
+
+    stbi_set_flip_vertically_on_load(p_options->flip_vertically);
+
+    if (p_asset_blob != NULL)
     {
-        LOG_INFO("Loading Image at path: %s", path);
-        // LOG_DEBUG("Format: %d, GenMips: %d, AFRange: %f",
-        //         format, genMipMaps, afRange);
-
-        localBuffer = stbi_load(path,
-                                &tex->width,
-                                &tex->height,
-                                &tex->bpp,
-                                /*Type*/ STBI_rgb_alpha);
+        localBuffer = stbi_load_from_memory(p_asset_blob->p_buffer,
+                                            p_asset_blob->buffer_len,
+                                            &ret.width,
+                                            &ret.height,
+                                            &ret.bpp,
+                                            STBI_rgb_alpha);
+    } else if (path != NULL)
+    {
+        ret.filePath = path;
+        localBuffer =
+          stbi_load(path, &ret.width, &ret.height, &ret.bpp, STBI_rgb_alpha);
     } else
     {
-        localBuffer = NULL;
+        LOG_ERROR("Failed to create texture. Must pass either blob or path.");
+        return ret;
     }
 
     if (localBuffer == NULL || localBuffer == 0x00)
     {
-        LOG_CRITICAL("Failed to load texture data!");
+        LOG_ERROR("Failed to load texture data!");
+        return ret;
     }
 
     if (GSK_DEVICE_API_OPENGL)
     {
-        glGenTextures(1, &tex->id);
-        glBindTexture(GL_TEXTURE_2D, tex->id);
+        glGenTextures(1, &ret.id);
+        glBindTexture(GL_TEXTURE_2D, ret.id);
 
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     options.internal_format,
-                     tex->width,
-                     tex->height,
+                     p_options->internal_format,
+                     ret.width,
+                     ret.height,
                      0,
                      GL_RGBA,
                      GL_UNSIGNED_BYTE,
@@ -71,12 +77,12 @@ texture_create(const char *path,
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_WRAPPING);
 
         // Mipmaps
-        if (options.gen_mips > 0)
+        if (p_options->gen_mips > 0)
         {
-            glGenerateTextureMipmap(tex->id);
+            glGenerateTextureMipmap(ret.id);
             glTexParameteri(
               GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         } else
         {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -84,10 +90,10 @@ texture_create(const char *path,
         }
 
         // Anistropic Filtering
-        if (options.af_range > 0)
+        if (p_options->af_range > 0)
         {
             glTexParameterf(
-              GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, options.af_range);
+              GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, p_options->af_range);
         }
     } // GSK_DEVICE_API_OPENGL
 
@@ -96,7 +102,7 @@ texture_create(const char *path,
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
-        VkDeviceSize imageSize = tex->width * tex->height * 4;
+        VkDeviceSize imageSize = ret.width * ret.height * 4;
 
         vulkan_buffer_create(vkDevice->physicalDevice,
                              vkDevice->device,
@@ -115,10 +121,10 @@ texture_create(const char *path,
 
         vulkan_image_create(vkDevice->physicalDevice,
                             vkDevice->device,
-                            &tex->vulkan.textureImage,
-                            &tex->vulkan.textureImageMemory,
-                            tex->width,
-                            tex->height,
+                            &ret.vulkan.textureImage,
+                            &ret.vulkan.textureImageMemory,
+                            ret.width,
+                            ret.height,
                             VK_FORMAT_R8G8B8A8_SRGB,
                             VK_IMAGE_TILING_OPTIMAL,
                             VK_IMAGE_USAGE_TRANSFER_DST_BIT |
@@ -128,7 +134,7 @@ texture_create(const char *path,
         vulkan_image_layout_transition(vkDevice->device,
                                        vkDevice->commandPool,
                                        vkDevice->graphicsQueue,
-                                       tex->vulkan.textureImage,
+                                       ret.vulkan.textureImage,
                                        VK_FORMAT_R8G8B8A8_SRGB,
                                        VK_IMAGE_LAYOUT_UNDEFINED,
                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -137,16 +143,16 @@ texture_create(const char *path,
                                       vkDevice->commandPool,
                                       vkDevice->graphicsQueue,
                                       stagingBuffer,
-                                      tex->vulkan.textureImage,
-                                      (u32)tex->width,
-                                      (u32)tex->height);
+                                      ret.vulkan.textureImage,
+                                      (u32)ret.width,
+                                      (u32)ret.height);
 
         // Final transition for shader access
         vulkan_image_layout_transition(
           vkDevice->device,
           vkDevice->commandPool,
           vkDevice->graphicsQueue,
-          tex->vulkan.textureImage,
+          ret.vulkan.textureImage,
           VK_FORMAT_R8G8B8A8_SRGB,
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -156,19 +162,36 @@ texture_create(const char *path,
         vkFreeMemory(vkDevice->device, stagingBufferMemory, NULL);
 
         // Create Texture ImageView
-        tex->vulkan.textureImageView =
+        ret.vulkan.textureImageView =
           vulkan_image_view_create(vkDevice->device,
-                                   tex->vulkan.textureImage,
+                                   ret.vulkan.textureImage,
                                    VK_FORMAT_R8G8B8A8_SRGB,
                                    VK_IMAGE_ASPECT_COLOR_BIT);
 
         // Create Texture Sampler (for shader access)
-        tex->vulkan.textureSampler = vulkan_image_texture_sampler(
+        ret.vulkan.textureSampler = vulkan_image_texture_sampler(
           vkDevice->device, vkDevice->physicalDeviceProperties);
 
     } // GSK_DEVICE_API_VULKAN
 
     if (localBuffer) { stbi_image_free(localBuffer); }
+
+    ret.is_valid = TRUE;
+    return ret;
+}
+
+gsk_Texture *
+texture_create(const char *path,
+               VulkanDeviceContext *vkDevice,
+               TextureOptions options)
+{
+    gsk_Texture *tex = malloc(sizeof(gsk_Texture));
+    if (tex == NULL)
+    {
+        LOG_CRITICAL("Failled to allocate memory for texture.");
+    }
+
+    *tex = _gsk_texture_create_internal(NULL, path, vkDevice, &options);
 
     return tex;
 }
@@ -181,6 +204,7 @@ texture_create_cubemap(u32 faceCount, ...)
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
 
     gsk_Texture *tex = malloc(sizeof(gsk_Texture));
+    tex->is_valid    = FALSE;
     tex->id          = textureId;
 
     va_list ap;
@@ -215,44 +239,51 @@ texture_create_cubemap(u32 faceCount, ...)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
+    tex->is_valid = TRUE;
     return tex;
 }
 
 gsk_Texture *
 texture_create_hdr(const char *path)
 {
-    LOG_INFO("Loading HDR Image at path: %s", path);
+    LOG_DEBUG("Loading HDR Image at path: %s", path);
 
     gsk_Texture *tex = malloc(sizeof(gsk_Texture));
+    tex->is_valid    = FALSE;
 
     stbi_set_flip_vertically_on_load(TRUE);
     float *data = stbi_loadf(path, &tex->width, &tex->height, &tex->bpp, 0);
 
     assert(data != NULL);
 
-    u32 textureId;
-    glGenTextures(1, &textureId);
-    glBindTexture(GL_TEXTURE_2D, textureId);
+    u32 textureId = 0;
 
-    for (int i = 0; i < 1; i++)
+    if (GSK_DEVICE_API_OPENGL)
     {
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_RGB16F,
-                     tex->width,
-                     tex->height,
-                     0,
-                     GL_RGB,
-                     GL_FLOAT,
-                     data);
+        glGenTextures(1, &textureId);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+
+        for (int i = 0; i < 1; i++)
+        {
+            glTexImage2D(GL_TEXTURE_2D,
+                         0,
+                         GL_RGB16F,
+                         tex->width,
+                         tex->height,
+                         0,
+                         GL_RGB,
+                         GL_FLOAT,
+                         data);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+    tex->is_valid = TRUE;
     tex->id       = textureId;
     tex->filePath = path;
 
@@ -263,16 +294,22 @@ texture_create_hdr(const char *path)
 void
 texture_bind(gsk_Texture *self, u32 slot)
 {
-    self->activeSlot = slot;
-    glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, self->id);
+    if (GSK_DEVICE_API_OPENGL)
+    {
+        self->activeSlot = slot;
+        glActiveTexture(GL_TEXTURE0 + slot);
+        glBindTexture(GL_TEXTURE_2D, self->id);
+    }
 }
 
 void
 texture_unbind()
 {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    if (GSK_DEVICE_API_OPENGL)
+    {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 }
 
 void

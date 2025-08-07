@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -20,27 +20,49 @@
 #define DRAW_ELEMENTS           0x01
 #define DRAW_ELEMENTS_WIREFRAME 0x02
 
-// TODO: Rework
-#define MESH_TBN_MODE_NONE 0
-#define MESH_TBN_MODE_OBJ  1
-#define MESH_TBN_MODE_GLTF 2
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum gsk_PrimitiveTypeEnum {
-    GSK_PRIMITIVE_TYPE_TRIANGLE,
-    GSK_PRIMITIVE_TYPE_QUAD,
-    GSK_PRIMITIVE_TYPE_POLY,
-    GSK_PRIMITIVE_TYPE_FAN,
-} gsk_PrimitiveTypeEnum;
+typedef enum GskMeshPrimitiveType_ {
+    GskMeshPrimitiveType_Triangle,
+    GskMeshPrimitiveType_Quad,
+    GskMeshPrimitiveType_Poly,
+    GskMeshPrimitiveType_Fan,
+} GskMeshPrimitiveType_;
 
-// type of BUFFER
-// BUFFER_VERT (bitshift means this comes first)
-//
-// type of MESH
-// MESH_SKINNED
+typedef enum GskMeshBufferFlag_ {
+    GskMeshBufferFlag_Positions  = 1 << 0,
+    GskMeshBufferFlag_Textures   = 1 << 1,
+    GskMeshBufferFlag_Normals    = 1 << 2,
+    GskMeshBufferFlag_Tangents   = 1 << 3,
+    GskMeshBufferFlag_Bitangents = 1 << 4,
+    GskMeshBufferFlag_Joints     = 1 << 5,
+    GskMeshBufferFlag_Weights    = 1 << 6,
+    GskMeshBufferFlag_Indices    = 1 << 7,
+} GskMeshBufferFlag_;
+#define GSK_MESH_BUFFER_FLAGS_TOTAL 8
+
+typedef enum GskMeshVertexLength_ {
+    GskMeshVertexLength_Positions  = 3,
+    GskMeshVertexLength_Textures   = 2,
+    GskMeshVertexLength_Normals    = 3,
+    GskMeshVertexLength_Tangents   = 3,
+    GskMeshVertexLength_Bitangents = 3,
+    GskMeshVertexLength_Joints     = 4,
+    GskMeshVertexLength_Weights    = 4,
+    GskMeshVertexLength_Indices    = 1
+} GskMeshVertexLength_;
+
+typedef s32 GskMeshBufferFlags;
+
+typedef struct gsk_MeshBuffer
+{
+    float *p_buffer;
+    u32 buffer_size;
+    GskMeshBufferFlags buffer_flags;
+
+} gsk_MeshBuffer;
 
 // gsk_MeshData - API-agonstic buffer information
 typedef struct gsk_MeshData
@@ -49,36 +71,27 @@ typedef struct gsk_MeshData
     u32 indicesCount;
     u32 trianglesCount;
 
-    gsk_PrimitiveTypeEnum primitive_type;
+    GskMeshPrimitiveType_ primitive_type;
+    GskOglUsageType usage_draw;
     u8 has_indices;
-    u8 hasTBN; // TODO: 2 == ONLY TANGENT
+    u8 isSkinnedMesh;
 
-    struct
-    {
-        // attribute buffers
-        float *v, *vt, *vn; // position, texCoord, normal
-        u32 vL, vtL, vnL;   // lengths
+    gsk_MeshBuffer mesh_buffers[4];
+    u32 mesh_buffers_count;
+    GskMeshBufferFlags combined_flags; // flags used by every buff
 
-        float *out;
-        u32 outI;
-
-        float *outTBN;
-
-        u32 *bufferIndices;
-        u32 bufferIndices_size;
-
-    } buffers;
-
-    // TODO: Move to model
-    gsk_Skeleton *skeleton;
-    int isSkinnedMesh;
+    gsk_Skeleton skeleton;       // reference to skeleton
+    gsk_AnimationSet animations; // list of animations
 
     vec3 boundingBox[2];
+    vec3 world_pos;
 
 } gsk_MeshData;
 
 typedef struct gsk_Mesh
 {
+    u8 is_gpu_loaded;
+
     // Mesh data
     gsk_MeshData *meshData;
     mat4 localMatrix;
@@ -86,6 +99,7 @@ typedef struct gsk_Mesh
     // Mesh GPU buffers
     gsk_GlVertexArray *vao;
     VulkanVertexBuffer *vkVBO;
+    VulkanIndexBuffer *vkIBO;
 
     // Imported material data
     u32 usingImportedMaterial;
@@ -93,14 +107,21 @@ typedef struct gsk_Mesh
 } gsk_Mesh;
 
 /**
- * Assemble mesh per Graphics API spec.
- * Currently, this handles loading the model (wavefront & gltf) as well.
+ * Setup Mesh for GPU readiness.
  *
- * @param[in] mesh data
- * @return pointer to allocated Model structure.
+ * @return pointer to heap-allocated Mesh.
  */
 gsk_Mesh *
-gsk_mesh_assemble(gsk_MeshData *meshData);
+gsk_mesh_allocate(gsk_MeshData *p_mesh_data);
+
+/**
+ * Upload mesh to GPU per Graphics API spec.
+ *
+ * @param[in] mesh data
+ * @return pointer to mesh
+ */
+u8
+gsk_mesh_assemble(gsk_Mesh *mesh);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -8,12 +8,21 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "util/filesystem.h"
 #include "util/gfx.h"
 #include "util/logger.h"
 
 #include "core/device/device.h"
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
+
+#include "runtime/gsk_runtime_wrapper.h"
+
+#include "asset/asset.h"
+#include "asset/asset_cache.h"
+#include "asset/asset_gcfg.h"
+
+#define FALLBACK_TEXTURE_URI "gsk://textures/defaults/missing_1.png"
 
 gsk_Material *
 gsk_material_create(gsk_ShaderProgram *shader,
@@ -28,7 +37,9 @@ gsk_material_create(gsk_ShaderProgram *shader,
         ret->shaderProgram = shader;
     } else if (shaderPath != "" || shaderPath != NULL)
     {
-        ret->shaderProgram = gsk_shader_program_create(shaderPath);
+        char uri[GSK_FS_MAX_PATH];
+        gsk_filesystem_path_to_uri(shaderPath, uri);
+        ret->shaderProgram = GSK_ASSET(uri);
     } else
     {
         LOG_ERROR(
@@ -50,7 +61,18 @@ gsk_material_create(gsk_ShaderProgram *shader,
     gsk_Texture **textures = malloc(textureCount * sizeof(gsk_Texture *));
     for (int i = 0; i < textureCount; i++)
     {
-        *(textures + i) = va_arg(ap, gsk_Texture *);
+        gsk_Texture *p_tex = va_arg(ap, gsk_Texture *);
+
+        if (p_tex == NULL)
+        {
+            LOG_WARN("texture (%d) on material %p is invalid - using fallback",
+                     i,
+                     ret);
+
+            p_tex = GSK_ASSET(FALLBACK_TEXTURE_URI);
+        }
+
+        *(textures + i) = p_tex;
     }
     ret->textures      = textures;
     ret->texturesCount = textureCount;
@@ -59,9 +81,59 @@ gsk_material_create(gsk_ShaderProgram *shader,
 
     // TODO: Create descriptor set
 }
+gsk_Material *
+gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg)
+{
+    gsk_ShaderProgram *p_shader = NULL;
+    gsk_Material *p_material    = NULL;
+
+    // need to grab the shader
+    for (int i = 0; i < p_gcfg->list_items.list_next; i++)
+    {
+        gsk_GCFGItem *item = array_list_get_at_index(&p_gcfg->list_items, i);
+        if (!strcmp(item->key, "shader"))
+        {
+            // get correct cache based on shader path
+            gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(item->value);
+
+            if (hash_table_has(&p_cache->asset_table, item->value) == FALSE)
+            {
+                LOG_ERROR("Shader asset is not cached! (%s)", item->value);
+            }
+
+            p_shader = (gsk_ShaderProgram *)GSK_ASSET(item->value);
+        }
+    }
+    if (p_shader == NULL)
+    {
+        // TODO: get filename from gcfg
+        LOG_CRITICAL("GCFG Material does not have a shader reference.");
+    }
+
+    p_material = gsk_material_create(p_shader, NULL, 0);
+
+    // attach textures
+    for (int i = 0; i < p_gcfg->list_items.list_next; i++)
+    {
+        gsk_GCFGItem *item = array_list_get_at_index(&p_gcfg->list_items, i);
+        if (!strcmp(item->key, "texture"))
+        {
+            // get correct cache based on texture path
+            gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(item->value);
+
+            // load and add texture
+
+            gsk_Texture *p_tex = (gsk_Texture *)GSK_ASSET(item->value);
+
+            gsk_material_add_texture(p_material, p_tex);
+        }
+    }
+
+    return p_material;
+}
 
 void
-gsk_material_use(gsk_Material *self)
+gsk_material_load_textures(gsk_Material *self)
 {
     if (GSK_DEVICE_API_OPENGL)
     {
@@ -72,14 +144,24 @@ gsk_material_use(gsk_Material *self)
                 texture_bind(self->textures[i], i);
             }
         }
-        gsk_shader_use(self->shaderProgram);
+
     } else if (GSK_DEVICE_API_VULKAN)
     {
-        LOG_DEBUG("Material not implemented for Vulkan");
+        // LOG_DEBUG("Material not implemented for Vulkan");
 
         // Bind Pipeline here? Probably.
         // TODO: Bind image descriptor set HERE
     }
+}
+
+void
+gsk_material_use(gsk_Material *self)
+{
+    gsk_material_load_textures(self);
+    if (GSK_DEVICE_API_OPENGL) { gsk_shader_use(self->shaderProgram); }
+
+    // update previous material on renderer
+    gsk_runtime_get_renderer()->p_prev_material = self;
 }
 
 void

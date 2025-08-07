@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -12,6 +12,9 @@
 
 #include "core/drivers/vulkan/vulkan_buffer.h"
 #include "core/drivers/vulkan/vulkan_support.h"
+
+#include "core/graphics/renderer/v1/renderer.h"
+#include "runtime/gsk_runtime_wrapper.h"
 
 void
 vulkan_uniform_buffer_create(VkPhysicalDevice physicalDevice,
@@ -58,6 +61,9 @@ vulkan_uniform_buffer_update(u32 currentImage,
                              void **uniformBuffersMapped,
                              VkExtent2D swapchainExtent)
 {
+    gsk_Renderer *p_renderer = gsk_runtime_get_renderer();
+
+#if 0
     mat4 init = GLM_MAT4_IDENTITY_INIT;
     UniformBufferObject ubo;
     glm_mat4_copy(init, ubo.model);
@@ -77,6 +83,13 @@ vulkan_uniform_buffer_update(u32 currentImage,
     ubo.proj[1][1] *= -1;
 
     glm_rotate(ubo.model, glm_rad(90.0f), (vec3) {1, 0, 0});
+#else
+
+    UniformBufferObject ubo;
+    glm_mat4_copy(p_renderer->vk_ubo_test.model, ubo.model);
+    glm_mat4_copy(p_renderer->vk_ubo_test.proj, ubo.proj);
+    glm_mat4_copy(p_renderer->vk_ubo_test.view, ubo.view);
+#endif
 
     memcpy(
       uniformBuffersMapped[currentImage], &ubo, sizeof(UniformBufferObject));

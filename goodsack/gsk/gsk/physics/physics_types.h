@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -56,6 +56,7 @@ typedef struct gsk_CollisionResult
     gsk_CollisionPoints points;
     gsk_PhysicsMark physics_mark;
     u64 ent_a_id, ent_b_id;
+    u8 is_trigger_response;
 } gsk_CollisionResult;
 
 typedef struct gsk_Collider

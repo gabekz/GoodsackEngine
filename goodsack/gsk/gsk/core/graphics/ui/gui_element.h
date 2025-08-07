@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -7,6 +7,7 @@
 #define __GUI_ELEMENT_H__
 
 #include "util/maths.h"
+#include "util/sysdefs.h"
 
 #include "core/drivers/opengl/opengl.h"
 
@@ -17,27 +18,39 @@
 extern "C" {
 #endif // __cplusplus
 
+typedef enum GskGuiElementAnchorType_ {
+    GskGuiElementAnchorType_None,
+    GskGuiElementAnchorType_Center,
+} GskGuiElementAnchorType_;
+
+typedef s32 GskGuiElementAnchorType;
+
 typedef struct gsk_GuiElement
 {
     gsk_GlVertexArray *vao;
     gsk_Texture *texture;
     gsk_Material *material;
 
-    vec2 position; // position in pixel-coordinates
-    vec2 size;     // size in pixel-coordinates
+    vec3 color_rgb; // element pixel color
+    vec2 offset;    // offset in pixel-coordinates
+    vec2 position;  // offset position in pixel-coordinates with viewport
+    vec2 size;      // size in pixel-coordinates
 
+    GskGuiElementAnchorType anchor_type;
     u16 using_texture;
 
 } gsk_GuiElement;
 
 gsk_GuiElement *
-gsk_gui_element_create(vec2 position,
+gsk_gui_element_create(GskGuiElementAnchorType anchor,
+                       vec2 position,
                        vec2 size,
+                       vec3 color,
                        gsk_Texture *p_texture,
                        vec4 tex_coords);
 
 void
-gsk_gui_element_draw(gsk_GuiElement *element);
+gsk_gui_element_draw(gsk_GuiElement *element, u32 shader_id);
 
 #ifdef __cplusplus
 }

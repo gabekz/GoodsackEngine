@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -14,6 +14,8 @@
 #include "core/device/device.h"
 #include "core/graphics/mesh/primitives.h"
 
+#include "asset/asset.h"
+
 static u32 csTexture;
 static gsk_ShaderProgram *csShader;
 static gsk_ShaderProgram *shader2;
@@ -23,11 +25,8 @@ void
 computebuffer_init()
 {
 
-    // shader Program
-    const char *csPath = "../res/shaders/hello.compute";
-    csShader           = gsk_shader_compute_program_create(csPath);
-    shader2 =
-      gsk_shader_program_create("../res/shaders/framebuffer-simple.shader");
+    csShader = GSK_ASSET("gsk://shaders/hello.compute");
+    shader2  = GSK_ASSET("gsk://shaders/framebuffer-simple.shader");
 
     // texture size
     const u32 TEXTURE_WIDTH = 320, TEXTURE_HEIGHT = 180;
@@ -52,9 +51,9 @@ computebuffer_init()
     // Create Rectangle
     vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vaoRect);
-    float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect =
-      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    float *rectPositions        = prim_vert_rect();
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(
+      rectPositions, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Dynamic);
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);

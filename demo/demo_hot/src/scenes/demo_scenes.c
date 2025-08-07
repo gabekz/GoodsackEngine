@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -10,15 +10,18 @@
 #include "entity/ecs.h"
 #include "entity/modules/modules_systems.h"
 
+#include "asset/asset.h"
+#include "asset/asset_cache.h"
 #include "physics/physics_types.h"
 
-#define LOAD_SCENE(index) GLUE(_scene, index)(ecs, renderer)
+#define LOAD_SCENE(index)   GLUE(_scene, index)(ecs, renderer)
+#define LOAD_SCENE_2(index) GLUE(_scene, index)(ecs, renderer, asset_cache)
 
 gsk_Texture *texDefSpec, *texDefNorm, *texPbrAo, *texMissing;
 gsk_Skybox *skyboxMain;
 
 static gsk_Entity
-__create_camera_entity(gsk_ECS *ecs, vec3 position, void *parent)
+__create_camera_entity(gsk_ECS *ecs, vec3 position)
 {
     gsk_Entity camera = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(
@@ -29,12 +32,12 @@ __create_camera_entity(gsk_ECS *ecs, vec3 position, void *parent)
         .renderLayer = 0, // DEFAULT RENDER LAYER (camera-zero)
       }));
     _gsk_ecs_add_internal(camera,
-                          C_CAMERALOOK,
+                          C_CAMERA_LOOK,
                           (void *)(&(struct ComponentCameraLook) {
                             .sensitivity = 1.0f,
                           }));
     _gsk_ecs_add_internal(camera,
-                          C_CAMERAMOVEMENT,
+                          C_CAMERA_MOVEMENT,
                           (void *)(&(struct ComponentCameraMovement) {
                             .speed = 5.0f,
                           }));
@@ -42,7 +45,6 @@ __create_camera_entity(gsk_ECS *ecs, vec3 position, void *parent)
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
                             .position = {position[0], position[1], position[2]},
-                            .parent   = parent,
                           }));
     return camera;
 }
@@ -52,11 +54,10 @@ _scene0(gsk_ECS *ecs, gsk_Renderer *renderer)
 {
     ecs = gsk_renderer_active_scene(renderer, 0);
 
-    gsk_Texture *texEarthDiff =
-      texture_create_d(GSK_PATH("data://textures/earth/diffuse.png"));
-    gsk_Texture *texEarthNorm =
-      texture_create_n(GSK_PATH("data://textures/earth/normal.png"));
-    texture_create_n(GSK_PATH("data://textures/earth/normal.png"));
+    gsk_Texture *texEarthDiff = GSK_ASSET("data://textures/earth/diffuse.png");
+    gsk_Texture *texEarthNorm = GSK_ASSET("data://textures/earth/normal.png");
+
+    gsk_Model *model_earth = GSK_ASSET("gsk://models/sphere.obj");
 
     gsk_Material *matSuzanne =
       gsk_material_create(NULL,
@@ -66,20 +67,16 @@ _scene0(gsk_ECS *ecs, gsk_Renderer *renderer)
                           texEarthNorm,
                           texDefSpec);
 
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f}, NULL);
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
     gsk_Entity suzanneObject = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(suzanneObject, C_TRANSFORM, NULL);
     _gsk_ecs_add_internal(suzanneObject,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matSuzanne,
-                            .modelPath  = GSK_PATH("gsk://models/sphere.obj"),
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material = matSuzanne,
+                            .pModel   = model_earth,
+                          }));
 }
 
 static void
@@ -112,8 +109,7 @@ _scene1(gsk_ECS *ecs, gsk_Renderer *renderer)
                           texDefNorm,
                           texContSpec);
 
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f}, NULL);
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
     gsk_Entity floorEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(floorEntity,
@@ -122,15 +118,12 @@ _scene1(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .position = {0.0f, -0.3f, 0.0f},
                             .scale    = {10.0f, 10.0f, 10.0f},
                           }));
-    _gsk_ecs_add_internal(
-      floorEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material  = matFloor,
-                                         .modelPath = "../res/models/plane.obj",
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(floorEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material  = matFloor,
+                            .modelPath = "../res/models/plane.obj",
+                          }));
 
     gsk_Entity boxEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(boxEntity,
@@ -138,15 +131,12 @@ _scene1(gsk_ECS *ecs, gsk_Renderer *renderer)
                           (void *)(&(struct ComponentTransform) {
                             .position = {0.0f, -0.085f, 0.0f},
                           }));
-    _gsk_ecs_add_internal(
-      boxEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .modelPath  = "../res/models/cube.obj",
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(boxEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material  = matBox,
+                            .modelPath = "../res/models/cube.obj",
+                          }));
 }
 
 static void
@@ -227,8 +217,7 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
                                                 texGoldSpecular,
                                                 texPbrAo);
 
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f}, NULL);
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 0.0f, 2.0f});
 
     gsk_Entity sphereEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(sphereEntity,
@@ -239,12 +228,9 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matGranite,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material  = matGranite,
+                            .modelPath = "../res/models/sphere.obj",
+                          }));
     gsk_Entity sphereEntity2 = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(sphereEntity2,
                           C_TRANSFORM,
@@ -254,12 +240,9 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity2,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matRust,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material  = matRust,
+                            .modelPath = "../res/models/sphere.obj",
+                          }));
 
     gsk_Entity sphereEntity3 = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(sphereEntity3,
@@ -270,12 +253,9 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity3,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matBrass,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material  = matBrass,
+                            .modelPath = "../res/models/sphere.obj",
+                          }));
     gsk_Entity sphereEntity4 = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(sphereEntity4,
                           C_TRANSFORM,
@@ -285,12 +265,9 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity4,
                           C_MODEL,
                           (void *)(&(struct ComponentModel) {
-                            .material   = matGold,
-                            .modelPath  = "../res/models/sphere.obj",
-                            .properties = {
-                              .drawMode = DRAW_ARRAYS,
-                              .cullMode = CULL_CW | CULL_FORWARD,
-                            }}));
+                            .material  = matGold,
+                            .modelPath = "../res/models/sphere.obj",
+                          }));
 
 #if 0
     gsk_Entity floorEntity2 = gsk_ecs_new(ecs);
@@ -304,10 +281,7 @@ _scene2(gsk_ECS *ecs, gsk_Renderer *renderer)
             C_MODEL,
             (void *)(&(struct ComponentModel) {.material   = matFloor,
                                      .modelPath  = "../demo/demo_hot/Resources/models/plane.obj",
-                                     .properties = {
-                                       .drawMode = DRAW_ARRAYS,
-                                       .cullMode = CULL_CW | CULL_FORWARD,
-                                     }}));
+                                     }));
 #endif
 }
 
@@ -318,6 +292,7 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
     ecs = gsk_renderer_active_scene(renderer, 3);
     __set_active_scene_skybox(renderer, skyboxMain);
 
+#if 0
     gsk_Texture *texCerbA =
       texture_create_d(GSK_PATH("data://textures/pbr/cerberus/Cerberus_A.tga"));
     gsk_Texture *texCerbN =
@@ -336,33 +311,28 @@ _scene3(gsk_ECS *ecs, gsk_Renderer *renderer)
                           texCerbM,
                           texCerbS,
                           texPbrAo);
-
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f}, NULL);
-
-    gsk_Model *model_cerb = gsk_model_load_from_file(
-      GSK_PATH("data://models/cerberus-triang.obj"), 1.0f, NULL);
-
-#if 1
-    gsk_Entity entCerb                          = gsk_ecs_new(ecs);
-    struct ComponentTransform compCerbTransform = {
-      .position = {0.0f, 0.0f, 0.0f},
-      .scale    = {4.0f, 4.0f, 4.0f},
-    };
-    struct ComponentModel compCerbMesh = {.material   = matCerb,
-                                          .pModel     = model_cerb,
-                                          .properties = {
-                                            .drawMode = DRAW_ARRAYS,
-                                            .cullMode = CULL_CW | CULL_FORWARD,
-                                          }};
-    _gsk_ecs_add_internal(
-      entCerb,
-      C_TRANSFORM,
-      (void *)((struct ComponentTransform *)&compCerbTransform));
-
-    _gsk_ecs_add_internal(
-      entCerb, C_MODEL, (void *)((struct ComponentModel *)&compCerbMesh));
+#else
+    gsk_Material *matCerb =
+      GSK_ASSET("data://textures/pbr/cerberus/cerberus.material");
 #endif
+
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
+
+    gsk_Model *model_cerb = GSK_ASSET("data://models/cerberus-triang.obj");
+
+    gsk_Entity e_cerb = gsk_ecs_new(ecs);
+    _gsk_ecs_add_internal(e_cerb,
+                          C_TRANSFORM,
+                          (void *)(&(struct ComponentTransform) {
+                            .position = {0.0f, 0.0f, 0.0f},
+                            .scale    = {4.0f, 4.0f, 4.0f},
+                          }));
+    _gsk_ecs_add_internal(e_cerb,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matCerb,
+                            .pModel   = model_cerb,
+                          }));
 }
 
 static void
@@ -376,8 +346,7 @@ _scene4(gsk_ECS *ecs, gsk_Renderer *renderer)
     gsk_Model *modelCharacter = gsk_model_load_from_file(
       GSK_PATH("data://models/character-anim.gltf"), 1, FALSE);
 
-    gsk_Entity camera =
-      __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f}, NULL);
+    gsk_Entity camera = __create_camera_entity(ecs, (vec3) {0.0f, 1.0f, 0.0f});
 
     gsk_Entity characterEntity = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(characterEntity,
@@ -386,15 +355,12 @@ _scene4(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .position = {0.0f, 0.0f, 0.0f},
                             //.scale = {0.001f, 0.001f, 0.001f},
                           }));
-    _gsk_ecs_add_internal(
-      characterEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matCharacter,
-                                         .pModel     = modelCharacter,
-                                         .properties = {
-                                           .drawMode = DRAW_ELEMENTS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(characterEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matCharacter,
+                            .pModel   = modelCharacter,
+                          }));
     _gsk_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
 }
 
@@ -405,16 +371,12 @@ _scene5(gsk_ECS *ecs, gsk_Renderer *renderer)
     __set_active_scene_skybox(renderer, skyboxMain);
 
     gsk_Material *matWire =
-      gsk_material_create(NULL, GSK_PATH("gsk://shaders/wireframe.shader"), 0);
+      gsk_material_create(GSK_ASSET("gsk://shaders/wireframe.shader"), NULL, 0);
 
-    gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
-    *pCamera = __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f}, NULL);
-    gsk_Entity e_camera = *pCamera;
+    gsk_Entity e_camera =
+      __create_camera_entity(ecs, (vec3) {-1.2f, 0.5f, 0.2f});
 
-    gsk_Model *modelSponza =
-      // gsk_model_load_from_file("../demo/demo_hot/Resources/models/AK.glb",
-      // 1);
-      gsk_model_load_from_file(GSK_PATH("data://models/sponza.glb"), 1, TRUE);
+    gsk_Model *modelSponza = GSK_ASSET("data://models/sponza.glb");
 
     gsk_Entity e_sponza = gsk_ecs_new(ecs);
     _gsk_ecs_add_internal(e_sponza,
@@ -423,19 +385,12 @@ _scene5(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .position = {0.0f, -1.5f, 0.0f},
                             .scale    = {0.001f, 0.001f, 0.001f},
                           }));
-    _gsk_ecs_add_internal(
-      e_sponza,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {
-        .material = matWire,
-        .pModel   = modelSponza,
-        //.modelPath = "../demo/demo_hot/Resources/models/sponza.glb",
-        //.modelPath  = "../res/models/test3.gltf",
-        .properties = {
-          .drawMode = DRAW_ELEMENTS,
-          .cullMode = CULL_CW | CULL_FORWARD,
-        }}));
-    //_gsk_ecs_add_internal(characterEntity, C_ANIMATOR, NULL);
+    _gsk_ecs_add_internal(e_sponza,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matWire,
+                            .pModel   = modelSponza,
+                          }));
 }
 
 // physics test
@@ -445,43 +400,18 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     ecs = gsk_renderer_active_scene(renderer, 6);
     __set_active_scene_skybox(renderer, skyboxMain);
 
-    gsk_Texture *texContDiff =
-      texture_create_d(GSK_PATH("data://textures/container/diffuse.png"));
-    gsk_Texture *texContSpec =
-      texture_create_n(GSK_PATH("data://textures/container/specular.png"));
+    gsk_Model *model_plane = GSK_ASSET("gsk://models/plane.obj");
 
-    gsk_Texture *texBrickDiff =
-      texture_create_d(GSK_PATH("data://textures/brickwall/diffuse.png"));
-    gsk_Texture *texBrickNorm =
-      texture_create_n(GSK_PATH("data://textures/brickwall/normal.png"));
+    gsk_Model *model_sphere = GSK_ASSET("gsk://models/sphere.obj");
 
-    gsk_Model *model_plane =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/plane.obj"), 1, FALSE);
+    gsk_Model *model_cube = GSK_ASSET("gsk://models/cube.obj");
 
-    gsk_Model *model_sphere =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/sphere.obj"), 1, FALSE);
-
-    gsk_Model *model_cube =
-      gsk_model_load_from_file(GSK_PATH("gsk://models/cube.obj"), 1, FALSE);
-
-    gsk_Material *matFloor =
-      gsk_material_create(NULL,
-                          GSK_PATH("gsk://shaders/lit-diffuse.shader"),
-                          3,
-                          texBrickDiff,
-                          texBrickNorm,
-                          texDefSpec);
     gsk_Material *matBox =
-      gsk_material_create(NULL,
-                          GSK_PATH("gsk://shaders/lit-diffuse.shader"),
-                          3,
-                          texContDiff,
-                          texDefNorm,
-                          texContSpec);
+      GSK_ASSET("data://textures/pbr/cerberus/cerberus.material");
 
     gsk_Entity *pCamera = malloc(sizeof(gsk_Entity));
 
-    *pCamera = __create_camera_entity(ecs, (vec3) {-2.0f, 5.0f, 8.0f}, NULL);
+    *pCamera          = __create_camera_entity(ecs, (vec3) {-2.0f, 5.0f, 8.0f});
     gsk_Entity camera = *pCamera;
 
     // Testing entity on heap memory
@@ -500,18 +430,25 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(floorEntity,
                           C_COLLIDER,
                           (void *)(&(struct ComponentCollider) {
-                            .type = COLLIDER_PLANE,
+                            .type = COLLIDER_BOX,
                           }));
-    _gsk_ecs_add_internal(
-      floorEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matFloor,
-                                         .pModel     = model_plane,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+#if 0
+    _gsk_ecs_add_internal(floorEntity,
+                          C_RIGIDBODY,
+                          (void *)(&(struct ComponentRigidbody) {
+                            .gravity = {0, 0, 0},
+                            .mass    = 100,
+                          }));
 #endif
+#if 0
+    _gsk_ecs_add_internal(floorEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matBox,
+                            .pModel   = model_plane,
+                          }));
+#endif // BOX
+#endif // FLOOR
 #if 1
 
     gsk_Entity *pSphereEntity = malloc(sizeof(gsk_Entity));
@@ -527,7 +464,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass    = 20.0f,
+                            .mass    = 2.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity,
@@ -536,15 +473,12 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .type = COLLIDER_SPHERE,
                           }));
 
-    _gsk_ecs_add_internal(
-      sphereEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_sphere,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(sphereEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matBox,
+                            .pModel   = model_sphere,
+                          }));
 #endif
 
 // Second sphere
@@ -556,14 +490,14 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
     _gsk_ecs_add_internal(sphereEntity2,
                           C_TRANSFORM,
                           (void *)(&(struct ComponentTransform) {
-                            .position = {0.0f, 3.0f, -2.2f},
+                            .position = {0.0f, 3.0f, -2.6f},
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass    = 20.0f,
+                            .mass    = 2.0f,
                           }));
 
     _gsk_ecs_add_internal(sphereEntity2,
@@ -572,15 +506,12 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .type = COLLIDER_SPHERE,
                           }));
 
-    _gsk_ecs_add_internal(
-      sphereEntity2,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_sphere,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(sphereEntity2,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matBox,
+                            .pModel   = model_sphere,
+                          }));
 #endif
 
 // Cube
@@ -598,7 +529,7 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                           C_RIGIDBODY,
                           (void *)(&(struct ComponentRigidbody) {
                             .gravity = GRAVITY_EARTH,
-                            .mass    = 10.0f,
+                            .mass    = 4.0f,
                           }));
 
     _gsk_ecs_add_internal(cubeEntity,
@@ -607,22 +538,22 @@ _scene6(gsk_ECS *ecs, gsk_Renderer *renderer)
                             .type = COLLIDER_BOX,
                           }));
 
-    _gsk_ecs_add_internal(
-      cubeEntity,
-      C_MODEL,
-      (void *)(&(struct ComponentModel) {.material   = matBox,
-                                         .pModel     = model_cube,
-                                         .properties = {
-                                           .drawMode = DRAW_ARRAYS,
-                                           .cullMode = CULL_CW | CULL_FORWARD,
-                                         }}));
+    _gsk_ecs_add_internal(cubeEntity,
+                          C_MODEL,
+                          (void *)(&(struct ComponentModel) {
+                            .material = matBox,
+                            .pModel   = model_cube,
+                          }));
 
 #endif
 }
 
 void
-demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer)
+demo_scenes_create(gsk_ECS *ecs,
+                   gsk_Renderer *renderer,
+                   gsk_AssetCache *asset_cache)
 {
+#if 0
     // Default textures with options
     texDefSpec =
       texture_create_n(GSK_PATH("gsk://textures/defaults/black.png"));
@@ -630,10 +561,28 @@ demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer)
       texture_create_n(GSK_PATH("gsk://textures/defaults/normal.png"));
     texPbrAo = texture_create_n(GSK_PATH("gsk://textures/defaults/white.png"));
     texMissing =
-      texture_create_n(GSK_PATH("gsk://textures/defaults/missing.jpg"));
+      texture_create_n(GSK_PATH("gsk://textures/defaults/missing_1.png"));
+#endif
 
     skyboxMain = gsk_skybox_hdr_create(
       texture_create_hdr(GSK_PATH("gsk://textures/hdr/sky_cloudy_ref.hdr")));
+
+    // Default textures with options
+    texDefSpec = GSK_ASSET("gsk://textures/defaults/black.png");
+    texDefNorm = GSK_ASSET("gsk://textures/defaults/normal.png");
+    texPbrAo   = GSK_ASSET("gsk://textures/defaults/white.png");
+    texMissing = GSK_ASSET("gsk://textures/defaults/missing_1.png");
+
+// NOTE: asset cache now handled by runtime
+#if 0
+    gsk_asset_cache_add_by_ext(asset_cache,
+                               "data://textures/container/diffuse.png");
+    gsk_asset_cache_add_by_ext(asset_cache,
+                               "data://textures/container/specular.png");
+
+    // test load material
+    gsk_asset_cache_add_by_ext(asset_cache, "data://materials/cube.material");
+#endif
 
 #if LOAD_ALL_SCENES
     LOAD_SCENE(0);
@@ -644,6 +593,8 @@ demo_scenes_create(gsk_ECS *ecs, gsk_Renderer *renderer)
     LOAD_SCENE(5);
     LOAD_SCENE(6);
     LOAD_SCENE(7);
+#elif INITIAL_SCENE == SCENE_ASSET_TEST
+    LOAD_SCENE_2(9);
 #else
     LOAD_SCENE(INITIAL_SCENE);
 #endif // LOAD_ALL_SCENES

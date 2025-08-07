@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -19,6 +19,7 @@ extern "C" {
 #define GSK_DEVICE_API_VULKAN gsk_device_getGraphics() == GRAPHICS_API_VULKAN
 
 #define GSK_TIME_FIXED_DELTA_DEFAULT 1.0 / 100.0
+#define GSK_TIME_ANALYTICS_DEFAULT   1.0 / 1.0
 #define GSK_TIME_SCALE_DEFAULT       1.0
 
 typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } gsk_GraphicsAPI;
@@ -30,6 +31,16 @@ typedef struct gsk_GraphicsSettings
     int swapInterval; // VSync
 } gsk_GraphicsSettings;
 
+// GPU Compatibility Info
+// TODO: move to gsk_WindowContext
+typedef struct gsk_GraphicsCompatibility
+{
+    s32 max_tex;
+    s32 max_coords;
+    s32 max_size;
+    s32 max_msaa_samples;
+} gsk_GraphicsCompatibility;
+
 // Time
 
 typedef struct gsk_Time
@@ -37,6 +48,7 @@ typedef struct gsk_Time
     f64 delta_time;       // variable delta_time time
     f64 fixed_delta_time; // fixed delta_time time interval
     f64 next_time_scale, time_scale;
+    f64 time_elapsed;
 
     struct
     {
@@ -76,6 +88,13 @@ gsk_device_getGraphicsSettings();
 void
 gsk_device_setGraphicsSettings(gsk_GraphicsSettings settings);
 
+gsk_GraphicsCompatibility
+gsk_device_getGraphicsCompatibility();
+
+void
+gsk_device_setGraphicsCompatibility(
+  gsk_GraphicsCompatibility compatibility_info);
+
 gsk_Time
 gsk_device_getTime();
 
@@ -91,10 +110,7 @@ gsk_device_updateTime(double time);
 // fixed delta-time clock handlers //
 
 u8
-_gsk_device_check_fixed_update(double time);
-
-void
-_gsk_device_reset_fixed_update(double time);
+_gsk_device_check_fixed_update();
 
 // input //
 

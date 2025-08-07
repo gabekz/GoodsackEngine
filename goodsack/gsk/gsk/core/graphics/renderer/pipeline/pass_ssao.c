@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -17,6 +17,8 @@
 #include "core/drivers/opengl/opengl.h"
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/renderer/pipeline/pass_prepass.h"
+
+#include "asset/asset.h"
 
 static vec3 s_ssaoSamples[64];
 static u32 s_ssaoFBO;
@@ -108,10 +110,8 @@ pass_ssao_init()
 
     // Create Shaders
     //---------------
-    s_ssaoOutShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/ssao-color.shader"));
-    s_ssaoBlurShader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/ssao-blur.shader"));
+    s_ssaoOutShader  = GSK_ASSET("gsk://shaders/ssao-color.shader");
+    s_ssaoBlurShader = GSK_ASSET("gsk://shaders/ssao-blur.shader");
 
     // Sample Kernel
     //--------------
@@ -173,9 +173,9 @@ pass_ssao_init()
     // Create Rectangle
     vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vaoRect);
-    float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect =
-      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    float *rectPositions        = prim_vert_rect();
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(
+      rectPositions, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
@@ -271,6 +271,18 @@ pass_ssao_bind(SsaoOptions options)
     // render quad
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // reset
     */
+}
+
+u32
+pass_ssao_getNoiseTextureId()
+{
+    return s_ssaoNoiseTextureId;
+}
+
+u32
+pass_ssao_getFirstTextureId()
+{
+    return s_ssaoOutTextureId;
 }
 
 u32

@@ -77,12 +77,12 @@ CreateAndLoadMyScene(gsk_ECS *ecs_handle, gsk_Renderer *renderer)
                     .render_layer = 0,
                 }));
     gsk_ecs_add(ent_camera,
-                C_CAMERALOOK,
+                C_CAMERA_LOOK,
                 ((struct ComponentCameraLook) {
                     .sensitivity = 1.0f,
                 }));
     gsk_ecs_add(ent_camera,
-                C_CAMERAMOVEMENT,
+                C_CAMERA_MOVEMENT,
                 ((struct ComponentCameraMovement) {
                     .speed = 2.5f,
                 }));

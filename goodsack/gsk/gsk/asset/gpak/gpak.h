@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Gabriel Kutuzov
+ * Copyright (c) 2024-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -10,41 +10,64 @@
 #include "util/filesystem.h"
 #include "util/sysdefs.h"
 
+#include "asset/asset_cache.h"
+
+// Maximum bytes per page
+#define GSK_GPAK_MAX_FILESIZE 0xF424000U // 256MB
+
+// Maximum bytes bloc
+#define GSK_GPAK_MAX_BLOC 0xFFFFFFFFU
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-typedef struct gsk_GPakAssetRef
+typedef struct gsk_GpakHeader
 {
-    u64 handle;   // default to 0 when not in use
-    u8 type;      // asset type
-    char *uri;    // uri of the reference
-    void *p_next; // chain pointer to next asset in linked-list
-} gsk_GPakAssetRef;
+    char signature[4];
+    char version[4];
+    u16 file_size;
+} gsk_GpakHeader;
 
-#if 0
-typedef struct gsk_GPakAssetBlob
+typedef struct gsk_GpakHandler
 {
-    void *p_data;
-    u64 data_size;
+    void *p_file;
+    u8 is_ready;
+    u8 is_compiled;
+    u8 mode;
 
-} gsk_GPakAssetBlob;
-#endif
-
-typedef struct gsk_GPakContainer
+} gsk_GpakHandler;
+typedef struct gsk_GpakWriter
 {
-    gsk_GPakAssetRef *p_refs_table;
-    u64 refs_table_count;
-} gsk_GPAK;
+    void *file_ptr;
+    u8 is_ready;
 
-gsk_GPAK
-gsk_gpak_init(u64 table_count);
+    void *data_file_ptr;
+    u32 dat_file_count;
+    u32 dat_file_crnt;
+
+    gsk_AssetCache *p_cache;
+    char output_dir[GSK_FS_MAX_PATH];
+
+} gsk_GpakWriter;
+
+gsk_GpakHandler
+gsk_gpak_handler_init();
+
+gsk_GpakWriter
+gsk_gpak_writer_init(gsk_AssetCache *p_cache, const char *output_absolute_dir);
 
 void
-gsk_gpak_write(gsk_GPAK *p_gpak, const char *str_key_uri, u64 value);
+gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer);
 
-u64
-gsk_gpak_read(gsk_GPAK *p_gpak, const char *str_uri);
+void
+gsk_gpak_writer_close(gsk_GpakWriter *p_writer);
+
+void
+gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path);
+
+gsk_AssetBlob
+gsk_gpak_reader_import_blob(const char *uri_str);
 
 #ifdef __cplusplus
 }

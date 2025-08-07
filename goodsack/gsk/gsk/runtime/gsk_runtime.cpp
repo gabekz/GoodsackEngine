@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #include "gsk_runtime.hpp"
 
+#include <cstdlib>
 #include <cstring>
 
 #include "util/filesystem.h"
@@ -17,6 +18,8 @@
 #include "entity/lua/eventstore.hpp"
 #include "wrapper/lua/lua_init.hpp"
 
+#include "gsk_generated/GoodsackEngineConfig.h"
+
 #if GSK_RUNTIME_USE_DEBUG
 #include "tools/debug/debug_toolbar.hpp"
 #endif // GSK_RUNTIME_USE_DEBUG
@@ -27,7 +30,24 @@
 #include "core/graphics/renderer/v1/renderer.h"
 #endif
 
+#include "asset/asset.h"
+#include "asset/asset_cache.h"
+#include "asset/gpak/gpak.h"
+
 #include "core/drivers/alsoft/alsoft.h"
+
+// included here for activating core ECS systems
+#include "entity/modules/modules_systems.h"
+
+#if GSK_USING_COMPOSER
+#include "core/audio/music_composer.h"
+#include "core/audio/music_composer_loader.hpp"
+#endif // GSK_USING_COMPOSER
+
+#include "entity/ecs.h"
+
+#define _TOTAL_ASSET_CACHES 2
+#define _TEST_WRITE_PNG     0
 
 extern "C" {
 static struct
@@ -35,51 +55,163 @@ static struct
     gsk_ECS *ecs;
     gsk_Renderer *renderer;
 
+    gsk_AssetCache *pp_asset_caches[_TOTAL_ASSET_CACHES];
+    u32 cache_cnt;
+    char proj_scheme[GSK_FS_MAX_SCHEME];
+
+    gsk_AssetRef *p_default_texture;
+    gsk_AssetRef *p_default_audio;
+    gsk_AssetRef *p_default_model;
+    gsk_AssetRef *p_default_material;
+    gsk_AssetRef *p_default_shader;
+
 #if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
+    gsk_EntityId selected_entity_id;
 #endif // GSK_RUNTIME_DEBUG
 
+    struct
+    {
+        u8 fs_mode;    // 0 = gpak; 1 = hot
+        u8 build_gpak; // 0 = FALSE; 1 = TRUE
+        u8 using_lua;  // 0 = FALSE; 1 = TRUE
+    } options;
+
+    struct
+    {
+        char map_uri[GSK_FS_MAX_PATH];
+        u8 map_from_runtime;
+    } map_setup;
+
+    struct
+    {
+        u8 is_lua_running;
+    } status;
+
+    char bin_directory[256] = "";
+
 } s_runtime;
-}
+} // extern "C"
 
 static void
 _gsk_check_args(int argc, char *argv[])
 {
+    // If no arguments are given, default to OpenGL
     if (argc <= 1)
     {
         gsk_device_setGraphics(GRAPHICS_API_OPENGL);
         return;
     }
 
-    for (int i = 0; i < argc; i++)
+    for (int i = 1; i < argc; i++)
     {
-        if (std::string(argv[i]) == "--vulkan")
+        std::string arg = argv[i];
+
+        // Check for key=value arguments first
+        size_t equal_pos = arg.find('=');
+        if (equal_pos != std::string::npos)
         {
-            gsk_device_setGraphics(GRAPHICS_API_VULKAN);
-        } else if (std::string(argv[i]) == "--opengl")
+            std::string key   = arg.substr(0, equal_pos);
+            std::string value = arg.substr(equal_pos + 1);
+
+            // Handle "--gpu=..."
+            if (key == "--gpu")
+            {
+                if (value == "vulkan")
+                {
+                    gsk_device_setGraphics(GRAPHICS_API_VULKAN);
+                } else if (value == "opengl")
+                {
+                    gsk_device_setGraphics(GRAPHICS_API_OPENGL);
+                } else
+                {
+                    LOG_WARN("GPU type not specified. Fallback to OpenGL");
+                    gsk_device_setGraphics(GRAPHICS_API_OPENGL);
+                }
+            }
+            // Handle "--map=..."
+            else if (key == "--map")
+            {
+                LOG_INFO("Loading map from: %s", value.c_str());
+                strcpy(s_runtime.map_setup.map_uri, value.c_str());
+                s_runtime.map_setup.map_from_runtime = 1;
+            }
+        }
+        // Check flags without values
+        else
         {
-            gsk_device_setGraphics(GRAPHICS_API_OPENGL);
-        } else if (std::string(argv[i]) == "--errlevel")
-        {
-            logger_setLevel(LogLevel_ERROR);
+            // errlevel switch
+            if (arg == "--errlevel")
+            {
+                logger_setLevel(LogLevel_ERROR);
+            }
+            // hot switch
+            else if (arg == "--hot")
+            {
+                LOG_INFO("Set FS Mode to RunHot");
+                s_runtime.options.fs_mode = 1;
+            }
+            // gpak switch
+            else if (arg == "--testgpak")
+            {
+                LOG_INFO("Testing GPAK (overriding FS Mode to RunHot)");
+                s_runtime.options.build_gpak = 1;
+                s_runtime.options.fs_mode    = 1;
+            }
+            // lua-disable switch
+            else if (arg == "--no-lua")
+            {
+                LOG_INFO("Lua disabled (--no-lua switch passed)");
+                s_runtime.options.using_lua = 0;
+            }
         }
     }
 }
 
-u32
-gsk_runtime_setup(const char *root_dir,
-                  const char *root_scheme,
-                  int argc,
-                  char *argv[])
+static void
+_gsk_runtime_cache_asset_file(const char *uri)
 {
-    // Setup logger
+    gsk_asset_cache_add_by_ext(s_runtime.pp_asset_caches[s_runtime.cache_cnt],
+                               uri);
+}
+
+u32
+gsk::runtime::rt_setup(const char *root_dir,
+                       const char *root_scheme,
+                       const char *app_name,
+                       int argc,
+                       char *argv[])
+{
+    /*==== Get binary directory + log path ===========================*/
+
+    strcpy(s_runtime.bin_directory, argv[0]);
+    gsk_filesystem_str_to_forward_slash(s_runtime.bin_directory);
+    gsk_filesystem_strip_filename(s_runtime.bin_directory);
+
+    char log_path[256] = "";
+    sprintf(log_path, "%s/log.txt", s_runtime.bin_directory);
+
+    /*==== Initialize Logger =========================================*/
+
     int logStat = logger_initConsoleLogger(NULL);
-    // logger_initFileLogger("logs/logs.txt", 0, 0);
+    // logger_initFileLogger(log_path, 0, 0);
 
     logger_setLevel(LogLevel_DEBUG);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
+    LOG_INFO("Root directory: %s", root_dir);
+
+    LOG_INFO("PATH: %s", s_runtime.bin_directory);
+    LOG_INFO("LOG_PATH: %s", log_path);
+
+    s_runtime.cache_cnt          = 0; // TODO: Change this.
+    s_runtime.options.fs_mode    = 0; // TODO: Change this.
+    s_runtime.options.build_gpak = 0; // TODO: Change this.
+    s_runtime.options.using_lua  = 1; // TODO: Change this.
+
+    s_runtime.map_setup.map_from_runtime = 0; // TODO: Change this.
+    s_runtime.status.is_lua_running      = 0; // TODO: Change this.
 
     _gsk_check_args(argc, argv);
 
@@ -90,20 +222,140 @@ gsk_runtime_setup(const char *root_dir,
     default: LOG_ERROR("Device API Failed to retreive Graphics Backend"); break;
     }
 
+    /*==== Setup gsk filesystem (uri) ================================*/
+
+    strcpy(s_runtime.proj_scheme, root_scheme);
     gsk_filesystem_initialize(root_dir, root_scheme);
 
-    // Initialize Renderer
+    /*==== Initialize Asset System ===================================*/
+
+    for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
+    {
+        // weird hack to stop possible issue
+        if (i >= 2) { LOG_CRITICAL("Not implemented.."); }
+
+        gsk_AssetCache *p_cache =
+          (gsk_AssetCache *)malloc(sizeof(gsk_AssetCache));
+
+        *p_cache = gsk_asset_cache_init(
+          ((i == 0) ? GSK_FS_GSK_SCHEME : s_runtime.proj_scheme));
+        s_runtime.pp_asset_caches[i] = p_cache;
+    }
+
+    // TODO: Setup default assets here
+    // gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
+
+    // GPAK
+    if (s_runtime.options.fs_mode == 0)
+    {
+        const char *path = (_GOODSACK_FS_DIR_BUILD "/output/gpak/gsk.gpak");
+        gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[0], path);
+
+#if _TEST_WRITE_PNG
+        gsk_AssetBlob blob = gsk_gpak_reader_import_blob("gsk://map/Icon.png");
+        LOG_INFO("%d", blob.buffer_len);
+
+        FILE *file_test;
+        file_test = fopen(GSK_PATH("gsk://test.png"), "wb");
+        if (file_test == NULL) { LOG_CRITICAL("FAIL"); }
+        fwrite(blob.p_buffer, 1, blob.buffer_len, file_test);
+        fclose(file_test);
+#endif
+
+        exit(0);
+    }
+    // HOT
+    else if (s_runtime.options.fs_mode == 1)
+    {
+        // TODO: filesystem traverse should be sorted to be platform-agnostic
+        s_runtime.cache_cnt = 0;
+        gsk_filesystem_traverse(_GOODSACK_FS_DIR_DATA,
+                                _gsk_runtime_cache_asset_file);
+
+        s_runtime.cache_cnt = 1;
+        gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
+
+        // set defaults
+
+        s_runtime.p_default_texture =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://textures/defaults/missing_1.png",
+                                  GSK_ASSET_FETCH_IMPORT);
+
+        s_runtime.p_default_audio =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://audio/boing.wav",
+                                  GSK_ASSET_FETCH_IMPORT);
+
+        s_runtime.p_default_model =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://models/cube.obj",
+                                  GSK_ASSET_FETCH_IMPORT);
+
+        s_runtime.p_default_material =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://fallback/fallback.material",
+                                  GSK_ASSET_FETCH_IMPORT);
+
+        s_runtime.p_default_shader =
+          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+                                  "gsk://shaders/basic_unlit.shader",
+                                  GSK_ASSET_FETCH_IMPORT);
+
+        // NOTE: test build_gpak requires hot-loading
+        if (s_runtime.options.build_gpak)
+        {
+            const char *path_gpak = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
+
+            for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
+            {
+                gsk_GpakWriter writer =
+                  gsk_gpak_writer_init(s_runtime.pp_asset_caches[i], path_gpak);
+
+                gsk_gpak_writer_populate_cache(&writer);
+                gsk_gpak_writer_close(&writer);
+            }
+
+#if GSK_TESTGPAK_EXIT
+            exit(0);
+#endif
+        }
+    }
+
+    // preload all GCFG files per Asset Cache
+    for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
+    {
+        gsk_AssetCache *p_cache = s_runtime.pp_asset_caches[i];
+        ArrayList *p_gcfg_refs  = &(p_cache->asset_lists[0].list_state);
+
+        for (int i = 0; i < p_gcfg_refs->list_next; i++)
+        {
+            gsk_AssetRef *p_ref =
+              (gsk_AssetRef *)array_list_get_at_index(p_gcfg_refs, i);
+
+            char *str;
+            str = (char *)array_list_get_at_index(&(p_cache->asset_uri_list),
+                                                  p_ref->asset_uri_index);
+
+            // TODO: Do not reference by URI, reference by handle.
+            GSK_ASSET(str);
+        }
+    }
+
+    /*==== Initialize Renderer =======================================*/
+
 #ifdef RENDERER_2
     gsk_Renderer renderer = new gsk_Renderer();
     // ECSManager ecs = gsk_Renderer.
     gsk_Scene scene0 = renderer->SetActiveScene(0);
 #else
-    s_runtime.renderer = gsk_renderer_init();
+    s_runtime.renderer = gsk_renderer_init(app_name);
 
     int winWidth  = s_runtime.renderer->windowWidth;
     int winHeight = s_runtime.renderer->windowHeight;
 
-    // Initialize ECS
+    /*==== Initialize ECS ============================================*/
+
     s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, 0);
 
 #if 0
@@ -118,10 +370,17 @@ gsk_runtime_setup(const char *root_dir,
 #endif
 
 #if GSK_RUNTIME_USE_DEBUG
-    // Create DebugToolbar
+
+    /*==== Initialize Debug Toolbar ==================================*/
+
     s_runtime.p_debug_toolbar =
       new gsk::tools::DebugToolbar(s_runtime.renderer);
+
+    s_runtime.selected_entity_id = 0;
+
 #endif // GSK_RUNTIME_USE_DEBUG
+
+    /*==== Runtime setup =============================================*/
 
     // FPS Counter
     gsk_device_resetTime();
@@ -136,66 +395,110 @@ gsk_runtime_setup(const char *root_dir,
     openal_init();
 
 #if USING_RUNTIME_LOADING_SCREEN
-    glfwSwapInterval(0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    gsk_GuiText *loading_text = gsk_gui_text_create("Loading");
-    for (int i = 0; i < 2; i++)
+    if (GSK_DEVICE_API_OPENGL)
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        gsk_gui_text_draw(loading_text);
-        glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
+        glfwSwapInterval(0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        vec2 text_pos   = {0.0f, 0.0f};
+        vec3 text_color = {1.0f, 1.0f, 1.0f};
+
+        gsk_GuiText *loading_text =
+          gsk_gui_text_create("Loading", text_pos, text_color);
+
+        const u32 canvas_shader_id =
+          s_runtime.renderer->canvas.p_material->shaderProgram->id;
+
+        for (int i = 0; i < 2; i++)
+        {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+#if RUNTIME_LOADING_TEXT
+            gsk_gui_text_draw(loading_text, canvas_shader_id);
+#endif // RUNTIME_LOADING_TEXT
+            glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
+        }
     }
 #endif // RUNTIME_LOADING_SCREEN
 
-#ifdef USING_LUA
-    // Main Lua entry
-    // TODO: possibly refactor this path (make mutable)
-    char path[GSK_FS_MAX_PATH];
-    strcpy(path, root_scheme);
-    strcat(path, "://scripts/main.lua");
-    LuaInit(GSK_PATH(path), s_runtime.ecs);
-#endif
+    if (s_runtime.options.using_lua)
+    {
+        // Main Lua entry
+        // TODO: possibly refactor this path (make mutable)
+        char path[GSK_FS_MAX_PATH];
+        strcpy(path, root_scheme);
+        strcat(path, "://scripts/main.lua");
+
+        s_runtime.status.is_lua_running =
+          LuaInit(GSK_PATH(path), s_runtime.ecs);
+
+        if (s_runtime.status.is_lua_running == false)
+        {
+            LOG_ERROR("Failed to initialize lua");
+        }
+    }
+
+    // const char *info =
+    //  ("Goodsack Engine | " GOODSACK_VERSION_MAJOR "."
+    //  GOODSACK_VERSION_MINOR);
+
+    char str_info[256];
+    sprintf(str_info,
+            "Goodsack Engine | v%d.%d.%d.%d",
+            GOODSACK_VERSION_MAJOR,
+            GOODSACK_VERSION_MINOR,
+            GOODSACK_VERSION_PATCH,
+            GOODSACK_VERSION_TWEAK);
+
+    vec2 text_info_pos = {5.0f, 5.0f};
+    vec3 text_info_col = {1.0f, 1.0f, 1.0f};
+
+    gsk_GuiText *text_info =
+      gsk_gui_text_create(str_info, text_info_pos, text_info_col);
+    gsk_gui_canvas_add_text(&s_runtime.renderer->canvas, text_info);
 
 #endif
     return 0;
 }
 
 void
-gsk_runtime_loop()
+gsk::runtime::rt_loop()
 {
     gsk_renderer_start(
       s_runtime.renderer); // Initialization for the render loop
 
-#if USING_LUA
+    // TODO: should not be handled in runtime
+    if (s_runtime.status.is_lua_running)
+    {
+        // Register components in Lua ECS
+        // TODO: automate (for each component and grab name)
 
-    // Register components in Lua ECS
-    // TODO: automate
+        entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
+        for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
+        {
+            ECSComponentType type = (ECSComponentType)(i);
+            entity::LuaEventStore::GetInstance().RegisterComponentList(
+              type, gsk_ecs_get_component_name(type));
+        }
 
-    entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
+        // ECS Lua Init
+        entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
+    }
 
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERA,
-                                                               "Camera");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERALOOK,
-                                                               "CameraLook");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(
-      C_CAMERAMOVEMENT, "CameraMovement");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
-                                                               "Transform");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
-                                                               "Weapon");
-    entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPONSWAY,
-                                                               "WeaponSway");
-
-    // ECS Lua Init
-    entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
-#endif
+#if GSK_USING_COMPOSER
+    gsk_MusicComposer composer = gsk_music_composer_create();
+    gsk::audio::composer::create_from_json(GSK_PATH("gsk://composer.json"));
+#endif // GSK_USING_COMPOSER
 
     // Main Engine Loop
     while (!glfwWindowShouldClose(s_runtime.renderer->window))
     {
-        gsk_device_updateTime(glfwGetTime());
+        double time_sec = glfwGetTime();
+        gsk_device_updateTime(time_sec);
+
+#if GSK_USING_COMPOSER
+        gsk_music_composer_update(&composer, time_sec);
+#endif // GSK_USING_COMPOSER
 
 #if USING_JOYSTICK_CONTROLLER
         int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
@@ -222,26 +525,25 @@ gsk_runtime_loop()
         if (GSK_DEVICE_API_OPENGL)
         {
 
-#if USING_LUA
-            entity::LuaEventStore::ECSEvent(ECS_UPDATE);
-#endif // USING_LUA
+            if (s_runtime.status.is_lua_running)
+            {
+                entity::LuaEventStore::ECSEvent(ECS_UPDATE);
+            }
 
             gsk_renderer_tick(s_runtime.renderer);
 
 #if GSK_RUNTIME_USE_DEBUG
+            s_runtime.p_debug_toolbar->update();
             s_runtime.p_debug_toolbar->render();
 #endif // GSK_RUNTIME_USE_DEBUG
 
             glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
-        } else if (GSK_DEVICE_API_VULKAN)
+        }
+
+        // Vulkan
+        else if (GSK_DEVICE_API_VULKAN)
         {
-            glfwPollEvents();
-            // debugGui->Update();
-            gsk_ecs_event(s_runtime.ecs, ECS_UPDATE); // TODO: REMOVE
-            vulkan_render_draw_begin(s_runtime.renderer->vulkanDevice,
-                                     s_runtime.renderer->window);
-            s_runtime.renderer->currentPass = REGULAR;
-            gsk_ecs_event(s_runtime.ecs, ECS_RENDER);
+            gsk_renderer_tick(s_runtime.renderer);
 
 #if GSK_RUNTIME_USE_DEBUG
             s_runtime.p_debug_toolbar->render();
@@ -252,11 +554,32 @@ gsk_runtime_loop()
         }
     }
 
-    LOG_TRACE("Closing Application");
+    LOG_INFO("Closing Application");
 
-    //
-    // Cleanup
-    //
+//
+// Cleanup
+//
+
+// Delete all ECS Entities
+#if 1
+    for (int i = 0; i < s_runtime.renderer->sceneC; i++)
+    {
+        if (s_runtime.renderer->sceneL[i] == NULL) { continue; }
+
+        gsk_ECS *p_ecs = s_runtime.renderer->sceneL[i]->ecs;
+
+        if (p_ecs == NULL) { continue; }
+
+        // mark each entity for deletion
+        for (int j = 0; j < p_ecs->nextIndex; j++)
+        {
+            gsk_ecs_ent_destroy(gsk_ecs_ent(p_ecs, p_ecs->p_ent_ids[j]));
+        }
+
+        // call ECS_DESTROY for each ECS handler
+        gsk_ecs_event(s_runtime.renderer->sceneL[i]->ecs, ECS_DESTROY);
+    }
+#endif
 
     if (GSK_DEVICE_API_VULKAN)
     {
@@ -268,25 +591,161 @@ gsk_runtime_loop()
     delete (s_runtime.p_debug_toolbar);
 #endif // GSK_RUNTIME_USE_DEBUG
 
+    // cleanup Lua handler
+    if (s_runtime.status.is_lua_running) { entity::LuaEventStore::Cleanup(); }
+
+    // TODO: asset_cache cleanup
+
     // cleanup audio driver
     openal_cleanup();
 
     glfwTerminate();
 }
 
-gsk_ECS *
-gsk_runtime_get_ecs()
+void
+gsk::runtime::rt_activate_ecs_systems(gsk_ECS *p_ecs)
 {
-    return s_runtime.ecs;
-}
-gsk_Renderer *
-gsk_runtime_get_renderer()
-{
-    return s_runtime.renderer;
+    // Activate ECS Systems
+
+    LOG_DEBUG("Activating built-in ECS Systems");
+
+    s_transform_init(p_ecs);
+
+    s_camera_init(p_ecs);
+    s_model_draw_init(p_ecs);
+    s_audio_listener_init(p_ecs);
+    s_audio_source_init(p_ecs);
+    s_animator_init(p_ecs);
+
+    // Physics Systems
+    // order is important here..
+    s_rigidbody_forces_system_init(p_ecs); // apply external forces
+    s_collider_setup_system_init(p_ecs);   // check for collisions
+    s_rigidbody_system_init(p_ecs); // run solvers on collisions. integrate
+
+    // Player Controller
+    s_player_controller_system_init(p_ecs);
+
+    // Misc Systems
+    s_health_setup_init(p_ecs);
+    s_particles_ecs_system_init(p_ecs);
+
+    // Light System
+    s_light_setup_system_init(p_ecs);
+
+    // s_collider_debug_draw_system_init(p_ecs);
 }
 
 void
-gsk_runtime_set_scene(u16 sceneIndex)
+gsk::runtime::rt_set_scene(u16 scene_index)
 {
-    s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, sceneIndex);
+    s_runtime.ecs = gsk_renderer_active_scene(s_runtime.renderer, scene_index);
+
+    if (s_runtime.ecs->systems_size <= 0)
+    {
+        gsk::runtime::rt_activate_ecs_systems(s_runtime.ecs);
+    }
+}
+
+gsk_ECS *
+gsk::runtime::rt_get_ecs()
+{
+    return s_runtime.renderer->sceneL[s_runtime.renderer->activeScene]->ecs;
+}
+
+gsk_Renderer *
+gsk::runtime::rt_get_renderer()
+{
+    return s_runtime.renderer;
+}
+gsk_AssetCache *
+gsk::runtime::rt_get_asset_cache(const char *uri_str)
+{
+    // validate uri
+    gsk_URI uri  = gsk_filesystem_uri(uri_str);
+    void *p_data = NULL;
+
+    if (!strcmp(uri.scheme, GSK_FS_GSK_SCHEME))
+    {
+        return s_runtime.pp_asset_caches[0];
+    } else if (!strcmp(uri.scheme, s_runtime.proj_scheme))
+    {
+
+        return s_runtime.pp_asset_caches[1];
+    }
+    LOG_ERROR("Failed to find asset cache for: %s", uri_str);
+    return NULL;
+}
+
+void *
+gsk::runtime::rt_get_debug_toolbar()
+{
+    return s_runtime.p_debug_toolbar;
+}
+
+gsk_AssetRef *
+gsk::runtime::rt_get_fallback_asset(GskAssetType type)
+{
+    gsk_AssetRef *p_ret = NULL;
+
+    switch (type)
+    {
+    case GskAssetType_Texture: p_ret = s_runtime.p_default_texture; break;
+    case GskAssetType_Audio: p_ret = s_runtime.p_default_audio; break;
+    case GskAssetType_Model: p_ret = s_runtime.p_default_model; break;
+    case GskAssetType_Material: p_ret = s_runtime.p_default_material; break;
+    case GskAssetType_Shader: p_ret = s_runtime.p_default_shader; break;
+    default: p_ret = NULL; break;
+    }
+
+    return p_ret;
+}
+
+char *
+gsk::runtime::rt_get_startup_map()
+{
+    if (s_runtime.map_setup.map_from_runtime == 0) { return NULL; }
+    return s_runtime.map_setup.map_uri;
+}
+
+gsk_EntityId
+gsk::runtime::rt_get_hovered_entity_id()
+{
+    if (s_runtime.renderer->hovered_entity_index == 0 ||
+        s_runtime.p_debug_toolbar->is_focused())
+    {
+        return 0;
+    }
+
+    u32 index = s_runtime.renderer->hovered_entity_index - 1;
+
+    gsk_ECS *p_ecs  = gsk::runtime::rt_get_ecs();
+    gsk_EntityId id = p_ecs->p_ent_ids[index];
+
+    return id;
+}
+
+gsk_EntityId
+gsk::runtime::rt_get_debug_entity_id()
+{
+    return s_runtime.selected_entity_id;
+}
+
+void
+gsk::runtime::rt_set_debug_entity_id(gsk_EntityId entity_id)
+{
+    if (entity_id >= ECS_ID_FIRST)
+    {
+        s_runtime.selected_entity_id = entity_id;
+        LOG_TRACE("set RT debug entity_id to: %d",
+                  s_runtime.selected_entity_id);
+    }
+}
+
+void *
+gsk::runtime::rt_get_lua_state()
+{
+    if (!s_runtime.status.is_lua_running) { return NULL; }
+
+    return entity::LuaEventStore::getLuaState();
 }

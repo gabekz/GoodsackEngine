@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Gabriel Kutuzov
+ * Copyright (c) 2023-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -10,6 +10,15 @@
 /*************************************************************************
  * Helper functions
  *************************************************************************/
+
+// Helper: clamp a value to [minVal, maxVal]
+static inline float
+clampf(float x, float minVal, float maxVal)
+{
+    if (x < minVal) return minVal;
+    if (x > maxVal) return maxVal;
+    return x;
+}
 
 static void
 _aabb_clamped_point(vec3 bounds[2], vec3 point_a, vec3 point_b, float *dest)
@@ -23,6 +32,14 @@ _aabb_clamped_point(vec3 bounds[2], vec3 point_a, vec3 point_b, float *dest)
     clamped[2]    = MAX(-halfwidth, MIN(halfwidth, point_b[2] - point_a[2]));
 
     glm_vec3_add(center, clamped, dest);
+}
+static void
+
+_aabb_clamped_in(const vec3 bounds[2], const vec3 point_in, vec3 out_clamped)
+{
+    out_clamped[0] = clampf(point_in[0], bounds[0][0], bounds[1][0]);
+    out_clamped[1] = clampf(point_in[1], bounds[0][1], bounds[1][1]);
+    out_clamped[2] = clampf(point_in[2], bounds[0][2], bounds[1][2]);
 }
 
 static void
@@ -69,7 +86,7 @@ __find_box_sphere_inverse(
 
     // Find the closest point on AABB to sphere center
     vec3 closest_point;
-    _aabb_clamped_point(bounds, pos_a, pos_b, closest_point);
+    _aabb_clamped_in(bounds, pos_b, closest_point);
 
     // Calculate the vector from the sphere center to this closest point
     vec3 to_closest;
@@ -77,7 +94,7 @@ __find_box_sphere_inverse(
     float distance_to_closest = glm_vec3_norm(to_closest);
 
     // Check for collision
-    if (distance_to_closest < b->radius)
+    if (distance_to_closest <= b->radius)
     {
         ret.has_collision = TRUE;
 
@@ -98,6 +115,99 @@ __find_box_sphere_inverse(
 
         // Set depth
         ret.depth = b->radius - distance_to_closest;
+    }
+
+    return ret;
+}
+
+gsk_CollisionPoints
+__find_box_capsule_inverse(gsk_BoxCollider *box,
+                           gsk_CapsuleCollider *cap,
+                           vec3 pos_box,
+                           vec3 pos_cap,
+                           u8 inverse)
+{
+    gsk_CollisionPoints ret = {.has_collision = FALSE};
+
+    // Compute the capsule's line segment in world space
+    vec3 A, B;
+    {
+        // base_ws = pos_cap - cap->base
+        vec3 base_ws;
+        glm_vec3_sub(pos_cap, cap->base, base_ws);
+
+        // tip_ws = pos_cap + cap->tip
+        vec3 tip_ws;
+        glm_vec3_add(pos_cap, cap->tip, tip_ws);
+
+        glm_vec3_copy(base_ws, A);
+        glm_vec3_copy(tip_ws, B);
+    }
+
+    vec3 boxMin, boxMax;
+    glm_vec3_add(pos_box, box->bounds[0], boxMin); // min corner
+    glm_vec3_add(pos_box, box->bounds[1], boxMax); // max corner
+
+    // Compute the center of the box
+    // (Even if the box is large/offset, this is the actual midpoint.)
+    vec3 boxCenter;
+    // glm_vec3_add(boxMin, boxMax, boxCenter);
+    // glm_vec3_sub(boxMax, boxMin, boxCenter);
+    // glm_vec3_scale(boxCenter, 2.0f, boxCenter);
+
+    vec3 bounds[2];
+    glm_vec3_copy(boxMin, bounds[0]);
+    glm_vec3_copy(boxMax, bounds[1]);
+    glm_aabb_center(bounds, boxCenter);
+
+    // Find the closest point on the capsule line segment to the box's center
+    vec3 closest_on_segment;
+    _closest_point_line_segment(A, B, boxCenter, closest_on_segment);
+
+    // clamp that "capsule-closest" point onto the AABB
+    vec3 closest_on_box;
+    _aabb_clamped_in(bounds, closest_on_segment, closest_on_box);
+
+    // measure the distance. If < capsule.radius => collision
+    vec3 diff;
+    glm_vec3_sub(closest_on_segment, closest_on_box, diff);
+    float dist_sq = glm_vec3_dot(diff, diff);
+    float r       = cap->radius;
+
+    if (dist_sq < r * r)
+    {
+        ret.has_collision = TRUE;
+
+        float dist  = sqrtf(dist_sq);
+        float pen   = r - dist; // penetration depth
+        vec3 normal = GLM_VEC3_ZERO_INIT;
+
+        if (dist > 1e-6f)
+        {
+            // normal = (closest_on_segment - closest_on_box) / dist
+            glm_vec3_scale(diff, 1.0f / dist, normal);
+        } else
+        {
+            normal[1] = 1.0f;
+        }
+
+        // collision points
+        // offset on capsule side = normal * radius
+        glm_vec3_copy(closest_on_box, ret.point_a);
+
+        vec3 offset;
+        glm_vec3_scale(normal, r, offset);
+        glm_vec3_add(closest_on_segment, offset, ret.point_b);
+
+        glm_vec3_copy(normal, ret.normal);
+        ret.depth = pen;
+
+        // TODO: !inverse for now
+        if (!inverse)
+        {
+            _invert_points(ret.point_a, ret.point_b);
+            glm_vec3_negate(ret.normal);
+        }
     }
 
     return ret;
@@ -347,11 +457,16 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
     gsk_CollisionPoints ret = {.has_collision = 0};
 
     vec3 bounds_a[2], bounds_b[2];
+    vec3 center_a, center_b;
     glm_vec3_add(pos_a, a->bounds[0], bounds_a[0]);
     glm_vec3_add(pos_a, a->bounds[1], bounds_a[1]);
+    // glm_aabb_center(bounds_a, center_a);
+    glm_vec3_copy(pos_a, center_a);
 
     glm_vec3_add(pos_b, b->bounds[0], bounds_b[0]);
     glm_vec3_add(pos_b, b->bounds[1], bounds_b[1]);
+    glm_aabb_center(bounds_b, center_b);
+    // glm_vec3_copy(pos_b, center_b);
 
     if (glm_aabb_aabb(bounds_a, bounds_b))
     {
@@ -359,7 +474,7 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
 
         // calculate normal
         vec3 normal = GLM_VEC3_ZERO_INIT;
-        glm_vec3_sub(pos_b, pos_a, normal);
+        glm_vec3_sub(center_b, center_a, normal);
         glm_normalize(normal);
         glm_vec3_copy(normal, ret.normal);
 
@@ -376,16 +491,17 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
 #endif
 
         // calculate point a
-        _aabb_clamped_point(bounds_a, pos_a, pos_b, ret.point_a);
+        _aabb_clamped_in(bounds_a, center_b, ret.point_a);
 
         // calculate point b
-        glm_vec3_sub(pos_b, ret.point_a, normal);
+        glm_vec3_sub(center_b, ret.point_a, normal);
         glm_vec3_normalize(normal);
 
-        float dist = glm_vec3_distance(pos_a, ret.point_a);
+        float dist = glm_vec3_distance(center_a, ret.point_a);
         glm_vec3_scale(normal, dist, ret.point_b);
-        glm_vec3_sub(pos_b, ret.point_b, ret.point_b);
-        _aabb_clamped_point(bounds_b, pos_b, ret.point_b, ret.point_b);
+        glm_vec3_sub(center_b, ret.point_b, ret.point_b);
+        //_aabb_clamped_point(bounds_b, center_b, ret.point_b, ret.point_b);
+        _aabb_clamped_in(bounds_b, ret.point_b, ret.point_b);
 
         glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
         glm_vec3_normalize(ret.normal);
@@ -394,6 +510,16 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
     }
 
     return ret;
+}
+
+// Box v. Capsule
+gsk_CollisionPoints
+gsk_physics_collision_find_box_capsule(gsk_BoxCollider *a,
+                                       gsk_CapsuleCollider *b,
+                                       vec3 pos_a,
+                                       vec3 pos_b)
+{
+    return __find_box_capsule_inverse(a, b, pos_a, pos_b, FALSE);
 }
 
 // Sphere v. Box
@@ -498,7 +624,7 @@ gsk_physics_collision_find_capsule_capsule(gsk_CapsuleCollider *a,
 
         glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
         glm_vec3_normalize(ret.normal);
-        ret.depth = glm_vec3_distance(ret.point_a, ret.point_b);
+        ret.depth = -glm_vec3_distance(ret.point_a, ret.point_b);
     }
 
     return ret;
@@ -590,6 +716,16 @@ gsk_physics_collision_find_capsule_sphere(gsk_CapsuleCollider *a,
     return __find_capsule_sphere_inverse(a, b, pos_a, pos_b, FALSE);
 }
 
+// Capsule v. Box
+gsk_CollisionPoints
+gsk_physics_collision_find_capsule_box(gsk_CapsuleCollider *a,
+                                       gsk_BoxCollider *b,
+                                       vec3 pos_a,
+                                       vec3 pos_b)
+{
+    return __find_box_capsule_inverse(b, a, pos_b, pos_a, TRUE);
+}
+
 /*------------------------------------------------------------------------
  * Raycast
  ------------------------------------------------------------------------*/
@@ -614,6 +750,26 @@ gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,
     glm_vec3_adds(ray->origin, discriminant, hitPosition);
     glm_vec3_mul(hitPosition, ray->direction, hitPosition);
 
+    if (discriminant < 0.0f) { return ret; }
+
+    float sqrtDisc = sqrtf(discriminant);
+    float t0       = (-b - sqrtDisc) / (2.0f * a);
+    float t1       = (-b + sqrtDisc) / (2.0f * a);
+
+    // pick the smallest positive t
+    float t = -1.0f;
+    if (t0 > 0.0f && t1 > 0.0f)
+        t = fminf(t0, t1);
+    else if (t0 > 0.0f)
+        t = t0;
+    else if (t1 > 0.0f)
+        t = t1;
+
+    // If t is still < 0 => intersection behind ray origin
+    if (t < 0.0f) { return ret; }
+
+    ret.has_collision = 1;
+
 #if 0
     LOG_INFO("Hit Position:\t%lf\t%lf\t%lf",
              hitPosition[0],
@@ -622,7 +778,12 @@ gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,
     LOG_INFO("discriminant %f", discriminant);
 #endif
 
-    ret.has_collision = (discriminant > 0);
+    glm_vec3_scale(ray->direction, t, ret.point_a);
+    glm_vec3_add(ray->origin, ret.point_a, ret.point_a);
+
+    glm_vec3_sub(ret.point_a, pos_sphere, ret.normal);
+    glm_vec3_normalize(ret.normal);
+
     return ret;
 }
 
@@ -681,6 +842,29 @@ gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
     glm_vec3_scale(ray->direction, t, ret.point_a);
     glm_vec3_add(ray->origin, ret.point_a, ret.point_a);
 
+    // Identify which plane we hit:
+    // Compare tmin with each t1..t6 to see which equals tmin
+    if (fabsf(t - t1) < 1e-6f || fabsf(t - t2) < 1e-6f)
+    {
+        // collision on X plane
+        // Check sign:
+        float sign = (t == t1) ? box->bounds[0][0] : box->bounds[1][0];
+        glm_vec3_copy((vec3) {sign, 0.0f, 0.0f}, ret.normal);
+
+    } else if (fabsf(t - t3) < 1e-6f || fabsf(t - t4) < 1e-6f)
+    {
+        // collision on Y plane
+        float sign = (t == t3) ? box->bounds[0][1] : box->bounds[1][1];
+        glm_vec3_copy((vec3) {0.0f, sign, 0.0f}, ret.normal);
+
+    } else if (fabsf(t - t5) < 1e-6f || fabsf(t - t6) < 1e-6f)
+    {
+        // collision on Z plane
+        float sign = (t == t5) ? box->bounds[0][2] : box->bounds[1][2];
+        glm_vec3_copy((vec3) {0.0f, 0.0f, sign}, ret.normal);
+    }
+
+    glm_vec3_normalize(ret.normal);
     return ret;
 
 #if 0
@@ -692,4 +876,57 @@ gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
 #endif
 
     return ret;
+}
+
+// gsk_Raycast v. Plane
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_plane(gsk_Raycast *ray,
+                                     gsk_PlaneCollider *plane,
+                                     vec3 pos_plane)
+{
+    gsk_CollisionPoints ret = {.has_collision = 0};
+
+    // Get the plane's normal
+    vec3 plane_normal = GLM_VEC3_ZERO_INIT;
+    glm_vec3_copy(((gsk_PlaneCollider *)plane->plane)->normal, plane_normal);
+
+    // Compute denominator = ray->direction · plane_normal
+    float denom = glm_vec3_dot(ray->direction, plane_normal);
+
+    // If denom is near zero, the ray is parallel or nearly parallel to the
+    // plane
+    if (fabsf(denom) < 1e-6f) return ret; // No intersection
+
+    // Vector from ray origin to any point on the plane (pos_plane)
+    //    We'll do: difference = (pos_plane - ray->origin)
+    vec3 difference;
+    glm_vec3_sub(pos_plane, ray->origin, difference);
+
+    // Solve for t in the plane equation:
+    //        (origin + t*dir - pos_plane) · plane_normal = 0
+    //    =>  t = [ (pos_plane - origin) · plane_normal ] / (dir · plane_normal)
+    float t = glm_vec3_dot(difference, plane_normal) / denom;
+
+    // We only consider an intersection if t >= 0 (in front of the ray)
+    if (t < 0.0f)
+        return ret; // Intersection is behind the origin => no forward hit
+
+    // We have a valid intersection => fill in the results
+    ret.has_collision = 1;
+
+    // intersection_point = origin + t * direction
+    glm_vec3_scale(ray->direction, t, ret.point_a);
+    glm_vec3_add(ray->origin, ret.point_a, ret.point_a);
+    glm_vec3_normalize_to(plane_normal, ret.normal);
+
+    return ret;
+}
+
+// gsk_Raycast v. Capsule
+gsk_CollisionPoints
+gsk_physics_collision_find_ray_capsule(gsk_Raycast *ray,
+                                       gsk_CapsuleCollider *capsule,
+                                       vec3 pos_capsule)
+{
+    return (gsk_CollisionPoints) {0};
 }

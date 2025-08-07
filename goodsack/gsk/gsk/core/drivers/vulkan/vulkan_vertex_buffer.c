@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -28,9 +28,9 @@ VkVertexInputBindingDescription
 vulkan_vertex_buffer_get_binding_description()
 {
     VkVertexInputBindingDescription bindingDescription = {
-      .binding = 0,
-      .stride =
-        ((sizeof(float) * 3) + (sizeof(float) * 2) + (sizeof(float) * 3)),
+      .binding   = 0,
+      .stride    = ((sizeof(float) * 3) + (sizeof(float) * 2) +
+                 (sizeof(float) * 3) + (sizeof(float) * 3)),
       .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
     return bindingDescription;
 }
@@ -39,7 +39,7 @@ VkVertexInputAttributeDescription *
 vulkan_vertex_buffer_get_attribute_descriptions()
 {
     VkVertexInputAttributeDescription *attributeDescriptions =
-      malloc(sizeof(VkVertexInputAttributeDescription) * 3);
+      malloc(sizeof(VkVertexInputAttributeDescription) * 4);
 
     // Position
     attributeDescriptions[0] =
@@ -59,6 +59,13 @@ vulkan_vertex_buffer_get_attribute_descriptions()
                                            .location = 2,
                                            .format = VK_FORMAT_R32G32B32_SFLOAT,
                                            .offset = 5 * sizeof(float)};
+
+    // Tangent
+    attributeDescriptions[3] =
+      (VkVertexInputAttributeDescription) {.binding  = 0,
+                                           .location = 3,
+                                           .format = VK_FORMAT_R32G32B32_SFLOAT,
+                                           .offset = 8 * sizeof(float)};
 
     return attributeDescriptions;
 }

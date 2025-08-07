@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
@@ -14,9 +14,14 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
+#include "core/device/device.h"
 #include "core/drivers/opengl/opengl.h"
 #include "core/graphics/mesh/primitives.h"
 #include "core/graphics/shader/shader.h"
+
+#include "core/graphics/renderer/pipeline/pass_ssao.h"
+
+#include "asset/asset.h"
 
 static u32 msFBO, sbFBO;
 static u32 msRBO, sbRBO;
@@ -31,7 +36,20 @@ static u32 ms_samples = 4;
 static void
 CreateMultisampleBuffer(u32 samples, u32 width, u32 height)
 {
-    ms_samples = samples;
+    u32 max_samples =
+      (u32)(gsk_device_getGraphicsCompatibility().max_msaa_samples);
+
+    if (samples > max_samples)
+    {
+        ms_samples = max_samples;
+        LOG_WARN("Requested MSAA sample count (%d) is larger than the maximum "
+                 "allowed (%d)",
+                 samples,
+                 max_samples);
+    } else
+    {
+        ms_samples = samples;
+    }
 
     // Create texture
     glGenTextures(1, &msTexture);
@@ -63,6 +81,14 @@ CreateMultisampleBuffer(u32 samples, u32 width, u32 height)
     // Attach Renderbuffer
     glFramebufferRenderbuffer(
       GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRBO);
+
+    // Error checking
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        LOG_CRITICAL("\nFramebuffer failed: %u\n", status);
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -78,6 +104,17 @@ CreateScreenBuffer(u32 width, u32 height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+
+#if 1
+    // Texture must be bound first
+    GLint swizzle[4] = {
+      GL_RED,   // Shader Red   channel source = Texture Red
+      GL_GREEN, // Shader Green channel source = Texture Green
+      GL_BLUE,  // Shader Blue  channel source = Texture Blue
+      GL_ONE    // Shader Alpha channel source = One
+    };
+    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+#endif
 
     // Create Framebuffer object
     glGenFramebuffers(1, &sbFBO);
@@ -99,14 +136,20 @@ CreateScreenBuffer(u32 width, u32 height)
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE)
     {
-        printf("\nFramebuffer ERROR: %u\n", status);
+        LOG_CRITICAL("\nFramebuffer failed: %u\n", status);
     }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void
 postbuffer_resize(u32 winWidth, u32 winHeight)
 {
-    LOG_INFO("Resizing window to %d x %d", winWidth, winHeight);
+    LOG_TRACE("Resizing window to %d x %d", winWidth, winHeight);
+
+    GLenum err = NULL;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, sbFBO);
 
     glBindTexture(GL_TEXTURE_2D, sbTexture);
     glTexImage2D(GL_TEXTURE_2D,
@@ -123,6 +166,11 @@ postbuffer_resize(u32 winWidth, u32 winHeight)
     glRenderbufferStorage(
       GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, winWidth, winHeight);
 
+    err = glGetError();
+    if (err != GL_NO_ERROR) { LOG_CRITICAL("glTexImage2D error: 0x%x", err); }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msTexture);
     glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
                             ms_samples,
@@ -135,6 +183,12 @@ postbuffer_resize(u32 winWidth, u32 winHeight)
     glRenderbufferStorageMultisample(
       GL_RENDERBUFFER, ms_samples, GL_DEPTH24_STENCIL8, winWidth, winHeight);
 
+    err = glGetError();
+    if (err != GL_NO_ERROR)
+    {
+        LOG_CRITICAL("glTexImage2DMultisample error: 0x%x", err);
+    }
+
     frameWidth  = winWidth;
     frameHeight = winHeight;
 }
@@ -146,17 +200,15 @@ postbuffer_init(u32 width, u32 height, gsk_RendererProps *properties)
     frameHeight = height;
 
     // Shader
-    shader =
-      gsk_shader_program_create(GSK_PATH("gsk://shaders/framebuffer.shader"));
+    shader = GSK_ASSET("gsk://shaders/framebuffer.shader");
     gsk_shader_use(shader);
-    glUniform1i(glGetUniformLocation(shader->id, "u_ScreenTexture"), 0);
 
     // Create Rectangle
     vaoRect = gsk_gl_vertex_array_create();
     gsk_gl_vertex_array_bind(vaoRect);
-    float *rectPositions = prim_vert_rect();
-    gsk_GlVertexBuffer *vboRect =
-      gsk_gl_vertex_buffer_create(rectPositions, (2 * 3 * 4) * sizeof(float));
+    float *rectPositions        = prim_vert_rect();
+    gsk_GlVertexBuffer *vboRect = gsk_gl_vertex_buffer_create(
+      rectPositions, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Static);
     gsk_gl_vertex_buffer_bind(vboRect);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
     gsk_gl_vertex_buffer_push(vboRect, 2, GL_FLOAT, GL_FALSE);
@@ -185,14 +237,10 @@ postbuffer_bind(int enableMSAA)
 
     // Prime
     glViewport(0, 0, frameWidth, frameHeight);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    vec4 col = DEFAULT_CLEAR_COLOR;
-    glClearColor(col[0], col[1], col[2], col[3]);
 }
 
 void
-postbuffer_draw(gsk_RendererProps *properties)
+postbuffer_draw(gsk_RendererProps *properties, u32 bloom_texture_id)
 {
 
     if (properties->msaaEnable)
@@ -232,9 +280,17 @@ postbuffer_draw(gsk_RendererProps *properties)
                 properties->vignetteAmount);
     glUniform1f(glGetUniformLocation(shader->id, "u_VignetteFalloff"),
                 properties->vignetteFalloff);
+    glUniform3fv(glGetUniformLocation(shader->id, "u_VignetteColor"),
+                 1,
+                 (float *)properties->vignetteColor);
+
+    glUniform1f(glGetUniformLocation(shader->id, "u_BloomIntensity"),
+                properties->bloom_intensity);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sbTexture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, bloom_texture_id);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
@@ -273,4 +329,11 @@ void
 postbuffer_cleanup()
 {
     glDeleteProgram(shader->id);
+}
+
+u32
+postbuffer_get_id()
+{
+    // TODO: Check if MSAA enabled
+    return sbTexture;
 }
