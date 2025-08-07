@@ -19,12 +19,12 @@ try {
 }
 
 # check msbuild version
-try {
-    & 'MSBuild.exe' -v
-} catch {
-    Write-Warning "Missing MSBuild.exe in system path"
-    Exit
-}
+#try {
+#    & 'MSBuild.exe' -v
+#} catch {
+#    Write-Warning "Missing MSBuild.exe in system path"
+#    Exit
+#}
 
 # run cmake with vcpkg
 & 'cmake.exe' -S . -B build/ `
@@ -32,7 +32,10 @@ try {
     -DCMAKE_TOOLCHAIN_FILE="D:/Projects/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake"
 
 # msbuild
-& 'MSBuild.exe' .\build\GoodsackEngine.sln
+#& 'MSBuild.exe' .\build\GoodsackEngine.sln
+
+# cmake build
+& 'cmake.exe' --build build/ --target GoodsackEngine_Gen
 
 if($run_demo) {
     & .\build\output\bin\Debug\demo.exe

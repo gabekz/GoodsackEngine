@@ -14,7 +14,8 @@
 
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION
-#include "entity/__generated__/components_gen.h"
+//#include "entity/__generated__/components_gen.h"
+#include "gsk_generated/ecs_components_gen.h"
 #endif // USING_GENERATED_COMPONENTS
 
 // subroutine to safely reallocate data to new_size
@@ -414,4 +415,10 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
 
     // TODO: determine whether or not there is a required component.
     // Go through that list instead of every entity.
+}
+
+const char *
+gsk_ecs_get_component_name(ECSComponentType component_id)
+{
+    return _ECSCOMPONENT_NAMES[component_id];
 }

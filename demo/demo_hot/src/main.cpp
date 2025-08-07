@@ -15,8 +15,9 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#include "gsk_generated/GoodsackEngineConfig.h"
+
 #include "scenes/demo_scenes.h"
-#include <GoodsackEngineConfig.h> // TODO: Change this
 
 #include "runtime/gsk_runtime.hpp"
 

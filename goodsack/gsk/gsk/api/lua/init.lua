@@ -3,6 +3,7 @@
  -- SPDX-License-Identifier: MIT
  --]]
 
+
 require('goodsack')
 
 --[[---------------------------------------------------------
@@ -12,7 +13,8 @@ input       = require('goodsack.input')
 time        = require('goodsack.time')
 fs          = require('goodsack.filesystem')
 
-Vector = require('goodsack.vector')
+Vector 		= require('goodsack.vector')
+
 
 --[[---------------------------------------------------------
 	Aliases
@@ -35,7 +37,12 @@ SYSTEM_RUN = function(name)
     require(name).run()
 end
 
+--[[---------------------------------------------------------
+	Shared Modules (Lua native)
+-----------------------------------------------------------]]
+package.path = (include_dir .. '?.lua;' .. package.path)
 
+hook = require("modules.hook")
 
 --[[---------------------------------------------------------
 	Extensions

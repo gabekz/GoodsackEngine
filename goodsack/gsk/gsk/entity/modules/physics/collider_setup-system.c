@@ -330,6 +330,11 @@ on_collide(gsk_Entity e)
 
             collider->isColliding = TRUE;
 
+#if 0
+            const char *luaCode = "hook.Run(\"PerformMultiplication\", 6, 4)";
+            luaL_dostring(L, luaCode);
+#endif
+
 #if 1
             // skip this entity if it is a trigger
             if (collider->is_trigger == TRUE)

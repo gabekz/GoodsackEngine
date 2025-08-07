@@ -1,9 +1,10 @@
 {
     "Animator": {
+        "Resource": [ "cntAnimation", "p_animation_set" ],
         "int": [ "cntTime", "cntKeyframeIndex", "nxtKeyframeIndex" ],
-        "Resource": [ "cntAnimation"],
+        "uint": [ "animation_index" ],
         "float": [ "timerStart", "timerNow" ],
-        "bool": ["is_transition_delayed", "is_looping", "is_playing", "force_replay"]
+        "bool": ["is_transition_delayed", "is_looping", "is_playing", "force_replay", "is_holding_end_frame" ]
     },
 
     "AudioListener": {
@@ -48,16 +49,10 @@
     },
     "Collider": {
         "int": ["type"],
-        "Resource": ["p_collider"],
-        "bool": ["is_colliding"],
-        "f32": ["radius"]
-    },
-
-    "Enemy": {
-        "int": ["enemy_type"],
-        "bool": ["is_wep_loaded"],
-        "vec3": ["hit_position"],
-        "Resource": ["projectile_model", "projectile_material"]
+        "Resource": ["pCollider", "p_mesh"],
+        "bool": ["isColliding", "is_trigger"],
+        "float": ["radius"],
+        "vec3": ["box_bounds_min", "box_bounds_max"]
     },
 
     "EntityReference": {
@@ -66,29 +61,38 @@
 
     "Health": {
         "int": ["current_health", "last_health", "max_health"],
-        "bool": ["is_alive"]
+        "bool": ["is_alive", "event_health_change"]
     },
 
     "Light": {
         "vec4": ["color"],
-        "uint": ["type"]
+        "float": ["intensity"],
+        "uint": ["type", "light_index"]
     },
 
     "Model": {
-        "Resource": [ "material", "mesh", "pModel", "vkVBO"],
+        "Resource": [ "material", "mesh", "pModel", "vkVBO", "_skeleton"],
         "string": ["modelPath"],
         "uint": ["vbo"],
+        "bool": ["cast_shadows"],
 
         "settings": {
             "bool": ["cast_shadows", "receive_shadows"]
         }
     },
 
+    "ParticleEmitter": {
+        "Resource": ["p_settings", "p_particle_system", "p_meshdata"],
+        "float": ["speed"],
+        "bool": ["is_awake"]
+    },
+
     "PlayerController": {
         "float": ["speed", "jump_force", "sprint_timer"],
         "int": ["walk_direction"],
         "bool": ["is_grounded", "is_jumping", "can_jump"],
-        "vec2": ["move_axes"]
+        "vec2": ["move_axes"],
+        "entity": ["entity_camera"]
     },
 
     "RenderLayer": {
@@ -97,21 +101,16 @@
 
     "Rigidbody": {
         "Resource": [ "solver" ],
-        "vec3": [ "gravity", "angular_velocity", "linear_velocity", "force" ],
-        "float": [ "mass", "static_friction", "dynamic_friction" ]
-    },
-
-    "SwordController": {
-        "int": ["last_direction", "weapon_state"],
-        "float": ["state_timer", "charge_time"],
-        "entity": [ "entity_camera", "entity_flock" ]
+        "vec3": [ "gravity", "angular_velocity", "linear_velocity", "force_impulse", "force_velocity", "torque" ],
+        "float": [ "mass", "static_friction", "dynamic_friction", "inverse_mass", "inverse_inertia" ],
+        "bool": ["is_kinematic", "disable_rotation"]
     },
 
     "Transform": {
-        "vec3": [ "position", "orientation", "scale", "forward" ],
+        "vec3": [ "position", "world_position", "orientation", "scale", "forward" ],
         "mat4": [ "model" ],
-        "bool": [ "hasParent" ],
-        "Resource": [ "parent" ]
+        "bool": [ "has_parent" ],
+        "entity": [ "parent_entity_id" ]
     },
 
     "Weapon": {
@@ -121,8 +120,6 @@
     },
 
     "WeaponSway": {
-        "float": ["sway_amount"],
-        "float": ["move_step_time"]
+        "float": ["sway_amount", "move_step_time"]
     }
-
 }

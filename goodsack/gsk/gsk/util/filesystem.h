@@ -48,6 +48,12 @@ static void filesystem_flush(BUFFER);
 void
 gsk_filesystem_initialize(const char *project_root, const char *project_scheme);
 
+void
+gsk_filesystem_str_to_forward_slash(char *buffer);
+
+void
+gsk_filesystem_strip_filename(char *buffer);
+
 char *
 gsk_filesystem_get_extension(const char *path);
 

@@ -18,7 +18,7 @@
 #include "entity/lua/eventstore.hpp"
 #include "wrapper/lua/lua_init.hpp"
 
-#include <GoodsackEngineConfig.h> // TODO: change this
+#include "gsk_generated/GoodsackEngineConfig.h"
 
 #if GSK_RUNTIME_USE_DEBUG
 #include "tools/debug/debug_toolbar.hpp"
@@ -43,6 +43,8 @@
 #include "core/audio/music_composer.h"
 #include "core/audio/music_composer_loader.hpp"
 #endif // GSK_USING_COMPOSER
+
+#include "entity/ecs.h"
 
 #define _TOTAL_ASSET_CACHES 2
 #define _TEST_WRITE_PNG     0
@@ -85,6 +87,8 @@ static struct
     {
         u8 is_lua_running;
     } status;
+
+    char bin_directory[256] = "";
 
 } s_runtime;
 } // extern "C"
@@ -178,16 +182,28 @@ gsk::runtime::rt_setup(const char *root_dir,
                        int argc,
                        char *argv[])
 {
+    /*==== Get binary directory + log path ===========================*/
+
+    strcpy(s_runtime.bin_directory, argv[0]);
+    gsk_filesystem_str_to_forward_slash(s_runtime.bin_directory);
+    gsk_filesystem_strip_filename(s_runtime.bin_directory);
+
+    char log_path[256] = "";
+    sprintf(log_path, "%s/log.txt", s_runtime.bin_directory);
+
     /*==== Initialize Logger =========================================*/
 
     int logStat = logger_initConsoleLogger(NULL);
-    // logger_initFileLogger(exe_path.c_str(), 0, 0);
+    // logger_initFileLogger(log_path, 0, 0);
 
     logger_setLevel(LogLevel_DEBUG);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
     LOG_INFO("Root directory: %s", root_dir);
+
+    LOG_INFO("PATH: %s", s_runtime.bin_directory);
+    LOG_INFO("LOG_PATH: %s", log_path);
 
     s_runtime.cache_cnt          = 0; // TODO: Change this.
     s_runtime.options.fs_mode    = 0; // TODO: Change this.
@@ -455,22 +471,15 @@ gsk::runtime::rt_loop()
     if (s_runtime.status.is_lua_running)
     {
         // Register components in Lua ECS
-        // TODO: automate
+        // TODO: automate (for each component and grab name)
 
         entity::LuaEventStore::GetInstance().m_ecs = s_runtime.ecs;
-
-        entity::LuaEventStore::GetInstance().RegisterComponentList(C_CAMERA,
-                                                                   "Camera");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(
-          C_CAMERALOOK, "CameraLook");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(
-          C_CAMERAMOVEMENT, "CameraMovement");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(C_TRANSFORM,
-                                                                   "Transform");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(C_WEAPON,
-                                                                   "Weapon");
-        entity::LuaEventStore::GetInstance().RegisterComponentList(
-          C_WEAPONSWAY, "WeaponSway");
+        for (int i = 0; i < ECSCOMPONENT_LAST + 1; i++)
+        {
+            ECSComponentType type = (ECSComponentType)(i);
+            entity::LuaEventStore::GetInstance().RegisterComponentList(
+              type, gsk_ecs_get_component_name(type));
+        }
 
         // ECS Lua Init
         entity::LuaEventStore::ECSEvent(ECS_INIT); // TODO: REMOVE
@@ -545,7 +554,7 @@ gsk::runtime::rt_loop()
         }
     }
 
-    LOG_TRACE("Closing Application");
+    LOG_INFO("Closing Application");
 
 //
 // Cleanup
@@ -731,4 +740,12 @@ gsk::runtime::rt_set_debug_entity_id(gsk_EntityId entity_id)
         LOG_TRACE("set RT debug entity_id to: %d",
                   s_runtime.selected_entity_id);
     }
+}
+
+void *
+gsk::runtime::rt_get_lua_state()
+{
+    if (!s_runtime.status.is_lua_running) { return NULL; }
+
+    return entity::LuaEventStore::getLuaState();
 }

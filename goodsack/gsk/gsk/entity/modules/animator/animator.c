@@ -9,8 +9,6 @@
 #include "core/graphics/mesh/animation.h"
 #include "core/graphics/mesh/mesh.h"
 
-#include "entity/__generated__/components_gen.h"
-
 #include <string.h>
 
 #define ANIMATOR_REWIND 0 // TODO: Move to component as a setting

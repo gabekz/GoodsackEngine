@@ -7,7 +7,7 @@
 
 #include <string.h>
 
-#include <GoodsackEngineConfig.h> // We need build info
+#include "gsk_generated/GoodsackEngineConfig.h" // We need build info
 
 #include "util/logger.h"
 #include "util/sysdefs.h"
@@ -30,8 +30,8 @@ static struct
     char proj_scheme[GSK_FS_MAX_SCHEME];
 } s_path_roots;
 
-static void
-_to_forward_slash(char *buffer)
+void
+gsk_filesystem_str_to_forward_slash(char *buffer)
 {
     int index = 0;
     while (buffer[index] && index < GSK_FS_MAX_PATH)
@@ -41,8 +41,8 @@ _to_forward_slash(char *buffer)
     }
 }
 
-static void
-_strip_filename(char *buffer)
+void
+gsk_filesystem_strip_filename(char *buffer)
 {
     char *pos = strrchr(buffer, '/');
     if (pos != NULL) { *pos = '\0'; }
@@ -112,7 +112,7 @@ gsk_filesystem_uri_to_path(const char *uri_path)
     else if (!strcmp(ret.uri.scheme, s_path_roots.gsk_scheme))
     {
         strcpy(absolute_path, s_path_roots.gsk_root);
-        _to_forward_slash(absolute_path);
+        gsk_filesystem_str_to_forward_slash(absolute_path);
     }
 
     strcat(absolute_path, ret.uri.path);
@@ -154,7 +154,7 @@ gsk_filesystem_path_to_uri(const char *file_path, char *output_uri)
     strcat(output_uri, "://");
     strcat(output_uri, file_path + strlen((char *)p_root));
 
-    _to_forward_slash(output_uri);
+    gsk_filesystem_str_to_forward_slash(output_uri);
     return output_uri;
 }
 
@@ -192,7 +192,7 @@ gsk_filesystem_traverse(const char *dirpath, FileUriHandler process_fn)
         } else
         {
             // fix slashes and convert to URI
-            _to_forward_slash(path);
+            gsk_filesystem_str_to_forward_slash(path);
             char output[GSK_FS_MAX_PATH];
             gsk_filesystem_path_to_uri(path, output);
 
