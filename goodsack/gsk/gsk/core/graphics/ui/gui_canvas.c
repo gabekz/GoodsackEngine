@@ -10,6 +10,8 @@
 #include "core/graphics/ui/gui_element.h"
 #include "runtime/gsk_runtime_wrapper.h"
 
+// test comment for branch folders
+
 #define USING_BLENDING  TRUE
 #define SCALE_TO_SCREEN TRUE
 
