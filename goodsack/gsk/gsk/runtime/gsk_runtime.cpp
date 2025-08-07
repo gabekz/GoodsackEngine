@@ -444,13 +444,15 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     char str_info[256];
     sprintf(str_info,
-            "Goodsack Engine | v%d.%d.%d.%d",
+            "Goodsack Engine v%d.%d.%d.%d-%s(%s)",
             GOODSACK_VERSION_MAJOR,
             GOODSACK_VERSION_MINOR,
             GOODSACK_VERSION_PATCH,
-            GOODSACK_VERSION_TWEAK);
+            GOODSACK_VERSION_TWEAK,
+            GOODSACK_VERSION_STATUS,
+            _GOODSACK_GIT_HASH_GSK);
 
-    vec2 text_info_pos = {5.0f, 5.0f};
+    vec2 text_info_pos = {4.0f, 0.0f};
     vec3 text_info_col = {1.0f, 1.0f, 1.0f};
 
     gsk_GuiText *text_info =

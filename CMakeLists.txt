@@ -23,6 +23,8 @@ set(GoodsackEngine_VERSION_PATCH ${CMAKE_MATCH_1})
 string(REGEX MATCH "VERSION_TWEAK ([0-9]*)" _ ${ver})
 set(GoodsackEngine_VERSION_TWEAK ${CMAKE_MATCH_1})
 
+string(REGEX MATCH "VERSION_STATUS ([a-z]*)" _ ${ver})
+set(GoodsackEngine_VERSION_STATUS ${CMAKE_MATCH_1})
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -322,5 +324,22 @@ endif(GOODSACK_TEST)
 # Set configure_file
 # NOTE: Should always be the last thing in our main CMakeLists.txt
 #################################################################
+
+execute_process(
+        COMMAND git rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_HASH_GSK
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+execute_process(
+        COMMAND git rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_HASH_PRJ
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+set(GIT_COMMIT_HASH_GSK_VAR "${GIT_COMMIT_HASH_GSK}")
+set(GIT_COMMIT_HASH_PRJ_VAR "${GIT_COMMIT_HASH_PRJ}")
 
 configure_file(GoodsackEngineConfig.h.in "${GSK_GEN_OUT_DIR}/GoodsackEngineConfig.h")

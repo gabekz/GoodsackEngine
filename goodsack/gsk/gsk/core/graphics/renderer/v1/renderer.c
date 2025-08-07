@@ -174,7 +174,7 @@ gsk_renderer_init(const char *app_name)
       gsk_billboard_create(GSK_PATH("gsk://textures/gizmo/light.png"), bbsize);
 
     // create GUI canvas
-    ret->canvas = gsk_gui_canvas_create();
+    ret->canvas = gsk_gui_canvas_create(1920, 1080);
 
     return ret;
 }

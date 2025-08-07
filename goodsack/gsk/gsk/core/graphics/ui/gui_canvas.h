@@ -23,10 +23,15 @@ typedef struct gsk_GuiCanvas
     gsk_Material *p_material;
     vec2 canvas_size;
 
+    u8 is_visible;
+
 } gsk_GuiCanvas;
 
 gsk_GuiCanvas
-gsk_gui_canvas_create();
+gsk_gui_canvas_create(u32 canvas_width_px, u32 canvas_height_px);
+
+void
+gsk_gui_canvas_set_visibility(gsk_GuiCanvas *p_self, u8 is_visible);
 
 void
 gsk_gui_canvas_add_element(gsk_GuiCanvas *p_self, gsk_GuiElement *p_element);
