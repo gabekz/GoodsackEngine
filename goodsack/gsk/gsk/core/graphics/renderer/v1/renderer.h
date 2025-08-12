@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef __RENDERER_H__
-#define __RENDERER_H__
+#ifndef __GSK_RENDERER_H__
+#define __GSK_RENDERER_H__
 
 #include "util/gfx.h"
 #include "util/maths.h"
@@ -72,7 +72,7 @@ typedef struct gsk_Renderer
     u32 prev_shader_id;
 
     gsk_Billboard2D *billboard; // Billboard testing
-    gsk_GuiCanvas canvas;       // Canvas test
+    gsk_GuiCanvas info_canvas;
 
     gsk_Skybox *activeSkybox;  // Active skybox that is being rendered
     gsk_Skybox *defaultSkybox; // Default skybox set for each scene on creation
@@ -163,4 +163,4 @@ gsk_renderer_resize(gsk_Renderer *p_self, int new_width, int new_height);
 }
 #endif
 
-#endif // __RENDERER_H__
+#endif // __GSK_RENDERER_H__

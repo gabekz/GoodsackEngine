@@ -78,7 +78,7 @@ gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color)
     u32 sprite_cells_total = sprite_cells_rows * sprite_cells_cols;
 
     // sprite options
-    f32 char_size       = 20.0f;
+    f32 char_size       = 21.0f;
     vec2 start_pos      = GLM_VEC2_ZERO_INIT;
     vec3 text_color_rgb = GLM_VEC3_ZERO_INIT;
 
