@@ -407,7 +407,7 @@ gsk::runtime::rt_setup(const char *root_dir,
           gsk_gui_text_create("Loading", text_pos, text_color);
 
         const u32 canvas_shader_id =
-          s_runtime.renderer->canvas.p_material->shaderProgram->id;
+          s_runtime.renderer->info_canvas.p_material->shaderProgram->id;
 
         for (int i = 0; i < 2; i++)
         {
@@ -438,9 +438,7 @@ gsk::runtime::rt_setup(const char *root_dir,
         }
     }
 
-    // const char *info =
-    //  ("Goodsack Engine | " GOODSACK_VERSION_MAJOR "."
-    //  GOODSACK_VERSION_MINOR);
+    // TODO: move this info_canvas stuff to renderer init
 
     char str_info[256];
     sprintf(str_info,
@@ -457,7 +455,7 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     gsk_GuiText *text_info =
       gsk_gui_text_create(str_info, text_info_pos, text_info_col);
-    gsk_gui_canvas_add_text(&s_runtime.renderer->canvas, text_info);
+    gsk_gui_canvas_add_text(&s_runtime.renderer->info_canvas, text_info);
 
 #endif
     return 0;

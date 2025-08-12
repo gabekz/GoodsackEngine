@@ -16,7 +16,6 @@ extern "C" {
 
 typedef struct gsk_GuiCanvas
 {
-
     gsk_GuiElement *elements[256];
     int elements_count;
 

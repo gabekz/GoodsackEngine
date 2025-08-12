@@ -47,10 +47,11 @@ _allocate_new_scene(gsk_Renderer *p_renderer, u32 scene_id)
     // TODO: no cap on scene limit
     if (scene_id > RENDERER_MAX_SCENES) { LOG_CRITICAL("too many scenes"); }
 
-    gsk_Scene *scene  = malloc(sizeof(gsk_Scene));
-    scene->id         = scene_id;
-    scene->ecs        = gsk_ecs_init(p_renderer);
-    scene->has_skybox = FALSE;
+    gsk_Scene *scene      = malloc(sizeof(gsk_Scene));
+    scene->id             = scene_id;
+    scene->ecs            = gsk_ecs_init(p_renderer);
+    scene->has_skybox     = FALSE;
+    scene->total_canvases = 0;
 
     // Fog options
     // TODO: Don't initialize the first fog options here
@@ -174,7 +175,7 @@ gsk_renderer_init(const char *app_name)
       gsk_billboard_create(GSK_PATH("gsk://textures/gizmo/light.png"), bbsize);
 
     // create GUI canvas
-    ret->canvas = gsk_gui_canvas_create(1920, 1080);
+    ret->info_canvas = gsk_gui_canvas_create(1920, 1080);
 
     return ret;
 }
@@ -541,8 +542,13 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     // vec3 pos = GLM_VEC3_ZERO_INIT;
     // gsk_billboard_draw(renderer->billboard, pos);
 
-    gsk_gui_canvas_draw(&renderer->canvas);
+    gsk_gui_canvas_draw(&renderer->info_canvas);
 #endif
+
+    for (int i = 0; i < scene->total_canvases; i++)
+    {
+        gsk_gui_canvas_draw(&scene->canvases[i]);
+    }
 
 #if TESTING_DRAW_LINE
 #if 1
