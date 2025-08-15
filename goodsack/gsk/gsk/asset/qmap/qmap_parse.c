@@ -59,10 +59,12 @@ static void
 __qmap_container_add_entity(gsk_QMapContainer *p_container)
 {
     gsk_QMapEntity ent;
-    ent.list_brushes = array_list_init(sizeof(gsk_QMapBrush), 1);
-    ent.list_fields  = array_list_init(sizeof(gsk_QMapEntityField), 1);
-    ent.ent_index    = p_container->total_entities;
-    ent.layer_id     = 0;
+    ent.list_brushes    = array_list_init(sizeof(gsk_QMapBrush), 1);
+    ent.list_fields     = array_list_init(sizeof(gsk_QMapEntityField), 1);
+    ent.ent_index       = p_container->total_entities;
+    ent.layer_id        = 0;
+    ent.is_model_loaded = FALSE;
+    ent.p_model         = NULL;
 
     // push to Container
     array_list_push(&p_container->list_entities, (void *)&ent);
@@ -581,7 +583,6 @@ gsk_qmap_parse_map_file(const char *map_path, gsk_TextureSet *p_textureset)
     ret.list_layers    = array_list_init(sizeof(gsk_QMapLayer), 2);
 
     ret.is_map_compiled = FALSE;
-    ret.is_model_loaded = FALSE;
 
     // attach textureset
     ret.p_texture_set = p_textureset;

@@ -141,8 +141,8 @@ gsk_qmap_load(const char *map_path,
         }
     }
 
-    // build model
-    gsk_qmap_load_model(&ret, p_shader_program);
+    // build models for each entity
+    gsk_qmap_load_models(&ret, p_shader_program);
 
     return ret;
 }

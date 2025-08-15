@@ -20,9 +20,9 @@
 extern "C" {
 #endif // __cplusplus
 
-gsk_Model *
-gsk_qmap_load_model(gsk_QMapContainer *p_container,
-                    gsk_ShaderProgram *p_shader);
+void
+gsk_qmap_load_models(gsk_QMapContainer *p_container,
+                     gsk_ShaderProgram *p_shader);
 
 #ifdef __cplusplus
 }

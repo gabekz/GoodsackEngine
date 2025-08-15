@@ -105,7 +105,7 @@ init(gsk_Entity e)
         glm_vec3_zero(box_collider->bounds[0]);
         glm_vec3_zero(box_collider->bounds[1]);
 
-        if (gsk_ecs_has(e, C_MODEL))
+        if (gsk_ecs_has(e, C_MODEL) && collider->p_mesh != 0x32)
         {
             struct ComponentModel *cmp_model = gsk_ecs_get(e, C_MODEL);
             gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
@@ -385,7 +385,7 @@ on_collide(gsk_Entity e)
             }
 
 #if 1
-            if (compareCollider->is_trigger == TRUE && rigidbody_b != NULL)
+            if (compareCollider->is_trigger == TRUE)
             {
                 // Create a new collision result using our points
                 gsk_CollisionResult result = {
@@ -396,10 +396,16 @@ on_collide(gsk_Entity e)
                   .is_trigger_response = TRUE,
                 };
 
-                // Send that over to rigidbody (B) solver list
-                gsk_physics_solver_push(
-                  (gsk_PhysicsSolver *)rigidbody_b->solver, result);
+                if (rigidbody_b != NULL)
+                {
 
+                    // Send that over to rigidbody (B) solver list
+                    gsk_physics_solver_push(
+                      (gsk_PhysicsSolver *)rigidbody_b->solver, result);
+                }
+
+                // skip this comparison because we don't want to walk on
+                // triggers
                 continue;
             }
 #endif

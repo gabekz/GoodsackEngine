@@ -99,6 +99,9 @@ typedef struct gsk_QMapEntity
     u32 layer_id;
     ArrayList list_brushes;
     ArrayList list_fields;
+    ArrayList list_batches;
+    u8 is_model_loaded;
+    gsk_Model *p_model;
 } gsk_QMapEntity;
 
 typedef struct gsk_QMapLayer
@@ -119,9 +122,8 @@ typedef struct gsk_QMapContainer
     s32 total_brushes;
     s32 total_planes;
 
-    u8 is_map_compiled, is_model_loaded;
+    u8 is_map_compiled;
 
-    gsk_Model *p_model;
     gsk_TextureSet *p_texture_set;
 
 } gsk_QMapContainer;
