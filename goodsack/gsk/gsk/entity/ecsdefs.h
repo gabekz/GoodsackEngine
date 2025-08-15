@@ -50,6 +50,8 @@ typedef enum GskEcsEntityFlag_ {
 #define ECS_ENT_CAPACITY 10000
 #define ECS_NAME_LEN_MAX 128
 
+#define ECS_CMP_STRING_LEN 32
+
 // Should always be True
 #define USING_GENERATED_COMPONENTS 1
 

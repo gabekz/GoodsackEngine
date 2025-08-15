@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <vector>
 
+#include "entity/ecsdefs.h"
+
 #include "util/logger.h"
 #include "util/maths.h"
 
@@ -90,9 +92,9 @@ entity::component::parse_components_from_json(
       {"mat2", (DataTypeContainer {sizeof(float[2]), 2, EcsDataType::MAT2})},
       {"mat3", (DataTypeContainer {sizeof(float[3]), 3, EcsDataType::MAT3})},
       {"mat4", (DataTypeContainer {sizeof(float[4]), 4, EcsDataType::MAT4})},
-      // String - TODO: implement correctly
       {"string",
-       (DataTypeContainer {sizeof(const char *), 1, EcsDataType::STRING})},
+       (DataTypeContainer {
+         sizeof(char), ECS_CMP_STRING_LEN, EcsDataType::STRING})},
       // Resource reference (void ptr)
       {"Resource",
        (DataTypeContainer {sizeof(void *), 1, EcsDataType::RESOURCE})},
@@ -120,15 +122,6 @@ entity::component::parse_components_from_json(
             // Every variable of 'type' in the component
             for (int i = 0; i < JData.size(); i++)
             {
-                if (!strcmp(type.first.c_str(), "string"))
-                {
-                    // TODO: handle
-                    // data[JData[i]] = (Accessor){0, type.second.size,
-                    // type.second.stride};
-                    LOG_WARN("String is not implemented correctly");
-                    // continue;
-                }
-
                 // TODO: just use DataType inside of accessor...
                 data[JData[i]] = (Accessor {
                   0, type.second.size, type.second.stride, type.second.type});
@@ -244,14 +237,20 @@ extern "C" {
             case EcsDataType::MAT3: buff << "mat3 "; break;
             case EcsDataType::MAT4: buff << "mat4 "; break;
 
-            // TODO: implement strings correctly
-            case EcsDataType::STRING: buff << "const char *"; break;
+            case EcsDataType::STRING: buff << "char "; break;
 
             case EcsDataType::RESOURCE: buff << "ResRef "; break;
             case EcsDataType::ENTITY: buff << "int "; break;
             default: break;
             }
-            buff << q.first << ");\n";
+            buff << q.first;
+
+            if (accessor.type == EcsDataType::STRING)
+            {
+                buff << "[" << ECS_CMP_STRING_LEN << "]";
+            }
+
+            buff << ");\n";
         }
 
 // Close struct
