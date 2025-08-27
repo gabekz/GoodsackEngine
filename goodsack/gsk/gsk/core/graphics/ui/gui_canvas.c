@@ -17,22 +17,35 @@
 #define DEFAULT_CANVAS_HEIGHT 1080
 
 gsk_GuiCanvas
-gsk_gui_canvas_create()
+gsk_gui_canvas_create(u32 canvas_width_px, u32 canvas_height_px)
 {
     gsk_Material *p_mat = gsk_material_create(
       NULL, GSK_PATH("gsk://shaders/canvas2d.shader"), 0, NULL);
 
-    vec2 viewport = {DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT};
+    vec2 viewport = {canvas_width_px, canvas_height_px};
 
     gsk_GuiCanvas ret = {
       .elements       = NULL,
       .elements_count = 0,
       .p_material     = p_mat,
+      .is_visible     = TRUE,
     };
 
     glm_vec2_copy(viewport, ret.canvas_size);
 
     return ret;
+}
+
+void
+gsk_gui_canvas_set_visibility(gsk_GuiCanvas *p_self, u8 is_visible)
+{
+    if (p_self == NULL)
+    {
+        LOG_ERROR("invalid canvas!");
+        return;
+    }
+
+    p_self->is_visible = is_visible;
 }
 
 void
@@ -55,6 +68,8 @@ gsk_gui_canvas_add_text(gsk_GuiCanvas *p_self, gsk_GuiText *p_text)
 void
 gsk_gui_canvas_draw(gsk_GuiCanvas *p_self)
 {
+    if (p_self->is_visible == FALSE) { return; }
+
     if (GSK_DEVICE_API_VULKAN) { return; }
 
     const gsk_Renderer *p_renderer = gsk_runtime_get_renderer();

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef __SCENE_H__
-#define __SCENE_H__
+#ifndef __GSK_SCENE_H__
+#define __GSK_SCENE_H__
 
 /* scene steps::
  * 1) Initialize and set active camera
@@ -18,7 +18,16 @@
 
 #include "core/graphics/lighting/lighting.h"
 #include "core/graphics/lighting/skybox.h"
+#include "core/graphics/ui/gui_canvas.h"
+
+#include "util/hash_table.h"
 #include "util/sysdefs.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+#define SCENE_MAX_CANVASES 16
 
 typedef struct gsk_Scene
 {
@@ -30,6 +39,10 @@ typedef struct gsk_Scene
 
     gsk_LightingData lighting_data;
 
+    HashTable canvases_table;
+    gsk_GuiCanvas canvases[SCENE_MAX_CANVASES];
+    u32 total_canvases;
+
     struct
     {
         f32 fog_start, fog_end, fog_density;
@@ -38,4 +51,16 @@ typedef struct gsk_Scene
 
 } gsk_Scene;
 
-#endif // __SCENE_H__
+void
+gsk_scene_add_canvas(gsk_Scene *p_scene,
+                     gsk_GuiCanvas canvas,
+                     const char *canvas_name);
+
+gsk_GuiCanvas *
+gsk_scene_get_canvas_by_name(gsk_Scene *p_scene, const char *canvas_name);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // __GSK_SCENE_H__
