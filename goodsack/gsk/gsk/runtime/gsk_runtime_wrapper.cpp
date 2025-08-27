@@ -66,6 +66,13 @@ gsk_runtime_set_debug_entity_id(gsk_EntityId entity_id)
                   // function internally
 }
 
+gsk_EntityId
+gsk_runtime_get_debug_entity_id()
+{
+    return gsk::runtime::rt_get_debug_entity_id(); // Calls the C++
+                                                   // function internally
+}
+
 void *
 gsk_runtime_get_lua_state()
 {

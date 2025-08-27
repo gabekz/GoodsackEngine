@@ -33,13 +33,17 @@ gsk::tools::panels::Profiler::draw(void)
     {
         Separator();
         Text("Window");
+
         int vsync = gsk_device_getGraphicsSettings().swapInterval;
-        Checkbox("VSync", (bool *)&vsync);
-        gsk_device_setGraphicsSettings(
-          (gsk_GraphicsSettings({.swapInterval = vsync})));
+        if (Checkbox("VSync", (bool *)&vsync))
+        {
+            gsk_device_setGraphicsSettings(
+              (gsk_GraphicsSettings({.swapInterval = vsync})));
+        }
 
         Separator();
         Text("Ambient Occlusion");
+
         DragFloat(
           "SSAO Strength", &p_renderer->ssaoOptions.strength, 0.1f, 0, 20);
         DragFloat("Bias", &p_renderer->ssaoOptions.bias, 0.0001f, 0, 2, "%.5f");
@@ -98,6 +102,7 @@ gsk::tools::panels::Profiler::draw(void)
 
         Separator();
         Text("Vignette");
+
         DragFloat("Amount", &props->vignetteAmount, 0.1f, 0.0f, 2.0f, "%.01f");
         DragFloat(
           "Falloff", &props->vignetteFalloff, 0.1f, 0.0f, 1.0f, "%.01f");
@@ -105,6 +110,7 @@ gsk::tools::panels::Profiler::draw(void)
 
         Separator();
         Text("Anti Aliasing");
+
         Checkbox("MSAA", (bool *)&props->msaaEnable);
         SameLine();
         int samples = (int)props->msaaSamples;
@@ -114,6 +120,7 @@ gsk::tools::panels::Profiler::draw(void)
 
         Separator();
         Text("Bloom");
+
         DragFloat(
           "Intensity", &props->bloom_intensity, 0.1f, 0.0f, 20.0f, "%.1f");
         DragFloat(

@@ -34,6 +34,14 @@ typedef struct gsk_DebugMarker
 
 } gsk_DebugMarker;
 
+typedef struct gsk_DebugPhysicsOptions
+{
+    u8 selected_entity_only;
+    u8 draw_collisions;
+    u8 draw_friction;
+
+} gsk_DebugPhysicsOptions;
+
 typedef struct gsk_DebugContext
 {
     gsk_GlVertexArray *vaoCube;
@@ -46,6 +54,8 @@ typedef struct gsk_DebugContext
     u32 vboLineId;              // Line VBO ID
 
     ArrayList *markers_list;
+
+    gsk_DebugPhysicsOptions physics_options;
 
 } gsk_DebugContext;
 

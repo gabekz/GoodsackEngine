@@ -94,6 +94,12 @@ gsk_debug_context_init()
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     }
 
+    ret->physics_options = (gsk_DebugPhysicsOptions) {
+      .selected_entity_only = TRUE,
+      .draw_collisions      = FALSE,
+      .draw_friction        = FALSE,
+    };
+
     return ret;
 }
 

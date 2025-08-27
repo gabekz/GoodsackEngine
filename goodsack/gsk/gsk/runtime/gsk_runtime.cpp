@@ -633,7 +633,7 @@ gsk::runtime::rt_activate_ecs_systems(gsk_ECS *p_ecs)
     // Light System
     s_light_setup_system_init(p_ecs);
 
-    // s_collider_debug_draw_system_init(p_ecs);
+    s_collider_debug_draw_system_init(p_ecs);
 }
 
 void

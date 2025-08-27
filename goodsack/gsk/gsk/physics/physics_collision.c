@@ -171,7 +171,7 @@ __find_box_capsule_inverse(gsk_BoxCollider *box,
     // measure the distance. If < capsule.radius => collision
     vec3 diff;
     glm_vec3_sub(closest_on_segment, closest_on_box, diff);
-    float dist_sq = glm_vec3_dot(diff, diff);
+    float dist_sq = glm_vec3_norm2(diff);
     float r       = cap->radius;
 
     if (dist_sq < r * r)

@@ -10,6 +10,8 @@
 #include "util/sysdefs.h"
 #include "util/vec_colors.h"
 
+#include "runtime/gsk_runtime_wrapper.h"
+
 #define DEFAULT_RESTITUION 0.0f
 
 #define DEBUG_POINTS       0 // 0 -- OFF | value = entity id
@@ -47,6 +49,9 @@ __calc_relative_velocity(_SolverData solver_data,
 void
 impulse_solver_with_rotation_friction(_SolverData solver_data)
 {
+    gsk_DebugContext *p_debug_context =
+      solver_data.entity.ecs->renderer->debugContext;
+
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     gsk_PhysicsMark marker                = collision_result->physics_mark;
 
@@ -127,49 +132,43 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     // Debug some data
     {
-        if (DEBUG_POINTS && solver_data.entity.id == DEBUG_POINTS)
+        if (p_debug_context->physics_options.draw_friction &&
+            solver_data.entity.id == gsk_runtime_get_debug_entity_id())
         {
+            gsk_debug_markers_push(p_debug_context,
+                                   MARKER_RAY,
+                                   solver_data.entity.id + 6,
+                                   collision_result->points.point_a,
+                                   rigidbody_a->linear_velocity,
+                                   1,
+                                   VCOL_BLUE,
+                                   FALSE);
 
-            gsk_debug_markers_push(
-              solver_data.entity.ecs->renderer->debugContext,
-              MARKER_RAY,
-              solver_data.entity.id + 6,
-              collision_result->points.point_a,
-              rigidbody_a->linear_velocity,
-              1,
-              VCOL_BLUE,
-              FALSE);
+            gsk_debug_markers_push(p_debug_context,
+                                   MARKER_RAY,
+                                   solver_data.entity.id + 7,
+                                   collision_result->points.point_a,
+                                   torque,
+                                   100,
+                                   VCOL_RED,
+                                   FALSE);
 
-            gsk_debug_markers_push(
-              solver_data.entity.ecs->renderer->debugContext,
-              MARKER_RAY,
-              solver_data.entity.id + 7,
-              // solver_data.p_transform->position,
-              collision_result->points.point_a,
-              torque,
-              100,
-              VCOL_RED,
-              FALSE);
-
-            gsk_debug_markers_push(
-              solver_data.entity.ecs->renderer->debugContext,
-              MARKER_RAY,
-              solver_data.entity.id + 11,
-              // solver_data.p_transform->position,
-              collision_result->points.point_a,
-              ra_perp,
-              1,
-              VCOL_WHITE,
-              FALSE);
-            gsk_debug_markers_push(
-              solver_data.entity.ecs->renderer->debugContext,
-              MARKER_RAY,
-              solver_data.entity.id + 20,
-              solver_data.p_transform->position,
-              ra,
-              1,
-              VCOL_GREEN,
-              FALSE);
+            gsk_debug_markers_push(p_debug_context,
+                                   MARKER_RAY,
+                                   solver_data.entity.id + 11,
+                                   collision_result->points.point_a,
+                                   ra_perp,
+                                   1,
+                                   VCOL_WHITE,
+                                   FALSE);
+            gsk_debug_markers_push(p_debug_context,
+                                   MARKER_RAY,
+                                   solver_data.entity.id + 20,
+                                   solver_data.p_transform->position,
+                                   ra,
+                                   1,
+                                   VCOL_GREEN,
+                                   FALSE);
 #if 0
             gsk_debug_markers_push(
               solver_data.entity.ecs->renderer->debugContext,
@@ -324,39 +323,35 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
     // --------------
     // DEBUG SOME LINES
     {
-        if (DEBUG_POINTS && solver_data.entity.id == DEBUG_POINTS)
+        if (p_debug_context->physics_options.draw_friction &&
+            solver_data.entity.id == gsk_runtime_get_debug_entity_id())
         {
-            gsk_debug_markers_push(
-              solver_data.entity.ecs->renderer->debugContext,
-              MARKER_RAY,
-              solver_data.entity.id + 8,
-              solver_data.p_transform->position,
-              relative_velocity,
-              1,
-              VCOL_CYAN,
-              FALSE);
+            gsk_debug_markers_push(p_debug_context,
+                                   MARKER_RAY,
+                                   solver_data.entity.id + 8,
+                                   solver_data.p_transform->position,
+                                   relative_velocity,
+                                   1,
+                                   VCOL_CYAN,
+                                   FALSE);
 
-            gsk_debug_markers_push(
-              solver_data.entity.ecs->renderer->debugContext,
-              MARKER_RAY,
-              solver_data.entity.id + 9,
-              // solver_data.p_transform->position,
-              collision_result->points.point_a,
-              friction_torque,
-              10,
-              VCOL_ORANGE,
-              FALSE);
+            gsk_debug_markers_push(p_debug_context,
+                                   MARKER_RAY,
+                                   solver_data.entity.id + 9,
+                                   collision_result->points.point_a,
+                                   friction_torque,
+                                   10,
+                                   VCOL_ORANGE,
+                                   FALSE);
 
-            gsk_debug_markers_push(
-              solver_data.entity.ecs->renderer->debugContext,
-              MARKER_RAY,
-              solver_data.entity.id + 10,
-              // solver_data.p_transform->position,
-              collision_result->points.point_a,
-              friction_impulse,
-              10,
-              VCOL_PURPLE,
-              FALSE);
+            gsk_debug_markers_push(p_debug_context,
+                                   MARKER_RAY,
+                                   solver_data.entity.id + 10,
+                                   collision_result->points.point_a,
+                                   friction_impulse,
+                                   10,
+                                   VCOL_PURPLE,
+                                   FALSE);
         }
     }
 }

@@ -23,6 +23,7 @@
 #include "tools/debug/panels/debug_panel_component_viewer.hpp"
 #include "tools/debug/panels/debug_panel_entity_viewer.hpp"
 #include "tools/debug/panels/debug_panel_lighting.hpp"
+#include "tools/debug/panels/debug_panel_physics.hpp"
 #include "tools/debug/panels/debug_panel_profiler.hpp"
 #include "tools/debug/panels/debug_panel_renderer.hpp"
 #include "tools/debug/panels/debug_panel_scene_viewer.hpp"
@@ -109,6 +110,7 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
                   (int)Menus::Pipeline);
         add_panel((DebugPanel *)(new RenderInfo("Renderer Info")),
                   (int)Menus::Pipeline);
+        add_panel((DebugPanel *)(new Physics("Physics")), (int)Menus::Pipeline);
     }
 
     set_visibility(true);
