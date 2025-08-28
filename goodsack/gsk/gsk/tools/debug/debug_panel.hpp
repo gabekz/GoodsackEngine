@@ -7,6 +7,8 @@
 #define __DEBUG_PANEL_HPP__
 
 #include "core/graphics/renderer/v1/renderer.h"
+#include "tools/debug/debug_toolbar.hpp"
+
 #include <string>
 
 #define _DECL_DEBUG_PANEL(x)     x(std::string str) : DebugPanel(str) {};
@@ -29,6 +31,7 @@ class DebugPanel {
     std::string title;
 
     gsk_Renderer *p_renderer;
+    DebugToolbar *p_toolbar;
 };
 
 } // namespace tools

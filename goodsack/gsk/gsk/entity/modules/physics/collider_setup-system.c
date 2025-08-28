@@ -111,6 +111,7 @@ init(gsk_Entity e)
             gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
             glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
             glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
+
         }
         // TODO: TESTING
         else if (collider->p_mesh == 0x32)
@@ -140,6 +141,13 @@ init(gsk_Entity e)
             glm_vec3_copy(bounds_max, box_collider->bounds[1]);
         }
 
+#if 1
+        glm_vec3_mul(
+          box_collider->bounds[0], transform->scale, box_collider->bounds[0]);
+        glm_vec3_mul(
+          box_collider->bounds[1], transform->scale, box_collider->bounds[1]);
+#endif
+
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_BoxCollider *)box_collider;
     }
@@ -154,6 +162,7 @@ init(gsk_Entity e)
         f32 radius = 0.2f;
 
         // TODO: CHANGE THIS - temp for secondary capsule test
+        // TODO: TODAY
         if (e.id >= 304)
         {
             vec3 new_base = {0.0f, -0.2f, 0.0f};
@@ -217,8 +226,10 @@ on_collide(gsk_Entity e)
              e.ecs->p_ent_layers[e_compare.index] == 2) ||
             (e.ecs->p_ent_layers[e.index] == 2 &&
              e.ecs->p_ent_layers[e_compare.index] == 1) ||
-            (e.ecs->p_ent_layers[e.index] == 3) &&
-              e.ecs->p_ent_layers[e_compare.index] == 3)
+            (e.ecs->p_ent_layers[e.index] == 3 &&
+             e.ecs->p_ent_layers[e_compare.index] == 3) ||
+            (e.ecs->p_ent_layers[e.index] == 4) &&
+              e.ecs->p_ent_layers[e_compare.index] == 4)
         {
             continue;
         }

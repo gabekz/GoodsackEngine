@@ -108,7 +108,7 @@
 
     "Transform": {
         "vec3": [ "position", "world_position", "orientation", "scale", "forward" ],
-        "mat4": [ "model" ],
+        "mat4": [ "model", "m4_rotation" ],
         "bool": [ "has_parent" ],
         "entity": [ "parent_entity_id" ]
     },

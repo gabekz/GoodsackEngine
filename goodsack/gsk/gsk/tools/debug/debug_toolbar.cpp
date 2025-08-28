@@ -156,6 +156,8 @@ gsk::tools::DebugToolbar::update(void)
     {
         m_debugEnableKeyCheck = true;
     }
+
+    m_renderer->debugContext->is_active = (m_debugEnabled) ? TRUE : FALSE;
 }
 
 void
@@ -164,6 +166,7 @@ gsk::tools::DebugToolbar::add_panel(gsk::tools::DebugPanel *panel,
 {
     // panel->set_menu_index((int)this->p_menus[menu_index]);
     panel->set_menu_index(menu_index);
+    panel->p_toolbar  = this;
     panel->p_renderer = this->m_renderer;
     debug_panels.push_back(panel);
 }
@@ -197,7 +200,6 @@ gsk::tools::DebugToolbar::render(void)
         {
             if (ImGui::BeginMenu(p_menu_names[i]))
             {
-
                 // for each panel
                 for (auto it = debug_panels.begin(); it != debug_panels.end();
                      ++it)

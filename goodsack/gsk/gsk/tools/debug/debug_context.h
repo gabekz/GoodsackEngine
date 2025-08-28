@@ -56,6 +56,7 @@ typedef struct gsk_DebugContext
     ArrayList *markers_list;
 
     gsk_DebugPhysicsOptions physics_options;
+    u8 is_active;
 
 } gsk_DebugContext;
 

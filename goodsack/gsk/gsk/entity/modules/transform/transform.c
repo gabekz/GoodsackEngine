@@ -185,6 +185,7 @@ late_update(gsk_Entity e)
     glm_scale(m4i, transform->scale);
 
     glm_mat4_copy(m4i, transform->model);
+    glm_mat4_copy(mat_rot, transform->m4_rotation);
 
     // set world position
     __update_world_position(transform);

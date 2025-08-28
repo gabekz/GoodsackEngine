@@ -12,6 +12,7 @@
 #include "core/drivers/alsoft/alsoft_debug.h"
 #include "core/graphics/mesh/model.h"
 #include "core/graphics/particles/particle_system.h"
+#include "physics/physics_types.h"
 
 #include <runtime/gsk_runtime.hpp>
 
@@ -74,10 +75,16 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         struct ComponentCollider &p = *(
           static_cast<struct ComponentCollider *>(gsk_ecs_get(e, C_COLLIDER)));
 
+        gsk_BoxCollider *c =
+          (gsk_BoxCollider *)((gsk_Collider *)p.pCollider)->collider_data;
+
         BeginDisabled();
         Checkbox("is_colliding", (bool *)&p.isColliding);
         Checkbox("is_trigger", (bool *)&p.is_trigger);
+        DragFloat3("min", *(vec3 *)c->bounds[0]);
+        DragFloat3("max", *(vec3 *)c->bounds[1]);
         EndDisabled();
+
     }
 
 #if 0

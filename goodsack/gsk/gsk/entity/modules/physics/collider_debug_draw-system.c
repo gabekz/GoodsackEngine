@@ -41,43 +41,48 @@ render(gsk_Entity entity)
 {
     if (entity.ecs->renderer->currentPass != GskRenderPass_Skybox) { return; }
 
-    if (!(gsk_ecs_has(entity, C_COLLIDER))) return;
-    if (!(gsk_ecs_has(entity, C_TRANSFORM))) return;
+    if (!(gsk_ecs_has(entity, C_COLLIDER))) { return; }
+    if (!(gsk_ecs_has(entity, C_TRANSFORM))) { return; }
 
-    const gsk_DebugPhysicsOptions *physics_options =
-      &entity.ecs->renderer->debugContext->physics_options;
+    const gsk_DebugContext *p_debug_context =
+      entity.ecs->renderer->debugContext;
 
-    if (physics_options->draw_collisions == FALSE) { return; }
+    const gsk_DebugPhysicsOptions *p_physics_options =
+      &(p_debug_context->physics_options);
+
+    if (p_debug_context->is_active == FALSE ||
+        p_physics_options->draw_collisions == FALSE)
+    {
+        return;
+    }
 
     // TODO: loop through children to render them as well
-    if (physics_options->selected_entity_only == TRUE &&
+    if (p_physics_options->selected_entity_only == TRUE &&
         entity.id != gsk_runtime_get_debug_entity_id())
     {
         return;
     }
 
-    struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
-    struct ComponentTransform *transform = gsk_ecs_get(entity, C_TRANSFORM);
+    gsk_C_Collider *collider   = gsk_ecs_get(entity, C_COLLIDER);
+    gsk_C_Transform *transform = gsk_ecs_get(entity, C_TRANSFORM);
 
     gsk_Collider *p_col = ((gsk_Collider *)collider->pCollider)->collider_data;
-    // if (collider->isColliding == FALSE) { return; }
 
     if (collider->type == COLLIDER_BOX)
     {
         gsk_BoxCollider *p_box = (gsk_BoxCollider *)p_col;
 
-#if 0
-        vec4 bounds_color = {
-          0.0f, 1.0f, 0.0f, (collider->isColliding) ? 1.0f : 0.5f};
-#endif
-
         vec4 collider_color = GLM_VEC4_ZERO_INIT;
         _get_collider_color(
           collider->isColliding, collider->is_trigger, collider_color);
 
+        mat4 matrix = GLM_MAT4_IDENTITY_INIT;
+        glm_translate(matrix, transform->position);
+        glm_mat4_mul(matrix, transform->m4_rotation, matrix);
+
         gsk_debug_draw_bounds(entity.ecs->renderer->debugContext,
                               p_box->bounds,
-                              transform->model,
+                              matrix,
                               collider_color);
     }
 }

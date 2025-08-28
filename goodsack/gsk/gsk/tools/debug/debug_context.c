@@ -16,6 +16,8 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/primitives.h"
 
+#include "runtime/gsk_runtime_wrapper.h"
+
 #include "asset/asset.h"
 
 #define DRAW_MESH_ONLY 0
@@ -29,6 +31,7 @@ gsk_debug_context_init()
     ret->markers_list = malloc(sizeof(ArrayList));
     *(ArrayList *)ret->markers_list =
       array_list_init(sizeof(gsk_DebugMarker), 64);
+    ret->is_active = TRUE;
 
     if (GSK_DEVICE_API_OPENGL)
     {
@@ -95,9 +98,9 @@ gsk_debug_context_init()
     }
 
     ret->physics_options = (gsk_DebugPhysicsOptions) {
-      .selected_entity_only = TRUE,
-      .draw_collisions      = FALSE,
-      .draw_friction        = FALSE,
+      .selected_entity_only = FALSE,
+      .draw_collisions      = TRUE,
+      .draw_friction        = TRUE,
     };
 
     return ret;

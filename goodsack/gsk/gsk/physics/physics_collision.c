@@ -456,58 +456,74 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
 {
     gsk_CollisionPoints ret = {.has_collision = 0};
 
-    vec3 bounds_a[2], bounds_b[2];
-    vec3 center_a, center_b;
-    glm_vec3_add(pos_a, a->bounds[0], bounds_a[0]);
-    glm_vec3_add(pos_a, a->bounds[1], bounds_a[1]);
-    // glm_aabb_center(bounds_a, center_a);
-    glm_vec3_copy(pos_a, center_a);
+    // World-space AABBs
+    vec3 A_min, A_max, B_min, B_max;
+    glm_vec3_add(pos_a, a->bounds[0], A_min);
+    glm_vec3_add(pos_a, a->bounds[1], A_max);
+    glm_vec3_add(pos_b, b->bounds[0], B_min);
+    glm_vec3_add(pos_b, b->bounds[1], B_max);
 
-    glm_vec3_add(pos_b, b->bounds[0], bounds_b[0]);
-    glm_vec3_add(pos_b, b->bounds[1], bounds_b[1]);
-    glm_aabb_center(bounds_b, center_b);
-    // glm_vec3_copy(pos_b, center_b);
-
-    if (glm_aabb_aabb(bounds_a, bounds_b))
+    if (!glm_aabb_aabb((vec3[2]) {{A_min[0], A_min[1], A_min[2]},
+                                  {A_max[0], A_max[1], A_max[2]}},
+                       (vec3[2]) {{B_min[0], B_min[1], B_min[2]},
+                                  {B_max[0], B_max[1], B_max[2]}}))
     {
-        ret.has_collision = TRUE;
-
-        // calculate normal
-        vec3 normal = GLM_VEC3_ZERO_INIT;
-        glm_vec3_sub(center_b, center_a, normal);
-        glm_normalize(normal);
-        glm_vec3_copy(normal, ret.normal);
-
-#if 0
-        // calculate nearest point
-        vec3 dist_vec_a, dist_vec_b;
-        // scale normal to radius for collision-test
-        glm_vec3_scale(ret.normal, 1 / 2, dist_vec_a);
-        glm_vec3_add(pos_a, dist_vec_a, dist_vec_a);
-
-        glm_vec3_scale(ret.normal, 1 / 2, dist_vec_b);
-        glm_vec3_add(pos_b, dist_vec_b, dist_vec_b);
-        // glm_vec3_negate(dist_vec_b);
-#endif
-
-        // calculate point a
-        _aabb_clamped_in(bounds_a, center_b, ret.point_a);
-
-        // calculate point b
-        glm_vec3_sub(center_b, ret.point_a, normal);
-        glm_vec3_normalize(normal);
-
-        float dist = glm_vec3_distance(center_a, ret.point_a);
-        glm_vec3_scale(normal, dist, ret.point_b);
-        glm_vec3_sub(center_b, ret.point_b, ret.point_b);
-        //_aabb_clamped_point(bounds_b, center_b, ret.point_b, ret.point_b);
-        _aabb_clamped_in(bounds_b, ret.point_b, ret.point_b);
-
-        glm_vec3_sub(ret.point_b, ret.point_a, ret.normal);
-        glm_vec3_normalize(ret.normal);
-
-        ret.depth = glm_vec3_distance(ret.point_b, ret.point_a);
+        return ret; // no overlap
     }
+
+    ret.has_collision = TRUE;
+
+    // Centers
+    vec3 center_a, center_b;
+    glm_aabb_center((vec3[2]) {{A_min[0], A_min[1], A_min[2]},
+                               {A_max[0], A_max[1], A_max[2]}},
+                    center_a);
+    glm_aabb_center((vec3[2]) {{B_min[0], B_min[1], B_min[2]},
+                               {B_max[0], B_max[1], B_max[2]}},
+                    center_b);
+
+    // Overlap along each axis
+    float overlap[3];
+    overlap[0] = fminf(A_max[0] - B_min[0], B_max[0] - A_min[0]);
+    overlap[1] = fminf(A_max[1] - B_min[1], B_max[1] - A_min[1]);
+    overlap[2] = fminf(A_max[2] - B_min[2], B_max[2] - A_min[2]);
+
+    // Choose axis of minimum overlap
+    int axis = 0;
+    if (overlap[1] < overlap[axis]) axis = 1;
+    if (overlap[2] < overlap[axis]) axis = 2;
+
+    // Normal points from A -> B along that axis
+    glm_vec3_zero(ret.normal);
+    ret.normal[axis] = (center_b[axis] >= center_a[axis]) ? 1.0f : -1.0f;
+
+    // Penetration depth is the min overlap
+    ret.depth = overlap[axis];
+
+    // Contact points: pick touching faces on the chosen axis.
+    // For the other two axes, clamp to the other box’s bounds.
+    // point_a is on A’s surface, point_b on B’s surface.
+    // Axis coord on A:
+    ret.point_a[axis] = (ret.normal[axis] > 0.0f) ? A_max[axis] : A_min[axis];
+    // Axis coord on B (opposite face):
+    ret.point_b[axis] = (ret.normal[axis] > 0.0f) ? B_min[axis] : B_max[axis];
+
+    // For the other two axes i ≠ axis, clamp each center to the opposite box
+    for (int i = 0; i < 3; ++i)
+    {
+        if (i == axis) continue;
+
+        // On A, clamp B’s center to A’s bounds
+        ret.point_a[i] = clampf(center_b[i], A_min[i], A_max[i]);
+
+        // On B, clamp A’s center to B’s bounds
+        ret.point_b[i] = clampf(center_a[i], B_min[i], B_max[i]);
+    }
+
+    // Optional: ensure normal aligns with (point_b - point_a)
+    vec3 ncheck;
+    glm_vec3_sub(ret.point_b, ret.point_a, ncheck);
+    if (glm_vec3_dot(ncheck, ret.normal) < 0.0f) glm_vec3_negate(ret.normal);
 
     return ret;
 }
