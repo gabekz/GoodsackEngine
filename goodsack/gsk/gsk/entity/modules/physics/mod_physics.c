@@ -50,26 +50,26 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
             points = gsk_physics_collision_find_ray_sphere(
               raycast,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
-              compareTransform->position);
+              compareTransform->world_position);
 
         } else if (compareCollider->type == COLLIDER_BOX)
         {
             points = gsk_physics_collision_find_ray_box(
               raycast,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
-              compareTransform->position);
+              compareTransform->world_position);
         } else if (compareCollider->type == COLLIDER_PLANE)
         {
             points = gsk_physics_collision_find_ray_plane(
               raycast,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
-              compareTransform->position);
+              compareTransform->world_position);
         } else if (compareCollider->type == COLLIDER_CAPSULE)
         {
             points = gsk_physics_collision_find_ray_capsule(
               raycast,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
-              compareTransform->position);
+              compareTransform->world_position);
         }
 
         if (points.has_collision)

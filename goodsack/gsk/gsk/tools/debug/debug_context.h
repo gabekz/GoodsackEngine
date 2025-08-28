@@ -49,6 +49,7 @@ typedef struct gsk_DebugContext
     gsk_Material *material;
 
     gsk_Model *model_sphere;
+    gsk_Mesh *mesh_sphere;
 
     gsk_GlVertexArray *vaoLine; // VAO for debug draw line
     u32 vboLineId;              // Line VBO ID

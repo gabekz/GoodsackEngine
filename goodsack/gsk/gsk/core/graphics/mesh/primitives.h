@@ -133,4 +133,7 @@ gsk_Mesh *primitive_mesh_create(u32 shape, float scale);
 void primitive_pyramid(float* out);
 float* prim_vert_rect();
 
+gsk_Mesh *
+primitive_sphere_create(f32 radius, f32 sector_count, f32 stack_count);
+
 #endif // __PRIMITIVES_H__

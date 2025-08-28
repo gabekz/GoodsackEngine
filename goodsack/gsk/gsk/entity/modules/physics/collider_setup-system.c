@@ -166,7 +166,9 @@ init(gsk_Entity e)
         if (e.id >= 304)
         {
             vec3 new_base = {0.0f, -0.2f, 0.0f};
+            vec3 new_tip  = {0.0f, 1.5f, 0.0f};
             glm_vec3_copy(new_base, base);
+            glm_vec3_copy(new_tip, tip);
         }
 
         glm_vec3_copy(base, capsule_collider->base);

@@ -27,4 +27,8 @@
 #define MIN(a, b)      (((a) < (b)) ? (a) : (b))
 #define CLAMP(c, m, n) c = (MIN(MAX(c, m), n))
 
+#ifndef PI
+#define PI 3.14159f
+#endif // PI
+
 #endif // __MATHS_H__

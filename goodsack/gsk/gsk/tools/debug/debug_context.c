@@ -75,6 +75,9 @@ gsk_debug_context_init()
                                      GskOglUsageType_Static);
         gsk_gl_index_buffer_bind(iboBoundingBox);
 
+        // VAO Sphere
+        ret->mesh_sphere = primitive_sphere_create(1.0f, 16, 16);
+
         // VAO Line
         vec3 lineStart              = GLM_VEC3_ZERO_INIT;
         vec3 lineEnd                = GLM_VEC3_ZERO_INIT;
@@ -93,6 +96,7 @@ gsk_debug_context_init()
 
         // OpenGL Line smoothing
         glLineWidth(1.0f);
+        glPointSize(2.0f);
         glEnable(GL_LINE_SMOOTH);
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     }
@@ -151,6 +155,8 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
 void
 gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
 {
+    if (p_debug_context->is_active == FALSE) { return; }
+
     for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++)
     {
 
