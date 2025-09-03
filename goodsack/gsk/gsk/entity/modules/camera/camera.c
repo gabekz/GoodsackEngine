@@ -16,11 +16,13 @@ TODO:
 
 #include <string.h>
 
+#include "util/array_list.h"
 #include "util/gfx.h"
 
 #include "core/device/device.h"
 #include "entity/ecs.h"
 #include "entity/modules/camera/camera_input.h"
+#include "entity/modules/camera/mod_camera.h"
 #include "entity/modules/transform/transform.h"
 
 #define CAMERA_SHAKE            1
@@ -125,6 +127,42 @@ _upload_shader_data(gsk_Entity e,
 #endif
 }
 
+static f32
+_calc_shake_coefficient(gsk_C_Camera *p_cmp_camera)
+{
+    f32 ret  = 0.0f;
+    f32 seed = 255.0f;
+
+    gsk_Time time    = gsk_device_getTime();
+    f32 time_elapsed = time.time_elapsed;
+    f32 delta        = time.delta_time;
+
+    ArrayList *p_list_shakers = p_cmp_camera->list_shakers;
+
+    for (int i = 0; i < p_list_shakers->list_next; i++)
+    {
+        gsk_mod_CameraShaker *p_shaker = LIST_GET(p_list_shakers, i);
+        if (p_shaker->is_running == FALSE) { continue; }
+
+        p_shaker->shake_amount -= p_shaker->shake_speed * delta;
+
+        if (p_shaker->shake_amount <= 0)
+        {
+            p_shaker->shake_amount = 0;
+            p_shaker->is_running   = FALSE;
+            continue;
+        }
+
+        float shake = p_shaker->shake_amount +
+                      (sin(seed + time_elapsed * p_shaker->shake_jitter) *
+                       p_shaker->shake_amount);
+
+        ret += (shake * p_shaker->shake_scalar);
+    }
+
+    return ret;
+}
+
 static void
 init(gsk_Entity e)
 {
@@ -146,6 +184,10 @@ init(gsk_Entity e)
 #if CAMERA_SHAKE
     // Reset camera shake
     camera->shake_amount = 0;
+
+    camera->list_shakers = malloc(sizeof(ArrayList));
+    *(ArrayList *)camera->list_shakers =
+      LIST_INIT(sizeof(gsk_mod_CameraShaker), GSK_MOD_CAMERA_MAX_SHAKERS);
 #endif // CAMERA_SHAKE
 
     // Create camera UBO
@@ -249,34 +291,23 @@ update(gsk_Entity e)
         cameraLook->pitch += yOffset;
 #endif
 
-#if CAMERA_SHAKE
-        // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
-        float seed = 255.0f;
-        float shakeCO =
-          camera->shake_amount + (sin(seed + gsk_device_getTime().time_elapsed *
-                                               camera->shake_jitter) *
-                                  camera->shake_amount);
-#endif // CAMERA_SHAKE
-
         // Clamp pitch
         if (cameraLook->pitch > 89.0f) cameraLook->pitch = 89.0f;
         if (cameraLook->pitch < -89.0f) cameraLook->pitch = -89.0f;
 
+        // --
         // Calculate camera direction
+
         vec3 camDirection = GLM_VEC3_ZERO_INIT;
-#if CAMERA_SHAKE
-        camDirection[0] = cos(glm_rad(cameraLook->yaw + shakeCO + 1)) *
+
+        // camera-shake coefficient
+        f32 shakeCO = (CAMERA_SHAKE) ? _calc_shake_coefficient(camera) : 0.0f;
+
+        camDirection[0] = cos(glm_rad(cameraLook->yaw + shakeCO)) *
                           cos(glm_rad(cameraLook->pitch + shakeCO));
         camDirection[1] = sin(glm_rad(cameraLook->pitch + shakeCO));
-        camDirection[2] = sin(glm_rad(cameraLook->yaw + shakeCO + 1)) *
+        camDirection[2] = sin(glm_rad(cameraLook->yaw + shakeCO)) *
                           cos(glm_rad(cameraLook->pitch));
-#else
-        camDirection[0] =
-          cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
-        camDirection[1] = sin(glm_rad(camera->pitch));
-        camDirection[2] =
-          sin(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch));
-#endif // CAMERA_SHAKE
 
         transform->orientation[0] = glm_deg(camDirection[0]);
         transform->orientation[1] = glm_deg(camDirection[1]);
