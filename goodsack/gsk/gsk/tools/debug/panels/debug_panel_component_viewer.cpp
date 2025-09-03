@@ -317,6 +317,11 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         DragFloat("Near", &p.nearZ, 0.01, 0, 10);
         SameLine();
         DragFloat("Far", &p.farZ, 1, 0, 1000);
+        PopItemWidth();
+
+        SliderFloat("Shake Amount (Impact)", &p.shake_amount, 0.0f, 100.0f);
+        SliderFloat("Shake Speed", &p.shake_speed, 0.0f, 100.0f);
+        SliderFloat("Shake Jitter", &p.shake_jitter, 0.0f, 100.0f);
     }
 
     else if (cmp_type == C_CAMERA_LOOK)

@@ -103,8 +103,8 @@ gsk_debug_context_init()
 
     ret->physics_options = (gsk_DebugPhysicsOptions) {
       .selected_entity_only = FALSE,
-      .draw_collisions      = TRUE,
-      .draw_friction        = TRUE,
+      .draw_collisions      = FALSE,
+      .draw_friction        = FALSE,
     };
 
     return ret;

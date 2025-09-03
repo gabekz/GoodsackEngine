@@ -161,7 +161,7 @@ init(gsk_Entity e)
 
     cameraLook->lastX = e.ecs->renderer->windowWidth / 2;
     cameraLook->lastY = e.ecs->renderer->windowHeight / 2;
-    cameraLook->yaw   = -90.0f;
+    cameraLook->yaw   = transform->orientation[1];
     cameraLook->pitch = 0;
 
     cameraLook->firstMouse = TRUE;
@@ -251,10 +251,11 @@ update(gsk_Entity e)
 
 #if CAMERA_SHAKE
         // float randomFloat = ((float)rand() / (float)(RAND_MAX)) * 2 - 1;
-        float seed    = 255.0f;
-        float shakeCO = camera->shake_amount +
-                        (sin(seed + gsk_device_getTime().time_elapsed) *
-                         camera->shake_amount * 20);
+        float seed = 255.0f;
+        float shakeCO =
+          camera->shake_amount + (sin(seed + gsk_device_getTime().time_elapsed *
+                                               camera->shake_jitter) *
+                                  camera->shake_amount);
 #endif // CAMERA_SHAKE
 
         // Clamp pitch
@@ -333,7 +334,8 @@ update(gsk_Entity e)
 #if CAMERA_SHAKE
     if (camera->shake_amount > 0)
     {
-        camera->shake_amount -= 3 * gsk_device_getTime().delta_time;
+        camera->shake_amount -=
+          camera->shake_speed * gsk_device_getTime().delta_time;
     } else if (camera->shake_amount <= 0)
     {
         camera->shake_amount = 0;
