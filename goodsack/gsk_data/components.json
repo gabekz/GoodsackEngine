@@ -15,7 +15,7 @@
         "uint": ["buffer_audio", "buffer_source"],
         "float": ["min_distance, max_distance", "pitch"],
         "string": ["filePath"],
-        "bool": ["is_looping", "is_playing", "play_on_start"],
+        "bool": ["is_looping", "is_playing", "play_on_start", "random_start"],
         "Resource": ["audio_clip"]
     },
 
@@ -33,7 +33,7 @@
     "Camera": {
         "int": ["screenWidth", "screenHeight"],
         "uint": ["renderLayer"],
-        "float": ["fov", "nearZ", "farZ", "shake_coefficient", "shake_amount", "shake_speed", "shake_jitter"],
+        "float": ["fov", "nearZ", "farZ", "shake_coefficient"],
         "vec3": ["axisUp", "center", "front"],
         "mat4": ["model", "view", "proj"],
         "Resource": ["uniformBuffer", "uniformBufferMemory", "uniformBufferMapped", "list_shakers"]
@@ -89,7 +89,7 @@
 
     "PlayerController": {
         "float": ["speed", "jump_force", "sprint_timer"],
-        "int": ["walk_direction"],
+        "int": ["walk_direction", "shaker_index"],
         "bool": ["is_grounded", "is_jumping", "can_jump"],
         "vec2": ["move_axes"],
         "entity": ["entity_camera"]

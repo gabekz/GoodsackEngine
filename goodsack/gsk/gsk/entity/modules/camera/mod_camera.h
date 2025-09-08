@@ -9,7 +9,8 @@
 #include "entity/ecs.h"
 #include "util/sysdefs.h"
 
-#define GSK_MOD_CAMERA_MAX_SHAKERS 16
+#define GSK_MOD_CAMERA_MAX_SHAKERS    16
+#define GSK_MOD_CAMERA_SHAKER_INVALID -1
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,11 +25,14 @@ typedef struct gsk_mod_CameraShaker
     f32 shake_scalar;
 } gsk_mod_CameraShaker;
 
-void
+s32
 gsk_mod_camera_shake_add(gsk_Entity entity_camera,
                          f32 amount,
                          f32 speed,
                          f32 jitter);
+
+gsk_mod_CameraShaker *
+gsk_mod_camera_shake_get(gsk_Entity entity_camera, s32 shaker_index);
 
 #ifdef __cplusplus
 }

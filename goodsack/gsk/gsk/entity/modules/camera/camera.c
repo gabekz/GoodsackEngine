@@ -182,9 +182,6 @@ init(gsk_Entity e)
     if (camera->farZ <= 0) { camera->farZ = 1200.0f; }
 
 #if CAMERA_SHAKE
-    // Reset camera shake
-    camera->shake_amount = 0;
-
     camera->list_shakers = malloc(sizeof(ArrayList));
     *(ArrayList *)camera->list_shakers =
       LIST_INIT(sizeof(gsk_mod_CameraShaker), GSK_MOD_CAMERA_MAX_SHAKERS);
@@ -361,28 +358,6 @@ update(gsk_Entity e)
 
     // Update camera UBO
     _upload_shader_data(e, camera, transform);
-
-#if CAMERA_SHAKE
-    if (camera->shake_amount > 0)
-    {
-        camera->shake_amount -=
-          camera->shake_speed * gsk_device_getTime().delta_time;
-    } else if (camera->shake_amount <= 0)
-    {
-        camera->shake_amount = 0;
-    }
-
-#if 1 // manual camera shake test-controls
-    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_P) == GLFW_PRESS)
-    {
-        camera->shake_amount += 0.165f;
-    }
-    if (glfwGetKey(e.ecs->renderer->window, GLFW_KEY_O) == GLFW_PRESS)
-    {
-        camera->shake_amount = 0.02f;
-    }
-#endif
-#endif // CAMERA_SHAKE
 }
 
 void
