@@ -384,7 +384,13 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     // Settings
     glfwSwapInterval(gsk_device_getGraphicsSettings().swapInterval);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    // glEnable(GL_STENCIL_TEST);
+    // glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // On pass, replace stencil
+    // value glStencilFunc(GL_ALWAYS, 1, 0xFF);         // Always pass, set
+    // stencil to 1 glStencilMask(0xFF);
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     /*-------------------------------------------
@@ -453,8 +459,9 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glClearColor(clear_col[0], clear_col[1], clear_col[2], 1.0f);
 
     glEnable(GL_DEPTH_TEST);
+    glDisable(GL_STENCIL_TEST);
     glDepthFunc(GL_LESS);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // binding the shadowmap to texture slot 8 (TODO:) for meshes
     shadowmap_bind_texture();
@@ -483,6 +490,14 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 #endif // TESTING_GLSAMPLER_OBJECTS
 
 #if LIGHTING_CULL_GLOBAL
+
+#if 0
+    glStencilFunc(GL_ALWAYS, 2, 0xFF); // Always pass, write 1, mask 0xFF
+    glStencilOp(
+      GL_KEEP, GL_KEEP, GL_REPLACE); // If stencil fails/passes depth, keep; if
+                                     // passes all, replace with ref value
+#endif
+
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);

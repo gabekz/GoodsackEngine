@@ -6,11 +6,90 @@
 #include "mesh.h"
 
 #include "util/logger.h"
+#include "util/sysdefs.h"
 
 #include "asset/import/loader_gltf.h"
 #include "asset/import/loader_obj.h"
 #include "core/device/device.h"
 #include "runtime/gsk_runtime_wrapper.h"
+
+static u32 s_ordered_lengths[GSK_MESH_BUFFER_FLAGS_TOTAL] = {
+  GskMeshVertexLength_Positions,
+  GskMeshVertexLength_Textures,
+  GskMeshVertexLength_Normals,
+  GskMeshVertexLength_Tangents,
+  GskMeshVertexLength_Bitangents,
+  GskMeshVertexLength_Joints,
+  GskMeshVertexLength_Weights,
+  GskMeshVertexLength_Indices};
+
+static gsk_MeshBuffer *
+_find_buf(gsk_MeshData *d, uint32_t flag)
+{
+    for (int i = 0; i < d->mesh_buffers_count; i++)
+    {
+        if (d->mesh_buffers[i].buffer_flags & flag)
+        {
+            return &d->mesh_buffers[i];
+        }
+    }
+    return NULL;
+}
+
+static u32
+_resolve_vertex_id(gsk_MeshData *p_mesh_data, uint32_t draw_index)
+{
+    const gsk_MeshBuffer *ibo =
+      _find_buf(p_mesh_data, GskMeshBufferFlag_Indices);
+    if (!ibo) { return draw_index; } // non-indexed mesh
+
+    const u64 by16  = (u64)p_mesh_data->indicesCount * sizeof(u16);
+    const u8 is_u16 = (ibo->buffer_size == by16);
+
+    if (is_u16)
+    {
+        const u16 *idx = (const u16 *)ibo->p_buffer;
+        return (u32)idx[draw_index];
+    }
+
+    const u32 *idx = (const u32 *)ibo->p_buffer;
+    return idx[draw_index];
+}
+
+static gsk_VertexAttribInfo
+__get_vertex_attrib_info(gsk_MeshBuffer *p_mesh_buffer,
+                         GskMeshBufferFlags vertex_flag)
+{
+    gsk_VertexAttribInfo ret = {0};
+
+    for (int i = 0; i < GSK_MESH_BUFFER_FLAGS_TOTAL; i++)
+    {
+        s32 flag = (1 << i);
+        if (vertex_flag != flag) { continue; }
+
+        if (!(p_mesh_buffer->buffer_flags & flag)) { continue; }
+
+        // This buffer has the flag. Get the other flags
+        for (int j = 0; k < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
+        {
+            s32 flag_cmp = (1 << j);
+            if (flag == flag_cmp) { continue; }
+
+            if (!(p_mesh_buffer->buffer_flags & flag_cmp)) { continue; }
+
+            if (flag_cmp < flag)
+            {
+                ret.spacing_before += s_ordered_lengths[j];
+
+            } else if (flag_cmp > flag)
+            {
+                ret.spacing_after += s_ordered_lengths[j];
+            }
+        }
+    }
+
+    return ret;
+}
 
 gsk_Mesh *
 gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
@@ -26,6 +105,8 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
 
     for (int i = 0; i < mesh->meshData->mesh_buffers_count; i++)
     {
+        p_mesh_data->mesh_buffers[i].buffer_stride = 0;
+
         for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
         {
             s32 flag = (1 << j);
@@ -39,10 +120,23 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
                 }
 
                 used_flags |= flag;
+
+                p_mesh_data->mesh_buffers[i].buffer_stride +=
+                  s_ordered_lengths[j];
             }
         }
 
         mesh->meshData->combined_flags = used_flags;
+    }
+
+    for (int i = 0; i < GSK_MESH_BUFFER_FLAGS_TOTAL; i++)
+    {
+        s32 flag = (1 << i);
+
+        gsk_MeshBuffer *pnt = _find_buf(p_mesh_data, flag);
+        if (pnt == NULL) { continue; }
+
+        pnt->vertex_attribs[i] = __get_vertex_attrib_info(pnt, flag);
     }
 
     return mesh;
@@ -95,24 +189,13 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
         {
             s32 flag = (1 << j);
 
-            // get number of vals
-            s32 n_vals  = 3;
-            u32 gl_type = GL_FLOAT;
-
-            if (flag == GskMeshBufferFlag_Textures)
-            {
-                n_vals = 2;
-            } else if ((flag == GskMeshBufferFlag_Joints) ||
-                       (flag == GskMeshBufferFlag_Weights))
-            {
-                n_vals = 4;
-            }
-
-            gl_type =
-              (flag == GskMeshBufferFlag_Joints) ? GL_UNSIGNED_INT : GL_FLOAT;
-
             // skip IBO for now. Done later.
             if (flag == GskMeshBufferFlag_Indices) { continue; }
+
+            // get number of vals
+            s32 n_vals = s_ordered_lengths[j];
+            u32 gl_type =
+              (flag == GskMeshBufferFlag_Joints) ? GL_UNSIGNED_INT : GL_FLOAT;
 
             if (data->mesh_buffers[i].buffer_flags & flag)
             {
@@ -190,9 +273,11 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
         }
     }
 
-    data->has_indices   = (used_flags & GskMeshBufferFlag_Indices);
+    data->has_indices = (used_flags & GskMeshBufferFlag_Indices) ? TRUE : FALSE;
     data->isSkinnedMesh = ((used_flags & GskMeshBufferFlag_Joints) ||
-                           (used_flags & GskMeshBufferFlag_Weights));
+                           (used_flags & GskMeshBufferFlag_Weights))
+                            ? TRUE
+                            : FALSE;
 
     data->combined_flags = used_flags;
     mesh->is_gpu_loaded  = TRUE;
@@ -218,5 +303,57 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
     }
 
     // return mesh;
+    return 1;
+}
+
+int
+gsk_mesh_get_vertex_at_draw_index(gsk_Mesh *mesh,
+                                  u32 draw_index,
+                                  gsk_Vertex *out)
+{
+    gsk_MeshData *d = mesh->meshData;
+    if (!d || !out) { return 0; }
+
+    for (int i = 0; i < d->mesh_buffers_count; i++)
+    {
+        if (d->mesh_buffers[i].p_buffer == NULL) { return 0; }
+    }
+
+    const u32 vi = _resolve_vertex_id(d, draw_index);
+
+    for (int i = 0; i < GSK_MESH_BUFFER_FLAGS_TOTAL; i++)
+    {
+        s32 flag            = (1 << i);
+        gsk_MeshBuffer *pnt = _find_buf(d, flag);
+
+        if (pnt == NULL) { continue; }
+
+        const f32 *base =
+          (const f32 *)pnt->p_buffer + (size_t)vi * pnt->buffer_stride;
+        f32 *dest = NULL;
+
+        u32 offset = pnt->vertex_attribs[i].spacing_before;
+
+        switch (flag)
+        {
+        case GskMeshBufferFlag_Positions: dest = out->pos; break;
+        case GskMeshBufferFlag_Textures: dest = out->uv; break;
+        case GskMeshBufferFlag_Normals: dest = out->nrm; break;
+        case GskMeshBufferFlag_Tangents: dest = out->tan; break;
+        case GskMeshBufferFlag_Bitangents: dest = out->bitan; break;
+        case GskMeshBufferFlag_Weights: dest = out->weights; break;
+        case GskMeshBufferFlag_Joints: dest = out->joints; break;
+        // TODO: should have some sort of error output here
+        default: continue;
+        }
+
+        if (dest == NULL) { return 0; }
+
+        for (int j = 0; j < s_ordered_lengths[i]; j++)
+        {
+            dest[j] = base[j + offset];
+        }
+    }
+
     return 1;
 }

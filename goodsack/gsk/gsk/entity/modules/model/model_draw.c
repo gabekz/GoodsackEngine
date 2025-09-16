@@ -160,7 +160,7 @@ DrawModel(struct ComponentModel *model,
           u16 useOverrideMaterial, // Material from renderer
           u32 renderLayer,
           u32 entity_index,
-          VkCommandBuffer commandBuffer,
+          VkCommandBuffer *p_command_buffer,
           gsk_Renderer *renderer)
 {
     gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
@@ -330,22 +330,25 @@ DrawModel(struct ComponentModel *model,
             // Bind Vertex/Index buffers
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(
-              commandBuffer, 0, 1, &mesh->vkVBO->buffer, offsets);
+              *p_command_buffer, 0, 1, &mesh->vkVBO->buffer, offsets);
 
             if (mesh->meshData->has_indices)
             {
-                vkCmdBindIndexBuffer(
-                  commandBuffer, mesh->vkIBO->buffer, 0, VK_INDEX_TYPE_UINT32);
+                vkCmdBindIndexBuffer(*p_command_buffer,
+                                     mesh->vkIBO->buffer,
+                                     0,
+                                     VK_INDEX_TYPE_UINT32);
 
                 // Draw command (indexed)
                 vkCmdDrawIndexed(
-                  commandBuffer, mesh->meshData->indicesCount, 1, 0, 0, 0);
+                  *p_command_buffer, mesh->meshData->indicesCount, 1, 0, 0, 0);
             }
 
             else
             {
                 // Draw command (no indices)
-                vkCmdDraw(commandBuffer, mesh->meshData->vertexCount, 1, 0, 0);
+                vkCmdDraw(
+                  *p_command_buffer, mesh->meshData->vertexCount, 1, 0, 0);
             }
         }
     }
@@ -423,32 +426,51 @@ render(gsk_Entity e)
 
     GskRenderPass pass = e.ecs->renderer->currentPass;
 
-    VkCommandBuffer cb;
+    VkCommandBuffer *p_cb = NULL;
     if (GSK_DEVICE_API_VULKAN)
     {
-        cb = e.ecs->renderer->vulkanDevice
-               ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame];
+        p_cb =
+          &(e.ecs->renderer->vulkanDevice
+              ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame]);
     }
 
     if (pass == GskRenderPass_Lighting)
     {
-        // Regular Render
-        (GSK_DEVICE_API_OPENGL) ? DrawModel(model,
-                                            transform,
-                                            FALSE,
-                                            renderLayer,
-                                            e.index,
-                                            NULL,
-                                            e.ecs->renderer)
-                                : DrawModel(model,
-                                            transform,
-                                            FALSE,
-                                            renderLayer,
-                                            e.index,
-                                            cb,
-                                            e.ecs->renderer);
+        DrawModel(
+          model, transform, FALSE, renderLayer, e.index, p_cb, e.ecs->renderer);
 
-        // store the pointer to gsk_Model for later use
+        if (model->culling_mask > 0)
+        {
+            glEnable(GL_STENCIL_TEST);
+            // glDisable(GL_DEPTH_TEST);
+            glCullFace(GL_FRONT);
+            glColorMask(
+              GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Don't write to color
+
+            glStencilFunc(
+              GL_ALWAYS, 2, 0xFF); // Always pass, write 1, mask 0xFF
+            glStencilOp(GL_KEEP,
+                        GL_KEEP,
+                        GL_REPLACE); // If stencil fails/passes depth, keep;
+                                     // if passes all, replace with ref value
+
+            // draw again
+            DrawModel(model,
+                      transform,
+                      FALSE,
+                      renderLayer,
+                      e.index,
+                      p_cb,
+                      e.ecs->renderer);
+
+            // reset culling and depth
+            // glEnable(GL_DEPTH_TEST);
+            glDisable(GL_STENCIL_TEST);
+            glCullFace(GL_BACK);
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Re-enable color
+        }
+
+#if (DEBUG_DRAW_BOUNDS || DEBUG_DRAW_SKELETON)
         gsk_Model *pModel = model->pModel;
 
         for (int i = 0; i < pModel->meshesCount; i++)
@@ -471,23 +493,12 @@ render(gsk_Entity e)
             }
 #endif // DEBUG_DRAW_SKELETON
         }
+#endif // (DEBUG_DRAW_BOUNDS || DEBUG_DRAW_SKELETON)
 
     } else if (pass != GskRenderPass_Skybox)
     {
-        (GSK_DEVICE_API_OPENGL) ? DrawModel(model,
-                                            transform,
-                                            TRUE,
-                                            renderLayer,
-                                            e.index,
-                                            NULL,
-                                            e.ecs->renderer)
-                                : DrawModel(model,
-                                            transform,
-                                            TRUE,
-                                            renderLayer,
-                                            e.index,
-                                            cb,
-                                            e.ecs->renderer);
+        DrawModel(
+          model, transform, TRUE, renderLayer, e.index, p_cb, e.ecs->renderer);
     }
 }
 

@@ -133,6 +133,7 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         // wow, this is ridiculous..
         struct ComponentModel &p =
           *(static_cast<struct ComponentModel *>(gsk_ecs_get(e, C_MODEL)));
+
         gsk_Model *p_model = (gsk_Model *)p.pModel;
 
         // Model information
@@ -151,7 +152,13 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         PopStyleColor();
         Separator();
 
-        Text("Meshes: %u", ((gsk_Model *)p.pModel)->meshesCount);
+        Text("Meshes: %u", p_model->meshesCount);
+        for (int i = 0; i < p_model->meshesCount; i++)
+        {
+            gsk_Mesh *p_mesh  = p_model->meshes[i];
+            u32 buffers_count = p_mesh->meshData->mesh_buffers_count;
+            Text("Mesh Buffers: %d", buffers_count);
+        }
 
         Separator();
 

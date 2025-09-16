@@ -154,7 +154,7 @@ _calc_shake_coefficient(gsk_C_Camera *p_cmp_camera)
         }
 
         float shake = p_shaker->shake_amount +
-                      (sin(seed + time_elapsed * p_shaker->shake_jitter) *
+                      (sin((seed + time_elapsed) * p_shaker->shake_jitter) *
                        p_shaker->shake_amount);
 
         ret += (shake * p_shaker->shake_scalar);

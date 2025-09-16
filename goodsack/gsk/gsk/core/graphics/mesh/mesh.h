@@ -56,12 +56,32 @@ typedef enum GskMeshVertexLength_ {
 
 typedef s32 GskMeshBufferFlags;
 
+typedef struct gsk_Vertex
+{
+    f32 pos[GskMeshVertexLength_Positions];
+    f32 uv[GskMeshVertexLength_Textures];
+    f32 nrm[GskMeshVertexLength_Normals];
+    f32 tan[GskMeshVertexLength_Tangents];
+    f32 bitan[GskMeshVertexLength_Bitangents];
+    u32 joints[GskMeshVertexLength_Joints];
+    f32 weights[GskMeshVertexLength_Weights];
+} gsk_Vertex;
+
+typedef struct gsk_VertexAttribInfo
+{
+    u32 spacing_before;
+    u32 spacing_after;
+    u32 num_vals;
+    u32 buffer_index;
+} gsk_VertexAttribInfo;
+
 typedef struct gsk_MeshBuffer
 {
-    float *p_buffer;
+    f32 *p_buffer;
     u32 buffer_size;
+    u32 buffer_stride;
     GskMeshBufferFlags buffer_flags;
-
+    gsk_VertexAttribInfo vertex_attribs[GSK_MESH_BUFFER_FLAGS_TOTAL];
 } gsk_MeshBuffer;
 
 // gsk_MeshData - API-agonstic buffer information
@@ -122,6 +142,11 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data);
  */
 u8
 gsk_mesh_assemble(gsk_Mesh *mesh);
+
+int
+gsk_mesh_get_vertex_at_draw_index(gsk_Mesh *mesh,
+                                  u32 draw_index,
+                                  gsk_Vertex *out);
 
 #ifdef __cplusplus
 }

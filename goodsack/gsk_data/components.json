@@ -73,7 +73,7 @@
     "Model": {
         "Resource": [ "material", "mesh", "pModel", "vkVBO", "_skeleton"],
         "string": ["modelPath"],
-        "uint": ["vbo"],
+        "uint": ["vbo", "culling_mask"],
         "bool": ["cast_shadows"],
 
         "settings": {
