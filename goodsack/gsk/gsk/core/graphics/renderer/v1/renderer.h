@@ -48,6 +48,7 @@ typedef enum GskRenderPass_ {
     GskRenderPass_GBuffer = 0,
     GskRenderPass_Shadowmap,
     GskRenderPass_Lighting,
+    GskRenderPass_LightingMask,
     GskRenderPass_Skybox,
 } GskRenderPass_;
 

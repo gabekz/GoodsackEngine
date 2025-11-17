@@ -386,11 +386,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    // glEnable(GL_STENCIL_TEST);
-    // glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // On pass, replace stencil
-    // value glStencilFunc(GL_ALWAYS, 1, 0xFF);         // Always pass, set
-    // stencil to 1 glStencilMask(0xFF);
-
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     /*-------------------------------------------
@@ -400,9 +396,9 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     _poll_update_events(renderer, scene, ecs);
 
     /*-------------------------------------------
-        Pass #0 - Depth Prepass
+        Pass #0 - GBuffer
     */
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Pass: Depth Prepass");
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Pass: GBuffer");
 
     prepass_bind();
     renderer->currentPass      = GskRenderPass_GBuffer;
@@ -490,40 +486,53 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 #endif // TESTING_GLSAMPLER_OBJECTS
 
 #if LIGHTING_CULL_GLOBAL
-
-#if 0
-    glStencilFunc(GL_ALWAYS, 2, 0xFF); // Always pass, write 1, mask 0xFF
-    glStencilOp(
-      GL_KEEP, GL_KEEP, GL_REPLACE); // If stencil fails/passes depth, keep; if
-                                     // passes all, replace with ref value
-#endif
-
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
-#endif
+#endif // LIGHTING_CULL_GLOBAL
+
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_EQUAL, 0,
+                  0xFF);                    // Only draw where stencil is 1
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // Don't modify stencil
 
     // Forward-draw Event
     renderer->currentPass = GskRenderPass_Lighting;
     gsk_ecs_event(ecs, ECS_RENDER);
 
+    glPopDebugGroup();
+    /*-------------------------------------------
+        Pass #4 - Post Processing / Lighting Mask
+    */
+    glPushDebugGroup(
+      GL_DEBUG_SOURCE_APPLICATION, 4, -1, "Pass: Lighting (Forward) - Mask");
+
+    // Forward-draw Event (LightingMask)
+    renderer->currentPass = GskRenderPass_LightingMask;
+    gsk_ecs_event(ecs, ECS_RENDER);
+
+    glDisable(GL_STENCIL_TEST);
+
 #if LIGHTING_CULL_GLOBAL
     glDisable(GL_CULL_FACE);
 #endif
 
+    glPopDebugGroup();
+    /*-------------------------------------------
+        Pass #5 - Post Processing / Lighting Mask
+    */
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 5, -1, "Pass: FX/Skybox");
+
     glDepthFunc(GL_LEQUAL);
+
     renderer->currentPass = GskRenderPass_Skybox;
     gsk_ecs_event(ecs, ECS_RENDER);
-    glDepthFunc(GL_LESS);
 
     // Render skybox (NOTE: Look into whether we want to keep this in
     // the postprocessing buffer as it is now)
-    if (scene->has_skybox)
-    {
-        glDepthFunc(GL_LEQUAL);
-        gsk_skybox_draw(renderer->activeSkybox);
-        glDepthFunc(GL_LESS);
-    }
+    if (scene->has_skybox) { gsk_skybox_draw(renderer->activeSkybox); }
+
+    glDepthFunc(GL_LESS);
 
 #if TESTING_GLSAMPLER_OBJECTS
     // reset texture unit sampler object
@@ -532,24 +541,30 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     glPopDebugGroup();
     /*-------------------------------------------
-        Pass #4 - Bloom Stage
+        Pass #6 - Bloom Stage
     */
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 6, -1, "Pass: Bloom");
 
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 4, -1, "Pass: Bloom");
     u32 cnt_draw_id = postbuffer_get_id();
     pass_bloom_render(cnt_draw_id, &renderer->properties);
 
     glPopDebugGroup();
 
     /*-------------------------------------------
-        Pass #5 - Final: Backbuffer draw
+        Pass #7 - Backbuffer draw
     */
-    glPushDebugGroup(
-      GL_DEBUG_SOURCE_APPLICATION, 5, -1, "Pass: Backbuffer Draw (Final)");
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION,
+                     7,
+                     -1,
+                     "Pass: Backbuffer Draw + Post-Processing");
 
     postbuffer_draw(&renderer->properties, pass_bloom_get_texture_id());
 
     glPopDebugGroup();
+    /*-------------------------------------------
+        Pass #8 - GUI
+    */
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 8, -1, "Pass: GUI");
 
     // Testing stuff
 
@@ -641,6 +656,8 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
         renderer->hovered_entity_index = hovered_entity;
     }
+
+    glPopDebugGroup();
 }
 
 static void

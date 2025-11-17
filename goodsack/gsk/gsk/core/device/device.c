@@ -128,7 +128,6 @@ gsk_device_updateTime(double time)
     // update metrics based on interval
     if (s_device.clock_metrics >= GSK_TIME_ANALYTICS_DEFAULT)
     {
-
         s_device.time.metrics.last_fps =
           (1.0 / s_device.clock_metrics) * s_device.counter;
 
@@ -144,6 +143,15 @@ gsk_device_updateTime(double time)
     if (s_device.clock_fixed_delta >= s_device.time.fixed_delta_time)
     {
         s_device.clock_fixed_delta_prev = time;
+    }
+
+    if (s_device.time.delta_time > GSK_TIME_DELTA_CAP)
+    {
+        LOG_DEBUG("delta time cap (%f) exceeded: %f",
+                  GSK_TIME_DELTA_CAP,
+                  s_device.time.delta_time);
+
+        s_device.time.delta_time = GSK_TIME_DELTA_CAP;
     }
 }
 

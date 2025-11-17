@@ -20,7 +20,7 @@
 #include "tools/debug/debug_draw_bounds.h"
 #include "tools/debug/debug_draw_skeleton.h"
 
-#define DEBUG_DRAW_SKELETON  0 // TODO: Does not draw with u_Model
+#define DEBUG_DRAW_SKELETON  0
 #define DEBUG_DRAW_BOUNDS    0
 #define CULLING_FOR_IMPORTED 0
 #define CULLING_LOCAL        0
@@ -434,21 +434,29 @@ render(gsk_Entity e)
               ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame]);
     }
 
-    if (pass == GskRenderPass_Lighting)
+    if ((pass == GskRenderPass_Lighting && model->drawing_mask == 0) ||
+        (pass == GskRenderPass_LightingMask && model->drawing_mask > 0))
     {
+
+        if (pass == GskRenderPass_LightingMask)
+        {
+            glStencilFunc(GL_EQUAL,
+                          model->drawing_mask,
+                          0xFF); // Only draw where stencil is 1
+        }
+
         DrawModel(
           model, transform, FALSE, renderLayer, e.index, p_cb, e.ecs->renderer);
 
         if (model->culling_mask > 0)
         {
-            glEnable(GL_STENCIL_TEST);
-            // glDisable(GL_DEPTH_TEST);
             glCullFace(GL_FRONT);
             glColorMask(
               GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Don't write to color
 
-            glStencilFunc(
-              GL_ALWAYS, 2, 0xFF); // Always pass, write 1, mask 0xFF
+            glStencilFunc(GL_ALWAYS,
+                          model->culling_mask,
+                          0xFF); // Always pass, write 1, mask 0xFF
             glStencilOp(GL_KEEP,
                         GL_KEEP,
                         GL_REPLACE); // If stencil fails/passes depth, keep;
@@ -464,10 +472,11 @@ render(gsk_Entity e)
                       e.ecs->renderer);
 
             // reset culling and depth
-            // glEnable(GL_DEPTH_TEST);
-            glDisable(GL_STENCIL_TEST);
             glCullFace(GL_BACK);
             glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Re-enable color
+            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // Don't modify stencil
+            glStencilFunc(GL_EQUAL, 0,
+                          0xFF); // Only draw where stencil is 1
         }
 
 #if (DEBUG_DRAW_BOUNDS || DEBUG_DRAW_SKELETON)
@@ -487,16 +496,19 @@ render(gsk_Entity e)
 #if DEBUG_DRAW_SKELETON
             if (mesh->meshData->isSkinnedMesh)
             {
-                gsk_debug_draw_skeleton(e.ecs->renderer->debugContext,
-                                        mesh->meshData->skeleton,
-                                        transform->model);
+                gsk_Skeleton *pSkeleton = (gsk_Skeleton *)model->_skeleton;
+                gsk_debug_draw_skeleton(
+                  e.ecs->renderer->debugContext, pSkeleton, transform->model);
             }
 #endif // DEBUG_DRAW_SKELETON
         }
 #endif // (DEBUG_DRAW_BOUNDS || DEBUG_DRAW_SKELETON)
 
-    } else if (pass != GskRenderPass_Skybox)
+    } else if (pass != GskRenderPass_Skybox && pass != GskRenderPass_Lighting &&
+               pass != GskRenderPass_LightingMask)
     {
+        if (model->drawing_mask > 0) { return; }
+
         DrawModel(
           model, transform, TRUE, renderLayer, e.index, p_cb, e.ecs->renderer);
     }

@@ -70,7 +70,7 @@ __get_vertex_attrib_info(gsk_MeshBuffer *p_mesh_buffer,
         if (!(p_mesh_buffer->buffer_flags & flag)) { continue; }
 
         // This buffer has the flag. Get the other flags
-        for (int j = 0; k < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
+        for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
         {
             s32 flag_cmp = (1 << j);
             if (flag == flag_cmp) { continue; }

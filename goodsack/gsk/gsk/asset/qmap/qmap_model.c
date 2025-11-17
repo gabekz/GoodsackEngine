@@ -351,7 +351,6 @@ gsk_qmap_load_models(gsk_QMapContainer *p_container,
         {
             ent->p_model = _create_model_from_batches(&ent->list_batches);
             ent->is_model_loaded = TRUE;
-            LOG_INFO("CREATED MODEL");
         }
     }
 }

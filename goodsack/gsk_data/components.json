@@ -34,7 +34,7 @@
         "int": ["screenWidth", "screenHeight"],
         "uint": ["renderLayer"],
         "float": ["fov", "nearZ", "farZ", "shake_coefficient"],
-        "vec3": ["axisUp", "center", "front"],
+        "vec3": ["axisUp", "center", "front", "right"],
         "mat4": ["model", "view", "proj"],
         "Resource": ["uniformBuffer", "uniformBufferMemory", "uniformBufferMapped", "list_shakers"]
     },
@@ -73,7 +73,7 @@
     "Model": {
         "Resource": [ "material", "mesh", "pModel", "vkVBO", "_skeleton"],
         "string": ["modelPath"],
-        "uint": ["vbo", "culling_mask"],
+        "uint": ["vbo", "culling_mask", "drawing_mask"],
         "bool": ["cast_shadows"],
 
         "settings": {

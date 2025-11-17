@@ -320,10 +320,13 @@ update(gsk_Entity e)
     camera->front[0] = glm_rad(transform->orientation[0]);
     camera->front[1] = glm_rad(transform->orientation[1]);
     camera->front[2] = glm_rad(transform->orientation[2]);
-    glm_normalize_to(camera->front, camera->front);
+    glm_vec3_normalize(camera->front);
 
     vec3 p = GLM_VEC3_ZERO_INIT;
     glm_vec3_add(transform->position, camera->front, p);
+
+    // calculate camera-right
+    glm_cross(camera->front, camera->axisUp, camera->right);
 
     // MVP: view
     glm_lookat(transform->position, p, camera->axisUp, camera->view);
