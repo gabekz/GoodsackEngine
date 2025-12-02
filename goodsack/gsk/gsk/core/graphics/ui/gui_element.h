@@ -35,6 +35,7 @@ typedef struct gsk_GuiElement
     vec2 offset;    // offset in pixel-coordinates
     vec2 position;  // offset position in pixel-coordinates with viewport
     vec2 size;      // size in pixel-coordinates
+    vec2 canvas_viewport;
 
     GskGuiElementAnchorType anchor_type;
     u16 using_texture;

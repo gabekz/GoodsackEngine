@@ -53,6 +53,23 @@ gsk_gui_canvas_add_element(gsk_GuiCanvas *p_self, gsk_GuiElement *p_element)
 {
     p_self->elements[p_self->elements_count] = p_element;
     p_self->elements_count++;
+
+    vec2 viewport = {p_self->canvas_size[0], p_self->canvas_size[1]};
+
+    // set the offset based on anchor type
+    switch (p_element->anchor_type)
+    {
+    case (GskGuiElementAnchorType_Center):
+        p_element->offset[0] = viewport[0] / 2;
+        p_element->offset[1] = viewport[1] / 2;
+        break;
+    case (GskGuiElementAnchorType_None):
+    default: break;
+    }
+
+    // assign canvas reference to element
+    gsk_GuiElement *p_el = p_self->elements[p_self->elements_count - 1];
+    glm_vec2_copy(p_self->canvas_size, p_el->canvas_viewport);
 }
 
 void
@@ -60,8 +77,7 @@ gsk_gui_canvas_add_text(gsk_GuiCanvas *p_self, gsk_GuiText *p_text)
 {
     for (int i = 0; i < p_text->character_count; i++)
     {
-        p_self->elements[p_self->elements_count] = p_text->elements[i];
-        p_self->elements_count++;
+        gsk_gui_canvas_add_element(p_self, p_text->elements[i]);
     }
 }
 
@@ -95,6 +111,7 @@ gsk_gui_canvas_draw(gsk_GuiCanvas *p_self)
     {
         vec2 element_pos = {0, 0};
 
+#if 0
         switch (p_self->elements[i]->anchor_type)
         {
         case (GskGuiElementAnchorType_Center):
@@ -104,8 +121,11 @@ gsk_gui_canvas_draw(gsk_GuiCanvas *p_self)
         case (GskGuiElementAnchorType_None):
         default: break;
         }
+#endif
 
-        glm_vec2_add(element_pos, p_self->elements[i]->position, element_pos);
+        glm_vec2_add(p_self->elements[i]->offset,
+                     p_self->elements[i]->position,
+                     element_pos);
 
         // send position to shader
         glUniform2fv(glGetUniformLocation(shader_id, "u_position"),

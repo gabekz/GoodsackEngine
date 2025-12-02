@@ -18,6 +18,8 @@
 
 #include "core/device/device.h"
 
+#include "runtime/gsk_runtime_wrapper.h"
+
 #define USING_SPRITE_SHEET FALSE
 
 #define S_X 1.0f
@@ -50,6 +52,8 @@ gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size,
     glm_vec2_copy(position, ret->position);
     glm_vec2_copy(size, ret->size);
     glm_vec3_copy(color, ret->color_rgb);
+    glm_vec2_zero(ret->offset);
+    ret->anchor_type = anchor;
 
     float pos_x = position[0];
     float pos_y = position[1];
@@ -111,8 +115,6 @@ gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size,
         }
     }
 
-    ret->anchor_type = anchor;
-
     return ret;
 }
 
@@ -141,31 +143,57 @@ gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
     1,
     (float *)self->color_rgb);
 
-#if 0
-  if(self->size[0] == 10 && self->size[1] == 10) {
+#if 1
+// TODO: only possible to select one gui button at a time
+// TODO: change to 0.0-1.0 range instead of pixel position
+    if(TRUE){
+
+        gsk_Renderer *p_renderer = gsk_runtime_get_renderer();
+
+        // TODO: replace 1920x1080 with canvas viewport
+        vec2 window_scale = {(f32)p_renderer->windowWidth / self->canvas_viewport[0],
+                             (f32)p_renderer->windowHeight / self->canvas_viewport[1]};
+
+        vec2 pos = GLM_VEC2_ZERO_INIT;
+        vec2 offs = {self->offset[0] * window_scale[0],
+                     self->offset[1] * window_scale[1]};
+
+        glm_vec2_add(self->position, offs, pos);
+
+    // TODO: division may not be correct here
+    double x_bounds[2] = {pos[0] - self->size[0] / 2.0f,
+                          pos[0] + self->size[0] / 2.0f};
   
-    double x_bounds[2] = {self->position[0] - self->size[0],
-                          self->position[0] + self->size[0]};
-  
-    double y_bounds[2] = {self->position[1] - self->size[1],
-                          self->position[1] + self->size[1]};
-  
+    // TODO: division may not be correct here
+    double y_bounds[2] = {pos[1] - self->size[1] / 2.0f,
+                          pos[1] + self->size[1] / 2.0f};
+
     const gsk_Input input = gsk_device_getInput();
     const double cursor_pos[2] = {
-      input.cursor_position[0],
-      input.cursor_position[1]
-      };
-  
+        input.cursor_position[0],
+        p_renderer->windowHeight - input.cursor_position[1]
+    };
+
     if((cursor_pos[0] > x_bounds[0] && cursor_pos[0] < x_bounds[1]) &&
-      (cursor_pos[1] > y_bounds[0] && cursor_pos[1] < y_bounds[1])) {
+      (cursor_pos[1] > y_bounds[0] && cursor_pos[1] < y_bounds[1]))
+    {
 
-        vec3 col = {0, 1, 0};
+      // TODO: handle button enter
 
+#if 1
+    vec3 col = {0, 1, 0};
     glUniform3fv(
-      glGetUniformLocation(self->material->shaderProgram->id, "u_color"),
+      glGetUniformLocation(shader_id, "u_color"),
       1,
       (float *)col);
+#endif
 
+      // TODO: handle button click
+
+    }
+
+    else {
+      // TODO: handle button leave
     }
   }
 #endif
