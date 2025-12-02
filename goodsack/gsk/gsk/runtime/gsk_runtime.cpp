@@ -90,6 +90,11 @@ static struct
 
     char bin_directory[256] = "";
 
+    struct
+    {
+        u32 collision_layer_matrix[ECS_MAX_LAYERS];
+    } layers;
+
 } s_runtime;
 } // extern "C"
 
@@ -353,6 +358,13 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     int winWidth  = s_runtime.renderer->windowWidth;
     int winHeight = s_runtime.renderer->windowHeight;
+
+    /*==== Initialize Layer Matrix ===================================*/
+
+    for (int i = 0; i < ECS_MAX_LAYERS; i++)
+    {
+        s_runtime.layers.collision_layer_matrix[i] = 0xFFFFFFFF;
+    }
 
     /*==== Initialize ECS ============================================*/
 
@@ -645,6 +657,29 @@ gsk::runtime::rt_set_scene(u16 scene_index)
     {
         gsk::runtime::rt_activate_ecs_systems(s_runtime.ecs);
     }
+}
+
+void
+gsk::runtime::rt_set_layer_mask(u32 layer_index, u32 layer_mask)
+{
+    s_runtime.layers.collision_layer_matrix[layer_index] = layer_mask;
+}
+
+u8
+gsk::runtime::rt_check_layer_mask(u32 layer_a, u32 layer_b)
+{
+    u32 *p_layer_mask = s_runtime.layers.collision_layer_matrix;
+
+    u32 lower  = layer_a;
+    u32 higher = layer_b;
+
+    if (layer_a > layer_b)
+    {
+        lower  = layer_b;
+        higher = layer_a;
+    }
+
+    return (((u32)0x01 << (higher - lower)) & p_layer_mask[lower]) > 0;
 }
 
 gsk_ECS *

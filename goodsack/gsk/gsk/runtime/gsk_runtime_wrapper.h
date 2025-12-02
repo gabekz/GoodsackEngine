@@ -14,6 +14,9 @@
 extern "C" {
 #endif // __cplusplus
 
+u8
+gsk_runtime_check_layer_mask(u32 layer_a, u32 layer_b);
+
 gsk_ECS *
 gsk_runtime_get_ecs();
 

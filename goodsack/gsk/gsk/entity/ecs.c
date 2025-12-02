@@ -233,6 +233,15 @@ gsk_ecs_ent_set_active(gsk_Entity entity, u8 is_active)
 void
 gsk_ecs_ent_set_layer(gsk_Entity entity, gsk_EntityLayer layer)
 {
+    if (layer > ECS_MAX_LAYERS)
+    {
+        LOG_ERROR("exceeded maximum layer count (%d). Setting entity (id: %d) "
+                  "layer to 0",
+                  ECS_MAX_LAYERS,
+                  entity.id);
+        return;
+    }
+
     entity.ecs->p_ent_layers[entity.index] = layer;
 }
 

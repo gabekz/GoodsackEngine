@@ -52,6 +52,8 @@ typedef enum GskEcsEntityFlag_ {
 
 #define ECS_CMP_STRING_LEN 32
 
+#define ECS_MAX_LAYERS 32
+
 // Should always be True
 #define USING_GENERATED_COMPONENTS 1
 

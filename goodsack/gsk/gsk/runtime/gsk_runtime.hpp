@@ -47,6 +47,12 @@ rt_activate_ecs_systems(gsk_ECS *p_ecs);
 void
 rt_set_scene(u16 scene_index);
 
+void
+rt_set_layer_mask(u32 layer_index, u32 layer_mask);
+
+u8
+rt_check_layer_mask(u32 layer_a, u32 layer_b);
+
 gsk_ECS *
 rt_get_ecs();
 

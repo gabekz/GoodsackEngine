@@ -7,6 +7,14 @@
 
 extern "C" {
 
+u8
+gsk_runtime_check_layer_mask(u32 layer_a, u32 layer_b)
+{
+    return gsk::runtime::rt_check_layer_mask(layer_a,
+                                             layer_b); // Calls the C++ function
+                                                       // internally
+}
+
 gsk_ECS *
 gsk_runtime_get_ecs()
 {

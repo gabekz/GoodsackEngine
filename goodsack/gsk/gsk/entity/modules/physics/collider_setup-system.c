@@ -16,6 +16,8 @@
 #include "physics/physics_collision.h"
 #include "physics/physics_solver.h"
 
+#include "runtime/gsk_runtime_wrapper.h"
+
 #define MAX_COLLISION_POINTS         128
 #define COLLISION_REQUIRES_RIGIDBODY FALSE
 
@@ -223,15 +225,9 @@ on_collide(gsk_Entity e)
           .ecs   = e.ecs,
         };
 
-        // TODO: add functionptr to validate collision-layer matrix
-        if ((e.ecs->p_ent_layers[e.index] == 1 &&
-             e.ecs->p_ent_layers[e_compare.index] == 2) ||
-            (e.ecs->p_ent_layers[e.index] == 2 &&
-             e.ecs->p_ent_layers[e_compare.index] == 1) ||
-            (e.ecs->p_ent_layers[e.index] == 3 &&
-             e.ecs->p_ent_layers[e_compare.index] == 3) ||
-            (e.ecs->p_ent_layers[e.index] == 4) &&
-              e.ecs->p_ent_layers[e_compare.index] == 4)
+        // check layer mask to ensure collision is allowed
+        if (!gsk_runtime_check_layer_mask(e.ecs->p_ent_layers[e.index],
+                                          e.ecs->p_ent_layers[e_compare.index]))
         {
             continue;
         }

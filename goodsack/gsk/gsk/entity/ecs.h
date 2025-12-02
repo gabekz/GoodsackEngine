@@ -64,7 +64,7 @@ typedef struct gsk_ECSComponentList gsk_ECSComponentList;
 
 typedef u64 gsk_EntityId;
 typedef s32 gsk_EntityFlags;
-typedef s32 gsk_EntityLayer;
+typedef u32 gsk_EntityLayer;
 
 typedef struct gsk_ECS gsk_ECS;
 
