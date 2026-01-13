@@ -13,6 +13,7 @@
 #include "runtime/gsk_runtime_wrapper.h"
 
 #define DEFAULT_RESTITUION 0.0f
+#define ROLLING_FRICTION   0.004f
 
 #define DEBUG_POINTS       0 // 0 -- OFF | value = entity id
 #define CALCULATE_ROTATION TRUE
@@ -99,14 +100,24 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     // calculate F
     {
+        vec3 raxn, rbxn;
+        glm_vec3_cross(ra, collision_normal, raxn);
+        glm_vec3_cross(rb, collision_normal, rbxn);
+
         float vDotN = (glm_vec3_dot(relative_velocity, collision_normal));
 
         f32 ra_perpDotN = glm_dot(ra_perp, collision_normal);
         f32 rb_perpDotN = glm_dot(rb_perp, collision_normal);
 
+#if 0
         f32 denom = body_a.inverse_mass + body_b.inverse_mass +
                     (pow(ra_perpDotN, 2) * body_a.inverse_inertia) +
                     (pow(rb_perpDotN, 2) * body_b.inverse_inertia);
+#else
+        f32 denom = body_a.inverse_mass + body_b.inverse_mass +
+                    glm_vec3_dot(raxn, raxn) * body_a.inverse_inertia +
+                    glm_vec3_dot(rbxn, rbxn) * body_b.inverse_inertia;
+#endif
 
         F = -(1.0f + restitution) * vDotN;
         F /= denom;
@@ -119,7 +130,6 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
     {
         glm_vec3_scale(collision_normal, F, impulse);
 
-        vec3 torque;
         glm_vec3_cross(ra, impulse, torque);
         // glm_vec3_negate(torque);
         //  scale torque by inverse inertia
@@ -149,7 +159,7 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
                                    solver_data.entity.id + 7,
                                    collision_result->points.point_a,
                                    torque,
-                                   100,
+                                   1,
                                    VCOL_RED,
                                    FALSE);
 
@@ -209,13 +219,19 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
     // Friction Step (re-calculate new impulse based on friction tangent)
     // -----------------------------
 
+    // predicted
+    vec3 pred_A_vel, pred_A_ang;
+    glm_vec3_add(impulse, rigidbody_a->linear_velocity, pred_A_vel);
+    glm_vec3_add(torque, rigidbody_a->angular_velocity, pred_A_ang);
+    glm_vec3_cross(pred_A_ang, ra, ra_perp);
+
     // calculate relative velocity
     {
         __calc_relative_velocity(solver_data,
                                  ra_perp,
                                  rb_perp,
-                                 rigidbody_a->linear_velocity,
-                                 rigidbody_a->angular_velocity,
+                                 pred_A_vel,
+                                 pred_A_ang,
                                  body_b_lin_vel,
                                  body_b_ang_vel,
                                  relative_velocity);
@@ -231,26 +247,41 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
         glm_vec3_sub(relative_velocity, tangent, tangent);
 
 // check tangent for near-zero
-#if 1
-        float zerodist = glm_vec3_distance(tangent, GLM_VEC3_ZERO);
-        if (zerodist <= 0.00005f)
-        {
-// glm_vec3_zero(rigidbody_a->linear_velocity);
-// glm_vec3_zero(rigidbody_a->angular_velocity);
 #if 0
+        float zerodist = glm_vec3_distance(tangent, GLM_VEC3_ZERO);
+        if (zerodist <= 0.00005f) { return; }
+#else
+        vec3 rvn, rvt;
+        glm_vec3_scale(collision_normal,
+                       glm_vec3_dot(relative_velocity, collision_normal),
+                       rvn);
+        glm_vec3_sub(relative_velocity, rvn, rvt);
+
+        float rvt_len2 = glm_vec3_norm2(rvt);
+        if (rvt_len2 < 1e-10f)
+        {
+            // Rolling resistance
             if (!rigidbody_a->disable_rotation)
             {
+                float rolling = ROLLING_FRICTION;
+                vec3 w        = GLM_VEC3_ZERO_INIT;
+                glm_vec3_copy(rigidbody_a->angular_velocity, w);
 
-                glm_vec3_scale(rigidbody_a->linear_velocity,
-                               0.9f,
-                               rigidbody_a->linear_velocity);
-                glm_vec3_scale(rigidbody_a->angular_velocity,
-                               0.9f,
-                               rigidbody_a->angular_velocity);
+                float wlen2 = glm_vec3_norm2(w);
+                if (wlen2 > 1e-12f)
+                {
+                    glm_vec3_scale(w, 1.0f / sqrtf(wlen2), w); // unit spin axis
+                    glm_vec3_scale(w, -rolling, w);            // resist spin
+                    glm_vec3_add(rigidbody_a->torque, w, rigidbody_a->torque);
+                }
             }
-#endif
+
+            // stick / no reliable tangent direction
             return;
         }
+
+        glm_vec3_scale(
+          rvt, 1.0f / sqrtf(rvt_len2), tangent); // tangent = normalized rvt
 #endif
 
         // proceed with calculation for tangent
@@ -259,13 +290,25 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 
     // calculate Ft
     {
-        f32 vDotT       = (glm_vec3_dot(relative_velocity, tangent));
+        vec3 raxt, rbxt;
+        glm_vec3_cross(ra, tangent, raxt);
+        glm_vec3_cross(rb, tangent, rbxt);
+
+        f32 vDotT = (glm_vec3_dot(relative_velocity, tangent));
+        if (vDotT < 0.0f) { glm_vec3_negate(tangent); }
+
         f32 ra_perpDotT = glm_dot(ra_perp, tangent);
         f32 rb_perpDotT = glm_dot(rb_perp, tangent);
 
+#if 0
         f32 denom = body_a.inverse_mass + body_b.inverse_mass +
                     (pow(ra_perpDotT, 2) * body_a.inverse_inertia) +
                     (pow(rb_perpDotT, 2) * body_b.inverse_inertia);
+#else
+        f32 denom = body_a.inverse_mass + body_b.inverse_mass +
+                    glm_vec3_dot(raxt, raxt) * body_a.inverse_inertia +
+                    glm_vec3_dot(rbxt, rbxt) * body_b.inverse_inertia;
+#endif
 
         Ft = -vDotT;
         Ft /= denom;
@@ -280,20 +323,35 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
           (rigidbody_a->dynamic_friction + rigidbody_a->dynamic_friction) *
           0.5f;
 
-        f32 friction_val = (fabs(Ft) <= F * sf) ? Ft * sf : -F * df;
+#if 0
+        f32 friction_val = (fabsf(Ft) <= F * sf) ? Ft : -F * df;
+#else
+        // float jn = F;
+        float jn = (F > 0.0f) ? F : 0.0f;
+        float jt = Ft;
 
+        // Static friction threshold and dynamic clamp
+        float max_static = sf * jn;
+
+        float friction_val =
+          (fabsf(jt) <= max_static)
+            ? jt
+            : copysignf(df * jn, jt); // oppose tangential motion
+#endif
+
+        // create friction_impulse and friction_torque
         glm_vec3_scale(tangent, friction_val, friction_impulse);
-        glm_vec3_scale(friction_impulse, body_a.inverse_mass, friction_impulse);
-
-        // NOTE: May need to be done AFTER torque calculation
-        // scale impulse by inverse mass
-
-        //  scale torque by inverse inertia
         glm_vec3_cross(ra, friction_impulse, friction_torque);
+
+// scale friction_impulse and friction_torque
+#if 1
+        glm_vec3_scale(friction_impulse, body_a.inverse_mass, friction_impulse);
         glm_vec3_scale(
           friction_torque, body_a.inverse_inertia, friction_torque);
+#endif
     }
 
+#if 1
     // apply friction impulses
     {
         glm_vec3_add(rigidbody_a->force_velocity,
@@ -303,22 +361,12 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
 #if (CALCULATE_ROTATION)
         if (!rigidbody_a->disable_rotation)
         {
-#if 0
-            float rollingFriction = 0.001f;
-            vec3 frictionTorque2;
-
-            glm_vec3_copy(rigidbody_a->angular_velocity, frictionTorque2);
-            glm_vec3_normalize(frictionTorque2); // direction opposite of spin
-            glm_vec3_scale(frictionTorque2, -rollingFriction, frictionTorque2);
-            glm_vec3_add(
-              rigidbody_a->torque, frictionTorque2, rigidbody_a->torque);
-#endif
-
             glm_vec3_add(
               rigidbody_a->torque, friction_torque, rigidbody_a->torque);
         }
 #endif // (CALCULATE_ROTATION)
     }
+#endif
 
     // --------------
     // DEBUG SOME LINES
@@ -326,6 +374,7 @@ impulse_solver_with_rotation_friction(_SolverData solver_data)
         if (p_debug_context->physics_options.draw_friction &&
             solver_data.entity.id == gsk_runtime_get_debug_entity_id())
         {
+            //_BRK();
             gsk_debug_markers_push(p_debug_context,
                                    MARKER_RAY,
                                    solver_data.entity.id + 8,

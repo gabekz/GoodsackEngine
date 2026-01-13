@@ -27,12 +27,11 @@
 #define CALC_INERTIA 1
 
 // physics default values
-#define DEFAULT_RESTITUION       0.5f
 #define DEFAULT_STATIC_FRICTION  0.6f
 #define DEFAULT_DYNAMIC_FRICTION 0.4f
 
 // constant for putting dynamic objects to sleep
-#define SLEEP_EPSILON 0.5f
+#define SLEEP_EPSILON 0.1f
 
 static void
 _position_solver(_SolverData solver_data);
@@ -262,12 +261,14 @@ fixed_update(gsk_Entity entity)
         return;
     }
 
-    if (total_impulses > 0)
+#if 0
+    if (total_impulses > 1)
     {
         glm_vec3_divs(
           rigidbody->force_velocity, total_impulses, rigidbody->force_velocity);
         glm_vec3_divs(rigidbody->torque, total_impulses, rigidbody->torque);
     }
+#endif
 
     // --
     // -- Add force to linear velocity (ignore mass)
@@ -275,17 +276,20 @@ fixed_update(gsk_Entity entity)
                  rigidbody->force_velocity,
                  rigidbody->linear_velocity);
 
-    // Rigidbody sleep threshold
-    if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON)
+// Rigidbody sleep threshold
+#if 1
+    if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON &&
+        collider->isColliding)
     {
         glm_vec3_zero(rigidbody->force_impulse);
         glm_vec3_zero(rigidbody->force_velocity);
         glm_vec3_zero(rigidbody->torque);
 
         glm_vec3_zero(rigidbody->angular_velocity);
-        // glm_vec3_zero(rigidbody->linear_velocity);
+        glm_vec3_zero(rigidbody->linear_velocity);
         return;
     }
+#endif
 
     // --
     // -- Integrate velocities
@@ -310,28 +314,35 @@ fixed_update(gsk_Entity entity)
     glm_vec3_add(transform->orientation, aVD, transform->orientation);
 #else
 
-    float rollingFriction = 0.001f;
-    vec3 frictionTorque2;
-
-    glm_vec3_copy(rigidbody->angular_velocity, frictionTorque2);
-    glm_vec3_normalize(frictionTorque2); // direction opposite of spin
-    glm_vec3_scale(frictionTorque2, -rollingFriction, frictionTorque2);
-    glm_vec3_add(rigidbody->torque, frictionTorque2, rigidbody->torque);
-
-    vec3 angularAccel;
-    glm_vec3_copy(rigidbody->torque, angularAccel);
-
-    glm_vec3_add(
-      angularAccel, rigidbody->angular_velocity, rigidbody->angular_velocity);
-
-    vec3 angularDeg; // angularDeg
-    glm_vec3_scale(rigidbody->angular_velocity, delta, angularDeg);
-    angularDeg[0] = glm_deg(angularDeg[0]);
-    angularDeg[1] = glm_deg(angularDeg[1]);
-    angularDeg[2] = glm_deg(angularDeg[2]);
+    glm_vec3_add(rigidbody->torque,
+                 rigidbody->angular_velocity,
+                 rigidbody->angular_velocity);
 
     // update orientation
-    glm_vec3_add(transform->orientation, angularDeg, transform->orientation);
+    if (!rigidbody->disable_rotation)
+    {
+        vec3 angularDeg; // angularDeg
+        glm_vec3_scale(rigidbody->angular_velocity, delta, angularDeg);
+        angularDeg[0] = glm_deg(angularDeg[0]);
+        angularDeg[1] = glm_deg(angularDeg[1]);
+        angularDeg[2] = glm_deg(angularDeg[2]);
+
+        mat4 tmp_rot = GLM_MAT4_IDENTITY_INIT;
+        mat4 new_rot = GLM_MAT4_IDENTITY_INIT;
+
+        glm_rotate_x(tmp_rot, glm_rad(angularDeg[0]), tmp_rot);
+        glm_rotate_y(tmp_rot, glm_rad(angularDeg[1]), tmp_rot);
+        glm_rotate_z(tmp_rot, glm_rad(angularDeg[2]), tmp_rot);
+
+        glm_mat4_mul(tmp_rot, transform->m4_rotation, new_rot);
+
+        vec3 new_angles = {0, 0, 0};
+        glm_euler_angles(new_rot, new_angles);
+
+        transform->orientation[0] = glm_deg(new_angles[0]);
+        transform->orientation[1] = glm_deg(new_angles[1]);
+        transform->orientation[2] = glm_deg(new_angles[2]);
+    }
 
 #endif // orientation
 

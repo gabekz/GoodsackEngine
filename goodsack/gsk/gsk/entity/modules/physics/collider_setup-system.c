@@ -216,7 +216,7 @@ on_collide(gsk_Entity e)
 
     for (int i = 0; i < e.ecs->nextIndex; i++)
     {
-        if (e.index == (gsk_EntityId)i) continue; // do not check self
+        if (e.id == e.ecs->p_ent_ids[i]) continue; // do not check self
 
         // TODO: fix look-up
         gsk_Entity e_compare = {
@@ -443,8 +443,9 @@ on_collide(gsk_Entity e)
             inverse_mass_a = (1.0f / rigidbody_a->mass);
 
             // TODO: actually calculate HERE
-            inertia_a         = inertia * (mass_a * 1.0f);
-            inverse_inertia_a = (fabs(inertia_a) > 0.0f) ? 1.0f / inertia_a : 0;
+            inertia_a = inertia * (mass_a * 1.0f);
+            inverse_inertia_a =
+              (fabsf(inertia_a) > 0.0f) ? 1.0f / inertia_a : 0;
 
             // copy b-values
             if (rigidbody_b == NULL)
@@ -456,18 +457,20 @@ on_collide(gsk_Entity e)
             else if (rigidbody_b->is_kinematic == FALSE)
             {
                 glm_vec3_copy(rigidbody_b->linear_velocity, linear_velocity_b);
-                mass_b         = rigidbody_b->mass;
-                inverse_mass_b = (1.0f / rigidbody_b->mass);
+                glm_vec3_copy(rigidbody_b->angular_velocity,
+                              angular_velocity_b);
+                mass_b = rigidbody_b->mass;
 
                 // TODO: Actually calculate HERE
                 inertia_b = inertia * mass_b * 1;
-                inverse_inertia_b =
-                  (fabs(inertia_b) > 0) ? 1.0f / inertia_b : 0;
 
                 // calculate relative velocity
                 glm_vec3_sub(
                   linear_velocity_a, linear_velocity_b, relative_velocity);
             }
+
+            inverse_mass_b    = mass_b * 0.5f;
+            inverse_inertia_b = (fabsf(inertia_b) > 0) ? (inertia_b * 0.5f) : 0;
 
             gsk_PhysicsMark mark = {
 
