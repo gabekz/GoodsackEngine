@@ -115,6 +115,8 @@ init(gsk_Entity e)
             glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
 
         }
+        // TODO: maybe pass in the center as the body position for the friction
+        // solver or solver_data?
         // TODO: TESTING
         else if (collider->p_mesh == 0x32)
         {

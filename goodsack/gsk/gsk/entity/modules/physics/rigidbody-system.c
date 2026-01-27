@@ -19,6 +19,8 @@
 #include "physics/physics_solver.h"
 
 #include "entity/modules/physics/solvers/friction_solver.h"
+#include "entity/modules/physics/solvers/position_solver.h"
+#include "entity/modules/physics/solvers/solver_data.h"
 
 // Functionality toggles
 #define DEBUG_TRACK  1
@@ -31,10 +33,7 @@
 #define DEFAULT_DYNAMIC_FRICTION 0.4f
 
 // constant for putting dynamic objects to sleep
-#define SLEEP_EPSILON 0.1f
-
-static void
-_position_solver(_SolverData solver_data);
+#define SLEEP_EPSILON 0.5f
 
 //-----------------------------------------------------------------------------
 #if DEBUG_TRACK
@@ -42,7 +41,7 @@ static u32 s_dbg_instance       = 0xFF;
 static u32 s_dbg_instance_begin = 0xFF;
 
 static void
-__debug_ray(const _SolverData solver_data,
+__debug_ray(const gsk_PhysicsSolverData solver_data,
             vec3 start,
             vec3 direction,
             vec4 color)
@@ -66,7 +65,7 @@ __debug_ray(const _SolverData solver_data,
 
 //-----------------------------------------------------------------------------
 static void
-__debug_points(const _SolverData solver_data)
+__debug_points(const gsk_PhysicsSolverData solver_data)
 {
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     gsk_Entity entity                     = solver_data.entity;
@@ -185,6 +184,7 @@ fixed_update(gsk_Entity entity)
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;
+    vec3 pos_fix        = {0, 0, 0}; // accumulated offset from position_solvers
 
 #if 0
     // Add Gravitational force
@@ -219,12 +219,12 @@ fixed_update(gsk_Entity entity)
         gsk_CollisionResult *pResult = &pSolver->solvers[i];
 
         // --
-        // construct _SolverData used to pass into solver functions
-        _SolverData solver_data = {.p_rigidbody        = rigidbody,
-                                   .p_transform        = transform,
-                                   .p_collision_result = pResult,
-                                   .entity             = entity,
-                                   .delta              = delta};
+        // construct solver_data used to pass into solver functions
+        gsk_PhysicsSolverData solver_data = {.p_rigidbody        = rigidbody,
+                                             .p_transform        = transform,
+                                             .p_collision_result = pResult,
+                                             .entity             = entity,
+                                             .delta              = delta};
 
         // --
         // Run Solvers
@@ -232,8 +232,8 @@ fixed_update(gsk_Entity entity)
         if (rigidbody->is_kinematic == FALSE &&
             solver_data.p_collision_result->is_trigger_response == FALSE)
         {
-            _position_solver(solver_data);
-            impulse_solver_with_rotation_friction(solver_data);
+            gsk_physics_position_solver(solver_data, pos_fix);
+            gsk_physics_impulse_solver(solver_data);
 
             total_impulses += 1;
         }
@@ -261,12 +261,20 @@ fixed_update(gsk_Entity entity)
         return;
     }
 
-#if 0
+#if 1
     if (total_impulses > 1)
     {
         glm_vec3_divs(
           rigidbody->force_velocity, total_impulses, rigidbody->force_velocity);
         glm_vec3_divs(rigidbody->torque, total_impulses, rigidbody->torque);
+    }
+#elif 0
+    if (rigidbody->is_kinematic == FALSE && collider->is_trigger == FALSE)
+    {
+        // Treat rigidbody->gravity as acceleration (e.g. {0, -9.81f, 0})
+        vec3 gDv = GLM_VEC3_ZERO_INIT;
+        glm_vec3_scale(rigidbody->gravity, delta * rigidbody->mass, gDv);
+        glm_vec3_add(rigidbody->force_velocity, gDv, rigidbody->force_velocity);
     }
 #endif
 
@@ -277,7 +285,7 @@ fixed_update(gsk_Entity entity)
                  rigidbody->linear_velocity);
 
 // Rigidbody sleep threshold
-#if 1
+#if 0
     if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON &&
         collider->isColliding)
     {
@@ -297,6 +305,9 @@ fixed_update(gsk_Entity entity)
     // calculate : position += velocity * delta_time;
     vec3 vD = GLM_VEC3_ZERO_INIT;
     glm_vec3_scale(rigidbody->linear_velocity, delta, vD);
+
+    // add accumulated pos_fix from position_solver
+    glm_vec3_add(vD, pos_fix, vD);
 
     // update position
     glm_vec3_add(transform->position, vD, transform->position);
@@ -354,35 +365,7 @@ fixed_update(gsk_Entity entity)
     glm_vec3_zero(rigidbody->torque);
 }
 //-----------------------------------------------------------------------------
-static void
-_position_solver(_SolverData solver_data)
-{
-    gsk_CollisionResult *collision_result = solver_data.p_collision_result;
-    struct ComponentTransform *transform  = solver_data.p_transform;
 
-    gsk_DynamicBody body_a = collision_result->physics_mark.body_a;
-    gsk_DynamicBody body_b = collision_result->physics_mark.body_b;
-
-    vec3 collision_normal = GLM_VEC3_ZERO_INIT;
-    glm_vec3_copy(collision_result->points.normal, collision_normal);
-
-#if 1
-    // I think these are better settings right now..
-    const float percent = 1.0f;
-    const float slop    = 0.005f;
-#else
-    const float percent = 0.8f;
-    const float slop    = 0.1f;
-#endif
-
-    vec3 correction;
-    f32 c_weight = fmax((collision_result->points.depth - slop), 0);
-    glm_vec3_scale(collision_normal, percent, correction);
-    glm_vec3_scale(correction, c_weight, correction);
-
-    // integrate new position
-    glm_vec3_add(transform->position, correction, transform->position);
-}
 //-----------------------------------------------------------------------------
 void
 s_rigidbody_system_init(gsk_ECS *ecs)
@@ -393,3 +376,4 @@ s_rigidbody_system_init(gsk_ECS *ecs)
                               .fixed_update = (gsk_ECSSubscriber)fixed_update,
                             }));
 }
+//-----------------------------------------------------------------------------
