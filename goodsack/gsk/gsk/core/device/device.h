@@ -21,7 +21,7 @@ extern "C" {
 #define GSK_TIME_FIXED_DELTA_DEFAULT 1.0 / 100.0
 #define GSK_TIME_ANALYTICS_DEFAULT   1.0 / 1.0
 #define GSK_TIME_SCALE_DEFAULT       1.0
-#define GSK_TIME_DELTA_CAP           0.1
+#define GSK_TIME_DELTA_CAP_DEFAULT   0.1
 
 typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } gsk_GraphicsAPI;
 
@@ -46,8 +46,9 @@ typedef struct gsk_GraphicsCompatibility
 
 typedef struct gsk_Time
 {
-    f64 delta_time;       // variable delta_time time
-    f64 fixed_delta_time; // fixed delta_time time interval
+    f64 delta_time;          // variable delta_time (scaled by timescale)
+    f64 unscaled_delta_time; // variable delta_time (not scaled by timescale)
+    f64 fixed_delta_time;    // fixed delta_time time interval
     f64 next_time_scale, time_scale;
     f64 time_elapsed;
 

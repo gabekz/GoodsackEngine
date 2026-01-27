@@ -134,7 +134,7 @@ _calc_shake_coefficient(gsk_C_Camera *p_cmp_camera)
     f32 seed = 255.0f;
 
     gsk_Time time    = gsk_device_getTime();
-    f32 time_elapsed = time.time_elapsed;
+    f32 time_elapsed = time.time_elapsed * time.time_scale;
     f32 delta        = time.delta_time;
 
     ArrayList *p_list_shakers = p_cmp_camera->list_shakers;

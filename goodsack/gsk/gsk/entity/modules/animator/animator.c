@@ -147,8 +147,7 @@ update(gsk_Entity e)
 
     if (animator->is_playing)
     {
-        animator->timerNow +=
-          (gsk_device_getTime().delta_time) * gsk_device_getTime().time_scale;
+        animator->timerNow += (gsk_device_getTime().delta_time);
     }
 
     gsk_Animation *cntAnimation = animator->cntAnimation;
@@ -211,8 +210,11 @@ update(gsk_Entity e)
     gsk_Keyframe *cntKeyframe = cntAnimation->keyframes[cntKeyframeIndex];
     gsk_Keyframe *nxtKeyframe = cntAnimation->keyframes[nxtKeyframeIndex];
 
-    float ratio = (animator->timerNow - cntKeyframe->frameTime) /
-                  (nxtKeyframe->frameTime - cntKeyframe->frameTime);
+    float dt    = (nxtKeyframe->frameTime - cntKeyframe->frameTime);
+    float ratio = 0.0f;
+
+    ratio = (animator->timerNow - cntKeyframe->frameTime) / dt;
+    CLAMP(ratio, 0.0f, 1.0f);
 
 #if ENABLE_LERP
     gsk_animation_set_keyframe_lerp((gsk_Skeleton *)model->_skeleton,
@@ -222,12 +224,14 @@ update(gsk_Entity e)
                                     ratio);
 #endif // ENABLE_LERP
 
-    if (ratio >= nxtKeyframe->frameTime)
+    if (animator->timerNow >= nxtKeyframe->frameTime)
     {
 
 #if !(ENABLE_LERP)
-        gsk_animation_set_keyframe(
-          p_model->p_skeleton, animator->cntAnimation, cntKeyframeIndex, ratio);
+        gsk_animation_set_keyframe((gsk_Skeleton *)model->_skeleton,
+                                   animator->cntAnimation,
+                                   cntKeyframeIndex,
+                                   ratio);
 #endif // !(ENABLE_LERP)
 
         animator->cntKeyframeIndex = nxtKeyframeIndex;

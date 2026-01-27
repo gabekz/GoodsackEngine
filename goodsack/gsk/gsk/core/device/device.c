@@ -92,10 +92,12 @@ gsk_device_resetTime()
     s_device.time.metrics.last_ms  = 0;
 
     // Shared timing
-    s_device.time.delta_time       = 0;
-    s_device.time.fixed_delta_time = GSK_TIME_FIXED_DELTA_DEFAULT;
-    s_device.time.time_scale       = GSK_TIME_SCALE_DEFAULT;
-    s_device.time.next_time_scale  = GSK_TIME_SCALE_DEFAULT;
+    s_device.time.delta_time          = 0;
+    s_device.time.unscaled_delta_time = 0;
+    s_device.time.fixed_delta_time    = GSK_TIME_FIXED_DELTA_DEFAULT;
+
+    s_device.time.time_scale      = GSK_TIME_SCALE_DEFAULT;
+    s_device.time.next_time_scale = GSK_TIME_SCALE_DEFAULT;
 }
 
 void
@@ -115,8 +117,14 @@ gsk_device_updateTime(double time)
     // update timescale
     s_device.time.time_scale = s_device.time.next_time_scale;
 
+    // Unscaled Delta Time
+    s_device.time.unscaled_delta_time = time - s_device.time.time_elapsed;
+
     // Delta Time
-    s_device.time.delta_time   = time - s_device.time.time_elapsed;
+    s_device.time.delta_time =
+      s_device.time.unscaled_delta_time * s_device.time.time_scale;
+
+    // Total time elapsed
     s_device.time.time_elapsed = time;
 
     // Update interval-clocks
@@ -145,13 +153,13 @@ gsk_device_updateTime(double time)
         s_device.clock_fixed_delta_prev = time;
     }
 
-    if (s_device.time.delta_time > GSK_TIME_DELTA_CAP)
+    if (s_device.time.delta_time > GSK_TIME_DELTA_CAP_DEFAULT)
     {
         LOG_DEBUG("delta time cap (%f) exceeded: %f",
-                  GSK_TIME_DELTA_CAP,
+                  GSK_TIME_DELTA_CAP_DEFAULT,
                   s_device.time.delta_time);
 
-        s_device.time.delta_time = GSK_TIME_DELTA_CAP;
+        s_device.time.delta_time = GSK_TIME_DELTA_CAP_DEFAULT;
     }
 }
 
