@@ -79,9 +79,12 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
         // Audio import
         else if (asset_type == GskAssetType_Audio)
         {
-            p_blob->p_buffer      = gsk_audio_clip_load_from_file(str_uri);
-            p_blob->asset_type    = GskAssetType_Audio;
+            gsk_AudioClip *p_clip = malloc(sizeof(gsk_AudioClip));
+            *p_clip               = gsk_audio_clip_import_from_file(str_uri);
+
+            p_blob->p_buffer      = p_clip;
             p_blob->buffer_len    = sizeof(gsk_AudioClip);
+            p_blob->asset_type    = GskAssetType_Audio;
             p_blob->is_serialized = FALSE;
         }
 
@@ -164,8 +167,15 @@ __load_audio(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
     gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
     if (p_blob->p_buffer == NULL) { return 0; }
-    *((gsk_AudioClip *)p_dest) = *(gsk_AudioClip *)p_blob->p_buffer;
+
+    gsk_AudioClip *p_clip = (gsk_AudioClip *)p_blob->p_buffer;
+
+    u8 load_status = gsk_audio_clip_load(p_clip);
+    if (load_status != 1) { return 0; }
+
+    *((gsk_AudioClip *)p_dest) = *(gsk_AudioClip *)p_clip;
     free(p_blob->p_buffer);
+
     return 1;
 }
 
@@ -270,22 +280,21 @@ _asset_load_generic(gsk_AssetCache *p_cache,
 }
 
 gsk_AssetRef *
-_gsk_asset_get_internal(gsk_AssetCache *p_cache,
+_gsk_asset_get_internal(const gsk_AssetCache *p_cache,
                         const char *str_uri,
                         u8 fetch_mode)
 {
-    // check if the asset has been added already
-    // -- if not, exit
+    gsk_AssetCache *p_cache_safe = p_cache;
+    u8 is_fallback               = FALSE;
 
-    gsk_AssetRef *p_ref = gsk_asset_cache_get(p_cache, str_uri);
-    u8 is_fallback      = FALSE;
+    gsk_AssetRef *p_ref = gsk_asset_cache_get(p_cache_safe, str_uri);
 
     if (p_ref == NULL)
     {
         LOG_ERROR("Failed to get asset (%s)", str_uri);
 
-        gsk_asset_cache_add_by_ext(p_cache, str_uri);
-        p_ref = gsk_asset_cache_get(p_cache, str_uri);
+        gsk_asset_cache_add_by_ext(p_cache_safe, str_uri);
+        p_ref = gsk_asset_cache_get(p_cache_safe, str_uri);
 
         if (p_ref == NULL)
         {
@@ -307,6 +316,11 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     {
         p_ref       = (gsk_AssetRef *)p_ref->p_fallback;
         is_fallback = TRUE;
+
+        // NOTE: must swap the asset cache to the one which contains the default
+        // fallback assets
+        p_cache_safe =
+          gsk_runtime_get_asset_cache_index(GSK_ASSET_FALLBACK_CACHE_INDEX);
     }
 
     u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
@@ -316,10 +330,11 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
 
     if (is_fallback == FALSE)
     {
-        LOG_DEBUG("loading asset (%s)", str_uri);
+        LOG_DEBUG("getting asset (%s)", str_uri);
     } else
     {
-        LOG_DEBUG("loading FALLBACK asset for type: %d", asset_type);
+        LOG_DEBUG(
+          "getting FALLBACK asset for type: %d (%p)", asset_type, p_ref);
     }
 
     if (fetch_mode != GSK_ASSET_FETCH_ALL)
@@ -368,7 +383,7 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     u8 import_code = 1;
     if (p_ref->is_imported == FALSE)
     {
-        import_code = __asset_import(p_cache, str_uri);
+        import_code = __asset_import(p_cache_safe, str_uri);
     }
 
     if (import_code == 0 || p_ref->is_imported == FALSE)
@@ -399,7 +414,7 @@ _gsk_asset_get_internal(gsk_AssetCache *p_cache,
     // Utilize/Create data
 
     p_ref->p_data_active = (void *)_asset_load_generic(
-      p_cache, p_ref, str_uri, p_create_func, p_load_func, asset_type);
+      p_cache_safe, p_ref, str_uri, p_create_func, p_load_func, asset_type);
 
     if (p_ref->p_data_active == NULL || p_ref->is_utilized == FALSE)
     {

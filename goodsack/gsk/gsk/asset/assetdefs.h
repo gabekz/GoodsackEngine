@@ -69,6 +69,12 @@ typedef struct gsk_AssetModelOptions
 
 } gsk_AssetModelOptions;
 
+typedef struct gsk_AssetAudioOptions
+{
+    u8 test_bool;
+
+} gsk_AssetAudioOptions;
+
 #ifdef __cplusplus
 }
 #endif //_cplusplus

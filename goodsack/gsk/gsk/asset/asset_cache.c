@@ -47,7 +47,7 @@ gsk_asset_cache_init(const char *cache_scheme)
     sizes_ops[GskAssetType_Texture]  = sizeof(TextureOptions);
     sizes_ops[GskAssetType_Material] = 1;
     sizes_ops[GskAssetType_Shader]   = 1;
-    sizes_ops[GskAssetType_Audio]    = 1;
+    sizes_ops[GskAssetType_Audio]    = sizeof(gsk_AssetAudioOptions);
     sizes_ops[GskAssetType_Model]    = sizeof(gsk_AssetModelOptions);
 
     // setup hash table
@@ -159,11 +159,16 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
       .import_materials = FALSE,
     };
 
+    gsk_AssetAudioOptions default_audio = {
+      .test_bool = TRUE,
+    };
+
     void *p_options = NULL;
     switch (list_type)
     {
     case GskAssetType_Model: p_options = &default_model; break;
     case GskAssetType_Texture: p_options = &default_tex; break;
+    case GskAssetType_Audio: p_options = &default_audio; break;
     default: break;
     }
 

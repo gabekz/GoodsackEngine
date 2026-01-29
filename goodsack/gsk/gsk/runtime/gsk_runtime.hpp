@@ -60,6 +60,9 @@ gsk_Renderer *
 rt_get_renderer();
 
 gsk_AssetCache *
+rt_get_asset_cache_index(u32 index);
+
+gsk_AssetCache *
 rt_get_asset_cache(const char *uri_str);
 
 void *

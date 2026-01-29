@@ -270,7 +270,8 @@ update(gsk_Entity e)
         cameraLook->lastY = cntY;
 
         const float sensitivity =
-          cameraLook->sensitivity / CAMERA_SENSITIVITY_DIVS;
+          (cameraLook->sensitivity / CAMERA_SENSITIVITY_DIVS) *
+          gsk_device_getTime().time_scale;
 
         xOffset *= sensitivity;
         yOffset *= sensitivity;

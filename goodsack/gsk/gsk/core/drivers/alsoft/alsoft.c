@@ -13,14 +13,11 @@
 #include "core/drivers/alsoft/alsoft_buffer.h"
 #include "core/drivers/alsoft/alsoft_debug.h"
 
-#include <AL/al.h>
-#include <AL/alc.h>
-
 /* static */
 
-ALCcontext *g_al_context;
-ALCdevice *g_al_device;
-u16 g_al_initialized = 0;
+static ALCcontext *g_al_context;
+static ALCdevice *g_al_device;
+static u16 g_al_initialized = 0;
 
 static void
 ListAudioDevices(const ALCchar *devices)
@@ -101,8 +98,8 @@ openal_cleanup()
     if (g_al_initialized)
     {
         LOG_DEBUG("Destroying AL Context");
-        AL_CHECK(alcCloseDevice(g_al_device));
         AL_CHECK(alcDestroyContext(g_al_context));
+        AL_CHECK(alcCloseDevice(g_al_device));
     }
 }
 

@@ -17,7 +17,7 @@ extern "C" {
 
 // WAV file loader.
 // @return struct gsk_AudioData
-gsk_AudioData *
+gsk_AudioData
 gsk_load_wav(const char *filepath);
 
 #ifdef __cplusplus

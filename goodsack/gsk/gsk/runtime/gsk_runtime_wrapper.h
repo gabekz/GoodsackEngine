@@ -24,6 +24,9 @@ gsk_Renderer *
 gsk_runtime_get_renderer();
 
 gsk_AssetCache *
+gsk_runtime_get_asset_cache_index(u32 index);
+
+gsk_AssetCache *
 gsk_runtime_get_asset_cache(const char *uri_str);
 
 gsk_AssetRef *

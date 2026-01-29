@@ -20,11 +20,11 @@ extern "C" {
  * Creates an OpenAL audio buffer and fills the data immediately
  * by loading the specified .wav file.
  *
- * @param[in] p_audio_clip - pointer to already loaded audio clip
+ * @param[in] p_audio_data - pointer to raw audio clip
  * @return buffer ID (ALuint)
  */
 ALuint
-openal_buffer_create(gsk_AudioClip *p_audio_clip);
+openal_buffer_create(gsk_AudioData *p_audio_data);
 
 /**
  * Deletes the specified OpenAL audio buffer

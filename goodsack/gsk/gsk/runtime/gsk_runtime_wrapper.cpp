@@ -30,6 +30,13 @@ gsk_runtime_get_renderer()
 }
 
 gsk_AssetCache *
+gsk_runtime_get_asset_cache_index(u32 index)
+{
+    return gsk::runtime::rt_get_asset_cache_index(index); // Calls the C++
+                                                          // function internally
+}
+
+gsk_AssetCache *
 gsk_runtime_get_asset_cache(const char *uri_str)
 {
     return gsk::runtime::rt_get_asset_cache(uri_str); // Calls the C++ function

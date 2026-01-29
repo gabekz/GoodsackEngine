@@ -8,14 +8,19 @@
 
 #include "util/sysdefs.h"
 
+#include "alsoft_buffer.h"
+#include "alsoft_debug.h"
+
 #include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alext.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-int
-openal_get_devices();
+ALCdevice *
+openal_get_device();
 
 int
 openal_init();

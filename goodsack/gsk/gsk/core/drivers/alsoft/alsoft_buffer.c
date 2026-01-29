@@ -25,16 +25,18 @@ FileToEnum(u16 channels, u16 samples)
 }
 
 ALuint
-openal_buffer_create(gsk_AudioClip *p_audio_clip)
+openal_buffer_create(gsk_AudioData *p_audio_data)
 {
-    // Load .wav file
-    gsk_AudioData *rawData = p_audio_clip->p_audio_data;
-    ALenum format          = FileToEnum(rawData->numChannels, rawData->samples);
+    ALenum format =
+      FileToEnum(p_audio_data->numChannels, p_audio_data->samples);
 
     ALuint buffer;
     AL_CHECK(alGenBuffers((ALuint)1, &buffer));
-    AL_CHECK(alBufferData(
-      buffer, format, rawData->data, rawData->dataSize, rawData->sampleRate));
+    AL_CHECK(alBufferData(buffer,
+                          format,
+                          p_audio_data->p_data,
+                          p_audio_data->data_size,
+                          p_audio_data->sampleRate));
 
     return buffer;
 }

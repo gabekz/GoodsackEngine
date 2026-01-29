@@ -16,35 +16,19 @@ void
 gsk_mod_audio_set_clip(struct ComponentAudioSource *p_audio_source,
                        gsk_AudioClip *p_audio_clip)
 {
-    // has a buffer. Close it.
+    // stop source buffer
+    gsk_mod_audio_stop(p_audio_source);
+
     if (p_audio_source->buffer_audio)
     {
-        // stop source buffer
-        AL_CHECK(alSourceStop(p_audio_source->buffer_source));
         // detach audio buffer
         AL_CHECK(alSourcei(p_audio_source->buffer_source, AL_BUFFER, 0));
-
-        // delete audio buffer
-        openal_buffer_cleanup(p_audio_source->buffer_audio);
     }
 
-    // create new audio buffer
-    p_audio_source->buffer_audio = openal_buffer_create(p_audio_clip);
-
-    // attach new audio buffer
+    // attach buffer id to audio source
+    p_audio_source->buffer_audio = p_audio_clip->al_buffer_id;
     AL_CHECK(alSourcei(
       p_audio_source->buffer_source, AL_BUFFER, p_audio_source->buffer_audio));
-
-// setup rolloff
-#if 0
-    AL_CHECK(alSourcef(p_audio_source->buffer_source, AL_ROLLOFF_FACTOR, 1));
-    AL_CHECK(alSourcef(p_audio_source->buffer_source,
-                       AL_REFERENCE_DISTANCE,
-                       p_audio_source->min_distance));
-    AL_CHECK(alSourcef(p_audio_source->buffer_source,
-                       AL_MAX_DISTANCE,
-                       p_audio_source->max_distance));
-#endif
 
     // reset is_playing state
     p_audio_source->is_playing = FALSE;

@@ -6,15 +6,15 @@
 #include "audio_source.h"
 
 #include "core/audio/audio_clip.h"
+#include "core/device/device.h"
 #include "core/drivers/alsoft/alsoft.h"
 #include "core/drivers/alsoft/alsoft_debug.h"
 
+#include "physics/physics_types.h"
+
+#include "entity/modules/audio/mod_audio.h"
 #include "entity/modules/camera/camera.h"
 #include "entity/modules/transform/transform.h"
-#include "gsk/core/device/device.h"
-
-// audio module
-#include "entity/modules/audio/mod_audio.h"
 
 #include "util/filesystem.h"
 #include "util/maths.h"
@@ -66,6 +66,12 @@ init(gsk_Entity e)
     if (cmp_audio_source->play_on_start == TRUE)
     {
         alSourcePlay(cmp_audio_source->buffer_source);
+
+        if (cmp_audio_source->random_start == TRUE)
+        {
+            f32 random = ((float)rand() / (float)(RAND_MAX)) * 4;
+            alSourcef(cmp_audio_source->buffer_source, AL_SEC_OFFSET, random);
+        }
     }
 
     // default pitch to 1.0f
@@ -84,11 +90,29 @@ update(gsk_Entity e)
     if ((gsk_ecs_has(e, C_TRANSFORM)))
     {
         struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
+        vec3 origin                          = {0, 0, 0};
+
+        // offset by box-collider bounds
+        if (gsk_ecs_has(e, C_COLLIDER))
+        {
+            gsk_C_Collider *cmp_collider = gsk_ecs_get(e, C_COLLIDER);
+
+            if (cmp_collider->type == COLLIDER_BOX)
+            {
+                vec3 bounds[2];
+                glm_vec3_copy(cmp_collider->box_bounds_min, bounds[0]);
+                glm_vec3_copy(cmp_collider->box_bounds_max, bounds[1]);
+                glm_aabb_center(bounds, origin);
+            }
+        }
+
+        glm_vec3_add(transform->world_position, origin, origin);
+
         AL_CHECK(alSource3f(cmp_audio_source->buffer_source,
                             AL_POSITION,
-                            transform->world_position[0],
-                            transform->world_position[1],
-                            transform->world_position[2]));
+                            origin[0],
+                            origin[1],
+                            origin[2]));
     }
 #endif
 
@@ -125,8 +149,10 @@ update(gsk_Entity e)
 #endif
 
     // update pitch
-    AL_CHECK(alSourcef(
-      cmp_audio_source->buffer_source, AL_PITCH, cmp_audio_source->pitch));
+    f32 pitch_time = gsk_device_getTime().time_scale;
+    AL_CHECK(alSourcef(cmp_audio_source->buffer_source,
+                       AL_PITCH,
+                       cmp_audio_source->pitch * pitch_time));
 
     // get the Audio Source state
     ALint source_state;

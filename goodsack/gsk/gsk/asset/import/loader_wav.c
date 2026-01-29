@@ -14,23 +14,23 @@
 
 #define LOG_LOADER_AUDIO FALSE
 
-gsk_AudioData *
+gsk_AudioData
 gsk_load_wav(const char *filepath)
 {
+    gsk_AudioData ret = {0};
 
-    gsk_AudioData *ret = malloc(sizeof(gsk_AudioData));
-
-    FILE *filePtr;
+    FILE *filePtr = NULL;
     char magic[5];
-    s32 fileSize;
-    s32 formatLength;
-    s16 formatType;
-    s16 numChannels;
-    s32 sampleRate;
-    s32 bytesPerSecond; // sampleRate * numChannels * bitsPerSample
-    s16 blockAlign;     // numChannels * bitsPerSample
-    s16 bitsPerSample;  // 16
-    s32 dataSize;
+
+    s32 fileSize       = 0;
+    s32 formatLength   = 0;
+    s16 formatType     = 0;
+    s16 numChannels    = 0;
+    s32 sampleRate     = 0;
+    s32 bytesPerSecond = 0; // sampleRate * numChannels * bitsPerSample
+    s16 blockAlign     = 0; // numChannels * bitsPerSample
+    s16 bitsPerSample  = 0; // 16
+    s32 dataSize       = 0;
 
     magic[4] = '\0';
 
@@ -39,7 +39,7 @@ gsk_load_wav(const char *filepath)
     if (filePtr == NULL)
     {
         LOG_ERROR("Failed to open file: %s", filepath);
-        return NULL;
+        return ret;
     }
 
     fread(magic, strlen("RIFF"), 1, filePtr);
@@ -69,7 +69,7 @@ gsk_load_wav(const char *filepath)
     {
         LOG_ERROR("Number of channels exceeds 1, is %d", numChannels);
     }
-    ret->numChannels = numChannels;
+    ret.numChannels = numChannels;
 
     fread(&sampleRate, 4, 1, filePtr);
     if (sampleRate != SAMPLING_RATE)
@@ -78,13 +78,13 @@ gsk_load_wav(const char *filepath)
                   SAMPLING_RATE,
                   sampleRate);
     }
-    ret->sampleRate = sampleRate;
+    ret.sampleRate = sampleRate;
 
     fread(&bytesPerSecond, 4, 1, filePtr);
     fread(&blockAlign, 2, 1, filePtr);
     fread(&bitsPerSample, 2, 1, filePtr);
     if (bitsPerSample != 16) { LOG_ERROR("Bits per sample should be 16"); }
-    ret->samples = bitsPerSample;
+    ret.samples = bitsPerSample;
 
     fread(magic, 1, 4, filePtr);
     if (!strcmp(magic, "LIST"))
@@ -117,18 +117,18 @@ gsk_load_wav(const char *filepath)
 
     fread(&dataSize, 4, 1, filePtr);
 
-    ret->data = malloc(dataSize);
-    if (ret->data == NULL)
+    ret.p_data = malloc(dataSize);
+    if (ret.p_data == NULL)
     {
         LOG_ERROR("Failed to allocate memory for audio data");
-        free(ret->data);
+        free(ret.p_data);
     }
 
-    if (fread(ret->data, 1, dataSize, filePtr) != dataSize)
+    if (fread(ret.p_data, 1, dataSize, filePtr) != dataSize)
     {
         LOG_ERROR("Failed to read data bytes");
     }
-    ret->dataSize = dataSize;
+    ret.data_size = dataSize;
 
 #if LOG_LOADER_AUDIO
     LOG_PRINT("-----------------");

@@ -13,6 +13,8 @@
 #define GSK_ASSET_FETCH_IMPORT   3
 #define GSK_ASSET_FETCH_ALL      4
 
+#define GSK_ASSET_FALLBACK_CACHE_INDEX 0
+
 #ifdef __cplusplus
 #include "runtime/gsk_runtime.hpp"
 #define GSK_ASSET(x)                                               \
@@ -40,7 +42,7 @@ typedef u8 (*gsk_LoadAssetFptr)(gsk_AssetRef *p_ref,
                                 void *p_dest);
 
 gsk_AssetRef *
-_gsk_asset_get_internal(gsk_AssetCache *p_cache,
+_gsk_asset_get_internal(const gsk_AssetCache *p_cache,
                         const char *str_uri,
                         u8 fetch_mode);
 

@@ -280,30 +280,29 @@ gsk::runtime::rt_setup(const char *root_dir,
         s_runtime.cache_cnt = 1;
         gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
 
+        gsk_AssetCache *p_fallback_cache =
+          rt_get_asset_cache_index(GSK_ASSET_FALLBACK_CACHE_INDEX);
+
         // set defaults
 
         s_runtime.p_default_texture =
-          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+          _gsk_asset_get_internal(p_fallback_cache,
                                   "gsk://textures/defaults/missing_1.png",
                                   GSK_ASSET_FETCH_IMPORT);
 
-        s_runtime.p_default_audio =
-          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
-                                  "gsk://audio/boing.wav",
-                                  GSK_ASSET_FETCH_IMPORT);
+        s_runtime.p_default_audio = _gsk_asset_get_internal(
+          p_fallback_cache, "gsk://audio/boing.wav", GSK_ASSET_FETCH_IMPORT);
 
-        s_runtime.p_default_model =
-          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
-                                  "gsk://models/cube.obj",
-                                  GSK_ASSET_FETCH_IMPORT);
+        s_runtime.p_default_model = _gsk_asset_get_internal(
+          p_fallback_cache, "gsk://models/cube.obj", GSK_ASSET_FETCH_IMPORT);
 
         s_runtime.p_default_material =
-          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+          _gsk_asset_get_internal(p_fallback_cache,
                                   "gsk://fallback/fallback.material",
                                   GSK_ASSET_FETCH_IMPORT);
 
         s_runtime.p_default_shader =
-          _gsk_asset_get_internal(s_runtime.pp_asset_caches[0],
+          _gsk_asset_get_internal(p_fallback_cache,
                                   "gsk://shaders/basic_unlit.shader",
                                   GSK_ASSET_FETCH_IMPORT);
 
@@ -499,7 +498,7 @@ gsk::runtime::rt_loop()
 
 #if GSK_USING_COMPOSER
     gsk_MusicComposer composer = gsk_music_composer_create();
-    gsk::audio::composer::create_from_json(GSK_PATH("gsk://composer.json"));
+    // gsk::audio::composer::create_from_json(GSK_PATH("gsk://composer.json"));
 #endif // GSK_USING_COMPOSER
 
     // Main Engine Loop
@@ -693,6 +692,19 @@ gsk::runtime::rt_get_renderer()
 {
     return s_runtime.renderer;
 }
+
+gsk_AssetCache *
+gsk::runtime::rt_get_asset_cache_index(u32 index)
+{
+    if (index > _TOTAL_ASSET_CACHES)
+    {
+        LOG_ERROR("cannot get asset cache which does not exist");
+        return NULL;
+    }
+
+    return s_runtime.pp_asset_caches[index];
+}
+
 gsk_AssetCache *
 gsk::runtime::rt_get_asset_cache(const char *uri_str)
 {
@@ -702,11 +714,11 @@ gsk::runtime::rt_get_asset_cache(const char *uri_str)
 
     if (!strcmp(uri.scheme, GSK_FS_GSK_SCHEME))
     {
-        return s_runtime.pp_asset_caches[0];
+        return rt_get_asset_cache_index(0);
     } else if (!strcmp(uri.scheme, s_runtime.proj_scheme))
     {
 
-        return s_runtime.pp_asset_caches[1];
+        return rt_get_asset_cache_index(1);
     }
     LOG_ERROR("Failed to find asset cache for: %s", uri_str);
     return NULL;
