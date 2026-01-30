@@ -129,9 +129,9 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 
 # REMOVE MAIN FILES
 list(REMOVE_ITEM SOURCES
-    "${SRC_DIR}/runtime/gsk_runtime_main.cpp"
+    "${SRC_DIR}/prog/gsk_runtime_main.cpp"
     "${SRC_DIR}/prog/test/gsk_test_main.cpp"
-    "${SRC_DIR}/prog/test/gsk_gen_main.cpp"
+    "${SRC_DIR}/prog/gpak/gsk_gen_main.cpp"
 )
 
 # Lua API-only sources
@@ -140,9 +140,9 @@ file(GLOB_RECURSE API_SOURCES CONFIGURE_DEPENDS
     "${API_DIR}/*.cpp"
 )
 
-# Lua API-only sources
+# GPAK-only sources
 file(GLOB_RECURSE GSKGEN_SOURCES CONFIGURE_DEPENDS
-    "${SRC_DIR}/prog/gsk_gen_main.cpp"
+    "${SRC_DIR}/prog/gpak/gsk_gen_main.cpp"
     "${SRC_DIR}/util/logger.c"
     "${SRC_DIR}/entity/component/ecs_component_layout.cpp"
     "${SRC_DIR}/entity/component/ecs_component_layout_loader.cpp"
@@ -307,7 +307,7 @@ endif(GOODSACK_TEST)
         ThirdParty_cglm
     )
     # TODO: May need to rework this
-    target_sources(GoodsackEngine_Gen PRIVATE "${SRC_DIR}/prog/test/gsk_gen_main.cpp")
+    target_sources(GoodsackEngine_Gen PRIVATE "${SRC_DIR}/prog/gpak/gsk_gen_main.cpp")
     target_include_directories(GoodsackEngine_Gen PRIVATE ${SRC_DIR} ${PROJECT_BINARY_DIR} ${GSK_LIBRARY_OUT_DIR})
 
     set_target_properties(GoodsackEngine_Gen PROPERTIES FOLDER "GoodsackEngine/internal")
