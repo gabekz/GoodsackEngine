@@ -11,7 +11,8 @@
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
-#define GSK_VULKAN_USING_DYNAMIC_RENDERING TRUE
+#define GSK_VULKAN_USING_DYNAMIC_RENDERING    TRUE
+#define GSK_VULKAN_USING_DYNAMIC_VERTEX_INPUT TRUE
 
 #define VK_REQ_VALIDATION_COUNT 1
 #define VK_REQ_VALIDATION_LIST        \
@@ -19,10 +20,11 @@
         "VK_LAYER_KHRONOS_validation" \
     }
 
-#define VK_REQ_DEVICE_EXT_COUNT 2
-#define VK_REQ_DEVICE_EXT                              \
-    {                                                  \
-        "VK_KHR_swapchain", "VK_KHR_dynamic_rendering" \
+#define VK_REQ_DEVICE_EXT_COUNT 3
+#define VK_REQ_DEVICE_EXT                               \
+    {                                                   \
+        "VK_KHR_swapchain", "VK_KHR_dynamic_rendering", \
+          "VK_EXT_vertex_input_dynamic_state"           \
     }
 
 #if defined(SYS_ENV_UNIX)

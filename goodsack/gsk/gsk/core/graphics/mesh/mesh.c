@@ -5,6 +5,8 @@
 
 #include "mesh.h"
 
+#include <string.h>
+
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
@@ -12,6 +14,8 @@
 #include "asset/import/loader_obj.h"
 #include "core/device/device.h"
 #include "runtime/gsk_runtime_wrapper.h"
+
+#include "core/drivers/vulkan/vulkan_vertex_array.h"
 
 static u32 s_ordered_lengths[GSK_MESH_BUFFER_FLAGS_TOTAL] = {
   GskMeshVertexLength_Positions,
@@ -26,7 +30,7 @@ static u32 s_ordered_lengths[GSK_MESH_BUFFER_FLAGS_TOTAL] = {
 static gsk_MeshBuffer *
 _find_buf(gsk_MeshData *d, uint32_t flag)
 {
-    for (int i = 0; i < d->mesh_buffers_count; i++)
+    for (u32 i = 0; i < d->mesh_buffers_count; i++)
     {
         if (d->mesh_buffers[i].buffer_flags & flag)
         {
@@ -77,6 +81,8 @@ __get_vertex_attrib_info(gsk_MeshBuffer *p_mesh_buffer,
 
             if (!(p_mesh_buffer->buffer_flags & flag_cmp)) { continue; }
 
+            // TODO: fill buffer_index and num_vals
+
             if (flag_cmp < flag)
             {
                 ret.spacing_before += s_ordered_lengths[j];
@@ -105,7 +111,8 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
 
     for (int i = 0; i < mesh->meshData->mesh_buffers_count; i++)
     {
-        p_mesh_data->mesh_buffers[i].buffer_stride = 0;
+        p_mesh_data->mesh_buffers[i].buffer_stride        = 0;
+        p_mesh_data->mesh_buffers[i].total_vertex_attribs = 0;
 
         for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
         {
@@ -123,6 +130,10 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
 
                 p_mesh_data->mesh_buffers[i].buffer_stride +=
                   s_ordered_lengths[j];
+
+                // TODO: create vulkan vertex input bindings
+                // TODO: after it's made, find the input binding identifier
+                // TODO: in between that, we could also probably inter-leave
             }
         }
 
@@ -133,10 +144,20 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
     {
         s32 flag = (1 << i);
 
-        gsk_MeshBuffer *pnt = _find_buf(p_mesh_data, flag);
-        if (pnt == NULL) { continue; }
+        gsk_MeshBuffer *p_buff = _find_buf(p_mesh_data, flag);
+        if (p_buff == NULL) { continue; }
 
-        pnt->vertex_attribs[i] = __get_vertex_attrib_info(pnt, flag);
+        p_buff->vertex_attribs[i] = __get_vertex_attrib_info(p_buff, flag);
+
+        // skip filling vertex_attrib_offsets for index buffers
+        // TODO: check to make sure the index buffer is standalone
+        if (flag == GskMeshBufferFlag_Indices) { continue; }
+
+        f32 vkoffset =
+          (f32)p_buff->vertex_attribs[i].spacing_before * sizeof(f32);
+
+        p_buff->vertex_attrib_offsets[p_buff->total_vertex_attribs] = vkoffset;
+        p_buff->total_vertex_attribs += 1;
     }
 
     return mesh;
@@ -170,6 +191,21 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
         gsk_gl_vertex_array_bind(vao);
         mesh->vao = vao;
     }
+    // Vulkan
+    else if (GSK_DEVICE_API_VULKAN)
+    {
+        gsk_VulkanVertexArray *p_vkvao = malloc(sizeof(gsk_VulkanVertexArray));
+        if (p_vkvao == NULL) { LOG_CRITICAL("failed to allocate vk_vao"); }
+        mesh->vk_vao  = p_vkvao;
+        *mesh->vk_vao = gsk_vulkan_vertex_array_create();
+        mesh->vk_vao->attributes_accum_counter = 0;
+        mesh->vk_vao->attributes_count         = 0;
+        mesh->vk_vao->bindings_count           = 0;
+
+        // when I come back
+        // maybe __find_buf with info on it or
+        // malloc
+    }
 
     GskMeshBufferFlags used_flags = 0; // overall flags of mesh
 
@@ -180,9 +216,31 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
 
         if (GSK_DEVICE_API_OPENGL)
         {
+            // TODO: should not make this when IBO
             vbo = gsk_gl_vertex_buffer_create(data->mesh_buffers[i].p_buffer,
                                               data->mesh_buffers[i].buffer_size,
                                               data->usage_draw);
+        }
+        // Vulkan
+        else if (GSK_DEVICE_API_VULKAN)
+        {
+            if (TRUE)
+            {
+                VulkanVertexBuffer *vb = vulkan_vertex_buffer_create(
+                  p_vk_device->physicalDevice,
+                  p_vk_device->device,
+                  p_vk_device->graphicsQueue,
+                  p_vk_device->commandPool,
+                  data->mesh_buffers[i].p_buffer,
+                  data->mesh_buffers[i].buffer_size);
+
+                if (vb == NULL) { LOG_ERROR("Failed to load VK mesh buffer"); }
+
+                gsk_vulkan_vertex_array_push(
+                  mesh->vk_vao,
+                  vb,
+                  data->mesh_buffers[i].buffer_stride * sizeof(f32));
+            }
         }
 
         for (int j = 0; j < GSK_MESH_BUFFER_FLAGS_TOTAL; j++)
@@ -210,6 +268,16 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
                     gsk_gl_vertex_buffer_push(vbo, n_vals, gl_type, GL_FALSE);
                 }
 
+                else if (GSK_DEVICE_API_VULKAN)
+                {
+                    // push attribute
+                    gsk_vulkan_vertex_array_add_attrib(
+                      mesh->vk_vao,
+                      i,
+                      0,
+                      data->mesh_buffers->vertex_attrib_offsets[j]);
+                }
+
                 used_flags |= flag;
             }
         }
@@ -221,20 +289,7 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
 
         else if (GSK_DEVICE_API_VULKAN && has_vulkan_vbo == FALSE)
         {
-            mesh->vkVBO =
-              vulkan_vertex_buffer_create(p_vk_device->physicalDevice,
-                                          p_vk_device->device,
-                                          p_vk_device->graphicsQueue,
-                                          p_vk_device->commandPool,
-                                          data->mesh_buffers[i].p_buffer,
-                                          data->mesh_buffers[i].buffer_size);
-
             has_vulkan_vbo = TRUE;
-
-            if (mesh->vkVBO == NULL)
-            {
-                LOG_ERROR("Failed to load VK mesh buffer");
-            }
         }
     }
 
@@ -255,7 +310,7 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
 
             else if (GSK_DEVICE_API_VULKAN)
             {
-                mesh->vkIBO =
+                mesh->vk_vao->p_index_buffer =
                   vulkan_index_buffer_create(p_vk_device->physicalDevice,
                                              p_vk_device->device,
                                              p_vk_device->graphicsQueue,
@@ -263,7 +318,7 @@ gsk_mesh_assemble(gsk_Mesh *mesh)
                                              data->mesh_buffers[i].p_buffer,
                                              (u16)data->indicesCount);
 
-                if (mesh->vkVBO == NULL)
+                if (mesh->vk_vao->p_index_buffer == NULL)
                 {
                     LOG_ERROR("Failed to load VK mesh buffer");
                 }

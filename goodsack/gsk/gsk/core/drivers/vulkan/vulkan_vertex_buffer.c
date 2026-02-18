@@ -29,8 +29,7 @@ vulkan_vertex_buffer_get_binding_description()
 {
     VkVertexInputBindingDescription bindingDescription = {
       .binding   = 0,
-      .stride    = ((sizeof(float) * 3) + (sizeof(float) * 2) +
-                 (sizeof(float) * 3) + (sizeof(float) * 3)),
+      .stride    = (3 + 2 + 3 + 3) * sizeof(float),
       .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
     return bindingDescription;
 }

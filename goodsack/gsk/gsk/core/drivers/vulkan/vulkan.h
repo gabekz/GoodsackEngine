@@ -22,6 +22,7 @@
 // Buffers
 #include "core/drivers/vulkan/vulkan_buffer.h"
 #include "core/drivers/vulkan/vulkan_uniform_buffer.h"
+#include "core/drivers/vulkan/vulkan_vertex_array.h"
 #include "core/drivers/vulkan/vulkan_vertex_buffer.h"
 
 #include "core/drivers/vulkan/vulkan_image.h"

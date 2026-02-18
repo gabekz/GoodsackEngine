@@ -327,17 +327,26 @@ DrawModel(struct ComponentModel *model,
             __update_dynamic_uniforms(
               0, renderLayer, entity_index, mesh, transform, model, renderer);
 
+#if 1
+            renderer->vulkanDevice->pfnCmdSetVertexInputEXT(
+              *p_command_buffer,
+              mesh->vk_vao->bindings_count,
+              mesh->vk_vao->vertex_binding_descriptions,
+              4,
+              mesh->vk_vao->vertex_attribute_descriptions);
+#endif
+
             // Bind Vertex/Index buffers
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(
-              *p_command_buffer, 0, 1, &mesh->vkVBO->buffer, offsets);
+            gsk_vulkan_vertex_array_bind(mesh->vk_vao, p_command_buffer);
 
 #if 0
-            vulkan_uniform_buffer_update(
-              renderer->vulkanDevice->currentFrame,
-              renderer->vulkanDevice->uniformBuffersMapped,
-              renderer->vulkanDevice->swapChainDetails->swapchainExtent);
-#else
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(*p_command_buffer,
+                                   0,
+                                   1,
+                                   &mesh->vk_vao->p_vertex_buffers[0]->buffer,
+                                   offsets);
+#endif
 
             vkCmdPushConstants(
               *p_command_buffer,
@@ -346,15 +355,9 @@ DrawModel(struct ComponentModel *model,
               0,
               sizeof(mat4),
               (float *)renderer->vk_ubo_test.model);
-#endif
 
             if (mesh->meshData->has_indices)
             {
-                vkCmdBindIndexBuffer(*p_command_buffer,
-                                     mesh->vkIBO->buffer,
-                                     0,
-                                     VK_INDEX_TYPE_UINT32);
-
                 // Draw command (indexed)
                 vkCmdDrawIndexed(
                   *p_command_buffer, mesh->meshData->indicesCount, 1, 0, 0, 0);

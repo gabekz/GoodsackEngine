@@ -176,6 +176,22 @@ vulkan_device_find_queue_families(VkPhysicalDevice physicalDevice)
     return graphicsFamily;
 }
 
+// 1. Define the function pointer type (if not in your loader)
+
+void
+loadVertexInputFunction(VkDevice device, VulkanDeviceContext *p_context)
+{
+    // 2. Load the function pointer using the device handle
+    p_context->pfnCmdSetVertexInputEXT =
+      (PFN_vkCmdSetVertexInputEXT)vkGetDeviceProcAddr(device,
+                                                      "vkCmdSetVertexInputEXT");
+
+    if (!p_context->pfnCmdSetVertexInputEXT)
+    {
+        LOG_CRITICAL("Failed to load vkCmdSetVertexInputEXT");
+    }
+}
+
 VulkanDeviceContext *
 vulkan_device_create()
 {
@@ -296,14 +312,21 @@ vulkan_device_create()
       .pQueuePriorities = &queuePriority,
     };
 
-    VkPhysicalDeviceFeatures deviceFeatures = {
-      .samplerAnisotropy = VK_TRUE,
+    VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT dynamic_vertex_input_ext = {
+      .sType =
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
+      .vertexInputDynamicState = VK_TRUE,
+      .pNext                   = NULL,
     };
 
     VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature = {
       .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR,
-      .pNext = NULL,
       .dynamicRendering = VK_TRUE,
+      .pNext            = &dynamic_vertex_input_ext,
+    };
+
+    VkPhysicalDeviceFeatures deviceFeatures = {
+      .samplerAnisotropy = VK_TRUE,
     };
 
     VkDeviceCreateInfo logicCreateInfo = {
@@ -322,6 +345,8 @@ vulkan_device_create()
     ret->device = malloc(sizeof(VkDevice));
     VK_CHECK(
       vkCreateDevice(physicalDevice, &logicCreateInfo, NULL, &ret->device));
+
+    loadVertexInputFunction(ret->device, ret);
 
     ret->physicalDevice = physicalDevice;
     ret->currentFrame   = 0;

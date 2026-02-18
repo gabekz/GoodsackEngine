@@ -64,6 +64,9 @@ struct _vulkanDeviceContext
 
     // Depth Buffer information
     VulkanDepthResources *depthResources;
+
+    // TODO: Test
+    PFN_vkCmdSetVertexInputEXT pfnCmdSetVertexInputEXT;
 };
 
 VulkanDeviceContext *

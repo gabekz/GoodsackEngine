@@ -170,6 +170,56 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
                             &context->descriptorSets[context->currentFrame],
                             0,
                             NULL);
+
+#if 0
+#if GSK_VULKAN_USING_DYNAMIC_VERTEX_INPUT
+    VkVertexInputBindingDescription2EXT vertex_binding_description_ext = {
+      .sType     = VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT,
+      .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
+      .binding   = 0,
+      .stride    = (3 + 2 + 3 + 3) * sizeof(f32),
+      .divisor   = 1,
+    };
+
+    VkVertexInputAttributeDescription2EXT vertex_attribute_description_ext[4] =
+      {
+        {
+          .sType   = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT,
+          .binding = 0,
+          .location = 0,
+          .format   = VK_FORMAT_R32G32B32_SFLOAT,
+          .offset   = 0,
+        },
+        {
+          .sType   = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT,
+          .binding = 0,
+          .location = 1,
+          .format   = VK_FORMAT_R32G32B32_SFLOAT,
+          .offset   = 3 * sizeof(f32),
+        },
+        {
+          .sType   = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT,
+          .binding = 0,
+          .location = 2,
+          .format   = VK_FORMAT_R32G32B32_SFLOAT,
+          .offset   = 5 * sizeof(f32),
+        },
+        {
+          .sType   = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT,
+          .binding = 0,
+          .location = 3,
+          .format   = VK_FORMAT_R32G32B32_SFLOAT,
+          .offset   = 8 * sizeof(f32),
+        },
+      };
+
+    context->pfnCmdSetVertexInputEXT(*commandBuffer,
+                                     1,
+                                     &vertex_binding_description_ext,
+                                     4,
+                                     vertex_attribute_description_ext);
+#endif // GSK_VULKAN_USING_DYNAMIC_VERTEX_INPUT
+#endif
 }
 
 static void

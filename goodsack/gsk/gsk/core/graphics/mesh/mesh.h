@@ -10,7 +10,7 @@
 #include "util/sysdefs.h"
 
 #include "core/drivers/opengl/opengl_buffer.h"
-#include "core/drivers/vulkan/vulkan_vertex_buffer.h"
+#include "core/drivers/vulkan/vulkan_vertex_array.h"
 
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/animation.h"
@@ -82,6 +82,8 @@ typedef struct gsk_MeshBuffer
     u32 buffer_stride;
     GskMeshBufferFlags buffer_flags;
     gsk_VertexAttribInfo vertex_attribs[GSK_MESH_BUFFER_FLAGS_TOTAL];
+    f32 vertex_attrib_offsets[GSK_MESH_BUFFER_FLAGS_TOTAL];
+    u32 total_vertex_attribs;
 } gsk_MeshBuffer;
 
 // gsk_MeshData - API-agonstic buffer information
@@ -118,8 +120,11 @@ typedef struct gsk_Mesh
 
     // Mesh GPU buffers
     gsk_GlVertexArray *vao;
+    gsk_VulkanVertexArray *vk_vao;
+#if 0
     VulkanVertexBuffer *vkVBO;
     VulkanIndexBuffer *vkIBO;
+#endif
 
     // Imported material data
     u32 usingImportedMaterial;

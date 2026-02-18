@@ -97,26 +97,16 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
                                                       fragShaderStageInfo};
 
     // Dynamic State
-    VkDynamicState dynamicStates[2] = {VK_DYNAMIC_STATE_VIEWPORT,
-                                       VK_DYNAMIC_STATE_SCISSOR};
+    VkDynamicState dynamicStates[3] = {VK_DYNAMIC_STATE_VIEWPORT,
+                                       VK_DYNAMIC_STATE_SCISSOR,
+                                       VK_DYNAMIC_STATE_VERTEX_INPUT_EXT};
 
     VkPipelineDynamicStateCreateInfo dynamicState = {
       .sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-      .dynamicStateCount = 2,
+      .dynamicStateCount = 3,
       .pDynamicStates    = dynamicStates};
 
-// Vertex Input
-#if 0 // Empty vertex input
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-
-        .vertexBindingDescriptionCount = 0,
-        .pVertexBindingDescriptions = NULL,
-
-        .vertexAttributeDescriptionCount = 0,
-        .pVertexAttributeDescriptions = NULL
-    };
-#else // Descriptor
+#if !(GSK_VULKAN_USING_DYNAMIC_VERTEX_INPUT)
     VkVertexInputBindingDescription bindingDescription =
       vulkan_vertex_buffer_get_binding_description();
     VkVertexInputAttributeDescription *attributeDescriptions =
@@ -131,7 +121,7 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .vertexAttributeDescriptionCount = 4, // TODO: no magic
       .pVertexAttributeDescriptions    = attributeDescriptions,
     };
-#endif
+#endif // !(GSK_VULKAN_USING_DYNAMIC_VERTEX_INPUT)
 
     // Input Assembly
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {
@@ -346,7 +336,8 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .stageCount = 2,
       .pStages    = shaderStages,
 
-      .pVertexInputState   = &vertexInputInfo,
+      .pVertexInputState = VK_NULL_HANDLE, // Disabled for dynamic input
+
       .pInputAssemblyState = &inputAssembly,
       .pViewportState      = &viewportState,
       .pRasterizationState = &rasterizer,
