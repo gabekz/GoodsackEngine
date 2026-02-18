@@ -76,6 +76,8 @@ vulkan_swapchain_choose_present_mode(VkPresentModeKHR *modes, int count)
         if (modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) { return modes[i]; }
     }
     return VK_PRESENT_MODE_FIFO_KHR;
+
+    // NOTE - gabe: VK_PRESENT_MODE_IMMEDIATE_KHR = no vsync
 }
 
 VkExtent2D
@@ -88,7 +90,9 @@ vulkan_swapchain_choose_extent(VkSurfaceCapabilitiesKHR capabilities,
     } else
     {
         int width, height;
+        // TODO: store elsewhere (outside of vulkan implementation)
         glfwGetFramebufferSize(window, &width, &height);
+
         VkExtent2D actualExtent = {(u32)width, (u32)height};
 
         actualExtent.width =
@@ -246,8 +250,10 @@ vulkan_swapchain_cleanup(VkDevice device,
     // TODO: may be incorrect sizes. i.e. framebuffer is not same count
     for (int i = 0; i < swapchainDetails->swapchainImageCount; i++)
     {
+#if (!GSK_VULKAN_USING_DYNAMIC_RENDERING)
         vkDestroyFramebuffer(
           device, swapchainDetails->swapchainFramebuffers[i], NULL);
+#endif
         vkDestroyImageView(
           device, swapchainDetails->swapchainImageViews[i], NULL);
     }

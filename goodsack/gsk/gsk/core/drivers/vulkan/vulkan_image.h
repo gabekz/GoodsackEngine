@@ -30,13 +30,14 @@ vulkan_image_create(VkPhysicalDevice physicalDevice,
                     VkMemoryPropertyFlags properties);
 
 void
-vulkan_image_layout_transition(VkDevice device,
-                               VkCommandPool commandPool,
-                               VkQueue graphicsQueue,
-                               VkImage image,
-                               VkFormat format,
-                               VkImageLayout prevLayout,
-                               VkImageLayout newLayout);
+vulkan_image_memory_barrier(VkDevice device,
+                            VkCommandBuffer *p_command_buffer,
+                            VkCommandPool commandPool,
+                            VkQueue graphicsQueue,
+                            VkImage image,
+                            VkFormat format,
+                            VkImageLayout prevLayout,
+                            VkImageLayout newLayout);
 
 void
 vulkan_image_copy_from_buffer(VkDevice device,

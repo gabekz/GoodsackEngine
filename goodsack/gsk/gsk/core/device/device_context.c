@@ -245,11 +245,13 @@ gsk_window_create(int win_width,
           vulkanDevice->swapChainDetails->swapchainImageFormat,
           vulkanDevice->swapChainDetails->swapchainExtent);
 
+        // TODO: move out of here
         vulkanDevice->depthResources = vulkan_depth_create_resources(
           vulkanDevice->physicalDevice,
           vulkanDevice->device,
           vulkanDevice->swapChainDetails->swapchainExtent);
 
+        // TODO: move out of here
         vulkanDevice->swapChainDetails->swapchainFramebuffers =
           vulkan_framebuffer_create(
             vulkanDevice->device,

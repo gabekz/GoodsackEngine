@@ -166,8 +166,17 @@ update(gsk_Entity e)
 static void
 destroy(gsk_Entity entity)
 {
-    if (!(gsk_ecs_has(entity, C_AUDIO_SOURCE))) return;
-    // LOG_INFO("Destroy");
+    if (!(gsk_ecs_has(entity, C_AUDIO_SOURCE))) { return; }
+
+    // TODO: destroy audio source later
+
+#if 0
+    struct ComponentAudioSource *cmp_audio_source =
+      gsk_ecs_get(entity, C_AUDIO_SOURCE);
+
+    gsk_mod_audio_stop(cmp_audio_source);
+    AL_CHECK(alDeleteSources((ALuint)1, &cmp_audio_source->buffer_source));
+#endif
 }
 
 void

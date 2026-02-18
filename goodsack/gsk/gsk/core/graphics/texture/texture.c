@@ -131,13 +131,14 @@ _gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
                               VK_IMAGE_USAGE_SAMPLED_BIT,
                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        vulkan_image_layout_transition(vkDevice->device,
-                                       vkDevice->commandPool,
-                                       vkDevice->graphicsQueue,
-                                       ret.vulkan.textureImage,
-                                       VK_FORMAT_R8G8B8A8_SRGB,
-                                       VK_IMAGE_LAYOUT_UNDEFINED,
-                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vulkan_image_memory_barrier(vkDevice->device,
+                                    NULL,
+                                    vkDevice->commandPool,
+                                    vkDevice->graphicsQueue,
+                                    ret.vulkan.textureImage,
+                                    VK_FORMAT_R8G8B8A8_SRGB,
+                                    VK_IMAGE_LAYOUT_UNDEFINED,
+                                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
         vulkan_image_copy_from_buffer(vkDevice->device,
                                       vkDevice->commandPool,
@@ -148,14 +149,14 @@ _gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
                                       (u32)ret.height);
 
         // Final transition for shader access
-        vulkan_image_layout_transition(
-          vkDevice->device,
-          vkDevice->commandPool,
-          vkDevice->graphicsQueue,
-          ret.vulkan.textureImage,
-          VK_FORMAT_R8G8B8A8_SRGB,
-          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        vulkan_image_memory_barrier(vkDevice->device,
+                                    NULL,
+                                    vkDevice->commandPool,
+                                    vkDevice->graphicsQueue,
+                                    ret.vulkan.textureImage,
+                                    VK_FORMAT_R8G8B8A8_SRGB,
+                                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         // Clean-up staging buffer
         vkDestroyBuffer(vkDevice->device, stagingBuffer, NULL);

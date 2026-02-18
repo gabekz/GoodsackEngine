@@ -46,7 +46,9 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
     {
         ImGui_ImplGlfw_InitForOpenGL(renderer->window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
-    } else if (GSK_DEVICE_API_VULKAN)
+    }
+
+    else if (GSK_DEVICE_API_VULKAN)
     {
         ImGui_ImplGlfw_InitForVulkan(renderer->window, true);
 
@@ -57,13 +59,26 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
           .Device         = vkDevice->device,
           .Queue          = vkDevice->graphicsQueue,
           .DescriptorPool = vkDevice->descriptorPool,
-          //.RenderPass = NULL,
-          .MinImageCount = 2,
-          .ImageCount    = 2,
-          //.MsaaSamples = VK_SAMPLE_COUNT_1_BIT,
+          .MinImageCount  = 2,
+          .ImageCount     = 2,
         };
-        ImGui_ImplVulkan_Init(&info, vkDevice->pipelineDetails->renderPass);
 
+#if GSK_VULKAN_USING_DYNAMIC_RENDERING
+
+        info.UseDynamicRendering = TRUE,
+
+        info.PipelineInfoMain.PipelineRenderingCreateInfo = {
+          .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+          .colorAttachmentCount = 1,
+          .pColorAttachmentFormats =
+            &renderer->vulkanDevice->swapChainDetails->swapchainImageFormat,
+          .depthAttachmentFormat =
+            vulkan_depth_find_format(renderer->vulkanDevice->physicalDevice),
+        };
+
+        ImGui_ImplVulkan_Init(&info);
+#else
+        ImGui_ImplVulkan_Init(&info);
         VkCommandBuffer commandBuffer =
           vulkan_command_stc_begin(vkDevice->device, vkDevice->commandPool);
 
@@ -76,6 +91,7 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
 
         vkDeviceWaitIdle(vkDevice->device);
         ImGui_ImplVulkan_DestroyFontUploadObjects();
+#endif // GSK_VULKAN_USING_DYNAMIC_RENDERING
     }
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -87,8 +103,8 @@ gsk::tools::DebugToolbar::DebugToolbar(gsk_Renderer *renderer)
     {
         using namespace gsk::tools::panels;
 
-        // Create EntityViewer panel, attach a new ComponentViewer pointer to
-        // it.
+        // Create EntityViewer panel, attach a new ComponentViewer pointer
+        // to it.
         ComponentViewer *p_component_viewer = new ComponentViewer("Components");
         EntityViewer *p_entity_viewer       = new EntityViewer("Entities");
         p_entity_viewer->set_component_viewer(p_component_viewer);

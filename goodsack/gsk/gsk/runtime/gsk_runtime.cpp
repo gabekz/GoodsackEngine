@@ -557,6 +557,7 @@ gsk::runtime::rt_loop()
             gsk_renderer_tick(s_runtime.renderer);
 
 #if GSK_RUNTIME_USE_DEBUG
+            s_runtime.p_debug_toolbar->update();
             s_runtime.p_debug_toolbar->render();
 #endif // GSK_RUNTIME_USE_DEBUG
 

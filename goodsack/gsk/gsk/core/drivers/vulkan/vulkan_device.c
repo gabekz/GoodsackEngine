@@ -103,24 +103,26 @@ _checkDeviceExtensionSupport(const char *extensions[],
 
     for (u32 i = 0; i < count; i++)
     {
-        int extensionFound = 0;
+        u8 is_found = FALSE;
         for (u32 j = 0; j < extensionsCount; j++)
         {
             if (strcmp(extensions[i], availableExtensions[j].extensionName) ==
                 0)
             {
-                extensionFound = 1;
                 LOG_INFO("Device Extension found: %s", extensions[i]);
-                break;
+
+                is_found = TRUE;
+                extensionsCount++;
             }
         }
 
-        if (!extensionFound)
-            LOG_WARN("Device Extension UNAVAILABLE: %s", extensions[i]);
-        return 0;
+        if (!is_found)
+        {
+            LOG_ERROR("Device Extension unavailable: %s", extensions[i]);
+        }
     }
 
-    return 1;
+    return extensionsCount;
 }
 
 static int
@@ -135,9 +137,9 @@ _isDeviceSuitable(VkPhysicalDevice physicalDevice)
     // Device extension support
     const char *deviceExtensions[VK_REQ_DEVICE_EXT_COUNT] = VK_REQ_DEVICE_EXT;
 
-    u32 indices = vulkan_device_find_queue_families(physicalDevice);
-    int extensionsSupported =
-      _checkDeviceExtensionSupport(deviceExtensions, 1, physicalDevice);
+    u32 indices             = vulkan_device_find_queue_families(physicalDevice);
+    int extensionsSupported = _checkDeviceExtensionSupport(
+      deviceExtensions, VK_REQ_DEVICE_EXT_COUNT, physicalDevice);
 
     int swapChainAdequate = 0;
     if (extensionsSupported)
@@ -178,6 +180,7 @@ VulkanDeviceContext *
 vulkan_device_create()
 {
     // Vulkan Application Info
+    // TODO: update this
     VkApplicationInfo appInfo = {
       .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
       .pApplicationName   = "Application Name",
@@ -194,7 +197,7 @@ vulkan_device_create()
     };
 
     // Validation Layer + Extension Handling for Instance
-    const unsigned char kEnableValidationLayers = 1;
+    const u8 kEnableValidationLayers = SYS_DEBUG;
 
     u32 glfwExtensionCount = 0;
     const char **glfwExtensions;
@@ -297,8 +300,15 @@ vulkan_device_create()
       .samplerAnisotropy = VK_TRUE,
     };
 
+    VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature = {
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR,
+      .pNext = NULL,
+      .dynamicRendering = VK_TRUE,
+    };
+
     VkDeviceCreateInfo logicCreateInfo = {
       .sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+      .pNext                = &dynamic_rendering_feature,
       .pQueueCreateInfos    = &queueCreateInfo,
       .queueCreateInfoCount = 1,
       .pEnabledFeatures     = &deviceFeatures,

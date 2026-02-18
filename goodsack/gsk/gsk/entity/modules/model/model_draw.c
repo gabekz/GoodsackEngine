@@ -332,6 +332,22 @@ DrawModel(struct ComponentModel *model,
             vkCmdBindVertexBuffers(
               *p_command_buffer, 0, 1, &mesh->vkVBO->buffer, offsets);
 
+#if 0
+            vulkan_uniform_buffer_update(
+              renderer->vulkanDevice->currentFrame,
+              renderer->vulkanDevice->uniformBuffersMapped,
+              renderer->vulkanDevice->swapChainDetails->swapchainExtent);
+#else
+
+            vkCmdPushConstants(
+              *p_command_buffer,
+              renderer->vulkanDevice->pipelineDetails->pipelineLayout,
+              VK_SHADER_STAGE_VERTEX_BIT,
+              0,
+              sizeof(mat4),
+              (float *)renderer->vk_ubo_test.model);
+#endif
+
             if (mesh->meshData->has_indices)
             {
                 vkCmdBindIndexBuffer(*p_command_buffer,
@@ -432,13 +448,16 @@ render(gsk_Entity e)
         p_cb =
           &(e.ecs->renderer->vulkanDevice
               ->commandBuffers[e.ecs->renderer->vulkanDevice->currentFrame]);
+
+        renderLayer = 0; // OVERRIDES CAMERA LAYER
+                         // TODO: add VK support for render layers
     }
 
     if ((pass == GskRenderPass_Lighting && model->drawing_mask == 0) ||
         (pass == GskRenderPass_LightingMask && model->drawing_mask > 0))
     {
 
-        if (pass == GskRenderPass_LightingMask)
+        if (pass == GskRenderPass_LightingMask && GSK_DEVICE_API_OPENGL)
         {
             glStencilFunc(GL_EQUAL,
                           model->drawing_mask,
@@ -448,7 +467,7 @@ render(gsk_Entity e)
         DrawModel(
           model, transform, FALSE, renderLayer, e.index, p_cb, e.ecs->renderer);
 
-        if (model->culling_mask > 0)
+        if (model->culling_mask > 0 && GSK_DEVICE_API_OPENGL)
         {
             glCullFace(GL_FRONT);
             glColorMask(

@@ -8,14 +8,13 @@
 #include "util/filesystem.h"
 #include "util/gfx.h"
 
+#include "core/drivers/vulkan/vulkan.h"
 #include "core/drivers/vulkan/vulkan_command.h"
+#include "core/drivers/vulkan/vulkan_descriptor.h"
 #include "core/drivers/vulkan/vulkan_device.h"
 #include "core/drivers/vulkan/vulkan_support.h"
 
-#include "core/graphics/mesh/primitives.h"
-
-#define TEST_RENDER_PRIMITIVE 0 // 0 - Model Loader | 1 - Primitive
-#define TEST_RENDER_MODE      0 // 0 - VkCmdDraw    | 1 - VkCmdDrawIndexed
+#include "core/graphics/texture/texture.h"
 
 void
 vulkan_render_setup(VulkanDeviceContext *context)
@@ -28,46 +27,6 @@ vulkan_render_setup(VulkanDeviceContext *context)
     LOG_DEBUG("Create command buffers");
     context->commandBuffers =
       vulkan_command_buffer_create(context->device, context->commandPool);
-
-    /*
-    // Create a VERTEX BUFFER
-        LOG_DEBUG("Create vertex buffer");
-
-    #if TEST_RENDER_PRIMITIVE == 0
-
-    #elif TEST_RENDER_PRIMITIVE == 1
-
-        float *vertices = PRIM_ARR_V_PYRAMID;
-        int size = PRIM_SIZ_V_PYRAMID * sizeof(float);
-
-    #endif
-
-        VulkanVertexBuffer *vb =
-            vulkan_vertex_buffer_create(
-                    context->physicalDevice,
-                    context->device,
-                    context->graphicsQueue,
-                    context->commandPool,
-                    vertices,
-                    size);
-
-        context->vertexBuffer = vb;
-
-    #if TEST_RENDER_MODE == 1
-
-        u16 *indices = PRIM_ARR_I_PYRAMID;
-        u32 indicesCount = PRIM_SIZ_I_PYRAMID;
-
-        context->indexBuffer = *vulkan_index_buffer_create(
-                context->physicalDevice,
-                context->device,
-                context->commandPool,
-                context->graphicsQueue,
-                indices, indicesCount
-        );
-
-    #endif
-    */
 
     // Create UNIFORM BUFFERS
     LOG_DEBUG("Create uniform buffers");
@@ -109,23 +68,22 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
                            u32 imageIndex,
                            VkCommandBuffer *commandBuffer)
 {
-    VkCommandBufferBeginInfo beginInfo = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-      //.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-      .flags            = 0,
-      .pInheritanceInfo = NULL, // Optional
-    };
-
-    if (vkBeginCommandBuffer(*commandBuffer, &beginInfo) != VK_SUCCESS)
-    {
-        LOG_ERROR("Failed to begin recording command buffer!");
-    }
+    vulkan_image_memory_barrier(
+      context->device,
+      commandBuffer,
+      context->commandPool,
+      context->graphicsQueue,
+      context->swapChainDetails->swapchainImages[imageIndex],
+      context->swapChainDetails->swapchainImageFormat,
+      VK_IMAGE_LAYOUT_UNDEFINED,
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     VkClearValue clearColor   = {{{0.0f, 0.1f, 0.2f, 1.0f}}};
     VkClearValue depthStencil = {1.0f, 0.0f};
 
     VkClearValue clearValues[] = {clearColor, depthStencil};
 
+#if !(GSK_VULKAN_USING_DYNAMIC_RENDERING)
     VkRenderPassBeginInfo renderPassInfo = {
       .sType      = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
       .renderPass = context->pipelineDetails->renderPass,
@@ -139,6 +97,47 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
 
     vkCmdBeginRenderPass(
       *commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+#else
+
+    VkRenderingAttachmentInfoKHR color_attachment = {
+      .sType       = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
+      .pNext       = NULL,
+      .imageView   = context->swapChainDetails->swapchainImageViews[imageIndex],
+      .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+      .resolveMode = VK_RESOLVE_MODE_NONE,
+      .resolveImageView   = VK_NULL_HANDLE,
+      .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .loadOp             = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp            = VK_ATTACHMENT_STORE_OP_STORE,
+      .clearValue         = clearColor,
+    };
+
+    VkRenderingAttachmentInfoKHR depth_attachment = {
+      .sType              = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
+      .pNext              = NULL,
+      .imageView          = context->depthResources->depthImageView,
+      .imageLayout        = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+      .resolveMode        = VK_RESOLVE_MODE_NONE,
+      .resolveImageView   = VK_NULL_HANDLE,
+      .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .loadOp             = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp            = VK_ATTACHMENT_STORE_OP_STORE,
+      .clearValue         = depthStencil,
+    };
+
+    VkRenderingInfoKHR rendering_info = {
+      .sType                = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
+      .renderArea.offset    = {0, 0},
+      .renderArea.extent    = context->swapChainDetails->swapchainExtent,
+      .layerCount           = 1,
+      .viewMask             = 0,
+      .colorAttachmentCount = 1,
+      .pColorAttachments    = &color_attachment,
+      .pDepthAttachment     = &depth_attachment,
+    };
+
+    vkCmdBeginRendering(*commandBuffer, &rendering_info);
+#endif // !(GSK_VULKAN_USING_DYNAMIC_RENDERING)
 
     // Bind pipeline (containing loaded shader modules)
     vkCmdBindPipeline(*commandBuffer,
@@ -146,6 +145,10 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
                       context->pipelineDetails->graphicsPipeline);
 
     // Set viewports and scissors (again?)
+    // TODO: viewport and scissor specified per abstracted render pass
+    // TODO: BindPipleine (GraphicsPipeline) for the appropriate model (create
+    // with variances i.e, different vertexInputs, culling etc.)
+    // One "abstract" render pipeline can have mulitple graphics pipelines
     VkViewport viewport = {
       .x        = 0.0f,
       .y        = 0.0f,
@@ -159,14 +162,6 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
                         .extent = context->swapChainDetails->swapchainExtent};
     vkCmdSetScissor(*commandBuffer, 0, 1, &scissor);
 
-    // LOG_DEBUG("Binding Vertex Buffer");
-    // VkBuffer vertexBuffers[] = {context->vertexBuffer->buffer};
-    VkDeviceSize offsets[] = {0};
-
-    // VkBuffer indexBuffer = context->indexBuffer.buffer;
-
-    // vkCmdBindVertexBuffers(*commandBuffer, 0, 1, vertexBuffers, offsets);
-
     vkCmdBindDescriptorSets(*commandBuffer,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                             context->pipelineDetails->pipelineLayout,
@@ -175,29 +170,25 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
                             &context->descriptorSets[context->currentFrame],
                             0,
                             NULL);
-
-#if TEST_RENDER_MODE == 0
-
-    // vkCmdDraw(*commandBuffer, context->vertexBuffer->size, 1, 0, 0);
-
-#elif TEST_RENDER_MODE == 1
-
-    // vkCmdBindIndexBuffer(*commandBuffer, indexBuffer, 0,
-    // VK_INDEX_TYPE_UINT16); vkCmdDrawIndexed(*commandBuffer,
-    // context->indexBuffer.indicesCount,
-    //         1, 0, 0, 0);
-#endif
 }
 
 static void
-vulkan_render_record_end(VkCommandBuffer *commandBuffer)
+vulkan_render_record_end(VulkanDeviceContext *context,
+                         u32 imageIndex,
+                         VkCommandBuffer *commandBuffer)
 {
-    vkCmdEndRenderPass(*commandBuffer);
+    // vkCmdEndRenderPass(*commandBuffer);
+    vkCmdEndRendering(*commandBuffer);
 
-    if (vkEndCommandBuffer(*commandBuffer) != VK_SUCCESS)
-    {
-        LOG_ERROR("Failed to record command buffer!");
-    }
+    vulkan_image_memory_barrier(
+      context->device,
+      commandBuffer,
+      context->commandPool,
+      context->graphicsQueue,
+      context->swapChainDetails->swapchainImages[imageIndex],
+      context->swapChainDetails->swapchainImageFormat,
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+      VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 }
 
 // ------------------------ DRAW ------------------------------------- //
@@ -237,6 +228,19 @@ vulkan_render_draw_begin(VulkanDeviceContext *context, GLFWwindow *window)
         LOG_ERROR("Failed to acquire next image!");
     }
 
+    VkCommandBufferBeginInfo beginInfo = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      //.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+      .flags            = 0,
+      .pInheritanceInfo = NULL, // Optional
+    };
+
+    if (vkBeginCommandBuffer(context->commandBuffers[context->currentFrame],
+                             &beginInfo) != VK_SUCCESS)
+    {
+        LOG_ERROR("Failed to begin recording command buffer!");
+    }
+
     // Record the command buffer
     vulkan_render_record_begin(context,
                                context->presentImageIndex,
@@ -248,7 +252,16 @@ vulkan_render_draw_end(VulkanDeviceContext *context, GLFWwindow *window)
 {
 
     // End recording
-    vulkan_render_record_end(&context->commandBuffers[context->currentFrame]);
+    vulkan_render_record_end(context,
+                             context->presentImageIndex,
+                             &context->commandBuffers[context->currentFrame]);
+
+    // end command buffer
+    if (vkEndCommandBuffer(context->commandBuffers[context->currentFrame]) !=
+        VK_SUCCESS)
+    {
+        LOG_ERROR("Failed to record command buffer!");
+    }
 
     // Must be done AFTER we potentially recreate the swapchain.
     // Avoids Fence deadlock.

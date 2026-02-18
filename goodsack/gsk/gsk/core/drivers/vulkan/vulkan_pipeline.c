@@ -12,6 +12,7 @@
 
 #include "core/drivers/vulkan/vulkan_depth.h"
 #include "core/drivers/vulkan/vulkan_descriptor.h"
+#include "core/drivers/vulkan/vulkan_support.h"
 #include "core/drivers/vulkan/vulkan_uniform_buffer.h"
 #include "core/drivers/vulkan/vulkan_vertex_buffer.h"
 
@@ -127,7 +128,7 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .vertexBindingDescriptionCount = 1,
       .pVertexBindingDescriptions    = &bindingDescription,
 
-      .vertexAttributeDescriptionCount = 4,
+      .vertexAttributeDescriptionCount = 4, // TODO: no magic
       .pVertexAttributeDescriptions    = attributeDescriptions,
     };
 #endif
@@ -226,13 +227,20 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
     // Create DescriptorSet Layout [UBO (MVP) + 1 TextureSampler Descriptors]
     details->descriptorSetLayout = vulkan_descriptor_create_layout(device);
 
+    // Push Constants
+    VkPushConstantRange psRange = {
+      .offset     = 0,
+      .size       = sizeof(mat4),
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+    };
+
     // Pipeline Layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
       .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .setLayoutCount         = 1,
       .pSetLayouts            = &details->descriptorSetLayout,
-      .pushConstantRangeCount = 0,
-      .pPushConstantRanges    = NULL,
+      .pushConstantRangeCount = 1,
+      .pPushConstantRanges    = &psRange,
     };
 
     if (vkCreatePipelineLayout(
@@ -242,6 +250,7 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
         LOG_ERROR("Failed to create pipeline layout!");
     }
 
+#if !(GSK_VULKAN_USING_DYNAMIC_RENDERING)
     // Create Renderpass
 
     // Color Attachment
@@ -276,6 +285,8 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
     VkAttachmentReference depthAttachmentRef = {
       .attachment = 1,
       .layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+
+    // Subpass
 
     VkSubpassDescription subpass = {
       .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -317,6 +328,17 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
     {
         LOG_ERROR("Failed to create render pass!");
     }
+#else
+
+    VkPipelineRenderingCreateInfoKHR rendering_info = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
+      .pNext = NULL,
+      .colorAttachmentCount    = 1,
+      .pColorAttachmentFormats = &swapchainImageFormat,
+      .depthAttachmentFormat   = vulkan_depth_find_format(physicalDevice),
+      .stencilAttachmentFormat = VK_FORMAT_UNDEFINED,
+    };
+#endif // !(GSK_USING_DYNAMIC_RENDERING)
 
     // Pipeline
     VkGraphicsPipelineCreateInfo pipelineInfo = {
@@ -334,8 +356,8 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
       .pDynamicState       = &dynamicState,
 
       .layout     = details->pipelineLayout,
-      .renderPass = details->renderPass,
-      .subpass    = 0,
+      .pNext      = &rendering_info,
+      .renderPass = VK_NULL_HANDLE,
 
       .basePipelineHandle = VK_NULL_HANDLE, // Optional
       .basePipelineIndex  = -1,             // Optional

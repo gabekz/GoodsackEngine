@@ -57,10 +57,11 @@ vulkan_descriptor_create_layout(VkDevice device)
       .pImmutableSamplers = NULL,               // optional
     };
 
+    // TODO: experiment with setting .binding = 0 (different descriptorType)
     // Texture Sampler Layout
     bindings[1] = (VkDescriptorSetLayoutBinding) {
       .binding         = 1,
-      .descriptorCount = 1, // number of values in the array (e.g, 1 UBO)
+      .descriptorCount = 1,
       .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 
       .stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT, // Reference location

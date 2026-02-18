@@ -288,8 +288,6 @@ gsk_renderer_start(gsk_Renderer *renderer)
         // glEnable(GL_FRAMEBUFFER_SRGB);
         clearGLState();
 
-        renderer->debugContext = gsk_debug_context_init();
-
         // Create camera Uniform Buffer
         u32 camera_uboId;
         u32 camera_uboSize     = sizeof(vec4) + (2 * sizeof(mat4));
@@ -342,6 +340,8 @@ gsk_renderer_start(gsk_Renderer *renderer)
         gsk_ecs_event(ecs, ECS_INIT);
         // LOG_DEBUG("gsk_Renderer Start-Phase is not implemented in Vulkan");
     }
+
+    renderer->debugContext = gsk_debug_context_init();
 }
 
 /* Shared Functions for the pipeline */

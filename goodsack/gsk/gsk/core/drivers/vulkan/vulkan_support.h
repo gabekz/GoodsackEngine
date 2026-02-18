@@ -11,16 +11,18 @@
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
+#define GSK_VULKAN_USING_DYNAMIC_RENDERING TRUE
+
 #define VK_REQ_VALIDATION_COUNT 1
 #define VK_REQ_VALIDATION_LIST        \
     {                                 \
         "VK_LAYER_KHRONOS_validation" \
     }
 
-#define VK_REQ_DEVICE_EXT_COUNT 1
-#define VK_REQ_DEVICE_EXT  \
-    {                      \
-        "VK_KHR_swapchain" \
+#define VK_REQ_DEVICE_EXT_COUNT 2
+#define VK_REQ_DEVICE_EXT                              \
+    {                                                  \
+        "VK_KHR_swapchain", "VK_KHR_dynamic_rendering" \
     }
 
 #if defined(SYS_ENV_UNIX)

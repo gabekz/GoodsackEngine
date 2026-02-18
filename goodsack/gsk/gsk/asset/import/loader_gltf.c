@@ -99,15 +99,21 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
     gsk_Keyframe **keyframes = malloc(sizeof(gsk_Keyframe *) * inputsCount);
 
     // Get all frame-times
-    float *frameTimes = malloc(inputsCount * sizeof(float));
+    f32 animation_duration = 0.0f;
+
     for (int i = 0; i < inputsCount; i++)
     {
-        cgltf_bool frameTimesSuccess = cgltf_accessor_read_float(
-          gltfAnimation->samplers[0].input, i, frameTimes + i, 8);
+        f32 frame_time = 0.0f;
+
+        cgltf_accessor_read_float(
+          gltfAnimation->samplers[0].input, i, &frame_time, sizeof(f32));
+
+        // update with each input frame
+        animation_duration = frame_time;
 
         // set keyframe information
         keyframes[i]            = malloc(sizeof(gsk_Keyframe));
-        keyframes[i]->frameTime = frameTimes[i];
+        keyframes[i]->frameTime = frame_time;
         keyframes[i]->index     = i;
 
         keyframes[i]->poses =
@@ -194,7 +200,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
 
     // Animation data
     gsk_Animation *animation  = malloc(sizeof(gsk_Animation));
-    animation->duration       = frameTimes[inputsCount - 1];
+    animation->duration       = animation_duration;
     animation->keyframes      = keyframes;
     animation->keyframesCount = inputsCount;
     animation->name           = strdup(gltfAnimation->name);
@@ -291,27 +297,31 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     ret->mesh_buffers_count = 0;
     ret->usage_draw         = GskOglUsageType_Dynamic;
 
+    // TODO: Get more than just the first primitive
+    struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
+    u8 has_tbn                      = (attribInfo.idxTan > -1) ? TRUE : FALSE;
+
     GskMeshBufferFlags flags_mesh_buffer =
       (GskMeshBufferFlag_Positions | GskMeshBufferFlag_Textures |
        GskMeshBufferFlag_Normals | GskMeshBufferFlag_Tangents);
 
-    // TODO: Get more than just the first primitive
-    struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
+    u32 vertCount    = attribInfo.posData->count;
+    ret->vertexCount = vertCount;
 
-    u32 vertCount      = attribInfo.posData->count;
-    ret->vertexCount   = vertCount;
-    u32 vPosBufferSize = vertCount * sizeof(float) * 3;
-    u32 vTexBufferSize = vertCount * sizeof(float) * 2;
-    u32 vNrmBufferSize = vertCount * sizeof(float) * 3;
-    u32 vTanBufferSize = vertCount * sizeof(float) * 3 * 2;
+    u32 buff_size = 0;
+    {
+        u32 vPosBufferSize = vertCount * 3;
+        u32 vTexBufferSize = vertCount * 2;
+        u32 vNrmBufferSize = vertCount * 3;
+        u32 vTanBufferSize = vertCount * 3;
 
-    // Buffer size + tangent (override later if not pulled from file)
-    u32 buff_size =
-      vPosBufferSize + vTexBufferSize + vNrmBufferSize + vTanBufferSize;
+        // Buffer size + tangent (override later if not pulled from file)
+        buff_size =
+          (vPosBufferSize + vTexBufferSize + vNrmBufferSize + vTanBufferSize) *
+          sizeof(f32) /* all are float values right now */;
+    }
 
     float *buff_verts = malloc(buff_size);
-
-    u8 has_tbn = (attribInfo.idxTan > -1);
 
     // Set min-max bounds
     glm_vec3_copy(attribInfo.posData->min, ret->boundingBox[0]);
@@ -322,32 +332,40 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
     // Position, TextureCoord, Normal
 
+    size_t size_vec2 = sizeof(vec3);
+    size_t size_vec3 = sizeof(vec2);
+
     int offsetA = 0;
     for (int i = 0; i < vertCount; i++)
     {
         // Fill Positions
         cgltf_accessor_read_float(
-          attribInfo.posData, i, buff_verts + offsetA, 100);
+          attribInfo.posData, i, buff_verts + offsetA, size_vec3);
         offsetA += 3;
         // Fill TextureCoords
         cgltf_accessor_read_float(
-          attribInfo.texData, i, buff_verts + offsetA, 100);
+          attribInfo.texData, i, buff_verts + offsetA, size_vec2);
         offsetA += 2;
         // Fill Normals
         cgltf_accessor_read_float(
-          attribInfo.nrmData, i, buff_verts + offsetA, 100);
+          attribInfo.nrmData, i, buff_verts + offsetA, size_vec3);
         offsetA += 3;
         // Fill Tangent
         if (has_tbn)
         {
             cgltf_accessor_read_float(
-              attribInfo.tanData, i, buff_verts + offsetA, 100);
+              attribInfo.tanData, i, buff_verts + offsetA, size_vec3);
             offsetA += 3;
-        } else
+        }
+        // default Tangent values
+        else
         {
             // TODO: calculate TBN
+            LOG_TRACE(
+              "mesh has to Tangent values - populating w/ default values.");
+
             vec3 vec = GLM_VEC3_ONE_INIT;
-            memcpy(buff_verts + offsetA, vec, sizeof(vec3));
+            memcpy(buff_verts + offsetA, vec, size_vec3);
             offsetA += 3;
         }
     }

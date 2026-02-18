@@ -130,7 +130,7 @@ target_link_libraries(ThirdParty_vulkan INTERFACE Vulkan::Vulkan)
 setup_thirdparty_lib(imgui)
 
 find_package(imgui CONFIG QUIET)
-if(imgui_FOUND)
+if(FALSE)
     message(STATUS "(ImGui) Found package with auto-locate")
     target_link_libraries(ThirdParty_imgui INTERFACE imgui::imgui) 
     #target_compile_definitions(imgui::imgui INTERFACE "IMGUI_IMPL_API=__declspec(dllexport)")
@@ -163,6 +163,7 @@ else()
 
 endif()
 
+target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING")
 #target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_IMPL_API=__declspec(dllexport)")
 #target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_API=__declspec(dllexport)")
 

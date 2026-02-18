@@ -20,6 +20,13 @@ vulkan_framebuffer_create(VkDevice device,
                           VkExtent2D swapchainExtent,
                           VkRenderPass renderPass)
 {
+    if (GSK_VULKAN_USING_DYNAMIC_RENDERING)
+    {
+        LOG_WARN(
+          "attempted to create VK framebuffer when using dynamic_rendering");
+        return NULL;
+    }
+
     VkFramebuffer *framebuffers =
       malloc(sizeof(VkFramebuffer) *
              framebufferCount /* previously swapChainImageCount */);

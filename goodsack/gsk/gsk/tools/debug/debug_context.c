@@ -31,10 +31,14 @@ gsk_debug_context_init()
     ret->markers_list = malloc(sizeof(ArrayList));
     *(ArrayList *)ret->markers_list =
       array_list_init(sizeof(gsk_DebugMarker), 64);
-    ret->is_active = TRUE;
+
+    ret->is_active = FALSE;
 
     if (GSK_DEVICE_API_OPENGL)
     {
+
+        ret->is_active = TRUE;
+
         // Assets
         ret->material = gsk_material_create(
           NULL, GSK_PATH("gsk://shaders/basic_unlit_color.shader"), NULL, 0);
@@ -120,20 +124,8 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
                        vec4 color,
                        u8 persist)
 {
-    gsk_DebugMarker marker = {
-      .type        = type,
-      .id          = id,
-      .persist     = persist,
-      .line.length = length,
-    };
-
-    glm_vec3_copy(position, marker.position);
-    glm_vec3_copy(pos_end, marker.line.direction);
-    glm_vec4_copy(color, marker.color);
-
     for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++)
     {
-
         gsk_DebugMarker *cnt_marker =
           &((gsk_DebugMarker *)p_debug_context->markers_list->data.buffer)[i];
 
@@ -143,11 +135,24 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
             {
                 glm_vec3_copy(position, cnt_marker->position);      // HACK
                 glm_vec3_copy(pos_end, cnt_marker->line.direction); // HACK
+                glm_vec3_copy(pos_end, cnt_marker->line.end_pos);   // HACK
                 glm_vec4_copy(color, cnt_marker->color);            // HACK
             }
             return;
         }
     }
+
+    gsk_DebugMarker marker = {
+      .type        = type,
+      .id          = id,
+      .persist     = persist,
+      .line.length = length,
+    };
+
+    glm_vec3_copy(position, marker.position);
+    glm_vec3_copy(pos_end, marker.line.direction);
+    glm_vec3_copy(pos_end, marker.line.end_pos);
+    glm_vec4_copy(color, marker.color);
 
     array_list_push(p_debug_context->markers_list, &marker);
 }
@@ -156,6 +161,7 @@ void
 gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
 {
     if (p_debug_context->is_active == FALSE) { return; }
+    if (GSK_DEVICE_API_VULKAN) { return; }
 
     for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++)
     {
@@ -170,6 +176,15 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
                                cnt_marker->line.direction,
                                cnt_marker->line.length,
                                cnt_marker->color);
+            continue;
+        }
+        // line
+        else if (cnt_marker->type == MARKER_LINE)
+        {
+            gsk_debug_draw_line(p_debug_context,
+                                cnt_marker->position,
+                                cnt_marker->line.end_pos,
+                                cnt_marker->color);
             continue;
         }
 
