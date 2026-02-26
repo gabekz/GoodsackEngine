@@ -126,25 +126,24 @@ CompileSingleShader(unsigned int type,
  * and fragment shaders in one file.
  * Returns the source object containing id's and compiled sources.
  */
-static gsk_ShaderSource
-ParseShader(const char *path)
+gsk_ShaderSource
+gsk_shader_source_parse(const char *path, u8 skip_version)
 {
     // File in
     FILE *fptr = NULL;
     char line[1024];
 
-    // output stream
-    FILE *stream = NULL;
-    char *vertOut, *fragOut, *compOut, *geomOut;
-    size_t vertLen = 0, fragLen = 0, geomLen = 0, compLen = 0;
+    s16 mode = -1; /* -1: NONE | 0: Vert | 1: Frag | 2: Geometry | 3: Compute */
 
-    short mode =
-      -1; /* -1: NONE | 0: Vert | 1: Frag | 2: Geometry | 3: Compute */
+    ArrayList list_outputs[4] = {0, 0, 0, 0};
+    for (int i = 0; i < 4; i++)
+    {
+        list_outputs[i] = LIST_INIT(sizeof(char), 20);
+    }
 
     if ((fptr = fopen(path, "rb")) == NULL)
     {
-        LOG_ERROR("Error opening %s\n", path);
-        exit(1);
+        LOG_CRITICAL("Error opening %s\n", path);
     }
 
     while (fgets(line, sizeof(line), fptr))
@@ -152,73 +151,75 @@ ParseShader(const char *path)
         // Line defines shader type
         if (strstr(line, "#shader") != NULL)
         {
-            if (stream != NULL)
-            {
-                // Close stream for restart
-                //
-#ifdef WIN32
-                fflush(stream);
-                rewind(stream);
-#else
-                if (fclose(stream))
-                {
-                    LOG_ERROR("Failed to close stream.");
-                    exit(1);
-                }
-#endif
-            }
-
             // Begin vertex
             if (strstr(line, "vertex") != NULL)
             {
-                mode   = 0;
-                stream = open_memstream(&vertOut, &vertLen);
+                mode = 0;
             }
             // Begin fragment
             else if (strstr(line, "fragment") != NULL)
             {
-                mode   = 1;
-                stream = open_memstream(&fragOut, &fragLen);
+                mode = 1;
             }
             // Begin Geometry
             else if (strstr(line, "geometry") != NULL)
             {
-                mode   = 2;
-                stream = open_memstream(&geomOut, &geomLen);
+                mode = 2;
             }
             // Begin Compute
             else if (strstr(line, "compute") != NULL)
             {
-                mode   = 3;
-                stream = open_memstream(&compOut, &compLen);
-            } else
+                mode = 3;
+            }
+            // no mode
+            else
             {
                 mode = -1;
             }
         }
         // skip "#version" lines to fill in our own
-        else if (strstr(line, "#version") != NULL)
+        else if (skip_version && strstr(line, "#version") != NULL)
         {
             continue;
         }
         // write line
-        else
+        else if (mode > -1)
         {
-            if (mode > -1) { fprintf(stream, line); }
+            LIST_APPEND(&list_outputs[mode], &line, strlen(line));
         }
     }
 
-    if (stream != NULL) fclose(stream);
     if (fptr != NULL) fclose(fptr);
-
-    /* TODO: Report 'NULL' declaration bug */
 
     gsk_ShaderSource ss = {0};
 
-    if (vertLen > 0) { ss.shaderVertex = strdup(vertOut); }
-    if (fragLen > 0) { ss.shaderFragment = strdup(fragOut); }
-    if (geomLen > 0) { ss.shaderGeometry = strdup(geomOut); }
-    if (compLen > 0) { ss.shaderCompute = strdup(compOut); }
+    for (int i = 0; i < 4; i++)
+    {
+        if (list_outputs[i].is_list_empty == TRUE) { continue; }
+
+        size_t headerLen = 0;
+        size_t buff_len  = list_outputs[i].list_next + headerLen + 1;
+
+        char *p_str = malloc(buff_len);
+        snprintf(p_str, buff_len, "%s", list_outputs[i].data.buffer);
+
+        array_list_free(&list_outputs[i]);
+
+        // TODO: clean this up.
+        if (i == 0)
+        {
+            ss.shaderVertex = p_str;
+        } else if (i == 1)
+        {
+            ss.shaderFragment = p_str;
+        } else if (i == 2)
+        {
+            ss.shaderGeometry = p_str;
+        } else if (i == 3)
+        {
+            ss.shaderCompute = p_str;
+        }
+    }
 
     return ss;
 }
@@ -233,7 +234,7 @@ gsk_shader_program_create(const char *path)
         return ret;
     }
 
-    gsk_ShaderSource ss   = ParseShader(path);
+    gsk_ShaderSource ss   = gsk_shader_source_parse(path, TRUE);
     gsk_ShaderProgram ret = {.id = 0, .id_skinned = 0, .shaderSource = ss};
 
     for (int i = 0; i < 2; i++)

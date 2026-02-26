@@ -5,8 +5,8 @@
 
 /* Vulkan implementation - headers */
 
-#ifndef __VULKAN_H__
-#define __VULKAN_H__
+#ifndef __GSK_VULKAN_H__
+#define __GSK_VULKAN_H__
 
 // Helpers + Defs
 #include "core/drivers/vulkan/vulkan_support.h"
@@ -29,4 +29,4 @@
 
 #include "core/drivers/vulkan/vulkan_framebuffer.h"
 
-#endif // __VULKAN_H__
+#endif // __GSK_VULKAN_H__

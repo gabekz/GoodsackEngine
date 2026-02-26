@@ -332,7 +332,7 @@ DrawModel(struct ComponentModel *model,
               *p_command_buffer,
               mesh->vk_vao->bindings_count,
               mesh->vk_vao->vertex_binding_descriptions,
-              4,
+              4, // TODO: should not be 4
               mesh->vk_vao->vertex_attribute_descriptions);
 #endif
 

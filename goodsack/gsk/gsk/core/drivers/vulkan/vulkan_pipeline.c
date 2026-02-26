@@ -16,55 +16,134 @@
 #include "core/drivers/vulkan/vulkan_uniform_buffer.h"
 #include "core/drivers/vulkan/vulkan_vertex_buffer.h"
 
-struct FileDescriptor
+#include "core/graphics/shader/shader.h"
+
+#include <glslang/Include/glslang_c_interface.h>
+#include <glslang/Public/resource_limits_c.h>
+
+typedef struct SpirVBinary
 {
-    char *buffer;
-    long filelen;
-};
+    uint32_t *words; // SPIR-V words
+    int size;        // number of words in SPIR-V binary
+} SpirVBinary;
 
-// Parses SPIR-V files
-static struct FileDescriptor *
-_parseShader(const char *path)
+typedef struct ShaderModules
 {
-    FILE *fileptr;
-    char *buffer;
-    long filelen;
-
-    fileptr = fopen(path, "rb"); // Open the file in binary mode
-    fseek(fileptr, 0, SEEK_END); // Jump to the end of the file
-    filelen = ftell(fileptr);    // Get the current byte offset in the file
-    rewind(fileptr);             // Jump back to the beginning of the file
-
-    buffer =
-      (char *)malloc(filelen * sizeof(char)); // Enough memory for the file
-    fread(buffer, filelen, 1, fileptr);       // Read in the entire file
-    fclose(fileptr);                          // Close the file
-
-    struct FileDescriptor *ret = malloc(sizeof(struct FileDescriptor));
-    ret->buffer                = buffer;
-    ret->filelen               = filelen;
-
-    return ret;
-}
+    VkShaderModule modules[4];
+} ShaderModules;
 
 static VkShaderModule
-_createShaderModule(VkDevice device, const char *path)
+_createShaderModule(VkDevice device, SpirVBinary *p_binary)
 {
-
-    struct FileDescriptor *file = _parseShader(path);
-
     VkShaderModuleCreateInfo createInfo = {
       .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-      .codeSize = file->filelen,
-      .pCode    = (uint32_t *)file->buffer,
+      .codeSize = p_binary->size * sizeof(u32),
+      .pCode    = (u32 *)p_binary->words,
     };
 
     VkShaderModule ret;
     if (vkCreateShaderModule(device, &createInfo, NULL, &ret) != VK_SUCCESS)
     {
         LOG_ERROR("Failed to create shader module!");
-        return NULL;
     }
+    return ret;
+}
+
+static SpirVBinary
+__create_single_shader(const char *raw_shader_code, u8 shader_type)
+{
+    glslang_stage_t stage =
+      (shader_type == 0) ? GLSLANG_STAGE_VERTEX : GLSLANG_STAGE_FRAGMENT;
+
+    const glslang_input_t input = {
+      .language                          = GLSLANG_SOURCE_GLSL,
+      .stage                             = stage,
+      .client                            = GLSLANG_CLIENT_VULKAN,
+      .client_version                    = GLSLANG_TARGET_VULKAN_1_3,
+      .target_language                   = GLSLANG_TARGET_SPV,
+      .target_language_version           = GLSLANG_TARGET_SPV_1_6,
+      .code                              = raw_shader_code,
+      .default_version                   = 100,
+      .default_profile                   = GLSLANG_NO_PROFILE,
+      .force_default_version_and_profile = FALSE,
+      .forward_compatible                = FALSE,
+      .messages                          = GLSLANG_MSG_DEFAULT_BIT,
+      .resource                          = glslang_default_resource(),
+    };
+
+    glslang_shader_t *shader = glslang_shader_create(&input);
+
+    SpirVBinary bin = {
+      .words = NULL,
+      .size  = 0,
+    };
+
+    if (!glslang_shader_preprocess(shader, &input))
+    {
+        // LOG_ERROR("GLSL preprocessing failed %s\n", path);
+        LOG_ERROR("%s", glslang_shader_get_info_log(shader));
+        LOG_ERROR("%s", glslang_shader_get_info_debug_log(shader));
+        LOG_ERROR("%s", input.code);
+        glslang_shader_delete(shader);
+        return bin;
+    }
+
+    if (!glslang_shader_parse(shader, &input))
+    {
+        // LOG_ERROR("GLSL parsing failed %s\n", path);
+        LOG_ERROR("%s", glslang_shader_get_info_log(shader));
+        LOG_ERROR("%s", glslang_shader_get_info_debug_log(shader));
+        LOG_ERROR("%s", glslang_shader_get_preprocessed_code(shader));
+        glslang_shader_delete(shader);
+        return bin;
+    }
+
+    glslang_program_t *program = glslang_program_create();
+    glslang_program_add_shader(program, shader);
+
+    if (!glslang_program_link(
+          program, GLSLANG_MSG_SPV_RULES_BIT | GLSLANG_MSG_VULKAN_RULES_BIT))
+    {
+        // LOG_ERROR("GLSL linking failed %s\n", path);
+        LOG_ERROR("%s", glslang_program_get_info_log(program));
+        LOG_ERROR("%s", glslang_program_get_info_debug_log(program));
+        glslang_program_delete(program);
+        glslang_shader_delete(shader);
+        return bin;
+    }
+
+    glslang_program_SPIRV_generate(program, stage);
+
+    bin.size  = glslang_program_SPIRV_get_size(program);
+    bin.words = malloc(bin.size * sizeof(uint32_t));
+    glslang_program_SPIRV_get(program, bin.words);
+
+    const char *spirv_messages = glslang_program_SPIRV_get_messages(program);
+    if (spirv_messages) LOG_DEBUG("%s", spirv_messages);
+
+    glslang_program_delete(program);
+    glslang_shader_delete(shader);
+
+    return bin;
+}
+
+static ShaderModules
+__create_shaders(VkDevice device, const char *path)
+{
+    ShaderModules ret = {0};
+
+    int process = glslang_initialize_process();
+
+    gsk_ShaderSource source = gsk_shader_source_parse(path, FALSE);
+
+    SpirVBinary bin_vert = __create_single_shader(source.shaderVertex, 0);
+    SpirVBinary bin_frag = __create_single_shader(source.shaderFragment, 1);
+
+    glslang_finalize_process();
+
+    ret.modules[0] = _createShaderModule(device, &bin_vert);
+    ret.modules[1] = _createShaderModule(device, &bin_frag);
+
     return ret;
 }
 
@@ -77,20 +156,18 @@ vulkan_pipeline_create(VkPhysicalDevice physicalDevice,
 
     VulkanPipelineDetails *details = malloc(sizeof(VulkanPipelineDetails));
 
-    details->vertShaderModule = _createShaderModule(
-      device, GSK_PATH("gsk://shaders/vulkan/std/compiled/white_vert.spv"));
-    details->fragShaderModule = _createShaderModule(
-      device, GSK_PATH("gsk://shaders/vulkan/std/compiled/white_frag.spv"));
+    ShaderModules shader_modules = __create_shaders(
+      device, GSK_PATH("gsk://shaders/vulkan/std/test.shader"));
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {
       .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage  = VK_SHADER_STAGE_VERTEX_BIT,
-      .module = details->vertShaderModule,
+      .module = shader_modules.modules[0],
       .pName  = "main"};
     VkPipelineShaderStageCreateInfo fragShaderStageInfo = {
       .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .module = details->fragShaderModule,
+      .module = shader_modules.modules[1],
       .pName  = "main"};
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,

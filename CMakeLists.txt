@@ -213,6 +213,7 @@ target_link_libraries(GoodsackEngine_runtime PRIVATE
     ThirdParty_stb
     ThirdParty_json
     ThirdParty_cgltf
+    ThirdParty_glslang
 )
 
 

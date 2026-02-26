@@ -2,6 +2,7 @@
   "dependencies": [
     "nlohmann-json",
     "gtest",
+    "glslang",
     {
       "name": "imgui",
       "features": [

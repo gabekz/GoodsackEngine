@@ -416,10 +416,12 @@ vulkan_device_cleanup(VulkanDeviceContext *context)
     }
     vkDestroyCommandPool(context->device, context->commandPool, NULL);
 
+#if 0
     vkDestroyShaderModule(
       context->device, context->pipelineDetails->vertShaderModule, NULL);
     vkDestroyShaderModule(
       context->device, context->pipelineDetails->fragShaderModule, NULL);
+#endif
 
     vkDestroyPipeline(
       context->device, context->pipelineDetails->graphicsPipeline, NULL);

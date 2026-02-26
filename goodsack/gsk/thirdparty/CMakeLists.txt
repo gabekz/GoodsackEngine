@@ -163,7 +163,7 @@ else()
 
 endif()
 
-target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING")
+#target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING")
 #target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_IMPL_API=__declspec(dllexport)")
 #target_compile_definitions(ThirdParty_imgui INTERFACE "IMGUI_API=__declspec(dllexport)")
 
@@ -194,6 +194,67 @@ else()
 
     #target_include_directories(${API_NAME} PUBLIC "${LUA_DIR}/src")
     #target_link_libraries(${API_NAME} lua)
+endif()
+
+#################################################################
+# Library: glslang
+#################################################################
+setup_thirdparty_lib(glslang)
+
+# Prefer vcpkg / installed config package
+find_package(glslang CONFIG QUIET)
+
+if(glslang_FOUND)
+    message(STATUS "(glslang) - auto located")
+
+    # vcpkg typically exports these targets (names can vary slightly by port/version)
+    # Common ones:
+    #   glslang::glslang
+    #   glslang::SPIRV
+    #   glslang::OGLCompiler
+    #   glslang::OSDependent
+    #   glslang::glslang-default-resource-limits   (optional but useful)
+    target_link_libraries(ThirdParty_glslang INTERFACE
+        glslang::glslang
+        glslang::SPIRV
+        glslang::OGLCompiler
+        glslang::OSDependent
+    )
+
+    # Optional (if present in your package):
+    if(TARGET glslang::glslang-default-resource-limits)
+        target_link_libraries(ThirdParty_glslang INTERFACE
+            glslang::glslang-default-resource-limits
+        )
+    endif()
+
+else()
+    message(STATUS "(glslang) - failed to find package. Using local")
+
+    set(GLSLANG_DIR "${LIB_DIR}/glslang")
+
+    # Disable extras you don't need
+    set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "" FORCE)
+    set(ENABLE_HLSL OFF CACHE BOOL "" FORCE)
+    set(ENABLE_OPT OFF CACHE BOOL "" FORCE)
+    set(GLSLANG_TESTS OFF CACHE BOOL "" FORCE)
+
+    add_subdirectory("${GLSLANG_DIR}" EXCLUDE_FROM_ALL)
+
+    # Upstream target names are usually these (non-namespaced):
+    #   glslang, SPIRV, OGLCompiler, OSDependent
+    target_link_libraries(ThirdParty_glslang INTERFACE
+        glslang
+        SPIRV
+        OGLCompiler
+        OSDependent
+    )
+
+    # Headers live under glslang/Public in the glslang repo; but adding root is fine.
+    target_include_directories(ThirdParty_glslang INTERFACE
+        "${GLSLANG_DIR}"
+        "${GLSLANG_DIR}/glslang/Public"
+    )
 endif()
 
 #################################################################
