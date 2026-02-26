@@ -11,8 +11,9 @@
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
-#define LOG_ENABLE        FALSE
-#define FALLBACK_CAPACITY 1
+#define LOG_ENABLE            FALSE
+#define FALLBACK_CAPACITY     1
+#define RESERVE_ITERATION_CAP 100
 
 static ArrayList
 __array_list_new_internal(const u32 data_size, const u32 list_increment)
@@ -56,27 +57,23 @@ __array_list_reset_internal(ArrayList *p_self)
     *p_self = __array_list_new_internal(data_size, list_incremenet);
 }
 
-ArrayList
-array_list_init(const u32 data_size, const u32 list_increment)
+static void
+__array_list_reserve_internal(ArrayList *self, u32 count)
 {
-    return __array_list_new_internal(data_size, list_increment);
-}
+    u8 reserve_iterations = 0;
 
-void
-array_list_push(ArrayList *self, void *data)
-{
-    if (self == NULL)
+    while ((self->list_next + count) > self->list_capacity)
     {
-        LOG_ERROR("Failed to push arraylist, list (%p) is NULL", self);
-        return;
-    }
+        if (reserve_iterations >= RESERVE_ITERATION_CAP)
+        {
+            LOG_CRITICAL("should not exceed %d iterations",
+                         RESERVE_ITERATION_CAP);
+        }
 
-    if (self->list_next >= self->list_capacity)
-    {
-        size_t newsize = self->data.buffer_size +
-                         (self->list_increment * self->data.data_size);
+        self->data.buffer_size = self->data.buffer_size +
+                                 (self->list_increment * self->data.data_size);
 
-        size_t newcount = self->list_capacity + self->list_increment;
+        self->list_capacity = self->list_capacity + self->list_increment;
 
 #if LOG_ENABLE
         LOG_TRACE("Resized list from %d to %d. Buffer went from %d to %d",
@@ -86,26 +83,54 @@ array_list_push(ArrayList *self, void *data)
                   newsize);
 #endif
 
-        void *p = realloc(self->data.buffer, newsize);
+        reserve_iterations++;
+    }
+
+    if (reserve_iterations > 0)
+    {
+        void *p = realloc(self->data.buffer, self->data.buffer_size);
         if (p == NULL)
         {
             LOG_CRITICAL("Failed to reallocate array_list %p", (void *)self);
         }
-        self->data.buffer      = p;
-        self->data.buffer_size = newsize;
-        self->list_capacity    = newcount;
+        self->data.buffer = p;
     }
+}
+
+ArrayList
+array_list_init(const u32 data_size, const u32 list_increment)
+{
+    return __array_list_new_internal(data_size, list_increment);
+}
+
+void
+array_list_append(ArrayList *self, void *data, u32 data_count)
+{
+    if (self == NULL)
+    {
+        LOG_ERROR("Failed to push arraylist, list (%p) is NULL", self);
+        return;
+    }
+
+    // ensure we have enough memory reserved
+    __array_list_reserve_internal(self, data_count);
 
     if (data != NULL)
     {
         memcpy((char *)self->data.buffer +
                  (self->list_next * self->data.data_size),
                data,
-               self->data.data_size);
+               self->data.data_size * data_count);
     }
 
-    self->list_next++;
+    self->list_next += data_count;
     self->is_list_empty = FALSE;
+}
+
+void
+array_list_push(ArrayList *self, void *data)
+{
+    array_list_append(self, data, 1);
 }
 
 void
@@ -168,4 +193,26 @@ array_list_count(ArrayList *self)
     }
 
     return (self->is_list_empty) ? 0 : self->list_next - 1;
+}
+
+u32
+array_list_free(ArrayList *self)
+{
+    if (self == NULL)
+    {
+        LOG_ERROR(
+          "error freeing array list - checking count for NULL arraylist %p",
+          self);
+        return 0;
+    }
+
+    if (self->data.buffer == NULL)
+    {
+        LOG_ERROR("error freeing array list - data buffer is NULL");
+        return 0;
+    }
+
+    free(self->data.buffer);
+
+    self->is_list_empty = TRUE;
 }

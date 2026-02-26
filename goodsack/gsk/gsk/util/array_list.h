@@ -16,10 +16,11 @@ extern "C" {
 
 #define ARRAY_LIST_RESIZE_EMPTY FALSE
 
-#define LIST_INIT(a, b) array_list_init(a, b)
-#define LIST_PUSH(a, b) array_list_push(a, b)
-#define LIST_GET(a, b)  array_list_get_at_index(a, b)
-#define LIST_COUNT(a)   array_list_count(a)
+#define LIST_INIT(a, b)      array_list_init(a, b)
+#define LIST_PUSH(a, b)      array_list_push(a, b)
+#define LIST_APPEND(a, b, n) array_list_append(a, b, n)
+#define LIST_GET(a, b)       array_list_get_at_index(a, b)
+#define LIST_COUNT(a)        array_list_count(a)
 
 typedef struct ArrayList
 {
@@ -38,6 +39,9 @@ ArrayList
 array_list_init(const u32 data_size, const u32 list_increment);
 
 void
+array_list_append(ArrayList *self, void *data, u32 data_count);
+
+void
 array_list_push(ArrayList *self, void *data);
 
 void
@@ -48,6 +52,9 @@ array_list_get_at_index(ArrayList *self, u64 index);
 
 u32
 array_list_count(ArrayList *self);
+
+u32
+array_list_free(ArrayList *self);
 
 #ifdef __cplusplus
 }

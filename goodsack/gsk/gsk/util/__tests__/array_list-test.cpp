@@ -11,7 +11,7 @@
 // TODO: replace with thirdparty root-include
 #include <gtest/gtest.h>
 
-TEST(Util_Array_list, Teardown)
+TEST(Util_Array_list, Functionality)
 {
     const u32 data_size = sizeof(u32);
     const u32 inc_size  = 10;
@@ -75,4 +75,27 @@ TEST(Util_Array_list, Teardown)
 
     // disabled for now
     // EXPECT_EQ(array.data.buffer_size, inc_size * data_size);
+}
+
+TEST(Util_Array_list, Appending)
+{
+    const u32 data_size = sizeof(char);
+    const u32 n_reserve = 2;
+    ArrayList array     = LIST_INIT(sizeof(char), n_reserve);
+
+    const char *name = "This is my name";
+
+    LIST_APPEND(&array, &name, strlen(name));
+
+    EXPECT_EQ(array.list_next, strlen(name));
+    EXPECT_EQ(array.data.buffer_size >= strlen(name), TRUE);
+
+    const char *p;
+    p = *(char **)array.data.buffer;
+
+    char new_str[512];
+    sprintf(new_str, "%s", *(char **)array.data.buffer);
+    EXPECT_STREQ(new_str, name);
+
+    EXPECT_STREQ(p, name);
 }
