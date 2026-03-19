@@ -62,6 +62,8 @@ typedef struct gsk_Renderer
     int renderWidth, renderHeight; // render resolution
     f32 window_aspect_ratio;       // window aspect ratio
 
+    u8 debug_group_id; // iterator for debug group message-id
+
     gsk_Scene **sceneL;
     u16 sceneC, activeScene, scene_queue_index;
     s32 scene_tracker[RENDERER_MAX_SCENES];

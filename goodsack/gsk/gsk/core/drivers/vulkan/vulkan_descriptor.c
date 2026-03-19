@@ -64,8 +64,10 @@ vulkan_descriptor_create_layout(VkDevice device)
       .descriptorCount = 1,
       .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 
-      .stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT, // Reference location
-      .pImmutableSamplers = NULL,                         // optional
+      .stageFlags =
+        VK_SHADER_STAGE_FRAGMENT_BIT |
+        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, // Reference location
+      .pImmutableSamplers = NULL,                    // optional
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {

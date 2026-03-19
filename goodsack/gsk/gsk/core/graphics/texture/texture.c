@@ -13,6 +13,8 @@
 #include "core/device/device.h"
 #include "core/drivers/vulkan/vulkan.h"
 
+#include "runtime/gsk_runtime_wrapper.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 // TODO: Move to thirdparty directive - gkutuzov/GoodsackEngine#19
 #include "stb_image.h"
@@ -97,8 +99,14 @@ _gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
         }
     } // GSK_DEVICE_API_OPENGL
 
-    else if (GSK_DEVICE_API_VULKAN && vkDevice)
+    else if (GSK_DEVICE_API_VULKAN)
     {
+        if (vkDevice == NULL)
+        {
+            LOG_WARN("vkDevice not passed in");
+            vkDevice = gsk_runtime_get_renderer()->vulkanDevice;
+        }
+
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
@@ -131,12 +139,9 @@ _gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
                               VK_IMAGE_USAGE_SAMPLED_BIT,
                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        vulkan_image_memory_barrier(vkDevice->device,
+        vulkan_image_memory_barrier(vkDevice,
                                     NULL,
-                                    vkDevice->commandPool,
-                                    vkDevice->graphicsQueue,
                                     ret.vulkan.textureImage,
-                                    VK_FORMAT_R8G8B8A8_SRGB,
                                     VK_IMAGE_LAYOUT_UNDEFINED,
                                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
@@ -149,12 +154,9 @@ _gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
                                       (u32)ret.height);
 
         // Final transition for shader access
-        vulkan_image_memory_barrier(vkDevice->device,
+        vulkan_image_memory_barrier(vkDevice,
                                     NULL,
-                                    vkDevice->commandPool,
-                                    vkDevice->graphicsQueue,
                                     ret.vulkan.textureImage,
-                                    VK_FORMAT_R8G8B8A8_SRGB,
                                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 

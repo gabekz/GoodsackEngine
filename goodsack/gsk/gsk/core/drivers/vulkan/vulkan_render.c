@@ -69,12 +69,9 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
                            VkCommandBuffer *commandBuffer)
 {
     vulkan_image_memory_barrier(
-      context->device,
+      context,
       commandBuffer,
-      context->commandPool,
-      context->graphicsQueue,
       context->swapChainDetails->swapchainImages[imageIndex],
-      context->swapChainDetails->swapchainImageFormat,
       VK_IMAGE_LAYOUT_UNDEFINED,
       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -140,6 +137,7 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
 #endif // !(GSK_VULKAN_USING_DYNAMIC_RENDERING)
 
     // Bind pipeline (containing loaded shader modules)
+    // TODO: done from shader_use probably
     vkCmdBindPipeline(*commandBuffer,
                       VK_PIPELINE_BIND_POINT_GRAPHICS,
                       context->pipelineDetails->graphicsPipeline);
@@ -162,6 +160,8 @@ vulkan_render_record_begin(VulkanDeviceContext *context,
                         .extent = context->swapChainDetails->swapchainExtent};
     vkCmdSetScissor(*commandBuffer, 0, 1, &scissor);
 
+    // TODO: done from material_use probably? maybe not. Maybe material should
+    // only UPDATE/WRITE-TO the descriptor sets, not actually bind them.
     vkCmdBindDescriptorSets(*commandBuffer,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                             context->pipelineDetails->pipelineLayout,
@@ -181,12 +181,9 @@ vulkan_render_record_end(VulkanDeviceContext *context,
     vkCmdEndRendering(*commandBuffer);
 
     vulkan_image_memory_barrier(
-      context->device,
+      context,
       commandBuffer,
-      context->commandPool,
-      context->graphicsQueue,
       context->swapChainDetails->swapchainImages[imageIndex],
-      context->swapChainDetails->swapchainImageFormat,
       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
       VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 }

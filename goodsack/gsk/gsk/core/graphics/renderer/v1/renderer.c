@@ -54,7 +54,6 @@ _allocate_new_scene(gsk_Renderer *p_renderer, u32 scene_id)
     scene->total_canvases = 0;
 
     // Fog options
-    // TODO: Don't initialize the first fog options here
     scene->fogOptions.fog_start   = -1.0f;
     scene->fogOptions.fog_end     = 100.0f;
     scene->fogOptions.fog_density = 0.1f;
@@ -64,7 +63,6 @@ _allocate_new_scene(gsk_Renderer *p_renderer, u32 scene_id)
     }
 
     // FIRST Scene Lighting
-    // TODO: Don't initialize the first scene lighting data here
     scene->lighting_data =
       gsk_lighting_initialize(RENDERER_UBO_BINDING_LIGHTING);
 
@@ -79,6 +77,21 @@ _allocate_new_scene(gsk_Renderer *p_renderer, u32 scene_id)
     p_renderer->scene_tracker[scene->id] = 1;
 
     return scene;
+}
+
+static void
+__push_debug_group(gsk_Renderer *p_renderer, const char *message)
+{
+    glPushDebugGroup(
+      GL_DEBUG_SOURCE_APPLICATION, p_renderer->debug_group_id, -1, message);
+
+    p_renderer->debug_group_id += 1;
+}
+
+static void
+__pop_debug_group(gsk_Renderer *p_renderer)
+{
+    glPopDebugGroup();
 }
 
 gsk_Renderer *
@@ -101,6 +114,8 @@ gsk_renderer_init(const char *app_name)
     ret->p_prev_material      = NULL;
     ret->prev_shader_id       = 0;
     ret->hovered_entity_index = 0;
+
+    ret->debug_group_id = 0;
 
     // Set Render Resolution
     ret->renderWidth  = (RENDER_RESOLUTION_OVERRIDE) ? PSX_WIDTH : winWidth;
@@ -398,7 +413,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     /*-------------------------------------------
         Pass #0 - GBuffer
     */
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Pass: GBuffer");
+    __push_debug_group(renderer, "Pass: GBuffer");
 
     prepass_bind();
     renderer->currentPass      = GskRenderPass_GBuffer;
@@ -406,12 +421,11 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     gsk_ecs_event(ecs, ECS_RENDER);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glPopDebugGroup();
+    __pop_debug_group(renderer);
     /*-------------------------------------------
         Pass #1 - Directional Shadowmap
     */
-    glPushDebugGroup(
-      GL_DEBUG_SOURCE_APPLICATION, 1, -1, "Pass: Shadowmap Depth");
+    __push_debug_group(renderer, "Pass: Shadowmap Depth");
 
     // update lighting information
     gsk_Light directional_light = p_active_scene->lighting_data.lights[0];
@@ -433,20 +447,19 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glPopDebugGroup();
+    __pop_debug_group(renderer);
     /*-------------------------------------------
         Pass #2 - SSAO Pass
     */
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1, "Pass: SSAO");
+    __push_debug_group(renderer, "Pass: SSAO");
     // bind the shadowmap textures & framebuffers
     pass_ssao_bind(renderer->ssaoOptions);
 
-    glPopDebugGroup();
+    __pop_debug_group(renderer);
     /*-------------------------------------------
         Pass #3 - Post Processing / Lighting Pass
     */
-    glPushDebugGroup(
-      GL_DEBUG_SOURCE_APPLICATION, 3, -1, "Pass: Lighting (Forward)");
+    __push_debug_group(renderer, "Pass: Lighting (Forward)");
 
     postbuffer_bind(renderer->properties.msaaEnable);
 
@@ -500,12 +513,11 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     renderer->currentPass = GskRenderPass_Lighting;
     gsk_ecs_event(ecs, ECS_RENDER);
 
-    glPopDebugGroup();
+    __pop_debug_group(renderer);
     /*-------------------------------------------
         Pass #4 - Post Processing / Lighting Mask
     */
-    glPushDebugGroup(
-      GL_DEBUG_SOURCE_APPLICATION, 4, -1, "Pass: Lighting (Forward) - Mask");
+    __push_debug_group(renderer, "Pass: Lighting (Forward) - Mask");
 
     // Forward-draw Event (LightingMask)
     renderer->currentPass = GskRenderPass_LightingMask;
@@ -517,11 +529,11 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glDisable(GL_CULL_FACE);
 #endif
 
-    glPopDebugGroup();
+    __pop_debug_group(renderer);
     /*-------------------------------------------
         Pass #5 - Post Processing / Lighting Mask
     */
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 5, -1, "Pass: FX/Skybox");
+    __push_debug_group(renderer, "Pass: FX/Skybox");
 
     glDepthFunc(GL_LEQUAL);
 
@@ -539,32 +551,29 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
     glBindSampler(0, 0);
 #endif // TESTING_GLSAMPLER_OBJECTS
 
-    glPopDebugGroup();
+    __pop_debug_group(renderer);
     /*-------------------------------------------
         Pass #6 - Bloom Stage
     */
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 6, -1, "Pass: Bloom");
+    __push_debug_group(renderer, "Pass: Bloom");
 
     u32 cnt_draw_id = postbuffer_get_id();
     pass_bloom_render(cnt_draw_id, &renderer->properties);
 
-    glPopDebugGroup();
+    __pop_debug_group(renderer);
 
     /*-------------------------------------------
         Pass #7 - Backbuffer draw
     */
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION,
-                     7,
-                     -1,
-                     "Pass: Backbuffer Draw + Post-Processing");
+    __push_debug_group(renderer, "Pass: Backbuffer Draw + Post-Processing");
 
     postbuffer_draw(&renderer->properties, pass_bloom_get_texture_id());
 
-    glPopDebugGroup();
+    __pop_debug_group(renderer);
     /*-------------------------------------------
         Pass #8 - GUI
     */
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 8, -1, "Pass: GUI");
+    __push_debug_group(renderer, "Pass: GUI");
 
     // Testing stuff
 
@@ -657,7 +666,7 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
         renderer->hovered_entity_index = hovered_entity;
     }
 
-    glPopDebugGroup();
+    __pop_debug_group(renderer);
 }
 
 static void
@@ -677,6 +686,8 @@ gsk_renderer_tick(gsk_Renderer *renderer)
 {
     gsk_Scene *scene = renderer->sceneL[renderer->activeScene];
     gsk_ECS *ecs     = scene->ecs;
+
+    renderer->debug_group_id = 0; // IMPORTANT TO RESET HERE
 
     if (renderer->scene_queue_index != renderer->activeScene)
     {

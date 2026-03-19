@@ -56,19 +56,17 @@ vulkan_image_create(VkPhysicalDevice physicalDevice,
 }
 
 void
-vulkan_image_memory_barrier(VkDevice device,
+vulkan_image_memory_barrier(VulkanDeviceContext *p_context,
                             VkCommandBuffer *p_command_buffer,
-                            VkCommandPool commandPool,
-                            VkQueue graphicsQueue,
                             VkImage image,
-                            VkFormat format,
                             VkImageLayout prevLayout,
                             VkImageLayout newLayout)
 {
     VkCommandBuffer commandBuffer = {0};
     if (p_command_buffer == NULL)
     {
-        commandBuffer = vulkan_command_stc_begin(device, commandPool);
+        commandBuffer =
+          vulkan_command_stc_begin(p_context->device, p_context->commandPool);
     }
 
     VkImageMemoryBarrier barrier = {
@@ -98,8 +96,10 @@ vulkan_image_memory_barrier(VkDevice device,
 
         srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    } else if (prevLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-               newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+    }
+
+    else if (prevLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+             newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
     {
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -134,22 +134,24 @@ vulkan_image_memory_barrier(VkDevice device,
         LOG_ERROR("Unsupported texture layout transition!");
     }
 
-    vkCmdPipelineBarrier((p_command_buffer == NULL) ? commandBuffer
-                                                    : *p_command_buffer,
-                         srcStage,
-                         dstStage,
-                         0,
-                         0,
-                         NULL,
-                         0,
-                         NULL,
-                         1,
-                         &barrier);
+    vkCmdPipelineBarrier(
+      ((p_command_buffer == NULL) ? commandBuffer : *p_command_buffer),
+      srcStage,
+      dstStage,
+      0,
+      0,
+      NULL,
+      0,
+      NULL,
+      1,
+      &barrier);
 
     if (p_command_buffer == NULL)
     {
-        vulkan_command_stc_end(
-          device, graphicsQueue, commandBuffer, commandPool);
+        vulkan_command_stc_end(p_context->device,
+                               p_context->graphicsQueue,
+                               commandBuffer,
+                               p_context->commandPool);
     }
 }
 

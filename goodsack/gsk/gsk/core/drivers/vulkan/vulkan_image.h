@@ -9,6 +9,7 @@
 #include "util/gfx.h"
 #include "util/sysdefs.h"
 
+#include "core/drivers/vulkan/vulkan_device.h"
 #include "core/drivers/vulkan/vulkan_support.h"
 
 #ifdef __cplusplus
@@ -30,12 +31,9 @@ vulkan_image_create(VkPhysicalDevice physicalDevice,
                     VkMemoryPropertyFlags properties);
 
 void
-vulkan_image_memory_barrier(VkDevice device,
+vulkan_image_memory_barrier(VulkanDeviceContext *p_context,
                             VkCommandBuffer *p_command_buffer,
-                            VkCommandPool commandPool,
-                            VkQueue graphicsQueue,
                             VkImage image,
-                            VkFormat format,
                             VkImageLayout prevLayout,
                             VkImageLayout newLayout);
 
