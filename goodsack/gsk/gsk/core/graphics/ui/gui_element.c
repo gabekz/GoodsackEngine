@@ -155,8 +155,8 @@ gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
                              (f32)p_renderer->windowHeight / self->canvas_viewport[1]};
 
         vec2 pos = GLM_VEC2_ZERO_INIT;
-        vec2 offs = {self->offset[0] * window_scale[0],
-                     self->offset[1] * window_scale[1]};
+        vec2 offs = {self->offset[0],
+                     self->offset[1]};
 
         glm_vec2_add(self->position, offs, pos);
 
@@ -170,8 +170,8 @@ gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
 
     const gsk_Input input = gsk_device_getInput();
     const double cursor_pos[2] = {
-        input.cursor_position[0],
-        p_renderer->windowHeight - input.cursor_position[1]
+        input.cursor_position[0] / window_scale[0],
+        (p_renderer->windowHeight - input.cursor_position[1]) / window_scale[1]
     };
 
     if((cursor_pos[0] > x_bounds[0] && cursor_pos[0] < x_bounds[1]) &&

@@ -107,6 +107,13 @@ __update_world_position(struct ComponentTransform *cmp_transform)
     cmp_transform->world_position[2] = cmp_transform->model[3][2];
 }
 
+// TODO: should be a utility function elsewhere, probably
+static inline f32
+__fdiv_safe(const f32 a, const f32 b)
+{
+    return (b == 0) ? 0 : a / b;
+}
+
 static void
 init(gsk_Entity e)
 {
@@ -120,8 +127,16 @@ init(gsk_Entity e)
     // Get parent transform (if exists)
     if (transform->has_parent)
     {
-        struct ComponentTransform *parentTransform = gsk_ecs_get(
-          gsk_ecs_ent(e.ecs, transform->parent_entity_id), C_TRANSFORM);
+        gsk_Entity ent_parent = gsk_ecs_ent(e.ecs, transform->parent_entity_id);
+
+        if (!gsk_ecs_has(ent_parent, C_TRANSFORM))
+        {
+            transform->has_parent       = FALSE;
+            transform->parent_entity_id = 0;
+        }
+
+        struct ComponentTransform *parentTransform =
+          gsk_ecs_get(ent_parent, C_TRANSFORM);
         glm_mat4_copy(parentTransform->model, m4i);
     }
 
@@ -149,12 +164,16 @@ late_update(gsk_Entity e)
 {
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
+    transform->has_parent =
+      (transform->parent_entity_id >= ECS_ID_FIRST) ? TRUE : FALSE;
 
     mat4 m4i     = GLM_MAT4_IDENTITY_INIT;
     mat4 skinned = GLM_MAT4_IDENTITY_INIT;
 
     // check for BONE_ATTACHMENT
     _set_to_joint_matrix(e, &m4i, &skinned);
+
+    vec3 scale_scalar = {0, 0, 0};
 
     if (gsk_ecs_has(e, C_CAMERA))
     {
@@ -166,9 +185,29 @@ late_update(gsk_Entity e)
 
     if (transform->has_parent)
     {
-        struct ComponentTransform *parentTransform = gsk_ecs_get(
-          gsk_ecs_ent(e.ecs, transform->parent_entity_id), C_TRANSFORM);
+        gsk_Entity ent_parent = gsk_ecs_ent(e.ecs, transform->parent_entity_id);
+
+        if (!gsk_ecs_has(ent_parent, C_TRANSFORM))
+        {
+            gsk_ecs_ent_destroy(e);
+            return;
+        }
+
+        struct ComponentTransform *parentTransform =
+          gsk_ecs_get(ent_parent, C_TRANSFORM);
+
         glm_mat4_copy(parentTransform->model, m4i);
+
+        scale_scalar[0] =
+          __fdiv_safe(transform->scale[0], parentTransform->scale[0]);
+        scale_scalar[1] =
+          __fdiv_safe(transform->scale[1], parentTransform->scale[1]);
+        scale_scalar[2] =
+          __fdiv_safe(transform->scale[2], parentTransform->scale[2]);
+
+    } else
+    {
+        glm_vec3_copy(transform->scale, scale_scalar);
     }
 
     glm_mat4_mul(m4i, skinned, m4i);
@@ -182,7 +221,7 @@ late_update(gsk_Entity e)
     // separated rotation matrix
     glm_mat4_mul(m4i, mat_rot, m4i);
 
-    glm_scale(m4i, transform->scale);
+    glm_scale(m4i, scale_scalar);
 
     glm_mat4_copy(m4i, transform->model);
     glm_mat4_copy(mat_rot, transform->m4_rotation);

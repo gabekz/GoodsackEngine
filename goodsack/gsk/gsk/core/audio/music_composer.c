@@ -11,6 +11,8 @@
 #include "core/audio/audio_clip.h"
 #include "core/drivers/alsoft/alsoft.h"
 #include "core/drivers/alsoft/alsoft_debug.h"
+#include <AL/alc.h>
+#include <AL/alext.h>
 
 #define BEATS_PER_BAR   4
 #define BARS_PER_PHRASE 4
@@ -19,10 +21,11 @@
 static void
 _sequence_create_track(gsk_ComposerSequence *p_sequence, const char *uri)
 {
-    gsk_AudioClip *p_clip = gsk_audio_clip_load_from_file(uri);
+    gsk_AudioClip p_clip = gsk_audio_clip_import_from_file(uri);
+    gsk_audio_clip_load(&p_clip);
+    ALuint buffer_clip = p_clip.al_buffer_id;
 
-    s32 buffer_source = openal_generate_source();
-    s32 buffer_clip   = openal_buffer_create(p_clip);
+    ALuint buffer_source = openal_generate_source();
 
     AL_CHECK(alSourcei(buffer_source, AL_BUFFER, buffer_clip));
     AL_CHECK(alSourcei(buffer_source, AL_LOOPING, TRUE));
@@ -55,7 +58,7 @@ _play_track(gsk_MusicComposer *p_composer, gsk_ComposerTrack *p_track)
     AL_CHECK(alSourcef(
       p_track->buffer_source, AL_SEC_OFFSET, p_composer->time_offset));
 
-    AL_CHECK(alSourcePlay(p_track->buffer_clip));
+    AL_CHECK(alSourcePlay(p_track->buffer_source));
 }
 
 static void
@@ -111,7 +114,7 @@ _begin_stage(gsk_MusicComposer *p_composer, u32 next_stage)
 
             if (skip_stop == FALSE)
             {
-                AL_CHECK(alSourceStop(p_track->buffer_clip));
+                AL_CHECK(alSourceStop(p_track->buffer_source));
             }
         }
     }
@@ -176,6 +179,12 @@ gsk_music_composer_update(gsk_MusicComposer *p_composer, double time_sec)
 {
     u32 next_stage  = p_composer->current_stage + 1;
     u32 last_phrase = p_composer->current_phrase;
+
+#if 0
+    ALint64SOFT now_samples;
+    alGetInteger64vSOFT(
+      openal_get_device(), ALC_DEVICE_CLOCK_SOFT, &now_samples);
+#endif
 
     // f64 beat_time = 0.4511; // 133bpm
     f64 beat_time = TEMPO_MS;

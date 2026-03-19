@@ -258,10 +258,16 @@ _gsk_ecs_add_internal(gsk_Entity entity, u32 component_id, void *value)
 
     if (ecs->p_ent_flags[entity.index] & GskEcsEntityFlag_Initialized)
     {
-        LOG_WARN("Cannot add components (yet) to an already initialized entity "
+        // TODO: Leaving this warning here, because we want to have a
+        // "component-flag" that checks for a components requirement for
+        // initialization (on a per-component scale)
+        //
+        // gsk_ecs_get() should check if initialization to the component has
+        // been done already by a system, and we may want to set up macros that
+        // are specific to the ECS_EVENT
+        LOG_WARN("adding component to an already initialized entity "
                  "(id: %d).",
                  entity.id);
-        return;
     }
 
     gsk_ECSComponentList *list = &ecs->component_lists[component_id];
