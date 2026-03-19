@@ -86,6 +86,9 @@ rt_set_debug_entity_id(gsk_EntityId entity_id);
 void *
 rt_get_lua_state();
 
+void
+rt_lua_reload();
+
 } // namespace runtime
 } // namespace gsk
 

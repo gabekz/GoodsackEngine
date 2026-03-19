@@ -6,6 +6,8 @@
 #include "debug_panel_assets.hpp"
 #include <imgui.h>
 
+#include "runtime/gsk_runtime.hpp"
+
 void
 gsk::tools::panels::Assets::draw(void)
 {
@@ -22,7 +24,11 @@ gsk::tools::panels::Assets::draw(void)
         Checkbox("Auto Reload", &luaStateEnable);
         EndDisabled();
         SameLine();
-        if (Button("Force Reload")) { LOG_DEBUG("Force Reload"); }
+        if (Button("Force Reload"))
+        {
+            LOG_DEBUG("Force Reload");
+            gsk::runtime::rt_lua_reload();
+        }
     }
 
     if (CollapsingHeader("Shaders"))

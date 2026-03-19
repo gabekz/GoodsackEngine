@@ -15,6 +15,7 @@
 #include "util/filesystem.h"
 #include "util/lua_deps.h"
 
+#include "api/llib/llib_vector.h"
 #include "wrapper/lua/lua_debug.h"
 
 #include "entity/component/ecs_component.hpp"
@@ -107,7 +108,16 @@ LuaEventStore::Cleanup()
 {
     LOG_DEBUG("cleaning up");
     if (s_Instance.m_Lua) { lua_close(s_Instance.m_Lua); }
-    // TODO: cleanup ECS related stuff
+
+#if 0
+    for (int i = 0; i < ECSEVENT_LAST + 1; i++)
+    {
+        if (s_Instance.m_functionList[i]->size > 0)
+        {
+            free(s_Instance.m_functionList[i]);
+        }
+    }
+#endif
 }
 
 void
@@ -142,19 +152,9 @@ _meta_Component_newindex(lua_State *L)
     // get variable type
     if (c->GetVariableType(k) == EcsDataType::VEC3)
     {
-        vec3 vec = GLM_VEC3_ONE_INIT;
-
-        lua_pushnil(L); // first key
-        int stackIndex = -2, iter = 0;
-        while (lua_next(L, stackIndex))
-        { // traverse keys
-            vec[iter] = lua_tonumber(L, -1);
-            lua_pop(L, 1); // stack restore
-            iter++;
-        }
-
-        c->SetVariable(k, &vec);
-
+        LOG_INFO("set vec3");
+        gsk_L_Vector *vec = (gsk_L_Vector *)luaL_checkudata(L, -1, VECTOR_LIB);
+        c->SetVariable(k, &vec->float3);
         return 0;
     }
 
@@ -173,6 +173,7 @@ _meta_Component_newindex(lua_State *L)
 static int
 _meta_Component_index(lua_State *L)
 {
+    LOG_INFO("component index");
     entity::ECSComponent *c;
     if (lua_isuserdata(L, 1))
     {
@@ -186,35 +187,13 @@ _meta_Component_index(lua_State *L)
     // get variable type
     if (var_type == EcsDataType::VEC3)
     {
-        // LOG_DEBUG("We have a vec3");
-        vec3 vec = GLM_VEC3_ONE_INIT;
+        gsk_L_Vector *new_vec =
+          (gsk_L_Vector *)lua_newuserdata(L, sizeof(gsk_L_Vector));
+        if (new_vec == NULL) { LOG_CRITICAL("Failed to create lua Vector"); }
 
-        c->GetVariable(k, &vec);
-
-        // open table
-        lua_newtable(L);
-
-        // create cell
-        lua_pushstring(L, "x");
-        lua_pushnumber(L, (float)vec[0]);
-        // lua_pushnumber(L, 3);
-        lua_rawset(L, -3); // insert cell and pop
-
-        lua_pushstring(L, "y");
-        lua_pushnumber(L, (float)vec[1]);
-        // lua_pushnumber(L, 2);
-        lua_rawset(L, -3);
-
-        lua_pushstring(L, "z");
-        lua_pushnumber(L, (float)vec[2]);
-        // lua_pushnumber(L, 1);
-        lua_rawset(L, -3);
-
-        // close table
-        lua_pushliteral(L, "n");
-        lua_pushnumber(L, 3); // number of cells
-        lua_rawset(L, -3);
-        return 1; // return table
+        c->GetVariable(k, &new_vec->float3);
+        luaL_setmetatable(L, VECTOR_LIB);
+        return 1;
 
     } else if (var_type == EcsDataType::ENTITY)
     {

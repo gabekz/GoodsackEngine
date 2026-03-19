@@ -41,7 +41,7 @@ _print_table(lua_State *L, int idx, int depth)
             _print_table(L, -1, depth + 2);
             for (int i = 0; i < depth; i++)
                 putchar(' ');
-            LOG_PRINT(BYEL "\t}\n" COLOR_RESET);
+            LOG_PRINT(BYEL "\t\n}\n" COLOR_RESET);
         } else
         {
             // convert value → string
@@ -59,6 +59,15 @@ static int
 lua_print(lua_State *L)
 {
     int nargs = lua_gettop(L);
+
+#if 0
+    lua_Debug ar;
+    if (lua_getstack(L, 1, &ar))
+    {
+        lua_getinfo(L, "nSl", &ar);
+        LOG_PRINT("[%s]:%d", ar.short_src, ar.currentline);
+    }
+#endif
 
     for (int i = 1; i <= nargs; i++)
     {

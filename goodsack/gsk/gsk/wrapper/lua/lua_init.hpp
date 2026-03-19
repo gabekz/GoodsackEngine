@@ -15,4 +15,7 @@
 bool
 LuaInit(const char *file, gsk_ECS *ecs);
 
+bool
+LuaClose();
+
 #endif // __LUA_INIT_H__

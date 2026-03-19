@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2023-present, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
 #include "common.h"
-#define VECTOR_LIB "goodsack.vector"
+
+#include "llib_vector.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,46 +13,33 @@
 #include "util/logger.h"
 #include "util/maths.h"
 
-typedef struct // Vector_lua_t
-{
-    float float3[3];
-} Vector;
-
-#if 0
-static int
-vector__index(lua_State *L)
-{
-    //const char *key   = luaL_checkstring(L, -2);
-    //const char *value = luaL_checkstring(L, -1);
-    if (!lua_rawget(L, 1)) { LOG_INFO("lua raw get");
-    }
-
-    return 1;
-}
-#endif
-
 static int
 _vector__OPERATOR(lua_State *L, int lua_operation)
 {
-    Vector *vec_a = *(Vector **)luaL_checkudata(L, 1, VECTOR_LIB);
+    gsk_L_Vector *vec_a = luaL_checkudata(L, 1, VECTOR_LIB);
 
-    Vector *vec_b = NULL;
-    f32 b_number  = 0;
+    gsk_L_Vector *vec_b = NULL;
+    f32 b_number        = 0;
+
+    gsk_L_Vector *ret = NULL;
 
     u8 is_b_scalar = (!lua_isuserdata(L, 2));
 
+    // grab number
     if (is_b_scalar)
     {
         b_number = luaL_checknumber(L, 2);
     }
-    // grab number
+    // grab vector
     else
     {
-        vec_b = *(Vector **)luaL_checkudata(L, 2, VECTOR_LIB);
+        vec_b = luaL_checkudata(L, 2, VECTOR_LIB);
     }
 
-    Vector *ret = malloc(sizeof(Vector));
-    if (ret == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
+    ret = lua_newuserdata(L, sizeof(gsk_L_Vector));
+
+    // Vector *ret = malloc(sizeof(Vector));
+    // if (ret == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
 
     if (is_b_scalar)
     {
@@ -79,7 +67,7 @@ _vector__OPERATOR(lua_State *L, int lua_operation)
         }
     }
 
-    *(Vector **)lua_newuserdata(L, sizeof(Vector *)) = ret;
+    //*(Vector **)lua_newuserdata(L, sizeof(Vector *)) = ret;
     luaL_setmetatable(L, VECTOR_LIB);
 
     return 1;
@@ -89,15 +77,15 @@ static int
 vector__gc(lua_State *L)
 {
     LOG_TRACE("## __gc\n");
-    Vector *foo = *(Vector **)luaL_checkudata(L, 1, VECTOR_LIB);
-    free(foo);
+    // Vector *foo = *(Vector **)luaL_checkudata(L, 1, VECTOR_LIB);
+    // free(foo);
     return 0;
 }
 
 static int
 vector__tostring(lua_State *L)
 {
-    Vector *foo = *(Vector **)luaL_checkudata(L, 1, VECTOR_LIB);
+    gsk_L_Vector *foo = luaL_checkudata(L, 1, VECTOR_LIB);
     lua_pushfstring(
       L, "{%f, %f, %f} ", foo->float3[0], foo->float3[1], foo->float3[2]);
     return 1;
@@ -115,38 +103,19 @@ vector__sub(lua_State *L)
     return _vector__OPERATOR(L, LUA_OPSUB);
 }
 
-#if 0
-static int
-vector_get_x(lua_State *L)
-{
-    if (!CheckLua(L, luaL_testudata(L, 1, VECTOR_LIB))) {
-        LOG_DEBUG("ITS NOT UDATA");
-    }
-    const char *key   = luaL_checkstring(L, -1);
-    const char *value = luaL_checkstring(L, -1);
-
-    LOG_INFO("Key: %s, Value: %s", key, value);
-
-    LOG_TRACE("## get_x\n");
-    Vector *foo = *(Vector **)luaL_checkudata(L, 1, VECTOR_LIB);
-    lua_pushinteger(L, foo->float3[0]);
-    return 1;
-}
-#endif
-
 static int
 vector_Cross(lua_State *L)
 {
     LOG_DEBUG("## Cross\n");
-    Vector *vec_a = *(Vector **)luaL_checkudata(L, 1, VECTOR_LIB);
-    Vector *vec_b = *(Vector **)luaL_checkudata(L, 2, VECTOR_LIB);
+    gsk_L_Vector *vec_a = luaL_checkudata(L, 1, VECTOR_LIB);
+    gsk_L_Vector *vec_b = luaL_checkudata(L, 2, VECTOR_LIB);
 
-    Vector *ret = malloc(sizeof(Vector));
-    if (ret == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
+    // Vector *ret = malloc(sizeof(Vector));
+    gsk_L_Vector *ret = lua_newuserdata(L, sizeof(gsk_L_Vector));
+    // if (ret == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
 
     glm_vec3_cross(vec_a->float3, vec_b->float3, ret->float3);
 
-    *(Vector **)lua_newuserdata(L, sizeof(Vector *)) = ret;
     luaL_setmetatable(L, VECTOR_LIB);
 
     return 1;
@@ -157,8 +126,9 @@ vector_new(lua_State *L)
 {
     LOG_TRACE("## new\n");
 
-    Vector *new_vec = malloc(sizeof(Vector));
-    if (new_vec == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
+    // Vector *new_vec = malloc(sizeof(Vector));
+    // if (new_vec == NULL) { LOG_CRITICAL("Failed to allocate lua Vector"); }
+    gsk_L_Vector *new_vec = lua_newuserdata(L, sizeof(gsk_L_Vector));
 
     int iter = 1 + lua_istable(L, 1);
 
@@ -166,28 +136,72 @@ vector_new(lua_State *L)
     {
         int j = iter + i;
         new_vec->float3[i] =
-          !lua_isnoneornil(L, j) ? luaL_checkinteger(L, j) : 0;
+          !lua_isnoneornil(L, j) ? luaL_checknumber(L, j) : 0;
     }
 
-    *(Vector **)lua_newuserdata(L, sizeof(Vector *)) = new_vec;
+    //*(Vector **)lua_newuserdata(L, sizeof(Vector *)) = new_vec;
     luaL_setmetatable(L, VECTOR_LIB);
     return 1;
 }
 
-#if 0
 static int
-vector_index(lua_State *L)
+vector__index(lua_State *L)
 {
-    LOG_TRACE("## index\n");
+    gsk_L_Vector *vec = luaL_checkudata(L, 1, VECTOR_LIB);
+    const char *key   = luaL_checkstring(L, 2);
 
-    const char *k = luaL_checkstring(L, -1);
-    LOG_INFO("Checked is %s", k);
+    if (strcmp(key, "x") == 0)
+    {
+        lua_pushnumber(L, vec->float3[0]);
+        return 1;
+    }
+    if (strcmp(key, "y") == 0)
+    {
+        lua_pushnumber(L, vec->float3[1]);
+        return 1;
+    }
+    if (strcmp(key, "z") == 0)
+    {
+        lua_pushnumber(L, vec->float3[2]);
+        return 1;
+    }
 
-    int i = luaL_checkinteger(L, 2);
-    lua_pushinteger(L, i);
+    /* fallback to methods stored in __methods */
+    luaL_getmetatable(L, VECTOR_LIB);
+    lua_getfield(L, -1, "__methods");
+    lua_pushvalue(L, 2);
+    lua_rawget(L, -2);
+
     return 1;
 }
-#endif
+
+static int
+vector__newindex(lua_State *L)
+{
+    gsk_L_Vector *vec = luaL_checkudata(L, 1, VECTOR_LIB);
+    const char *key   = luaL_checkstring(L, 2);
+    float value       = luaL_checknumber(L, 3);
+
+    LOG_INFO("vec3 __newindex %f", value);
+
+    if (strcmp(key, "x") == 0)
+    {
+        vec->float3[0] = value;
+        return 0;
+    }
+    if (strcmp(key, "y") == 0)
+    {
+        vec->float3[1] = value;
+        return 0;
+    }
+    if (strcmp(key, "z") == 0)
+    {
+        vec->float3[2] = value;
+        return 0;
+    }
+
+    return luaL_error(L, "invalid Vector field '%s'", key);
+}
 
 int
 luaopen_goodsack_vector(lua_State *L)
@@ -197,23 +211,21 @@ luaopen_goodsack_vector(lua_State *L)
                                     {"__tostring", vector__tostring},
                                     {"__add", vector__add},
                                     {"__sub", vector__sub},
-                                    //{"__index", vector__index},
+                                    {"__index", vector__index},
+                                    {"__newindex", vector__newindex},
                                     {NULL, NULL}};
 
     static const luaL_Reg meth[] = {{"Cross", vector_Cross}, {NULL, NULL}};
 
     luaL_newmetatable(L, VECTOR_LIB); // -- metatable: goodsack.vector
     luaL_setfuncs(L, meta, 0);
-    // lua_pushcfunction(L, vector__index); //-- instead of newlib(L, meth)
     luaL_newlib(L, meth);
-    lua_setfield(L, -2, "__index");
+    lua_setfield(L, -2, "__methods");
+
     lua_pop(L, 1);
 
-// static functions -- Vector
-#if 0
-    static const luaL_Reg static_meta[] = {
-      {"__index", vector_index}, {"__call", vector_new}, {NULL, NULL}};
-#endif
+    // static functions -- Vector
+
     static const luaL_Reg static_meta[] = {{"__call", vector_new},
                                            {NULL, NULL}};
     static const luaL_Reg static_meth[] = {{"new", vector_new}, {NULL, NULL}};

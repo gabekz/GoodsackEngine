@@ -51,3 +51,10 @@ LuaInit(const char *file, gsk_ECS *ecs)
 
     return true;
 }
+
+bool
+LuaClose()
+{
+    entity::LuaEventStore::Cleanup();
+    return true;
+}

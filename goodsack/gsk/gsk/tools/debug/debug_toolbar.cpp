@@ -194,6 +194,18 @@ gsk::tools::DebugToolbar::render(void)
 
     if (!m_debugEnabled) return;
 
+    // disable ImGui input if cursor is locked
+    {
+        ImGuiIO &io = ImGui::GetIO();
+        if (gsk_device_getInput().cursor_state.is_visible == FALSE)
+        {
+            io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+        } else
+        {
+            io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+        }
+    }
+
     // Create new frame
     if (GSK_DEVICE_API_OPENGL)
     {

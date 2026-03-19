@@ -13,7 +13,12 @@ function hook.Add(event_name, name, func)
         print('adding HOOK (' .. event_name .. ')')
 	end
 
-	Hooks[ event_name ][ name ] = func
+	if (Hooks[event_name][name] == nil) then
+        print('registering HOOK func (' .. event_name .. ')(' .. name .. ')')
+		Hooks[ event_name ][ name ] = func
+	else
+		print('cannot add hook with duplicate name')
+	end
 end
 
 function hook.Run(name, ...)

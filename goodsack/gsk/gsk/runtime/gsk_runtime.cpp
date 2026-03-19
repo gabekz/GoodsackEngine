@@ -39,6 +39,8 @@
 // included here for activating core ECS systems
 #include "entity/modules/modules_systems.h"
 
+#include "console/console_cmd.h"
+
 #if GSK_USING_COMPOSER
 #include "core/audio/music_composer.h"
 #include "core/audio/music_composer_loader.hpp"
@@ -95,8 +97,20 @@ static struct
         u32 collision_layer_matrix[ECS_MAX_LAYERS];
     } layers;
 
+    gsk_Path lua_init_path;
+
 } s_runtime;
 } // extern "C"
+
+static void
+__cmd_echo(u32 argc, const char **argv)
+{
+    for (u32 i = 0; i < argc; i++)
+    {
+        LOG_PRINT("%s", argv[i]);
+        if (i + 1 < argc) { LOG_PRINT(" "); }
+    }
+}
 
 static void
 _gsk_check_args(int argc, char *argv[])
@@ -432,6 +446,11 @@ gsk::runtime::rt_setup(const char *root_dir,
     }
 #endif // RUNTIME_LOADING_SCREEN
 
+    // Intialize TEST commands
+    gsk_console_cmd_register("echo", "echo <text..>", __cmd_echo);
+
+    // Initialize Lua
+
     if (s_runtime.options.using_lua)
     {
         // Main Lua entry
@@ -439,9 +458,10 @@ gsk::runtime::rt_setup(const char *root_dir,
         char path[GSK_FS_MAX_PATH];
         strcpy(path, root_scheme);
         strcat(path, "://scripts/main.lua");
+        s_runtime.lua_init_path = gsk_filesystem_uri_to_path(path);
 
         s_runtime.status.is_lua_running =
-          LuaInit(GSK_PATH(path), s_runtime.ecs);
+          LuaInit(s_runtime.lua_init_path.path, s_runtime.ecs);
 
         if (s_runtime.status.is_lua_running == false)
         {
@@ -796,4 +816,20 @@ gsk::runtime::rt_get_lua_state()
     if (!s_runtime.status.is_lua_running) { return NULL; }
 
     return entity::LuaEventStore::getLuaState();
+}
+
+void
+gsk::runtime::rt_lua_reload()
+{
+    if (!s_runtime.status.is_lua_running) { return; }
+
+    s_runtime.status.is_lua_running = LuaClose();
+
+    s_runtime.status.is_lua_running =
+      LuaInit(s_runtime.lua_init_path.path, s_runtime.ecs);
+
+    if (s_runtime.status.is_lua_running == false)
+    {
+        LOG_ERROR("Failed to initialize lua");
+    }
 }
