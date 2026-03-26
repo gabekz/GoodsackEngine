@@ -222,12 +222,19 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
     {
         list_type = GskAssetType_Audio;
     }
-    // model
+// model
+#if 1
     else if (!strcmp(ext, ".obj") || !strcmp(ext, ".gltf") ||
              !strcmp(ext, ".glb"))
     {
         list_type = GskAssetType_Model;
     }
+#else
+    else if (!strcmp(ext, ".obj"))
+    {
+        list_type = GskAssetType_Model;
+    }
+#endif
     // None
     else
     {

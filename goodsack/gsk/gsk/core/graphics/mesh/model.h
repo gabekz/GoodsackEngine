@@ -43,6 +43,12 @@ typedef struct gsk_Model
 gsk_Model *
 gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials);
 
+gsk_AssetBlob
+gsk_model_serialize(gsk_Model *p_self);
+
+gsk_Model
+gsk_model_deserialize_blob(gsk_AssetBlob *p_blob);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

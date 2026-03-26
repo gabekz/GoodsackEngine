@@ -31,6 +31,33 @@
 // TODO: We don't want to depend on the runtime
 #include "runtime/gsk_runtime_wrapper.h"
 
+static inline const char *
+_fetch_mode_str(u8 fetch_mode)
+{
+    switch (fetch_mode)
+    {
+    case GSK_ASSET_FETCH_ALL: return "FETCH_ALL";
+    case GSK_ASSET_FETCH_IMPORT: return "FETCH_IMPORT";
+    case GSK_ASSET_FETCH_VALIDATE: return "FETCH_VALIDATE";
+    default: return "";
+    }
+}
+
+static inline const char *
+_asset_type_str(GskAssetType asset_type)
+{
+    switch (asset_type)
+    {
+    case GskAssetType_GCFG: return "GCFG";
+    case GskAssetType_Texture: return "Texture";
+    case GskAssetType_Material: return "Material";
+    case GskAssetType_Shader: return "Shader";
+    case GskAssetType_Audio: return "Audio";
+    case GskAssetType_Model: return "Model";
+    default: return "";
+    }
+}
+
 static u8
 __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 {
@@ -60,6 +87,13 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     if (p_ref->is_baked == TRUE)
     {
         if (asset_type == GskAssetType_Texture)
+        {
+            *p_blob               = gsk_gpak_reader_import_blob(str_uri);
+            p_blob->is_serialized = TRUE;
+            if (p_blob == NULL) { return 0; }
+        }
+
+        else if (asset_type == GskAssetType_Model)
         {
             *p_blob               = gsk_gpak_reader_import_blob(str_uri);
             p_blob->is_serialized = TRUE;
@@ -97,8 +131,14 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
             gsk_Model *p_model = gsk_model_load_from_file(
               GSK_PATH(str_uri), p_ops->scale, p_ops->import_materials);
 
+#if 1
+            // TODO TESTING SERIALIZATION
+            *p_blob = gsk_model_serialize(p_model);
+#else
+
             p_blob->p_buffer      = p_model;
             p_blob->is_serialized = FALSE;
+#endif
         }
 
         if (p_blob == NULL || p_blob->p_buffer == NULL) { return 0; }
@@ -183,36 +223,42 @@ static u8
 __load_model(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
     gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
+    gsk_Model *p_model    = (gsk_Model *)p_dest;
+
+    if (p_model == NULL) { LOG_CRITICAL("model asset destination corrupted"); }
 
     if (p_blob->is_serialized == TRUE)
     {
         LOG_INFO("SERIAL");
+
+        *p_model = gsk_model_deserialize_blob(p_blob);
         // extract
         // assemble
     }
     // assemble without extraction
     else if (p_blob->is_serialized == FALSE)
     {
-        gsk_Model *p_model = (gsk_Model *)p_blob->p_buffer;
-
-        // upload each mesh to the GPU
-        for (int i = 0; i < p_model->meshesCount; i++)
-        {
-            u8 status = gsk_mesh_assemble(p_model->meshes[i]);
-            if (status == 0 || p_model->meshes[i]->is_gpu_loaded != TRUE)
-            {
-                LOG_ERROR("Failed to upload mesh");
-                return 0;
-            }
-        }
-
-        ((gsk_Model *)p_dest)->meshes      = p_model->meshes;
-        ((gsk_Model *)p_dest)->meshesCount = p_model->meshesCount;
-        ((gsk_Model *)p_dest)->fileType    = p_model->fileType;
+        p_model = (gsk_Model *)p_blob->p_buffer;
     }
+
+    // upload each mesh to the GPU
+    for (int i = 0; i < p_model->meshesCount; i++)
+    {
+        u8 status = gsk_mesh_assemble(p_model->meshes[i]);
+        if (status == 0 || p_model->meshes[i]->is_gpu_loaded != TRUE)
+        {
+            LOG_ERROR("Failed to upload mesh");
+            return 0;
+        }
+    }
+
+    ((gsk_Model *)p_dest)->meshes      = p_model->meshes;
+    ((gsk_Model *)p_dest)->meshesCount = p_model->meshesCount;
+    ((gsk_Model *)p_dest)->fileType    = p_model->fileType;
+
     return 1;
 
-    free(p_blob->p_buffer);
+    // free(p_blob->p_buffer);
 }
 
 static void *
@@ -293,7 +339,8 @@ _gsk_asset_get_internal(const gsk_AssetCache *p_cache,
     {
         LOG_ERROR("Failed to get asset (%s)", str_uri);
 
-        gsk_asset_cache_add_by_ext(p_cache_safe, str_uri);
+        gsk_asset_cache_add_by_ext(p_cache_safe,
+                                   str_uri); // TODO: error handling
         p_ref = gsk_asset_cache_get(p_cache_safe, str_uri);
 
         if (p_ref == NULL)
@@ -301,13 +348,13 @@ _gsk_asset_get_internal(const gsk_AssetCache *p_cache,
             LOG_CRITICAL("Failed to create intermediate asset");
         }
 
-        u32 type          = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
+        GskAssetType type = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
         p_ref->p_fallback = gsk_runtime_get_fallback_asset(type);
 
         if (p_ref->p_fallback == NULL)
         {
-            LOG_CRITICAL("Failed to retrieve fallback asset for type: %d",
-                         type);
+            LOG_CRITICAL("Failed to retrieve fallback asset for type: %s",
+                         _asset_type_str(type));
         }
     }
 
@@ -323,26 +370,20 @@ _gsk_asset_get_internal(const gsk_AssetCache *p_cache,
           gsk_runtime_get_asset_cache_index(GSK_ASSET_FALLBACK_CACHE_INDEX);
     }
 
-    u32 asset_type  = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
-    u32 asset_index = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
+    GskAssetType asset_type = GSK_ASSET_HANDLE_LIST_NUM(p_ref->asset_handle);
+    u32 asset_index         = GSK_ASSET_HANDLE_INDEX_NUM(p_ref->asset_handle);
 
     if (p_ref->is_utilized == TRUE) { return p_ref; }
 
     if (is_fallback == FALSE)
     {
-        LOG_DEBUG("getting asset (%s)", str_uri);
+        LOG_DEBUG(
+          "getting asset (%s) - (%s)", str_uri, _fetch_mode_str(fetch_mode));
     } else
     {
-        LOG_DEBUG(
-          "getting FALLBACK asset for type: %d (%p)", asset_type, p_ref);
-    }
-
-    if (fetch_mode != GSK_ASSET_FETCH_ALL)
-    {
-        LOG_TRACE("%s - fetch mode: %s",
-                  str_uri,
-                  (fetch_mode == GSK_ASSET_FETCH_IMPORT) ? "IMPORT"
-                                                         : "VALIDATE");
+        LOG_DEBUG("getting FALLBACK asset for type: %s (%p)",
+                  _asset_type_str(asset_type),
+                  p_ref);
     }
 
     gsk_CreateAssetFptr p_create_func = NULL;
@@ -405,11 +446,8 @@ _gsk_asset_get_internal(const gsk_AssetCache *p_cache,
         return p_ref->p_fallback;
     }
 
-    if (fetch_mode == GSK_ASSET_FETCH_IMPORT)
-    {
-        LOG_TRACE("asset (%s) fetched import.", str_uri);
-        return p_ref;
-    }
+    // stop if we are only importing
+    if (fetch_mode == GSK_ASSET_FETCH_IMPORT) { return p_ref; }
 
     // Utilize/Create data
 
@@ -421,8 +459,8 @@ _gsk_asset_get_internal(const gsk_AssetCache *p_cache,
         // Abort if we can't even LOAD the fallback asset
         if (is_fallback == TRUE)
         {
-            LOG_CRITICAL("Failed to load FALLBACK asset. asset_type: (%d).",
-                         asset_type);
+            LOG_CRITICAL("Failed to load FALLBACK asset. asset_type: (%s).",
+                         _asset_type_str(asset_type));
         }
 
         LOG_ERROR("Probably failed to load asset. This may result in a "

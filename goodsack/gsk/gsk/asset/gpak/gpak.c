@@ -116,6 +116,7 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer)
     for (int i = 0; i < ASSETTYPE_LAST + 1; i++)
     {
         // TODO: Temporarily only checking Textures
+        // if (i != GskAssetType_Texture) { continue; }
         if (i != GskAssetType_Texture && i != GskAssetType_Model) { continue; }
 
         // TODO: update asset-type container block
@@ -322,7 +323,8 @@ gsk_gpak_reader_import_blob(const char *uri_str)
 
     gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(uri_str);
     gsk_AssetRef *p_ref     = gsk_asset_cache_get(p_cache, uri_str);
-    const char *path        = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
+    // TODO: error handling
+    const char *path = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
 
     char pathT[256];
     sprintf(pathT,

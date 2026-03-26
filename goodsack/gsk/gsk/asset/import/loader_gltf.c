@@ -154,7 +154,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
               "Failed to find bone index for animation: \'%s\'. Skipping "
               "fill for this animation.",
               gltfAnimation->name);
-            return NULL;
+            continue;
         };
 
         // Set parameters
@@ -336,6 +336,12 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     size_t size_vec3 = sizeof(vec2);
 
     int offsetA = 0;
+
+    if (!has_tbn)
+    {
+        LOG_TRACE("mesh has to Tangent values - populating w/ default values.");
+    }
+
     for (int i = 0; i < vertCount; i++)
     {
         // Fill Positions
@@ -361,9 +367,6 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         else
         {
             // TODO: calculate TBN
-            LOG_TRACE(
-              "mesh has to Tangent values - populating w/ default values.");
-
             vec3 vec = GLM_VEC3_ONE_INIT;
             memcpy(buff_verts + offsetA, vec, size_vec3);
             offsetA += 3;
@@ -476,19 +479,17 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         int animationsCount             = data->animations_count;
         cgltf_animation *gltfAnimations = data->animations;
 
+        ret->animations = (gsk_AnimationSet) {
+          .animations_count    = animationsCount,
+          .p_skeleton_ref      = &ret->skeleton,
+          .cnt_animation_index = STARTING_ANIMATION_INDEX,
+        };
+
         if (animationsCount > 0)
         {
             // Create AnimationSet
-
-            ret->animations = (gsk_AnimationSet) {
-              .animations_count = animationsCount,
-              .p_skeleton_ref   = &ret->skeleton,
-              .p_animations = malloc(sizeof(gsk_Animation *) * animationsCount),
-              .cnt_animation_index = STARTING_ANIMATION_INDEX,
-            };
-
-            // NOTE: incremented in loop for reasons
-            ret->animations.cnt_animation_index = 0;
+            ret->animations.p_animations =
+              malloc(sizeof(gsk_Animation *) * animationsCount);
         }
 
         // LOG_TRACE("Animations: %d", animationsCount);
@@ -518,16 +519,20 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
             if (ret->animations.p_animations[i] != NULL) { nxt_anim_index++; }
         }
 
-        if (ret->animations.animations_count != animationsCount)
+        if (nxt_anim_index > 0)
         {
-            LOG_WARN("skinned-mesh skeleton (%s) has incorrect animation count",
-                     ret->animations.p_skeleton_ref->name);
-        }
+            if (ret->animations.animations_count != animationsCount)
+            {
+                LOG_WARN(
+                  "skinned-mesh skeleton (%s) has incorrect animation count",
+                  ret->animations.p_skeleton_ref->name);
+            }
 
-        if (ret->animations.animations_count == 0 || animationsCount == 0)
-        {
-            LOG_WARN("skinned-mesh skeleton (%s) has no animation data",
-                     ret->animations.p_skeleton_ref->name);
+            if (ret->animations.animations_count == 0 || animationsCount == 0)
+            {
+                LOG_WARN("skinned-mesh skeleton (%s) has no animation data",
+                         ret->animations.p_skeleton_ref->name);
+            }
         }
 
 // set current animation to the first one in the list

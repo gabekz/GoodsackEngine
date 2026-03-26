@@ -62,39 +62,31 @@ __array_list_reserve_internal(ArrayList *self, u32 count)
 {
     u8 reserve_iterations = 0;
 
-    while ((self->list_next + count) > self->list_capacity)
+    if (self == NULL || count == 0) { return; }
+
+    u32 required_capacity = self->list_next + count;
+    if (required_capacity <= self->list_capacity) { return; }
+
+    u32 old_capacity    = self->list_capacity;
+    u32 old_buffer_size = self->data.buffer_size;
+
+    u32 missing = required_capacity - self->list_capacity;
+
+    u32 increments =
+      (missing + self->list_increment - 1) / self->list_increment;
+
+    // TODO: proper reserve cap
+    // if(increments >= RESERVE_ITERATION_CAP) {
+
+    self->list_capacity += increments * self->list_increment;
+    self->data.buffer_size = self->list_capacity * self->data.data_size;
+
+    void *p = realloc(self->data.buffer, self->data.buffer_size);
+    if (p == NULL)
     {
-        if (reserve_iterations >= RESERVE_ITERATION_CAP)
-        {
-            LOG_CRITICAL("should not exceed %d iterations",
-                         RESERVE_ITERATION_CAP);
-        }
-
-        self->data.buffer_size = self->data.buffer_size +
-                                 (self->list_increment * self->data.data_size);
-
-        self->list_capacity = self->list_capacity + self->list_increment;
-
-#if LOG_ENABLE
-        LOG_TRACE("Resized list from %d to %d. Buffer went from %d to %d",
-                  self->list_capacity,
-                  newcount,
-                  self->data.buffer_size,
-                  newsize);
-#endif
-
-        reserve_iterations++;
+        LOG_CRITICAL("Failed to reallocate array_list %p", (void *)self);
     }
-
-    if (reserve_iterations > 0)
-    {
-        void *p = realloc(self->data.buffer, self->data.buffer_size);
-        if (p == NULL)
-        {
-            LOG_CRITICAL("Failed to reallocate array_list %p", (void *)self);
-        }
-        self->data.buffer = p;
-    }
+    self->data.buffer = p;
 }
 
 ArrayList

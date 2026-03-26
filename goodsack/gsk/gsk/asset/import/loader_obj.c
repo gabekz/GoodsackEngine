@@ -258,6 +258,7 @@ gsk_load_obj(const char *path, float scale)
 
     ret->trianglesCount = total_verts / 3;
     ret->vertexCount    = total_verts;
+    ret->indicesCount   = 0;
 
     ret->primitive_type = GskMeshPrimitiveType_Triangle;
     ret->usage_draw     = GskOglUsageType_Dynamic;

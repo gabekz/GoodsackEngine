@@ -160,6 +160,7 @@ gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
         p_buff->total_vertex_attribs += 1;
     }
 
+    glm_mat4_identity(mesh->localMatrix);
     return mesh;
 }
 

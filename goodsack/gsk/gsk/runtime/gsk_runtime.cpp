@@ -210,12 +210,15 @@ gsk::runtime::rt_setup(const char *root_dir,
     char log_path[256] = "";
     sprintf(log_path, "%s/log.txt", s_runtime.bin_directory);
 
+    char gpak_path[256] = "";
+    sprintf(gpak_path, "%s/gpak/", s_runtime.bin_directory);
+
     /*==== Initialize Logger =========================================*/
 
     int logStat = logger_initConsoleLogger(NULL);
     // logger_initFileLogger(log_path, 0, 0);
 
-    logger_setLevel(LogLevel_DEBUG);
+    logger_setLevel(LogLevel_TRACE);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
@@ -267,8 +270,14 @@ gsk::runtime::rt_setup(const char *root_dir,
     // GPAK
     if (s_runtime.options.fs_mode == 0)
     {
-        const char *path = (_GOODSACK_FS_DIR_BUILD "/output/gpak/gsk.gpak");
+
+        char path[256] = "";
+        sprintf(path, "%s%s.gpak", gpak_path, GSK_FS_GSK_SCHEME);
         gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[0], path);
+
+        char path2[256] = "";
+        sprintf(path2, "%s%s.gpak", gpak_path, s_runtime.proj_scheme);
+        gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[1], path2);
 
 #if _TEST_WRITE_PNG
         gsk_AssetBlob blob = gsk_gpak_reader_import_blob("gsk://map/Icon.png");
@@ -281,7 +290,7 @@ gsk::runtime::rt_setup(const char *root_dir,
         fclose(file_test);
 #endif
 
-        exit(0);
+        // exit(0);
     }
     // HOT
     else if (s_runtime.options.fs_mode == 1)
@@ -328,7 +337,7 @@ gsk::runtime::rt_setup(const char *root_dir,
             for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
             {
                 gsk_GpakWriter writer =
-                  gsk_gpak_writer_init(s_runtime.pp_asset_caches[i], path_gpak);
+                  gsk_gpak_writer_init(s_runtime.pp_asset_caches[i], gpak_path);
 
                 gsk_gpak_writer_populate_cache(&writer);
                 gsk_gpak_writer_close(&writer);
