@@ -78,7 +78,7 @@ gsk_asset_cache_init(const char *cache_scheme)
 /*--------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------*/
-void
+u8
 gsk_asset_cache_add(gsk_AssetCache *p_cache,
                     u32 asset_type,
                     const char *str_uri,
@@ -95,7 +95,7 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     {
         LOG_WARN("Attempt to add asset to cache when it already exists (%s)",
                  str_uri);
-        return;
+        return FALSE;
     }
 
     /*==== Generate file handle ======================================*/
@@ -181,6 +181,8 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
               (item.is_baked == TRUE) ? "true" : "false",
               list_type,
               str_uri);
+
+    return TRUE;
 }
 /*--------------------------------------------------------------------*/
 
@@ -243,12 +245,13 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
         return;
     }
 
-    LOG_TRACE("adding asset by extension (pool: %d, ext: %s)(asset: %s)",
-              list_type,
-              ext,
-              str_uri);
-
-    gsk_asset_cache_add(p_cache, list_type, str_uri, NULL);
+    if (gsk_asset_cache_add(p_cache, list_type, str_uri, NULL))
+    {
+        LOG_TRACE("added asset by extension (pool: %d, ext: %s)(asset: %s)",
+                  list_type,
+                  ext,
+                  str_uri);
+    }
 }
 /*--------------------------------------------------------------------*/
 

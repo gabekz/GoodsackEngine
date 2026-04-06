@@ -43,7 +43,7 @@ typedef struct gsk_AssetCache
 gsk_AssetCache
 gsk_asset_cache_init(const char *cache_scheme);
 
-void
+u8
 gsk_asset_cache_add(gsk_AssetCache *p_cache,
                     u32 asset_type,
                     const char *str_uri,

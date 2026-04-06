@@ -116,8 +116,11 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
         keyframes[i]->frameTime = frame_time;
         keyframes[i]->index     = i;
 
+        // TODO: We may not want this to be the joints count.
+        keyframes[i]->posesCount = skeleton->jointsCount;
+
         keyframes[i]->poses =
-          malloc(skeleton->jointsCount * sizeof(gsk_Pose *));
+          malloc(sizeof(gsk_Pose *) * keyframes[i]->posesCount);
 
         for (int j = 0; j < skeleton->jointsCount; j++)
         {
@@ -203,7 +206,11 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
     animation->duration       = animation_duration;
     animation->keyframes      = keyframes;
     animation->keyframesCount = inputsCount;
-    animation->name           = strdup(gltfAnimation->name);
+
+    strncpy(
+      animation->name, gltfAnimation->name, strlen(gltfAnimation->name) + 1);
+    // animation->name[strlen(gltfAnimation->name) - 1] = '\0';
+    // animation->name           = strdup(gltfAnimation->name);
 
     // TODO: ANIMATION SET
     // animation->pSkeleton      = skeleton;
@@ -235,8 +242,9 @@ _create_joint_recurse(gsk_Skeleton *skeleton,
                       cgltf_skin *skinNode)
 {
     gsk_Joint joint;
-    joint.id             = id;
-    joint.name           = jointsNode[id]->name;
+    joint.id = id;
+    // joint.name           = jointsNode[id]->name;
+    strncpy(joint.name, jointsNode[id]->name, strlen(jointsNode[id]->name) + 1);
     joint.parent         = (parent == NULL) ? NULL : parent;
     joint.parent_id      = (parent == NULL) ? -1 : (s32)parent->id;
     joint.childrenCount  = jointsNode[id]->children_count;
@@ -407,19 +415,25 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     u8 is_skinned      = (data->skins_count >= 1) ? TRUE : FALSE;
     ret->isSkinnedMesh = is_skinned;
 
+    ret->skeleton   = (gsk_Skeleton) {0};
+    ret->animations = (gsk_AnimationSet) {0};
+
     // If we have a skinned mesh
     if (is_skinned)
     {
         cgltf_node *armatureNode = data->scenes[0].nodes[0];
 
-        ret->skeleton = (gsk_Skeleton) {0};
+        // ret->skeleton = (gsk_Skeleton) {0};
 
         // Skeleton information //
 
         ret->skeleton.jointsCount = data->skins->joints_count;
 
         // Skeleton name from node
-        ret->skeleton.name = strdup(armatureNode->name);
+        // ret->skeleton.name = strdup(armatureNode->name);
+        strncpy(ret->skeleton.name,
+                armatureNode->name,
+                strlen(armatureNode->name) + 1);
 
 #if _DEBUG_GLTF
         LOG_TRACE("Skeleton name: %s\nSkeleton children: %d",

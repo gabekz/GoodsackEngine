@@ -21,7 +21,10 @@ _allocate_new_skeleton(gsk_Mesh *p_mesh)
 
     ret->jointsCount = p_mesh->meshData->skeleton.jointsCount;
     glm_mat4_copy(p_mesh->meshData->skeleton.rootMatrix, ret->rootMatrix);
-    ret->name   = strdup(p_mesh->meshData->skeleton.name);
+
+    strcpy(ret->name, p_mesh->meshData->skeleton.name);
+    // ret->name   = strdup(p_mesh->meshData->skeleton.name);
+
     ret->joints = p_mesh->meshData->skeleton.joints;
 
     gsk_Joint **new_joints = malloc(sizeof(gsk_Joint *) * ret->jointsCount);
@@ -32,11 +35,14 @@ _allocate_new_skeleton(gsk_Mesh *p_mesh)
 
         new_joint->childrenCount = ret->joints[i]->childrenCount;
         new_joint->id            = ret->joints[i]->id;
-        new_joint->name          = strdup(ret->joints[i]->name);
-        new_joint->override      = ret->joints[i]->override;
-        new_joint->pose          = ret->joints[i]->pose;
-        new_joint->parent        = NULL;
-        new_joint->parent_id     = -1;
+        // new_joint->name          = strdup(ret->joints[i]->name);
+
+        strcpy(new_joint->name, ret->joints[i]->name);
+
+        new_joint->override  = ret->joints[i]->override;
+        new_joint->pose      = ret->joints[i]->pose;
+        new_joint->parent    = NULL;
+        new_joint->parent_id = -1;
 
         glm_mat4_copy(ret->joints[i]->mInvBindPose, new_joint->mInvBindPose);
 

@@ -112,6 +112,8 @@ gsk_model_archive(GskArchiveMode archive_mode,
         GPAK_ARCHIVE(&archive, &p_meshdata->animations.animations_count);
         // if (p_meshdata->isSkinnedMesh) { LOG_INFO("is_skinned"); }
 
+        // Mesh Buffers
+
         for (int j = 0; j < p_meshdata->mesh_buffers_count; j++)
         {
             gsk_MeshBuffer *p_meshbuff = &p_meshdata->mesh_buffers[j];
@@ -140,8 +142,120 @@ gsk_model_archive(GskArchiveMode archive_mode,
               &archive, p_meshbuff->p_buffer, p_meshbuff->buffer_size);
         }
 
+        // Skeleton
+
         GPAK_ARCHIVE(&archive, &p_meshdata->skeleton.jointsCount);
         GPAK_ARCHIVE(&archive, &p_meshdata->skeleton.rootMatrix);
+
+        gsk_archive_bytes(
+          &archive, p_meshdata->skeleton.name, MAX_BONE_NAME_LEN);
+
+        // Skeleton Joints
+
+        if (archive.mode == GskArchiveMode_Read)
+        {
+            p_meshdata->skeleton.joints =
+              malloc(sizeof(gsk_Joint *) * p_meshdata->skeleton.jointsCount);
+        }
+
+        for (int j = 0; j < p_meshdata->skeleton.jointsCount; j++)
+        {
+            if (archive.mode == GskArchiveMode_Read)
+            {
+                p_meshdata->skeleton.joints[j] = malloc(sizeof(gsk_Joint));
+            }
+
+            gsk_Joint *p_joint = p_meshdata->skeleton.joints[j];
+
+            GPAK_ARCHIVE(&archive, &p_joint->id);
+            GPAK_ARCHIVE(&archive, &p_joint->override);
+            GPAK_ARCHIVE(&archive, &p_joint->childrenCount);
+            GPAK_ARCHIVE(&archive, &p_joint->parent_id);
+
+            gsk_archive_bytes(&archive, p_joint->name, MAX_BONE_NAME_LEN);
+
+            GPAK_ARCHIVE(&archive, &p_joint->mInvBindPose);
+        }
+
+        // Animation Set
+
+        GPAK_ARCHIVE(&archive, &p_meshdata->animations);
+
+        if (archive.mode == GskArchiveMode_Read)
+        {
+            p_meshdata->animations.p_animations =
+              malloc(sizeof(gsk_Animation *) *
+                     p_meshdata->animations.animations_count);
+        }
+
+        for (int anim = 0; anim < p_meshdata->animations.animations_count;
+             anim++)
+        {
+            if (archive.mode == GskArchiveMode_Read)
+            {
+                p_meshdata->animations.p_animations[anim] =
+                  malloc(sizeof(gsk_Animation));
+            }
+
+            gsk_Animation *p_animation =
+              p_meshdata->animations.p_animations[anim];
+
+            gsk_archive_bytes(&archive, p_animation->name, MAX_BONE_NAME_LEN);
+
+            GPAK_ARCHIVE(&archive, &p_animation->index);
+            GPAK_ARCHIVE(&archive, &p_animation->duration);
+            GPAK_ARCHIVE(&archive, &p_animation->keyframesCount);
+
+            // Animation - KEYFRAMES
+
+            if (archive.mode == GskArchiveMode_Read)
+            {
+                p_animation->keyframes =
+                  malloc(sizeof(gsk_Keyframe *) * p_animation->keyframesCount);
+            }
+
+            for (int keyframe = 0; keyframe < p_animation->keyframesCount;
+                 keyframe++)
+            {
+                if (archive.mode == GskArchiveMode_Read)
+                {
+                    p_animation->keyframes[keyframe] =
+                      malloc(sizeof(gsk_Keyframe));
+                }
+
+                gsk_Keyframe *p_keyframe = p_animation->keyframes[keyframe];
+
+                GPAK_ARCHIVE(&archive, &p_keyframe->index);
+                GPAK_ARCHIVE(&archive, &p_keyframe->frameTime);
+                GPAK_ARCHIVE(&archive, &p_keyframe->posesCount);
+
+                if (archive.mode == GskArchiveMode_Read)
+                {
+                    p_keyframe->poses =
+                      malloc(sizeof(gsk_Pose *) * p_keyframe->posesCount);
+                }
+
+                // Animation - KEYFRAMES - POSES
+
+                for (int pose = 0; pose < p_keyframe->posesCount; pose++)
+                {
+                    if (archive.mode == GskArchiveMode_Read)
+                    {
+                        p_keyframe->poses[pose] = malloc(sizeof(gsk_Pose));
+                    }
+
+                    gsk_Pose *p_pose = p_keyframe->poses[pose];
+
+                    GPAK_ARCHIVE(&archive, &p_pose->translation);
+                    GPAK_ARCHIVE(&archive, &p_pose->scale);
+                    GPAK_ARCHIVE(&archive, &p_pose->rotation);
+
+                    GPAK_ARCHIVE(&archive, &p_pose->mTransform);
+                    GPAK_ARCHIVE(&archive, &p_pose->mSkinningMatrix);
+                    GPAK_ARCHIVE(&archive, &p_pose->hasMatrix);
+                }
+            }
+        }
 
 #if 0
         if (p_meshdata->isSkinnedMesh)

@@ -9,8 +9,9 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
-#define MAX_BONES         256
-#define MAX_BONE_NAME_LEN 256
+#define MAX_BONES             256
+#define MAX_BONE_NAME_LEN     32
+#define MAX_SKELETON_NAME_LEN 32
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +38,7 @@ struct gsk_Pose
 
 struct gsk_Joint
 {
-    char *name;
+    char name[MAX_BONE_NAME_LEN];
     u8 override;
     u16 id;
 
@@ -60,7 +61,7 @@ struct gsk_Keyframe
 
 struct gsk_Skeleton
 {
-    char *name;
+    char name[MAX_SKELETON_NAME_LEN];
     gsk_Joint **joints;
     u16 jointsCount;
     mat4 rootMatrix;
@@ -68,8 +69,8 @@ struct gsk_Skeleton
 
 struct gsk_Animation
 {
-    char *name;     // animation name
-    float duration; // animation time
+    char name[MAX_BONE_NAME_LEN]; // animation name
+    float duration;               // animation time
 
     u32 index; // animation-index relative to the Animation Set
 

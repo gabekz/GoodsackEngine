@@ -193,6 +193,7 @@ gsk_load_obj(const char *path, float scale)
 
     // Output
     gsk_MeshData *ret = malloc(sizeof(gsk_MeshData));
+    *ret              = (gsk_MeshData) {0};
 
 #if 1 // Calcuate TBN for each triangle/vertex
     u32 total_verts = n_faces * 3;
