@@ -296,6 +296,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     gsk_MeshData *ret       = malloc(sizeof(gsk_MeshData));
     ret->mesh_buffers_count = 0;
     ret->usage_draw         = GskOglUsageType_Dynamic;
+    ret->isSkinnedMesh      = FALSE;
 
     // TODO: Get more than just the first primitive
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
@@ -403,7 +404,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
     // Skinned mesh
 
-    u8 is_skinned = (data->skins_count >= 1);
+    u8 is_skinned      = (data->skins_count >= 1) ? TRUE : FALSE;
+    ret->isSkinnedMesh = is_skinned;
 
     // If we have a skinned mesh
     if (is_skinned)

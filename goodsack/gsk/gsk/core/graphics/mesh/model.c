@@ -14,6 +14,7 @@
 
 #include "core/graphics/mesh/mesh.h"
 
+#include "asset/gpak/gpak_archive.h"
 #include "asset/import/loader_gltf.h"
 #include "asset/import/loader_obj.h"
 
@@ -50,190 +51,119 @@ gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials)
         // model->fileType = GLTF;
     }
 
-    // gsk_model_serialize(model);
-
     return model;
 }
 
-gsk_AssetBlob
-gsk_model_serialize(gsk_Model *p_self)
+void
+gsk_model_archive(GskArchiveMode archive_mode,
+                  gsk_Model *p_model,
+                  gsk_AssetBlob *p_blob)
 {
-    gsk_AssetBlob ret = {
-      .asset_type    = GskAssetType_Model,
-      .is_serialized = FALSE,
-      .p_buffer      = NULL,
-      .buffer_len    = 0,
+    gsk_Archive archive = {
+      .mode = archive_mode,
     };
 
-    if (p_self == NULL)
+    // read-mode
+    if (archive_mode == GskArchiveMode_Read)
     {
-        LOG_ERROR("failed to serialize");
-        return ret;
+        archive.p_buffer = p_blob->p_buffer;
+        archive.seek_cnt = 0;
+        LOG_DEBUG("Model READ");
+    }
+    // write-mode
+    else if (archive_mode == GskArchiveMode_Write)
+    {
+        archive.out = LIST_INIT(sizeof(u8), 20);
+        LOG_DEBUG("Model WRITE");
     }
 
-    ArrayList data_list = LIST_INIT(sizeof(u8), 1000);
+    GPAK_ARCHIVE(&archive, &p_model->meshesCount);
 
-    LIST_APPEND(&data_list, &p_self->meshesCount, sizeof(u32));
-
-    for (int i = 0; i < p_self->meshesCount; i++)
+    if (archive.mode == GskArchiveMode_Read)
     {
-        gsk_Mesh *p_mesh         = p_self->meshes[i];
-        gsk_MeshData *p_meshdata = p_self->meshes[i]->meshData;
+        p_model->meshes = malloc(sizeof(gsk_Mesh *) * p_model->meshesCount);
+    }
 
-        // mesh local matrix
-        // LIST_APPEND(&data_list, &p_mesh->localMatrix, sizeof(mat4));
-
-        LIST_APPEND(&data_list, &p_meshdata->vertexCount, sizeof(u32));
-        LIST_APPEND(&data_list, &p_meshdata->indicesCount, sizeof(u32));
-        LIST_APPEND(&data_list, &p_meshdata->mesh_buffers_count, sizeof(u32));
-
-        // primitive type, usage
-        LIST_APPEND(&data_list, &p_meshdata->primitive_type, sizeof(s32));
-        LIST_APPEND(
-          &data_list, &p_meshdata->usage_draw, sizeof(GskOglUsageType));
-
-        for (int j = 0; j < p_meshdata->mesh_buffers_count; j++)
+    for (int i = 0; i < p_model->meshesCount; i++)
+    {
+        LOG_INFO("mesh %d", i);
+        gsk_MeshData *p_meshdata = NULL;
+        if (archive.mode == GskArchiveMode_Read)
         {
-
-            gsk_MeshBuffer *p_meshbuff = &p_meshdata->mesh_buffers[j];
-
-            LIST_APPEND(&data_list,
-                        &p_meshbuff->buffer_flags,
-                        sizeof(GskMeshBufferFlags));
-
-            LIST_APPEND(
-              &data_list, &p_meshbuff->total_vertex_attribs, sizeof(u32));
-
-            LIST_APPEND(&data_list,
-                        &p_meshbuff->vertex_attribs,
-                        sizeof(gsk_VertexAttribInfo) *
-                          p_meshbuff->total_vertex_attribs);
-
-            LIST_APPEND(&data_list,
-                        &p_meshbuff->vertex_attrib_offsets,
-                        sizeof(f32) * p_meshbuff->total_vertex_attribs);
-
-            // stride
-
-            LIST_APPEND(&data_list, &p_meshbuff->buffer_stride, sizeof(u32));
-
-            // buffer
-
-            LIST_APPEND(&data_list, &p_meshbuff->buffer_size, sizeof(u32));
-            LIST_APPEND(
-              &data_list, p_meshbuff->p_buffer, p_meshbuff->buffer_size);
+            p_meshdata = malloc(sizeof(gsk_MeshData));
+        } else
+        {
+            p_meshdata = p_model->meshes[i]->meshData;
         }
-    }
 
-    ret.p_buffer      = data_list.data.buffer;
-    ret.buffer_len    = data_list.data.buffer_size;
-    ret.is_serialized = TRUE;
+        GPAK_ARCHIVE(&archive, &p_meshdata->vertexCount);
+        GPAK_ARCHIVE(&archive, &p_meshdata->indicesCount);
 
-    gsk_model_deserialize_blob(&ret);
+        GPAK_ARCHIVE(&archive, &p_meshdata->boundingBox);
 
-    return ret;
-}
+        // TODO: triangles count
 
-struct _BuffReader
-{
-    void *p_buffer;
-    u32 buffer_len;
-    u64 seek_cnt;
-};
+        GPAK_ARCHIVE(&archive, &p_meshdata->mesh_buffers_count);
 
-static void
-_buff_reader_copy(struct _BuffReader *p_reader, void *p_dest, u32 data_size)
-{
-    memcpy(p_dest, (char *)p_reader->p_buffer + p_reader->seek_cnt, data_size);
-    p_reader->seek_cnt += data_size;
-}
+        GPAK_ARCHIVE(&archive, &p_meshdata->primitive_type);
+        GPAK_ARCHIVE(&archive, &p_meshdata->usage_draw);
 
-gsk_Model
-gsk_model_deserialize_blob(gsk_AssetBlob *p_blob)
-{
-    gsk_Model ret = {0};
-    if (p_blob == NULL) { LOG_ERROR("AssetBlob is NULL"); }
-
-    struct _BuffReader reader = {
-      .p_buffer   = p_blob->p_buffer,
-      .buffer_len = p_blob->buffer_len,
-      .seek_cnt   = 0,
-    };
-
-    _buff_reader_copy(&reader, &ret.meshesCount, sizeof(u32));
-
-    ret.meshes = malloc(sizeof(gsk_Mesh *) * ret.meshesCount);
-
-    for (int i = 0; i < ret.meshesCount; i++)
-    {
-        gsk_MeshData *p_meshdata = malloc(sizeof(gsk_MeshData));
-
-        // mesh local matrix
-        //_buff_reader_copy(&reader, &ret.meshes[i]->localMatrix, sizeof(mat4));
-
-        // vertex, index
-        _buff_reader_copy(&reader, &p_meshdata->vertexCount, sizeof(u32));
-        _buff_reader_copy(&reader, &p_meshdata->indicesCount, sizeof(u32));
-
-        p_meshdata->trianglesCount = p_meshdata->vertexCount / 3;
-
-        mat4 zero_root = GLM_MAT4_IDENTITY_INIT;
-        glm_mat4_copy(zero_root, p_meshdata->skeleton.rootMatrix);
-        p_meshdata->skeleton.jointsCount = 0;
-        p_meshdata->skeleton.name        = strdup("none");
-
-        _buff_reader_copy(
-          &reader, &p_meshdata->mesh_buffers_count, sizeof(u32));
-
-        // primitive type, usage
-        _buff_reader_copy(&reader, &p_meshdata->primitive_type, sizeof(s32));
-        _buff_reader_copy(
-          &reader, &p_meshdata->usage_draw, sizeof(GskOglUsageType));
+        GPAK_ARCHIVE(&archive, &p_meshdata->isSkinnedMesh);
+        GPAK_ARCHIVE(&archive, &p_meshdata->animations.animations_count);
+        // if (p_meshdata->isSkinnedMesh) { LOG_INFO("is_skinned"); }
 
         for (int j = 0; j < p_meshdata->mesh_buffers_count; j++)
         {
-
-            // buffer flags
-
-            // total_vertex_attribs
-            // vertex_attribs[]
-            // vertex_attribs_offsets[]
-
-            // buffer size
-            // copy buffer
-
             gsk_MeshBuffer *p_meshbuff = &p_meshdata->mesh_buffers[j];
-            *p_meshbuff                = (gsk_MeshBuffer) {0};
+            //*p_meshbuff                = (gsk_MeshBuffer) {0};
 
-            _buff_reader_copy(
-              &reader, &p_meshbuff->buffer_flags, sizeof(GskMeshBufferFlags));
-            _buff_reader_copy(
-              &reader, &p_meshbuff->total_vertex_attribs, sizeof(f32));
-            _buff_reader_copy(&reader,
-                              &p_meshbuff->vertex_attribs,
+            GPAK_ARCHIVE(&archive, &p_meshbuff->buffer_flags);
+            GPAK_ARCHIVE(&archive, &p_meshbuff->total_vertex_attribs);
+
+            gsk_archive_bytes(&archive,
+                              p_meshbuff->vertex_attribs,
                               sizeof(gsk_VertexAttribInfo) *
                                 p_meshbuff->total_vertex_attribs);
-            _buff_reader_copy(&reader,
-                              &p_meshbuff->vertex_attrib_offsets,
+
+            gsk_archive_bytes(&archive,
+                              p_meshbuff->vertex_attrib_offsets,
                               sizeof(f32) * p_meshbuff->total_vertex_attribs);
 
-            // buffer stride, size, and buffer data
+            GPAK_ARCHIVE(&archive, &p_meshbuff->buffer_stride);
+            GPAK_ARCHIVE(&archive, &p_meshbuff->buffer_size);
 
-            _buff_reader_copy(&reader, &p_meshbuff->buffer_stride, sizeof(u32));
-            _buff_reader_copy(&reader, &p_meshbuff->buffer_size, sizeof(u32));
-
-            void *dat = malloc(p_meshbuff->buffer_size);
-            _buff_reader_copy(&reader, dat, p_meshbuff->buffer_size);
-            p_meshbuff->p_buffer = dat;
+            if (archive_mode == GskArchiveMode_Read)
+            {
+                p_meshbuff->p_buffer = malloc(p_meshbuff->buffer_size);
+            }
+            gsk_archive_bytes(
+              &archive, p_meshbuff->p_buffer, p_meshbuff->buffer_size);
         }
 
-        ret.meshes[i] = gsk_mesh_allocate(p_meshdata);
+        GPAK_ARCHIVE(&archive, &p_meshdata->skeleton.jointsCount);
+        GPAK_ARCHIVE(&archive, &p_meshdata->skeleton.rootMatrix);
 
-        // mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
-        // glm_mat4_copy(localMatrix, ret.meshes[i]->localMatrix);
+#if 0
+        if (p_meshdata->isSkinnedMesh)
+        {
+            s32 str_len = strlen(p_meshdata->skeleton.name);
+            GPAK_ARCHIVE(&archive, &str_len);
+            gsk_archive_bytes(&archive, p_meshdata->skeleton.name, str_len);
+        }
+#endif
 
-        ret.meshes[i]->usingImportedMaterial = FALSE;
+        if (archive_mode == GskArchiveMode_Read)
+        {
+            p_model->meshes[i] = gsk_mesh_allocate(p_meshdata);
+            p_model->meshes[i]->usingImportedMaterial = FALSE;
+        }
     }
 
-    return ret;
+    if (archive_mode == GskArchiveMode_Write)
+    {
+        p_blob->asset_type    = GskAssetType_Model;
+        p_blob->p_buffer      = archive.out.data.buffer;
+        p_blob->buffer_len    = archive.out.data.buffer_size;
+        p_blob->is_serialized = TRUE;
+    }
 }

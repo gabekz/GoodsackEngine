@@ -46,15 +46,24 @@ gsk_load_wav(const char *filepath)
     if (strcmp(magic, "RIFF"))
     {
         LOG_ERROR("First 4 bytes should be \"RIFF\", are \"%4s\"", magic);
+        return ret;
     }
 
     fread(&fileSize, 4, 1, filePtr);
 
     fread(magic, 1, 4, filePtr);
-    if (strcmp(magic, "WAVE")) { LOG_ERROR("Failed"); }
+    if (strcmp(magic, "WAVE"))
+    {
+        LOG_ERROR("Failed");
+        return ret;
+    }
 
     fread(magic, 1, 4, filePtr);
-    if (strcmp(magic, "fmt ")) { LOG_ERROR("Failed"); }
+    if (strcmp(magic, "fmt "))
+    {
+        LOG_ERROR("Failed");
+        return ret;
+    }
 
     fread(&formatLength, 4, 1, filePtr);
 

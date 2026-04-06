@@ -81,6 +81,16 @@ init(gsk_Entity e)
     gsk_Model *p_model      = (gsk_Model *)cmp_model->pModel;
     u32 skeleton_mesh_index = 0;
 
+#if 0
+    cmp_model->_skeleton = NULL;
+
+    if (cmp_model->_skeleton == NULL)
+    {
+        _gsk_ecs_set_internal(e, C_ANIMATOR, FALSE);
+        return;
+    }
+#endif
+
     // TODO: create new skeleton here on the model
     // TODO: grab animationset from model (if it has any)
     // - loop through meshes - find skinned mesh - find animationset
@@ -139,7 +149,10 @@ update(gsk_Entity e)
 
     struct ComponentAnimator *animator = gsk_ecs_get(e, C_ANIMATOR);
     struct ComponentModel *model       = gsk_ecs_get(e, C_MODEL);
-    gsk_Mesh *mesh                     = model->mesh;
+
+    if (model->_skeleton == NULL) { return; }
+
+    gsk_Mesh *mesh = model->mesh;
 
     gsk_Model *p_model = (gsk_Model *)model->pModel;
 

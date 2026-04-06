@@ -49,7 +49,8 @@
 #include "entity/ecs.h"
 
 #define _TOTAL_ASSET_CACHES 2
-#define _TEST_WRITE_PNG     0
+#define _TEST_WRITE_PNG     FALSE
+#define _HOT_IS_FALLBACK    TRUE
 
 extern "C" {
 static struct
@@ -264,13 +265,9 @@ gsk::runtime::rt_setup(const char *root_dir,
         s_runtime.pp_asset_caches[i] = p_cache;
     }
 
-    // TODO: Setup default assets here
-    // gsk_asset_cache_add(p_cache, 0, "gsk:bin//defaults/material");
-
     // GPAK
     if (s_runtime.options.fs_mode == 0)
     {
-
         char path[256] = "";
         sprintf(path, "%s%s.gpak", gpak_path, GSK_FS_GSK_SCHEME);
         gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[0], path);
@@ -278,22 +275,12 @@ gsk::runtime::rt_setup(const char *root_dir,
         char path2[256] = "";
         sprintf(path2, "%s%s.gpak", gpak_path, s_runtime.proj_scheme);
         gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[1], path2);
-
-#if _TEST_WRITE_PNG
-        gsk_AssetBlob blob = gsk_gpak_reader_import_blob("gsk://map/Icon.png");
-        LOG_INFO("%d", blob.buffer_len);
-
-        FILE *file_test;
-        file_test = fopen(GSK_PATH("gsk://test.png"), "wb");
-        if (file_test == NULL) { LOG_CRITICAL("FAIL"); }
-        fwrite(blob.p_buffer, 1, blob.buffer_len, file_test);
-        fclose(file_test);
-#endif
-
-        // exit(0);
     }
-    // HOT
+
+// HOT
+#if !(_HOT_IS_FALLBACK)
     else if (s_runtime.options.fs_mode == 1)
+#endif
     {
         // TODO: filesystem traverse should be sorted to be platform-agnostic
         s_runtime.cache_cnt = 0;
@@ -302,11 +289,12 @@ gsk::runtime::rt_setup(const char *root_dir,
 
         s_runtime.cache_cnt = 1;
         gsk_filesystem_traverse(root_dir, _gsk_runtime_cache_asset_file);
+    }
 
+    // set fallback assets
+    {
         gsk_AssetCache *p_fallback_cache =
           rt_get_asset_cache_index(GSK_ASSET_FALLBACK_CACHE_INDEX);
-
-        // set defaults
 
         s_runtime.p_default_texture =
           _gsk_asset_get_internal(p_fallback_cache,
@@ -328,25 +316,25 @@ gsk::runtime::rt_setup(const char *root_dir,
           _gsk_asset_get_internal(p_fallback_cache,
                                   "gsk://shaders/basic_unlit.shader",
                                   GSK_ASSET_FETCH_IMPORT);
+    }
 
-        // NOTE: test build_gpak requires hot-loading
-        if (s_runtime.options.build_gpak)
+    // NOTE: test build_gpak requires hot-loading
+    if (s_runtime.options.build_gpak)
+    {
+        const char *path_gpak = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
+
+        for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
         {
-            const char *path_gpak = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
+            gsk_GpakWriter writer =
+              gsk_gpak_writer_init(s_runtime.pp_asset_caches[i], gpak_path);
 
-            for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
-            {
-                gsk_GpakWriter writer =
-                  gsk_gpak_writer_init(s_runtime.pp_asset_caches[i], gpak_path);
-
-                gsk_gpak_writer_populate_cache(&writer);
-                gsk_gpak_writer_close(&writer);
-            }
+            gsk_gpak_writer_populate_cache(&writer);
+            gsk_gpak_writer_close(&writer);
+        }
 
 #if GSK_TESTGPAK_EXIT
-            exit(0);
+        exit(0);
 #endif
-        }
     }
 
     // preload all GCFG files per Asset Cache

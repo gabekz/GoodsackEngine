@@ -93,8 +93,9 @@ gsk_asset_cache_add(gsk_AssetCache *p_cache,
     // ensure asset name is not already cached
     if (hash_table_has(&(p_cache->asset_table), str_uri))
     {
-        LOG_CRITICAL(
-          "Attempt to add asset to cache when it already exists (%s)", str_uri);
+        LOG_WARN("Attempt to add asset to cache when it already exists (%s)",
+                 str_uri);
+        return;
     }
 
     /*==== Generate file handle ======================================*/

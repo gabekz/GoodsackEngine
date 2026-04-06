@@ -117,7 +117,8 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer)
     {
         // TODO: Temporarily only checking Textures
         // if (i != GskAssetType_Texture) { continue; }
-        if (i != GskAssetType_Texture && i != GskAssetType_Model) { continue; }
+        // if (i != GskAssetType_Texture && i != GskAssetType_Model) { continue;
+        // }
 
         // TODO: update asset-type container block
 
@@ -287,7 +288,7 @@ gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path)
         char uri[GSK_FS_MAX_PATH] = "";
         sprintf(uri, "%s://%s", p_cache->cache_scheme, path);
 
-        LOG_DEBUG(
+        LOG_TRACE(
           "%d, %d, %s", bloc_read.bloc_offset, bloc_read.bloc_length, uri);
 
         // validate URI
@@ -324,7 +325,7 @@ gsk_gpak_reader_import_blob(const char *uri_str)
     gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(uri_str);
     gsk_AssetRef *p_ref     = gsk_asset_cache_get(p_cache, uri_str);
     // TODO: error handling
-    const char *path = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
+    const char *path = (_GOODSACK_FS_DIR_BUILD "/gpak/");
 
     char pathT[256];
     sprintf(pathT,
@@ -355,8 +356,9 @@ gsk_gpak_reader_import_blob(const char *uri_str)
 #endif
 
     gsk_AssetBlob ret = {
-      .p_buffer   = buffer,
-      .buffer_len = buffer_len,
+      .p_buffer      = buffer,
+      .buffer_len    = buffer_len,
+      .is_serialized = FALSE,
     };
 
     // TODO: close - Need to handle this somewhere. Probably in the runtime.

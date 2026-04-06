@@ -6,7 +6,9 @@
 #ifndef __AUDIO_CLIP_H__
 #define __AUDIO_CLIP_H__
 
+#include "asset/assetdefs.h"
 #include "util/sysdefs.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,6 +34,11 @@ gsk_audio_clip_import_from_file(const char *uri);
 
 u8
 gsk_audio_clip_load(gsk_AudioClip *p_self);
+
+void
+gsk_audio_clip_archive(u8 archive_mode,
+                       gsk_AudioClip *p_clip,
+                       gsk_AssetBlob *p_blob);
 
 #ifdef __cplusplus
 }

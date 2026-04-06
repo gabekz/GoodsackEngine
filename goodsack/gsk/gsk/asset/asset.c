@@ -26,7 +26,8 @@
 #include "asset/gpak/gpak.h"
 #include "asset/import/loader_gcfg.h"
 #include "io/parse_image.h"
-#include "io/serialize_model.h"
+
+#include "asset/gpak/gpak_archive.h"
 
 // TODO: We don't want to depend on the runtime
 #include "runtime/gsk_runtime_wrapper.h"
@@ -86,6 +87,10 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     // import from gpak
     if (p_ref->is_baked == TRUE)
     {
+        gsk_AssetBlob blob_import = gsk_gpak_reader_import_blob(str_uri);
+        *p_blob                   = blob_import;
+        p_blob->is_serialized     = (p_blob->p_buffer == NULL) ? FALSE : TRUE;
+#if 0
         if (asset_type == GskAssetType_Texture)
         {
             *p_blob               = gsk_gpak_reader_import_blob(str_uri);
@@ -99,11 +104,15 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
             p_blob->is_serialized = TRUE;
             if (p_blob == NULL) { return 0; }
         }
+#endif
     }
 
     // import from disk
     else
     {
+        // default to unserialized
+        p_blob->is_serialized = FALSE;
+
         // Texture import
         if (asset_type == GskAssetType_Texture)
         {
@@ -116,10 +125,15 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
             gsk_AudioClip *p_clip = malloc(sizeof(gsk_AudioClip));
             *p_clip               = gsk_audio_clip_import_from_file(str_uri);
 
+#if 0
+
             p_blob->p_buffer      = p_clip;
             p_blob->buffer_len    = sizeof(gsk_AudioClip);
             p_blob->asset_type    = GskAssetType_Audio;
             p_blob->is_serialized = FALSE;
+#else
+            gsk_audio_clip_archive(GskArchiveMode_Write, p_clip, p_blob);
+#endif
         }
 
         // Model import
@@ -133,7 +147,9 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 
 #if 1
             // TODO TESTING SERIALIZATION
-            *p_blob = gsk_model_serialize(p_model);
+            //*p_blob = gsk_model_serialize(p_model);
+            LOG_INFO("begin archive");
+            gsk_model_archive(GskArchiveMode_Write, p_model, p_blob);
 #else
 
             p_blob->p_buffer      = p_model;
@@ -141,7 +157,8 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 #endif
         }
 
-        if (p_blob == NULL || p_blob->p_buffer == NULL) { return 0; }
+        if (p_blob == NULL) { return 0; }
+        if (p_blob->p_buffer == NULL) { return 0; }
 
         // TODO: Check if we want to serialize HERE
     }
@@ -208,13 +225,24 @@ __load_audio(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
     gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
     if (p_blob->p_buffer == NULL) { return 0; }
 
-    gsk_AudioClip *p_clip = (gsk_AudioClip *)p_blob->p_buffer;
+    gsk_AudioClip *p_clip = NULL;
+
+    if (p_blob->is_serialized == TRUE)
+    {
+        p_clip = (gsk_AudioClip *)p_dest;
+        gsk_audio_clip_archive(GskArchiveMode_Read, p_clip, p_blob);
+    }
+
+    else
+    {
+        p_clip = (gsk_AudioClip *)p_blob->p_buffer;
+    }
 
     u8 load_status = gsk_audio_clip_load(p_clip);
     if (load_status != 1) { return 0; }
 
     *((gsk_AudioClip *)p_dest) = *(gsk_AudioClip *)p_clip;
-    free(p_blob->p_buffer);
+    // free(p_blob->p_buffer);
 
     return 1;
 }
@@ -229,11 +257,7 @@ __load_model(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 
     if (p_blob->is_serialized == TRUE)
     {
-        LOG_INFO("SERIAL");
-
-        *p_model = gsk_model_deserialize_blob(p_blob);
-        // extract
-        // assemble
+        gsk_model_archive(GskArchiveMode_Read, p_model, p_blob);
     }
     // assemble without extraction
     else if (p_blob->is_serialized == FALSE)

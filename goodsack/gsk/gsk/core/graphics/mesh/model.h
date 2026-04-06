@@ -6,8 +6,10 @@
 #ifndef __MODEL_H__
 #define __MODEL_H__
 
+#include "asset/gpak/gpak_archive.h"
 #include "core/graphics/mesh/animation.h"
 #include "core/graphics/mesh/mesh.h"
+
 #include "util/sysdefs.h"
 
 #ifdef __cplusplus
@@ -43,11 +45,10 @@ typedef struct gsk_Model
 gsk_Model *
 gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials);
 
-gsk_AssetBlob
-gsk_model_serialize(gsk_Model *p_self);
-
-gsk_Model
-gsk_model_deserialize_blob(gsk_AssetBlob *p_blob);
+void
+gsk_model_archive(GskArchiveMode archive_mode,
+                  gsk_Model *p_model,
+                  gsk_AssetBlob *p_blob);
 
 #ifdef __cplusplus
 }

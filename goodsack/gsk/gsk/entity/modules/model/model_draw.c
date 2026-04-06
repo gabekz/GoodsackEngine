@@ -46,7 +46,8 @@ __update_dynamic_uniforms(u32 shader_id,
     }
 
     // Skinned Matrix array buffer
-    if (mesh->meshData->isSkinnedMesh)
+    if (mesh->meshData->isSkinnedMesh &&
+        (gsk_Skeleton *)model->_skeleton != NULL)
     {
         mat4 skinnedMatrices[MAX_BONES];
         gsk_Skeleton *pSkeleton = (gsk_Skeleton *)model->_skeleton;
