@@ -12,6 +12,7 @@
 #include "asset/assetdefs.h"
 #include "core/graphics/texture/texture.h"
 #include "runtime/gsk_runtime_wrapper.h"
+#include "util/array_list.h"
 
 static u8
 _parse_texture_ops(gsk_GCFGItem *p_item, TextureOptions *p_dest)
@@ -118,3 +119,55 @@ gsk_asset_gcfg_check_type(const gsk_GCFGItem *p_item,
     if (p_item->type == type) { return 1; }
     return 0;
 }
+
+#if 1
+void
+gsk_asset_gcfg_archive(GskArchiveMode archive_mode,
+                       gsk_GCFG *p_gcfg,
+                       gsk_AssetBlob *p_blob)
+{
+    gsk_Archive archive = {
+      .mode = archive_mode,
+    };
+
+    // read-mode
+    if (archive_mode == GskArchiveMode_Read)
+    {
+        archive.p_buffer = p_blob->p_buffer;
+        archive.seek_cnt = 0;
+        LOG_DEBUG("GCFG READ");
+    }
+    // write-mode
+    else if (archive_mode == GskArchiveMode_Write)
+    {
+        archive.out = LIST_INIT(sizeof(u8), 20);
+        LOG_DEBUG("GCFG WRITE");
+    }
+
+    if (archive_mode == GskArchiveMode_Read)
+    {
+        p_gcfg->list_items = LIST_INIT(sizeof(gsk_GCFGItem), 10);
+    }
+
+    GPAK_ARCHIVE(&archive, &p_gcfg->list_items.list_next);
+
+    for (int i = 0; i < p_gcfg->list_items.list_next; i++)
+    {
+        gsk_GCFGItem *p_item = LIST_GET(&p_gcfg->list_items, i);
+
+        GPAK_ARCHIVE(&archive, &p_item->type);
+        GPAK_ARCHIVE(&archive, &p_item->key);
+        if (p_item->type != GskGCFGItemType_None)
+        {
+            GPAK_ARCHIVE(&archive, &p_item->value);
+        }
+    }
+
+    if (archive_mode == GskArchiveMode_Write)
+    {
+        p_blob->p_buffer      = archive.out.data.buffer;
+        p_blob->buffer_len    = archive.out.data.buffer_size;
+        p_blob->is_serialized = TRUE;
+    }
+}
+#endif

@@ -7,6 +7,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "util/filesystem.h"
 #include "util/gfx.h"
@@ -17,6 +18,8 @@
 #include "core/graphics/texture/texture.h"
 
 #include "runtime/gsk_runtime_wrapper.h"
+
+#include "core/drivers/vulkan/vulkan.h"
 
 #include "asset/asset.h"
 #include "asset/asset_cache.h"
@@ -107,7 +110,8 @@ gsk_material_create_from_gcfg(gsk_GCFG *p_gcfg)
     if (p_shader == NULL)
     {
         // TODO: get filename from gcfg
-        LOG_CRITICAL("GCFG Material does not have a shader reference.");
+        LOG_ERROR("GCFG Material does not have a shader reference.");
+        return NULL;
     }
 
     p_material = gsk_material_create(p_shader, NULL, 0);
@@ -147,10 +151,44 @@ gsk_material_load_textures(gsk_Material *self)
 
     } else if (GSK_DEVICE_API_VULKAN)
     {
+#if 0
+        VulkanDeviceContext *p_context =
+          gsk_runtime_get_renderer()->vulkanDevice;
+        VkDescriptorSet *sets = p_context->descriptorSets;
+
         // LOG_DEBUG("Material not implemented for Vulkan");
 
         // Bind Pipeline here? Probably.
         // TODO: Bind image descriptor set HERE
+        VkDescriptorImageInfo imageInfo = {
+          .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+          .imageView   = self->textures[0]->vulkan.textureImageView,
+          .sampler     = self->textures[0]->vulkan.textureSampler,
+        };
+
+        for (int i = 0; i < 2; i++)
+        {
+
+            u32 descriptorWritesCount = 1;
+            VkWriteDescriptorSet descriptorWrites[1];
+
+            descriptorWrites[0] = (VkWriteDescriptorSet) {
+              .sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+              .dstSet          = sets[i],
+              .dstBinding      = 1,
+              .dstArrayElement = 0,
+
+              .descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+              .descriptorCount = 1,
+
+              .pImageInfo = &imageInfo,
+
+            };
+
+            vkUpdateDescriptorSets(
+              p_context->device, 1, descriptorWrites, 0, NULL);
+    }
+#endif
     }
 }
 

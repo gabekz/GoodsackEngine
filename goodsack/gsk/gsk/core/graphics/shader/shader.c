@@ -209,15 +209,19 @@ gsk_shader_source_parse(const char *path, u8 skip_version)
         if (i == 0)
         {
             ss.shaderVertex = p_str;
+            ss.len_vertex   = buff_len;
         } else if (i == 1)
         {
             ss.shaderFragment = p_str;
+            ss.len_fragment   = buff_len;
         } else if (i == 2)
         {
             ss.shaderGeometry = p_str;
+            ss.len_geometry   = buff_len;
         } else if (i == 3)
         {
             ss.shaderCompute = p_str;
+            ss.len_compute   = buff_len;
         }
     }
 
@@ -225,7 +229,7 @@ gsk_shader_source_parse(const char *path, u8 skip_version)
 }
 
 gsk_ShaderProgram
-gsk_shader_program_create(const char *path)
+gsk_shader_program_import_from_file(const char *path)
 {
     if (GSK_DEVICE_API_VULKAN)
     {
@@ -236,23 +240,30 @@ gsk_shader_program_create(const char *path)
 
     gsk_ShaderSource ss   = gsk_shader_source_parse(path, TRUE);
     gsk_ShaderProgram ret = {.id = 0, .id_skinned = 0, .shaderSource = ss};
+    return ret;
+}
+
+u8
+gsk_shader_program_load(gsk_ShaderProgram *p_self)
+{
+    gsk_ShaderSource ss = p_self->shaderSource;
 
     for (int i = 0; i < 2; i++)
     {
         u32 program = glCreateProgram();
 
-        u32 vs = (ss.shaderVertex)
+        u32 vs = (ss.len_vertex > 0)
                    ? CompileSingleShader(GL_VERTEX_SHADER, ss.shaderVertex, i)
                    : 0;
         u32 fs =
-          (ss.shaderFragment)
+          (ss.len_fragment > 0)
             ? CompileSingleShader(GL_FRAGMENT_SHADER, ss.shaderFragment, i)
             : 0;
         u32 gs =
-          (ss.shaderGeometry)
+          (ss.len_geometry > 0)
             ? CompileSingleShader(GL_GEOMETRY_SHADER, ss.shaderGeometry, i)
             : 0;
-        u32 cs = (ss.shaderCompute)
+        u32 cs = (ss.len_compute > 0)
                    ? CompileSingleShader(GL_COMPUTE_SHADER, ss.shaderCompute, i)
                    : 0;
 
@@ -289,17 +300,14 @@ gsk_shader_program_create(const char *path)
 
         if (i == 0)
         {
-            ret.id = program;
+            p_self->id = program;
         } else if (i == 1)
         {
-            ret.id_skinned = program;
+            p_self->id_skinned = program;
         }
     }
 
-    return ret;
-
-    // gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
-    // return ret;
+    return TRUE;
 }
 
 void
@@ -341,3 +349,66 @@ gsk_shader_uniform(gsk_ShaderProgram *shader,
     */
 }
 #endif // _GSK_SHADER_EASY_UNIFORMS
+
+void
+gsk_shader_archive(GskArchiveMode archive_mode,
+                   gsk_ShaderProgram *p_shader,
+                   gsk_AssetBlob *p_blob)
+{
+    gsk_Archive archive = {
+      .mode = archive_mode,
+    };
+
+    // read-mode
+    if (archive_mode == GskArchiveMode_Read)
+    {
+        archive.p_buffer = p_blob->p_buffer;
+        archive.seek_cnt = 0;
+        LOG_DEBUG("Model READ");
+    }
+    // write-mode
+    else if (archive_mode == GskArchiveMode_Write)
+    {
+        archive.out = LIST_INIT(sizeof(u8), 20);
+        LOG_DEBUG("Model WRITE");
+    }
+
+    gsk_ShaderSource *p_shader_source = &p_shader->shaderSource;
+
+    GPAK_ARCHIVE(&archive, &p_shader_source->len_vertex);
+    GPAK_ARCHIVE(&archive, &p_shader_source->len_fragment);
+    GPAK_ARCHIVE(&archive, &p_shader_source->len_geometry);
+    GPAK_ARCHIVE(&archive, &p_shader_source->len_compute);
+
+    if (archive_mode == GskArchiveMode_Read)
+    {
+        p_shader_source->shaderVertex   = malloc(p_shader_source->len_vertex);
+        p_shader_source->shaderFragment = malloc(p_shader_source->len_fragment);
+        p_shader_source->shaderGeometry = malloc(p_shader_source->len_geometry);
+        p_shader_source->shaderCompute  = malloc(p_shader_source->len_compute);
+    }
+
+    gsk_archive_bytes(&archive,
+                      p_shader_source->shaderVertex,
+                      sizeof(char) * p_shader_source->len_vertex);
+
+    gsk_archive_bytes(&archive,
+                      p_shader_source->shaderFragment,
+                      sizeof(char) * p_shader_source->len_fragment);
+
+    gsk_archive_bytes(&archive,
+                      p_shader_source->shaderGeometry,
+                      sizeof(char) * p_shader_source->len_geometry);
+
+    gsk_archive_bytes(&archive,
+                      p_shader_source->shaderCompute,
+                      sizeof(char) * p_shader_source->len_compute);
+
+    if (archive_mode == GskArchiveMode_Write)
+    {
+        p_blob->asset_type    = GskAssetType_Shader;
+        p_blob->p_buffer      = archive.out.data.buffer;
+        p_blob->buffer_len    = archive.out.data.buffer_size;
+        p_blob->is_serialized = TRUE;
+    }
+}

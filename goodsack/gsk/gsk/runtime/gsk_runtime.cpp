@@ -50,7 +50,7 @@
 
 #define _TOTAL_ASSET_CACHES 2
 #define _TEST_WRITE_PNG     FALSE
-#define _HOT_IS_FALLBACK    TRUE
+#define _HOT_IS_FALLBACK    FALSE
 
 extern "C" {
 static struct
@@ -212,7 +212,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     sprintf(log_path, "%s/log.txt", s_runtime.bin_directory);
 
     char gpak_path[256] = "";
-    sprintf(gpak_path, "%s/gpak/", s_runtime.bin_directory);
+    sprintf(gpak_path, "%s/data/", s_runtime.bin_directory);
 
     /*==== Initialize Logger =========================================*/
 
@@ -246,6 +246,9 @@ gsk::runtime::rt_setup(const char *root_dir,
     }
 
     /*==== Setup gsk filesystem (uri) ================================*/
+
+    char newroot[256] = "";
+    sprintf(newroot, "%s/data", s_runtime.bin_directory);
 
     strcpy(s_runtime.proj_scheme, root_scheme);
     gsk_filesystem_initialize(root_dir, root_scheme);
@@ -318,25 +321,6 @@ gsk::runtime::rt_setup(const char *root_dir,
                                   GSK_ASSET_FETCH_IMPORT);
     }
 
-    // NOTE: test build_gpak requires hot-loading
-    if (s_runtime.options.build_gpak)
-    {
-        const char *path_gpak = (_GOODSACK_FS_DIR_BUILD "/output/gpak/");
-
-        for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
-        {
-            gsk_GpakWriter writer =
-              gsk_gpak_writer_init(s_runtime.pp_asset_caches[i], gpak_path);
-
-            gsk_gpak_writer_populate_cache(&writer);
-            gsk_gpak_writer_close(&writer);
-        }
-
-#if GSK_TESTGPAK_EXIT
-        exit(0);
-#endif
-    }
-
     // preload all GCFG files per Asset Cache
     for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
     {
@@ -355,6 +339,23 @@ gsk::runtime::rt_setup(const char *root_dir,
             // TODO: Do not reference by URI, reference by handle.
             GSK_ASSET(str);
         }
+    }
+
+    // NOTE: test build_gpak requires hot-loading
+    if (s_runtime.options.build_gpak)
+    {
+        for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
+        {
+            gsk_GpakWriter writer =
+              gsk_gpak_writer_init(s_runtime.pp_asset_caches[i], gpak_path);
+
+            gsk_gpak_writer_populate_cache(&writer);
+            gsk_gpak_writer_close(&writer);
+        }
+
+#if GSK_TESTGPAK_EXIT
+        exit(0);
+#endif
     }
 
     /*==== Initialize Renderer =======================================*/

@@ -271,6 +271,8 @@ gsk_model_archive(GskArchiveMode archive_mode,
             p_model->meshes[i] = gsk_mesh_allocate(p_meshdata);
             p_model->meshes[i]->usingImportedMaterial = FALSE;
         }
+
+        // GPAK_ARCHIVE(&archive, &p_model->meshes[i]->localMatrix);
     }
 
     if (archive_mode == GskArchiveMode_Write)

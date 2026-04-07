@@ -122,7 +122,7 @@ gsk_gpak_writer_populate_cache(gsk_GpakWriter *p_writer)
 
         // TODO: update asset-type container block
 
-        int total_refs = p_cache->asset_lists[i].list_state.list_next - 1;
+        int total_refs = p_cache->asset_lists[i].list_state.list_next;
         for (int j = 0; j < total_refs; j++)
         {
             /*---- capture AssetRef ------------------------------------------*/
@@ -325,7 +325,7 @@ gsk_gpak_reader_import_blob(const char *uri_str)
     gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(uri_str);
     gsk_AssetRef *p_ref     = gsk_asset_cache_get(p_cache, uri_str);
     // TODO: error handling
-    const char *path = (_GOODSACK_FS_DIR_BUILD "/gpak/");
+    const char *path = (_GOODSACK_FS_DIR_BUILD "/data/");
 
     char pathT[256];
     sprintf(pathT,

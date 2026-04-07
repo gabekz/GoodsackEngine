@@ -32,6 +32,9 @@
 // TODO: We don't want to depend on the runtime
 #include "runtime/gsk_runtime_wrapper.h"
 
+#define _DISABLE_AUDIO_ARCHIVE FALSE
+#define _DISABLE_MODEL_ARCHIVE FALSE
+
 static inline const char *
 _fetch_mode_str(u8 fetch_mode)
 {
@@ -90,21 +93,6 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
         gsk_AssetBlob blob_import = gsk_gpak_reader_import_blob(str_uri);
         *p_blob                   = blob_import;
         p_blob->is_serialized     = (p_blob->p_buffer == NULL) ? FALSE : TRUE;
-#if 0
-        if (asset_type == GskAssetType_Texture)
-        {
-            *p_blob               = gsk_gpak_reader_import_blob(str_uri);
-            p_blob->is_serialized = TRUE;
-            if (p_blob == NULL) { return 0; }
-        }
-
-        else if (asset_type == GskAssetType_Model)
-        {
-            *p_blob               = gsk_gpak_reader_import_blob(str_uri);
-            p_blob->is_serialized = TRUE;
-            if (p_blob == NULL) { return 0; }
-        }
-#endif
     }
 
     // import from disk
@@ -125,7 +113,7 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
             gsk_AudioClip *p_clip = malloc(sizeof(gsk_AudioClip));
             *p_clip               = gsk_audio_clip_import_from_file(str_uri);
 
-#if 0
+#if _DISABLE_AUDIO_ARCHIVE
 
             p_blob->p_buffer      = p_clip;
             p_blob->buffer_len    = sizeof(gsk_AudioClip);
@@ -133,7 +121,7 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
             p_blob->is_serialized = FALSE;
 #else
             gsk_audio_clip_archive(GskArchiveMode_Write, p_clip, p_blob);
-#endif
+#endif // _DISABLE_MODEL_ARCHIVE
         }
 
         // Model import
@@ -145,15 +133,71 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
             gsk_Model *p_model = gsk_model_load_from_file(
               GSK_PATH(str_uri), p_ops->scale, p_ops->import_materials);
 
-#if 1
-            // TODO TESTING SERIALIZATION
-            //*p_blob = gsk_model_serialize(p_model);
-            LOG_INFO("begin archive");
-            gsk_model_archive(GskArchiveMode_Write, p_model, p_blob);
-#else
-
+#if _DISABLE_MODEL_ARCHIVE
             p_blob->p_buffer      = p_model;
             p_blob->is_serialized = FALSE;
+#else
+            gsk_model_archive(GskArchiveMode_Write, p_model, p_blob);
+#endif // _DISABLE_MODEL_ARCHIVE
+        }
+
+        // Shader import
+        else if (asset_type == GskAssetType_GCFG)
+        {
+            gsk_GCFG *p_gcfg = malloc(sizeof(gsk_GCFG));
+            *p_gcfg          = gsk_load_gcfg(GSK_PATH(str_uri));
+
+#if 0
+            p_blob->p_buffer      = p_gcfg;
+            p_blob->buffer_len    = sizeof(gsk_GCFG);
+            p_blob->asset_type    = GskAssetType_GCFG;
+            p_blob->is_serialized = FALSE;
+#else
+            gsk_asset_gcfg_archive(GskArchiveMode_Write, p_gcfg, p_blob);
+            p_blob->is_serialized = TRUE;
+#endif
+        }
+
+        // Shader import
+        else if (asset_type == GskAssetType_Shader)
+        {
+            gsk_ShaderProgram *p_shader = malloc(sizeof(gsk_ShaderProgram));
+            *p_shader = gsk_shader_program_import_from_file(GSK_PATH(str_uri));
+
+#if 0
+            p_blob->p_buffer      = p_shader;
+            p_blob->buffer_len    = sizeof(gsk_ShaderProgram);
+            p_blob->asset_type    = GskAssetType_Shader;
+            p_blob->is_serialized = FALSE;
+#else
+            gsk_shader_archive(GskArchiveMode_Write, p_shader, p_blob);
+#endif
+        }
+
+        // Material import
+        else if (asset_type == GskAssetType_Material)
+        {
+            // gsk_AssetMaterialOptions *p_ops = NULL;
+            // p_ops = (gsk_AssetMaterialOptions *)p_options;
+
+            gsk_GCFG *p_gcfg = malloc(sizeof(gsk_GCFG));
+            *p_gcfg          = gsk_load_gcfg(GSK_PATH(str_uri));
+
+            LOG_INFO("Material import");
+
+#if 0
+            if (p_gcfg->is_valid == TRUE)
+            {
+                p_blob->p_buffer      = p_gcfg;
+                p_blob->buffer_len    = sizeof(gsk_GCFG);
+                p_blob->asset_type    = GskAssetType_Material;
+                p_blob->is_serialized = FALSE;
+            }
+
+#else
+
+            gsk_asset_gcfg_archive(GskArchiveMode_Write, p_gcfg, p_blob);
+            p_blob->is_serialized = TRUE;
 #endif
         }
 
@@ -170,33 +214,75 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
     // TODO: handle path for importing from .gpak
 }
 
-static void
-__create_gcfg(const char *str_uri, void *p_options, void *p_dest)
+static u8
+__load_gcfg(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
-    // gsk_IO_AssetGCFG asset = gsk_io_import_gcfg(GSK_PATH(str_uri));
+    gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
+    gsk_GCFG *p_gcfg      = NULL;
 
-    gsk_GCFG gcfg = gsk_load_gcfg(GSK_PATH(str_uri));
-    gsk_asset_gcfg_set_config(&gcfg);
+    if (p_blob->is_serialized == TRUE)
+    {
+        p_gcfg = malloc(sizeof(gsk_GCFG));
+        gsk_asset_gcfg_archive(GskArchiveMode_Read, p_gcfg, p_blob);
+    } else
+    {
+        p_gcfg = (gsk_GCFG *)p_blob->p_buffer;
+    }
 
-    *((gsk_GCFG *)p_dest) = gcfg;
+    gsk_asset_gcfg_set_config(p_gcfg);
+    *((gsk_GCFG *)p_dest) = *p_gcfg;
+
+    return 1;
 }
 
-static void
-__create_shader(const char *str_uri, void *p_options, void *p_dest)
+static u8
+__load_shader(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
-    gsk_ShaderProgram shader = gsk_shader_program_create(GSK_PATH(str_uri));
-    *((gsk_ShaderProgram *)p_dest) = shader;
+    gsk_AssetBlob *p_blob       = (gsk_AssetBlob *)p_ref->p_data_import;
+    gsk_ShaderProgram *p_shader = NULL;
+
+    if (p_blob->is_serialized == TRUE)
+    {
+        p_shader = malloc(sizeof(gsk_ShaderProgram));
+        gsk_shader_archive(GskArchiveMode_Read, p_shader, p_blob);
+    } else
+    {
+        p_shader = (gsk_ShaderProgram *)p_blob->p_buffer;
+    }
+
+    gsk_shader_program_load(p_shader);
+
+    ((gsk_ShaderProgram *)p_dest)->id           = p_shader->id;
+    ((gsk_ShaderProgram *)p_dest)->id_skinned   = p_shader->id_skinned;
+    ((gsk_ShaderProgram *)p_dest)->shaderSource = p_shader->shaderSource;
+    return 1;
 }
 
-static void
-__create_material(const char *str_uri, void *p_options, void *p_dest)
+static u8
+__load_material(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
 {
-    gsk_GCFG gcfg            = gsk_load_gcfg(GSK_PATH(str_uri));
-    gsk_Material *p_material = gsk_material_create_from_gcfg(&gcfg);
+    gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
+    // gsk_Material *p_material = (gsk_Material *)p_dest;
+    gsk_Material *p_material = NULL;
+
+    if (p_blob->is_serialized == TRUE)
+    {
+        gsk_GCFG *p_gcfg = malloc(sizeof(gsk_GCFG));
+        gsk_asset_gcfg_archive(GskArchiveMode_Read, p_gcfg, p_blob);
+        p_material = gsk_material_create_from_gcfg(p_gcfg);
+    }
+
+    else
+    {
+        p_material =
+          gsk_material_create_from_gcfg((gsk_GCFG *)p_blob->p_buffer);
+    }
 
     ((gsk_Material *)p_dest)->shaderProgram = p_material->shaderProgram;
     ((gsk_Material *)p_dest)->textures      = p_material->textures;
     ((gsk_Material *)p_dest)->texturesCount = p_material->texturesCount;
+
+    return 1;
 }
 
 static u8
@@ -415,11 +501,10 @@ _gsk_asset_get_internal(const gsk_AssetCache *p_cache,
 
     switch (asset_type)
     {
-    // create-functions
-    case GskAssetType_GCFG: p_create_func = __create_gcfg; break;
-    case GskAssetType_Material: p_create_func = __create_material; break;
-    case GskAssetType_Shader: p_create_func = __create_shader; break;
     // load-functions
+    case GskAssetType_GCFG: p_load_func = __load_gcfg; break;
+    case GskAssetType_Material: p_load_func = __load_material; break;
+    case GskAssetType_Shader: p_load_func = __load_shader; break;
     case GskAssetType_Texture: p_load_func = __load_texture; break;
     case GskAssetType_Audio: p_load_func = __load_audio; break;
     case GskAssetType_Model: p_load_func = __load_model; break;

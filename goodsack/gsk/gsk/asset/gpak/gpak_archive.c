@@ -15,6 +15,12 @@ gsk_archive_bytes(gsk_Archive *p_self, void *p_data, u32 data_size)
 {
     if (p_self == NULL) { LOG_CRITICAL("Failed archive"); }
 
+    if (data_size == 0)
+    {
+        LOG_TRACE("data_size is 0");
+        return;
+    }
+
     if (p_self->mode == GskArchiveMode_Write)
     {
         LIST_APPEND(&p_self->out, p_data, data_size);

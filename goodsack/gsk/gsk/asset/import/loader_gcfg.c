@@ -26,7 +26,10 @@ gsk_load_gcfg() // load, no matter what we use this func
 static GskGCFGItemType
 _get_value_type(const char *value)
 {
-    if (value == NULL || value == '\0') { return GskGCFGItemType_None; }
+    if (value == NULL || value == '\0' || value == "")
+    {
+        return GskGCFGItemType_None;
+    }
 
     char *endptr;
 
@@ -49,6 +52,7 @@ static gsk_GCFG
 _parse_gcfg(char *path)
 {
     gsk_GCFG ret   = {0};
+    ret.is_valid   = FALSE;
     ret.list_items = array_list_init(sizeof(gsk_GCFGItem), 6);
 
     FILE *stream = NULL;
@@ -56,7 +60,8 @@ _parse_gcfg(char *path)
 
     if ((stream = fopen(path, "rb")) == NULL)
     {
-        LOG_CRITICAL("Error opening %s", path);
+        LOG_ERROR("Error opening %s", path);
+        return ret;
     }
     while (fgets(line, sizeof(line), stream))
     {
@@ -76,15 +81,21 @@ _parse_gcfg(char *path)
         char *value = strtok(NULL, delim); // line, split by spaces
 
         gsk_GCFGItem item = {0};
-        item.key          = strdup(key);
-        item.value        = strdup(value);
-        item.type         = _get_value_type(item.value);
+
+        strncpy(item.key, key, strlen(key) + 1);
+
+        item.type = _get_value_type(value);
+        if (item.type != GskGCFGItemType_None)
+        {
+            strncpy(item.value, value, strlen(value) + 1);
+        }
 
         array_list_push(&ret.list_items, &item);
     }
 
     fclose(stream);
 
+    ret.is_valid = TRUE;
     return ret;
 }
 

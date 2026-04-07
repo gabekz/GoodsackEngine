@@ -21,6 +21,7 @@ typedef struct gsk_Material
     struct
     {
         VkPipelineLayout *pipelineLayout;
+        VkDescriptorSet *descriptor_sets;
     } vulkan;
 } gsk_Material;
 

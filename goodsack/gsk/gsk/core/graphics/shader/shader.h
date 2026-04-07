@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef __SHADER_H__
-#define __SHADER_H__
+#ifndef __GSK_SHADER_H__
+#define __GSK_SHADER_H__
 
+#include "asset/assetdefs.h"
+#include "asset/gpak/gpak_archive.h"
 #include "util/gfx.h"
 #include "util/sysdefs.h"
 
@@ -48,6 +50,7 @@ typedef enum UniformType {
 typedef struct gsk_ShaderSource
 {
     char *shaderVertex, *shaderFragment, *shaderGeometry, *shaderCompute;
+    u32 len_vertex, len_fragment, len_geometry, len_compute;
 } gsk_ShaderSource;
 
 typedef struct gsk_ShaderProgram
@@ -57,7 +60,10 @@ typedef struct gsk_ShaderProgram
 } gsk_ShaderProgram;
 
 gsk_ShaderProgram
-gsk_shader_program_create(const char *path);
+gsk_shader_program_import_from_file(const char *path);
+
+u8
+gsk_shader_program_load(gsk_ShaderProgram *p_self);
 
 gsk_ShaderSource
 gsk_shader_source_parse(const char *path, u8 skip_version);
@@ -76,8 +82,15 @@ gsk_shader_uniform(gsk_ShaderProgram *shader,
                    void *data);
 #endif // _GSK_SHADER_EASY_UNIFORMS
 
+#if 1
+void
+gsk_shader_archive(GskArchiveMode archive_mode,
+                   gsk_ShaderProgram *p_shader,
+                   gsk_AssetBlob *p_blob);
+#endif
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __SHADER_H__
+#endif // __GSK_SHADER_H__
