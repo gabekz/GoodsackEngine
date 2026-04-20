@@ -153,6 +153,9 @@ __update_static_uniforms(u32 shader_id, gsk_Renderer *renderer)
                 renderer->lightOptions.ambient_strength);
     glUniform1f(glGetUniformLocation(shader_id, "u_prefilter_strength"),
                 renderer->lightOptions.prefilter_strength);
+
+    f64 time = gsk_device_getTime().time_elapsed;
+    glUniform1f(glGetUniformLocation(shader_id, "u_time"), (f32)time);
 }
 
 static void

@@ -25,6 +25,7 @@ _gsk_gl_debug_output(GLenum source,
                      const char *message,
                      const void *userParam)
 {
+#if 1
     // ignore non-significant error/warning codes
     if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
 
@@ -32,7 +33,10 @@ _gsk_gl_debug_output(GLenum source,
     if (type == GL_DEBUG_TYPE_PUSH_GROUP || type == GL_DEBUG_TYPE_POP_GROUP)
         return;
 
-    LOG_WARN("------------\nOpenGL message: %s", message);
+    LogLevel level = logger_getLevel();
+    if (level != LogLevel_TRACE) { return; }
+
+    LOG_TRACE("------------\nOpenGL message: %s", message);
 
     switch (source)
     {
@@ -80,6 +84,7 @@ _gsk_gl_debug_output(GLenum source,
 #if _BREAK_ON_MSG
     _BRK();
 #endif // _BREAK_ON_MSG
+#endif
 }
 
 void

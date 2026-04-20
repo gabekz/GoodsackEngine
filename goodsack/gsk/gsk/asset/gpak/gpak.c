@@ -249,7 +249,8 @@ gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path)
     file_dic = fopen(gpak_path, "rb");
     if (!file_dic)
     {
-        LOG_CRITICAL("Failed to open dictionary file %s", gpak_path);
+        LOG_ERROR("Failed to open dictionary file %s", gpak_path);
+        return;
     }
 
     magic[4] = '\0';
@@ -337,13 +338,22 @@ gsk_gpak_reader_import_blob(const char *uri_str)
     // check with FS to open
     FILE *file_ptr;
     file_ptr = fopen(pathT, "rb");
-    if (!file_ptr) { LOG_CRITICAL("Failed to open file: %s", pathT); }
+    if (!file_ptr)
+    {
+        LOG_ERROR("Failed to open file: %s", pathT);
+        return (gsk_AssetBlob) {0};
+    }
 
     char *buffer    = NULL;
     long buffer_len = p_ref->bloc_info.bloc_length;
 
     buffer = malloc(buffer_len);
-    if (buffer == NULL) { LOG_CRITICAL("Failed to allocate AssetBlob buffer"); }
+    if (buffer == NULL)
+    {
+        LOG_ERROR("Failed to allocate AssetBlob buffer");
+        fclose(file_ptr);
+        return (gsk_AssetBlob) {0};
+    }
 
     fseek(file_ptr, p_ref->bloc_info.bloc_offset - 1, SEEK_SET);
 #if 0

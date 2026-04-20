@@ -34,6 +34,7 @@ gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials)
     {
         model               = malloc(sizeof(gsk_Model));
         gsk_MeshData *mesh0 = gsk_load_obj(path, scale);
+        if (mesh0 == NULL) { return NULL; }
 
         model->modelPath   = path;
         model->meshesCount = 1;
@@ -239,12 +240,18 @@ gsk_model_archive(GskArchiveMode archive_mode,
 
                 for (int pose = 0; pose < p_keyframe->posesCount; pose++)
                 {
+#if 1
                     if (archive.mode == GskArchiveMode_Read)
                     {
                         p_keyframe->poses[pose] = malloc(sizeof(gsk_Pose));
                     }
 
                     gsk_Pose *p_pose = p_keyframe->poses[pose];
+#else
+
+                    gsk_Pose *p_pose = GPAK_ARCHIVE_ALLOC(
+                      &archive, p_keyframe->poses[pose], sizeof(gsk_Pose));
+#endif
 
                     GPAK_ARCHIVE(&archive, &p_pose->translation);
                     GPAK_ARCHIVE(&archive, &p_pose->scale);

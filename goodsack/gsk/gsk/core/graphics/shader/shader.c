@@ -246,6 +246,13 @@ gsk_shader_program_import_from_file(const char *path)
 u8
 gsk_shader_program_load(gsk_ShaderProgram *p_self)
 {
+    if (GSK_DEVICE_API_VULKAN)
+    {
+        LOG_DEBUG("Shader not implemented for Vulkan");
+        gsk_ShaderProgram ret = {.id = 0, .shaderSource = NULL};
+        return FALSE;
+    }
+
     gsk_ShaderSource ss = p_self->shaderSource;
 
     for (int i = 0; i < 2; i++)
@@ -364,13 +371,11 @@ gsk_shader_archive(GskArchiveMode archive_mode,
     {
         archive.p_buffer = p_blob->p_buffer;
         archive.seek_cnt = 0;
-        LOG_DEBUG("Model READ");
     }
     // write-mode
     else if (archive_mode == GskArchiveMode_Write)
     {
         archive.out = LIST_INIT(sizeof(u8), 20);
-        LOG_DEBUG("Model WRITE");
     }
 
     gsk_ShaderSource *p_shader_source = &p_shader->shaderSource;

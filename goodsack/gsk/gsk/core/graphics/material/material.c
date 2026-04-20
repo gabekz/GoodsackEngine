@@ -38,7 +38,7 @@ gsk_material_create(gsk_ShaderProgram *shader,
     if (shader)
     {
         ret->shaderProgram = shader;
-    } else if (shaderPath != "" || shaderPath != NULL)
+    } else if (shaderPath != NULL)
     {
         char uri[GSK_FS_MAX_PATH];
         gsk_filesystem_path_to_uri(shaderPath, uri);

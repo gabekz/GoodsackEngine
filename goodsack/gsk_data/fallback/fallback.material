@@ -1,4 +1,4 @@
 shader gsk://shaders/basic_unlit.shader
-texture gsk://textures/defaults/missing_2.png
+texture gsk://textures/defaults/black.png
 texture gsk://textures/defaults/normal.png
 texture gsk://textures/defaults/white.png

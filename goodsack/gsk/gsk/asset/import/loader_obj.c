@@ -38,8 +38,8 @@ gsk_load_obj(const char *path, float scale)
 
     if ((stream = fopen(path, "rb")) == NULL)
     {
-        LOG_CRITICAL("Error opening %s\n", path);
-        exit(1);
+        LOG_ERROR("Error opening %s\n", path);
+        return NULL;
     }
 
 #ifdef LOGGING_OBJ

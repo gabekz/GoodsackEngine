@@ -67,6 +67,7 @@ static struct
     gsk_AssetRef *p_default_model;
     gsk_AssetRef *p_default_material;
     gsk_AssetRef *p_default_shader;
+    gsk_AssetRef *p_default_gcfg;
 
 #if GSK_RUNTIME_USE_DEBUG
     gsk::tools::DebugToolbar *p_debug_toolbar;
@@ -223,7 +224,9 @@ gsk::runtime::rt_setup(const char *root_dir,
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
+#if SYS_DEBUG
     LOG_INFO("Root directory: %s", root_dir);
+#endif // SYS_DEBUG
 
     LOG_INFO("PATH: %s", s_runtime.bin_directory);
     LOG_INFO("LOG_PATH: %s", log_path);
@@ -318,6 +321,11 @@ gsk::runtime::rt_setup(const char *root_dir,
         s_runtime.p_default_shader =
           _gsk_asset_get_internal(p_fallback_cache,
                                   "gsk://shaders/basic_unlit.shader",
+                                  GSK_ASSET_FETCH_IMPORT);
+
+        s_runtime.p_default_gcfg =
+          _gsk_asset_get_internal(p_fallback_cache,
+                                  "gsk://fallback/fallback.gcfg",
                                   GSK_ASSET_FETCH_IMPORT);
     }
 
@@ -746,7 +754,11 @@ gsk::runtime::rt_get_asset_cache(const char *uri_str)
 void *
 gsk::runtime::rt_get_debug_toolbar()
 {
+#if SYS_DEBUG
     return s_runtime.p_debug_toolbar;
+#else
+    return NULL;
+#endif // SYS_DEBUG
 }
 
 gsk_AssetRef *
@@ -761,6 +773,7 @@ gsk::runtime::rt_get_fallback_asset(GskAssetType type)
     case GskAssetType_Model: p_ret = s_runtime.p_default_model; break;
     case GskAssetType_Material: p_ret = s_runtime.p_default_material; break;
     case GskAssetType_Shader: p_ret = s_runtime.p_default_shader; break;
+    case GskAssetType_GCFG: p_ret = s_runtime.p_default_gcfg; break;
     default: p_ret = NULL; break;
     }
 
@@ -777,6 +790,7 @@ gsk::runtime::rt_get_startup_map()
 gsk_EntityId
 gsk::runtime::rt_get_hovered_entity_id()
 {
+#if SYS_DEBUG
     if (s_runtime.renderer->hovered_entity_index == 0 ||
         s_runtime.p_debug_toolbar->is_focused())
     {
@@ -789,23 +803,32 @@ gsk::runtime::rt_get_hovered_entity_id()
     gsk_EntityId id = p_ecs->p_ent_ids[index];
 
     return id;
+#else
+    return 0;
+#endif // SYS_DEBUG
 }
 
 gsk_EntityId
 gsk::runtime::rt_get_debug_entity_id()
 {
+#if SYS_DEBUG
     return s_runtime.selected_entity_id;
+#else
+    return (gsk_EntityId)0;
+#endif // SYS_DEBUG
 }
 
 void
 gsk::runtime::rt_set_debug_entity_id(gsk_EntityId entity_id)
 {
+#if SYS_DEBUG
     if (entity_id >= ECS_ID_FIRST)
     {
         s_runtime.selected_entity_id = entity_id;
         LOG_TRACE("set RT debug entity_id to: %d",
                   s_runtime.selected_entity_id);
     }
+#endif // SYS_DEBUG
 }
 
 void *

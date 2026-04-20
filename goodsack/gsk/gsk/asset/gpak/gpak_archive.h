@@ -14,6 +14,7 @@ extern "C" {
 #endif // __cplusplus
 
 #define GPAK_ARCHIVE(a, b) gsk_archive_bytes(a, b, sizeof(*b))
+// #define GPAK_ARCHIVE_ALLOC(a, b, c) gsk_archive_alloc(a, b, c)
 
 typedef enum GskArchiveMode_ {
     GskArchiveMode_Read = 0,
@@ -36,6 +37,11 @@ typedef struct gsk_Archive
 
 u8
 gsk_archive_bytes(gsk_Archive *p_self, void *p_data, u32 data_size);
+
+#if 0
+void *
+gsk_archive_alloc(gsk_Archive *p_self, void *p_data, u32 data_size);
+#endif
 
 #ifdef __cplusplus
 }
