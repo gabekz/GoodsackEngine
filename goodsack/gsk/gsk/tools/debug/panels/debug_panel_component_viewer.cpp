@@ -14,6 +14,8 @@
 #include "core/graphics/particles/particle_system.h"
 #include "physics/physics_types.h"
 
+#include "entity/modules/transform/transform.h"
+
 #include <runtime/gsk_runtime.hpp>
 
 #include "gsk_generated/ecs_components_gen.h"
@@ -37,7 +39,10 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         DragFloat3("World Position", p.world_position, 0.1f, -3000, 3000);
         EndDisabled();
         // BeginDisabled();
-        DragFloat3("Rotation", p.orientation, 0.1f, -3000, 3000);
+        if (DragFloat3("Rotation", p.orientation, 0.1f, -3000, 3000))
+        {
+            transform_set_rotation_xyz(&p, p.orientation);
+        }
         // EndDisabled();
         DragFloat3("Scale", p.scale, -1, 1);
         Separator();
@@ -136,6 +141,8 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
 
         gsk_Model *p_model = (gsk_Model *)p.pModel;
 
+        gsk_Skeleton *p_skeleton = (gsk_Skeleton *)p._skeleton;
+
         // Model information
         PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 255, 255));
         Text("Model information");
@@ -158,6 +165,19 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
             gsk_Mesh *p_mesh  = p_model->meshes[i];
             u32 buffers_count = p_mesh->meshData->mesh_buffers_count;
             Text("Mesh Buffers: %d", buffers_count);
+
+            if (p_mesh->meshData->isSkinnedMesh)
+            {
+                for (int j = 0; j < p_skeleton->jointsCount; j++)
+                {
+                    gsk_Joint *p_joint = (gsk_Joint *)p_skeleton->joints[j];
+
+                    Text("rotation %f, %f, %f",
+                         p_joint->pose.rotation[0],
+                         p_joint->pose.rotation[1],
+                         p_joint->pose.rotation[2]);
+                }
+            }
         }
 
         Separator();
@@ -294,6 +314,10 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
                   &p_particles->particle_count,
                   0,
                   _GSK_MAX_PARTICLE_COUNT);
+
+        Checkbox("Is Looping", (bool *)&p_particles->settings.is_looping);
+
+        if (Button("Single Burst")) { gsk_particle_system_burst(p_particles); }
     }
 
     else if (cmp_type == C_PLAYER_CONTROLLER)

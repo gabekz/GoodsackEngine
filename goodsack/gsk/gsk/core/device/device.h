@@ -18,10 +18,10 @@ extern "C" {
 #define GSK_DEVICE_API_OPENGL gsk_device_getGraphics() == GRAPHICS_API_OPENGL
 #define GSK_DEVICE_API_VULKAN gsk_device_getGraphics() == GRAPHICS_API_VULKAN
 
-#define GSK_TIME_FIXED_DELTA_DEFAULT 1.0 / 100.0
+#define GSK_TIME_FIXED_DELTA_DEFAULT 1.0 / 60.0
 #define GSK_TIME_ANALYTICS_DEFAULT   1.0 / 1.0
 #define GSK_TIME_SCALE_DEFAULT       1.0
-#define GSK_TIME_DELTA_CAP_DEFAULT   0.1
+#define GSK_TIME_DELTA_CAP_DEFAULT   0.25
 
 typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } gsk_GraphicsAPI;
 
@@ -29,7 +29,8 @@ typedef enum { GRAPHICS_API_OPENGL, GRAPHICS_API_VULKAN } gsk_GraphicsAPI;
 
 typedef struct gsk_GraphicsSettings
 {
-    int swapInterval; // VSync
+    s32 max_fps;
+    u8 swapInterval; // VSync
 } gsk_GraphicsSettings;
 
 // GPU Compatibility Info
@@ -57,6 +58,13 @@ typedef struct gsk_Time
         f64 last_fps;
         f64 last_ms;
     } metrics;
+
+    struct
+    {
+        f64 last_time;
+        f64 accumulated_time;
+
+    } limits;
 
 } gsk_Time;
 
@@ -108,6 +116,9 @@ gsk_device_setTimescale(f32 timescale);
 
 void
 gsk_device_updateTime(double time);
+
+u8
+gsk_device_checkLimits();
 
 // fixed delta-time clock handlers //
 

@@ -370,8 +370,11 @@ _poll_update_events(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     glfwPollEvents();
 
-    if (_gsk_device_check_fixed_update())
+    // LOG_INFO("regular");
+
+    while (_gsk_device_check_fixed_update() == 1)
     {
+        // LOG_INFO("fixed");
         gsk_ecs_event(ecs, ECS_INIT); // call init at fixed (does not call on
                                       // entities that are already initialized)
 
@@ -380,6 +383,8 @@ _poll_update_events(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
         // fixed-update related events
         gsk_ecs_event(ecs, ECS_ON_COLLIDE);
         gsk_ecs_event(ecs, ECS_FIXED_UPDATE);
+
+        gsk_ecs_event(ecs, ECS_LATE_UPDATE);
     }
 
     gsk_ecs_event(ecs, ECS_UPDATE);
@@ -394,6 +399,12 @@ _poll_update_events(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 static void
 renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 {
+    /*-------------------------------------------
+        gsk_Scene Logic/Data update
+    */
+
+    _poll_update_events(renderer, scene, ecs);
+
     gsk_Scene *p_active_scene = renderer->sceneL[renderer->activeScene];
 
     // Settings
@@ -403,12 +414,6 @@ renderer_tick_OPENGL(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    /*-------------------------------------------
-        gsk_Scene Logic/Data update
-    */
-
-    _poll_update_events(renderer, scene, ecs);
 
     /*-------------------------------------------
         Pass #0 - GBuffer

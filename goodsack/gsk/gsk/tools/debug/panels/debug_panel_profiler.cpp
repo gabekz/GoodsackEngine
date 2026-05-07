@@ -34,11 +34,20 @@ gsk::tools::panels::Profiler::draw(void)
         Separator();
         Text("Window");
 
-        int vsync = gsk_device_getGraphicsSettings().swapInterval;
+        gsk_GraphicsSettings settings = gsk_device_getGraphicsSettings();
+
+        int vsync = settings.swapInterval;
         if (Checkbox("VSync", (bool *)&vsync))
         {
-            gsk_device_setGraphicsSettings(
-              (gsk_GraphicsSettings({.swapInterval = vsync})));
+            settings.swapInterval = vsync;
+            gsk_device_setGraphicsSettings(settings);
+        }
+
+        u32 max_fps = settings.max_fps;
+        if (SliderInt("Max FPS", (s32 *)&max_fps, 5, 250))
+        {
+            settings.max_fps = max_fps;
+            gsk_device_setGraphicsSettings(settings);
         }
 
         Separator();

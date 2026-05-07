@@ -23,10 +23,9 @@
 static f32
 _update_curl(f32 curl_min, f32 curl_max, f32 curl_speed)
 {
-    return glm_lerp(curl_min,
-                    curl_max,
-                    sin(gsk_device_getTime().time_elapsed * curl_speed) / 2.0f +
-                      0.5f);
+    gsk_Time time = gsk_device_getTime();
+    return glm_lerp(
+      curl_min, curl_max, sin(time.time_elapsed * curl_speed) / 2.0f + 0.5f);
 }
 
 gsk_ParticleSystem
@@ -65,8 +64,15 @@ gsk_particle_system_create(gsk_ParticleSystemSettings *p_settings,
         sp_particles[i].velocity[1] = 0;
         sp_particles[i].velocity[2] = 0;
 
+        sp_particles[i].STRIDE_FILLER1 = 8;
+
         // Initial life value
+
+#if 0
         sp_particles[i].life = ((double)rand() / (double)RAND_MAX);
+#else
+        sp_particles[i].life = ((double)rand() / (double)RAND_MAX);
+#endif
     }
 
     // create SSBO's
@@ -200,7 +206,7 @@ gsk_particle_system_create(gsk_ParticleSystemSettings *p_settings,
 
     // Create particle SSBO
 
-    ssbo_size    = _GSK_PARTICLE_SIZE;
+    ssbo_size    = sizeof(gsk_Particle);
     ssbo_binding = 1;
 
     glGenBuffers(1, &s_particle_ssbo_id);
@@ -240,14 +246,31 @@ gsk_particle_system_create(gsk_ParticleSystemSettings *p_settings,
         .particles_buff      = sp_particles,
         .mesh_buff           = buff,
         .mesh_buff_size      = (sizeof(vec4) * 3) * triangle_count,
-        .particles_buff_size = _GSK_PARTICLE_SIZE * _GSK_MAX_PARTICLE_COUNT,
+        .particles_buff_size = sizeof(gsk_Particle) * _GSK_MAX_PARTICLE_COUNT,
 
         .num_verts = numvert,
 
         .is_initialized = TRUE,
+        .is_burst       = FALSE,
     };
 
     return ret;
+}
+
+void
+gsk_particle_system_burst(gsk_ParticleSystem *p_particle_system)
+{
+#if 0
+    for (int i = 0; i < p_particle_system->particle_count; i++)
+    {
+        gsk_Particle *p_particle =
+          (gsk_Particle *)(p_particle_system->particles_buff + i);
+
+        p_particle_system->particles_buff[i].life = 0;
+        p_particle->STRIDE_FILLER1                = 1;
+    }
+#endif
+    p_particle_system->is_burst = TRUE;
 }
 
 void
@@ -314,12 +337,24 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
         glUniform1f(glGetUniformLocation(shader_id, "randSeed"), rand_idx);
         glUniform1i(glGetUniformLocation(shader_id, "numVertices"),
                     (float)num_vert);
+
+        glUniform1i(glGetUniformLocation(shader_id, "isLooping"),
+                    p_settings->is_looping);
+
+        glUniform1i(glGetUniformLocation(shader_id, "isBurst"),
+                    p_particle_system->is_burst);
     }
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_mesh_id);
     glBindBufferBase(
       GL_SHADER_STORAGE_BUFFER, 0, p_particle_system->ssbo_mesh_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, p_particle_system->ssbo_particle_id);
+#if 0
+    glBufferData(GL_SHADER_STORAGE_BUFFER,
+                 sizeof(gsk_Particle) * _GSK_MAX_PARTICLE_COUNT,
+                 p_particle_system->particles_buff,
+                 GL_DYNAMIC_DRAW);
+#endif
     glBindBufferBase(
       GL_SHADER_STORAGE_BUFFER, 1, p_particle_system->ssbo_particle_id);
 #if 0
@@ -333,6 +368,10 @@ gsk_particle_system_update(gsk_ParticleSystem *p_particle_system)
 
     // dispatch to update particles
     glDispatchCompute(num_thread_groups, 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+    // disable burst
+    p_particle_system->is_burst = FALSE;
 }
 
 void

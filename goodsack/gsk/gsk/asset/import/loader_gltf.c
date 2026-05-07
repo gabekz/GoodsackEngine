@@ -9,6 +9,7 @@
 #include "util/filesystem.h"
 #include "util/logger.h"
 #include "util/maths.h"
+#include "util/sysdefs.h"
 
 #include "core/graphics/mesh/mesh.h"
 #include "core/graphics/mesh/mesh_helpers.inl"
@@ -26,6 +27,8 @@
 #define STARTING_ANIMATION_INDEX 0
 
 #define _DEBUG_GLTF 0
+
+#include <string.h>
 
 struct AttributeInfo
 {
@@ -53,7 +56,7 @@ _get_primitive_attributes(cgltf_primitive *gltfPrimitive)
 
     int attribCount = gltfPrimitive->attributes_count;
 
-    struct AttributeInfo attribInfo = {-1};
+    struct AttributeInfo attribInfo = {0};
     attribInfo.idxTan               = -1;
 
     for (int i = 0; i < attribCount; i++)
@@ -125,6 +128,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
         for (int j = 0; j < skeleton->jointsCount; j++)
         {
             keyframes[i]->poses[j]            = malloc(sizeof(gsk_Pose));
+            *keyframes[i]->poses[j]           = (gsk_Pose) {0};
             keyframes[i]->poses[j]->hasMatrix = 0;
         }
     }
@@ -171,7 +175,7 @@ __fill_animation_data(cgltf_animation *gltfAnimation, gsk_Skeleton *skeleton)
                 cgltf_bool testSuccess = cgltf_accessor_read_float(
                   gltfAnimation->channels[i].sampler->output, j, output, 8);
 
-                glm_vec3_zero(keyframes[j]->poses[boneIndex]->translation);
+                // glm_vec3_zero(keyframes[j]->poses[boneIndex]->translation);
                 glm_vec3_copy(output,
                               keyframes[j]->poses[boneIndex]->translation);
             }
@@ -241,8 +245,8 @@ _create_joint_recurse(gsk_Skeleton *skeleton,
                       cgltf_node **jointsNode,
                       cgltf_skin *skinNode)
 {
-    gsk_Joint joint;
-    joint.id = id;
+    gsk_Joint joint = (gsk_Joint) {0};
+    joint.id        = id;
     // joint.name           = jointsNode[id]->name;
     strncpy(joint.name, jointsNode[id]->name, strlen(jointsNode[id]->name) + 1);
     joint.parent         = (parent == NULL) ? NULL : parent;
@@ -256,7 +260,7 @@ _create_joint_recurse(gsk_Skeleton *skeleton,
     cgltf_accessor_read_float(skinNode->inverse_bind_matrices,
                               id,
                               (float *)inverseBindPose,
-                              32 * sizeof(float));
+                              sizeof(mat4) / sizeof(f32));
     glm_mat4_copy(inverseBindPose, joint.mInvBindPose);
 
     // transformation matrix
@@ -301,10 +305,10 @@ _create_joint_recurse(gsk_Skeleton *skeleton,
 static gsk_MeshData *
 _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 {
-    gsk_MeshData *ret       = malloc(sizeof(gsk_MeshData));
-    ret->mesh_buffers_count = 0;
-    ret->usage_draw         = GskOglUsageType_Dynamic;
-    ret->isSkinnedMesh      = FALSE;
+    gsk_MeshData *ret  = malloc(sizeof(gsk_MeshData));
+    *ret               = (gsk_MeshData) {0};
+    ret->usage_draw    = GskOglUsageType_Dynamic;
+    ret->isSkinnedMesh = FALSE;
 
     // TODO: Get more than just the first primitive
     struct AttributeInfo attribInfo = _get_primitive_attributes(gltfPrimitive);
@@ -341,8 +345,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
     // Position, TextureCoord, Normal
 
-    size_t size_vec2 = sizeof(vec3);
-    size_t size_vec3 = sizeof(vec2);
+    size_t size_vec3 = 3;
+    size_t size_vec2 = 2;
 
     int offsetA = 0;
 
@@ -389,9 +393,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
     // Indices //
 
-    u32 indices_count     = attribInfo.indicesData->count;
-    u32 buff_indices_size = indices_count * sizeof(u32);
-    float *buff_indices   = malloc(buff_indices_size);
+    u64 indices_count = attribInfo.indicesData->count;
+    f32 *buff_indices = malloc(indices_count * sizeof(u32));
 
     ret->indicesCount = indices_count;
 
@@ -407,7 +410,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
     ret->mesh_buffers_count += 1;
     ret->mesh_buffers[1].p_buffer     = buff_indices;
-    ret->mesh_buffers[1].buffer_size  = buff_indices_size;
+    ret->mesh_buffers[1].buffer_size  = indices_count * sizeof(u32);
     ret->mesh_buffers[1].buffer_flags = (GskMeshBufferFlag_Indices);
 
     // Skinned mesh
@@ -456,8 +459,8 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         u32 jointsBufferSize  = vertCount * 4 * sizeof(u32);
         u32 weightsBufferSize = vertCount * 4 * sizeof(float);
 
-        u32 *jointsBuffer    = malloc(jointsBufferSize);
-        float *weightsBuffer = malloc(weightsBufferSize);
+        f32 *jointsBuffer    = malloc(jointsBufferSize);
+        f32 *weightsBuffer = malloc(weightsBufferSize);
 
         // fill joint and weight buffers
         int offset = 0;
@@ -563,12 +566,12 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
 
 // Material Data //
 
-static gsk_Texture *_test_texture_white;
-static gsk_Texture *_test_texture_normal;
-static gsk_ShaderProgram *s_pbrShader;
+static gsk_Texture *_test_texture_white  = NULL;
+static gsk_Texture *_test_texture_normal = NULL;
+static gsk_ShaderProgram *s_pbrShader    = NULL;
 
-static gsk_Texture **s_loaded_textures;
-static int s_loaded_textures_count;
+static gsk_Texture **s_loaded_textures = NULL;
+static int s_loaded_textures_count     = 0;
 
 #define TEXTURE_POOL_COUNT 70
 #define TEST_PATH_URI      "data://textures/sponza/"
@@ -625,7 +628,6 @@ _create_material(cgltf_material *gltfMaterial,
     // PBR textures
     if (gltfMaterial->has_pbr_metallic_roughness)
     {
-
         gsk_Material *material = gsk_material_create(s_pbrShader, NULL, 0);
 
         cgltf_pbr_metallic_roughness *textureContainer =
@@ -747,6 +749,7 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
     }
 
     gsk_Model *ret = malloc(sizeof(gsk_Model));
+    *ret           = (gsk_Model) {0};
     ret->meshes    = malloc(sizeof(gsk_Mesh *) * totalObjects);
 
     // Create texture/material pools
@@ -780,9 +783,11 @@ gsk_load_gltf(const char *path, int scale, int importMaterials)
               _load_mesh_vertex_data(&data->nodes[i].mesh->primitives[j], data);
             ret->meshes[cntMesh] = gsk_mesh_allocate(meshData);
 
+#if 1
             mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;
             glm_translate(localMatrix, data->nodes[i].translation);
             glm_mat4_copy(localMatrix, ret->meshes[cntMesh]->localMatrix);
+#endif
 
             // Add textures to material pools
             if (importMaterials)

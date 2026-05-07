@@ -29,7 +29,7 @@ extern "C" {
                                                   \
         .ramp_dist = 0.8f,                        \
                                                   \
-        .updraft = 0.02f,                         \
+        .updraft = 1.02f,                         \
                                                   \
         .min_life = 0.1f,                         \
                                                   \
@@ -42,6 +42,8 @@ extern "C" {
         .convergence_point_world_pos = {0, 4, 0}, \
                                                   \
         .convergence_strength = 0.002f,           \
+                                                  \
+        .is_looping = TRUE,                       \
     }
 
 typedef struct gsk_Particle
@@ -55,7 +57,6 @@ typedef struct gsk_Particle
     f32 STRIDE_FILLER1;
     f32 STRIDE_FILLER2;
 } gsk_Particle;
-#define _GSK_PARTICLE_SIZE 80
 
 typedef struct gsk_ParticleSystemSettings
 {
@@ -73,6 +74,7 @@ typedef struct gsk_ParticleSystemSettings
     vec3 convergence_point_world_pos;
 
     gsk_Texture *p_ramp_tex, *p_main_tex;
+    u8 is_looping;
 
 } gsk_ParticleSystemSettings;
 
@@ -89,7 +91,7 @@ typedef struct gsk_ParticleSystem
     u32 ssbo_particle_id, ssbo_mesh_id;
 
     f32 noise_cnt;
-    f32 *particles_buff;
+    gsk_Particle *particles_buff;
     u32 particles_buff_size;
     f32 *mesh_buff;
     u32 mesh_buff_size;
@@ -97,6 +99,8 @@ typedef struct gsk_ParticleSystem
     u32 num_verts;
 
     u8 is_initialized;
+
+    u8 is_burst;
 
 } gsk_ParticleSystem;
 
@@ -115,6 +119,9 @@ gsk_particle_system_create(gsk_ParticleSystemSettings *p_settings,
                            gsk_ShaderProgram *p_compute_shader,
                            gsk_ShaderProgram *p_render_shader,
                            gsk_MeshData *p_emitter_mesh);
+
+void
+gsk_particle_system_burst(gsk_ParticleSystem *p_particle_system);
 
 void
 gsk_particle_system_update(gsk_ParticleSystem *p_particle_system);

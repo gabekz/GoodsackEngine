@@ -101,6 +101,7 @@ gsk_Mesh *
 gsk_mesh_allocate(gsk_MeshData *p_mesh_data)
 {
     gsk_Mesh *mesh = malloc(sizeof(gsk_Mesh));
+    *mesh          = (gsk_Mesh) {0};
     if (mesh == NULL) { LOG_CRITICAL("Failed to allocate memory for Mesh"); }
 
     mesh->meshData = p_mesh_data;

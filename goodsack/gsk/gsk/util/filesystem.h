@@ -46,13 +46,24 @@ static void filesystem_flush(BUFFER);
 // filesystem_path(FS_DIR_DEBUG, "logs/logs.txt");
 
 void
-gsk_filesystem_initialize(const char *project_root, const char *project_scheme);
+gsk_filesystem_initialize(const char *binary_path,
+                          const char *project_root,
+                          const char *project_scheme);
+
+char *
+gsk_filesystem_get_data_path();
 
 void
 gsk_filesystem_str_to_forward_slash(char *buffer);
 
 void
 gsk_filesystem_strip_filename(char *buffer);
+
+void
+gsk_filesystem_strip_extension(char *buffer);
+
+char *
+gsk_filesystem_get_filename(const char *path);
 
 char *
 gsk_filesystem_get_extension(const char *path);

@@ -38,9 +38,8 @@ struct gsk_Pose
 
 struct gsk_Joint
 {
-    char name[MAX_BONE_NAME_LEN];
-    u8 override;
     u16 id;
+    u8 override;
 
     gsk_Joint *parent;
     s32 parent_id;
@@ -48,6 +47,7 @@ struct gsk_Joint
 
     gsk_Pose pose; // current pose
     mat4 mInvBindPose;
+    char name[MAX_BONE_NAME_LEN];
 };
 
 struct gsk_Keyframe

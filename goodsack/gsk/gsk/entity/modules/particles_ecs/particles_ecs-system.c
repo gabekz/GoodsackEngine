@@ -66,7 +66,7 @@ init(gsk_Entity ent)
     {
         LOG_DEBUG("using fallback for particle emitter for entity %d", ent.id);
 
-        gsk_Model *p_model_emitter = GSK_ASSET("gsk://models/cube.obj");
+        gsk_Model *p_model_emitter = GSK_ASSET("gsk://models/sphere.obj");
         p_explicitdata             = p_model_emitter->meshes[0]->meshData;
     }
 
@@ -169,7 +169,8 @@ destroy(gsk_Entity ent)
 
     ent_emitter->is_awake = FALSE;
 
-    if (ent_emitter->p_settings) { free(ent_emitter->p_settings); }
+    // TODO: fix this
+    // if (ent_emitter->p_settings) { free(ent_emitter->p_settings); }
 
     gsk_ParticleSystem *p_sys =
       (gsk_ParticleSystem *)ent_emitter->p_particle_system;
@@ -183,9 +184,9 @@ s_particles_ecs_system_init(gsk_ECS *ecs)
 {
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
-                              .init         = (gsk_ECSSubscriber)init,
-                              .fixed_update = (gsk_ECSSubscriber)fixed_update,
-                              .render       = (gsk_ECSSubscriber)render,
-                              .destroy      = (gsk_ECSSubscriber)destroy,
+                              .init    = (gsk_ECSSubscriber)init,
+                              .update  = (gsk_ECSSubscriber)fixed_update,
+                              .render  = (gsk_ECSSubscriber)render,
+                              .destroy = (gsk_ECSSubscriber)destroy,
                             }));
 }

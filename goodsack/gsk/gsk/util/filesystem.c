@@ -24,6 +24,8 @@
 
 static struct
 {
+    char binary_path[GSK_FS_MAX_PATH];
+    char data_path[GSK_FS_MAX_PATH];
     char gsk_root[GSK_FS_MAX_PATH];
     char gsk_scheme[GSK_FS_MAX_SCHEME];
     char proj_root[GSK_FS_MAX_PATH];
@@ -48,6 +50,20 @@ gsk_filesystem_strip_filename(char *buffer)
     if (pos != NULL) { *pos = '\0'; }
 }
 
+void
+gsk_filesystem_strip_extension(char *buffer)
+{
+    char *pos = strrchr(buffer, '.');
+    if (pos != NULL) { *pos = '\0'; }
+}
+
+char *
+gsk_filesystem_get_filename(const char *path)
+{
+    const char *last_slash = strrchr(path, '/');
+    return (last_slash) ? (last_slash + 1) : path;
+}
+
 char *
 gsk_filesystem_get_extension(const char *path)
 {
@@ -55,9 +71,24 @@ gsk_filesystem_get_extension(const char *path)
     return ext;
 }
 
-void
-gsk_filesystem_initialize(const char *project_root, const char *project_scheme)
+char *
+gsk_filesystem_get_data_path()
 {
+    return s_path_roots.data_path;
+}
+
+// TODO: move to top of file
+void
+gsk_filesystem_initialize(const char *binary_path,
+                          const char *project_root,
+                          const char *project_scheme)
+{
+    if (binary_path != NULL)
+    {
+        strcpy(s_path_roots.binary_path, binary_path);
+        sprintf(s_path_roots.data_path, "%s/data/", binary_path);
+    }
+
     if (project_root == NULL)
     {
         LOG_CRITICAL("Failed to initialize filesystem - missing project_root.");
@@ -125,6 +156,8 @@ gsk_filesystem_path_to_uri(const char *file_path, char *output_uri)
 {
     void *p_root   = NULL;
     void *p_scheme = NULL;
+
+    if (file_path == NULL) { return NULL; }
 
     // engine-specific path
     if (strncmp(

@@ -52,6 +52,8 @@
 #define _TEST_WRITE_PNG     FALSE
 #define _HOT_IS_FALLBACK    FALSE
 
+#define _DEFAULT_MAX_FPS 250
+
 extern "C" {
 static struct
 {
@@ -254,7 +256,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     sprintf(newroot, "%s/data", s_runtime.bin_directory);
 
     strcpy(s_runtime.proj_scheme, root_scheme);
-    gsk_filesystem_initialize(root_dir, root_scheme);
+    gsk_filesystem_initialize(s_runtime.bin_directory, root_dir, root_scheme);
 
     /*==== Initialize Asset System ===================================*/
 
@@ -274,13 +276,10 @@ gsk::runtime::rt_setup(const char *root_dir,
     // GPAK
     if (s_runtime.options.fs_mode == 0)
     {
-        char path[256] = "";
-        sprintf(path, "%s%s.gpak", gpak_path, GSK_FS_GSK_SCHEME);
-        gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[0], path);
-
-        char path2[256] = "";
-        sprintf(path2, "%s%s.gpak", gpak_path, s_runtime.proj_scheme);
-        gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[1], path2);
+        for (int i = 0; i < _TOTAL_ASSET_CACHES; i++)
+        {
+            gsk_gpak_reader_fill_cache(s_runtime.pp_asset_caches[i]);
+        }
     }
 
 // HOT
@@ -417,7 +416,10 @@ gsk::runtime::rt_setup(const char *root_dir,
     gsk_device_resetTime();
 
     // Initialize Graphics Settings
-    gsk_device_setGraphicsSettings((gsk_GraphicsSettings {.swapInterval = 1}));
+    gsk_device_setGraphicsSettings((gsk_GraphicsSettings {
+      .max_fps      = _DEFAULT_MAX_FPS,
+      .swapInterval = 1,
+    }));
     // Initialize gsk_Input
     gsk_device_setInput((gsk_Input {.cursor_position = {0, 0}}));
     device_setCursorState(INIT_CURSOR_LOCKED, INIT_CURSOR_VISIBLE);
@@ -504,6 +506,8 @@ gsk::runtime::rt_loop()
     gsk_renderer_start(
       s_runtime.renderer); // Initialization for the render loop
 
+    // TODO: ECS_INIT
+
     // TODO: should not be handled in runtime
     if (s_runtime.status.is_lua_running)
     {
@@ -527,68 +531,84 @@ gsk::runtime::rt_loop()
     // gsk::audio::composer::create_from_json(GSK_PATH("gsk://composer.json"));
 #endif // GSK_USING_COMPOSER
 
+    f64 last_time        = 0.0f;
+    f64 accumulated_time = 0.0f;
+
     // Main Engine Loop
     while (!glfwWindowShouldClose(s_runtime.renderer->window))
     {
         double time_sec = glfwGetTime();
-        gsk_device_updateTime(time_sec);
+
+        f64 dt    = time_sec - last_time;
+        last_time = time_sec;
+
+        accumulated_time += dt;
+
+        f64 frame_time = 1.0f / (f64)gsk_device_getGraphicsSettings().max_fps;
+        if (accumulated_time >= frame_time)
+        {
+            gsk_device_updateTime(time_sec);
+            accumulated_time = 0;
+
+            // LOG_INFO("frame start");
 
 #if GSK_USING_COMPOSER
-        gsk_music_composer_update(&composer, time_sec);
+            gsk_music_composer_update(&composer, time_sec);
 #endif // GSK_USING_COMPOSER
 
 #if USING_JOYSTICK_CONTROLLER
-        int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
-        if (present)
-        {
+            int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+            if (present)
             {
-                int count;
-                const float *axes =
-                  glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
+                {
+                    int count;
+                    const float *axes =
+                      glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
 
-                LOG_INFO("Axes0 %d: %f", 0, axes[0]);
-                LOG_INFO("Axes1 %d: %f", 1, axes[1]);
-            }
-            {
-                int count;
-                const unsigned char *buttons =
-                  glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
+                    LOG_INFO("Axes0 %d: %f", 0, axes[0]);
+                    LOG_INFO("Axes1 %d: %f", 1, axes[1]);
+                }
+                {
+                    int count;
+                    const unsigned char *buttons =
+                      glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
 
-                if (buttons[1] == GLFW_PRESS) { LOG_INFO("Press"); }
+                    if (buttons[1] == GLFW_PRESS) { LOG_INFO("Press"); }
+                }
             }
-        }
 #endif
 
-        if (GSK_DEVICE_API_OPENGL)
-        {
-
-            if (s_runtime.status.is_lua_running)
+            if (GSK_DEVICE_API_OPENGL)
             {
-                entity::LuaEventStore::ECSEvent(ECS_UPDATE);
+
+                if (s_runtime.status.is_lua_running)
+                {
+                    entity::LuaEventStore::ECSEvent(ECS_UPDATE);
+                }
+
+                gsk_renderer_tick(s_runtime.renderer);
+
+#if GSK_RUNTIME_USE_DEBUG
+                s_runtime.p_debug_toolbar->update();
+                s_runtime.p_debug_toolbar->render();
+#endif // GSK_RUNTIME_USE_DEBUG
+
+                glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
             }
 
-            gsk_renderer_tick(s_runtime.renderer);
+            // Vulkan
+            else if (GSK_DEVICE_API_VULKAN)
+            {
+                gsk_renderer_tick(s_runtime.renderer);
 
 #if GSK_RUNTIME_USE_DEBUG
-            s_runtime.p_debug_toolbar->update();
-            s_runtime.p_debug_toolbar->render();
+                s_runtime.p_debug_toolbar->update();
+                s_runtime.p_debug_toolbar->render();
 #endif // GSK_RUNTIME_USE_DEBUG
 
-            glfwSwapBuffers(s_runtime.renderer->window); // we need to swap.
-        }
-
-        // Vulkan
-        else if (GSK_DEVICE_API_VULKAN)
-        {
-            gsk_renderer_tick(s_runtime.renderer);
-
-#if GSK_RUNTIME_USE_DEBUG
-            s_runtime.p_debug_toolbar->update();
-            s_runtime.p_debug_toolbar->render();
-#endif // GSK_RUNTIME_USE_DEBUG
-
-            vulkan_render_draw_end(s_runtime.renderer->vulkanDevice,
-                                   s_runtime.renderer->window);
+                vulkan_render_draw_end(s_runtime.renderer->vulkanDevice,
+                                       s_runtime.renderer->window);
+            }
         }
     }
 

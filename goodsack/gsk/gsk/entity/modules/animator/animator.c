@@ -170,10 +170,27 @@ update(gsk_Entity e)
     }
 
     gsk_Animation *cntAnimation = animator->cntAnimation;
-    u32 cntKeyframeIndex        = animator->cntKeyframeIndex;
-    u32 nxtKeyframeIndex        = cntKeyframeIndex + 1;
+    u32 cnt_anim_index          = cntAnimation->index;
 
-    u32 cnt_anim_index = cntAnimation->index;
+    u32 cntKeyframeIndex = animator->cntKeyframeIndex;
+    u32 nxtKeyframeIndex = cntKeyframeIndex + 1;
+
+#if 1
+    if (animator->timerNow > 0)
+    {
+        for (int i = 1; i < cntAnimation->keyframesCount; i++)
+        {
+            f32 ftime = cntAnimation->keyframes[i]->frameTime;
+
+            if (ftime > animator->timerNow)
+            {
+                cntKeyframeIndex = i - 1;
+                nxtKeyframeIndex = i;
+                break;
+            }
+        }
+    }
+#endif
 
     gsk_AnimationSet *p_animation_set =
       (gsk_AnimationSet *)animator->p_animation_set;

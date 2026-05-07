@@ -14,27 +14,6 @@
 // #define ECS_SYSTEM
 //  ECS_SYSTEM_DECLARE()
 
-void
-transform_translate(struct ComponentTransform *transform, vec3 position)
-{
-    glm_translate(transform->model, position);
-}
-
-void
-transform_position(struct ComponentTransform *transform, vec3 position)
-{
-    mat4 matrix = GLM_MAT4_IDENTITY_INIT;
-    glm_translate(matrix, position);
-    glm_vec3_copy(position, transform->position);
-    glm_mat4_copy(matrix, transform->model);
-}
-
-/*
-void transform_rotate(struct ComponentTransform *transform, vec3 rotation) {
-    glm_rotate(*transform->mvp.matrix, rotation);
-}
-*/
-
 static void
 _validate_bone_matrix(gsk_Entity e)
 {
@@ -115,6 +94,85 @@ __fdiv_safe(const f32 a, const f32 b)
 }
 
 static void
+__update_rotation_euler_angles(struct ComponentTransform *cmp_transform)
+{
+    // glm_quat_normalize(cmp_transform->rotation);
+
+    glm_quat_mat4(cmp_transform->rotation, cmp_transform->m4_rotation);
+
+    // update euler orientation
+    vec3 new_angles = {0, 0, 0};
+    glm_euler_angles(cmp_transform->m4_rotation, new_angles);
+    cmp_transform->orientation[0] = glm_deg(new_angles[0]);
+    cmp_transform->orientation[1] = glm_deg(new_angles[1]);
+    cmp_transform->orientation[2] = glm_deg(new_angles[2]);
+}
+
+static void
+__quat_from_xyz(vec3 euler, versor *dest)
+{
+    versor delta = GLM_QUAT_IDENTITY_INIT;
+    {
+        versor qx = GLM_QUAT_IDENTITY_INIT;
+        versor qy = GLM_QUAT_IDENTITY_INIT;
+        versor qz = GLM_QUAT_IDENTITY_INIT;
+
+        // 1. Create individual rotations (angles must be in RADIANS)
+        glm_quatv(qx, glm_rad(euler[0]), (vec3) {1.0f, 0.0f, 0.0f});
+        glm_quatv(qy, glm_rad(euler[1]), (vec3) {0.0f, 1.0f, 0.0f});
+        glm_quatv(qz, glm_rad(euler[2]), (vec3) {0.0f, 0.0f, 1.0f});
+
+        versor temp = GLM_QUAT_IDENTITY_INIT;
+        // glm_quat_mul(qz, qy, temp);
+        // glm_quat_mul(temp, qx, delta);
+        glm_quat_mul(qx, qy, temp);
+        glm_quat_mul(temp, qz, dest);
+        glm_quat_normalize(dest);
+    }
+}
+
+static void
+__rotate_euler(vec3 euler, versor *p_cnt_rotation)
+{
+    // glm_quat_copy(delta, *p_cnt_rotation);
+    // return;
+
+    versor next_rot = GLM_QUAT_IDENTITY_INIT;
+    __quat_from_xyz(euler, next_rot);
+
+    glm_quat_mul(next_rot, *p_cnt_rotation, next_rot);
+    glm_quat_normalize(next_rot);
+
+    glm_quat_copy(next_rot, *p_cnt_rotation);
+}
+
+void
+transform_set_rotation(struct ComponentTransform *transform, versor quat)
+{
+    versor new_rot = GLM_QUAT_IDENTITY_INIT;
+
+    glm_quat_normalize_to(quat, new_rot);
+    glm_quat_copy(new_rot, transform->rotation);
+
+    __update_rotation_euler_angles(transform);
+}
+
+void
+transform_set_rotation_xyz(struct ComponentTransform *transform, vec3 rotation)
+{
+    versor new_rot = GLM_QUAT_IDENTITY_INIT;
+    __quat_from_xyz(rotation, new_rot);
+    transform_set_rotation(transform, new_rot);
+}
+
+void
+transform_rotate(struct ComponentTransform *transform, vec3 rotation)
+{
+    __rotate_euler(rotation, &transform->rotation);
+    __update_rotation_euler_angles(transform);
+}
+
+static void
 init(gsk_Entity e)
 {
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
@@ -123,6 +181,10 @@ init(gsk_Entity e)
       (transform->parent_entity_id >= ECS_ID_FIRST) ? TRUE : FALSE;
 
     mat4 m4i = GLM_MAT4_IDENTITY_INIT;
+
+    versor rot_init = GLM_QUAT_IDENTITY_INIT;
+    glm_quat_copy(rot_init, transform->rotation);
+    transform_rotate(transform, transform->orientation);
 
     // Get parent transform (if exists)
     if (transform->has_parent)
@@ -214,9 +276,18 @@ late_update(gsk_Entity e)
     glm_translate(m4i, transform->position);
 
     mat4 mat_rot = GLM_MAT4_IDENTITY_INIT;
+
+#if _TRANSFORM_QUATERNION
+    __update_rotation_euler_angles(transform);
+    glm_mat4_copy(transform->m4_rotation, mat_rot);
+
+#else
     glm_rotate_x(mat_rot, glm_rad(transform->orientation[0]), mat_rot);
     glm_rotate_y(mat_rot, glm_rad(transform->orientation[1]), mat_rot);
     glm_rotate_z(mat_rot, glm_rad(transform->orientation[2]), mat_rot);
+
+    glm_mat4_copy(mat_rot, transform->m4_rotation);
+#endif // _TRANSFORM_QUATERNION
 
     // separated rotation matrix
     glm_mat4_mul(m4i, mat_rot, m4i);
@@ -224,7 +295,6 @@ late_update(gsk_Entity e)
     glm_scale(m4i, scale_scalar);
 
     glm_mat4_copy(m4i, transform->model);
-    glm_mat4_copy(mat_rot, transform->m4_rotation);
 
     // set world position
     __update_world_position(transform);

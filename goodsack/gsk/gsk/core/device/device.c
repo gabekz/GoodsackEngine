@@ -7,6 +7,7 @@
 
 #include "util/gfx.h"
 #include "util/logger.h"
+#include "util/maths.h"
 #include "util/sysdefs.h"
 
 #include <string.h>
@@ -98,6 +99,9 @@ gsk_device_resetTime()
 
     s_device.time.time_scale      = GSK_TIME_SCALE_DEFAULT;
     s_device.time.next_time_scale = GSK_TIME_SCALE_DEFAULT;
+
+    s_device.time.limits.accumulated_time = 0;
+    s_device.time.limits.last_time        = 0;
 }
 
 void
@@ -126,18 +130,29 @@ gsk_device_updateTime(double time)
 
     // Total time elapsed
     s_device.time.time_elapsed = time;
+    // s_device.time.time_elapsed += s_device.time.unscaled_delta_time;
 
     // Update interval-clocks
-    s_device.clock_metrics     = time - s_device.clock_metrics_prev;
-    s_device.clock_fixed_delta = time - s_device.clock_fixed_delta_prev;
+    s_device.clock_metrics = time - s_device.clock_metrics_prev;
+    // s_device.clock_fixed_delta = time - s_device.clock_fixed_delta_prev;
+
+    s_device.clock_fixed_delta += s_device.time.unscaled_delta_time;
 
     s_device.counter++; // total frames since last interval
+
+    // Limits
+    s_device.time.limits.accumulated_time += s_device.time.unscaled_delta_time;
 
     // update metrics based on interval
     if (s_device.clock_metrics >= GSK_TIME_ANALYTICS_DEFAULT)
     {
         s_device.time.metrics.last_fps =
           (1.0 / s_device.clock_metrics) * s_device.counter;
+
+        if (s_device.time.metrics.last_fps <= 140)
+        {
+            LOG_INFO("FPS IS %f", s_device.time.metrics.last_fps);
+        }
 
         s_device.time.metrics.last_ms =
           (s_device.clock_metrics / s_device.counter) * 1000;
@@ -147,11 +162,13 @@ gsk_device_updateTime(double time)
         s_device.counter            = 0;
     }
 
+#if 0
     // update fixed-delta based on interval
     if (s_device.clock_fixed_delta >= s_device.time.fixed_delta_time)
     {
         s_device.clock_fixed_delta_prev = time;
     }
+#endif
 
     if (s_device.time.delta_time > GSK_TIME_DELTA_CAP_DEFAULT)
     {
@@ -159,14 +176,52 @@ gsk_device_updateTime(double time)
                   GSK_TIME_DELTA_CAP_DEFAULT,
                   s_device.time.delta_time);
 
-        s_device.time.delta_time = GSK_TIME_DELTA_CAP_DEFAULT;
+        s_device.time.delta_time   = GSK_TIME_DELTA_CAP_DEFAULT;
+        s_device.clock_fixed_delta = 0;
     }
+}
+
+u8
+gsk_device_checkLimits()
+{
+    f32 ftime = 1.0f / 20.0f;
+
+    if (s_device.time.limits.accumulated_time >= ftime)
+    {
+        s_device.time.limits.last_time        = s_device.time.time_elapsed;
+        s_device.time.limits.accumulated_time = 0.0f;
+        return 1;
+    }
+
+    return 0;
 }
 
 u8
 _gsk_device_check_fixed_update()
 {
-    return (s_device.clock_fixed_delta >= s_device.time.fixed_delta_time);
+    // change dt if higher than current FPS?
+
+#if 0
+    if (s_device.time.unscaled_delta_time < s_device.time.fixed_delta_time)
+    {
+        s_device.time.fixed_delta_time = s_device.time.unscaled_delta_time;
+    } else
+    {
+        s_device.time.fixed_delta_time = GSK_TIME_FIXED_DELTA_DEFAULT;
+    }
+#endif
+
+    if (s_device.clock_fixed_delta >= s_device.time.fixed_delta_time)
+    {
+        // s_device.clock_fixed_delta_prev = s_device.time.time_elapsed;
+        // s_device.clock_fixed_delta -= s_device.time.unscaled_delta_time;
+
+        s_device.clock_fixed_delta -= s_device.time.fixed_delta_time;
+        // s_device.clock_fixed_delta -= MAX(s_device.time.fixed_delta_time,
+        //                                  s_device.time.unscaled_delta_time);
+        return 1;
+    }
+    return 0;
 }
 
 gsk_Input
