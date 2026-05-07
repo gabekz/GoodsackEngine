@@ -529,7 +529,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
 #endif
 
         u32 num_vert    = poly->list_vertices.list_next;
-        u32 num_indices = (num_vert - 2) * 3;
+        u32 num_indices = (num_vert - 1) * 3;
 
         // push the center vertex FIRST (Triangle-Fan rendering)
 
@@ -572,7 +572,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
         // Buffers for storing input
         // pos + tex + norm + tan
         s32 buff_count    = vL + vnL + vtL + vnL;
-        float *buff_verts = malloc(buff_count * (sizeof(float) * 3));
+        float *buff_verts = malloc(buff_count * (sizeof(float)));
 #if _USING_INDICES
         u32 *buff_indices = malloc(num_indices * sizeof(u32));
 #endif // _USING_INDICES
@@ -640,6 +640,7 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
 
         meshdata->mesh_buffers_count = 0;
         meshdata->usage_draw         = GskOglUsageType_Static;
+        meshdata->isSkinnedMesh      = FALSE;
 
         meshdata->mesh_buffers_count++;
         meshdata->mesh_buffers[0] = (gsk_MeshBuffer) {
@@ -654,11 +655,11 @@ gsk_qmap_build_polys_from_brush(gsk_QMapContainer *p_container,
         meshdata->mesh_buffers[1] = (gsk_MeshBuffer) {
           .buffer_flags = (GskMeshBufferFlag_Indices),
           .p_buffer     = buff_indices,
-          .buffer_size  = num_indices * sizeof(u32),
+          .buffer_size  = num_indices,
         };
 #endif // _USING_INDICES
 
-        meshdata->vertexCount    = vL / 3;
+        meshdata->vertexCount    = num_vert;
         meshdata->indicesCount   = (_USING_INDICES) ? num_indices : 0;
         meshdata->primitive_type = (_USING_INDICES)
                                      ? GskMeshPrimitiveType_Triangle

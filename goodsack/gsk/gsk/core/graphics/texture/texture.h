@@ -36,6 +36,7 @@ typedef struct gsk_Texture
     s32 width, height;
     u32 id;
     u32 activeSlot;
+    // byte_t *p_imported_data;
 
     struct
     {

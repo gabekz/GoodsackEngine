@@ -60,21 +60,59 @@ _calculate_vertex_skinning()
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
+mat4
+_calculate_vertex_skinning_m4()
+{
+#if SKINNED
+    mat4 totalLocalPos = mat4(0.0);
+    for (int i = 0; i < MAX_WEIGHTS; i++)
+    {
+        mat4 skinnedTransform = u_SkinnedMatrices[int(a_Joints[i])];
+        totalLocalPos += skinnedTransform * a_Weights[i];
+    }
+    return totalLocalPos;
+#endif // SKINNED
+    return mat4(1.0);
+}
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+mat3
+_calculate_tbn(mat4 model, mat4 boneTransform)
+{
+    mat3 normalMatrix = mat3(u_Model * boneTransform);
+    vec3 T            = normalize(normalMatrix * a_Tangent);
+    vec3 N            = normalize(normalMatrix * a_Normal);
+
+    T = normalize(T - dot(T, N) * N);
+
+    vec3 B = cross(N, T);
+
+    return mat3(T, B, N);
+}
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
 void
 main()
 {
     CameraData camera = s_Camera.cameras[u_render_layer];
 
-    vec4 viewPos   = camera.view * u_Model * _calculate_vertex_skinning();
-    vs_out.fragPos = viewPos.xyz;
+    mat4 boneTransform = _calculate_vertex_skinning_m4();
 
-    mat3 normalMatrix = transpose(inverse(mat3(camera.view * u_Model)));
+    vec4 viewPos =
+      camera.view * u_Model * boneTransform * vec4(a_Position, 1.0);
+
+    gl_Position      = camera.projection * viewPos;
+    vs_out.fragPos   = viewPos.xyz;
+    vs_out.texCoords = a_TexCoords;
+
+#if 0
+    mat3 normalMatrix =
+      transpose(inverse(mat3(camera.view * u_Model * boneTransform)));
     vs_out.normal = normalMatrix * (u_InvertedNormals ? -a_Normal : a_Normal);
     vs_out.normal = normalize(vs_out.normal);
     // vs_out.normal = normalize(a_Normal);
-
-    gl_Position      = camera.projection * viewPos;
-    vs_out.texCoords = a_TexCoords;
 
     // TBN
     vec3 t = vec3(u_Model * vec4(a_Tangent, 0.0));
@@ -82,6 +120,22 @@ main()
     vec3 n = vec3(u_Model * vec4(vs_out.normal, 0.0));
 
     vs_out.tbn = mat3(t, b, n);
+#else
+    mat3 normalMatrix = mat3(camera.view * u_Model * boneTransform);
+    vec3 T            = normalize(normalMatrix * a_Tangent);
+    vec3 N            = normalize(normalMatrix * a_Normal);
+
+    T = normalize(T - dot(T, N) * N);
+
+    vec3 B = cross(N, T);
+
+    vs_out.tbn    = mat3(T, B, N);
+    vs_out.normal = N;
+
+#endif
+
+    // vs_out.tbn    = _calculate_tbn(u_Model, boneTransform);
+    // vs_out.normal = vs_out.tbn[2];
 }
 //-----------------------------------------------------------------------------
 

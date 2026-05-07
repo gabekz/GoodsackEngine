@@ -239,17 +239,21 @@ struct _BlocInfo
 #pragma pack(pop)
 
 void
-gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache, const char *gpak_path)
+gsk_gpak_reader_fill_cache(gsk_AssetCache *p_cache)
 {
     // TODO: find dict file based on AssetCache in gpak_directory
 
     FILE *file_dic;
     char magic[5];
 
-    file_dic = fopen(gpak_path, "rb");
+    char path[256] = "";
+    sprintf(
+      path, "%s%s.gpak", gsk_filesystem_get_data_path(), p_cache->cache_scheme);
+
+    file_dic = fopen(path, "rb");
     if (!file_dic)
     {
-        LOG_ERROR("Failed to open dictionary file %s", gpak_path);
+        LOG_ERROR("Failed to open dictionary file %s", path);
         return;
     }
 
@@ -326,7 +330,9 @@ gsk_gpak_reader_import_blob(const char *uri_str)
     gsk_AssetCache *p_cache = gsk_runtime_get_asset_cache(uri_str);
     gsk_AssetRef *p_ref     = gsk_asset_cache_get(p_cache, uri_str);
     // TODO: error handling
-    const char *path = (_GOODSACK_FS_DIR_BUILD "/data/");
+    // const char *path = (_GOODSACK_FS_DIR_BUILD "/data/");
+
+    const char *path = gsk_filesystem_get_data_path();
 
     char pathT[256];
     sprintf(pathT,

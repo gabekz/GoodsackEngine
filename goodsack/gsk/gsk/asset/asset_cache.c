@@ -22,6 +22,9 @@
 #include "core/graphics/shader/shader.h"
 #include "core/graphics/texture/texture.h"
 
+#include "asset/asset_font.h"
+#include "asset/import/loader_font.h"
+
 /*--------------------------------------------------------------------*/
 gsk_AssetCache
 gsk_asset_cache_init(const char *cache_scheme)
@@ -42,6 +45,7 @@ gsk_asset_cache_init(const char *cache_scheme)
     sizes_data[GskAssetType_Shader]   = sizeof(gsk_ShaderProgram);
     sizes_data[GskAssetType_Audio]    = sizeof(gsk_AudioClip);
     sizes_data[GskAssetType_Model]    = sizeof(gsk_Model);
+    sizes_data[GskAssetType_Font]     = sizeof(gsk_Font);
 
     sizes_ops[GskAssetType_GCFG]     = 1;
     sizes_ops[GskAssetType_Texture]  = sizeof(TextureOptions);
@@ -49,6 +53,7 @@ gsk_asset_cache_init(const char *cache_scheme)
     sizes_ops[GskAssetType_Shader]   = 1;
     sizes_ops[GskAssetType_Audio]    = sizeof(gsk_AssetAudioOptions);
     sizes_ops[GskAssetType_Model]    = sizeof(gsk_AssetModelOptions);
+    sizes_ops[GskAssetType_Font]     = sizeof(gsk_AssetFontOptions);
 
     // setup hash table
     // TODO: needs to scale
@@ -238,6 +243,11 @@ gsk_asset_cache_add_by_ext(gsk_AssetCache *p_cache, const char *str_uri)
         list_type = GskAssetType_Model;
     }
 #endif
+    // font
+    else if (!strcmp(ext, ".bmp"))
+    {
+        list_type = GskAssetType_Font;
+    }
     // None
     else
     {

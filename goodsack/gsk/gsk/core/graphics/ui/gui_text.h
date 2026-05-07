@@ -23,10 +23,6 @@ typedef struct gsk_GuiText
     u32 character_count;
     const char *text;          // text of the string
     gsk_GuiElement **elements; // individual character GUI elements
-    gsk_Texture *font_atlas;   // pointer to the font atlas texture
-
-    char char_spacing[GUI_FONT_MAX_CHARS]; // character effective-widths
-
 } gsk_GuiText;
 
 gsk_GuiText *

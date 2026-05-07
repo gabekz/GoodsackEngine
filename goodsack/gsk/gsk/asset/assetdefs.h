@@ -6,6 +6,7 @@
 #ifndef __ASSETDEFS_H__
 #define __ASSETDEFS_H__
 
+#include "util/maths.h"
 #include "util/sysdefs.h"
 
 #ifdef __cplusplus
@@ -19,10 +20,11 @@ typedef enum GskAssetType_ {
     GskAssetType_Shader,
     GskAssetType_Audio,
     GskAssetType_Model,
+    GskAssetType_Font,
 } GskAssetType_;
 
 #define ASSETTYPE_FIRST GskAssetType_GCFG
-#define ASSETTYPE_LAST  GskAssetType_Model
+#define ASSETTYPE_LAST  GskAssetType_Font
 
 typedef s32 GskAssetType;
 
@@ -50,7 +52,7 @@ typedef struct gsk_AssetBlob
 {
     u8 is_serialized;
     void *p_buffer;
-    u32 buffer_len;
+    u64 buffer_len;
     GskAssetType asset_type;
 } gsk_AssetBlob;
 
@@ -74,6 +76,12 @@ typedef struct gsk_AssetAudioOptions
     u8 test_bool;
 
 } gsk_AssetAudioOptions;
+
+typedef struct gsk_AssetFontOptions
+{
+    ivec2 sheet_size;
+    ivec2 cell_size;
+} gsk_AssetFontOptions;
 
 #ifdef __cplusplus
 }

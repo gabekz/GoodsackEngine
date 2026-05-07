@@ -20,8 +20,8 @@ parse_image(const char *path)
 
     // find the location on disk
     char *buffer = 0;
-    long length;
-    FILE *f = fopen(path, "rb");
+    long length  = 0;
+    FILE *f      = fopen(path, "rb");
 
     if (f == NULL)
     {
@@ -47,5 +47,6 @@ parse_image(const char *path)
     ret.p_buffer   = buffer;
     ret.buffer_len = length;
 
+    LOG_INFO("successful image read");
     return ret;
 }

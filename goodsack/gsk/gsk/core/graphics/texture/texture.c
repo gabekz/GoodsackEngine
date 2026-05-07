@@ -21,6 +21,25 @@
 
 #define TEXTURE_WRAPPING GL_REPEAT
 
+#if 0
+static gsk_Texture
+_gsk_texture_import_from_file(const char *path, TextureOptions *p_options)
+{
+    gsk_Texture ret = {0};
+    stbi_uc *p_buffer =
+      stbi_load(&ret.width, &ret.height, &ret.bpp, STBI_rgb_alpha);
+
+    if (p_buffer == NULL || p_buffer == 0x00)
+    {
+        LOG_ERROR("Failed to load texture data!");
+        return ret;
+    }
+
+    ret.p_imported_data = p_buffer;
+    return ret;
+}
+#endif
+
 gsk_Texture
 _gsk_texture_create_internal(gsk_AssetBlob *p_asset_blob,
                              const char *path,

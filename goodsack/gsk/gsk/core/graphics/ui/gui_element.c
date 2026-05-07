@@ -55,9 +55,6 @@ gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size,
     glm_vec2_zero(ret->offset);
     ret->anchor_type = anchor;
 
-    float pos_x = position[0];
-    float pos_y = position[1];
-
     float size_x_off = size[0] / 2;
     float size_y_off = size[1] / 2;
 

@@ -52,6 +52,26 @@ _parse_model_ops(gsk_GCFGItem *p_item, gsk_AssetModelOptions *p_dest)
     return 1;
 }
 
+static u8
+_parse_font_ops(gsk_GCFGItem *p_item, gsk_AssetFontOptions *p_dest)
+{
+    if (!strcmp(p_item->key, "sheet_size"))
+    {
+        u32 sheet_size        = atoi(p_item->value);
+        p_dest->sheet_size[0] = sheet_size;
+        p_dest->sheet_size[1] = sheet_size;
+    }
+
+    else if (!strcmp(p_item->key, "cell_size"))
+    {
+        u32 cell_size        = atoi(p_item->value);
+        p_dest->cell_size[0] = cell_size;
+        p_dest->cell_size[1] = cell_size;
+    }
+
+    return 1;
+}
+
 void
 gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
 {
@@ -105,7 +125,10 @@ gsk_asset_gcfg_set_config(gsk_GCFG *p_gcfg)
             _parse_texture_ops(p_item, (TextureOptions *)p_options);
             break;
         case (GskAssetType_Model):
-            _parse_model_ops(p_item, (TextureOptions *)p_options);
+            _parse_model_ops(p_item, (gsk_AssetModelOptions *)p_options);
+            break;
+        case (GskAssetType_Font):
+            _parse_font_ops(p_item, (gsk_AssetFontOptions *)p_options);
             break;
         default: break;
         }

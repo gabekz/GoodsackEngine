@@ -19,8 +19,9 @@ extern "C" {
 #endif // __cplusplus
 
 typedef enum GskGuiElementAnchorType_ {
-    GskGuiElementAnchorType_None,
+    GskGuiElementAnchorType_None = 0,
     GskGuiElementAnchorType_Center,
+    GskGuiElementAnchorType_Top,
 } GskGuiElementAnchorType_;
 
 typedef s32 GskGuiElementAnchorType;

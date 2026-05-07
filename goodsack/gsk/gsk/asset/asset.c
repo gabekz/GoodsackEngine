@@ -21,11 +21,15 @@
 #include "core/graphics/texture/texture.h"
 
 #include "asset/asset_cache.h"
+#include "asset/asset_font.h"
 #include "asset/asset_gcfg.h"
 #include "asset/assetdefs.h"
 #include "asset/gpak/gpak.h"
+#include "asset/import/loader_font.h"
 #include "asset/import/loader_gcfg.h"
 #include "io/parse_image.h"
+
+#include "asset/archive/archive.h"
 
 #include "asset/gpak/gpak_archive.h"
 
@@ -58,6 +62,7 @@ _asset_type_str(GskAssetType asset_type)
     case GskAssetType_Shader: return "Shader";
     case GskAssetType_Audio: return "Audio";
     case GskAssetType_Model: return "Model";
+    case GskAssetType_Font: return "Font";
     default: return "";
     }
 }
@@ -206,6 +211,34 @@ __asset_import(gsk_AssetCache *p_cache, const char *str_uri)
 
             gsk_asset_gcfg_archive(GskArchiveMode_Write, p_gcfg, p_blob);
             p_blob->is_serialized = TRUE;
+#endif
+        }
+
+        // Font import
+        else if (asset_type == GskAssetType_Font)
+        {
+            gsk_AssetFontOptions *p_ops = NULL;
+            p_ops                       = (gsk_AssetFontOptions *)p_options;
+
+            gsk_Font *p_font = malloc(sizeof(gsk_Font));
+            *p_font          = gsk_font_import_from_file(GSK_PATH(str_uri));
+
+            // TODO: MOVE to importer
+            // TODO: look at default values
+            glm_ivec2_copy(p_ops->sheet_size, p_font->sheet_size);
+            glm_ivec2_copy(p_ops->cell_size, p_font->cell_size);
+
+            // p_font->sprite_rows = p_font->sheet_size[0] /
+            // p_font->cell_size[0]; p_font->sprite_cols = p_font->sheet_size[1]
+            // / p_font->cell_size[1];
+
+#if 0
+            p_blob->p_buffer      = p_font;
+            p_blob->buffer_len    = sizeof(gsk_Font);
+            p_blob->asset_type    = GskAssetType_Font;
+            p_blob->is_serialized = FALSE;
+#else
+            gsk_asset_archive_font(GskArchiveMode_Write, p_font, p_blob);
 #endif
         }
 
@@ -384,6 +417,41 @@ __load_model(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
     // free(p_blob->p_buffer);
 }
 
+static u8
+__load_font(gsk_AssetRef *p_ref, void *p_options, void *p_dest)
+{
+    gsk_AssetBlob *p_blob = (gsk_AssetBlob *)p_ref->p_data_import;
+    if (p_blob->p_buffer == NULL) { return 0; }
+
+    void *p_vk_device =
+      (GSK_DEVICE_API_VULKAN) ? gsk_runtime_get_renderer()->vulkanDevice : NULL;
+
+    gsk_Font *p_font = NULL;
+
+    if (p_blob->is_serialized == TRUE)
+    {
+        p_font = (gsk_Font *)p_dest;
+        gsk_asset_archive_font(GskArchiveMode_Read, p_font, p_blob);
+    }
+
+    else
+    {
+        p_font = (gsk_Font *)p_blob->p_buffer;
+    }
+
+    TextureOptions *p_tops = malloc(sizeof(TextureOptions));
+    *p_tops                = (TextureOptions) {8, GL_RGBA, FALSE, TRUE};
+
+    p_font->p_texture  = malloc(sizeof(gsk_Texture));
+    *p_font->p_texture = _gsk_texture_create_internal(
+      &p_font->image_blob, NULL, p_vk_device, p_tops);
+
+    (*(gsk_Font *)p_dest) = *p_font;
+
+    free(p_tops);
+    return 1;
+}
+
 static void *
 _asset_load_generic(gsk_AssetCache *p_cache,
                     gsk_AssetRef *p_ref,
@@ -546,6 +614,7 @@ _gsk_asset_get_internal(const gsk_AssetCache *p_cache,
     case GskAssetType_Texture: p_load_func = __load_texture; break;
     case GskAssetType_Audio: p_load_func = __load_audio; break;
     case GskAssetType_Model: p_load_func = __load_model; break;
+    case GskAssetType_Font: p_load_func = __load_font; break;
     // failed
     default:
         p_create_func = NULL;

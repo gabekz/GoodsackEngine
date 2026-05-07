@@ -60,8 +60,12 @@ gsk_gui_canvas_add_element(gsk_GuiCanvas *p_self, gsk_GuiElement *p_element)
     switch (p_element->anchor_type)
     {
     case (GskGuiElementAnchorType_Center):
-        p_element->offset[0] = viewport[0] / 2;
-        p_element->offset[1] = viewport[1] / 2;
+        p_element->offset[0] = viewport[0] / 2.0f;
+        p_element->offset[1] = viewport[1] / 2.0f;
+        break;
+    case (GskGuiElementAnchorType_Top):
+        p_element->offset[0] = viewport[0] / 2.0f;
+        p_element->offset[1] = viewport[1];
         break;
     case (GskGuiElementAnchorType_None):
     default: break;
