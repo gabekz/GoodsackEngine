@@ -6,6 +6,7 @@
 #ifndef __MATHS_H__
 #define __MATHS_H__
 
+#include <float.h>
 #include <math.h>
 
 #include "cglm/cglm.h"

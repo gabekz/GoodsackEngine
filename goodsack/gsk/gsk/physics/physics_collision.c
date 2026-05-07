@@ -7,6 +7,11 @@
 
 #include "util/logger.h"
 
+#define _BOX_USING_OBB TRUE
+#if _BOX_USING_OBB
+#include "physics_sat.h"
+#endif // _BOX_USING_OBB
+
 /*************************************************************************
  * Helper functions
  *************************************************************************/
@@ -18,6 +23,12 @@ clampf(float x, float minVal, float maxVal)
     if (x < minVal) return minVal;
     if (x > maxVal) return maxVal;
     return x;
+}
+
+static inline float
+signf_nonzero(float x)
+{
+    return (x >= 0.0f) ? 1.0f : -1.0f;
 }
 
 static void
@@ -73,11 +84,12 @@ _closest_point_line_segment(vec3 a, vec3 b, vec3 point, float *dest)
  * Static functions - collision-tests with inverse
  *************************************************************************/
 
-static gsk_CollisionPoints
+static gsk_CollisionManifold
 __find_box_sphere_inverse(
   gsk_BoxCollider *a, gsk_SphereCollider *b, vec3 pos_a, vec3 pos_b, u8 inverse)
 {
-    gsk_CollisionPoints ret = {.has_collision = 0};
+    gsk_CollisionManifold ret     = {0};
+    ret.contacts[0].has_collision = FALSE;
 
     // Calculate AABB bounds in world space
     vec3 bounds[2];
@@ -96,25 +108,34 @@ __find_box_sphere_inverse(
     // Check for collision
     if (distance_to_closest <= b->radius)
     {
-        ret.has_collision = TRUE;
+        ret.has_collision             = TRUE;
+        ret.contacts[0].has_collision = TRUE;
+        ret.contacts_count            = 1;
 
         // Calculate the normal (from sphere to box)
         glm_vec3_normalize_to(to_closest, ret.normal);
 
         // Calculate collision points
-        glm_vec3_scale(ret.normal, b->radius, ret.point_b);
-        glm_vec3_add(pos_b, ret.point_b, ret.point_b); // Point on sphere
+        glm_vec3_scale(ret.normal, b->radius, ret.contacts[0].point_b);
+        glm_vec3_add(pos_b,
+                     ret.contacts[0].point_b,
+                     ret.contacts[0].point_b); // Point on sphere
 
-        glm_vec3_copy(closest_point, ret.point_a); // Point on box
+        glm_vec3_copy(closest_point, ret.contacts[0].point_a); // Point on box
 
         if (inverse)
         {
-            _invert_points(ret.point_a, ret.point_b);
+            _invert_points(ret.contacts[0].point_a, ret.contacts[0].point_b);
             glm_vec3_negate(ret.normal);
         }
 
         // Set depth
-        ret.depth = b->radius - distance_to_closest;
+        ret.contacts[0].penetration = b->radius - distance_to_closest;
+
+        // copy over (TODO cleanup and fix)
+        ret.depth             = ret.contacts[0].penetration;
+        ret.contacts[0].depth = ret.depth;
+        glm_vec3_copy(ret.normal, ret.contacts[0].normal);
     }
 
     return ret;
@@ -444,18 +465,42 @@ gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
                                       vec3 pos_b)
 {
 
-    return __find_box_sphere_inverse(a, b, pos_a, pos_b, FALSE);
+    gsk_CollisionManifold manifold =
+      __find_box_sphere_inverse(a, b, pos_a, pos_b, FALSE);
+
+    return manifold.contacts[0];
 }
 
-// Box v. Box
-gsk_CollisionPoints
+// Box v. Box Manifold
+gsk_CollisionManifold
 gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
                                    gsk_BoxCollider *b,
                                    vec3 pos_a,
-                                   vec3 pos_b)
+                                   vec3 pos_b,
+                                   mat3 rot_a,
+                                   mat3 rot_b)
 {
-    gsk_CollisionPoints ret = {.has_collision = 0};
 
+#if _BOX_USING_OBB
+    gsk_OBB obb_a = gsk_physics_sat_obb_make(a, pos_a, rot_a);
+    gsk_OBB obb_b = gsk_physics_sat_obb_make(b, pos_b, rot_b);
+
+    return gsk_physics_sat_find_obb_obb_manifold(&obb_a, &obb_b);
+
+    // u8 sat_result = _test_obb(&obb_a, &obb_b);
+    // if (sat_result == 1) { LOG_INFO("collision"); }
+
+    // gsk_OBBSatResult sat_result = gsk_physics_sat_obb_test(&obb_a, &obb_b);
+    // if (!sat_result.has_collision) { return ret; }
+
+#if 0
+    gsk_physics_sat_contact_single(&obb_a, &obb_b, &sat_result, &ret);
+    return ret;
+#else
+
+#endif
+
+#else
     // World-space AABBs
     vec3 A_min, A_max, B_min, B_max;
     glm_vec3_add(pos_a, a->bounds[0], A_min);
@@ -526,6 +571,7 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
     if (glm_vec3_dot(ncheck, ret.normal) < 0.0f) glm_vec3_negate(ret.normal);
 
     return ret;
+#endif // _BOX_USING_OBB
 }
 
 // Box v. Capsule
@@ -546,7 +592,10 @@ gsk_physics_collision_find_sphere_box(gsk_SphereCollider *a,
                                       vec3 pos_b)
 {
 
-    return __find_box_sphere_inverse(b, a, pos_b, pos_a, TRUE);
+    gsk_CollisionManifold manifold =
+      __find_box_sphere_inverse(b, a, pos_b, pos_a, TRUE);
+
+    return manifold.contacts[0];
 }
 
 /*------------------------------------------------------------------------

@@ -200,9 +200,9 @@ on_collide(gsk_Entity e)
 
     collider->isColliding = 0;
 
-    gsk_CollisionPoints points_list[MAX_COLLISION_POINTS];
-    gsk_EntityId id_point_list[MAX_COLLISION_POINTS];
-    u32 points_list_next = 0;
+    gsk_CollisionManifold manifold_list[MAX_COLLISION_POINTS];
+    gsk_EntityId id_manifold_list[MAX_COLLISION_POINTS];
+    u32 manifold_list_next = 0;
 
 #if 0
     if (gsk_ecs_has(e, C_RIGIDBODY))
@@ -261,7 +261,9 @@ on_collide(gsk_Entity e)
         //
         // determine which collision-test function to use
         //
-        gsk_CollisionPoints points = {.has_collision = 0};
+
+        gsk_CollisionPoints points     = {0};
+        gsk_CollisionManifold manifold = {0};
 
         if (collider->type == COLLIDER_SPHERE)
         { // --- Sphere Collider
@@ -303,7 +305,12 @@ on_collide(gsk_Entity e)
                 points = gsk_physics_collision_find_box_plane(__clsn_prm);
                 break;
             case COLLIDER_BOX:
-                points = gsk_physics_collision_find_box_box(__clsn_prm);
+                mat3 arot = GLM_MAT3_IDENTITY_INIT;
+                mat3 brot = GLM_MAT3_IDENTITY_INIT;
+                glm_mat4_pick3(transform->m4_rotation, arot);
+                glm_mat4_pick3(compareTransform->m4_rotation, brot);
+                manifold =
+                  gsk_physics_collision_find_box_box(__clsn_prm, arot, brot);
                 break;
             case COLLIDER_CAPSULE:
                 points = gsk_physics_collision_find_box_capsule(__clsn_prm);
@@ -330,13 +337,25 @@ on_collide(gsk_Entity e)
             }
         }
 
-        if (points.has_collision && points_list_next >= MAX_COLLISION_POINTS)
+        // TODO: this is a hack for now just to test manifolds
+        if ((collider->type == COLLIDER_BOX &&
+             compareCollider->type == COLLIDER_BOX) == FALSE)
+        {
+            manifold.contacts_count = 1;
+            manifold.contacts[0]    = points;
+            manifold.depth          = points.depth;
+            manifold.has_collision  = points.has_collision;
+            glm_vec3_copy(points.normal, manifold.normal);
+        }
+
+        if (manifold.has_collision &&
+            manifold_list_next >= MAX_COLLISION_POINTS)
         {
             LOG_ERROR("MAX COLLISION POINTS");
         }
 
         // Collision points
-        if (points.has_collision && points_list_next < MAX_COLLISION_POINTS)
+        if (manifold.has_collision && manifold_list_next < MAX_COLLISION_POINTS)
         {
 
             collider->isColliding = TRUE;
@@ -355,19 +374,19 @@ on_collide(gsk_Entity e)
             }
 #endif
 
-            points_list[points_list_next] = points;
-            id_point_list[points_list_next] =
+            manifold_list[manifold_list_next] = manifold;
+            id_manifold_list[manifold_list_next] =
               (gsk_EntityId)i; // TODO: Should be ID
-            points_list_next++;
+            manifold_list_next++;
         }
     }
 
-    for (int i = 0; i < points_list_next; i++)
+    for (int i = 0; i < manifold_list_next; i++)
     {
         // TODO: AGAIN - fix look-up
         gsk_Entity e_compare = {
-          .id    = e.ecs->p_ent_ids[id_point_list[i]],
-          .index = (gsk_EntityId)id_point_list[i],
+          .id    = e.ecs->p_ent_ids[id_manifold_list[i]],
+          .index = (gsk_EntityId)id_manifold_list[i],
           .ecs   = e.ecs,
         };
 
@@ -400,7 +419,7 @@ on_collide(gsk_Entity e)
             {
                 // Create a new collision result using our points
                 gsk_CollisionResult result = {
-                  .points              = points_list[i], // TODO: invert points
+                  .manifold = manifold_list[i], // TODO: possibly invert points
                   .physics_mark        = (gsk_PhysicsMark) {0},
                   .ent_a_id            = e_compare.id,
                   .ent_b_id            = e.id,
@@ -508,14 +527,14 @@ on_collide(gsk_Entity e)
 
             // Create a new collision result using our points
             gsk_CollisionResult result = {
-              .points              = points_list[i],
+              .manifold            = manifold_list[i],
               .physics_mark        = mark,
               .ent_a_id            = e.id,
               .ent_b_id            = e_compare.id,
               .is_trigger_response = FALSE,
             };
 
-            if (points_list_next >= MAX_COLLISION_POINTS)
+            if (manifold_list_next >= MAX_COLLISION_POINTS)
             {
                 LOG_CRITICAL("Max collision points exceeded");
             }

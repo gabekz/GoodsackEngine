@@ -15,7 +15,9 @@ gsk_physics_position_solver(gsk_PhysicsSolverData solver_data, vec3 pos_fix)
     gsk_DynamicBody body_b = collision_result->physics_mark.body_b;
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
-    glm_vec3_copy(collision_result->points.normal, collision_normal);
+    glm_vec3_copy(
+      collision_result->manifold.contacts[solver_data.contact_point].normal,
+      collision_normal);
 
 #if 1
     // I think these are better settings right now..
@@ -27,7 +29,10 @@ gsk_physics_position_solver(gsk_PhysicsSolverData solver_data, vec3 pos_fix)
 #endif
 
     vec3 correction;
-    f32 c_weight = fmax((collision_result->points.depth - slop), 0);
+    f32 c_weight = fmax(
+      (collision_result->manifold.contacts[solver_data.contact_point].depth -
+       slop),
+      0);
     glm_vec3_scale(collision_normal, percent, correction);
     glm_vec3_scale(correction, c_weight, correction);
 

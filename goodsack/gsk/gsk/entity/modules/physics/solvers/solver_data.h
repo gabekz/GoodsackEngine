@@ -15,6 +15,7 @@ typedef struct gsk_PhysicsSolverData
     gsk_CollisionResult *p_collision_result;
     const gsk_Entity entity;
     const f64 delta;
+    u32 contact_point;
 } gsk_PhysicsSolverData;
 
 #ifdef __cplusplus

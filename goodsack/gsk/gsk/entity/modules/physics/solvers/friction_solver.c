@@ -56,6 +56,8 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
 
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     gsk_PhysicsMark marker                = collision_result->physics_mark;
+    gsk_CollisionPoints points =
+      collision_result->manifold.contacts[solver_data.contact_point];
 
     struct ComponentTransform *transform   = solver_data.p_transform;
     struct ComponentRigidbody *rigidbody_a = solver_data.p_rigidbody;
@@ -75,17 +77,17 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
     float restitution = DEFAULT_RESTITUION; // Bounce factor
 
     // store collision_normal
-    glm_vec3_copy(collision_result->points.normal, collision_normal);
+    glm_vec3_copy(points.normal, collision_normal);
     // glm_vec3_negate(collision_normal);
 
     // calculate r-values + relative velocity
     {
-        glm_vec3_sub(collision_result->points.point_a, body_a.position, ra);
+        glm_vec3_sub(points.point_a, body_a.position, ra);
         glm_vec3_cross(body_a.angular_velocity, ra, ra_perp);
         // glm_vec3_negate(ra_perp);
         // glm_vec3_normalize(ra_perp);
 
-        glm_vec3_sub(collision_result->points.point_b, body_b.position, rb);
+        glm_vec3_sub(points.point_b, body_b.position, rb);
         glm_vec3_cross(body_b.angular_velocity, rb, rb_perp);
         // glm_vec3_negate(rb_perp);
         // glm_vec3_normalize(rb_perp);
@@ -151,7 +153,7 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
             gsk_debug_markers_push(p_debug_context,
                                    MARKER_RAY,
                                    solver_data.entity.id + 6,
-                                   collision_result->points.point_a,
+                                   points.point_a,
                                    rigidbody_a->linear_velocity,
                                    1,
                                    VCOL_BLUE,
@@ -160,7 +162,7 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
             gsk_debug_markers_push(p_debug_context,
                                    MARKER_RAY,
                                    solver_data.entity.id + 7,
-                                   collision_result->points.point_a,
+                                   points.point_a,
                                    torque,
                                    1,
                                    VCOL_RED,
@@ -169,7 +171,7 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
             gsk_debug_markers_push(p_debug_context,
                                    MARKER_RAY,
                                    solver_data.entity.id + 11,
-                                   collision_result->points.point_a,
+                                   points.point_a,
                                    ra_perp,
                                    1,
                                    VCOL_WHITE,
@@ -177,7 +179,7 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
             gsk_debug_markers_push(p_debug_context,
                                    MARKER_RAY,
                                    solver_data.entity.id + 12,
-                                   collision_result->points.point_a,
+                                   points.point_a,
                                    rigidbody_a->angular_velocity,
                                    1,
                                    VCOL_YELLOW,
@@ -402,7 +404,7 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
             gsk_debug_markers_push(p_debug_context,
                                    MARKER_RAY,
                                    solver_data.entity.id + 9,
-                                   collision_result->points.point_a,
+                                   points.point_a,
                                    friction_torque,
                                    10,
                                    VCOL_ORANGE,
@@ -411,7 +413,7 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
             gsk_debug_markers_push(p_debug_context,
                                    MARKER_RAY,
                                    solver_data.entity.id + 10,
-                                   collision_result->points.point_a,
+                                   points.point_a,
                                    friction_impulse,
                                    10,
                                    VCOL_PURPLE,

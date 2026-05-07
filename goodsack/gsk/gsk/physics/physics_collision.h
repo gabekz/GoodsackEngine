@@ -14,12 +14,14 @@
 gsk_Collider
 gsk_physics_collider_new(u16 type);
 
+#if 0
 // general?
 gsk_CollisionPoints
 gsk_physics_test_collision(gsk_Collider *a,
                            gsk_Collider *b,
                            vec3 pos_a,
                            vec3 pos_b);
+#endif
 
 /*************************************************************************
  * Sphere definitions
@@ -76,11 +78,13 @@ gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
                                       vec3 pos_b);
 
 // Box v. Box
-gsk_CollisionPoints
+gsk_CollisionManifold
 gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
                                    gsk_BoxCollider *b,
                                    vec3 pos_a,
-                                   vec3 pos_b);
+                                   vec3 pos_b,
+                                   mat3 rot_a,
+                                   mat3 rot_b);
 
 // Box v. Plane
 gsk_CollisionPoints

@@ -9,6 +9,8 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#define GSK_MAX_COLLISION_CONTACTS 4
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -28,12 +30,24 @@ typedef enum GskColliderType {
 
 typedef struct gsk_CollisionPoints
 {
-    vec3 point_a;      // furthest point of A into B
-    vec3 point_b;      // furthest point of B into A
-    vec3 normal;       // point_b - point_a normalized
-    float depth;       // Length of point_b - point_a
+    vec3 point_a; // furthest point of A into B
+    vec3 point_b; // furthest point of B into A
+    vec3 normal;  // point_b - point_a normalized
+    f32 depth;    // Length of point_b - point_a
+    f32 penetration;
     u16 has_collision; // bool
 } gsk_CollisionPoints;
+
+typedef struct gsk_CollisionManifold
+{
+    vec3 normal;
+    f32 depth;
+    u8 has_collision;
+
+    u32 contacts_count;
+    gsk_CollisionPoints contacts[GSK_MAX_COLLISION_CONTACTS];
+
+} gsk_CollisionManifold;
 
 typedef struct gsk_DynamicBody
 {
@@ -53,7 +67,7 @@ typedef struct gsk_PhysicsMark
 
 typedef struct gsk_CollisionResult
 {
-    gsk_CollisionPoints points;
+    gsk_CollisionManifold manifold;
     gsk_PhysicsMark physics_mark;
     u64 ent_a_id, ent_b_id;
     u8 is_trigger_response;
@@ -96,6 +110,32 @@ typedef struct gsk_Raycast
 {
     vec3 origin, direction;
 } gsk_Raycast;
+
+typedef struct gsk_OBB
+{
+    vec3 c;    // center
+    vec3 e;    // half extents
+    vec3 u[3]; // axes in world (unit)
+} gsk_OBB;
+
+typedef enum gsk_OBBAxisType {
+    GSK_OBB_AXIS_NONE = 0,
+    GSK_OBB_AXIS_FACE_A,
+    GSK_OBB_AXIS_FACE_B,
+    GSK_OBB_AXIS_EDGE
+} gsk_OBBAxisType;
+
+typedef struct gsk_OBBSatResult
+{
+    u8 has_collision;
+
+    vec3 normal; // world-space normal from A -> B
+    float depth;
+
+    gsk_OBBAxisType type;
+    int axis_a;
+    int axis_b;
+} gsk_OBBSatResult;
 
 #ifdef __cplusplus
 }

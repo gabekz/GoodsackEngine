@@ -18,9 +18,14 @@
 #include "core/device/device.h"
 #include "physics/physics_solver.h"
 
+#include "entity/modules/transform/transform.h"
+
 #include "entity/modules/physics/solvers/friction_solver.h"
 #include "entity/modules/physics/solvers/position_solver.h"
 #include "entity/modules/physics/solvers/solver_data.h"
+
+#define GSK_PHYSICS_VELOCITY_ITERATIONS 1
+#define GSK_PHYSICS_POSITION_ITERATIONS 1
 
 // Functionality toggles
 #define DEBUG_TRACK  1
@@ -64,6 +69,7 @@ __debug_ray(const gsk_PhysicsSolverData solver_data,
 #endif
 
 //-----------------------------------------------------------------------------
+// TODO: FIX THIS WITH ITERATOR for all points in manifold
 static void
 __debug_points(const gsk_PhysicsSolverData solver_data)
 {
@@ -78,7 +84,7 @@ __debug_points(const gsk_PhysicsSolverData solver_data)
                                MARKER_RAY,
                                entity.id + 25,
                                solver_data.p_transform->position,
-                               collision_result->points.normal,
+                               collision_result->manifold.normal,
                                5,
                                VCOL_GREEN,
                                FALSE);
@@ -86,8 +92,8 @@ __debug_points(const gsk_PhysicsSolverData solver_data)
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                MARKER_POINT,
                                entity.id + 26,
-                               collision_result->points.point_a,
-                               collision_result->points.normal,
+                               collision_result->manifold.contacts[0].point_a,
+                               collision_result->manifold.normal,
                                5,
                                VCOL_GREEN,
                                FALSE);
@@ -95,12 +101,27 @@ __debug_points(const gsk_PhysicsSolverData solver_data)
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                MARKER_POINT,
                                entity.id + 27,
-                               collision_result->points.point_b,
-                               collision_result->points.normal,
+                               collision_result->manifold.contacts[0].point_b,
+                               collision_result->manifold.normal,
                                5,
                                VCOL_RED,
                                FALSE);
     }
+}
+//-----------------------------------------------------------------------------
+
+static u8
+__can_solve_contact(struct ComponentRigidbody *rigidbody,
+                    struct ComponentCollider *collider,
+                    gsk_CollisionResult *result)
+{
+    if (rigidbody->is_kinematic == TRUE) return FALSE;
+
+    if (collider->is_trigger == TRUE) return FALSE;
+
+    if (result->is_trigger_response == TRUE) return FALSE;
+
+    return TRUE;
 }
 //-----------------------------------------------------------------------------
 
@@ -184,7 +205,6 @@ fixed_update(gsk_Entity entity)
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;
-    vec3 pos_fix        = {0, 0, 0}; // accumulated offset from position_solvers
 
 #if 0
     // Add Gravitational force
@@ -214,75 +234,65 @@ fixed_update(gsk_Entity entity)
     s_dbg_instance = s_dbg_instance_begin;
 #endif
 
-    for (int i = total_solvers - 1; i >= 0; i--)
+    for (int iter = 0; iter < GSK_PHYSICS_VELOCITY_ITERATIONS; ++iter)
     {
-        gsk_CollisionResult *pResult = &pSolver->solvers[i];
-
-        // --
-        // construct solver_data used to pass into solver functions
-        gsk_PhysicsSolverData solver_data = {.p_rigidbody        = rigidbody,
-                                             .p_transform        = transform,
-                                             .p_collision_result = pResult,
-                                             .entity             = entity,
-                                             .delta              = delta};
-
-        // --
-        // Run Solvers
-
-        if (rigidbody->is_kinematic == FALSE &&
-            solver_data.p_collision_result->is_trigger_response == FALSE)
+        for (int i = total_solvers - 1; i >= 0; i--)
         {
-            gsk_physics_position_solver(solver_data, pos_fix);
-            gsk_physics_impulse_solver(solver_data);
+            gsk_CollisionResult *pResult = &pSolver->solvers[i];
+            // --
+            // construct solver_data used to pass into solver functions
+            gsk_PhysicsSolverData solver_data = {
+              .p_rigidbody        = rigidbody,
+              .p_transform        = transform,
+              .p_collision_result = pResult,
+              .entity             = entity,
+              .delta              = delta,
+              .contact_point      = 0,
+            };
 
-            total_impulses += 1;
-        }
+            for (int j = 0; j < pResult->manifold.contacts_count; j++)
+            {
+                // make sure we set the contact point here
+                solver_data.contact_point = j;
 
-        // --
-        // Run debug markers
+                // --
+                // Run Solvers
+
+                if (rigidbody->is_kinematic == FALSE &&
+                    solver_data.p_collision_result->is_trigger_response ==
+                      FALSE)
+                {
+                    gsk_physics_impulse_solver(solver_data);
+                }
+
+                // total_impulses += 1;
+
+                // --
+                // Run debug markers
 
 #if DEBUG_POINTS
-        __debug_points(solver_data);
+                __debug_points(solver_data);
 #endif // DEBUG_POINTS
-
-        // --
-        // Pop our solver
-
-        gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
+            }
+        }
     }
 
-    if (pSolver->solvers_list->is_list_empty == FALSE)
+    if (rigidbody->is_kinematic == FALSE && collider->is_trigger == FALSE)
     {
-        LOG_ERROR("solver list failed to clear on entity %d", entity.id);
-    }
-
-    if (rigidbody->is_kinematic == TRUE || collider->is_trigger == TRUE)
-    {
-        return;
-    }
-
-#if 1
+#if 0
     if (total_impulses > 1)
     {
         glm_vec3_divs(
           rigidbody->force_velocity, total_impulses, rigidbody->force_velocity);
         glm_vec3_divs(rigidbody->torque, total_impulses, rigidbody->torque);
     }
-#elif 0
-    if (rigidbody->is_kinematic == FALSE && collider->is_trigger == FALSE)
-    {
-        // Treat rigidbody->gravity as acceleration (e.g. {0, -9.81f, 0})
-        vec3 gDv = GLM_VEC3_ZERO_INIT;
-        glm_vec3_scale(rigidbody->gravity, delta * rigidbody->mass, gDv);
-        glm_vec3_add(rigidbody->force_velocity, gDv, rigidbody->force_velocity);
-    }
 #endif
 
-    // --
-    // -- Add force to linear velocity (ignore mass)
-    glm_vec3_add(rigidbody->linear_velocity,
-                 rigidbody->force_velocity,
-                 rigidbody->linear_velocity);
+        // --
+        // -- Add force to linear velocity (ignore mass)
+        glm_vec3_add(rigidbody->linear_velocity,
+                     rigidbody->force_velocity,
+                     rigidbody->linear_velocity);
 
 // Rigidbody sleep threshold
 #if 0
@@ -299,18 +309,15 @@ fixed_update(gsk_Entity entity)
     }
 #endif
 
-    // --
-    // -- Integrate velocities
+        // --
+        // -- Integrate velocities
 
-    // calculate : position += velocity * delta_time;
-    vec3 vD = GLM_VEC3_ZERO_INIT;
-    glm_vec3_scale(rigidbody->linear_velocity, delta, vD);
+        // calculate : position += velocity * delta_time;
+        vec3 vD = GLM_VEC3_ZERO_INIT;
+        glm_vec3_scale(rigidbody->linear_velocity, delta, vD);
 
-    // add accumulated pos_fix from position_solver
-    glm_vec3_add(vD, pos_fix, vD);
-
-    // update position
-    glm_vec3_add(transform->position, vD, transform->position);
+        // update position
+        glm_vec3_add(transform->position, vD, transform->position);
 
 #if 0
     // calculate : orientation += angular_velocity * delta_time;
@@ -325,9 +332,10 @@ fixed_update(gsk_Entity entity)
     glm_vec3_add(transform->orientation, aVD, transform->orientation);
 #else
 
-    glm_vec3_add(rigidbody->torque,
-                 rigidbody->angular_velocity,
-                 rigidbody->angular_velocity);
+        glm_vec3_add(rigidbody->torque,
+                     rigidbody->angular_velocity,
+                     rigidbody->angular_velocity);
+    }
 
     // update orientation
     if (!rigidbody->disable_rotation)
@@ -338,6 +346,11 @@ fixed_update(gsk_Entity entity)
         angularDeg[1] = glm_deg(angularDeg[1]);
         angularDeg[2] = glm_deg(angularDeg[2]);
 
+        vec3 test = {angularDeg[0], angularDeg[1], angularDeg[2]};
+
+#if _TRANSFORM_QUATERNION
+        transform_rotate(transform, test);
+#else
         mat4 tmp_rot = GLM_MAT4_IDENTITY_INIT;
         mat4 new_rot = GLM_MAT4_IDENTITY_INIT;
 
@@ -353,27 +366,79 @@ fixed_update(gsk_Entity entity)
         transform->orientation[0] = glm_deg(new_angles[0]);
         transform->orientation[1] = glm_deg(new_angles[1]);
         transform->orientation[2] = glm_deg(new_angles[2]);
+#endif
     }
 
 #endif // orientation
 
-    // --
-    // -- Reset net forces
+        for (int iter = 0; iter < GSK_PHYSICS_POSITION_ITERATIONS; ++iter)
+        {
+            for (int i = total_solvers - 1; i >= 0; i--)
+            {
+                gsk_CollisionResult *pResult = &pSolver->solvers[i];
+                // --
+                // construct solver_data used to pass into solver functions
+                gsk_PhysicsSolverData solver_data = {
+                  .p_rigidbody        = rigidbody,
+                  .p_transform        = transform,
+                  .p_collision_result = pResult,
+                  .entity             = entity,
+                  .delta              = delta,
+                  .contact_point      = 0,
+                };
 
-    glm_vec3_zero(rigidbody->force_velocity);
-    glm_vec3_zero(rigidbody->force_impulse);
-    glm_vec3_zero(rigidbody->torque);
-}
-//-----------------------------------------------------------------------------
+                for (int j = 0; j < pResult->manifold.contacts_count; j++)
+                {
+                    // make sure we set the contact point here
+                    solver_data.contact_point = j;
 
-//-----------------------------------------------------------------------------
-void
-s_rigidbody_system_init(gsk_ECS *ecs)
-{
-    gsk_ecs_system_register(ecs,
-                            ((gsk_ECSSystem) {
-                              .init         = (gsk_ECSSubscriber)init,
-                              .fixed_update = (gsk_ECSSubscriber)fixed_update,
-                            }));
-}
-//-----------------------------------------------------------------------------
+                    // --
+                    // Run Solvers
+
+                    if (rigidbody->is_kinematic == FALSE &&
+                        solver_data.p_collision_result->is_trigger_response ==
+                          FALSE)
+                    {
+                        vec3 pos_fix = {0, 0, 0};
+                        gsk_physics_position_solver(
+                          solver_data, pos_fix); // TODO: don't run many times
+                        // add accumulated pos_fix from position_solver
+                        glm_vec3_add(
+                          transform->position, pos_fix, transform->position);
+                    }
+                }
+            }
+        }
+
+        // clear solvers
+
+        while (pSolver->solvers_list->is_list_empty == FALSE)
+        {
+            gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
+        }
+
+        if (pSolver->solvers_list->is_list_empty == FALSE)
+        {
+            LOG_ERROR("solver list failed to clear on entity %d", entity.id);
+        }
+
+        // --
+        // -- Reset net forces
+
+        glm_vec3_zero(rigidbody->force_velocity);
+        glm_vec3_zero(rigidbody->force_impulse);
+        glm_vec3_zero(rigidbody->torque);
+    }
+    //-----------------------------------------------------------------------------
+
+    //-----------------------------------------------------------------------------
+    void s_rigidbody_system_init(gsk_ECS * ecs)
+    {
+        gsk_ecs_system_register(
+          ecs,
+          ((gsk_ECSSystem) {
+            .init         = (gsk_ECSSubscriber)init,
+            .fixed_update = (gsk_ECSSubscriber)fixed_update,
+          }));
+    }
+    //-----------------------------------------------------------------------------
