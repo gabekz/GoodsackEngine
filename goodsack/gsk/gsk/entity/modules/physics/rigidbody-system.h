@@ -11,4 +11,7 @@
 void
 s_rigidbody_system_init(gsk_ECS *ecs);
 
+void
+s_rigidbody_integ_system_init(gsk_ECS *ecs);
+
 #endif // __RIGIDBODY_SYSTEM_H__

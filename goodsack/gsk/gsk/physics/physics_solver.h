@@ -10,6 +10,8 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#include "entity/ecs.h"
+
 #include "physics/physics_types.h"
 
 typedef struct gsk_PhysicsSolver
@@ -30,5 +32,10 @@ gsk_physics_solver_pop(gsk_PhysicsSolver *solver);
 
 void
 gsk_physics_solver_step(gsk_PhysicsSolver *solver);
+
+u8
+gsk_physics_solver_exists(gsk_PhysicsSolver *solver,
+                          gsk_EntityId entity_a,
+                          gsk_EntityId entity_b);
 
 #endif // __PHYSICS_SOLVER_H__

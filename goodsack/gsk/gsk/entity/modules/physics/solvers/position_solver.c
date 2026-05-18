@@ -11,9 +11,6 @@ gsk_physics_position_solver(gsk_PhysicsSolverData solver_data, vec3 pos_fix)
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     struct ComponentTransform *transform  = solver_data.p_transform;
 
-    gsk_DynamicBody body_a = collision_result->physics_mark.body_a;
-    gsk_DynamicBody body_b = collision_result->physics_mark.body_b;
-
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(
       collision_result->manifold.contacts[solver_data.contact_point].normal,

@@ -8,7 +8,9 @@
 
 #include "entity/modules/physics/solvers/solver_data.h"
 
-void
-gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data);
+#include "util/sysdefs.h"
+
+gsk_PhysicsSolverLambda
+gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data, f32 lambda_n);
 
 #endif // __GSK_FRICTION_SOLVER_H__

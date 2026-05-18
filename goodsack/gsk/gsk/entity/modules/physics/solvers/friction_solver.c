@@ -48,9 +48,11 @@ __calc_relative_velocity(gsk_PhysicsSolverData solver_data,
     glm_vec3_sub(cmba, cmbb, dest_relative_velocity);
 }
 
-void
-gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
+gsk_PhysicsSolverLambda
+gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data, f32 lambda_n)
 {
+    gsk_PhysicsSolverLambda ret = {0};
+
     gsk_DebugContext *p_debug_context =
       solver_data.entity.ecs->renderer->debugContext;
 
@@ -119,15 +121,25 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
                     (pow(ra_perpDotN, 2) * body_a.inverse_inertia) +
                     (pow(rb_perpDotN, 2) * body_b.inverse_inertia);
 #else
+        // NOTE: denom = contact's effective-mass
         f32 denom = body_a.inverse_mass + body_b.inverse_mass +
-                    glm_vec3_dot(raxn, raxn) * body_a.inverse_inertia +
-                    glm_vec3_dot(rbxn, rbxn) * body_b.inverse_inertia;
+                    (glm_vec3_dot(raxn, raxn) * body_a.inverse_inertia) +
+                    (glm_vec3_dot(rbxn, rbxn) * body_b.inverse_inertia);
 #endif
 
         F = -(1.0f + restitution) * vDotN;
-        F /= denom;
-        // prevent negative impulse
+        F = (denom != 0) ? F / denom : F;
+
+// prevent negative impulse
+#if 0
         if (vDotN > 0.0f) F = 0;
+#else
+        f32 delta_lambda = F;
+        f32 old_lambda   = lambda_n /* F */;
+        ret.lambda_n     = fmaxf(old_lambda + delta_lambda, 0.0f);
+
+        F = ret.lambda_n - old_lambda;
+#endif
     }
 
     // calculate impulse, torque
@@ -138,11 +150,11 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
         glm_vec3_cross(ra, impulse, torque);
         // glm_vec3_negate(torque);
         //  scale torque by inverse inertia
-        glm_vec3_scale(torque, body_a.inverse_inertia, torque);
+        // glm_vec3_scale(torque, body_a.inverse_inertia, torque);
 
         // NOTE: May need to be done AFTER torque calculation
         // scale impulse by inverse mass
-        glm_vec3_scale(impulse, body_a.inverse_mass, impulse);
+        // glm_vec3_scale(impulse, body_a.inverse_mass, impulse);
     }
 
     // Debug some data
@@ -216,25 +228,35 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
         };
     }
 
-    vec3 body_b_lin_vel, body_b_ang_vel;
-    glm_vec3_copy(body_b.linear_velocity, body_b_lin_vel);
-    glm_vec3_copy(body_b.angular_velocity, body_b_ang_vel);
 #if 1
     // apply impulses
     {
-        glm_vec3_add(
-          rigidbody_a->force_velocity, impulse, rigidbody_a->force_velocity);
+        vec3 impulse_a, impulse_b;
+        vec3 torque_a, torque_b;
+        glm_vec3_scale(impulse, body_a.inverse_mass, impulse_a);
+        glm_vec3_scale(impulse, body_b.inverse_mass, impulse_b);
 
-#if (CALCULATE_ROTATION)
-        if (!rigidbody_a->disable_rotation)
-        {
-            glm_vec3_add(rigidbody_a->torque, torque, rigidbody_a->torque);
-        }
-        // TESTING
-        // glm_vec3_sub(body_b_lin_vel, impulse, body_b_lin_vel);
-        // glm_vec3_sub(body_b_ang_vel, torque, body_b_ang_vel);
-#endif // (CALCULATE_ROTATION)
+        glm_vec3_scale(torque, body_a.inverse_inertia, torque_a);
+        glm_vec3_scale(torque, body_b.inverse_inertia, torque_b);
+
+        glm_vec3_add(ret.impulse_a, impulse_a, ret.impulse_a);
+        glm_vec3_add(ret.torque_a, torque_a, ret.torque_a);
+
+        glm_vec3_sub(ret.impulse_b, impulse_b, ret.impulse_b);
+        glm_vec3_sub(ret.torque_b, torque_b, ret.torque_b);
+
+        //#if (CALCULATE_ROTATION)
+        //        if (!rigidbody_a->disable_rotation) {}
+        //        // TESTING
+        //        // glm_vec3_sub(body_b_lin_vel, impulse, body_b_lin_vel);
+        //        // glm_vec3_sub(body_b_ang_vel, torque, body_b_ang_vel);
+        //#endif // (CALCULATE_ROTATION)
     }
+#endif
+
+// TODO: IMPORTANT (SKIPPING FRICTION)
+#if 1
+    return ret;
 #endif
 
     // -----------------------------
@@ -243,10 +265,15 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
 
     // predicted
     vec3 pred_A_vel, pred_A_ang;
-    glm_vec3_add(impulse, rigidbody_a->linear_velocity, pred_A_vel);
-    glm_vec3_add(torque, rigidbody_a->angular_velocity, pred_A_ang);
+    vec3 pred_B_vel, pred_B_ang;
+    glm_vec3_add(body_a.linear_velocity, impulse, pred_A_vel);
+    glm_vec3_add(body_a.angular_velocity, torque, pred_A_ang);
     glm_vec3_cross(pred_A_ang, ra, ra_perp);
-    // glm_vec3_negate(ra_perp);
+
+    // glm_vec3_sub(body_b.linear_velocity, impulse, pred_B_vel);
+    // glm_vec3_sub(body_b.angular_velocity, torque, pred_B_ang);
+    glm_vec3_copy(body_b.linear_velocity, pred_B_vel);
+    glm_vec3_copy(body_b.angular_velocity, pred_B_ang);
 
     // calculate relative velocity
     {
@@ -255,8 +282,8 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
                                  rb_perp,
                                  pred_A_vel,
                                  pred_A_ang,
-                                 body_b_lin_vel,
-                                 body_b_ang_vel,
+                                 pred_B_vel,
+                                 pred_B_ang,
                                  relative_velocity);
     }
 
@@ -294,7 +321,7 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
             }
 
             // stick / no reliable tangent direction
-            return;
+            return ret;
         }
 
         glm_vec3_scale(
@@ -371,17 +398,24 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
 #if 1
     // apply friction impulses
     {
-        glm_vec3_add(rigidbody_a->force_velocity,
-                     friction_impulse,
-                     rigidbody_a->force_velocity);
+        //        glm_vec3_add(rigidbody_a->force_velocity,
+        //                     friction_impulse,
+        //                     rigidbody_a->force_velocity);
+        //
+        //#if (CALCULATE_ROTATION)
+        //        if (!rigidbody_a->disable_rotation)
+        //        {
+        //            glm_vec3_add(
+        //              rigidbody_a->torque, friction_torque,
+        //              rigidbody_a->torque);
+        //        }
+        //#endif // (CALCULATE_ROTATION)
 
-#if (CALCULATE_ROTATION)
-        if (!rigidbody_a->disable_rotation)
-        {
-            glm_vec3_add(
-              rigidbody_a->torque, friction_torque, rigidbody_a->torque);
-        }
-#endif // (CALCULATE_ROTATION)
+        glm_vec3_add(ret.impulse_a, friction_impulse, ret.impulse_a);
+        glm_vec3_add(ret.torque_a, friction_torque, ret.torque_a);
+
+        glm_vec3_sub(ret.impulse_b, friction_impulse, ret.impulse_b);
+        glm_vec3_sub(ret.torque_b, friction_torque, ret.torque_b);
     }
 #endif
 
@@ -420,4 +454,6 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data)
                                    FALSE);
         }
     }
+
+    return ret;
 }

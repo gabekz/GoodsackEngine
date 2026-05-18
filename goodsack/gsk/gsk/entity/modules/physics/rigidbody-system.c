@@ -24,7 +24,7 @@
 #include "entity/modules/physics/solvers/position_solver.h"
 #include "entity/modules/physics/solvers/solver_data.h"
 
-#define GSK_PHYSICS_VELOCITY_ITERATIONS 1
+#define GSK_PHYSICS_VELOCITY_ITERATIONS 3
 #define GSK_PHYSICS_POSITION_ITERATIONS 1
 
 // Functionality toggles
@@ -76,34 +76,42 @@ __debug_points(const gsk_PhysicsSolverData solver_data)
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
     gsk_Entity entity                     = solver_data.entity;
 
-    if (DEBUG_POINTS && entity.id == DEBUG_POINTS)
+    if (!(DEBUG_POINTS && entity.id == DEBUG_POINTS)) { return; }
+
+    for (int i = 0; i < solver_data.p_collision_result->manifold.contacts_count;
+         i++)
     {
 
-        // collision normal
+        gsk_CollisionPoints points =
+          solver_data.p_collision_result->manifold.contacts[i];
+
+// collision normal
+#if 0
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                MARKER_RAY,
                                entity.id + 25,
                                solver_data.p_transform->position,
-                               collision_result->manifold.normal,
+                               points.normal,
+                               5,
+                               VCOL_GREEN,
+                               FALSE);
+#endif
+
+        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
+                               MARKER_POINT,
+                               entity.id + i,
+                               points.point_a,
+                               points.normal,
                                5,
                                VCOL_GREEN,
                                FALSE);
 
         gsk_debug_markers_push(entity.ecs->renderer->debugContext,
                                MARKER_POINT,
-                               entity.id + 26,
-                               collision_result->manifold.contacts[0].point_a,
-                               collision_result->manifold.normal,
-                               5,
-                               VCOL_GREEN,
-                               FALSE);
-
-        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
-                               MARKER_POINT,
-                               entity.id + 27,
-                               collision_result->manifold.contacts[0].point_b,
-                               collision_result->manifold.normal,
-                               5,
+                               entity.id + ((i + 3) * 2),
+                               points.point_b,
+                               points.normal,
+                               3,
                                VCOL_RED,
                                FALSE);
     }
@@ -124,6 +132,27 @@ __can_solve_contact(struct ComponentRigidbody *rigidbody,
     return TRUE;
 }
 //-----------------------------------------------------------------------------
+
+#if 0
+static void
+__apply_impulse_at_point(struct ComponentRigidbody *rigidbody, vec3 impulse_in)
+{
+    // calculate impulse, torque
+    vec3 impulse, torque = GLM_VEC3_ZERO_INIT;
+    {
+        glm_vec3_scale(collision_normal, F, impulse);
+
+        glm_vec3_cross(ra, impulse, torque);
+        // glm_vec3_negate(torque);
+        //  scale torque by inverse inertia
+        glm_vec3_scale(torque, body_a.inverse_inertia, torque);
+
+        // NOTE: May need to be done AFTER torque calculation
+        // scale impulse by inverse mass
+        glm_vec3_scale(impulse, body_a.inverse_mass, impulse);
+    }
+}
+#endif
 
 static void
 init(gsk_Entity entity)
@@ -169,24 +198,37 @@ init(gsk_Entity entity)
 
     else if (collider->type == COLLIDER_BOX)
     {
-
         // TODO: get width/height from bounds
         f32 width  = 1;
         f32 height = 1;
 
         // I_d = 1/12m(w^2 + h^2) -- rectangular cuboid depth
         inertia =
-          (1.0f / 12.0f) * rigidbody->mass * pow(width, 2) + pow(height, 2);
+          (1.0f / 12.0f) * rigidbody->mass * (pow(width, 2) + pow(height, 2));
     }
 
+    else
+    {
+        inertia = (2.0f / 5.0f); /*  X (mass * radius) */
+    }
+
+    rigidbody->inertia = inertia;
+
     // inverse mass and inertia
-    rigidbody->inverse_mass    = 1.0f / rigidbody->mass;
-    rigidbody->inverse_inertia = 1.0f / inertia;
+    rigidbody->inverse_mass =
+      (fabsf(rigidbody->mass) > 0.0f) ? 1.0f / rigidbody->mass : 0.0f;
+    rigidbody->inverse_inertia =
+      (fabsf(inertia) > 0.0f) ? 1.0f / inertia : 0.0f;
 #endif
 
     // Initialize the physics solver
     rigidbody->solver                       = malloc(sizeof(gsk_PhysicsSolver));
     *(gsk_PhysicsSolver *)rigidbody->solver = gsk_physics_solver_init();
+}
+
+static void
+__integrate(gsk_Entity entity, gsk_PhysicsSolverLambda lambda)
+{
 }
 
 static void
@@ -200,45 +242,29 @@ fixed_update(gsk_Entity entity)
     struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(entity, C_TRANSFORM);
 
-    // if (rigidbody->is_kinematic == TRUE) { return; }
-
     // Calculate simulation-time
     const gsk_Time time = gsk_device_getTime();
     const f64 delta     = time.fixed_delta_time * time.time_scale;
-
-#if 0
-    // Add Gravitational force
-
-    glm_vec3_scale(
-      rigidbody->gravity, rigidbody->mass, rigidbody->force_impulse);
-
-    // add impulse force
-    vec3 fDm = GLM_VEC3_ZERO_INIT;
-    glm_vec3_divs(rigidbody->force_impulse, rigidbody->mass, fDm);
-    // glm_vec3_scale(fDm, delta, fDm);
-    glm_vec3_add(fDm, rigidbody->force_impulse, rigidbody->force_impulse);
-
-    glm_vec3_add(rigidbody->force_impulse,
-                 rigidbody->linear_velocity,
-                 rigidbody->linear_velocity);
-#endif
 
     // --
     // -- Check for solvers/collision results
 
     gsk_PhysicsSolver *pSolver = (gsk_PhysicsSolver *)rigidbody->solver;
     int total_solvers          = (int)pSolver->solvers_list->list_next;
-    int total_impulses         = 0;
 
 #if DEBUG_TRACK
     s_dbg_instance = s_dbg_instance_begin;
 #endif
 
+    u32 total_impulses             = 0;
+    gsk_PhysicsSolverLambda lambda = {0};
+
     for (int iter = 0; iter < GSK_PHYSICS_VELOCITY_ITERATIONS; ++iter)
     {
-        for (int i = total_solvers - 1; i >= 0; i--)
+        for (int i = 0; i < total_solvers; i++)
         {
             gsk_CollisionResult *pResult = &pSolver->solvers[i];
+
             // --
             // construct solver_data used to pass into solver functions
             gsk_PhysicsSolverData solver_data = {
@@ -252,20 +278,57 @@ fixed_update(gsk_Entity entity)
 
             for (int j = 0; j < pResult->manifold.contacts_count; j++)
             {
+                // total_impulses++;
                 // make sure we set the contact point here
                 solver_data.contact_point = j;
 
                 // --
                 // Run Solvers
 
-                if (rigidbody->is_kinematic == FALSE &&
-                    solver_data.p_collision_result->is_trigger_response ==
-                      FALSE)
+                if (solver_data.p_collision_result->is_trigger_response == TRUE)
                 {
-                    gsk_physics_impulse_solver(solver_data);
+                    continue;
                 }
 
-                // total_impulses += 1;
+                // run the solver
+                gsk_PhysicsSolverLambda output = gsk_physics_impulse_solver(
+                  solver_data, pResult->manifold.contacts[j].lambda_n);
+
+                // adjust lambda
+                glm_vec3_add(
+                  lambda.impulse_a, output.impulse_a, lambda.impulse_a);
+                glm_vec3_add(
+                  lambda.impulse_b, output.impulse_b, lambda.impulse_b);
+
+                glm_vec3_add(lambda.torque_a, output.torque_a, lambda.torque_a);
+                glm_vec3_add(lambda.torque_b, output.torque_b, lambda.torque_b);
+
+                lambda.lambda_n                        = output.lambda_n;
+                pResult->manifold.contacts[j].lambda_n = output.lambda_n;
+
+                // probably just update actual velocity instead?
+
+                glm_vec3_add(lambda.impulse_a,
+                             pResult->physics_mark.body_a.linear_velocity,
+                             pResult->physics_mark.body_a.linear_velocity);
+                glm_vec3_add(lambda.torque_a,
+                             pResult->physics_mark.body_a.angular_velocity,
+                             pResult->physics_mark.body_a.angular_velocity);
+
+#if 1
+                glm_vec3_add(lambda.impulse_b,
+                             pResult->physics_mark.body_b.linear_velocity,
+                             pResult->physics_mark.body_b.linear_velocity);
+                glm_vec3_add(lambda.torque_b,
+                             pResult->physics_mark.body_b.angular_velocity,
+                             pResult->physics_mark.body_b.angular_velocity);
+#endif
+
+                // WAIT IT MAKES SENSE
+                // EVERY CONTACT POINT STORES THE LAMBDA FOR THE NEXT ITERATION
+                // if it's too much, it doesn't do anything ,right?
+
+                // TODO: probably apply here?
 
                 // --
                 // Run debug markers
@@ -274,171 +337,41 @@ fixed_update(gsk_Entity entity)
                 __debug_points(solver_data);
 #endif // DEBUG_POINTS
             }
-        }
-    }
 
-    if (rigidbody->is_kinematic == FALSE && collider->is_trigger == FALSE)
-    {
-#if 0
-    if (total_impulses > 1)
-    {
-        glm_vec3_divs(
-          rigidbody->force_velocity, total_impulses, rigidbody->force_velocity);
-        glm_vec3_divs(rigidbody->torque, total_impulses, rigidbody->torque);
-    }
-#endif
-
-        // --
-        // -- Add force to linear velocity (ignore mass)
-        glm_vec3_add(rigidbody->linear_velocity,
-                     rigidbody->force_velocity,
-                     rigidbody->linear_velocity);
-
-// Rigidbody sleep threshold
-#if 0
-    if (glm_vec3_norm(rigidbody->linear_velocity) <= SLEEP_EPSILON &&
-        collider->isColliding)
-    {
-        glm_vec3_zero(rigidbody->force_impulse);
-        glm_vec3_zero(rigidbody->force_velocity);
-        glm_vec3_zero(rigidbody->torque);
-
-        glm_vec3_zero(rigidbody->angular_velocity);
-        glm_vec3_zero(rigidbody->linear_velocity);
-        return;
-    }
-#endif
-
-        // --
-        // -- Integrate velocities
-
-        // calculate : position += velocity * delta_time;
-        vec3 vD = GLM_VEC3_ZERO_INIT;
-        glm_vec3_scale(rigidbody->linear_velocity, delta, vD);
-
-        // update position
-        glm_vec3_add(transform->position, vD, transform->position);
-
-#if 0
-    // calculate : orientation += angular_velocity * delta_time;
-    vec3 aVD = GLM_VEC3_ZERO_INIT;
-    glm_vec3_scale(rigidbody->angular_velocity, delta, aVD);
-
-    aVD[0] = glm_deg(aVD[0]);
-    aVD[1] = glm_deg(aVD[1]);
-    aVD[2] = glm_deg(aVD[2]);
-
-    // update orientation
-    glm_vec3_add(transform->orientation, aVD, transform->orientation);
-#else
-
-        glm_vec3_add(rigidbody->torque,
-                     rigidbody->angular_velocity,
-                     rigidbody->angular_velocity);
-    }
-
-    // update orientation
-    if (!rigidbody->disable_rotation)
-    {
-        vec3 angularDeg; // angularDeg
-        glm_vec3_scale(rigidbody->angular_velocity, delta, angularDeg);
-        angularDeg[0] = glm_deg(angularDeg[0]);
-        angularDeg[1] = glm_deg(angularDeg[1]);
-        angularDeg[2] = glm_deg(angularDeg[2]);
-
-        vec3 test = {angularDeg[0], angularDeg[1], angularDeg[2]};
-
-#if _TRANSFORM_QUATERNION
-        transform_rotate(transform, test);
-#else
-        mat4 tmp_rot = GLM_MAT4_IDENTITY_INIT;
-        mat4 new_rot = GLM_MAT4_IDENTITY_INIT;
-
-        glm_rotate_x(tmp_rot, glm_rad(angularDeg[0]), tmp_rot);
-        glm_rotate_y(tmp_rot, glm_rad(angularDeg[1]), tmp_rot);
-        glm_rotate_z(tmp_rot, glm_rad(angularDeg[2]), tmp_rot);
-
-        glm_mat4_mul(tmp_rot, transform->m4_rotation, new_rot);
-
-        vec3 new_angles = {0, 0, 0};
-        glm_euler_angles(new_rot, new_angles);
-
-        transform->orientation[0] = glm_deg(new_angles[0]);
-        transform->orientation[1] = glm_deg(new_angles[1]);
-        transform->orientation[2] = glm_deg(new_angles[2]);
-#endif
-    }
-
-#endif // orientation
-
-        for (int iter = 0; iter < GSK_PHYSICS_POSITION_ITERATIONS; ++iter)
-        {
-            for (int i = total_solvers - 1; i >= 0; i--)
+            // CHECK JUST IN CASE
+            // integrate for B
+            struct ComponentRigidbody *tgt_rigidbody = NULL;
+            gsk_Entity ent_tgt = gsk_ecs_ent(entity.ecs, pResult->ent_b_id);
+            if (gsk_ecs_has(ent_tgt, C_RIGIDBODY))
             {
-                gsk_CollisionResult *pResult = &pSolver->solvers[i];
-                // --
-                // construct solver_data used to pass into solver functions
-                gsk_PhysicsSolverData solver_data = {
-                  .p_rigidbody        = rigidbody,
-                  .p_transform        = transform,
-                  .p_collision_result = pResult,
-                  .entity             = entity,
-                  .delta              = delta,
-                  .contact_point      = 0,
-                };
+                tgt_rigidbody = gsk_ecs_get(ent_tgt, C_RIGIDBODY);
+                glm_vec3_add(lambda.impulse_b,
+                             tgt_rigidbody->force_velocity,
+                             tgt_rigidbody->force_velocity);
 
-                for (int j = 0; j < pResult->manifold.contacts_count; j++)
-                {
-                    // make sure we set the contact point here
-                    solver_data.contact_point = j;
-
-                    // --
-                    // Run Solvers
-
-                    if (rigidbody->is_kinematic == FALSE &&
-                        solver_data.p_collision_result->is_trigger_response ==
-                          FALSE)
-                    {
-                        vec3 pos_fix = {0, 0, 0};
-                        gsk_physics_position_solver(
-                          solver_data, pos_fix); // TODO: don't run many times
-                        // add accumulated pos_fix from position_solver
-                        glm_vec3_add(
-                          transform->position, pos_fix, transform->position);
-                    }
-                }
+                glm_vec3_add(lambda.torque_b,
+                             tgt_rigidbody->torque,
+                             tgt_rigidbody->torque);
             }
+
+            glm_vec3_add(lambda.impulse_a,
+                         rigidbody->force_velocity,
+                         rigidbody->force_velocity);
+            glm_vec3_add(lambda.torque_a, rigidbody->torque, rigidbody->torque);
         }
-
-        // clear solvers
-
-        while (pSolver->solvers_list->is_list_empty == FALSE)
-        {
-            gsk_physics_solver_pop((gsk_PhysicsSolver *)rigidbody->solver);
-        }
-
-        if (pSolver->solvers_list->is_list_empty == FALSE)
-        {
-            LOG_ERROR("solver list failed to clear on entity %d", entity.id);
-        }
-
-        // --
-        // -- Reset net forces
-
-        glm_vec3_zero(rigidbody->force_velocity);
-        glm_vec3_zero(rigidbody->force_impulse);
-        glm_vec3_zero(rigidbody->torque);
     }
-    //-----------------------------------------------------------------------------
+}
 
-    //-----------------------------------------------------------------------------
-    void s_rigidbody_system_init(gsk_ECS * ecs)
-    {
-        gsk_ecs_system_register(
-          ecs,
-          ((gsk_ECSSystem) {
-            .init         = (gsk_ECSSubscriber)init,
-            .fixed_update = (gsk_ECSSubscriber)fixed_update,
-          }));
-    }
-    //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+void
+s_rigidbody_system_init(gsk_ECS *ecs)
+{
+    gsk_ecs_system_register(ecs,
+                            ((gsk_ECSSystem) {
+                              .init         = (gsk_ECSSubscriber)init,
+                              .fixed_update = (gsk_ECSSubscriber)fixed_update,
+                            }));
+}
+//-----------------------------------------------------------------------------

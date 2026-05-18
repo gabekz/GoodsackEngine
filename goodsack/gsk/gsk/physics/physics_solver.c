@@ -7,6 +7,7 @@
 
 #include <assert.h>
 
+#include "entity/ecs.h"
 #include "physics/physics_types.h"
 
 #include "util/array_list.h"
@@ -51,4 +52,26 @@ gsk_physics_solver_step(gsk_PhysicsSolver *solver)
     // TODO: run all solvers
 
     gsk_physics_solver_pop(solver); // pop when resolved
+}
+
+u8
+gsk_physics_solver_exists(gsk_PhysicsSolver *solver,
+                          gsk_EntityId entity_a,
+                          gsk_EntityId entity_b)
+{
+    if (solver->solvers_list->is_list_empty) { return FALSE; }
+
+    for (int i = 0; i < solver->solvers_list->list_next; i++)
+    {
+        gsk_CollisionResult *p_result = LIST_GET(solver->solvers_list, i);
+
+        if ((p_result->ent_a_id == entity_a &&
+             p_result->ent_b_id == entity_b) ||
+            (p_result->ent_a_id == entity_b && p_result->ent_b_id == entity_a))
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }

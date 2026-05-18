@@ -10,6 +10,8 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#include "entity/ecs.h"
+
 #include "core/device/device.h"
 #include "core/graphics/mesh/mesh.h"
 
@@ -30,7 +32,7 @@ init(gsk_Entity e)
     struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
-    collider->isColliding = false; // TODO: remove <- this is for testing
+    collider->isColliding = FALSE; // TODO: remove <- this is for testing
 
     collider->pCollider = (gsk_Collider *)malloc(sizeof(gsk_Collider));
     ((gsk_Collider *)collider->pCollider)->collider_data_type = collider->type;
@@ -165,8 +167,9 @@ init(gsk_Entity e)
         vec3 tip   = {0.0f, 0.5f, 0.0f};
         f32 radius = 0.2f;
 
-        // TODO: CHANGE THIS - temp for secondary capsule test
-        // TODO: TODAY
+// TODO: CHANGE THIS - temp for secondary capsule test
+// TODO: TODAY
+#if 1
         if (e.id >= 304)
         {
             vec3 new_base = {0.0f, -0.2f, 0.0f};
@@ -174,6 +177,7 @@ init(gsk_Entity e)
             glm_vec3_copy(new_base, base);
             glm_vec3_copy(new_tip, tip);
         }
+#endif
 
         glm_vec3_copy(base, capsule_collider->base);
         glm_vec3_copy(tip, capsule_collider->tip);
@@ -216,16 +220,32 @@ on_collide(gsk_Entity e)
     }
 #endif
 
+    if (gsk_ecs_has(e, C_RIGIDBODY))
+    {
+        struct ComponentRigidbody *rigidbody = gsk_ecs_get(e, C_RIGIDBODY);
+        if (rigidbody->is_kinematic) { return; }
+    }
+
     for (int i = 0; i < e.ecs->nextIndex; i++)
     {
         if (e.id == e.ecs->p_ent_ids[i]) continue; // do not check self
 
-        // TODO: fix look-up
-        gsk_Entity e_compare = {
-          .id    = e.ecs->p_ent_ids[i],
-          .index = (gsk_EntityId)i,
-          .ecs   = e.ecs,
-        };
+        gsk_Entity e_compare =
+          gsk_ecs_ent(e.ecs, (gsk_EntityId)e.ecs->p_ent_ids[i]);
+
+        // IMPORTANT:
+        // check to see if we already have a collision manifold.
+        if (gsk_ecs_has(e_compare, C_RIGIDBODY))
+        {
+            struct ComponentRigidbody *tgt_rigidbody =
+              gsk_ecs_get(e_compare, C_RIGIDBODY);
+
+            if (gsk_physics_solver_exists(
+                  tgt_rigidbody->solver, e.id, e_compare.id))
+            {
+                continue;
+            }
+        }
 
         // check layer mask to ensure collision is allowed
         if (!gsk_runtime_check_layer_mask(e.ecs->p_ent_layers[e.index],
@@ -383,12 +403,8 @@ on_collide(gsk_Entity e)
 
     for (int i = 0; i < manifold_list_next; i++)
     {
-        // TODO: AGAIN - fix look-up
-        gsk_Entity e_compare = {
-          .id    = e.ecs->p_ent_ids[id_manifold_list[i]],
-          .index = (gsk_EntityId)id_manifold_list[i],
-          .ecs   = e.ecs,
-        };
+        gsk_Entity e_compare = gsk_ecs_ent(
+          e.ecs, (gsk_EntityId)e.ecs->p_ent_ids[id_manifold_list[i]]);
 
         struct ComponentCollider *compareCollider =
           gsk_ecs_get(e_compare, C_COLLIDER);
@@ -452,6 +468,7 @@ on_collide(gsk_Entity e)
             vec3 linear_velocity_a, linear_velocity_b   = GLM_VEC3_ZERO_INIT;
             vec3 angular_velocity_a, angular_velocity_b = GLM_VEC3_ZERO_INIT;
             vec3 relative_velocity = GLM_VEC3_ZERO_INIT;
+
             f32 mass_a, mass_b                       = 0.0f; // default to 1
             f32 inverse_mass_a, inverse_mass_b       = 0.0f; // default to 1
             f32 inertia_a, inertia_b                 = 0.0f;
@@ -460,13 +477,12 @@ on_collide(gsk_Entity e)
             // copy a-values
             glm_vec3_copy(rigidbody_a->linear_velocity, linear_velocity_a);
             glm_vec3_copy(rigidbody_a->angular_velocity, angular_velocity_a);
-            mass_a         = rigidbody_a->mass;
-            inverse_mass_a = (1.0f / rigidbody_a->mass);
 
-            // TODO: actually calculate HERE
-            inertia_a = inertia * (mass_a * 1.0f);
-            inverse_inertia_a =
-              (fabsf(inertia_a) > 0.0f) ? 1.0f / inertia_a : 0;
+            mass_a         = rigidbody_a->mass;
+            inverse_mass_a = rigidbody_a->inverse_mass;
+
+            inertia_a         = rigidbody_a->inertia;
+            inverse_inertia_a = rigidbody_a->inverse_inertia;
 
             // copy b-values
             if (rigidbody_b == NULL)
@@ -480,18 +496,23 @@ on_collide(gsk_Entity e)
                 glm_vec3_copy(rigidbody_b->linear_velocity, linear_velocity_b);
                 glm_vec3_copy(rigidbody_b->angular_velocity,
                               angular_velocity_b);
-                mass_b = rigidbody_b->mass;
+                mass_b         = rigidbody_b->mass;
+                inverse_mass_b = rigidbody_b->inverse_mass;
 
-                // TODO: Actually calculate HERE
-                inertia_b = inertia * mass_b * 1;
+                inertia_b         = rigidbody_b->inertia;
+                inverse_inertia_b = rigidbody_b->inverse_inertia;
 
                 // calculate relative velocity
                 glm_vec3_sub(
                   linear_velocity_a, linear_velocity_b, relative_velocity);
             }
 
-            inverse_mass_b    = mass_b * 0.5f;
-            inverse_inertia_b = (fabsf(inertia_b) > 0) ? (inertia_b * 0.5f) : 0;
+            else
+            {
+                inverse_mass_b = mass_b * 0.5f;
+                inverse_inertia_b =
+                  (fabsf(inertia_b) > 0) ? (inertia_b * 0.5f) : 0;
+            }
 
             gsk_PhysicsMark mark = {
 
