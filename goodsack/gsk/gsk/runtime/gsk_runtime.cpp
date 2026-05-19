@@ -222,7 +222,7 @@ gsk::runtime::rt_setup(const char *root_dir,
     int logStat = logger_initConsoleLogger(NULL);
     // logger_initFileLogger(log_path, 0, 0);
 
-    logger_setLevel(LogLevel_TRACE);
+    logger_setLevel(LogLevel_DEBUG);
     logger_setDetail(LogDetail_SIMPLE);
 
     if (logStat != 0) { LOG_INFO("Initialized Console Logger"); }
@@ -677,9 +677,11 @@ gsk::runtime::rt_activate_ecs_systems(gsk_ECS *p_ecs)
 
     // Physics Systems
     // order is important here..
-    s_rigidbody_forces_system_init(p_ecs); // apply external forces
-    s_collider_setup_system_init(p_ecs);   // check for collisions
-    s_rigidbody_system_init(p_ecs); // run solvers on collisions. integrate
+    // s_rigidbody_forces_system_init(p_ecs); // apply external forces
+    s_collider_setup_system_init(p_ecs); // check for collisions
+    s_rigidbody_system_init(p_ecs);      // run solvers on collisions. integrate
+    s_physics_world_system_init(p_ecs);
+    // s_rigidbody_integ_system_init(p_ecs);
 
     // Player Controller
     s_player_controller_system_init(p_ecs);

@@ -102,7 +102,7 @@
     "Rigidbody": {
         "Resource": [ "solver" ],
         "vec3": [ "gravity", "angular_velocity", "linear_velocity", "force_impulse", "force_velocity", "torque" ],
-        "float": [ "mass", "static_friction", "dynamic_friction", "inverse_mass", "inverse_inertia" ],
+        "float": [ "mass", "inertia", "static_friction", "dynamic_friction", "inverse_mass", "inverse_inertia" ],
         "bool": ["is_kinematic", "disable_rotation"]
     },
 

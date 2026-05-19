@@ -240,11 +240,7 @@ on_collide(gsk_Entity e)
             struct ComponentRigidbody *tgt_rigidbody =
               gsk_ecs_get(e_compare, C_RIGIDBODY);
 
-            if (gsk_physics_solver_exists(
-                  tgt_rigidbody->solver, e.id, e_compare.id))
-            {
-                continue;
-            }
+            if (gsk_physics_solver_exists(e.id, e_compare.id)) { continue; }
         }
 
         // check layer mask to ensure collision is allowed
@@ -446,8 +442,8 @@ on_collide(gsk_Entity e)
                 {
 
                     // Send that over to rigidbody (B) solver list
-                    gsk_physics_solver_push(
-                      (gsk_PhysicsSolver *)rigidbody_b->solver, result);
+                    // TODO: this is going to be broken with kinematic-ness
+                    gsk_physics_solver_push(result);
                 }
 
                 // skip this comparison because we don't want to walk on
@@ -469,10 +465,12 @@ on_collide(gsk_Entity e)
             vec3 angular_velocity_a, angular_velocity_b = GLM_VEC3_ZERO_INIT;
             vec3 relative_velocity = GLM_VEC3_ZERO_INIT;
 
-            f32 mass_a, mass_b                       = 0.0f; // default to 1
-            f32 inverse_mass_a, inverse_mass_b       = 0.0f; // default to 1
-            f32 inertia_a, inertia_b                 = 0.0f;
-            f32 inverse_inertia_a, inverse_inertia_b = 0.0f;
+            f32 mass_a, mass_b                         = 0.0f; // default to 1
+            f32 inverse_mass_a, inverse_mass_b         = 0.0f; // default to 1
+            f32 inertia_a, inertia_b                   = 0.0f;
+            f32 inverse_inertia_a, inverse_inertia_b   = 0.0f;
+            f32 static_friction_a, static_friction_b   = 0.0f;
+            f32 dynamic_friction_a, dynamic_friction_b = 0.0f;
 
             // copy a-values
             glm_vec3_copy(rigidbody_a->linear_velocity, linear_velocity_a);
@@ -483,6 +481,9 @@ on_collide(gsk_Entity e)
 
             inertia_a         = rigidbody_a->inertia;
             inverse_inertia_a = rigidbody_a->inverse_inertia;
+
+            static_friction_a  = rigidbody_a->static_friction;
+            dynamic_friction_a = rigidbody_a->dynamic_friction;
 
             // copy b-values
             if (rigidbody_b == NULL)
@@ -502,34 +503,43 @@ on_collide(gsk_Entity e)
                 inertia_b         = rigidbody_b->inertia;
                 inverse_inertia_b = rigidbody_b->inverse_inertia;
 
+                static_friction_b  = rigidbody_b->static_friction;
+                dynamic_friction_b = rigidbody_b->dynamic_friction;
+
                 // calculate relative velocity
                 glm_vec3_sub(
                   linear_velocity_a, linear_velocity_b, relative_velocity);
             }
 
+#if 1
             else
             {
                 inverse_mass_b = mass_b * 0.5f;
                 inverse_inertia_b =
                   (fabsf(inertia_b) > 0) ? (inertia_b * 0.5f) : 0;
             }
+#endif
 
             gsk_PhysicsMark mark = {
 
               .body_a =
                 (gsk_DynamicBody) {
-                  .mass            = mass_a,
-                  .inverse_mass    = inverse_mass_a,
-                  .inertia         = inertia_a,
-                  .inverse_inertia = inverse_inertia_a,
+                  .mass             = mass_a,
+                  .inverse_mass     = inverse_mass_a,
+                  .inertia          = inertia_a,
+                  .inverse_inertia  = inverse_inertia_a,
+                  .static_friction  = static_friction_a,
+                  .dynamic_friction = dynamic_friction_a,
                 },
 
               .body_b =
                 (gsk_DynamicBody) {
-                  .mass            = mass_b,
-                  .inverse_mass    = inverse_mass_b,
-                  .inertia         = inertia_b,
-                  .inverse_inertia = inverse_inertia_b,
+                  .mass             = mass_b,
+                  .inverse_mass     = inverse_mass_b,
+                  .inertia          = inertia_b,
+                  .inverse_inertia  = inverse_inertia_b,
+                  .static_friction  = static_friction_b,
+                  .dynamic_friction = dynamic_friction_b,
                 },
             };
 
@@ -560,8 +570,7 @@ on_collide(gsk_Entity e)
                 LOG_CRITICAL("Max collision points exceeded");
             }
             // Send that over to the rigidbody solver list
-            gsk_physics_solver_push((gsk_PhysicsSolver *)rigidbody_a->solver,
-                                    result);
+            gsk_physics_solver_push(result);
         }
     }
 }

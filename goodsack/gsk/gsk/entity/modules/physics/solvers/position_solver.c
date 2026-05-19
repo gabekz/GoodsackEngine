@@ -9,7 +9,6 @@ void
 gsk_physics_position_solver(gsk_PhysicsSolverData solver_data, vec3 pos_fix)
 {
     gsk_CollisionResult *collision_result = solver_data.p_collision_result;
-    struct ComponentTransform *transform  = solver_data.p_transform;
 
     vec3 collision_normal = GLM_VEC3_ZERO_INIT;
     glm_vec3_copy(

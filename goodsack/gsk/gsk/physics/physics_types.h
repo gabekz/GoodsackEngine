@@ -36,6 +36,8 @@ typedef struct gsk_CollisionPoints
     f32 depth;    // Length of point_b - point_a
     f32 penetration;
     u16 has_collision; // bool
+    f32 lambda_n;
+    f32 lambda_t;
 } gsk_CollisionPoints;
 
 typedef struct gsk_CollisionManifold
@@ -56,6 +58,7 @@ typedef struct gsk_DynamicBody
     vec3 angular_velocity;
     f32 mass, inverse_mass;
     f32 inertia, inverse_inertia;
+    f32 static_friction, dynamic_friction;
 } gsk_DynamicBody;
 
 typedef struct gsk_PhysicsMark

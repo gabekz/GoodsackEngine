@@ -34,6 +34,8 @@ extern "C" {
 
 #include "entity/modules/light/light_setup-system.h"
 
+#include "entity/modules/physics/physics_world-system.h"
+
 #ifdef __cplusplus
 }
 #endif

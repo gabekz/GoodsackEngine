@@ -17,12 +17,10 @@ extern "C" {
 
 typedef struct gsk_PhysicsSolverData
 {
-    gsk_C_Rigidbody *const p_rigidbody;
-    gsk_C_Transform *const p_transform;
     gsk_CollisionResult *p_collision_result;
-    const gsk_Entity entity;
     const f64 delta;
     u32 contact_point;
+    const gsk_Entity entity;
 } gsk_PhysicsSolverData;
 
 typedef struct gsk_PhysicsSolverLambda
@@ -32,6 +30,7 @@ typedef struct gsk_PhysicsSolverLambda
     vec3 torque_a;
     vec3 torque_b;
     f32 lambda_n;
+    f32 lambda_t;
 
 } gsk_PhysicsSolverLambda;
 

@@ -24,11 +24,8 @@
 #include "entity/modules/physics/solvers/position_solver.h"
 #include "entity/modules/physics/solvers/solver_data.h"
 
-#define GSK_PHYSICS_VELOCITY_ITERATIONS 3
-#define GSK_PHYSICS_POSITION_ITERATIONS 1
-
 // Functionality toggles
-#define DEBUG_TRACK  1
+#define DEBUG_TRACK  0
 #define DEBUG_POINTS 0 // 0 -- OFF | value = entity id
 
 #define CALC_INERTIA 1
@@ -118,42 +115,7 @@ __debug_points(const gsk_PhysicsSolverData solver_data)
 }
 //-----------------------------------------------------------------------------
 
-static u8
-__can_solve_contact(struct ComponentRigidbody *rigidbody,
-                    struct ComponentCollider *collider,
-                    gsk_CollisionResult *result)
-{
-    if (rigidbody->is_kinematic == TRUE) return FALSE;
-
-    if (collider->is_trigger == TRUE) return FALSE;
-
-    if (result->is_trigger_response == TRUE) return FALSE;
-
-    return TRUE;
-}
 //-----------------------------------------------------------------------------
-
-#if 0
-static void
-__apply_impulse_at_point(struct ComponentRigidbody *rigidbody, vec3 impulse_in)
-{
-    // calculate impulse, torque
-    vec3 impulse, torque = GLM_VEC3_ZERO_INIT;
-    {
-        glm_vec3_scale(collision_normal, F, impulse);
-
-        glm_vec3_cross(ra, impulse, torque);
-        // glm_vec3_negate(torque);
-        //  scale torque by inverse inertia
-        glm_vec3_scale(torque, body_a.inverse_inertia, torque);
-
-        // NOTE: May need to be done AFTER torque calculation
-        // scale impulse by inverse mass
-        glm_vec3_scale(impulse, body_a.inverse_mass, impulse);
-    }
-}
-#endif
-
 static void
 init(gsk_Entity entity)
 {
@@ -220,12 +182,9 @@ init(gsk_Entity entity)
     rigidbody->inverse_inertia =
       (fabsf(inertia) > 0.0f) ? 1.0f / inertia : 0.0f;
 #endif
-
-    // Initialize the physics solver
-    rigidbody->solver                       = malloc(sizeof(gsk_PhysicsSolver));
-    *(gsk_PhysicsSolver *)rigidbody->solver = gsk_physics_solver_init();
 }
 
+#if 0
 static void
 __integrate(gsk_Entity entity, gsk_PhysicsSolverLambda lambda)
 {
@@ -268,12 +227,12 @@ fixed_update(gsk_Entity entity)
             // --
             // construct solver_data used to pass into solver functions
             gsk_PhysicsSolverData solver_data = {
-              .p_rigidbody        = rigidbody,
-              .p_transform        = transform,
+              //.p_rigidbody        = rigidbody,
+              //.p_transform        = transform,
               .p_collision_result = pResult,
-              .entity             = entity,
-              .delta              = delta,
-              .contact_point      = 0,
+              //.entity             = entity,
+              .delta         = delta,
+              .contact_point = 0,
             };
 
             for (int j = 0; j < pResult->manifold.contacts_count; j++)
@@ -361,6 +320,7 @@ fixed_update(gsk_Entity entity)
         }
     }
 }
+#endif
 
 //-----------------------------------------------------------------------------
 
@@ -370,8 +330,8 @@ s_rigidbody_system_init(gsk_ECS *ecs)
 {
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
-                              .init         = (gsk_ECSSubscriber)init,
-                              .fixed_update = (gsk_ECSSubscriber)fixed_update,
+                              .init = (gsk_ECSSubscriber)init,
+                              //.fixed_update = (gsk_ECSSubscriber)fixed_update,
                             }));
 }
 //-----------------------------------------------------------------------------

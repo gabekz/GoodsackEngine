@@ -13,4 +13,9 @@
 gsk_PhysicsSolverLambda
 gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data, f32 lambda_n);
 
+gsk_PhysicsSolverLambda
+gsk_physics_friction_solver(gsk_PhysicsSolverData solver_data,
+                            f32 lambda_n,
+                            f32 lambda_t);
+
 #endif // __GSK_FRICTION_SOLVER_H__

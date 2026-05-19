@@ -28,7 +28,7 @@
 #define GSK_PHYSICS_POSITION_ITERATIONS 1
 
 // Functionality toggles
-#define DEBUG_TRACK  1
+#define DEBUG_TRACK  0
 #define DEBUG_POINTS 0 // 0 -- OFF | value = entity id
 
 #define CALC_INERTIA 1
@@ -122,12 +122,12 @@ fixed_update(gsk_Entity entity)
             // --
             // construct solver_data used to pass into solver functions
             gsk_PhysicsSolverData solver_data = {
-              .p_rigidbody        = rigidbody,
-              .p_transform        = transform,
+              //.p_rigidbody        = rigidbody,
+              //.p_transform        = transform,
               .p_collision_result = pResult,
-              .entity             = entity,
-              .delta              = delta,
-              .contact_point      = 0,
+              //.entity             = entity,
+              .delta         = delta,
+              .contact_point = 0,
             };
 
             for (int j = 0; j < pResult->manifold.contacts_count; j++)
