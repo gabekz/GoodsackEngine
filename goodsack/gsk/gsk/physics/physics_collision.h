@@ -46,7 +46,8 @@ gsk_CollisionPoints
 gsk_physics_collision_find_sphere_box(gsk_SphereCollider *a,
                                       gsk_BoxCollider *b,
                                       vec3 pos_a,
-                                      vec3 pos_b);
+                                      vec3 pos_b,
+                                      mat3 rot_b);
 
 // Sphere v. Capsule
 gsk_CollisionPoints
@@ -75,7 +76,8 @@ gsk_CollisionPoints
 gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
                                       gsk_SphereCollider *b,
                                       vec3 pos_a,
-                                      vec3 pos_b);
+                                      vec3 pos_b,
+                                      mat3 rot_a);
 
 // Box v. Box
 gsk_CollisionManifold

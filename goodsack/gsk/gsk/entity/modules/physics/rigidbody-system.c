@@ -152,10 +152,13 @@ init(gsk_Entity entity)
     f32 inertia = 0;
     if (collider->type == COLLIDER_SPHERE)
     {
+        gsk_SphereCollider *p_sphere =
+          ((gsk_Collider *)collider->pCollider)->collider_data;
+
+        f32 radius = p_sphere->radius;
 
         // I = 2/5mr^2 -- solid sphere
-        inertia = (2.0f / 5.0f) * rigidbody->mass *
-                  pow(((gsk_SphereCollider *)collider->pCollider)->radius, 2);
+        inertia = (2.0f / 5.0f) * rigidbody->mass * (radius * radius);
     }
 
     else if (collider->type == COLLIDER_BOX)
@@ -164,14 +167,19 @@ init(gsk_Entity entity)
         f32 width  = 1;
         f32 height = 1;
 
-        // I_d = 1/12m(w^2 + h^2) -- rectangular cuboid depth
+// I_d = 1/12m(w^2 + h^2) -- rectangular cuboid depth
+#if 0
         inertia =
           (1.0f / 12.0f) * rigidbody->mass * (pow(width, 2) + pow(height, 2));
+#else
+        inertia =
+          (1.0f / 12.0f) * rigidbody->mass * (width * width + height * height);
+#endif
     }
 
     else
     {
-        inertia = (2.0f / 5.0f); /*  X (mass * radius) */
+        inertia = 4.0f;
     }
 
     rigidbody->inertia = inertia;
@@ -331,7 +339,6 @@ s_rigidbody_system_init(gsk_ECS *ecs)
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
                               .init = (gsk_ECSSubscriber)init,
-                              //.fixed_update = (gsk_ECSSubscriber)fixed_update,
                             }));
 }
 //-----------------------------------------------------------------------------

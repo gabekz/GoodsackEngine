@@ -677,11 +677,10 @@ gsk::runtime::rt_activate_ecs_systems(gsk_ECS *p_ecs)
 
     // Physics Systems
     // order is important here..
-    // s_rigidbody_forces_system_init(p_ecs); // apply external forces
-    s_collider_setup_system_init(p_ecs); // check for collisions
-    s_rigidbody_system_init(p_ecs);      // run solvers on collisions. integrate
-    s_physics_world_system_init(p_ecs);
-    // s_rigidbody_integ_system_init(p_ecs);
+    s_collider_setup_system_init(p_ecs);      // initialize colliders
+    s_rigidbody_system_init(p_ecs);           // rigidbody initialization
+    s_collision_detection_system_init(p_ecs); // check for collisions
+    s_physics_world_system_init(p_ecs);       // physics simulation (singelton)
 
     // Player Controller
     s_player_controller_system_init(p_ecs);

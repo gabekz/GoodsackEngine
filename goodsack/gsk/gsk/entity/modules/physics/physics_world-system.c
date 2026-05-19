@@ -21,7 +21,7 @@
 #include "util/sysdefs.h"
 
 #define _VELOCITY_ITERATIONS 6
-#define _FRICTION_ITERATIONS 4
+#define _FRICTION_ITERATIONS 3
 #define _POSITION_ITERATIONS 1
 
 static void
@@ -57,7 +57,7 @@ __apply_gravity(gsk_Entity entity, f64 delta)
 }
 
 static u8
-__apply_velocity(gsk_Entity entity, vec3 impulse, vec3 torque)
+__apply_linear_velocity(gsk_Entity entity, vec3 impulse)
 {
     if (!gsk_ecs_has(entity, C_RIGIDBODY)) { return FALSE; }
 
@@ -68,12 +68,22 @@ __apply_velocity(gsk_Entity entity, vec3 impulse, vec3 torque)
     glm_vec3_add(
       cmp_rigidbody->linear_velocity, impulse, cmp_rigidbody->linear_velocity);
 
-    if (!cmp_rigidbody->disable_rotation)
-    {
-        glm_vec3_add(cmp_rigidbody->angular_velocity,
-                     torque,
-                     cmp_rigidbody->angular_velocity);
-    }
+    return TRUE;
+}
+
+static u8
+__apply_angular_velocity(gsk_Entity entity, vec3 torque)
+{
+    if (!gsk_ecs_has(entity, C_RIGIDBODY)) { return FALSE; }
+
+    gsk_C_Rigidbody *cmp_rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
+    if (cmp_rigidbody->is_kinematic == TRUE) { return FALSE; }
+
+    if (cmp_rigidbody->disable_rotation) { return FALSE; }
+
+    glm_vec3_add(
+      cmp_rigidbody->angular_velocity, torque, cmp_rigidbody->angular_velocity);
+
     return TRUE;
 }
 
@@ -206,32 +216,38 @@ fixed_update(gsk_Entity entity)
 
                 pResult->manifold.contacts[j].lambda_n = output.lambda_n;
 
-                if (__apply_velocity(
-                      entity_a, output.impulse_a, output.torque_a))
+                // Apply Velocity to Body A
+
+                if (__apply_linear_velocity(entity_a, output.impulse_a))
                 {
 
-#if 1
                     glm_vec3_add(pResult->physics_mark.body_a.linear_velocity,
                                  output.impulse_a,
                                  pResult->physics_mark.body_a.linear_velocity);
+                }
+
+                if (__apply_angular_velocity(entity_a, output.torque_a))
+                {
                     glm_vec3_add(pResult->physics_mark.body_a.angular_velocity,
                                  output.torque_a,
                                  pResult->physics_mark.body_a.angular_velocity);
-#endif
                 }
 
-                if (__apply_velocity(
-                      entity_b, output.impulse_b, output.torque_b))
+                // Apply Velocity to Body B
+
+                if (__apply_linear_velocity(entity_b, output.impulse_b))
                 {
-#if 1
 
                     glm_vec3_add(pResult->physics_mark.body_b.linear_velocity,
                                  output.impulse_b,
                                  pResult->physics_mark.body_b.linear_velocity);
+                }
+
+                if (__apply_angular_velocity(entity_b, output.torque_b))
+                {
                     glm_vec3_add(pResult->physics_mark.body_b.angular_velocity,
                                  output.torque_b,
                                  pResult->physics_mark.body_b.angular_velocity);
-#endif
                 }
             }
         }
@@ -277,32 +293,38 @@ fixed_update(gsk_Entity entity)
 
                 pResult->manifold.contacts[j].lambda_t = output.lambda_t;
 
-                if (__apply_velocity(
-                      entity_a, output.impulse_a, output.torque_a))
+                // Apply Velocity to Body A
+
+                if (__apply_linear_velocity(entity_a, output.impulse_a))
                 {
 
-#if 1
                     glm_vec3_add(pResult->physics_mark.body_a.linear_velocity,
                                  output.impulse_a,
                                  pResult->physics_mark.body_a.linear_velocity);
+                }
+
+                if (__apply_angular_velocity(entity_a, output.torque_a))
+                {
                     glm_vec3_add(pResult->physics_mark.body_a.angular_velocity,
                                  output.torque_a,
                                  pResult->physics_mark.body_a.angular_velocity);
-#endif
                 }
 
-                if (__apply_velocity(
-                      entity_b, output.impulse_b, output.torque_b))
+                // Apply Velocity to Body B
+
+                if (__apply_linear_velocity(entity_b, output.impulse_b))
                 {
-#if 1
 
                     glm_vec3_add(pResult->physics_mark.body_b.linear_velocity,
                                  output.impulse_b,
                                  pResult->physics_mark.body_b.linear_velocity);
+                }
+
+                if (__apply_angular_velocity(entity_b, output.torque_b))
+                {
                     glm_vec3_add(pResult->physics_mark.body_b.angular_velocity,
                                  output.torque_b,
                                  pResult->physics_mark.body_b.angular_velocity);
-#endif
                 }
             }
         }

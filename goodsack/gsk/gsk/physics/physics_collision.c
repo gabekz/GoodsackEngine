@@ -209,7 +209,7 @@ __find_box_capsule_inverse(gsk_BoxCollider *box,
             glm_vec3_scale(diff, 1.0f / dist, normal);
         } else
         {
-            normal[1] = 1.0f;
+            glm_vec3_copy(diff, normal);
         }
 
         // collision points
@@ -295,6 +295,28 @@ __find_capsule_sphere_inverse(gsk_CapsuleCollider *a,
             glm_vec3_negate(ret.normal);
         }
     }
+    return ret;
+}
+
+gsk_CollisionPoints
+__find_obb_sphere_inverse(gsk_BoxCollider *a,
+                          gsk_SphereCollider *b,
+                          vec3 pos_a,
+                          vec3 pos_b,
+                          mat3 rot_a,
+                          u8 inverse)
+{
+    gsk_OBB obb_a = gsk_physics_sat_obb_make(a, pos_a, rot_a);
+
+    gsk_CollisionPoints ret =
+      gsk_pyhysics_sat_find_obb_sphere_points(&obb_a, pos_b, b->radius);
+
+    if (!inverse)
+    {
+        _invert_points(ret.point_a, ret.point_b);
+        glm_vec3_negate(ret.normal);
+    }
+
     return ret;
 }
 
@@ -459,16 +481,18 @@ gsk_physics_collision_find_box_plane(gsk_BoxCollider *a,
 
 // Box v. Sphere
 gsk_CollisionPoints
-gsk_physics_collision_find_box_sphere(gsk_BoxCollider *a,
-                                      gsk_SphereCollider *b,
-                                      vec3 pos_a,
-                                      vec3 pos_b)
+gsk_physics_collision_find_box_sphere(
+  gsk_BoxCollider *a, gsk_SphereCollider *b, vec3 pos_a, vec3 pos_b, mat3 rot_a)
 {
 
+#if 0
     gsk_CollisionManifold manifold =
       __find_box_sphere_inverse(a, b, pos_a, pos_b, FALSE);
 
     return manifold.contacts[0];
+#else
+    return __find_obb_sphere_inverse(a, b, pos_a, pos_b, rot_a, FALSE);
+#endif
 }
 
 // Box v. Box Manifold
@@ -485,16 +509,24 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
     gsk_OBB obb_a = gsk_physics_sat_obb_make(a, pos_a, rot_a);
     gsk_OBB obb_b = gsk_physics_sat_obb_make(b, pos_b, rot_b);
 
+#if 1
     return gsk_physics_sat_find_obb_obb_manifold(&obb_a, &obb_b);
+#else
 
-    // u8 sat_result = _test_obb(&obb_a, &obb_b);
-    // if (sat_result == 1) { LOG_INFO("collision"); }
-
-    // gsk_OBBSatResult sat_result = gsk_physics_sat_obb_test(&obb_a, &obb_b);
-    // if (!sat_result.has_collision) { return ret; }
+    gsk_CollisionManifold ret   = {0};
+    gsk_OBBSatResult sat_result = gsk_physics_sat_obb_test(&obb_a, &obb_b);
+    if (!sat_result.has_collision) { return ret; }
+    gsk_CollisionPoints points = {0};
+    gsk_physics_sat_contact_single(&obb_a, &obb_b, &sat_result, &points);
+    ret.contacts[0]    = points;
+    ret.contacts_count = 1;
+    ret.depth          = ret.contacts[0].depth;
+    ret.has_collision  = ret.contacts[0].has_collision;
+    glm_vec3_copy(ret.contacts[0].normal, ret.normal);
+    return ret;
+#endif
 
 #if 0
-    gsk_physics_sat_contact_single(&obb_a, &obb_b, &sat_result, &ret);
     return ret;
 #else
 
@@ -586,16 +618,18 @@ gsk_physics_collision_find_box_capsule(gsk_BoxCollider *a,
 
 // Sphere v. Box
 gsk_CollisionPoints
-gsk_physics_collision_find_sphere_box(gsk_SphereCollider *a,
-                                      gsk_BoxCollider *b,
-                                      vec3 pos_a,
-                                      vec3 pos_b)
+gsk_physics_collision_find_sphere_box(
+  gsk_SphereCollider *a, gsk_BoxCollider *b, vec3 pos_a, vec3 pos_b, mat3 rot_b)
 {
 
+#if 0
     gsk_CollisionManifold manifold =
       __find_box_sphere_inverse(b, a, pos_b, pos_a, TRUE);
 
     return manifold.contacts[0];
+#else
+    return __find_obb_sphere_inverse(b, a, pos_b, pos_a, rot_b, TRUE);
+#endif
 }
 
 /*------------------------------------------------------------------------

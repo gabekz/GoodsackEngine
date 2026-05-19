@@ -24,8 +24,9 @@ extern "C" {
 
 #include "entity/modules/physics/collider_debug_draw-system.h"
 #include "entity/modules/physics/collider_setup-system.h"
+#include "entity/modules/physics/collision_detection-system.h"
+#include "entity/modules/physics/physics_world-system.h"
 #include "entity/modules/physics/rigidbody-system.h"
-#include "entity/modules/physics/rigidbody_forces-system.h"
 
 #include "entity/modules/misc/health_setup.h"
 #include "entity/modules/player/player_controller-system.h"
@@ -33,8 +34,6 @@ extern "C" {
 #include "entity/modules/particles_ecs/particles_ecs-system.h"
 
 #include "entity/modules/light/light_setup-system.h"
-
-#include "entity/modules/physics/physics_world-system.h"
 
 #ifdef __cplusplus
 }

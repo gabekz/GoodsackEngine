@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-present, Gabriel Kutuzov
+ * Copyright (c) 2022-present, Gabriel Kutuzov
  * SPDX-License-Identifier: MIT
  */
 
