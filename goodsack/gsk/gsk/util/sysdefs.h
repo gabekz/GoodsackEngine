@@ -157,4 +157,8 @@ typedef std::string     string;
 #endif
 #endif
 
+#define BYTES_KB(x) ((size_t)(x) << 10)
+#define BYTES_MB(x) ((size_t)(x) << 20)
+#define BYTES_GB(x) ((size_t)(x) << 30)
+
 #endif // __SYSDEFS_H__

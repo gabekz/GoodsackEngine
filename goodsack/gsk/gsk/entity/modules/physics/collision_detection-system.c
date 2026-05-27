@@ -18,6 +18,9 @@
 
 #include "runtime/gsk_runtime_wrapper.h"
 
+#include "entity/modules/physics/physics_util.h"
+#include "entity/modules/transform/transform.h"
+
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
@@ -85,10 +88,7 @@ on_collide(gsk_Entity e)
 
         // IMPORTANT:
         // check to see if we already have a collision manifold.
-        if (gsk_ecs_has(e_compare, C_RIGIDBODY))
-        {
-            if (gsk_physics_solver_exists(e.id, e_compare.id)) { continue; }
-        }
+        if (gsk_physics_solver_exists(e.id, e_compare.id)) { continue; }
 
         // check layer mask to ensure collision is allowed
         if (!gsk_runtime_check_layer_mask(e.ecs->p_ent_layers[e.index],
@@ -128,6 +128,12 @@ on_collide(gsk_Entity e)
         gsk_CollisionPoints points     = {0};
         gsk_CollisionManifold manifold = {0};
 
+        mat3 a_rot = GLM_MAT3_IDENTITY_INIT;
+        mat3 b_rot = GLM_MAT3_IDENTITY_INIT;
+
+        glm_quat_mat3(transform->rotation, a_rot);
+        glm_quat_mat3(compareTransform->rotation, b_rot);
+
         if (collider->type == COLLIDER_SPHERE)
         { // --- Sphere Collider
             switch (compareCollider->type)
@@ -139,10 +145,8 @@ on_collide(gsk_Entity e)
                 points = gsk_physics_collision_find_sphere_plane(__clsn_prm);
                 break;
             case COLLIDER_BOX:
-                mat3 brot_s = GLM_MAT3_IDENTITY_INIT;
-                glm_mat4_pick3(compareTransform->m4_rotation, brot_s);
                 points =
-                  gsk_physics_collision_find_sphere_box(__clsn_prm, brot_s);
+                  gsk_physics_collision_find_sphere_box(__clsn_prm, b_rot);
                 break;
             case COLLIDER_CAPSULE:
                 points = gsk_physics_collision_find_sphere_capsule(__clsn_prm);
@@ -165,21 +169,15 @@ on_collide(gsk_Entity e)
             switch (compareCollider->type)
             {
             case COLLIDER_SPHERE:
-                mat3 arot_s = GLM_MAT3_IDENTITY_INIT;
-                glm_mat4_pick3(transform->m4_rotation, arot_s);
                 points =
-                  gsk_physics_collision_find_box_sphere(__clsn_prm, arot_s);
+                  gsk_physics_collision_find_box_sphere(__clsn_prm, a_rot);
                 break;
             case COLLIDER_PLANE:
                 points = gsk_physics_collision_find_box_plane(__clsn_prm);
                 break;
             case COLLIDER_BOX:
-                mat3 arot = GLM_MAT3_IDENTITY_INIT;
-                mat3 brot = GLM_MAT3_IDENTITY_INIT;
-                glm_mat4_pick3(transform->m4_rotation, arot);
-                glm_mat4_pick3(compareTransform->m4_rotation, brot);
                 manifold =
-                  gsk_physics_collision_find_box_box(__clsn_prm, arot, brot);
+                  gsk_physics_collision_find_box_box(__clsn_prm, a_rot, b_rot);
                 break;
             case COLLIDER_CAPSULE:
                 points = gsk_physics_collision_find_box_capsule(__clsn_prm);
@@ -231,6 +229,17 @@ on_collide(gsk_Entity e)
 
             collider->isColliding        = TRUE;
             compareCollider->isColliding = TRUE;
+
+            // calculate local points
+            for (int pt = 0; pt < manifold.contacts_count; pt++)
+            {
+                gsk_CollisionPoints *p_contact = &manifold.contacts[pt];
+                transform_point_world_to_local(
+                  transform, p_contact->point_a, p_contact->local_point_a);
+                transform_point_world_to_local(compareTransform,
+                                               p_contact->point_b,
+                                               p_contact->local_point_b);
+            }
 
             manifold_list[manifold_list_next] = manifold;
             id_manifold_list[manifold_list_next] =
@@ -289,103 +298,8 @@ on_collide(gsk_Entity e)
         }
 #endif
 
-        //
-        // TODO: Refactor this section to separate function
-        //
-
-        // initialize intermediary variables
-        vec3 linear_velocity_a, linear_velocity_b   = GLM_VEC3_ZERO_INIT;
-        vec3 angular_velocity_a, angular_velocity_b = GLM_VEC3_ZERO_INIT;
-        vec3 relative_velocity = GLM_VEC3_ZERO_INIT;
-
-        f32 mass_a, mass_b                         = 0.0f; // default to 1
-        f32 inverse_mass_a, inverse_mass_b         = 0.0f; // default to 1
-        f32 inertia_a, inertia_b                   = 0.0f;
-        f32 inverse_inertia_a, inverse_inertia_b   = 0.0f;
-        f32 static_friction_a, static_friction_b   = 0.0f;
-        f32 dynamic_friction_a, dynamic_friction_b = 0.0f;
-
-        // copy a-values
-        glm_vec3_copy(rigidbody_a->linear_velocity, linear_velocity_a);
-        glm_vec3_copy(rigidbody_a->angular_velocity, angular_velocity_a);
-
-        mass_a         = rigidbody_a->mass;
-        inverse_mass_a = rigidbody_a->inverse_mass;
-
-        inertia_a         = rigidbody_a->inertia;
-        inverse_inertia_a = rigidbody_a->inverse_inertia;
-
-        static_friction_a  = rigidbody_a->static_friction;
-        dynamic_friction_a = rigidbody_a->dynamic_friction;
-
-        // copy b-values
-        if (rigidbody_b == NULL)
-        {
-            glm_vec3_copy(linear_velocity_a, relative_velocity);
-
-        }
-        // copy b-values for standard rigidbodies
-        else if (rigidbody_b->is_kinematic == FALSE)
-        {
-            glm_vec3_copy(rigidbody_b->linear_velocity, linear_velocity_b);
-            glm_vec3_copy(rigidbody_b->angular_velocity, angular_velocity_b);
-            mass_b         = rigidbody_b->mass;
-            inverse_mass_b = rigidbody_b->inverse_mass;
-
-            inertia_b         = rigidbody_b->inertia;
-            inverse_inertia_b = rigidbody_b->inverse_inertia;
-
-            static_friction_b  = rigidbody_b->static_friction;
-            dynamic_friction_b = rigidbody_b->dynamic_friction;
-
-            // calculate relative velocity
-            glm_vec3_sub(
-              linear_velocity_a, linear_velocity_b, relative_velocity);
-        }
-
-#if 1
-        else
-        {
-            inverse_mass_b    = mass_b;
-            inverse_inertia_b = (fabsf(inertia_b) > 0) ? (inertia_b * 0.5f) : 0;
-        }
-#endif
-
-        gsk_PhysicsMark mark = {
-
-          .body_a =
-            (gsk_DynamicBody) {
-              .mass             = mass_a,
-              .inverse_mass     = inverse_mass_a,
-              .inertia          = inertia_a,
-              .inverse_inertia  = inverse_inertia_a,
-              .static_friction  = static_friction_a,
-              .dynamic_friction = dynamic_friction_a,
-            },
-
-          .body_b =
-            (gsk_DynamicBody) {
-              .mass             = mass_b,
-              .inverse_mass     = inverse_mass_b,
-              .inertia          = inertia_b,
-              .inverse_inertia  = inverse_inertia_b,
-              .static_friction  = static_friction_b,
-              .dynamic_friction = dynamic_friction_b,
-            },
-        };
-
-        // copy vectors
-        glm_vec3_copy(linear_velocity_a, mark.body_a.linear_velocity);
-        glm_vec3_copy(linear_velocity_b, mark.body_b.linear_velocity);
-
-        glm_vec3_copy(angular_velocity_a, mark.body_a.angular_velocity);
-        glm_vec3_copy(angular_velocity_b, mark.body_b.angular_velocity);
-
-        glm_vec3_copy(relative_velocity, mark.relative_velocity);
-
-        // copy world-positions
-        glm_vec3_copy(transform->world_position, mark.body_a.position);
-        glm_vec3_copy(transform_b->world_position, mark.body_b.position);
+        gsk_PhysicsMark mark =
+          gsk_physics_util_create_physics_mark(e, e_compare);
 
         // Create a new collision result using our points
         gsk_CollisionResult result = {

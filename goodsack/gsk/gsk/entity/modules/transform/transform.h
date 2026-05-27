@@ -38,6 +38,16 @@ void
 transform_set_rotation_xyz(struct ComponentTransform *transform, vec3 rotation);
 
 void
+transform_point_local_to_world(struct ComponentTransform *transform,
+                               vec3 local_point,
+                               vec3 out_world);
+
+void
+transform_point_world_to_local(struct ComponentTransform *transform,
+                               vec3 world_point,
+                               vec3 out_local);
+
+void
 s_transform_init(gsk_ECS *ecs);
 
 #ifdef __cplusplus

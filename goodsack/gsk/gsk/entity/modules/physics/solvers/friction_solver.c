@@ -70,8 +70,8 @@ __calc_effective_mass_along_normal(gsk_PhysicsSolverData solver_data,
     glm_vec3_cross(rb, normal, rbxn);
 
     return body_a.inverse_mass + body_b.inverse_mass +
-           (glm_vec3_dot(raxn, raxn) * body_a.inverse_inertia) +
-           (glm_vec3_dot(rbxn, rbxn) * body_b.inverse_inertia);
+           (glm_vec3_norm(raxn) * body_a.inverse_inertia) +
+           (glm_vec3_norm(rbxn) * body_b.inverse_inertia);
 }
 
 gsk_PhysicsSolverLambda
@@ -104,7 +104,7 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data, f32 lambda_n)
 
         F = -(1.0f + DEFAULT_RESTITUION) * vDotN;
         F = (denom != 0) ? F / denom : F;
-        // if (vDotN > 0.0f) { F = 0.0f; }
+        // if (vDotN >= 0.0f) { return ret; }
 
 // prevent negative impulse
 #if 0
@@ -149,16 +149,9 @@ gsk_physics_friction_solver(gsk_PhysicsSolverData solver_data,
       collision_result->manifold.contacts[solver_data.contact_point].normal,
       collision_normal);
 
+    f32 Ft = 0;
+
     vec3 relative_velocity = GLM_VEC3_ZERO_INIT;
-
-    float Ft = 0;
-
-    float restitution = DEFAULT_RESTITUION; // Bounce factor
-
-    // -----------------------------
-    // Friction Step (re-calculate new impulse based on friction tangent)
-    // -----------------------------
-
     __calc_relative_velocity(solver_data, relative_velocity, ra, rb);
     // create tangent
     vec3 tangent = GLM_VEC3_ZERO_INIT;
@@ -198,9 +191,10 @@ gsk_physics_friction_solver(gsk_PhysicsSolverData solver_data,
 #endif
 
         f32 divs = sqrtf(rvt_len2);
-        if (fabsf(divs) < 1e-6f) { return ret; }
+        if (IS_NEAR_ZERO(divs)) { return ret; }
 
-        glm_vec3_scale(rvt, 1.0f / divs, tangent); // tangent = normalized rvt
+        glm_vec3_scale(
+          rvt, FDIV_SAFE(1.0f, divs), tangent); // tangent = normalized rvt
 #endif
 
         // proceed with calculation for tangent

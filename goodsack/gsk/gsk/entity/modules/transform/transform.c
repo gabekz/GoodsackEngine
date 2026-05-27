@@ -10,6 +10,9 @@
 #include "entity/ecs.h"
 
 #include "util/logger.h"
+#include "util/sysdefs.h"
+
+#define _CLAMP_ROTATION FALSE
 
 // #define ECS_SYSTEM
 //  ECS_SYSTEM_DECLARE()
@@ -86,23 +89,32 @@ __update_world_position(struct ComponentTransform *cmp_transform)
     cmp_transform->world_position[2] = cmp_transform->model[3][2];
 }
 
-// TODO: should be a utility function elsewhere, probably
+// Normalize angle to [0, 2*PI]
 static inline f32
-__fdiv_safe(const f32 a, const f32 b)
+_clamp_positive_rad(float angle_rad)
 {
-    return (b == 0) ? 0 : a / b;
+    float result = fmodf(angle_rad, GLM_PI * 2.0f);
+    if (result < 0.0f) { result += GLM_PI * 2.0f; }
+    return result;
 }
 
 static void
 __update_rotation_euler_angles(struct ComponentTransform *cmp_transform)
 {
-    // glm_quat_normalize(cmp_transform->rotation);
+    glm_quat_normalize(cmp_transform->rotation);
 
     glm_quat_mat4(cmp_transform->rotation, cmp_transform->m4_rotation);
 
     // update euler orientation
     vec3 new_angles = {0, 0, 0};
     glm_euler_angles(cmp_transform->m4_rotation, new_angles);
+
+#if _CLAMP_ROTATION
+    new_angles[0] = _clamp_positive_rad(new_angles[0]);
+    new_angles[1] = _clamp_positive_rad(new_angles[1]);
+    new_angles[2] = _clamp_positive_rad(new_angles[2]);
+#endif
+
     cmp_transform->orientation[0] = glm_deg(new_angles[0]);
     cmp_transform->orientation[1] = glm_deg(new_angles[1]);
     cmp_transform->orientation[2] = glm_deg(new_angles[2]);
@@ -170,6 +182,32 @@ transform_rotate(struct ComponentTransform *transform, vec3 rotation)
 {
     __rotate_euler(rotation, &transform->rotation);
     __update_rotation_euler_angles(transform);
+}
+
+void
+transform_point_local_to_world(struct ComponentTransform *transform,
+                               vec3 local_point,
+                               vec3 out_world)
+{
+    vec3 out = GLM_VEC3_ZERO_INIT;
+    glm_quat_rotatev(transform->rotation, local_point, out);
+    // NOTE: should be world_position
+    glm_vec3_add(transform->position, out, out_world);
+}
+
+void
+transform_point_world_to_local(struct ComponentTransform *transform,
+                               vec3 world_point,
+                               vec3 out_local)
+{
+    vec3 out = GLM_VEC3_ZERO_INIT;
+    // NOTE: should be world_position
+    glm_vec3_sub(world_point, transform->position, out);
+
+    versor qinv = GLM_QUAT_IDENTITY_INIT;
+    glm_quat_inv(transform->rotation, qinv);
+
+    glm_quat_rotatev(qinv, out, out_local);
 }
 
 static void
@@ -261,11 +299,11 @@ late_update(gsk_Entity e)
         glm_mat4_copy(parentTransform->model, m4i);
 
         scale_scalar[0] =
-          __fdiv_safe(transform->scale[0], parentTransform->scale[0]);
+          FDIV_SAFE(transform->scale[0], parentTransform->scale[0]);
         scale_scalar[1] =
-          __fdiv_safe(transform->scale[1], parentTransform->scale[1]);
+          FDIV_SAFE(transform->scale[1], parentTransform->scale[1]);
         scale_scalar[2] =
-          __fdiv_safe(transform->scale[2], parentTransform->scale[2]);
+          FDIV_SAFE(transform->scale[2], parentTransform->scale[2]);
 
     } else
     {

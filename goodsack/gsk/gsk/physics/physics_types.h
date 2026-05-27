@@ -38,6 +38,10 @@ typedef struct gsk_CollisionPoints
     u16 has_collision; // bool
     f32 lambda_n;
     f32 lambda_t;
+
+    vec3 local_point_a;
+    vec3 local_point_b;
+
 } gsk_CollisionPoints;
 
 typedef struct gsk_CollisionManifold
@@ -101,6 +105,7 @@ typedef struct gsk_PlaneCollider
 typedef struct gsk_BoxCollider
 {
     vec3 bounds[2];
+    mat3 rotation;
 } gsk_BoxCollider;
 
 typedef struct gsk_CapsuleCollider

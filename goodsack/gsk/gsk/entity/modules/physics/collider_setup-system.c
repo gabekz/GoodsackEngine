@@ -143,8 +143,8 @@ init(gsk_Entity e)
                      "default bounds",
                      e.id);
 
-            vec3 bounds_min = {-1.0f, -1.0f, -1.0f};
-            vec3 bounds_max = {1.0f, 1.0f, 1.0f};
+            vec3 bounds_min = {-0.5f, -0.5f, -0.5f};
+            vec3 bounds_max = {0.5f, 0.5f, 0.5f};
             glm_vec3_copy(bounds_min, box_collider->bounds[0]);
             glm_vec3_copy(bounds_max, box_collider->bounds[1]);
         }

@@ -179,7 +179,7 @@ init(gsk_Entity entity)
 
     else
     {
-        inertia = 4.0f;
+        inertia = 0.2f;
     }
 
     rigidbody->inertia = inertia;
@@ -188,7 +188,7 @@ init(gsk_Entity entity)
     rigidbody->inverse_mass =
       (fabsf(rigidbody->mass) > 0.0f) ? 1.0f / rigidbody->mass : 0.0f;
     rigidbody->inverse_inertia =
-      (fabsf(inertia) > 0.0f) ? 1.0f / inertia : 0.0f;
+      (fabsf(rigidbody->inertia) > 0.0f) ? 1.0f / rigidbody->inertia : 0.0f;
 #endif
 }
 

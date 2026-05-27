@@ -32,6 +32,22 @@ typedef struct gsk_PhysicsSolverLambda
 
 } gsk_PhysicsSolverLambda;
 
+typedef struct gsk_ConstraintSolverData
+{
+    const f64 delta;
+
+    f64 beta;
+    f64 softness;
+
+    gsk_PhysicsMark physics_mark;
+
+    vec3 world_a; // from local anchor
+    vec3 world_b; // from local anchor
+
+    vec3 impules_axes[3];
+
+} gsk_ConstraintSolverData;
+
 #if 0
 typedef struct gsk_PhysicsConstraint
 {

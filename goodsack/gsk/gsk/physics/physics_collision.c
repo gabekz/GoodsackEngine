@@ -165,20 +165,20 @@ __find_box_capsule_inverse(gsk_BoxCollider *box,
         glm_vec3_copy(tip_ws, B);
     }
 
-    vec3 boxMin, boxMax;
-    glm_vec3_add(pos_box, box->bounds[0], boxMin); // min corner
-    glm_vec3_add(pos_box, box->bounds[1], boxMax); // max corner
+    // vec3 boxMin, boxMax;
+    vec3 bounds[2];
+    glm_vec3_add(pos_box, box->bounds[0], bounds[0]); // min corner
+    glm_vec3_add(pos_box, box->bounds[1], bounds[1]); // max corner
+    // glm_vec3_copy(box->bounds[0], boxMin); // min corner
+    // glm_vec3_copy(box->bounds[1], boxMax); // max corner
 
     // Compute the center of the box
     // (Even if the box is large/offset, this is the actual midpoint.)
-    vec3 boxCenter;
+    vec3 boxCenter = GLM_VEC3_ZERO_INIT;
     // glm_vec3_add(boxMin, boxMax, boxCenter);
     // glm_vec3_sub(boxMax, boxMin, boxCenter);
     // glm_vec3_scale(boxCenter, 2.0f, boxCenter);
 
-    vec3 bounds[2];
-    glm_vec3_copy(boxMin, bounds[0]);
-    glm_vec3_copy(boxMax, bounds[1]);
     glm_aabb_center(bounds, boxCenter);
 
     // Find the closest point on the capsule line segment to the box's center
@@ -209,7 +209,7 @@ __find_box_capsule_inverse(gsk_BoxCollider *box,
             glm_vec3_scale(diff, 1.0f / dist, normal);
         } else
         {
-            glm_vec3_copy(diff, normal);
+            glm_vec3_copy((vec3) {0, 1, 0}, normal);
         }
 
         // collision points
@@ -311,8 +311,12 @@ __find_obb_sphere_inverse(gsk_BoxCollider *a,
     gsk_CollisionPoints ret =
       gsk_pyhysics_sat_find_obb_sphere_points(&obb_a, pos_b, b->radius);
 
-    if (!inverse)
+    // NOTE: negating normal here regardless
+    glm_vec3_negate(ret.normal);
+
+    if (inverse)
     {
+        // NOTE: this breaks position-solver
         _invert_points(ret.point_a, ret.point_b);
         glm_vec3_negate(ret.normal);
     }
