@@ -115,6 +115,44 @@ __debug_points(const gsk_PhysicsSolverData solver_data)
 }
 //-----------------------------------------------------------------------------
 
+static void
+gsk_calc_box_inverse_inertia_local(
+  f32 mass, f32 width, f32 height, f32 depth, mat3 out_inv_inertia)
+{
+    glm_mat3_zero(out_inv_inertia);
+
+    if (mass <= 0.0f) return;
+
+    f32 w2 = width * width;
+    f32 h2 = height * height;
+    f32 d2 = depth * depth;
+
+    f32 ixx = (1.0f / 12.0f) * mass * (h2 + d2);
+    f32 iyy = (1.0f / 12.0f) * mass * (w2 + d2);
+    f32 izz = (1.0f / 12.0f) * mass * (w2 + h2);
+
+    if (ixx > 1e-8f) out_inv_inertia[0][0] = 1.0f / ixx;
+    if (iyy > 1e-8f) out_inv_inertia[1][1] = 1.0f / iyy;
+    if (izz > 1e-8f) out_inv_inertia[2][2] = 1.0f / izz;
+}
+
+static void
+gsk_calc_sphere_inverse_inertia_local(f32 mass,
+                                      f32 radius,
+                                      mat3 out_inv_inertia)
+{
+    glm_mat3_zero(out_inv_inertia);
+
+    if (mass <= 0.0f || radius <= 0.0f) return;
+
+    f32 i     = (2.0f / 5.0f) * mass * radius * radius;
+    f32 inv_i = 1.0f / i;
+
+    out_inv_inertia[0][0] = inv_i;
+    out_inv_inertia[1][1] = inv_i;
+    out_inv_inertia[2][2] = inv_i;
+}
+
 //-----------------------------------------------------------------------------
 static void
 init(gsk_Entity entity)
@@ -124,6 +162,8 @@ init(gsk_Entity entity)
 
     struct ComponentRigidbody *rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
     struct ComponentCollider *collider   = gsk_ecs_get(entity, C_COLLIDER);
+
+    struct ComponentTransform *transform = gsk_ecs_get(entity, C_TRANSFORM);
 
 #if 0
     glm_vec3_zero(rigidbody->force_impulse);
@@ -149,7 +189,8 @@ init(gsk_Entity entity)
 #if CALC_INERTIA
     // calculate rotational inertia
     // TODO: Defaults
-    f32 inertia = 0;
+    f32 inertia               = 0;
+    mat3 inertia_tensor_local = GLM_MAT3_ZERO_INIT;
     if (collider->type == COLLIDER_SPHERE)
     {
         gsk_SphereCollider *p_sphere =
@@ -159,13 +200,22 @@ init(gsk_Entity entity)
 
         // I = 2/5mr^2 -- solid sphere
         inertia = (2.0f / 5.0f) * rigidbody->mass * (radius * radius);
+
+        gsk_calc_sphere_inverse_inertia_local(
+          rigidbody->mass, p_sphere->radius, inertia_tensor_local);
     }
 
     else if (collider->type == COLLIDER_BOX)
     {
+        gsk_BoxCollider *p_box =
+          ((gsk_Collider *)collider->pCollider)->collider_data;
+
+        vec3 size;
+        glm_vec3_sub(p_box->bounds[1], p_box->bounds[0], size);
+
         // TODO: get width/height from bounds
-        f32 width  = 1;
-        f32 height = 1;
+        f32 width  = size[0];
+        f32 height = size[1];
 
 // I_d = 1/12m(w^2 + h^2) -- rectangular cuboid depth
 #if 0
@@ -174,6 +224,12 @@ init(gsk_Entity entity)
 #else
         inertia =
           (1.0f / 12.0f) * rigidbody->mass * (width * width + height * height);
+
+        // glm_vec3_mul(size, transform->scale, size);
+
+        gsk_calc_box_inverse_inertia_local(
+          rigidbody->mass, size[0], size[1], size[2], inertia_tensor_local);
+
 #endif
     }
 
@@ -189,6 +245,7 @@ init(gsk_Entity entity)
       (fabsf(rigidbody->mass) > 0.0f) ? 1.0f / rigidbody->mass : 0.0f;
     rigidbody->inverse_inertia =
       (fabsf(rigidbody->inertia) > 0.0f) ? 1.0f / rigidbody->inertia : 0.0f;
+    glm_mat3_copy(inertia_tensor_local, rigidbody->inverse_inertia_tensor);
 #endif
 }
 

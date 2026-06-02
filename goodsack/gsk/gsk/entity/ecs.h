@@ -60,6 +60,7 @@ extern "C" {
 
 typedef struct gsk_Entity gsk_Entity;
 typedef union gsk_ECSSystem gsk_ECSSystem;
+typedef union gsk_ECSSystemProfile gsk_ECSSystemProfile;
 typedef struct gsk_ECSComponentList gsk_ECSComponentList;
 
 typedef u64 gsk_EntityId;
@@ -99,9 +100,11 @@ struct gsk_ECS
     char **entity_names;
 
     gsk_Renderer *renderer;
+    s32 current_event;
 
     gsk_ECSComponentList component_lists[ECSCOMPONENT_LAST + 1];
     gsk_ECSSystem *systems;
+    gsk_ECSSystemProfile *systems_profile;
     u32 systems_size;
 };
 
@@ -114,6 +117,14 @@ union gsk_ECSSystem {
     };
 
     gsk_ECSSubscriber subscribers[ECSEVENT_LAST + 1];
+};
+
+union gsk_ECSSystemProfile {
+    struct
+    {
+        f64 ECSEVENT_CFN_NAMES;
+    };
+    f64 subscribers[ECSEVENT_LAST + 1];
 };
 
 /*-------------------------------------------*/
@@ -157,7 +168,7 @@ void
 gsk_ecs_component_register(gsk_ECS *self, u32 component_id, u64 size);
 
 void
-gsk_ecs_event(gsk_ECS *self, enum ECSEvent event);
+gsk_ecs_event(gsk_ECS *self, s32 event);
 
 const char *
 gsk_ecs_get_component_name(ECSComponentType component_id);

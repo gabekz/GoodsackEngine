@@ -32,6 +32,10 @@ gsk_debug_context_init()
     *(ArrayList *)ret->markers_list =
       array_list_init(sizeof(gsk_DebugMarker), 64);
 
+    ret->markers_list_fixed = malloc(sizeof(ArrayList));
+    *(ArrayList *)ret->markers_list_fixed =
+      array_list_init(sizeof(gsk_DebugMarker), 64);
+
     ret->is_active = FALSE;
 
     if (GSK_DEVICE_API_OPENGL)
@@ -124,6 +128,7 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
                        vec4 color,
                        u8 persist)
 {
+#if 0
     for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++)
     {
         gsk_DebugMarker *cnt_marker =
@@ -141,9 +146,11 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
             return;
         }
     }
+#endif
 
     gsk_DebugMarker marker = {
-      .type        = type,
+      .type = type,
+      //.id          = p_debug_context->markers_list->list_next,
       .id          = id,
       .persist     = persist,
       .line.length = length,
@@ -154,20 +161,24 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
     glm_vec3_copy(pos_end, marker.line.end_pos);
     glm_vec4_copy(color, marker.color);
 
-    array_list_push(p_debug_context->markers_list, &marker);
+    ArrayList *p_list = (id == DEBUG_MARKERS_FIXED_ID)
+                          ? p_debug_context->markers_list_fixed
+                          : p_debug_context->markers_list;
+
+    array_list_push(p_list, &marker);
 }
 
-void
-gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
+static void
+_gsk_debug_markers_render_internal(gsk_DebugContext *p_debug_context, u32 id)
 {
-    if (p_debug_context->is_active == FALSE) { return; }
-    if (GSK_DEVICE_API_VULKAN) { return; }
+    ArrayList *p_list = (id == DEBUG_MARKERS_FIXED_ID)
+                          ? p_debug_context->markers_list_fixed
+                          : p_debug_context->markers_list;
 
-    for (u32 i = 0; i < p_debug_context->markers_list->list_next; i++)
+    for (u32 i = 0; i < p_list->list_next; i++)
     {
-
         gsk_DebugMarker *cnt_marker =
-          &((gsk_DebugMarker *)p_debug_context->markers_list->data.buffer)[i];
+          &((gsk_DebugMarker *)p_list->data.buffer)[i];
 
         if (cnt_marker->type == MARKER_RAY)
         {
@@ -201,7 +212,10 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
 
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         glm_translate(model, cnt_marker->position);
-        glm_scale(model, (vec3) {5.0f, 5.0f, 5.0f});
+
+        // NOTE: HACK - get scale from line
+        f32 scalar = cnt_marker->line.length;
+        glm_scale(model, (vec3) {scalar, scalar, scalar});
 
         glUniformMatrix4fv(
           glGetUniformLocation(p_debug_context->material->shaderProgram->id,
@@ -210,7 +224,7 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
           GL_FALSE,
           (float *)model);
 
-        vec4 color = {0, 1, 0, 1};
+        vec4 color = {1, 1, 1, 1};
         glm_vec4_copy(cnt_marker->color, color);
         glUniform4fv(glGetUniformLocation(
                        p_debug_context->material->shaderProgram->id, "u_Color"),
@@ -226,3 +240,28 @@ gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
 #endif // DRAW_MESH_ONLY
     }
 }
+
+void
+gsk_debug_markers_render(gsk_DebugContext *p_debug_context)
+{
+    if (p_debug_context->is_active == FALSE) { return; }
+    if (GSK_DEVICE_API_VULKAN) { return; }
+
+    _gsk_debug_markers_render_internal(p_debug_context, 0);
+    _gsk_debug_markers_render_internal(p_debug_context, DEBUG_MARKERS_FIXED_ID);
+}
+
+#if 1
+void
+gsk_debug_markers_clear(gsk_DebugContext *p_debug_context, u32 clear_id)
+{
+    ArrayList *p_list = (clear_id == DEBUG_MARKERS_FIXED_ID)
+                          ? p_debug_context->markers_list_fixed
+                          : p_debug_context->markers_list;
+
+    while (p_list->is_list_empty == FALSE)
+    {
+        array_list_pop(p_list);
+    }
+}
+#endif

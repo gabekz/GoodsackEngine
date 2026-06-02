@@ -47,8 +47,12 @@ gsk_debug_draw_ray(gsk_DebugContext *debugContext,
                    f32 length,
                    vec4 color)
 {
+
+    vec3 dir_norm = {0, 0, 0};
+    glm_vec3_normalize_to(direction, dir_norm);
+
     vec3 end; // new end
-    glm_vec3_scale(direction, length, end);
+    glm_vec3_scale(dir_norm, length, end);
     glm_vec3_add(start, end, end); // store the directed ray into end
 
     // draw line

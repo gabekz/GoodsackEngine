@@ -370,14 +370,16 @@ _poll_update_events(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
     glfwPollEvents();
 
-    // LOG_INFO("regular");
-
+    u8 iterations = 0;
     while (_gsk_device_check_fixed_update() == 1)
     {
-        // LOG_INFO("fixed");
+        iterations++;
+
+        // CLEAR/RESET FIXED_UPDATE_MARKERS every run
+        gsk_debug_markers_clear(renderer->debugContext, DEBUG_MARKERS_FIXED_ID);
+
         gsk_ecs_event(ecs, ECS_INIT); // call init at fixed (does not call on
                                       // entities that are already initialized)
-
         gsk_ecs_event(ecs, ECS_DESTROY);
 
         // fixed-update related events
@@ -386,6 +388,11 @@ _poll_update_events(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
 
         gsk_ecs_event(ecs, ECS_LATE_UPDATE);
     }
+
+    if (iterations > 1) { LOG_INFO("iterations: %d", iterations); }
+
+    // TODO: CLEAR/RESET REGULAR DEBUG MARKERS
+    gsk_debug_markers_clear(renderer->debugContext, 0);
 
     gsk_ecs_event(ecs, ECS_UPDATE);
     gsk_ecs_event(ecs, ECS_LATE_UPDATE);

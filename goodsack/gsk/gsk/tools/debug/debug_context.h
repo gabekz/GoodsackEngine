@@ -14,6 +14,8 @@
 #include "core/graphics/material/material.h"
 #include "core/graphics/mesh/model.h"
 
+#define DEBUG_MARKERS_FIXED_ID 4
+
 typedef enum GskDebugMarkerType {
     MARKER_POINT = 0,
     MARKER_LINE,
@@ -55,6 +57,7 @@ typedef struct gsk_DebugContext
     u32 vboLineId;              // Line VBO ID
 
     ArrayList *markers_list;
+    ArrayList *markers_list_fixed;
 
     gsk_DebugPhysicsOptions physics_options;
     u8 is_active;
@@ -76,5 +79,8 @@ gsk_debug_markers_push(gsk_DebugContext *p_debug_context,
 
 void
 gsk_debug_markers_render(gsk_DebugContext *p_debug_context);
+
+void
+gsk_debug_markers_clear(gsk_DebugContext *p_debug_context, u32 clear_id);
 
 #endif // __DEBUG_CONTEXT_H__

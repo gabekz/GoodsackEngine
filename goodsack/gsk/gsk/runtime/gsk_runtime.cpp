@@ -539,12 +539,14 @@ gsk::runtime::rt_loop()
     {
         double time_sec = glfwGetTime();
 
+        if (time_sec < last_time) { LOG_CRITICAL("timing issue"); }
         f64 dt    = time_sec - last_time;
         last_time = time_sec;
 
         accumulated_time += dt;
 
-        f64 frame_time = 1.0f / (f64)gsk_device_getGraphicsSettings().max_fps;
+        f64 frame_time =
+          FDIV_SAFE(1.0f, gsk_device_getGraphicsSettings().max_fps);
         if (accumulated_time >= frame_time)
         {
             gsk_device_updateTime(time_sec);

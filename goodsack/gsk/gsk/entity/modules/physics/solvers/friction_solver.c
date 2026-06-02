@@ -10,8 +10,12 @@
 #include "util/sysdefs.h"
 #include "util/vec_colors.h"
 
+#include "gsk/entity/modules/physics/physics_util.h"
+
 #include "entity/ecs.h"
 #include "runtime/gsk_runtime_wrapper.h"
+
+#include "runtime/gsk_runtime_debug.h"
 
 #define DEFAULT_RESTITUION 0.0f
 #define ROLLING_FRICTION   0.01f
@@ -99,8 +103,14 @@ gsk_physics_impulse_solver(gsk_PhysicsSolverData solver_data, f32 lambda_n)
     {
         float vDotN = (glm_vec3_dot(relative_velocity, collision_normal));
 
-        f32 denom = __calc_effective_mass_along_normal(
-          solver_data, collision_normal, ra, rb);
+        // f32 denom = __calc_effective_mass_along_normal(
+        //  solver_data, collision_normal, ra, rb);
+        f32 denom = gsk_physics_util_effective_mass_axis(
+          &collision_result->physics_mark.body_a,
+          &collision_result->physics_mark.body_b,
+          ra,
+          rb,
+          collision_normal);
 
         F = -(1.0f + DEFAULT_RESTITUION) * vDotN;
         F = (denom != 0) ? F / denom : F;
@@ -208,10 +218,19 @@ gsk_physics_friction_solver(gsk_PhysicsSolverData solver_data,
         glm_vec3_cross(rb, tangent, rbxt);
 
         f32 vDotT = (glm_vec3_dot(relative_velocity, tangent));
-        // if (vDotT < 0.0f) { return ret; }
+        // if (vDotT < NEAR_ZERO) { return ret; }
 
+#if 0
         f32 denom =
           __calc_effective_mass_along_normal(solver_data, tangent, ra, rb);
+#else
+        f32 denom = gsk_physics_util_effective_mass_axis(
+          &collision_result->physics_mark.body_a,
+          &collision_result->physics_mark.body_b,
+          raxt,
+          rbxt,
+          tangent);
+#endif
 
         Ft = vDotT;
         if (denom != 0) { Ft /= denom; }
@@ -262,5 +281,6 @@ gsk_physics_friction_solver(gsk_PhysicsSolverData solver_data,
     // create friction_impulse and friction_torque
     glm_vec3_scale(tangent, friction_val, friction_impulse);
     glm_vec3_copy(friction_impulse, ret.impulse_total);
+
     return ret;
 }

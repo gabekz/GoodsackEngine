@@ -161,11 +161,14 @@ gsk_mod_physics_capsuletest(gsk_Entity entity_caller,
 
         } else if (compareCollider->type == COLLIDER_BOX)
         {
+            mat3 rot = GLM_MAT3_IDENTITY_INIT;
+            glm_mat4_pick3(compareTransform->m4_rotation, rot);
             points = gsk_physics_collision_find_capsule_box(
               &capsuleCollider,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
               ray_vec,
-              compareTransform->position);
+              compareTransform->position,
+              rot);
         } else if (compareCollider->type == COLLIDER_PLANE)
         {
             points = gsk_physics_collision_find_capsule_plane(

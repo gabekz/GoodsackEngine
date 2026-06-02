@@ -69,10 +69,15 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         DragFloat3("Linear Velocity", p.linear_velocity, 0.1f, -3000, 3000);
         DragFloat3("Angular Velocity", p.angular_velocity, 0.1f, -3000, 3000);
 
+        DragFloat3("Force Velocity", p.force_velocity, 0.1f, -3000, 3000);
+        DragFloat3("Torque", p.torque, 0.1f, -3000, 3000);
+
         Separator();
 
         DragFloat("Static Friction", &p.static_friction, 0.1f, 0.0f, 1.0f);
         DragFloat("Dynamic Friction", &p.dynamic_friction, 0.1f, 0.0f, 1.0f);
+
+        Checkbox("disable_rotation", (bool *)&p.disable_rotation);
     }
 
     else if (cmp_type == C_COLLIDER)
@@ -89,6 +94,7 @@ _draw_component_editors(gsk_Entity e, ECSComponentType cmp_type)
         DragFloat3("min", *(vec3 *)c->bounds[0]);
         DragFloat3("max", *(vec3 *)c->bounds[1]);
         EndDisabled();
+        DragFloat3("center", p.center);
 
     }
 

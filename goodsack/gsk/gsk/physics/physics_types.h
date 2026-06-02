@@ -9,7 +9,7 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
-#define GSK_MAX_COLLISION_CONTACTS 4
+#define GSK_MAX_COLLISION_CONTACTS 8
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,6 +63,9 @@ typedef struct gsk_DynamicBody
     f32 mass, inverse_mass;
     f32 inertia, inverse_inertia;
     f32 static_friction, dynamic_friction;
+
+    mat3 inertia_tensor;
+
 } gsk_DynamicBody;
 
 typedef struct gsk_PhysicsMark
@@ -80,12 +83,25 @@ typedef struct gsk_CollisionResult
     u8 is_trigger_response;
 } gsk_CollisionResult;
 
+typedef struct gsk_ConstraintResult
+{
+    u64 ent_a_id;
+    u64 ent_b_id;
+
+    vec3 local_anchor_a;
+    vec3 local_anchor_b;
+
+    f64 softness;
+    f64 rest_distance;
+
+} gsk_ConstraintResult;
+
 typedef struct gsk_Collider
 {
     void *collider_data;
     u16 collider_data_type;
 
-    vec3 position;
+    vec3 center;
 
     u16 is_dynamic, is_trigger;
 } gsk_Collider;
@@ -105,6 +121,7 @@ typedef struct gsk_PlaneCollider
 typedef struct gsk_BoxCollider
 {
     vec3 bounds[2];
+    vec3 center;
     mat3 rotation;
 } gsk_BoxCollider;
 

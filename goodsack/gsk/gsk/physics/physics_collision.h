@@ -101,7 +101,8 @@ gsk_CollisionPoints
 gsk_physics_collision_find_box_capsule(gsk_BoxCollider *a,
                                        gsk_CapsuleCollider *b,
                                        vec3 pos_a,
-                                       vec3 pos_b);
+                                       vec3 pos_b,
+                                       mat3 rot_a);
 #endif
 
 /*************************************************************************
@@ -135,7 +136,8 @@ gsk_CollisionPoints
 gsk_physics_collision_find_capsule_box(gsk_CapsuleCollider *a,
                                        gsk_BoxCollider *b,
                                        vec3 pos_a,
-                                       vec3 pos_b);
+                                       vec3 pos_b,
+                                       mat3 rot_b);
 #endif
 
 /*************************************************************************

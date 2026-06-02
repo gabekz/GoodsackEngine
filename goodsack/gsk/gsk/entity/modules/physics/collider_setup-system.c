@@ -108,8 +108,10 @@ init(gsk_Entity e)
     else if (collider->type == COLLIDER_BOX)
     {
         gsk_BoxCollider *box_collider = malloc(sizeof(gsk_BoxCollider));
+
         glm_vec3_zero(box_collider->bounds[0]);
         glm_vec3_zero(box_collider->bounds[1]);
+        glm_vec3_zero(box_collider->center);
 
         if (gsk_ecs_has(e, C_MODEL) && collider->p_mesh != 0x32)
         {
@@ -117,6 +119,18 @@ init(gsk_Entity e)
             gsk_MeshData *meshdata = ((gsk_Mesh *)cmp_model->mesh)->meshData;
             glm_vec3_copy(meshdata->boundingBox[0], box_collider->bounds[0]);
             glm_vec3_copy(meshdata->boundingBox[1], box_collider->bounds[1]);
+
+// TODO: Might want to get AABB center anyway
+// either way, need to add "Center" for the box collider to offset from the
+// position
+#if 0
+            glm_vec3_add(box_collider->bounds[0],
+                         (vec3) {0, 1, 0},
+                         box_collider->bounds[0]);
+            glm_vec3_add(box_collider->bounds[1],
+                         (vec3) {0, 1, 0},
+                         box_collider->bounds[1]);
+#endif
 
         }
         // TODO: maybe pass in the center as the body position for the friction
@@ -155,6 +169,8 @@ init(gsk_Entity e)
         glm_vec3_mul(
           box_collider->bounds[1], transform->scale, box_collider->bounds[1]);
 #endif
+
+        glm_vec3_copy(collider->center, box_collider->center);
 
         ((gsk_Collider *)collider->pCollider)->collider_data =
           (gsk_BoxCollider *)box_collider;

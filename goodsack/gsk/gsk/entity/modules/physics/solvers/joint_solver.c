@@ -8,6 +8,7 @@
 #include "util/maths.h"
 #include "util/sysdefs.h"
 
+#include "entity/modules/physics/physics_util.h"
 #include "entity/modules/physics/solvers/solver_data.h"
 
 #include "entity/modules/transform/transform.h"
@@ -39,9 +40,9 @@ gsk_physics_distance_joint_position_solver(vec3 world_a,
     float inv_mass_sum = inv_mass_a + inv_mass_b;
     if (inv_mass_sum <= 0.0f) return;
 
-    float percent = 0.8f;
+    float percent = 0.2f;
 
-    glm_vec3_scale(n, percent * error / inv_mass_sum, out_impulse);
+    glm_vec3_scale(n, percent * FDIV_SAFE(error, inv_mass_sum), out_impulse);
     return;
 
 #if 0
@@ -61,9 +62,12 @@ gsk_physics_distance_joint_position_solver(vec3 world_a,
 #endif
 }
 
-void
+gsk_ConstraintSolverOutput
 gsk_physics_joint_velocity_solver(gsk_ConstraintSolverData solver_data)
 {
+
+    gsk_ConstraintSolverOutput ret = {0};
+
     gsk_DynamicBody body_a = solver_data.physics_mark.body_a;
     gsk_DynamicBody body_b = solver_data.physics_mark.body_b;
 
@@ -111,6 +115,10 @@ gsk_physics_joint_velocity_solver(gsk_ConstraintSolverData solver_data)
       {0.0f, 0.0f, 1.0f},
     };
 
+    // copy ra,rb to output
+    glm_vec3_copy(ra, ret.ra);
+    glm_vec3_copy(rb, ret.rb);
+
     for (int i = 0; i < 3; ++i)
     {
         vec3 axis;
@@ -124,23 +132,30 @@ gsk_physics_joint_velocity_solver(gsk_ConstraintSolverData solver_data)
          * This ignores the full rotational Jacobian matrix.
          * Good enough to get a prototype moving.
          */
+#if 0
         float effective_mass = body_a.inverse_mass + body_b.inverse_mass;
+#else
+        f32 effective_mass =
+          gsk_physics_util_effective_mass_axis(&body_a, &body_b, ra, rb, axis);
+#endif
 
         if (effective_mass <= 1e-6f) continue;
 
         float lambda = -(jv + b) / (effective_mass + solver_data.softness);
 
-        vec3 impulse;
-        glm_vec3_scale(axis, lambda, impulse);
+        // output to impulse-axes
+        glm_vec3_scale(axis, lambda, ret.impulse_axes[i]);
 
         /*
          * A receives -impulse, B receives +impulse.
          */
-        vec3 neg_impulse;
-        glm_vec3_copy(impulse, neg_impulse);
-        glm_vec3_negate(neg_impulse);
+        // vec3 neg_impulse;
+        // glm_vec3_copy(impulse, neg_impulse);
+        // glm_vec3_negate(neg_impulse);
 
         //_apply_impulse_at_point(data.rb_a, neg_impulse, ra);
         //_apply_impulse_at_point(data.rb_b, impulse, rb);
     }
+
+    return ret;
 }

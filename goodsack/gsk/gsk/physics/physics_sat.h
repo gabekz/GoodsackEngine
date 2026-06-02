@@ -37,6 +37,12 @@ gsk_pyhysics_sat_find_obb_sphere_points(const gsk_OBB *box,
                                         vec3 sphere_center,
                                         float sphere_radius);
 
+gsk_CollisionPoints
+gsk_physics_sat_find_obb_capsule(const gsk_OBB *box,
+                                 vec3 cap_a,
+                                 vec3 cap_b,
+                                 float radius);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

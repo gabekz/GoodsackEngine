@@ -26,7 +26,9 @@ gsk_physics_solver_init()
     *(ArrayList *)s_solver->solvers_list =
       array_list_init(sizeof(gsk_CollisionResult), LIST_INCREMENT_SIZE);
 
-    s_solver->solvers = s_solver->solvers_list->data.buffer;
+    s_solver->constraints_list = malloc(sizeof(ArrayList));
+    *(ArrayList *)s_solver->constraints_list =
+      array_list_init(sizeof(gsk_ConstraintResult), LIST_INCREMENT_SIZE);
 }
 
 gsk_PhysicsSolver *
@@ -42,26 +44,24 @@ gsk_physics_solver_push(gsk_CollisionResult collision_result)
 }
 
 void
-gsk_physics_solver_pop()
+gsk_physics_solver_push_constraint(gsk_ConstraintResult constraint_result)
 {
-    array_list_pop(s_solver->solvers_list);
+    array_list_push(s_solver->constraints_list, &constraint_result);
 }
 
-#if 0
 void
-gsk_physics_solver_step(gsk_PhysicsSolver *solver)
+gsk_physics_solver_clear()
 {
-    if (solver->solvers_list->is_list_empty)
+    while (s_solver->solvers_list->is_list_empty == FALSE)
     {
-        assert(solver->solvers_list->list_next == 0);
-        return;
+        array_list_pop(s_solver->solvers_list);
     }
 
-    // TODO: run all solvers
-
-    gsk_physics_solver_pop(solver); // pop when resolved
+    while (s_solver->constraints_list->is_list_empty == FALSE)
+    {
+        array_list_pop(s_solver->constraints_list);
+    }
 }
-#endif
 
 u8
 gsk_physics_solver_exists(gsk_EntityId entity_a, gsk_EntityId entity_b)

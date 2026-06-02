@@ -26,17 +26,31 @@
 
 #include "util/maths.h"
 #include "util/sysdefs.h"
+#include "util/vec_colors.h"
 
-#define _VELOCITY_ITERATIONS 16
-#define _FRICTION_ITERATIONS 8
-#define _POSITION_ITERATIONS 2
+#include "runtime/gsk_runtime_debug.h"
+
+#define _APPLY_GRAVITY_FIRST FALSE
+
+#define _VELOCITY_ITERATIONS 8 // 6
+#define _FRICTION_ITERATIONS 4 // 2
+#define _POSITION_ITERATIONS 1 // 1
 
 #define _UPDATE_DB_MODE      2
 #define _NEW_POSITION_SOLVER 1
 
-#define _POSITION_UPDATES_ROTATION 0
+#define _POSITION_UPDATES_ROTATION 1
 
-#if 1
+#define _USING_CONSTRAINTS 0
+#define A_ANCHOR           1.0f
+#define B_ANCHOR           0.5f
+#define A_ID               303
+#define B_ID               302
+#define _SOFTNESS          0.1f
+#define _REST_LEN          0.2f
+#define _BETA              0.2f // higher for non-rb
+
+#if 0
 static f32
 __calc_effective_mass(gsk_PhysicsSolverData solver_data,
                       vec3 point_a,
@@ -67,6 +81,43 @@ __calc_effective_mass(gsk_PhysicsSolverData solver_data,
 #else
     return body_a.inverse_mass + body_b.inverse_mass;
 #endif
+}
+#endif
+
+#if 0
+static void
+__calc_relative_velocity(gsk_PhysicsSolverData solver_data,
+                         vec3 out_relative_velocity,
+                         vec3 out_ra,
+                         vec3 out_rb)
+{
+    gsk_CollisionResult *collision_result = solver_data.p_collision_result;
+    gsk_PhysicsMark marker                = collision_result->physics_mark;
+    gsk_CollisionPoints points =
+      collision_result->manifold.contacts[solver_data.contact_point];
+
+    gsk_DynamicBody body_a = marker.body_a;
+    gsk_DynamicBody body_b = marker.body_b;
+
+    vec3 ra, ra_perp;
+    vec3 rb, rb_perp;
+
+    // calculate r-values + relative velocity
+    {
+        glm_vec3_sub(points.point_a, body_a.position, ra);
+        glm_vec3_cross(body_a.angular_velocity, ra, ra_perp);
+
+        glm_vec3_sub(points.point_b, body_b.position, rb);
+        glm_vec3_cross(body_b.angular_velocity, rb, rb_perp);
+
+        vec3 cmba, cmbb;
+        glm_vec3_add(body_a.linear_velocity, ra_perp, cmba);
+        glm_vec3_add(body_b.linear_velocity, rb_perp, cmbb);
+        glm_vec3_sub(cmba, cmbb, out_relative_velocity);
+
+        glm_vec3_copy(ra, out_ra);
+        glm_vec3_copy(rb, out_rb);
+    }
 }
 #endif
 
@@ -121,12 +172,27 @@ __apply_impulse_at_point(gsk_Entity entity, vec3 impulse, vec3 point)
     vec3 ra         = GLM_VEC3_ZERO_INIT;
     glm_vec3_sub(point, cmp_transform->position, ra);
     glm_vec3_cross(ra, impulse, new_torque);
+
+#if 0
     glm_vec3_scale(new_torque, cmp_rigidbody->inverse_inertia, new_torque);
 
     // add new torque
     glm_vec3_add(cmp_rigidbody->angular_velocity,
                  new_torque,
                  cmp_rigidbody->angular_velocity);
+#else
+    mat3 rot = GLM_MAT3_ZERO_INIT;
+    glm_quat_mat3(cmp_transform->rotation, rot);
+
+    mat3 inertia_world = GLM_MAT3_ZERO_INIT;
+    gsk_physics_util_inverse_inertia_world(
+      rot, cmp_rigidbody->inverse_inertia_tensor, inertia_world);
+    // angular velocity += I^-1_world * angular_impulse
+    vec3 dw;
+    glm_mat3_mulv(inertia_world, new_torque, dw);
+    glm_vec3_add(
+      cmp_rigidbody->angular_velocity, dw, cmp_rigidbody->angular_velocity);
+#endif
 }
 
 static void
@@ -144,6 +210,9 @@ __apply_impulse_at_point_position(gsk_Entity entity, vec3 impulse, vec3 point)
 
     glm_vec3_scale(impulse, cmp_rigidbody->inverse_mass, new_impulse);
 
+    vec3 old_pos = GLM_VEC3_ZERO_INIT;
+    glm_vec3_copy(cmp_transform->position, old_pos);
+
     // add new impulse
     glm_vec3_add(cmp_transform->position, new_impulse, cmp_transform->position);
 
@@ -154,8 +223,10 @@ __apply_impulse_at_point_position(gsk_Entity entity, vec3 impulse, vec3 point)
 
     vec3 new_torque = GLM_VEC3_ZERO_INIT;
     vec3 ra         = GLM_VEC3_ZERO_INIT;
-    glm_vec3_sub(point, cmp_transform->position, ra);
+    glm_vec3_sub(point, old_pos, ra);
     glm_vec3_cross(ra, impulse, new_torque);
+
+#if 0
     glm_vec3_scale(new_torque, cmp_rigidbody->inverse_inertia, new_torque);
 
     // transform_rotate(cmp_transform, new_torque);
@@ -166,8 +237,18 @@ __apply_impulse_at_point_position(gsk_Entity entity, vec3 impulse, vec3 point)
     angularDeg[2]   = glm_deg(new_torque[2]);
 
     vec3 test = {angularDeg[0], angularDeg[1], angularDeg[2]};
+#endif
 
-    transform_rotate(cmp_transform, new_torque);
+    mat3 rot = GLM_MAT3_ZERO_INIT;
+    glm_quat_mat3(cmp_transform->rotation, rot);
+
+    mat3 inertia_world = GLM_MAT3_ZERO_INIT;
+    gsk_physics_util_inverse_inertia_world(
+      rot, cmp_rigidbody->inverse_inertia_tensor, inertia_world);
+    // angular velocity += I^-1_world * angular_impulse
+    vec3 dw;
+    glm_mat3_mulv(inertia_world, new_torque, dw);
+    transform_rotate(cmp_transform, dw);
 #endif // _POSITION_UPDATES_ROTATION
 }
 
@@ -263,13 +344,12 @@ static void
 __integrate_position_add(gsk_Entity entity, vec3 new_pos)
 {
     if (!gsk_ecs_has(entity, C_TRANSFORM)) { return; }
-    if (!gsk_ecs_has(entity, C_RIGIDBODY)) { return; }
+    // if (!gsk_ecs_has(entity, C_RIGIDBODY)) { return; }
 
-    gsk_C_Rigidbody *cmp_rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
-    if (cmp_rigidbody->is_kinematic == TRUE) { return; }
+    // gsk_C_Rigidbody *cmp_rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
+    // if (cmp_rigidbody->is_kinematic == TRUE) { return; }
 
     gsk_C_Transform *cmp_transform = gsk_ecs_get(entity, C_TRANSFORM);
-
     glm_vec3_add(cmp_transform->position, new_pos, cmp_transform->position);
 }
 //-----------------------------------------------------------------------------
@@ -346,9 +426,39 @@ fixed_update(gsk_Entity entity)
     const f64 delta     = time.fixed_delta_time * time.time_scale;
 
     gsk_PhysicsSolver *p_solver = gsk_physics_solver_get();
-    u8 total_solvers            = p_solver->solvers_list->list_next;
 
-#if 1
+#if _USING_CONSTRAINTS
+    /*---- PUSH TEST CONSTRAINT --------------------------------------*/
+    {
+        gsk_ConstraintResult constraint = {
+          .ent_a_id       = A_ID,
+          .ent_b_id       = B_ID,
+          .local_anchor_a = {0, A_ANCHOR, 0},
+          .local_anchor_b = {0, B_ANCHOR, 0},
+          .softness       = 2.0f,
+          .rest_distance  = _REST_LEN,
+        };
+
+        gsk_physics_solver_push_constraint(constraint);
+    }
+    {
+        gsk_ConstraintResult constraint = {
+          .ent_a_id       = B_ID,
+          .ent_b_id       = 304,
+          .local_anchor_a = {0, -B_ANCHOR, 0},
+          .local_anchor_b = {0, 0.2f, 0},
+          .softness       = 2.0f,
+          .rest_distance  = 0.2f,
+        };
+
+        gsk_physics_solver_push_constraint(constraint);
+    }
+#endif _USING_CONSTRAINTS
+
+    u8 total_solvers     = p_solver->solvers_list->list_next;
+    u8 total_constraints = p_solver->constraints_list->list_next;
+
+#if _APPLY_GRAVITY_FIRST
     /*==== Apply Gravity ===================================*/
 
     for (int i = 0; i < entity.ecs->nextIndex; i++)
@@ -368,7 +478,8 @@ fixed_update(gsk_Entity entity)
 
         for (int i_solver = 0; i_solver < total_solvers; ++i_solver)
         {
-            gsk_CollisionResult *pResult = &(p_solver->solvers[i_solver]);
+            gsk_CollisionResult *pResult =
+              LIST_GET(p_solver->solvers_list, i_solver);
 
             // --
             // construct solver_data used to pass into solver functions
@@ -415,6 +526,61 @@ fixed_update(gsk_Entity entity)
         }
 
         /*---- constraint contact velocity -------------------------------*/
+        for (int i_constraint = 0; i_constraint < total_constraints;
+             i_constraint++)
+        {
+#if 1
+            gsk_ConstraintResult *p_constraint =
+              LIST_GET(p_solver->constraints_list, i_constraint);
+
+            gsk_Entity ent_a = gsk_ecs_ent(entity.ecs, p_constraint->ent_a_id);
+            gsk_Entity ent_b = gsk_ecs_ent(entity.ecs, p_constraint->ent_b_id);
+
+            vec3 world_a, world_b;
+            {
+                gsk_C_Transform *cmp_transform =
+                  gsk_ecs_get(ent_a, C_TRANSFORM);
+
+                transform_point_local_to_world(
+                  cmp_transform, p_constraint->local_anchor_a, world_a);
+            }
+            {
+                gsk_C_Transform *cmp_transform =
+                  gsk_ecs_get(ent_b, C_TRANSFORM);
+
+                transform_point_local_to_world(
+                  cmp_transform, p_constraint->local_anchor_b, world_b);
+            }
+
+            gsk_ConstraintSolverData solver_data = {
+              .delta    = 0.05f,
+              .beta     = _BETA,
+              .softness = p_constraint->softness,
+              .physics_mark =
+                gsk_physics_util_create_physics_mark(ent_a, ent_b),
+            };
+            glm_vec3_copy(world_a, solver_data.world_a);
+            glm_vec3_copy(world_b, solver_data.world_b);
+
+            gsk_ConstraintSolverOutput output =
+              gsk_physics_joint_velocity_solver(solver_data);
+
+            for (int axis = 0; axis < 3; axis++)
+            {
+                vec3 impulse = GLM_VEC3_ZERO_INIT;
+                glm_vec3_negate_to(output.impulse_axes[axis], impulse);
+                // glm_vec3_copy(output.impulse_axes[axis], impulse);
+                __apply_impulse_at_point(ent_a, impulse, world_a);
+                glm_vec3_negate(impulse);
+                __apply_impulse_at_point(ent_b, impulse, world_b);
+
+#if 0
+                GSK_DEBUG_DRAW_RAY(
+                  world_a, impulse, glm_vec3_norm2(impulse) * 5.0f, VCOL_CYAN);
+#endif
+            }
+#endif
+        }
     }
 
 #if 1
@@ -425,7 +591,8 @@ fixed_update(gsk_Entity entity)
     {
         for (int i_solver = 0; i_solver < total_solvers; ++i_solver)
         {
-            gsk_CollisionResult *pResult = &(p_solver->solvers[i_solver]);
+            gsk_CollisionResult *pResult =
+              LIST_GET(p_solver->solvers_list, i_solver);
 
             // --
             // construct solver_data used to pass into solver functions
@@ -479,43 +646,6 @@ fixed_update(gsk_Entity entity)
 
         //__apply_gravity(ent, delta);
         __integrate_velocity(ent, delta);
-
-#if 0
-        if (ent.id == 302)
-        {
-
-            gsk_C_Transform *cmp_transform = gsk_ecs_get(ent, C_TRANSFORM);
-
-            vec3 world_point = GLM_VEC3_ZERO_INIT;
-            transform_point_local_to_world(
-              cmp_transform, (vec3) {1, -1, 2}, world_point);
-
-            gsk_debug_markers_push(ent.ecs->renderer->debugContext,
-                                   MARKER_POINT,
-                                   100,
-                                   world_point,
-                                   world_point,
-                                   0,
-                                   (vec4) {1, 1, 1, 1},
-                                   TRUE);
-
-            vec3 local_point = GLM_VEC3_ZERO_INIT;
-            transform_point_world_to_local(
-              cmp_transform, world_point, local_point);
-
-            // do it again
-            transform_point_local_to_world(
-              cmp_transform, local_point, world_point);
-            gsk_debug_markers_push(ent.ecs->renderer->debugContext,
-                                   MARKER_POINT,
-                                   100,
-                                   world_point,
-                                   world_point,
-                                   0,
-                                   (vec4) {1, 1, 1, 1},
-                                   TRUE);
-        }
-#endif
     }
 
     /*==== Position Solver ===========================================*/
@@ -524,7 +654,8 @@ fixed_update(gsk_Entity entity)
     {
         for (int i_solver = 0; i_solver < total_solvers; ++i_solver)
         {
-            gsk_CollisionResult *pResult = &(p_solver->solvers[i_solver]);
+            gsk_CollisionResult *pResult =
+              LIST_GET(p_solver->solvers_list, i_solver);
 
             // --
             // construct solver_data used to pass into solver functions
@@ -572,8 +703,8 @@ fixed_update(gsk_Entity entity)
                     gsk_C_Transform *cmp_transform =
                       gsk_ecs_get(entity_a, C_TRANSFORM);
 
-                    // NOTE: the way we are getting the rotation here is somehow
-                    // wrong.
+                    // NOTE: the way we are getting the rotation here is
+                    // somehow wrong.
                     transform_point_local_to_world(
                       cmp_transform,
                       pResult->manifold.contacts[j].local_point_a,
@@ -610,24 +741,53 @@ fixed_update(gsk_Entity entity)
                 f32 force = steering * (depth + slop);
                 CLAMP(force, -max_correction, 0.0f);
 
-                force = FDIV_SAFE(
-                  force, __calc_effective_mass(solver_data, world_a, world_b));
+                gsk_DynamicBody *body_a = &pResult->physics_mark.body_a;
+                gsk_DynamicBody *body_b = &pResult->physics_mark.body_b;
+
+                gsk_CollisionPoints points =
+                  pResult->manifold.contacts[solver_data.contact_point];
 
                 vec3 impulse = GLM_VEC3_ZERO_INIT;
-
 #if 1
+                vec3 rvel, ra, rb;
+                // TODO: might want to check against points.point_a/b
+                gsk_physics_util_relative_velocity(
+                  *body_a, *body_b, world_a, world_b, rvel, ra, rb);
+
+                glm_vec3_normalize_to(ab, impulse);
+
+                f32 mass = gsk_physics_util_effective_mass_axis(
+                  body_a, body_b, ra, rb, ab);
+#else
+                f32 mass = __calc_effective_mass(solver_data, world_a, world_b);
+#endif
+
+                force = FDIV_SAFE(force, mass);
+
+#if 0
                 glm_vec3_scale(
                   solver_data.p_collision_result->manifold.contacts[j].normal,
                   force,
                   impulse);
 #else
-                glm_vec3_normalize_to(ab, impulse);
+                // glm_vec3_normalize_to(ab, impulse);
                 glm_vec3_scale(impulse, force, impulse);
 #endif
+
+                const f32 debug_ray_scale = sqrt(force * 10);
+
+                // GSK_DEBUG_DRAW_POINT(body_a->position, 1.0f, VCOL_GREEN);
+                GSK_DEBUG_DRAW_POINT(world_a, 1.0f, VCOL_GREEN);
+                GSK_DEBUG_DRAW_RAY(
+                  world_a, impulse, debug_ray_scale, VCOL_GREEN);
 
                 __apply_impulse_at_point_position(entity_a, impulse, world_a);
                 glm_vec3_negate(impulse);
                 __apply_impulse_at_point_position(entity_b, impulse, world_b);
+
+                // GSK_DEBUG_DRAW_POINT(body_b->position, 1.0f, VCOL_RED);
+                GSK_DEBUG_DRAW_POINT(world_b, 1.0f, VCOL_RED);
+                GSK_DEBUG_DRAW_RAY(world_b, impulse, debug_ray_scale, VCOL_RED);
 #endif
             }
         }
@@ -647,45 +807,84 @@ fixed_update(gsk_Entity entity)
         }
 #endif
 
-#if 0
-        gsk_Entity ent_a = gsk_ecs_ent(entity.ecs, 303);
-
-        vec3 world_a, world_b      = {0, 7, 0};
-        f32 inv_mass_a, inv_mass_b = 0.0f;
+#if 1
+        for (int i_constraint = 0; i_constraint < total_constraints;
+             i_constraint++)
         {
-            gsk_C_Transform *cmp_transform = gsk_ecs_get(ent_a, C_TRANSFORM);
-            gsk_C_Rigidbody *cmp_rigidbody = gsk_ecs_get(ent_a, C_RIGIDBODY);
+            gsk_ConstraintResult *p_constraint =
+              LIST_GET(p_solver->constraints_list, i_constraint);
 
-            inv_mass_a = cmp_rigidbody->inverse_mass;
-            transform_point_local_to_world(
-              cmp_transform, (vec3) {0, 1.0f, 0}, world_a);
-        }
+            gsk_Entity ent_a = gsk_ecs_ent(entity.ecs, p_constraint->ent_a_id);
+            gsk_Entity ent_b = gsk_ecs_ent(entity.ecs, p_constraint->ent_b_id);
 
-        vec3 impulse = GLM_VEC3_ZERO_INIT;
-        gsk_physics_distance_joint_position_solver(
-          world_a, world_b, inv_mass_a, inv_mass_b, 0.1f, impulse);
+            gsk_PhysicsMark mark =
+              gsk_physics_util_create_physics_mark(ent_a, ent_b);
 
-        glm_vec3_scale(impulse, inv_mass_a, impulse);
-        glm_vec3_negate(impulse);
-        __integrate_position_add(ent_a, impulse);
+            vec3 world_a, world_b;
+            {
+                gsk_C_Transform *cmp_transform =
+                  gsk_ecs_get(ent_a, C_TRANSFORM);
 
-        gsk_debug_markers_push(entity.ecs->renderer->debugContext,
-                               MARKER_POINT,
-                               100,
-                               world_b,
-                               world_b,
-                               0,
-                               (vec4) {0, 1, 0, 1},
-                               TRUE);
+                transform_point_local_to_world(
+                  cmp_transform, p_constraint->local_anchor_a, world_a);
+            }
+            {
+                gsk_C_Transform *cmp_transform =
+                  gsk_ecs_get(ent_b, C_TRANSFORM);
+
+                transform_point_local_to_world(
+                  cmp_transform, p_constraint->local_anchor_b, world_b);
+            }
+
+            vec3 impulse = GLM_VEC3_ZERO_INIT;
+            gsk_physics_distance_joint_position_solver(
+              world_a,
+              world_b,
+              mark.body_a.inverse_mass,
+              mark.body_b.inverse_mass,
+              p_constraint->rest_distance,
+              impulse);
+
+            __apply_impulse_at_point_position(ent_b, impulse, world_b);
+            glm_vec3_negate(impulse);
+            __apply_impulse_at_point_position(ent_a, impulse, world_a);
+
+            // NOTE: change this
+            continue;
+
+            vec3 impulse_a, impulse_b;
+            glm_vec3_negate(impulse);
+            glm_vec3_scale(impulse, mark.body_a.inverse_mass, impulse_a);
+            __integrate_position_add(ent_a, impulse_a);
+
+// glm_vec3_scale(impulse, mark.body_a.inverse_mass, impulse_b);
+#if 0
+        glm_vec3_negate_to(impulse_a, impulse_b);
+#else
+            glm_vec3_negate(impulse);
+            glm_vec3_scale(impulse, mark.body_b.inverse_mass, impulse_b);
 #endif
+            __integrate_position_add(ent_b, impulse_b);
+
+#endif
+        }
     }
 
     /*==== Clear Solvers List ========================================*/
 
-    while (p_solver->solvers_list->is_list_empty == FALSE)
+    gsk_physics_solver_clear();
+
+#if !(_APPLY_GRAVITY_FIRST)
+    /*==== Apply Gravity ===================================*/
+
+    for (int i = 0; i < entity.ecs->nextIndex; i++)
     {
-        gsk_physics_solver_pop();
+        gsk_Entity ent =
+          gsk_ecs_ent(entity.ecs, (gsk_EntityId)entity.ecs->p_ent_ids[i]);
+
+        __apply_gravity(ent, delta);
     }
+#endif
 }
 //-----------------------------------------------------------------------------
 

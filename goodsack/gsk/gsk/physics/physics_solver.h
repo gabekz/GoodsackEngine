@@ -16,8 +16,8 @@
 
 typedef struct gsk_PhysicsSolver
 {
-    gsk_CollisionResult *solvers;
     ArrayList *solvers_list;
+    ArrayList *constraints_list;
 } gsk_PhysicsSolver;
 
 void
@@ -30,10 +30,10 @@ void
 gsk_physics_solver_push(gsk_CollisionResult collision_result);
 
 void
-gsk_physics_solver_pop();
+gsk_physics_solver_push_constraint(gsk_ConstraintResult constraint_result);
 
 void
-gsk_physics_solver_step();
+gsk_physics_solver_clear();
 
 u8
 gsk_physics_solver_exists(gsk_EntityId entity_a, gsk_EntityId entity_b);

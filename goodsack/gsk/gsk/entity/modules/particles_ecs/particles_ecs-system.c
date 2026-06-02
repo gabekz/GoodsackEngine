@@ -8,6 +8,8 @@
 #include "core/graphics/particles/particle_system.h"
 #include "entity/ecs.h"
 
+#include "entity/modules/transform/transform.h"
+
 #include "util/filesystem.h"
 #include "util/logger.h"
 
@@ -109,7 +111,22 @@ fixed_update(gsk_Entity ent)
     gsk_ParticleSystem *p_sys =
       (gsk_ParticleSystem *)ent_emitter->p_particle_system;
 
-    glm_vec3_copy(ent_transform->world_position, p_sys->world_pos);
+    if (gsk_ecs_has(ent, C_COLLIDER))
+    {
+        gsk_C_Collider *ent_collider = gsk_ecs_get(ent, C_COLLIDER);
+        if (ent_collider->p_mesh == 0x32)
+        {
+            vec3 new_pos = GLM_VEC3_ZERO_INIT;
+            transform_point_world_to_local(
+              ent_transform, ent_transform->world_position, new_pos);
+
+            glm_vec3_copy(new_pos, p_sys->world_pos);
+        }
+    } else
+    {
+        glm_vec3_copy(ent_transform->world_position, p_sys->world_pos);
+    }
+
     glm_vec3_copy(ent_transform->orientation, p_sys->world_rot);
 
     // TODO: Transform - get world_scale

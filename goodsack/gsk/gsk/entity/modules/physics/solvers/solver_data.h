@@ -41,12 +41,20 @@ typedef struct gsk_ConstraintSolverData
 
     gsk_PhysicsMark physics_mark;
 
-    vec3 world_a; // from local anchor
-    vec3 world_b; // from local anchor
+    vec3 local_anchor_a;
+    vec3 local_anchor_b;
 
-    vec3 impules_axes[3];
+    vec3 world_a;
+    vec3 world_b;
 
 } gsk_ConstraintSolverData;
+
+typedef struct gsk_ConstraintSolverOutput
+{
+    vec3 impulse_axes[3];
+    vec3 ra;
+    vec3 rb;
+} gsk_ConstraintSolverOutput;
 
 #if 0
 typedef struct gsk_PhysicsConstraint

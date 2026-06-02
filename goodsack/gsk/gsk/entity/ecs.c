@@ -5,12 +5,17 @@
 
 #include "ecs.h"
 
+#define _PROFILE 0
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "util/sysdefs.h"
+#if _PROFILE
+#include "util/timer.h"
+#endif //_PROFILE
 
 #if USING_GENERATED_COMPONENTS
 #define COMPONENTS_GEN_IMPLEMENTATION
@@ -165,9 +170,13 @@ gsk_ecs_init(gsk_Renderer *renderer)
     // point to renderer
     ecs->renderer = renderer;
 
+    // set current event
+    ecs->current_event = ECS_INIT;
+
     // Initialize systems and components
-    ecs->systems_size = 0;
-    ecs->systems      = malloc(sizeof(gsk_ECSSystem));
+    ecs->systems_size    = 0;
+    ecs->systems         = malloc(sizeof(gsk_ECSSystem));
+    ecs->systems_profile = malloc(sizeof(gsk_ECSSystemProfile));
 
 #if USING_GENERATED_COMPONENTS
     _ecs_init_internal_gen(ecs);
@@ -344,6 +353,10 @@ gsk_ecs_system_register(gsk_ECS *self, gsk_ECSSystem system)
     gsk_ECSSystem *p = realloc(self->systems, newsize * sizeof(gsk_ECSSystem));
     self->systems    = p;
 
+    gsk_ECSSystem *q =
+      realloc(self->systems_profile, newsize * sizeof(gsk_ECSSystemProfile));
+    self->systems_profile = q;
+
     self->systems[newsize - 1] = system;
     self->systems_size         = newsize;
 }
@@ -384,8 +397,17 @@ gsk_ecs_ent(gsk_ECS *self, gsk_EntityId id)
 }
 
 void
-gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
+gsk_ecs_event(gsk_ECS *self, s32 event)
 {
+    // set current event
+    self->current_event = event;
+
+    // reset system times
+    for (int j = 0; j < self->systems_size; j++)
+    {
+        self->systems_profile[j].subscribers[event] = 0.0f;
+    }
+
     // loop through each entity
     for (int i = 0; i < self->nextIndex; i++)
     {
@@ -413,8 +435,22 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
         // Loop through each system, fire the appropriate event
         for (int j = 0; j < self->systems_size; j++)
         {
+#if _PROFILE
+            f64 start = 0, end = 0;
+            start = gsk_timer_get();
+#endif //_PROFILE
+
             gsk_ECSSubscriber func = self->systems[j].subscribers[event];
+
+            self->systems_profile[j].subscribers[event];
+
             if (func != NULL) { func(ent); }
+
+#if _PROFILE
+            end = gsk_timer_get();
+            self->systems_profile[j].subscribers[event] +=
+              (end - start) * 1000.0;
+#endif //_PROFILE
         }
 
         // ensure we flagged the entity as deleted
@@ -430,6 +466,18 @@ gsk_ecs_event(gsk_ECS *self, enum ECSEvent event)
 
     // TODO: determine whether or not there is a required component.
     // Go through that list instead of every entity.
+
+#if _PROFILE
+    for (int i = 0; i < self->systems_size; i++)
+    {
+
+        f64 time = self->systems_profile[i].subscribers[event];
+
+        if (time < 1.0) { continue; }
+
+        LOG_INFO("%d - %f", i, self->systems_profile[i].subscribers[event]);
+    }
+#endif //_PROFILE
 }
 
 const char *

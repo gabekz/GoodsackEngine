@@ -324,6 +324,46 @@ __find_obb_sphere_inverse(gsk_BoxCollider *a,
     return ret;
 }
 
+gsk_CollisionPoints
+__find_obb_capsule_inverse(gsk_BoxCollider *a,
+                           gsk_CapsuleCollider *b,
+                           vec3 pos_a,
+                           vec3 pos_b,
+                           mat3 rot_a,
+                           u8 inverse)
+{
+    gsk_OBB obb_a = gsk_physics_sat_obb_make(a, pos_a, rot_a);
+
+    // Compute the capsule's caps
+    vec3 A, B;
+    {
+        // base_ws = pos_cap - cap->base
+        vec3 base_ws;
+        glm_vec3_sub(pos_b, b->base, base_ws);
+
+        // tip_ws = pos_cap + cap->tip
+        vec3 tip_ws;
+        glm_vec3_add(pos_b, b->tip, tip_ws);
+
+        glm_vec3_copy(base_ws, A);
+        glm_vec3_copy(tip_ws, B);
+    }
+
+    gsk_CollisionPoints ret =
+      gsk_physics_sat_find_obb_capsule(&obb_a, A, B, b->radius);
+
+    // NOTE: negating normal here regardless
+    glm_vec3_negate(ret.normal);
+
+    if (inverse)
+    {
+        _invert_points(ret.point_a, ret.point_b);
+        glm_vec3_negate(ret.normal);
+    }
+
+    return ret;
+}
+
 /*************************************************************************
  * implementation from physics_collision.h
  *************************************************************************/
@@ -510,6 +550,7 @@ gsk_physics_collision_find_box_box(gsk_BoxCollider *a,
 {
 
 #if _BOX_USING_OBB
+    vec3 test     = GLM_VEC3_ZERO_INIT;
     gsk_OBB obb_a = gsk_physics_sat_obb_make(a, pos_a, rot_a);
     gsk_OBB obb_b = gsk_physics_sat_obb_make(b, pos_b, rot_b);
 
@@ -615,9 +656,12 @@ gsk_CollisionPoints
 gsk_physics_collision_find_box_capsule(gsk_BoxCollider *a,
                                        gsk_CapsuleCollider *b,
                                        vec3 pos_a,
-                                       vec3 pos_b)
+                                       vec3 pos_b,
+                                       mat3 rot_a)
 {
-    return __find_box_capsule_inverse(a, b, pos_a, pos_b, FALSE);
+    // return __find_box_capsule_inverse(a, b, pos_a, pos_b, FALSE);
+
+    return __find_obb_capsule_inverse(a, b, pos_a, pos_b, rot_a, FALSE);
 }
 
 // Sphere v. Box
@@ -824,9 +868,11 @@ gsk_CollisionPoints
 gsk_physics_collision_find_capsule_box(gsk_CapsuleCollider *a,
                                        gsk_BoxCollider *b,
                                        vec3 pos_a,
-                                       vec3 pos_b)
+                                       vec3 pos_b,
+                                       mat3 rot_b)
 {
-    return __find_box_capsule_inverse(b, a, pos_b, pos_a, TRUE);
+    // return __find_box_capsule_inverse(b, a, pos_b, pos_a, TRUE);
+    return __find_obb_capsule_inverse(b, a, pos_b, pos_a, rot_b, TRUE);
 }
 
 /*------------------------------------------------------------------------

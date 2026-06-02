@@ -14,6 +14,9 @@
 #define OBB_EPSILON        1e-6f
 #define GSK_CLIP_MAX_VERTS 8
 
+#define SAT_EDGE_AXIS_EPSILON       1e-5f
+#define SAT_FACE_PREFERENCE_EPSILON 1e-3f
+
 typedef struct gsk_ClipVertex
 {
     vec3 p;
@@ -34,6 +37,23 @@ static inline float
 signf_nonzero(float x)
 {
     return (x >= 0.0f) ? 1.0f : -1.0f;
+}
+
+// TODO: move to helpers
+static void
+_closest_point_line_segment(vec3 a, vec3 b, vec3 point, float *dest)
+{
+    vec3 ab, p_a;
+    glm_vec3_sub(b, a, ab);      // ab = B - A
+    glm_vec3_sub(point, a, p_a); // p_a = Point - A
+
+    f32 t = glm_dot(p_a, ab) / glm_dot(ab, ab);
+
+    f32 offset = MIN(MAX(t, 0), 1); // saturate
+
+    // return A + saturate(t) * AB
+    glm_vec3_scale(ab, offset, dest);
+    glm_vec3_add(a, dest, dest);
 }
 
 static u8
@@ -152,11 +172,11 @@ _sat_try_axis(gsk_OBB *a,
 {
     float len2 = glm_vec3_norm2(axis_world);
 
-    // Parallel edge axes produce near-zero cross products. Skip them.
-    if (len2 < OBB_EPSILON) return 1;
+    // skip near-parallel
+    if (len2 < SAT_EDGE_AXIS_EPSILON) return TRUE;
 
     vec3 axis;
-    glm_vec3_normalize_to(axis_world, axis);
+    glm_vec3_scale(axis_world, 1.0f / sqrtf(len2), axis);
 
     float center_a = glm_vec3_dot(a->c, axis);
     float center_b = glm_vec3_dot(b->c, axis);
@@ -170,15 +190,34 @@ _sat_try_axis(gsk_OBB *a,
         radius_b += b->e[i] * fabsf(glm_vec3_dot(axis, b->u[i]));
     }
 
-    float dist    = center_b - center_a;
-    float overlap = radius_a + radius_b - fabsf(dist);
+    float signed_dist = center_b - center_a;
+    float overlap     = radius_a + radius_b - fabsf(signed_dist);
 
-    if (overlap < 0.0f) return 0;
+    if (overlap < 0.0f) return FALSE;
 
-    // Orient normal from A -> B.
-    if (dist < 0.0f) glm_vec3_negate(axis);
+    if (signed_dist < 0.0f) glm_vec3_negate(axis);
 
-    if (overlap < out->depth)
+    // prefer face-axis over edge-edge
+    u8 should_replace = FALSE;
+
+    if (out->type == GSK_OBB_AXIS_NONE)
+    {
+        should_replace = TRUE;
+    } else if (type == GSK_OBB_AXIS_EDGE && out->type != GSK_OBB_AXIS_EDGE)
+    {
+        // edge can only replace face if it's clearly better
+        if (overlap < out->depth - SAT_FACE_PREFERENCE_EPSILON)
+            should_replace = TRUE;
+    } else if (type != GSK_OBB_AXIS_EDGE && out->type == GSK_OBB_AXIS_EDGE)
+    {
+        if (overlap <= out->depth + SAT_FACE_PREFERENCE_EPSILON)
+            should_replace = TRUE;
+    } else
+    {
+        if (overlap < out->depth) should_replace = TRUE;
+    }
+
+    if (should_replace)
     {
         out->depth  = overlap;
         out->type   = type;
@@ -187,7 +226,7 @@ _sat_try_axis(gsk_OBB *a,
         glm_vec3_copy(axis, out->normal);
     }
 
-    return 1;
+    return TRUE;
 }
 
 static void
@@ -600,13 +639,14 @@ _make_obb_face_contacts(gsk_OBB *a,
          */
         float dist = glm_vec3_dot(ref_normal, p_inc) - ref_plane_offset;
 
-        if (dist <= 1e-4f)
+        if (dist <= OBB_EPSILON)
         {
             gsk_CollisionPoints *cp = &out->contacts[out->contacts_count++];
 
             cp->has_collision = TRUE;
-            cp->penetration   = -dist;
-            cp->depth         = cp->penetration;
+            cp->penetration =
+              -dist; // TODO: see if has to be negative (or clamp)
+            cp->depth = cp->penetration;
 
             glm_vec3_copy(contact_normal, cp->normal);
 
@@ -674,27 +714,44 @@ gsk_OBB
 gsk_physics_sat_obb_make(const gsk_BoxCollider *col, vec3 pos, mat3 rot)
 {
     gsk_OBB O = {0};
-    glm_vec3_copy(pos, O.c);
 
-    // half extents from bounds
     vec3 minv, maxv;
     glm_vec3_copy(col->bounds[0], minv);
     glm_vec3_copy(col->bounds[1], maxv);
 
-    // e = (max-min)/2
+    // local-space center
+    vec3 local_center;
+    glm_vec3_add(minv, maxv, local_center);
+    glm_vec3_scale(local_center, 0.5f, local_center);
+
+    // Half-extents
     O.e[0] = 0.5f * (maxv[0] - minv[0]);
     O.e[1] = 0.5f * (maxv[1] - minv[1]);
     O.e[2] = 0.5f * (maxv[2] - minv[2]);
 
-    // axes from rotation matrix columns (cglm mat3 is vec3[3] columns)
+    // Axes rotation columns
     glm_vec3_copy(rot[0], O.u[0]);
     glm_vec3_copy(rot[1], O.u[1]);
     glm_vec3_copy(rot[2], O.u[2]);
 
-    // ensure unit (if your rot is orthonormal already, this is cheap insurance)
+    // ensure normalized
     glm_vec3_normalize(O.u[0]);
     glm_vec3_normalize(O.u[1]);
     glm_vec3_normalize(O.u[2]);
+
+    // World-Space OBB Center
+    vec3 center_offset_world = GLM_VEC3_ZERO_INIT;
+
+    glm_vec3_scale(O.u[0], local_center[0], center_offset_world);
+
+    vec3 term;
+    glm_vec3_scale(O.u[1], local_center[1], term);
+    glm_vec3_add(center_offset_world, term, center_offset_world);
+
+    glm_vec3_scale(O.u[2], local_center[2], term);
+    glm_vec3_add(center_offset_world, term, center_offset_world);
+
+    glm_vec3_add(pos, center_offset_world, O.c);
 
     return O;
 }
@@ -877,10 +934,15 @@ gsk_physics_sat_find_obb_obb_manifold(gsk_OBB *a, gsk_OBB *b)
         // glm_vec3_normalize(ret.contacts[i].normal);
         glm_vec3_negate(ret.contacts[i].normal);
         // ret.contacts[i].depth = fabsf(ret.contacts[i].depth);
+
+        //_invert_points(ret.contacts[i].point_a, ret.contacts[i].point_b);
+        //_invert_points(ret.contacts[i].local_point_a,
+        //               ret.contacts[i].local_point_b);
     }
     glm_vec3_negate(ret.normal);
 #endif
 
+#if 0
     // create local points
     for (int i = 0; i < ret.contacts_count; i++)
     {
@@ -890,6 +952,7 @@ gsk_physics_sat_find_obb_obb_manifold(gsk_OBB *a, gsk_OBB *b)
         _obb_world_to_local(
           b, ret.contacts[i].point_b, ret.contacts[i].local_point_b);
     }
+#endif
 
     return ret;
 }
@@ -986,3 +1049,64 @@ gsk_pyhysics_sat_find_obb_sphere_points(const gsk_OBB *box,
 
     return ret;
 }
+
+#if 1
+gsk_CollisionPoints
+gsk_physics_sat_find_obb_capsule(const gsk_OBB *box,
+                                 vec3 cap_a,
+                                 vec3 cap_b,
+                                 float radius)
+{
+    gsk_CollisionPoints ret = {0};
+
+    /*
+     * Approximation:
+     * use closest point on capsule segment to box center,
+     * then closest point on OBB to that point.
+     */
+    vec3 closest_seg;
+    _closest_point_line_segment(
+      cap_a, cap_b, (vec3) {box->c[0], box->c[1], box->c[2]}, closest_seg);
+
+    vec3 closest_local;
+    _obb_world_to_local(box, closest_seg, closest_local);
+
+    vec3 closest_box_local = {
+      clampf(closest_local[0], -box->e[0], box->e[0]),
+      clampf(closest_local[1], -box->e[1], box->e[1]),
+      clampf(closest_local[2], -box->e[2], box->e[2]),
+    };
+
+    vec3 closest_box_world;
+    _obb_local_to_world(box, closest_box_local, closest_box_world);
+
+    vec3 diff;
+    glm_vec3_sub(closest_seg, closest_box_world, diff);
+
+    float dist2 = glm_vec3_norm2(diff);
+
+    if (dist2 > radius * radius) return ret;
+
+    ret.has_collision = TRUE;
+
+    float dist = sqrtf(dist2);
+
+    if (dist > 1e-6f)
+    {
+        glm_vec3_scale(diff, 1.0f / dist, ret.normal);
+    } else
+    {
+        glm_vec3_copy((vec3) {0, 1, 0}, ret.normal);
+    }
+
+    glm_vec3_copy(closest_box_world, ret.point_a);
+
+    vec3 offset;
+    glm_vec3_scale(ret.normal, radius, offset);
+    glm_vec3_sub(closest_seg, offset, ret.point_b);
+
+    ret.depth = radius - dist;
+
+    return ret;
+}
+#endif

@@ -56,10 +56,6 @@ on_collide(gsk_Entity e)
     struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
 
-    gsk_CollisionManifold manifold_list[MAX_COLLISION_POINTS];
-    gsk_EntityId id_manifold_list[MAX_COLLISION_POINTS];
-    u32 manifold_list_next = 0;
-
 #if 0
     // TODO: make this a function
     if (collider->type == COLLIDER_BOX)
@@ -111,15 +107,37 @@ on_collide(gsk_Entity e)
         struct ComponentTransform *compareTransform =
           gsk_ecs_get(e_compare, C_TRANSFORM);
 
-//-----------------------
-// parameters used for all collision-check functions
-//
-// NOTE: this may be a little hacky, but it makes the collision-comparison
-// a lot more readable.
-#define __clsn_prm                                                 \
-    ((gsk_Collider *)collider->pCollider)->collider_data,          \
-      ((gsk_Collider *)compareCollider->pCollider)->collider_data, \
-      transform->world_position, compareTransform->world_position
+        //-----------------------
+        // parameters used for all collision-check functions
+        //
+        // NOTE: this may be a little hacky, but it makes the
+        // collision-comparison a lot more readable.
+
+        vec3 a, b;
+        vec3 pos_a, pos_b;
+
+#if 0
+        transform_point_local_to_world(
+          transform, collider->center, collider->new_extents);
+        transform_point_local_to_world(compareTransform,
+                                       compareCollider->center,
+                                       compareCollider->newExtents);
+#elif 0
+        glm_vec3_add(transform->world_position, collider->center, pos_a);
+        glm_vec3_add(
+          compareTransform->world_position, compareCollider->center, pos_b);
+#else
+        glm_vec3_copy(transform->world_position, pos_a);
+        glm_vec3_copy(compareTransform->world_position, pos_b);
+
+#endif
+
+#define __clsn_prm                                                        \
+    ((gsk_Collider *)collider->pCollider)->collider_data,                 \
+      ((gsk_Collider *)compareCollider->pCollider)->collider_data, pos_a, \
+      pos_b
+
+        // TODO: world_position not working when changing this to fixed_update
 
         //
         // determine which collision-test function to use
@@ -133,6 +151,9 @@ on_collide(gsk_Entity e)
 
         glm_quat_mat3(transform->rotation, a_rot);
         glm_quat_mat3(compareTransform->rotation, b_rot);
+
+        // glm_mat4_pick3(transform->m4_rotation, a_rot);
+        // glm_mat4_pick3(compareTransform->m4_rotation, b_rot);
 
         if (collider->type == COLLIDER_SPHERE)
         { // --- Sphere Collider
@@ -180,7 +201,8 @@ on_collide(gsk_Entity e)
                   gsk_physics_collision_find_box_box(__clsn_prm, a_rot, b_rot);
                 break;
             case COLLIDER_CAPSULE:
-                points = gsk_physics_collision_find_box_capsule(__clsn_prm);
+                points =
+                  gsk_physics_collision_find_box_capsule(__clsn_prm, a_rot);
                 break;
             default: break;
             };
@@ -198,7 +220,8 @@ on_collide(gsk_Entity e)
                 points = gsk_physics_collision_find_capsule_sphere(__clsn_prm);
                 break;
             case COLLIDER_BOX:
-                points = gsk_physics_collision_find_capsule_box(__clsn_prm);
+                points =
+                  gsk_physics_collision_find_capsule_box(__clsn_prm, b_rot);
                 break;
             default: break;
             }
@@ -215,14 +238,8 @@ on_collide(gsk_Entity e)
             glm_vec3_copy(points.normal, manifold.normal);
         }
 
-        if (manifold.has_collision &&
-            manifold_list_next >= MAX_COLLISION_POINTS)
-        {
-            LOG_ERROR("MAX COLLISION POINTS");
-        }
-
         // Collision points
-        if (manifold.has_collision && manifold_list_next < MAX_COLLISION_POINTS)
+        if (manifold.has_collision)
         {
             // TODO: check that this belongs here
             if (collider->is_trigger == TRUE) { continue; }
@@ -241,13 +258,50 @@ on_collide(gsk_Entity e)
                                                p_contact->local_point_b);
             }
 
+#if 0
             manifold_list[manifold_list_next] = manifold;
             id_manifold_list[manifold_list_next] =
               (gsk_EntityId)i; // TODO: Should be ID
             manifold_list_next++;
+#else
+#if 1
+            if (compareCollider->is_trigger == TRUE)
+            {
+                // Create a new collision result using our points
+                gsk_CollisionResult result = {
+                  .manifold            = manifold,
+                  .physics_mark        = (gsk_PhysicsMark) {0},
+                  .ent_a_id            = e_compare.id,
+                  .ent_b_id            = e.id,
+                  .is_trigger_response = TRUE,
+                };
+
+                // TODO: CHECK if this is going to be broken with kinematic-ness
+                gsk_physics_solver_push(result);
+
+                // skip this comparison because we don't want to walk on
+                // triggers
+                continue;
+            }
+#endif
+
+            // Create a new collision result using our points
+            gsk_CollisionResult result = {
+              .manifold = manifold,
+              .physics_mark =
+                gsk_physics_util_create_physics_mark(e, e_compare),
+              .ent_a_id            = e.id,
+              .ent_b_id            = e_compare.id,
+              .is_trigger_response = FALSE,
+            };
+
+            // Send that over to the rigidbody solver list
+            gsk_physics_solver_push(result);
+#endif
         }
     }
 
+#if 0
     for (int i = 0; i < manifold_list_next; i++)
     {
         gsk_Entity e_compare = gsk_ecs_ent(
@@ -317,6 +371,7 @@ on_collide(gsk_Entity e)
         // Send that over to the rigidbody solver list
         gsk_physics_solver_push(result);
     }
+#endif
 }
 //-----------------------------------------------------------------------------
 
