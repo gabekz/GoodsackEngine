@@ -10,7 +10,7 @@ believe that it slows us down as developers. GUI programs for tasks involving Le
 the properties of an entity.
 
 Games are difficult to make. By making it easier for those who have no experience with Game Development, tools that rely on GUI do make the barrier of entry a
-lot shorter for newcomers. However, I want to make it easier for those who have been in the industry for a long time.
+lot shorter for newcomers. However, I want to make it easier and more enjoyable for those who have been in the industry for a long time.
 
 This project started as a simple exercise for graphics rendering with OpenGL - now it has evolved into something much more. My vision for this engine is particularly
 inspired by the [Valve Source Engine](https://developer.valvesoftware.com/wiki/Source). I want to create an engine that is built for developers, with the added
@@ -24,14 +24,62 @@ Feel free to stick around if you love game engine development!
 
 ---
 
-## Features
-- Custom Rendering Pipelines - PBR out of the box
-- 2D & 3D Graphics Rendering
-- Cross Platform - Windows and Linux supported
-- Lua scripting API
-- Spatial audio
-- Dynamic Physics
-- Scene/Level Management
+## Particle System
+<img align="right" src="https://github.com/gabekz/goodsack-gifs/blob/master/showcase/particles_fire.gif " width="300"/>
+
+### Features
+- GPU-based Particle System with a lot of options to suit the needs of most games
+- Automatically grabs vertices from existing mesh to use as an emitter shape
+- Properties can modify properties at runtime
+
+> [!TIP]
+This can be utilized on Quake-style maps' brush entities to, for example, set the brushes on fire! 
+
+<br clear="right"/>
+
+## Custom Physics Engine
+<img align="left" src="https://github.com/gabekz/goodsack-gifs/blob/master/showcase/physics_props.gif" width="49%"/>
+<img align="right" src="https://github.com/gabekz/goodsack-gifs/blob/master/showcase/physics_player.gif" width="49%"/>
+<br clear="right"/>
+
+<br />
+
+A custom physics engine was designed in Goodsack for complete visibility and control. <i> - also just a great learning experience to write one </i>
+### Current Features
+- Collision Detection Shapes (Box OBB/AABB, Sphere, Capsule, Plane)
+- Raycasting
+- Sequential Impulse control for all rigidbody solvers
+- Joint constraints
+- Currently 3D only
+
+## Quake-style Map Support
+<img align="right" src="https://github.com/gabekz/goodsack-gifs/blob/master/showcase/qmap_support.gif" width="49%"/>
+This engine has excellent Quake-style map support, because making maps with tools like Trenchbroom is fun, and incredibly efficient.
+
+### Current Features
+- Automatic Brush Collision
+- `.cfg` GameConfig files for point and brush entity spec
+- Parse brush and point entities in-engine for in-engine ECS entities
+- Brush models are batched, cutting down on draw calls
+
+<br clear="right"/>
+
+## PBR & Post-Processing
+<img align="right" src="https://github.com/gabekz/goodsack-gifs/blob/master/showcase/cerberus_pbr.png" width="500px"/>
+
+Built-in is support for a PBR shader, supporting multiple lights and HDR irradiance.
+A GBuffer is created for use with some effects. Currently the renderer runs forward rendering, but a GBuffer is needed for some effects.
+
+### Built-in Effects
+- Bloom (compute-shader based)
+- Screen-Space Ambient Occlusion
+- HDR & gamma control
+- ACES tone mapping
+- Distance Fog
+- multi-camera support
+- Shadowmapping
+
+<br clear="right"/>
 
 ---
 
