@@ -13,6 +13,9 @@ extern "C" {
 #include "entity/ecs.h"
 #include "physics/physics_types.h"
 
+gsk_DynamicBody
+gsk_physics_util_create_dynamic_body(gsk_Entity entity);
+
 gsk_PhysicsMark
 gsk_physics_util_create_physics_mark(gsk_Entity entity_a, gsk_Entity entity_b);
 

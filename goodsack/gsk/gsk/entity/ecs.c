@@ -188,7 +188,6 @@ gsk_ecs_init(gsk_Renderer *renderer)
 gsk_Entity
 _gsk_ecs_new_internal(gsk_ECS *self, char *name)
 {
-
     u64 next_index  = self->nextIndex; // nextIndex by default
     u8 is_replacing = FALSE;
 
@@ -317,6 +316,16 @@ int
 gsk_ecs_has(gsk_Entity entity, ECSComponentType component_id)
 {
     if (entity.ecs == NULL) { return 0; }
+
+#if 1
+    // ensure that the component only exists AFTER the entity is initialized
+    gsk_EntityFlags *p_flags = &entity.ecs->p_ent_flags[entity.index];
+    u8 is_ent_initialized    = (*p_flags & GskEcsEntityFlag_Initialized);
+    if (entity.ecs->current_event != ECS_INIT && is_ent_initialized == FALSE)
+    {
+        return FALSE;
+    }
+#endif
 
     gsk_ECSComponentList *list = &entity.ecs->component_lists[component_id];
 

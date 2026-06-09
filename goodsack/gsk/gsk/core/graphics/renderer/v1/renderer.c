@@ -36,6 +36,8 @@
 #include "tools/debug/debug_context.h"
 #include "tools/debug/debug_draw_line.h"
 
+#include "physics/physics_solver.h"
+
 #define TESTING_DRAW_UI           1
 #define TESTING_DRAW_LINE         0
 #define TESTING_GLSAMPLER_OBJECTS 0
@@ -163,8 +165,8 @@ gsk_renderer_init(const char *app_name)
     };
 
     ret->shadowmapOptions = (ShadowmapOptions) {
-      .nearPlane = 0.00f,
-      .farPlane  = 40.0f,
+      .nearPlane = -30.00f,
+      .farPlane  = 30.0f,
       .camSize   = 20.0f,
 
       .normalBiasMin = 0.0004f,
@@ -383,8 +385,9 @@ _poll_update_events(gsk_Renderer *renderer, gsk_Scene *scene, gsk_ECS *ecs)
         gsk_ecs_event(ecs, ECS_DESTROY);
 
         // fixed-update related events
-        gsk_ecs_event(ecs, ECS_ON_COLLIDE);
         gsk_ecs_event(ecs, ECS_FIXED_UPDATE);
+
+        gsk_ecs_event(ecs, ECS_ON_COLLIDE);
 
         gsk_ecs_event(ecs, ECS_LATE_UPDATE);
     }

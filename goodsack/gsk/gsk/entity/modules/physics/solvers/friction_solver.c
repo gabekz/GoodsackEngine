@@ -42,10 +42,10 @@ __calc_relative_velocity(gsk_PhysicsSolverData solver_data,
 
     // calculate r-values + relative velocity
     {
-        glm_vec3_sub(points.point_a, body_a.position, ra);
+        glm_vec3_sub(points.point_a, body_a.center_of_mass, ra);
         glm_vec3_cross(body_a.angular_velocity, ra, ra_perp);
 
-        glm_vec3_sub(points.point_b, body_b.position, rb);
+        glm_vec3_sub(points.point_b, body_b.center_of_mass, rb);
         glm_vec3_cross(body_b.angular_velocity, rb, rb_perp);
 
         vec3 cmba, cmbb;

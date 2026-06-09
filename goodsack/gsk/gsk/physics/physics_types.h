@@ -58,6 +58,7 @@ typedef struct gsk_CollisionManifold
 typedef struct gsk_DynamicBody
 {
     vec3 position;
+    vec3 center_of_mass;
     vec3 linear_velocity;
     vec3 angular_velocity;
     f32 mass, inverse_mass;
@@ -141,6 +142,10 @@ typedef struct gsk_OBB
     vec3 c;    // center
     vec3 e;    // half extents
     vec3 u[3]; // axes in world (unit)
+
+    // testing
+    vec3 com; // center-of-mass
+    vec3 local_com;
 } gsk_OBB;
 
 typedef enum gsk_OBBAxisType {

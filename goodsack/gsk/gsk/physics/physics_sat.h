@@ -43,6 +43,9 @@ gsk_physics_sat_find_obb_capsule(const gsk_OBB *box,
                                  vec3 cap_b,
                                  float radius);
 
+gsk_CollisionPoints
+gsk_physics_sat_ray_obb(gsk_Raycast *ray, const gsk_OBB *box);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

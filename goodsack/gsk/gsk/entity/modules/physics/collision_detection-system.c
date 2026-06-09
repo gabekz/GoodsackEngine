@@ -38,13 +38,9 @@ _singleton_clear_collider_status(gsk_ECS *p_ecs)
     }
 }
 
-//-----------------------------------------------------------------------------
 static void
-on_collide(gsk_Entity e)
+_check_collision_on_entity(gsk_Entity e)
 {
-    // NOTE: important step here to reset collision status
-    if (e.index == 0) { _singleton_clear_collider_status(e.ecs); }
-
     // test for collisions
     if (!(gsk_ecs_has(e, C_COLLIDER))) return;
     if (!(gsk_ecs_has(e, C_TRANSFORM))) return;
@@ -55,6 +51,8 @@ on_collide(gsk_Entity e)
 
     struct ComponentCollider *collider   = gsk_ecs_get(e, C_COLLIDER);
     struct ComponentTransform *transform = gsk_ecs_get(e, C_TRANSFORM);
+
+    if (collider->pCollider == NULL) { return; }
 
 #if 0
     // TODO: make this a function
@@ -104,8 +102,13 @@ on_collide(gsk_Entity e)
         struct ComponentCollider *compareCollider =
           gsk_ecs_get(e_compare, C_COLLIDER);
 
+        if (compareCollider->pCollider == NULL) { continue; }
+
         struct ComponentTransform *compareTransform =
           gsk_ecs_get(e_compare, C_TRANSFORM);
+
+        // TODO: check that this belongs here
+        if (collider->is_trigger == TRUE) { continue; }
 
         //-----------------------
         // parameters used for all collision-check functions
@@ -127,6 +130,8 @@ on_collide(gsk_Entity e)
         glm_vec3_add(
           compareTransform->world_position, compareCollider->center, pos_b);
 #else
+        // TODO: need to fix this to work properly for world_position. Breaks
+        // QMap stuff if not using world_pos.
         glm_vec3_copy(transform->world_position, pos_a);
         glm_vec3_copy(compareTransform->world_position, pos_b);
 
@@ -241,8 +246,6 @@ on_collide(gsk_Entity e)
         // Collision points
         if (manifold.has_collision)
         {
-            // TODO: check that this belongs here
-            if (collider->is_trigger == TRUE) { continue; }
 
             collider->isColliding        = TRUE;
             compareCollider->isColliding = TRUE;
@@ -258,13 +261,6 @@ on_collide(gsk_Entity e)
                                                p_contact->local_point_b);
             }
 
-#if 0
-            manifold_list[manifold_list_next] = manifold;
-            id_manifold_list[manifold_list_next] =
-              (gsk_EntityId)i; // TODO: Should be ID
-            manifold_list_next++;
-#else
-#if 1
             if (compareCollider->is_trigger == TRUE)
             {
                 // Create a new collision result using our points
@@ -283,7 +279,6 @@ on_collide(gsk_Entity e)
                 // triggers
                 continue;
             }
-#endif
 
             // Create a new collision result using our points
             gsk_CollisionResult result = {
@@ -297,81 +292,25 @@ on_collide(gsk_Entity e)
 
             // Send that over to the rigidbody solver list
             gsk_physics_solver_push(result);
-#endif
         }
     }
+}
 
-#if 0
-    for (int i = 0; i < manifold_list_next; i++)
+//-----------------------------------------------------------------------------
+static void
+fixed_update(gsk_Entity entity)
+{
+    // NOTE: important step here to reset collision status
+    if (entity.index != 0) { return; }
+
+    _singleton_clear_collider_status(entity.ecs);
+
+    for (int i = 0; i < entity.ecs->nextIndex; i++)
     {
-        gsk_Entity e_compare = gsk_ecs_ent(
-          e.ecs, (gsk_EntityId)e.ecs->p_ent_ids[id_manifold_list[i]]);
-
-        struct ComponentCollider *compareCollider =
-          gsk_ecs_get(e_compare, C_COLLIDER);
-
-        // TODO: make sure this doesn't break shit
-        // push collision to rigidbody solver
-        if (!gsk_ecs_has(e, C_RIGIDBODY)) { continue; }
-
-        struct ComponentRigidbody *rigidbody_a = gsk_ecs_get(e, C_RIGIDBODY);
-
-        struct ComponentRigidbody *rigidbody_b = NULL;
-        struct ComponentTransform *transform_b = NULL;
-
-        // Get body_b Rigidbody
-        if (gsk_ecs_has(e_compare, C_RIGIDBODY))
-        {
-            rigidbody_b = gsk_ecs_get(e_compare, C_RIGIDBODY);
-        }
-
-        // Get body_b Transform
-        if (gsk_ecs_has(e_compare, C_TRANSFORM))
-        {
-            transform_b = gsk_ecs_get(e_compare, C_TRANSFORM);
-        }
-
-#if 1
-        if (compareCollider->is_trigger == TRUE)
-        {
-            // Create a new collision result using our points
-            gsk_CollisionResult result = {
-              .manifold     = manifold_list[i], // TODO: possibly invert points
-              .physics_mark = (gsk_PhysicsMark) {0},
-              .ent_a_id     = e_compare.id,
-              .ent_b_id     = e.id,
-              .is_trigger_response = TRUE,
-            };
-
-            // TODO: CHECK if this is going to be broken with kinematic-ness
-            gsk_physics_solver_push(result);
-
-            // skip this comparison because we don't want to walk on
-            // triggers
-            continue;
-        }
-#endif
-
-        gsk_PhysicsMark mark =
-          gsk_physics_util_create_physics_mark(e, e_compare);
-
-        // Create a new collision result using our points
-        gsk_CollisionResult result = {
-          .manifold            = manifold_list[i],
-          .physics_mark        = mark,
-          .ent_a_id            = e.id,
-          .ent_b_id            = e_compare.id,
-          .is_trigger_response = FALSE,
-        };
-
-        if (manifold_list_next >= MAX_COLLISION_POINTS)
-        {
-            LOG_CRITICAL("Max collision points exceeded");
-        }
-        // Send that over to the rigidbody solver list
-        gsk_physics_solver_push(result);
+        gsk_Entity ent =
+          gsk_ecs_ent(entity.ecs, (gsk_EntityId)entity.ecs->p_ent_ids[i]);
+        _check_collision_on_entity(ent);
     }
-#endif
 }
 //-----------------------------------------------------------------------------
 
@@ -381,7 +320,7 @@ s_collision_detection_system_init(gsk_ECS *ecs)
 {
     gsk_ecs_system_register(ecs,
                             ((gsk_ECSSystem) {
-                              .on_collide = (gsk_ECSSubscriber)on_collide,
+                              .fixed_update = (gsk_ECSSubscriber)fixed_update,
                             }));
 }
 //-----------------------------------------------------------------------------

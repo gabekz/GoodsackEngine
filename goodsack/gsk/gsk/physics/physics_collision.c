@@ -941,8 +941,13 @@ gsk_physics_collision_find_ray_sphere(gsk_Raycast *ray,
 gsk_CollisionPoints
 gsk_physics_collision_find_ray_box(gsk_Raycast *ray,
                                    gsk_BoxCollider *box,
-                                   vec3 pos_box)
+                                   vec3 pos_box,
+                                   mat3 rot_box)
 {
+
+    gsk_OBB obb = gsk_physics_sat_obb_make(box, pos_box, rot_box);
+    return gsk_physics_sat_ray_obb(ray, &obb);
+
     // algorithm mostly taken from: https://gamedev.stackexchange.com/a/18459
 
     gsk_CollisionPoints ret = {.has_collision = 0};

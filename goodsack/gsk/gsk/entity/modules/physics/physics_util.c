@@ -5,10 +5,41 @@
 
 #include "physics_util.h"
 
+#include "entity/modules/transform/transform.h"
+#include "physics/physics_sat.h"
+
+#include "runtime/gsk_runtime_debug.h"
+
+#include "util/vec_colors.h"
+
 #define _KINEMATIC_VALS 0
 
-static gsk_DynamicBody
-_create_dynamic_body(gsk_Entity entity)
+static void
+_box_bounds_center_world(const gsk_BoxCollider *col,
+                         vec3 pos,
+                         mat3 rot,
+                         vec3 out)
+{
+    vec3 local_center;
+    glm_vec3_add(col->bounds[0], col->bounds[1], local_center);
+    glm_vec3_scale(local_center, 0.5f, local_center);
+
+    vec3 offset = GLM_VEC3_ZERO_INIT;
+    vec3 term;
+
+    glm_vec3_scale(rot[0], local_center[0], offset);
+
+    glm_vec3_scale(rot[1], local_center[1], term);
+    glm_vec3_add(offset, term, offset);
+
+    glm_vec3_scale(rot[2], local_center[2], term);
+    glm_vec3_add(offset, term, offset);
+
+    glm_vec3_add(pos, offset, out);
+}
+
+gsk_DynamicBody
+gsk_physics_util_create_dynamic_body(gsk_Entity entity)
 {
     gsk_DynamicBody ret = {0};
 
@@ -18,6 +49,7 @@ _create_dynamic_body(gsk_Entity entity)
     // TODO: ret.position should actually be center-of-mass (with respect to
     // bounds if BOX Collider)
     glm_vec3_copy(cmp_transform->position, ret.position);
+    glm_vec3_copy(ret.position, ret.center_of_mass);
 
     if (!gsk_ecs_has(entity, C_RIGIDBODY)) { return ret; }
     gsk_C_Rigidbody *cmp_rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
@@ -55,11 +87,49 @@ _create_dynamic_body(gsk_Entity entity)
     // TODO: probably store reference to entity ID here? Just to avoid possible
     // issues when applying impulses to incorrect bodies
 
-    mat3 rot = GLM_MAT3_ZERO_INIT;
+    mat3 rot = GLM_MAT3_IDENTITY_INIT;
     glm_quat_mat3(cmp_transform->rotation, rot);
 
     gsk_physics_util_inverse_inertia_world(
       rot, cmp_rigidbody->inverse_inertia_tensor, ret.inertia_tensor);
+
+#if 1
+
+    if (gsk_ecs_has(entity, C_COLLIDER))
+    {
+        gsk_C_Collider *cmp_collider = gsk_ecs_get(entity, C_COLLIDER);
+
+        if (cmp_collider->type == COLLIDER_BOX)
+        {
+            gsk_OBB obb = gsk_physics_sat_obb_make(
+              ((gsk_Collider *)cmp_collider->pCollider)->collider_data,
+              ret.position,
+              rot);
+
+            // glm_vec3_add(ret.position, obb.e, ret.position);
+
+            vec3 out = {0, 0, 0};
+            _box_bounds_center_world(
+              ((gsk_Collider *)cmp_collider->pCollider)->collider_data,
+              ret.position,
+              rot,
+              out);
+
+            // GSK_DEBUG_DRAW_POINT(out, 1.0f, VCOL_ORANGE);
+
+            glm_vec3_copy(obb.c, ret.center_of_mass);
+            // glm_vec3_copy(out, ret.position);
+            // GSK_DEBUG_DRAW_POINT(ret.position, 1.0f, VCOL_CYAN);
+        }
+    }
+#endif
+
+    if (entity.id > 305)
+    {
+
+        GSK_DEBUG_DRAW_POINT(ret.position, 1.0f, VCOL_CYAN);
+        GSK_DEBUG_DRAW_POINT(ret.center_of_mass, 1.0f, VCOL_ORANGE);
+    }
 
     return ret;
 }
@@ -69,8 +139,8 @@ gsk_physics_util_create_physics_mark(gsk_Entity entity_a, gsk_Entity entity_b)
 {
     gsk_PhysicsMark ret = {0};
 
-    ret.body_a = _create_dynamic_body(entity_a);
-    ret.body_b = _create_dynamic_body(entity_b);
+    ret.body_a = gsk_physics_util_create_dynamic_body(entity_a);
+    ret.body_b = gsk_physics_util_create_dynamic_body(entity_b);
 
     // TODO: calculate relative velocity
     glm_vec3_zero(ret.relative_velocity);
@@ -107,10 +177,10 @@ gsk_physics_util_relative_velocity(gsk_DynamicBody body_a,
 
     // calculate r-values + relative velocity
     {
-        glm_vec3_sub(point_a, body_a.position, ra);
+        glm_vec3_sub(point_a, body_a.center_of_mass, ra);
         glm_vec3_cross(body_a.angular_velocity, ra, ra_perp);
 
-        glm_vec3_sub(point_b, body_b.position, rb);
+        glm_vec3_sub(point_b, body_b.center_of_mass, rb);
         glm_vec3_cross(body_b.angular_velocity, rb, rb_perp);
 
         vec3 cmba, cmbb;

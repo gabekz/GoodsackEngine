@@ -219,8 +219,8 @@ gsk_qmap_load_models(gsk_QMapContainer *p_container,
             gsk_QMapBrush *brush = LIST_GET(&ent->list_brushes, j);
 
             // setup brush-specific bounds
-            vec3 minBounds = {10000, 10000, 10000};
-            vec3 maxBounds = {-10000, -10000, -10000};
+            vec3 minBounds = {FLT_MAX, FLT_MAX, FLT_MAX};
+            vec3 maxBounds = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
 
             for (int k = 0; k < brush->list_planes.list_next; k++)
             {
@@ -249,16 +249,24 @@ gsk_qmap_load_models(gsk_QMapContainer *p_container,
                     if (p_meshdata->boundingBox[1][2] > maxBounds[2])
                         maxBounds[2] = p_meshdata->boundingBox[1][2];
 
-#if 0
-            // TODO: gabekz look at this please
-            // calculate local-space bounds with aabb-center
-            glm_vec3_copy(minBounds, brush->brush_bounds[0]);
-            glm_vec3_copy(maxBounds, brush->brush_bounds[1]);
+#if 1
+                    // TODO: gabekz look at this please
+                    // calculate local-space bounds with aabb-center
+                    glm_vec3_copy(minBounds, brush->brush_bounds[0]);
+                    glm_vec3_copy(maxBounds, brush->brush_bounds[1]);
 
-            glm_aabb_center(brush->brush_bounds, brush->world_pos);
+                    glm_aabb_center(brush->brush_bounds, brush->world_pos);
 
-            glm_vec3_sub(minBounds, brush->world_pos, brush->brush_bounds[0]);
-            glm_vec3_sub(maxBounds, brush->world_pos, brush->brush_bounds[1]);
+                    glm_vec3_sub(
+                      minBounds, brush->world_pos, brush->brush_bounds[0]);
+                    // NOTE: THIS IS A HACK to fix a precision issue. This is
+                    // assuming the bounds are 1:1 with eachother
+                    glm_vec3_negate_to(brush->brush_bounds[0],
+                                       brush->brush_bounds[1]);
+                    // glm_vec3_sub(
+                    //  maxBounds, brush->world_pos, brush->brush_bounds[1]);
+
+                    // glm_aabb_center(brush->brush_bounds, brush->world_pos);
 #else
                     // copy world-space bounds
                     glm_vec3_copy(minBounds, brush->brush_bounds[0]);

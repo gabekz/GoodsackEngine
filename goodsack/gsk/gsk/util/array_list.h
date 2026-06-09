@@ -14,8 +14,6 @@
 extern "C" {
 #endif // __cplusplus
 
-#define ARRAY_LIST_RESIZE_EMPTY FALSE
-
 #define LIST_INIT(a, b)      array_list_init(a, b)
 #define LIST_PUSH(a, b)      array_list_push(a, b)
 #define LIST_APPEND(a, b, n) array_list_append(a, b, n)

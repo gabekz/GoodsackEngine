@@ -710,6 +710,7 @@ _make_obb_edge_contact(gsk_OBB *a,
  * Main testing functions
  *************************************************************************/
 
+#if 0
 gsk_OBB
 gsk_physics_sat_obb_make(const gsk_BoxCollider *col, vec3 pos, mat3 rot)
 {
@@ -753,8 +754,82 @@ gsk_physics_sat_obb_make(const gsk_BoxCollider *col, vec3 pos, mat3 rot)
 
     glm_vec3_add(pos, center_offset_world, O.c);
 
+    glm_vec3_copy(center_offset_world, O.com);
+    glm_vec3_copy(local_center, O.local_com);
+
     return O;
 }
+#else
+gsk_OBB
+gsk_physics_sat_obb_make(const gsk_BoxCollider *col, vec3 pos, mat3 rot)
+{
+    gsk_OBB O = {0};
+
+    vec3 minv, maxv;
+    glm_vec3_copy(col->bounds[0], minv);
+    glm_vec3_copy(col->bounds[1], maxv);
+
+    /*
+     * Local-space center of the collider/COM relative to the model/body origin.
+     *
+     * Example:
+     *   bounds.y = [0, 1]
+     *   local_center.y = 0.5
+     */
+    vec3 local_center;
+    glm_vec3_add(minv, maxv, local_center);
+    glm_vec3_scale(local_center, 0.5f, local_center);
+
+    /*
+     * Half extents.
+     */
+    O.e[0] = 0.5f * (maxv[0] - minv[0]);
+    O.e[1] = 0.5f * (maxv[1] - minv[1]);
+    O.e[2] = 0.5f * (maxv[2] - minv[2]);
+
+    /*
+     * World-space OBB axes.
+     * cglm mat3 is column-major: rot[0], rot[1], rot[2] are basis vectors.
+     */
+    glm_vec3_copy(rot[0], O.u[0]);
+    glm_vec3_copy(rot[1], O.u[1]);
+    glm_vec3_copy(rot[2], O.u[2]);
+
+    glm_vec3_normalize(O.u[0]);
+    glm_vec3_normalize(O.u[1]);
+    glm_vec3_normalize(O.u[2]);
+
+    /*
+     * center_offset_world = rot * local_center
+     */
+    vec3 center_offset_world = GLM_VEC3_ZERO_INIT;
+    vec3 term;
+
+    glm_vec3_scale(O.u[0], local_center[0], center_offset_world);
+
+    glm_vec3_scale(O.u[1], local_center[1], term);
+    glm_vec3_add(center_offset_world, term, center_offset_world);
+
+    glm_vec3_scale(O.u[2], local_center[2], term);
+    glm_vec3_add(center_offset_world, term, center_offset_world);
+
+    /*
+     * World-space collider center.
+     */
+    glm_vec3_add(pos, center_offset_world, O.c);
+
+    /*
+     * Center of mass for impulse solver.
+     *
+     * For a uniform box collider, COM == OBB center.
+     */
+    glm_vec3_copy(local_center,
+                  O.local_com); // local-space offset from model origin
+    glm_vec3_copy(O.c, O.com);  // world-space COM
+
+    return O;
+}
+#endif
 
 gsk_OBBSatResult
 gsk_physics_sat_obb_test(gsk_OBB *a, gsk_OBB *b)
@@ -1110,3 +1185,77 @@ gsk_physics_sat_find_obb_capsule(const gsk_OBB *box,
     return ret;
 }
 #endif
+
+gsk_CollisionPoints
+gsk_physics_sat_ray_obb(gsk_Raycast *ray, const gsk_OBB *box)
+{
+    gsk_CollisionPoints ret = {0};
+
+    vec3 origin_local;
+    _obb_world_to_local(box, ray->origin, origin_local);
+
+    vec3 dir_local = {
+      glm_vec3_dot(ray->direction, box->u[0]),
+      glm_vec3_dot(ray->direction, box->u[1]),
+      glm_vec3_dot(ray->direction, box->u[2]),
+    };
+
+    float tmin = -FLT_MAX;
+    float tmax = FLT_MAX;
+
+    int hit_axis   = -1;
+    float hit_sign = 1.0f;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        if (fabsf(dir_local[i]) < 1e-6f)
+        {
+            if (origin_local[i] < -box->e[i] || origin_local[i] > box->e[i])
+                return ret;
+        } else
+        {
+            float inv_d = 1.0f / dir_local[i];
+
+            float t1 = (-box->e[i] - origin_local[i]) * inv_d;
+            float t2 = (box->e[i] - origin_local[i]) * inv_d;
+
+            float sign = -1.0f;
+
+            if (t1 > t2)
+            {
+                float tmp = t1;
+                t1        = t2;
+                t2        = tmp;
+                sign      = 1.0f;
+            }
+
+            if (t1 > tmin)
+            {
+                tmin     = t1;
+                hit_axis = i;
+                hit_sign = sign;
+            }
+
+            if (t2 < tmax) tmax = t2;
+
+            if (tmin > tmax) return ret;
+        }
+    }
+
+    if (tmax < 0.0f) return ret;
+
+    float t = (tmin >= 0.0f) ? tmin : tmax;
+
+    ret.has_collision = TRUE;
+
+    vec3 scaled_dir;
+    glm_vec3_scale(ray->direction, t, scaled_dir);
+    glm_vec3_add(ray->origin, scaled_dir, ret.point_a);
+
+    if (hit_axis >= 0)
+    {
+        glm_vec3_scale(box->u[hit_axis], hit_sign, ret.normal);
+    }
+
+    return ret;
+}

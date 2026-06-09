@@ -78,8 +78,8 @@ gsk_physics_joint_velocity_solver(gsk_ConstraintSolverData solver_data)
     glm_vec3_copy(solver_data.world_b, pb);
 
     vec3 ra, rb;
-    glm_vec3_sub(pa, body_a.position, ra);
-    glm_vec3_sub(pb, body_b.position, rb);
+    glm_vec3_sub(pa, body_a.center_of_mass, ra);
+    glm_vec3_sub(pb, body_b.center_of_mass, rb);
 
     vec3 va_anchor;
     vec3 vb_anchor;

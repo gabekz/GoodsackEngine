@@ -30,10 +30,10 @@
 
 #include "runtime/gsk_runtime_debug.h"
 
-#define _APPLY_GRAVITY_FIRST FALSE
+#define _APPLY_GRAVITY_FIRST TRUE
 
-#define _VELOCITY_ITERATIONS 8 // 6
-#define _FRICTION_ITERATIONS 4 // 2
+#define _VELOCITY_ITERATIONS 6 // 6
+#define _FRICTION_ITERATIONS 2 // 2
 #define _POSITION_ITERATIONS 1 // 1
 
 #define _UPDATE_DB_MODE      2
@@ -144,6 +144,7 @@ __apply_gravity(gsk_Entity entity, f64 delta)
 }
 //-----------------------------------------------------------------------------
 
+#if 0
 static void
 __apply_impulse_at_point(gsk_Entity entity, vec3 impulse, vec3 point)
 {
@@ -194,7 +195,52 @@ __apply_impulse_at_point(gsk_Entity entity, vec3 impulse, vec3 point)
       cmp_rigidbody->angular_velocity, dw, cmp_rigidbody->angular_velocity);
 #endif
 }
+#else
+static void
+__apply_impulse_at_point(gsk_Entity entity, vec3 impulse, vec3 point)
+{
+    if (!gsk_ecs_has(entity, C_RIGIDBODY)) { return; }
+    if (!gsk_ecs_has(entity, C_TRANSFORM)) { return; }
 
+    gsk_C_Rigidbody *cmp_rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
+    if (cmp_rigidbody->is_kinematic == TRUE) { return; }
+
+    /*
+     * Linear velocity:
+     * v += impulse * inv_mass
+     */
+    vec3 dv = GLM_VEC3_ZERO_INIT;
+    glm_vec3_scale(impulse, cmp_rigidbody->inverse_mass, dv);
+    glm_vec3_add(
+      cmp_rigidbody->linear_velocity, dv, cmp_rigidbody->linear_velocity);
+
+    if (cmp_rigidbody->disable_rotation == TRUE) { return; }
+
+    /*
+     * IMPORTANT:
+     * Torque arm must be point - center_of_mass, not point -
+     * transform.position.
+     */
+    gsk_DynamicBody body = gsk_physics_util_create_dynamic_body(entity);
+
+    vec3 ra = GLM_VEC3_ZERO_INIT;
+    glm_vec3_sub(point, body.center_of_mass, ra);
+
+    vec3 angular_impulse = GLM_VEC3_ZERO_INIT;
+    glm_vec3_cross(ra, impulse, angular_impulse);
+
+    /*
+     * angular_velocity += inverse_inertia_world * angular_impulse
+     */
+    vec3 dw = GLM_VEC3_ZERO_INIT;
+    glm_mat3_mulv(body.inertia_tensor, angular_impulse, dw);
+
+    glm_vec3_add(
+      cmp_rigidbody->angular_velocity, dw, cmp_rigidbody->angular_velocity);
+}
+#endif
+
+#if 0
 static void
 __apply_impulse_at_point_position(gsk_Entity entity, vec3 impulse, vec3 point)
 {
@@ -251,6 +297,54 @@ __apply_impulse_at_point_position(gsk_Entity entity, vec3 impulse, vec3 point)
     transform_rotate(cmp_transform, dw);
 #endif // _POSITION_UPDATES_ROTATION
 }
+#else
+static void
+__apply_impulse_at_point_position(gsk_Entity entity, vec3 impulse, vec3 point)
+{
+    if (!gsk_ecs_has(entity, C_RIGIDBODY)) { return; }
+    if (!gsk_ecs_has(entity, C_TRANSFORM)) { return; }
+
+    gsk_C_Rigidbody *cmp_rigidbody = gsk_ecs_get(entity, C_RIGIDBODY);
+    if (cmp_rigidbody->is_kinematic == TRUE) { return; }
+
+    gsk_C_Transform *cmp_transform = gsk_ecs_get(entity, C_TRANSFORM);
+
+    /*
+     * Snapshot current body state before modifying transform.
+     */
+    gsk_DynamicBody body = gsk_physics_util_create_dynamic_body(entity);
+
+    /*
+     * Linear position correction.
+     *
+     * This moves the model origin by the same delta that the COM should move.
+     * That is okay for pure translation.
+     */
+    vec3 dp = GLM_VEC3_ZERO_INIT;
+    glm_vec3_scale(impulse, cmp_rigidbody->inverse_mass, dp);
+    glm_vec3_add(cmp_transform->position, dp, cmp_transform->position);
+
+#if _POSITION_UPDATES_ROTATION
+    if (cmp_rigidbody->disable_rotation == TRUE) { return; }
+
+    /*
+     * Angular correction around COM.
+     */
+    vec3 ra = GLM_VEC3_ZERO_INIT;
+    glm_vec3_sub(point, body.center_of_mass, ra);
+
+    vec3 angular_impulse = GLM_VEC3_ZERO_INIT;
+    glm_vec3_cross(ra, impulse, angular_impulse);
+
+    vec3 dtheta = GLM_VEC3_ZERO_INIT;
+    glm_mat3_mulv(body.inertia_tensor, angular_impulse, dtheta);
+
+    transform_rotate(cmp_transform, dtheta);
+
+    glm_vec3_copy(body.center_of_mass, cmp_rigidbody->center_of_mass);
+#endif
+}
+#endif
 
 //-----------------------------------------------------------------------------
 static u8
@@ -490,6 +584,11 @@ fixed_update(gsk_Entity entity)
               .entity             = entity,
             };
 
+            if (solver_data.p_collision_result->is_trigger_response == TRUE)
+            {
+                continue;
+            }
+
             // TODO: we are probably going to need to reconstruct the body_a and
             // body_b parts for each iteration because of joints (they might
             // need to see updated impulses)
@@ -511,11 +610,6 @@ fixed_update(gsk_Entity entity)
                   gsk_physics_util_create_physics_mark(entity_a, entity_b);
 #endif
                 solver_data.contact_point = j;
-
-                if (solver_data.p_collision_result->is_trigger_response == TRUE)
-                {
-                    continue;
-                }
 
                 // run the solver
                 gsk_PhysicsSolverLambda output = gsk_physics_impulse_solver(
@@ -603,6 +697,11 @@ fixed_update(gsk_Entity entity)
               .entity             = entity,
             };
 
+            if (solver_data.p_collision_result->is_trigger_response == TRUE)
+            {
+                continue;
+            }
+
             gsk_Entity entity_a =
               gsk_ecs_ent(entity.ecs, solver_data.p_collision_result->ent_a_id);
             gsk_Entity entity_b =
@@ -619,11 +718,6 @@ fixed_update(gsk_Entity entity)
                   gsk_physics_util_create_physics_mark(entity_a, entity_b);
 #endif
                 solver_data.contact_point = j;
-
-                if (solver_data.p_collision_result->is_trigger_response == TRUE)
-                {
-                    continue;
-                }
 
                 // run the solver
                 gsk_PhysicsSolverLambda output = gsk_physics_friction_solver(
@@ -666,6 +760,11 @@ fixed_update(gsk_Entity entity)
               .entity             = entity,
             };
 
+            if (solver_data.p_collision_result->is_trigger_response == TRUE)
+            {
+                continue;
+            }
+
             gsk_Entity entity_a =
               gsk_ecs_ent(entity.ecs, solver_data.p_collision_result->ent_a_id);
             gsk_Entity entity_b =
@@ -678,6 +777,7 @@ fixed_update(gsk_Entity entity)
             for (int j = 0; j < pResult->manifold.contacts_count; j++)
             {
                 solver_data.contact_point = j;
+
 #if _UPDATE_DB_MODE == 2
                 solver_data.p_collision_result->physics_mark =
                   gsk_physics_util_create_physics_mark(entity_a, entity_b);
@@ -735,11 +835,11 @@ fixed_update(gsk_Entity entity)
                 f32 depth          = contact_separation;
                 f32 steering       = 0.20f;
                 f32 max_correction = 0.0005f;
-                f32 slop           = 0.0001f;
+                f32 slop           = 0.0002f;
 
                 // f32 force = steering * (depth + slop);
                 f32 force = steering * (depth + slop);
-                CLAMP(force, -max_correction, 0.0f);
+                // CLAMP(force, -max_correction, 0.0f);
 
                 gsk_DynamicBody *body_a = &pResult->physics_mark.body_a;
                 gsk_DynamicBody *body_b = &pResult->physics_mark.body_b;
@@ -870,9 +970,11 @@ fixed_update(gsk_Entity entity)
         }
     }
 
+#if 1
     /*==== Clear Solvers List ========================================*/
 
-    gsk_physics_solver_clear();
+    gsk_physics_solver_clear_constraints();
+#endif
 
 #if !(_APPLY_GRAVITY_FIRST)
     /*==== Apply Gravity ===================================*/
@@ -889,6 +991,19 @@ fixed_update(gsk_Entity entity)
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
+static void
+late_update(gsk_Entity entity)
+{
+    // NOTE: hack so this only runs on one entity.
+    // should have proper support for singleton ECS systems.
+    if (entity.index != 0) { return; }
+
+    /*==== Clear Solvers List ========================================*/
+
+    gsk_physics_solver_clear();
+}
+
+//-----------------------------------------------------------------------------
 void
 s_physics_world_system_init(gsk_ECS *ecs)
 {
@@ -896,6 +1011,7 @@ s_physics_world_system_init(gsk_ECS *ecs)
                             ((gsk_ECSSystem) {
                               .init         = (gsk_ECSSubscriber)init,
                               .fixed_update = (gsk_ECSSubscriber)fixed_update,
+                              .late_update  = (gsk_ECSSubscriber)late_update,
                             }));
 }
 //-----------------------------------------------------------------------------

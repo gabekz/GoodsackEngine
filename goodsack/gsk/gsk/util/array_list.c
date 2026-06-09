@@ -15,6 +15,8 @@
 #define FALLBACK_CAPACITY     1
 #define RESERVE_ITERATION_CAP 100
 
+#define ARRAY_LIST_RESIZE_EMPTY FALSE
+
 static ArrayList
 __array_list_new_internal(const u32 data_size, const u32 list_increment)
 {

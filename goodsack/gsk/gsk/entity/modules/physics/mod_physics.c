@@ -45,6 +45,9 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
         gsk_CollisionPoints points;
         points.has_collision = FALSE;
 
+        mat3 rot = GLM_MAT3_ZERO_INIT;
+        glm_mat4_pick3(compareTransform->m4_rotation, rot);
+
         if (compareCollider->type == COLLIDER_SPHERE)
         {
             points = gsk_physics_collision_find_ray_sphere(
@@ -57,7 +60,8 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
             points = gsk_physics_collision_find_ray_box(
               raycast,
               ((gsk_Collider *)compareCollider->pCollider)->collider_data,
-              compareTransform->world_position);
+              compareTransform->world_position,
+              rot);
         } else if (compareCollider->type == COLLIDER_PLANE)
         {
             points = gsk_physics_collision_find_ray_plane(
@@ -89,6 +93,7 @@ gsk_mod_physics_raycast(gsk_Entity entity_caller,
                                  points.normal[1],
                                  points.normal[2]},
                   .has_collision = TRUE,
+                  .hit_range     = closest_range,
                 };
             }
         }

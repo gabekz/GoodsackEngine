@@ -20,7 +20,8 @@ static gsk_PhysicsSolver *s_solver = NULL;
 void
 gsk_physics_solver_init()
 {
-    s_solver = malloc(sizeof(gsk_PhysicsSolver));
+    gsk_PhysicsSolver *solver = malloc(sizeof(gsk_PhysicsSolver));
+    s_solver                  = solver;
 
     s_solver->solvers_list = malloc(sizeof(ArrayList));
     *(ArrayList *)s_solver->solvers_list =
@@ -52,10 +53,18 @@ gsk_physics_solver_push_constraint(gsk_ConstraintResult constraint_result)
 void
 gsk_physics_solver_clear()
 {
+    if (s_solver == NULL) { return; }
+
     while (s_solver->solvers_list->is_list_empty == FALSE)
     {
         array_list_pop(s_solver->solvers_list);
     }
+}
+
+void
+gsk_physics_solver_clear_constraints()
+{
+    if (s_solver == NULL) { return; }
 
     while (s_solver->constraints_list->is_list_empty == FALSE)
     {

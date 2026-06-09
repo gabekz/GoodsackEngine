@@ -116,6 +116,24 @@ __debug_points(const gsk_PhysicsSolverData solver_data)
 //-----------------------------------------------------------------------------
 
 static void
+gsk_calc_sphere_inverse_inertia_local(f32 mass,
+                                      f32 radius,
+                                      mat3 out_inv_inertia)
+{
+    glm_mat3_zero(out_inv_inertia);
+
+    if (mass <= 0.0f || radius <= 0.0f) return;
+
+    f32 i     = (2.0f / 5.0f) * mass * radius * radius;
+    f32 inv_i = 1.0f / i;
+
+    out_inv_inertia[0][0] = inv_i;
+    out_inv_inertia[1][1] = inv_i;
+    out_inv_inertia[2][2] = inv_i;
+}
+
+#if 1
+static void
 gsk_calc_box_inverse_inertia_local(
   f32 mass, f32 width, f32 height, f32 depth, mat3 out_inv_inertia)
 {
@@ -136,22 +154,33 @@ gsk_calc_box_inverse_inertia_local(
     if (izz > 1e-8f) out_inv_inertia[2][2] = 1.0f / izz;
 }
 
-static void
-gsk_calc_sphere_inverse_inertia_local(f32 mass,
-                                      f32 radius,
-                                      mat3 out_inv_inertia)
+#else
+void
+gsk_calc_box_inverse_inertia_local_2(float mass,
+                                     vec3 bounds_min,
+                                     vec3 bounds_max,
+                                     mat3 out_inv_inertia_local)
 {
-    glm_mat3_zero(out_inv_inertia);
+    glm_mat3_zero(out_inv_inertia_local);
 
-    if (mass <= 0.0f || radius <= 0.0f) return;
+    if (mass <= 0.0f) return;
 
-    f32 i     = (2.0f / 5.0f) * mass * radius * radius;
-    f32 inv_i = 1.0f / i;
+    vec3 size;
+    glm_vec3_sub(bounds_max, bounds_min, size);
 
-    out_inv_inertia[0][0] = inv_i;
-    out_inv_inertia[1][1] = inv_i;
-    out_inv_inertia[2][2] = inv_i;
+    float w = size[0];
+    float h = size[1];
+    float d = size[2];
+
+    float ixx = (1.0f / 12.0f) * mass * (h * h + d * d);
+    float iyy = (1.0f / 12.0f) * mass * (w * w + d * d);
+    float izz = (1.0f / 12.0f) * mass * (w * w + h * h);
+
+    if (ixx > 1e-8f) out_inv_inertia_local[0][0] = 1.0f / ixx;
+    if (iyy > 1e-8f) out_inv_inertia_local[1][1] = 1.0f / iyy;
+    if (izz > 1e-8f) out_inv_inertia_local[2][2] = 1.0f / izz;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 static void
@@ -227,8 +256,15 @@ init(gsk_Entity entity)
 
         // glm_vec3_mul(size, transform->scale, size);
 
+#if 1
         gsk_calc_box_inverse_inertia_local(
           rigidbody->mass, size[0], size[1], size[2], inertia_tensor_local);
+#else
+        gsk_calc_box_inverse_inertia_local_2(rigidbody->mass,
+                                             p_box->bounds[0],
+                                             p_box->bounds[1],
+                                             inertia_tensor_local);
+#endif
 
 #endif
     }
