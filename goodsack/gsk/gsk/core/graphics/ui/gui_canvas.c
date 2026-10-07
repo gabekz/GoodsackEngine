@@ -67,6 +67,9 @@ gsk_gui_canvas_add_element(gsk_GuiCanvas *p_self, gsk_GuiElement *p_element)
         p_element->offset[0] = viewport[0] / 2.0f;
         p_element->offset[1] = viewport[1];
         break;
+    case (GskGuiElementAnchorType_TopLeft):
+        p_element->offset[1] = viewport[1];
+        break;
     case (GskGuiElementAnchorType_None):
     default: break;
     }
@@ -79,10 +82,13 @@ gsk_gui_canvas_add_element(gsk_GuiCanvas *p_self, gsk_GuiElement *p_element)
 void
 gsk_gui_canvas_add_text(gsk_GuiCanvas *p_self, gsk_GuiText *p_text)
 {
+    gsk_gui_canvas_add_element(p_self, p_text->p_element);
+#if 0
     for (int i = 0; i < p_text->character_count; i++)
     {
-        gsk_gui_canvas_add_element(p_self, p_text->elements[i]);
+        // gsk_gui_canvas_add_element(p_self, p_text->elements[i]);
     }
+#endif
 }
 
 void

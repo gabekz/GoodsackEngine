@@ -6,6 +6,8 @@
 #ifndef __GUI_TEXT_H__
 #define __GUI_TEXT_H__
 
+#include "asset/asset_font.h"
+
 #include "core/graphics/texture/texture.h"
 #include "core/graphics/ui/gui_element.h"
 
@@ -21,12 +23,23 @@ extern "C" {
 typedef struct gsk_GuiText
 {
     u32 character_count;
-    const char *text;          // text of the string
-    gsk_GuiElement **elements; // individual character GUI elements
+    char *str_text; // text of the string
+    u32 max_chars;
+    // gsk_GuiElement **elements; // individual character GUI elements
+    gsk_GuiElement *p_element;
+    gsk_Font *p_font;
+    vec2 pos_offset;
 } gsk_GuiText;
 
 gsk_GuiText *
-gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color);
+gsk_gui_text_create(const char *text_string,
+                    GskGuiElementAnchorType anchor_type,
+                    vec2 pos_offset,
+                    vec3 color,
+                    u32 max_chars);
+
+void
+gsk_gui_text_modify(gsk_GuiText *self, const char *text_string);
 
 void
 gsk_gui_text_draw(gsk_GuiText *self, u32 shader_id);

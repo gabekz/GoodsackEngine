@@ -22,6 +22,7 @@ typedef enum GskGuiElementAnchorType_ {
     GskGuiElementAnchorType_None = 0,
     GskGuiElementAnchorType_Center,
     GskGuiElementAnchorType_Top,
+    GskGuiElementAnchorType_TopLeft,
 } GskGuiElementAnchorType_;
 
 typedef s32 GskGuiElementAnchorType;
@@ -29,6 +30,7 @@ typedef s32 GskGuiElementAnchorType;
 typedef struct gsk_GuiElement
 {
     gsk_GlVertexArray *vao;
+    gsk_GlVertexBuffer *vbo;
     gsk_Texture *texture;
     gsk_Material *material;
 
@@ -38,10 +40,33 @@ typedef struct gsk_GuiElement
     vec2 size;      // size in pixel-coordinates
     vec2 canvas_viewport;
 
+    ArrayList list_elements;
+    u32 max_elements;
+    u32 num_vertices;
+
     GskGuiElementAnchorType anchor_type;
     u16 using_texture;
 
+    u8 needs_refresh;
 } gsk_GuiElement;
+
+void
+gsk_gui_element_push_data(ArrayList *p_element_list,
+                          vec2 size,
+                          vec2 pos_offset,
+                          vec4 tex_coords);
+
+gsk_GuiElement *
+gsk_gui_element_allocate(u32 max_elements);
+
+void
+gsk_gui_element_set_properties(gsk_GuiElement *p_self,
+                               GskGuiElementAnchorType anchor,
+                               vec2 position,
+                               vec2 size,
+                               vec3 color,
+                               gsk_Texture *p_texture,
+                               vec4 tex_coords);
 
 gsk_GuiElement *
 gsk_gui_element_create(GskGuiElementAnchorType anchor,

@@ -44,19 +44,17 @@
 #define S_NEG_Y 0
 #endif
 
-gsk_GuiElement *
-gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size, vec3 color, gsk_Texture *p_texture, vec4 tex_coords)
+#define _DEFAULT_VERTEX_COUNT 24
+#define _DEFAULT_NUM_VERTICES 6
+
+void
+gsk_gui_element_push_data(ArrayList *p_element_list, vec2 size, vec2 pos_offset, vec4 tex_coords)
 {
-    gsk_GuiElement *ret = malloc(sizeof(gsk_GuiElement));
+    float size_x_off = (size[0] / 2);
+    float size_y_off = (size[1] / 2);
 
-    glm_vec2_copy(position, ret->position);
-    glm_vec2_copy(size, ret->size);
-    glm_vec3_copy(color, ret->color_rgb);
-    glm_vec2_zero(ret->offset);
-    ret->anchor_type = anchor;
-
-    float size_x_off = size[0] / 2;
-    float size_y_off = size[1] / 2;
+    float pos_x = pos_offset[0];
+    float pos_y = pos_offset[1];
 
     float t_pos_x = S_POS_X;
     float t_neg_x = S_NEG_X;
@@ -70,47 +68,81 @@ gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size,
         t_neg_y = tex_coords[3];
     }
 
-    float *rectPos = 
+    float *rectangle = 
     (float[])
     {
-         size_x_off , -size_y_off, t_pos_x, t_neg_y,
-        -size_x_off , -size_y_off, t_neg_x, t_neg_y,
-        -size_x_off ,  size_y_off, t_neg_x, t_pos_y,
-         size_x_off ,  size_y_off, t_pos_x, t_pos_y,
-         size_x_off , -size_y_off, t_pos_x, t_neg_y,
-        -size_x_off ,  size_y_off, t_neg_x, t_pos_y,
+         // Triangle 1
+         size_x_off + pos_x, -size_y_off + pos_y, t_pos_x, t_neg_y,
+        -size_x_off + pos_x, -size_y_off + pos_y, t_neg_x, t_neg_y,
+        -size_x_off + pos_x,  size_y_off + pos_y, t_neg_x, t_pos_y,
+
+         // Triangle 2
+         size_x_off + pos_x,  size_y_off + pos_y, t_pos_x, t_pos_y,
+         size_x_off + pos_x, -size_y_off + pos_y, t_pos_x, t_neg_y,
+        -size_x_off + pos_x,  size_y_off + pos_y, t_neg_x, t_pos_y,
     };
+    LIST_PUSH(p_element_list, rectangle);
+}
 
-    if(GSK_DEVICE_API_OPENGL) {
+gsk_GuiElement *
+gsk_gui_element_allocate(u32 max_elements)
+{
+    gsk_GuiElement *ret = malloc(sizeof(gsk_GuiElement));
+    ret->list_elements = LIST_INIT(sizeof(f32) * _DEFAULT_VERTEX_COUNT, 1); // TODO: change increment 
 
-    ret->vao = gsk_gl_vertex_array_create();
-    gsk_GlVertexBuffer *vbo = gsk_gl_vertex_buffer_create(rectPos, (2 * 3 * 4) * sizeof(float), GskOglUsageType_Dynamic);
-    gsk_gl_vertex_buffer_bind(vbo);
-    gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
-    gsk_gl_vertex_buffer_push(vbo, 2, GL_FLOAT, GL_FALSE);
-    gsk_gl_vertex_array_add_buffer(ret->vao, vbo);
+    ret->num_vertices = _DEFAULT_NUM_VERTICES;
+    ret->max_elements = max_elements;
+    ret->needs_refresh = TRUE;
+
+    if(GSK_DEVICE_API_OPENGL)
+    {
+      ret->vao = gsk_gl_vertex_array_create();
+      ret->vbo = gsk_gl_vertex_buffer_create(NULL, ret->max_elements * _DEFAULT_VERTEX_COUNT * sizeof(float), GskOglUsageType_Dynamic);
+      gsk_gl_vertex_buffer_bind(ret->vbo);
+      gsk_gl_vertex_buffer_push(ret->vbo, 2, GL_FLOAT, GL_FALSE);
+      gsk_gl_vertex_buffer_push(ret->vbo, 2, GL_FLOAT, GL_FALSE);
+      gsk_gl_vertex_array_add_buffer(ret->vao, ret->vbo);
+
+      //glBufferData(GL_ARRAY_BUFFER, sizeof(f32) * _DEFAULT_VERTEX_COUNT * ret->list_elements.list_next, NULL, GL_DYNAMIC_DRAW);
+
     }
     else if(GSK_DEVICE_API_VULKAN) {
       ret->vao = NULL;
     }
 
-    ret->using_texture = (p_texture != NULL) ? TRUE : FALSE;
+    return ret;
+}
 
-#if 0
-    ret->material =
-      gsk_material_create(NULL, GSK_PATH("gsk://shaders/canvas2d.shader"), 0, NULL);
-#else
-      ret->material = NULL;
-#endif
+void
+gsk_gui_element_set_properties(gsk_GuiElement *p_self, GskGuiElementAnchorType anchor, vec2 position, vec2 size, vec3 color, gsk_Texture *p_texture, vec4 tex_coords)
+{
+    glm_vec2_copy(position, p_self->position);
+    glm_vec2_copy(size, p_self->size);
+    glm_vec3_copy(color, p_self->color_rgb);
+    glm_vec2_zero(p_self->offset);
+    p_self->anchor_type = anchor;
 
-    if(ret->using_texture)
+    // TODO: possible set a refresh just in case. Well, probably only for modifying vertex data
+    //p_self->needs_refresh = TRUE;
+
+    p_self->using_texture = (p_texture != NULL) ? TRUE : FALSE;
+    p_self->material = NULL;
+
+    if(p_self->using_texture)
     {
-        ret->texture = p_texture;
-
-        if(ret->material) {
-          gsk_material_add_texture(ret->material, ret->texture);
+        p_self->texture = p_texture;
+        if(p_self->material) {
+          gsk_material_add_texture(p_self->material, p_self->texture);
         }
     }
+}
+
+gsk_GuiElement *
+gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size, vec3 color, gsk_Texture *p_texture, vec4 tex_coords)
+{
+    gsk_GuiElement *ret = gsk_gui_element_allocate(1); // TODO: be more clear with 1
+    gsk_gui_element_set_properties(ret, anchor, position, size, color, p_texture, tex_coords);
+    gsk_gui_element_push_data(&ret->list_elements, size, (vec2){0, 0}, tex_coords);
 
     return ret;
 }
@@ -118,7 +150,6 @@ gsk_gui_element_create(GskGuiElementAnchorType anchor, vec2 position, vec2 size,
 void
 gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
 {
-
 #if 0
     if(self->material != NULL) {
       gsk_material_use(self->material);
@@ -143,8 +174,8 @@ gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
 #if 1
 // TODO: only possible to select one gui button at a time
 // TODO: change to 0.0-1.0 range instead of pixel position
-    if(TRUE){
-
+    if(TRUE)
+    {
         gsk_Renderer *p_renderer = gsk_runtime_get_renderer();
 
         // TODO: replace 1920x1080 with canvas viewport
@@ -196,8 +227,19 @@ gsk_gui_element_draw(gsk_GuiElement *self, u32 shader_id)
 #endif
 
 
-  if(GSK_DEVICE_API_OPENGL) {
+  if(GSK_DEVICE_API_OPENGL)
+  {
     gsk_gl_vertex_array_bind(self->vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    if(self->needs_refresh == TRUE)
+    {
+      gsk_gl_vertex_buffer_bind(self->vbo);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(f32) * _DEFAULT_VERTEX_COUNT * self->list_elements.list_next, NULL, GL_DYNAMIC_DRAW);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(f32) * _DEFAULT_VERTEX_COUNT * self->list_elements.list_next, self->list_elements.data.buffer);
+
+      self->needs_refresh = FALSE;
+    }
+
+    glDrawArrays(GL_TRIANGLES, 0, self->num_vertices * self->list_elements.list_next);
   }
 }

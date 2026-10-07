@@ -14,17 +14,66 @@
 
 #include "util/filesystem.h"
 
+#include <string.h>
+
+#define _DEFAULT_CHAR_SIZE 32.0f
+
 gsk_GuiText *
-gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color)
+gsk_gui_text_create(const char *text_string,
+                    GskGuiElementAnchorType anchor_type,
+                    vec2 pos_offset,
+                    vec3 color,
+                    u32 max_chars)
 {
     gsk_GuiText *ret = malloc(sizeof(gsk_GuiText));
 
+    ret->str_text  = malloc(sizeof(char) * max_chars);
+    ret->max_chars = max_chars;
+
+    snprintf(ret->str_text, ret->max_chars, "%s", text_string);
+
     gsk_Font *p_font = GSK_ASSET("gsk://fonts/font1024.bmp");
+    ret->p_font      = p_font;
+
+    glm_vec2_copy(pos_offset, ret->pos_offset);
 
     // Create elements for each character in the string
     u32 char_count       = strlen(text_string);
     ret->character_count = char_count;
-    ret->elements        = malloc(sizeof(gsk_GuiElement *) * char_count);
+// ret->elements        = malloc(sizeof(gsk_GuiElement *) * char_count);
+// ret->p_element = gsk_gui_element_allocate(128);
+#if 0
+    ret->p_element = gsk_gui_element_create(GskGuiElementAnchorType_None,
+                                            (vec2) {0, 0},
+                                            (vec2) {1, 1},
+                                            (vec3) {1, 1, 1},
+                                            p_font->p_texture,
+                                            (vec4) {0, 0, 0, 0});
+#else
+    ret->p_element = gsk_gui_element_allocate(max_chars);
+    gsk_gui_element_set_properties(ret->p_element,
+                                   anchor_type,
+                                   (vec2) {0, 0},
+                                   (vec2) {0, 0},
+                                   (vec4) {color[0], color[1], color[2]},
+                                   p_font->p_texture,
+                                   (vec4) {0, 0, 0, 0});
+#endif
+
+    gsk_gui_text_modify(ret, text_string);
+    return ret;
+}
+
+void
+gsk_gui_text_modify(gsk_GuiText *self, const char *text_string)
+{
+    // TODO: check
+    self->character_count = strlen(text_string);
+
+    snprintf(self->str_text, self->max_chars, "%s", text_string);
+    self->p_element->needs_refresh = TRUE;
+
+    gsk_Font *p_font = self->p_font;
 
     // sprite sheet info
     vec2 sprite_sheet_size = {p_font->sheet_size[0], p_font->sheet_size[1]};
@@ -36,13 +85,9 @@ gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color)
     u32 sprite_cells_total = sprite_cells_rows * sprite_cells_cols;
 
     // sprite options
-    f32 char_size       = 21.0f; // TODO: change
-    vec2 start_pos      = GLM_VEC2_ZERO_INIT;
-    vec3 text_color_rgb = GLM_VEC3_ZERO_INIT;
-
-    // copy stuff
-    glm_vec2_copy(pos_offset, start_pos);
-    glm_vec3_copy(color, text_color_rgb);
+    f32 char_size  = _DEFAULT_CHAR_SIZE; // TODO: change
+    vec2 start_pos = GLM_VEC2_ZERO_INIT;
+    glm_vec2_copy(self->pos_offset, start_pos);
 
     if (char_size <= 0) { LOG_CRITICAL("cannot have 0 character size."); }
 
@@ -58,14 +103,21 @@ gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color)
     f32 current_x_position =
       start_pos[0]; // Start position for the text (can be modified)
 
-    // Loop through each character
-    for (int i = 0; i < char_count; i++)
+    // clear the element list
+    for (int i = self->p_element->list_elements.list_next; i >= 0; i--)
+    {
+        if (self->p_element->list_elements.is_list_empty == TRUE) { break; }
+        array_list_pop(&self->p_element->list_elements);
+    }
+
+    // Loop through each character and populate element list
+    for (int i = 0; i < self->character_count; i++)
     {
         char c =
           (sprite_cells_rows > 8) ? text_string[i] : toupper(text_string[i]);
 
         int target = (int)c - atlas_first_char_ascii_num;
-        if (target < 0) continue; // Skip invalid characters
+        if (target < 0) { continue; } // Skip invalid characters
 
         int row = target % sprite_cells_rows;
         int col = (target / sprite_cells_cols);
@@ -82,18 +134,27 @@ gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color)
           ((col + 1) * sprite_cells_size[1]) / sprite_sheet_size[1];
         tex_coords[3] = ((col)*sprite_cells_size[1]) / sprite_sheet_size[1];
 
-        // Kerning: Update the position based on character spacing
-        f32 spacing =
-          p_font->char_spacing[target] / (sprite_cells_size[0] / char_size);
-
+#if 0
         // CREATE NEW ELEMENTS
-        ret->elements[i] =
+        ret->p_element =
           gsk_gui_element_create(GskGuiElementAnchorType_None,
                                  (vec2) {current_x_position, start_pos[1]},
                                  (vec2) {char_size, char_size},
                                  text_color_rgb,
                                  p_font->p_texture,
                                  tex_coords);
+#else
+        // ret->elements[0] = gsk_gui_element_allocate(256);
+        gsk_gui_element_push_data(&self->p_element->list_elements,
+                                  (vec2) {char_size, char_size},
+                                  (vec2) {current_x_position, start_pos[1]},
+                                  tex_coords);
+
+#endif
+
+        // Kerning: Update the position based on character spacing
+        f32 spacing =
+          p_font->char_spacing[target] / (sprite_cells_size[0] / char_size);
 
         // Store the current spacing as the last effective one (for the next
         // loop iteration)
@@ -103,15 +164,11 @@ gsk_gui_text_create(const char *text_string, vec2 pos_offset, vec3 color)
         // the character)
         current_x_position += last_effective_spacing;
     }
-
-    return ret;
 }
 
 void
 gsk_gui_text_draw(gsk_GuiText *self, u32 shader_id)
 {
-    for (int i = 0; i < self->character_count; i++)
-    {
-        gsk_gui_element_draw(self->elements[i], shader_id);
-    }
+    // TODO: check if text has been updated
+    gsk_gui_element_draw(self->p_element, shader_id);
 }
