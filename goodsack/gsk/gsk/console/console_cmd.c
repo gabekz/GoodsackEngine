@@ -5,6 +5,8 @@
 
 #include "console_cmd.h"
 
+#include "console/console_var.h"
+
 #include "util/logger.h"
 #include "util/sysdefs.h"
 
@@ -57,7 +59,7 @@ gsk_console_cmd_register(const char *cmd_name,
 {
     if (cmd_name == NULL || callback == NULL)
     {
-        LOG_ERROR("failed to register command: invalid args");
+        LOG_ERROR("failed to register command: invalid cmd_name");
         return;
     }
 
@@ -157,6 +159,22 @@ gsk_console_cmd_execute(const char *input_line)
 
     if (cmd_index < 0)
     {
+        // attempt to see if we really want to get a console var
+        if (gsk_console_var_print(cmd_name))
+        {
+            // TODO: check
+            if (argc < 2) { return TRUE; }
+
+            char new_cmd[256] = "";
+            sprintf(new_cmd, "setvar %s %s", cmd_name, argv[1]);
+
+            if (gsk_console_cmd_execute(new_cmd))
+            {
+                gsk_console_var_print(cmd_name);
+                return TRUE;
+            }
+        }
+
         LOG_ERROR("unknown command: %s", cmd_name);
         return FALSE;
     }
@@ -227,6 +245,8 @@ _tokenize_input(char *buffer, u32 *out_argc, const char **out_argv)
     char *p;
     u32 argc = 0;
 
+    u8 is_full_cmd = FALSE;
+
     if (buffer == NULL || out_argc == NULL || out_argv == NULL)
     {
         return FALSE;
@@ -242,7 +262,16 @@ _tokenize_input(char *buffer, u32 *out_argc, const char **out_argv)
             p++;
         }
 
+        if (!strcmp(buffer, "lua")) { is_full_cmd = TRUE; }
+
         if (*p == '\0') { break; }
+
+        if (is_full_cmd)
+        {
+            out_argv[argc++] = p;
+            *out_argc        = argc;
+            return TRUE;
+        }
 
         if (argc >= GSK_CONSOLE_MAX_ARGS)
         {

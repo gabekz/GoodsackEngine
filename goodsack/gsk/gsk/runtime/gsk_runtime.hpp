@@ -89,6 +89,18 @@ rt_get_lua_state();
 void
 rt_lua_reload();
 
+void
+rt_append_input_textfield(char *str);
+
+char *
+rt_get_input_textfield();
+
+void
+rt_clear_input_textfield();
+
+void
+rt_backspace_input_textfield();
+
 } // namespace runtime
 } // namespace gsk
 

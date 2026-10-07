@@ -60,6 +60,11 @@ _key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
     }
 #endif
 
+    if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
+    {
+        gsk_runtime_backspace_input_textfield();
+    }
+
     // 1.) Send the key to the input device stack
     // 2.) (From UPDATE) - GetKey() checks the stack for actions and inputs
     // 3.) EOF(Endofframe)
@@ -88,6 +93,24 @@ _cursor_callback(GLFWwindow *window, double xpos, double ypos)
     input.cursor_position[1] = ypos;
 
     gsk_device_setInput(input);
+}
+
+static void
+_character_callback(GLFWwindow *window, u32 codepoint)
+{
+    // UTF32 codepoint to UT-8
+    if (codepoint < 128)
+    {
+        if (codepoint == GLFW_KEY_BACKSPACE)
+        {
+            gsk_runtime_clear_input_textfield();
+        }
+
+        char str[8] = "";
+        sprintf(str, "%c", codepoint);
+
+        gsk_runtime_append_input_textfield(str);
+    }
 }
 
 GLFWwindow *
@@ -169,6 +192,7 @@ gsk_window_create(int win_width,
         glfwSetKeyCallback(window, _key_callback);
         glfwSetCursorPosCallback(window, _cursor_callback);
         glfwSetMouseButtonCallback(window, _mouse_callback);
+        glfwSetCharCallback(window, _character_callback);
 
         // Initialize GL debug callback
         _gsk_gl_debug_init();

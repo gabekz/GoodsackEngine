@@ -94,4 +94,27 @@ gsk_runtime_get_lua_state()
     return gsk::runtime::rt_get_lua_state(); // Calls the C++
                                              // function internally
 }
+void
+gsk_runtime_append_input_textfield(char *str)
+{
+    return gsk::runtime::rt_append_input_textfield(str);
+}
+
+char *
+gsk_runtime_get_input_textfield()
+{
+    return gsk::runtime::rt_get_input_textfield();
+}
+
+void
+gsk_runtime_clear_input_textfield()
+{
+    return gsk::runtime::rt_clear_input_textfield();
+}
+
+void
+gsk_runtime_backspace_input_textfield()
+{
+    return gsk::runtime::rt_backspace_input_textfield();
+}
 }

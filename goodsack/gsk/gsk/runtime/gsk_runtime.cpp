@@ -40,6 +40,9 @@
 #include "entity/modules/modules_systems.h"
 
 #include "console/console_cmd.h"
+#include "console/console_var.h"
+
+#include "wrapper/lua/lua_debug.h"
 
 #if GSK_USING_COMPOSER
 #include "core/audio/music_composer.h"
@@ -47,6 +50,8 @@
 #endif // GSK_USING_COMPOSER
 
 #include "entity/ecs.h"
+
+#include "input/input_mapping.h"
 
 #define _TOTAL_ASSET_CACHES 2
 #define _TEST_WRITE_PNG     FALSE
@@ -103,6 +108,9 @@ static struct
 
     gsk_Path lua_init_path;
 
+    bool is_input_text_field_active = false;
+    char input_text_field[256]      = "";
+
 } s_runtime;
 } // extern "C"
 
@@ -112,7 +120,36 @@ __cmd_echo(u32 argc, const char **argv)
     for (u32 i = 0; i < argc; i++)
     {
         LOG_PRINT("%s", argv[i]);
-        if (i + 1 < argc) { LOG_PRINT(" "); }
+        // if (i + 1 < argc) { LOG_PRINT(" "); }
+    }
+}
+
+static void
+__cmd_setvar(u32 argc, const char **argv)
+{
+    if (argc < 2) { return; }
+    std::string cmd_name = argv[0];
+    std::string value    = argv[1];
+    gsk_console_var_set_from_string(cmd_name.c_str(), value.c_str());
+}
+
+static void
+__cmd_lua_exec(u32 argc, const char **argv)
+{
+    if (!s_runtime.options.using_lua)
+    {
+        LOG_ERROR("failed to execute Lua command - Lua is disabled!");
+        return;
+    }
+
+    if (argc < 1) { return; }
+    std::string value = argv[0];
+
+    lua_State *L = entity::LuaEventStore::getLuaState();
+
+    if (!CheckLua(L, luaL_dostring(L, value.c_str())))
+    {
+        LOG_ERROR("failed to execute lua command");
     }
 }
 
@@ -310,7 +347,7 @@ gsk::runtime::rt_setup(const char *root_dir,
           p_fallback_cache, "gsk://audio/boing.wav", GSK_ASSET_FETCH_IMPORT);
 
         s_runtime.p_default_model = _gsk_asset_get_internal(
-          p_fallback_cache, "gsk://models/cube.obj", GSK_ASSET_FETCH_IMPORT);
+          p_fallback_cache, "gsk://models/cube.glb", GSK_ASSET_FETCH_IMPORT);
 
         s_runtime.p_default_material =
           _gsk_asset_get_internal(p_fallback_cache,
@@ -427,6 +464,13 @@ gsk::runtime::rt_setup(const char *root_dir,
     // Initialize audio interface
     openal_init();
 
+    // Initialize input system mapping
+    gsk_InputMap *p_input_map = gsk_input_map_create();
+
+    gsk_InputAction *p_action =
+      (gsk_InputAction *)LIST_GET(&p_input_map->list_actions, 0);
+    gsk_input_action_get(p_action);
+
 #if USING_RUNTIME_LOADING_SCREEN
     if (GSK_DEVICE_API_OPENGL)
     {
@@ -436,8 +480,8 @@ gsk::runtime::rt_setup(const char *root_dir,
         vec2 text_pos   = {0.0f, 0.0f};
         vec3 text_color = {1.0f, 1.0f, 1.0f};
 
-        gsk_GuiText *loading_text =
-          gsk_gui_text_create("Loading", text_pos, text_color);
+        gsk_GuiText *loading_text = gsk_gui_text_create(
+          "Loading", GskGuiElementAnchorType_None, text_pos, text_color, 24);
 
         const u32 canvas_shader_id =
           s_runtime.renderer->info_canvas.p_material->shaderProgram->id;
@@ -456,6 +500,8 @@ gsk::runtime::rt_setup(const char *root_dir,
 
     // Intialize TEST commands
     gsk_console_cmd_register("echo", "echo <text..>", __cmd_echo);
+    gsk_console_cmd_register("setvar", "set <convar> <variable>", __cmd_setvar);
+    gsk_console_cmd_register("lua", "lua <code>", __cmd_lua_exec);
 
     // Initialize Lua
 
@@ -492,8 +538,12 @@ gsk::runtime::rt_setup(const char *root_dir,
     vec2 text_info_pos = {4.0f, 0.0f};
     vec3 text_info_col = {1.0f, 1.0f, 1.0f};
 
-    gsk_GuiText *text_info =
-      gsk_gui_text_create(str_info, text_info_pos, text_info_col);
+    gsk_GuiText *text_info = gsk_gui_text_create(str_info,
+                                                 GskGuiElementAnchorType_None,
+                                                 text_info_pos,
+                                                 text_info_col,
+                                                 256);
+
     gsk_gui_canvas_add_text(&s_runtime.renderer->info_canvas, text_info);
 
 #endif
@@ -695,6 +745,11 @@ gsk::runtime::rt_activate_ecs_systems(gsk_ECS *p_ecs)
     s_light_setup_system_init(p_ecs);
 
     s_collider_debug_draw_system_init(p_ecs);
+
+// DEBUG
+#if SYS_DEBUG
+    s_debug_console_system_init(p_ecs);
+#endif // SYS_DEBUG
 }
 
 void
@@ -876,4 +931,38 @@ gsk::runtime::rt_lua_reload()
     {
         LOG_ERROR("Failed to initialize lua");
     }
+}
+
+void
+gsk::runtime::rt_append_input_textfield(char *str)
+{
+    strcat(s_runtime.input_text_field, str);
+}
+
+char *
+gsk::runtime::rt_get_input_textfield()
+{
+    return s_runtime.input_text_field;
+}
+
+void
+gsk::runtime::rt_clear_input_textfield()
+{
+    std::fill(std::begin(s_runtime.input_text_field),
+              std::end(s_runtime.input_text_field),
+              '\0');
+}
+
+void
+gsk::runtime::rt_backspace_input_textfield()
+{
+    char *str = s_runtime.input_text_field;
+
+    s32 pos = strlen(s_runtime.input_text_field) - 1;
+    if (pos <= 0)
+    {
+        s_runtime.input_text_field[0] = '\0';
+        return;
+    }
+    std::memmove(str + pos, str + pos + 1, std::strlen(str) - pos);
 }

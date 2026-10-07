@@ -35,6 +35,8 @@ extern "C" {
 
 #include "entity/modules/light/light_setup-system.h"
 
+#include "debug/debug_console-system.h"
+
 #ifdef __cplusplus
 }
 #endif

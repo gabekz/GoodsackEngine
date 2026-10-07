@@ -13,26 +13,6 @@
 extern "C" {
 #endif // __cplusplus
 
-#if 0
-typedef enum gsk_ConsoleArgType {
-    GSK_CONSOLE_ARG_STRING,
-    GSK_CONSOLE_ARG_INT,
-    GSK_CONSOLE_ARG_FLOAT,
-    GSK_CONSOLE_ARG_BOOL
-} gsk_ConsoleArgType;
-
-typedef struct gsk_ConsoleArg
-{
-    gsk_ConsoleArgType type;
-    union {
-        const char *s;
-        s32 i;
-        f32 f;
-        u8 b;
-    } as;
-} gsk_ConsoleArg;
-#endif
-
 typedef void (*gsk_Fn_ConsoleCommand)(u32 argc, const char **argv);
 
 void

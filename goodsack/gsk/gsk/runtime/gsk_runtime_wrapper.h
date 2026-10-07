@@ -47,6 +47,15 @@ gsk_runtime_get_debug_entity_id();
 void *
 gsk_runtime_get_lua_state();
 
+void
+gsk_runtime_append_input_textfield(char *str);
+
+char *
+gsk_runtime_get_input_textfield();
+
+void
+gsk_runtime_backspace_input_textfield();
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
