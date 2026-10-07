@@ -216,7 +216,13 @@ _gsk_device_check_fixed_update()
         // s_device.clock_fixed_delta_prev = s_device.time.time_elapsed;
         // s_device.clock_fixed_delta -= s_device.time.unscaled_delta_time;
 
+#if 1
         s_device.clock_fixed_delta -= s_device.time.fixed_delta_time;
+        if (s_device.clock_fixed_delta < 0) { s_device.clock_fixed_delta = 0; }
+#else
+        s_device.clock_fixed_delta = 0;
+#endif
+
         // s_device.clock_fixed_delta -= MAX(s_device.time.fixed_delta_time,
         //                                  s_device.time.unscaled_delta_time);
         return 1;

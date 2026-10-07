@@ -39,6 +39,8 @@ void
 gsk_physics_solver_clear_constraints();
 
 u8
-gsk_physics_solver_exists(gsk_EntityId entity_a, gsk_EntityId entity_b);
+gsk_physics_solver_exists(gsk_EntityId entity_a,
+                          gsk_EntityId entity_b,
+                          u32 *out_index);
 
 #endif // __PHYSICS_SOLVER_H__

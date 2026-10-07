@@ -40,6 +40,7 @@ gsk_model_load_from_file(const char *path, f32 scale, u16 importMaterials)
         model->meshesCount = 1;
         model->meshes      = malloc(sizeof(gsk_Mesh *) * model->meshesCount);
         model->meshes[0]   = gsk_mesh_allocate(mesh0);
+        // gsk_mesh_center(model->meshes[0]);
         model->meshes[0]->usingImportedMaterial = FALSE;
 
         mat4 localMatrix = GLM_MAT4_IDENTITY_INIT;

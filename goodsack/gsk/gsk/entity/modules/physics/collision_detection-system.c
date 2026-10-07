@@ -82,7 +82,8 @@ _check_collision_on_entity(gsk_Entity e)
 
         // IMPORTANT:
         // check to see if we already have a collision manifold.
-        if (gsk_physics_solver_exists(e.id, e_compare.id)) { continue; }
+        if (gsk_physics_solver_exists(e.id, e_compare.id, NULL)) { continue; }
+        // TODO: maybe here is where we check? idk how to implement this.
 
         // check layer mask to ensure collision is allowed
         if (!gsk_runtime_check_layer_mask(e.ecs->p_ent_layers[e.index],
@@ -254,6 +255,9 @@ _check_collision_on_entity(gsk_Entity e)
             for (int pt = 0; pt < manifold.contacts_count; pt++)
             {
                 gsk_CollisionPoints *p_contact = &manifold.contacts[pt];
+
+                // TODO: possibly check for warm-starting here?
+
                 transform_point_world_to_local(
                   transform, p_contact->point_a, p_contact->local_point_a);
                 transform_point_world_to_local(compareTransform,

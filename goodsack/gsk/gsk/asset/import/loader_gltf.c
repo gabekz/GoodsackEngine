@@ -263,6 +263,10 @@ _create_joint_recurse(gsk_Skeleton *skeleton,
                               sizeof(mat4) / sizeof(f32));
     glm_mat4_copy(inverseBindPose, joint.mInvBindPose);
 
+#if 0
+    glm_translate(joint.mInvBindPose, (vec3) {0, 0.68f, 0});
+#endif
+
     // transformation matrix
     glm_vec3_copy(jointsNode[id]->scale, joint.pose.scale);
     glm_vec4_copy(jointsNode[id]->rotation, joint.pose.rotation);
@@ -340,6 +344,20 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
     glm_vec3_copy(attribInfo.posData->min, ret->boundingBox[0]);
     glm_vec3_copy(attribInfo.posData->max, ret->boundingBox[1]);
 
+#if 0
+    vec3 local_offset = {0, 0, 0};
+    glm_vec3_add(ret->boundingBox[0], ret->boundingBox[1], local_offset);
+    glm_vec3_scale(local_offset, 0.5f, local_offset);
+    local_offset[0] *= IS_NEAR_ZERO(local_offset[0]) ? 0.0f : 1.0f;
+    local_offset[1] *= IS_NEAR_ZERO(local_offset[1]) ? 0.0f : 1.0f;
+    local_offset[2] *= IS_NEAR_ZERO(local_offset[2]) ? 0.0f : 1.0f;
+
+    // TODO: do this
+    glm_vec3_add(ret->boundingBox[0], local_offset, ret->boundingBox[0]);
+    glm_vec3_negate_to(ret->boundingBox[0], ret->boundingBox[1]);
+    // glm_vec3_add(ret->boundingBox[1], local_offset, ret->boundingBox[1]);
+#endif
+
     // Set primitive type
     ret->primitive_type = GskMeshPrimitiveType_Triangle; // TODO: Get from file
 
@@ -360,6 +378,12 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         // Fill Positions
         cgltf_accessor_read_float(
           attribInfo.posData, i, buff_verts + offsetA, size_vec3);
+
+#if 0
+         glm_vec3_sub(buff_verts + offsetA, local_offset, buff_verts +
+         offsetA);
+#endif
+
         offsetA += 3;
         // Fill TextureCoords
         cgltf_accessor_read_float(
@@ -459,7 +483,7 @@ _load_mesh_vertex_data(cgltf_primitive *gltfPrimitive, cgltf_data *data)
         u32 jointsBufferSize  = vertCount * 4 * sizeof(u32);
         u32 weightsBufferSize = vertCount * 4 * sizeof(float);
 
-        f32 *jointsBuffer    = malloc(jointsBufferSize);
+        f32 *jointsBuffer  = malloc(jointsBufferSize);
         f32 *weightsBuffer = malloc(weightsBufferSize);
 
         // fill joint and weight buffers

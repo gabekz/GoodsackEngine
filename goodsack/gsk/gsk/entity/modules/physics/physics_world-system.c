@@ -32,8 +32,8 @@
 
 #define _APPLY_GRAVITY_FIRST TRUE
 
-#define _VELOCITY_ITERATIONS 6 // 6
-#define _FRICTION_ITERATIONS 2 // 2
+#define _VELOCITY_ITERATIONS 8 // 6
+#define _FRICTION_ITERATIONS 4 // 2
 #define _POSITION_ITERATIONS 1 // 1
 
 #define _UPDATE_DB_MODE      2
@@ -647,7 +647,8 @@ fixed_update(gsk_Entity entity)
             }
 
             gsk_ConstraintSolverData solver_data = {
-              .delta    = 0.05f,
+              //.delta    = 0.05f,
+              .delta    = delta,
               .beta     = _BETA,
               .softness = p_constraint->softness,
               .physics_mark =

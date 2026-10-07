@@ -234,7 +234,7 @@ gsk_load_obj(const char *path, float scale)
         glm_vec2_sub(uv2, uv1, del1);
         glm_vec2_sub(uv3, uv1, del2);
 
-        float f = 1.0f / (del1[0] * del2[1] - del2[0] * del1[1]);
+        f32 f = FDIV_SAFE(1.0f, (del1[0] * del2[1] - del2[0] * del1[1]));
 
         // loop for coordinates - x=0, y=1, z=2
         for (int k = 0; k < 3; k++)

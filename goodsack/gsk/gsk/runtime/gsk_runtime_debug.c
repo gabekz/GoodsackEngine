@@ -13,6 +13,7 @@ void
 _gsk_debug_draw_internal(
   u8 type, vec4 pos_start, vec4 pos_end, f32 length, vec4 color)
 {
+#if SYS_DEBUG
 
     gsk_ECS *p_ecs = gsk_runtime_get_ecs();
 
@@ -31,4 +32,5 @@ _gsk_debug_draw_internal(
                            length,
                            color,
                            FALSE);
+#endif // SYS_DEBUG
 }

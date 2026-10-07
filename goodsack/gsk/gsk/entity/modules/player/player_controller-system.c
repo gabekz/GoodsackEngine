@@ -9,13 +9,14 @@
 #include "gsk/entity/modules/physics/mod_physics.h"
 #include "player.h"
 
+#include "gsk/core/device/device.h"
 #include "gsk/wrapper/lua/lua_hook.h"
 
 #include "util/logger.h"
 #include "util/sysdefs.h"
 #include "util/vec_colors.h"
 
-#define DEFAULT_JUMP_FORCE 160
+#define DEFAULT_JUMP_FORCE 10
 
 #define USING_COLLIDE_AND_SLIDE TRUE
 #define COLLIDE_AND_SLIDE_DIST  1.4f
@@ -49,6 +50,9 @@ update(gsk_Entity entity)
 {
     if (!gsk_ecs_has(entity, C_PLAYER_CONTROLLER)) { return; }
 
+    gsk_Input deviceInput = gsk_device_getInput();
+    if (deviceInput.cursor_state.is_visible == TRUE) { return; }
+
     struct ComponentPlayerController *cmp_controller =
       gsk_ecs_get(entity, C_PLAYER_CONTROLLER);
 
@@ -65,7 +69,7 @@ update(gsk_Entity entity)
         cmp_controller->can_jump = FALSE;
 
         // LUA_HOOK_RUN("ZHR_Player_Jump", "i", entity.id);
-        LUA_HOOK_RUN("ZHR_Player_Jump", "i", entity.id);
+        int result = LUA_HOOK_RUN("ZHR_Player_Jump", "i", entity.id);
     }
     // jump release
     else if (input_jump == GLFW_RELEASE && cmp_controller->is_grounded)

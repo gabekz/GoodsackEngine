@@ -30,7 +30,7 @@ gsk_physics_distance_joint_position_solver(vec3 world_a,
     glm_vec3_sub(world_a, world_b, delta);
 
     float len = glm_vec3_norm(delta);
-    if (len < 1e-6f) return;
+    if (len < 1e-6f) { return; }
 
     vec3 n;
     glm_vec3_scale(delta, 1.0f / len, n);
@@ -38,7 +38,7 @@ gsk_physics_distance_joint_position_solver(vec3 world_a,
     float error = len - rest_length;
 
     float inv_mass_sum = inv_mass_a + inv_mass_b;
-    if (inv_mass_sum <= 0.0f) return;
+    if (inv_mass_sum <= 0.0f) { return; }
 
     float percent = 0.2f;
 
@@ -127,11 +127,6 @@ gsk_physics_joint_velocity_solver(gsk_ConstraintSolverData solver_data)
         float jv = glm_vec3_dot(rel_v, axis);
         float b  = glm_vec3_dot(bias, axis);
 
-        /*
-         * Approximate effective mass.
-         * This ignores the full rotational Jacobian matrix.
-         * Good enough to get a prototype moving.
-         */
 #if 0
         float effective_mass = body_a.inverse_mass + body_b.inverse_mass;
 #else
@@ -139,22 +134,12 @@ gsk_physics_joint_velocity_solver(gsk_ConstraintSolverData solver_data)
           gsk_physics_util_effective_mass_axis(&body_a, &body_b, ra, rb, axis);
 #endif
 
-        if (effective_mass <= 1e-6f) continue;
+        if (effective_mass <= 1e-6f) { continue; }
 
         float lambda = -(jv + b) / (effective_mass + solver_data.softness);
 
         // output to impulse-axes
         glm_vec3_scale(axis, lambda, ret.impulse_axes[i]);
-
-        /*
-         * A receives -impulse, B receives +impulse.
-         */
-        // vec3 neg_impulse;
-        // glm_vec3_copy(impulse, neg_impulse);
-        // glm_vec3_negate(neg_impulse);
-
-        //_apply_impulse_at_point(data.rb_a, neg_impulse, ra);
-        //_apply_impulse_at_point(data.rb_b, impulse, rb);
     }
 
     return ret;

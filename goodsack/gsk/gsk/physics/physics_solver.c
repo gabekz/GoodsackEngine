@@ -73,8 +73,13 @@ gsk_physics_solver_clear_constraints()
 }
 
 u8
-gsk_physics_solver_exists(gsk_EntityId entity_a, gsk_EntityId entity_b)
+gsk_physics_solver_exists(gsk_EntityId entity_a,
+                          gsk_EntityId entity_b,
+                          u32 *out_index)
 {
+
+    if (out_index) { out_index = 0; }
+
     if (s_solver->solvers_list->is_list_empty) { return FALSE; }
 
     for (int i = 0; i < s_solver->solvers_list->list_next; i++)
@@ -85,6 +90,7 @@ gsk_physics_solver_exists(gsk_EntityId entity_a, gsk_EntityId entity_b)
              p_result->ent_b_id == entity_b) ||
             (p_result->ent_a_id == entity_b && p_result->ent_b_id == entity_a))
         {
+            if (out_index) { out_index = i; }
             return TRUE;
         }
     }

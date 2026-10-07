@@ -34,10 +34,30 @@ _calculate_vertex_skinning()
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
+mat4
+_calculate_vertex_skinning_m4()
+{
+#if SKINNED
+    mat4 totalLocalPos = mat4(0.0);
+    for (int i = 0; i < MAX_WEIGHTS; i++)
+    {
+        mat4 skinnedTransform = u_SkinnedMatrices[int(a_Joints[i])];
+        totalLocalPos += skinnedTransform * a_Weights[i];
+    }
+    return totalLocalPos;
+#endif // SKINNED
+    return mat4(1.0);
+}
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
 void
 main()
 {
-    gl_Position = u_LightSpaceMatrix * u_Model * _calculate_vertex_skinning();
+    mat4 boneTransform = _calculate_vertex_skinning_m4();
+    vec4 worldPos      = u_Model * boneTransform * vec4(a_Position, 1.0);
+
+    gl_Position = u_LightSpaceMatrix * worldPos;
 }
 //-----------------------------------------------------------------------------
 
